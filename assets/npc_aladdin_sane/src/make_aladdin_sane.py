@@ -189,6 +189,37 @@ def bowie_spiky_mullet(se, ne):
             x, y = ex, ey+2
             body[y,x] = "Ka"
             if 0 <= x+1 < lv.CW: body[y,x+1] = "Kh"
+        # Strip the broad side curtains completely: the Aladdin Sane haircut
+        # is layered and tight around the ears, NOT two thick long panels.
+        for y in range(13, 31):
+            if backwards:
+                left_limit, right_limit = (12, 26) if y < 21 else (11, 27)
+            else:
+                left_limit, right_limit = (13, 26) if y < 21 else (12, 27)
+            for x in range(lv.CW):
+                if (x < left_limit or x > right_limit):
+                    front[y, x] = ""
+            # Back hair shares the panel silhouette only near the temples.
+            # Preserve center nape/neck while leaving the skin ears exposed.
+            if 14 <= y <= 19:
+                for ex, _, _ in ear_centers:
+                    for x in range(max(0,ex-1),min(lv.CW,ex+2)):
+                        back[y,x] = ""
+        # Thin graduated nape strands, reaching just past the ears.
+        # Leave whitespace between strands, so the result stays airy at 1x.
+        for x0, lean in ((12,-1),(27,1)):
+            for k in range(8):
+                y = 21 + k
+                x = x0 + (lean if k > 5 else 0)
+                if 0 <= x < lv.CW and y < lv.CH and k not in (5,7):
+                    front[y, x] = "H1" if k >= 5 else "H3"
+        # Ear cutouts win over ALL hair strands, including the back layer.
+        for ex,ey,_side in ear_centers:
+            for dx,dy in ear_shape:
+                x,y = ex+dx,ey+dy
+                if 0 <= x < lv.CW and 0 <= y < lv.CH:
+                    front[y,x] = ""
+                    back[y,x] = ""
         # Slender tapered sideburn just above the exposed ears.
         for x0 in (8, 30):
             for y in range(10,14):
@@ -335,6 +366,7 @@ def sanitize_native_pngs():
         (0x7D, 0x64, 0x52): (0x7A, 0x52, 0x30),
         (0xB4, 0xE0, 0xED): (0xBF, 0xE6, 0xFF),
         (0xB0, 0xE2, 0xF0): (0xBF, 0xE6, 0xFF),
+        (0xAC, 0xD2, 0xDA): (0xBF, 0xE6, 0xFF),
     }
     for p in SPRITES.glob("*.png"):
         a = np.asarray(Image.open(p).convert("RGBA")).copy()
