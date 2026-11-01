@@ -1,0 +1,42 @@
+name: Verify and build Aladdin Sane v6b NPC
+
+on:
+  push:
+    branches:
+      - feature/aladdin-sane-v6b
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-dejavu-core fonts-wine
+          python -m pip install -r requirements.txt
+      - name: Verify baseline pipeline
+        run: bash ./run_all.sh verify
+      - name: Generate native game-ready character and previews
+        run: python assets/npc_aladdin_sane/src/make_aladdin_sane.py
+      - name: Audit sprite pixels
+        run: python tools/audit_colors.py assets/npc_aladdin_sane/sprites
+      - name: Publish generated output for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aladdin-sane-v6b-generated
+          path: |
+            assets/npc_aladdin_sane/sprites/
+            assets/npc_aladdin_sane/preview/
+            assets/npc_aladdin_sane/manifest.json
+          if-no-files-found: warn
