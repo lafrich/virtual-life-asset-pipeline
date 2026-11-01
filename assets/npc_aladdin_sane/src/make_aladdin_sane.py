@@ -151,6 +151,49 @@ def bowie_spiky_mullet(se, ne):
                     x = bx + (k//6) * (-1 if idx < 2 else 1)
                     if 0 <= y < lv.CH and 0 <= x < lv.CW:
                         back[y,x] = "H1" if k > 8 else ("H4" if k%5==0 else "H3")
+        # Bowie sideburns: narrow both sides WITHOUT trimming the tall crown.
+        # The original mid-hair generator is a wide, almost square helmet.
+        # Taper from temple (row 10) down to the ends (row 29).
+        for y in range(10, min(31, lv.CH)):
+            row = np.flatnonzero(front[y] != "")
+            if len(row) < 13:
+                continue
+            cut = 2 if y <= 12 else (3 if y <= 20 else 4)
+            for x in row[:cut]:
+                front[y, int(x)] = ""
+            for x in row[-cut:]:
+                front[y, int(x)] = ""
+        # Ear windows: leave the larger top / back hair masses untouched.
+        # Native v6b coordinates (not frame pixels), so these move perfectly
+        # with each walk/idle/sit pose, with right-side views mirrored.
+        body = layers["body"]
+        if not backwards:
+            ear_centers = ((11, 15, "near"), (27, 15, "far"))
+        else:
+            # The v6b back view normally hides the ear under the whole hair cap.
+            ear_centers = ((10, 15, "near"), (28, 15, "far"))
+        for ex, ey, side in ear_centers:
+            ear_shape = ((0,0),(1,0),(-1,1),(0,1),(1,1),
+                         (-1,2),(0,2),(1,2),(0,3),(1,3))
+            for dx, dy in ear_shape:
+                x, y = ex + dx, ey + dy
+                if not (0 <= x < lv.CW and 0 <= y < lv.CH):
+                    continue
+                # Cut a clear negative-space ear silhouette into BOTH hair
+                # layers; then paint native skin codes on the existing body.
+                front[y,x] = ""
+                back[y,x] = ""
+                outer = dx == -1 or dx == 1 or dy == 3
+                body[y,x] = "K7" if outer else ("Ke" if side == "far" else "Ki")
+            # Two-pixel inner-ear fold; deliberately unobtrusive at native 1x.
+            x, y = ex, ey+2
+            body[y,x] = "Ka"
+            if 0 <= x+1 < lv.CW: body[y,x+1] = "Kh"
+        # Slender tapered sideburn just above the exposed ears.
+        for x0 in (8, 30):
+            for y in range(10,14):
+                if 0 <= x0 < lv.CW and front[y,x0]:
+                    front[y,x0] = "H1"
         # Reduce the rigid square silhouette at the ends of the front mullet.
         for y in range(21, min(35,lv.CH)):
             xs = np.flatnonzero(front[y] != "")
