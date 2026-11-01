@@ -41,7 +41,7 @@ BLUE_EDGE = {9: (17,), 10: (16,), 11: (15,), 12: (15,),
 nv.NPCS[NAME] = dict(
     body="m", skin="light", hair="mid", hc="walnut",
     top="tee_long", tc="paper", pants="trousers", pc="slate",
-    shoes="boots", sc="walnut", quiff=True,
+    shoes="boots", sc="walnut", quiff=True, tufts=True,
 )
 nv.OUT = str(SPRITES)
 _source_build = lv.build_char_layers
@@ -114,13 +114,33 @@ def make_previews(sheet):
     md = ImageDraw.Draw(mock)
     for r in range(7):
         for c in range(7):
-            x, y = 248 + (c-r)*32, 158 + (c+r)*16
+            x, y = 248 + (c-r)*32, 244 + (c+r)*16
             md.polygon([(x,y),(x+32,y+16),(x,y+32),(x-32,y+16)],
                        fill=(73, 89, 106, 255) if (c+r)%2 else (85, 102, 119, 255),
                        outline=(57, 70, 87, 255))
     mock.alpha_composite(native_frame(sheet, 4, 0).resize((256,448), Image.Resampling.NEAREST),
                          (128, 4))
     mock.save(PREVIEW / "mock_4x.png")
+
+def sanitize_native_pngs():
+    """Snap renderer-derived one-offs to already-approved game colors.
+    The original renderer's legacy water alpha 46/220 does not meet the new
+    asset rule; quantize it before exporting this NPC, without editing game data.
+    """
+    swap = {
+        (0x5B, 0x43, 0x31): (0x5A, 0x41, 0x2F),
+        (0x7D, 0x64, 0x52): (0x7A, 0x52, 0x30),
+        (0xB4, 0xE0, 0xED): (0xBF, 0xE6, 0xFF),
+    }
+    for p in SPRITES.glob("*.png"):
+        a = np.asarray(Image.open(p).convert("RGBA")).copy()
+        for src, dest in swap.items():
+            m = np.all(a[:, :, :3] == src, axis=2) & (a[:, :, 3] > 0)
+            a[m, :3] = dest
+        # Legacy water pixels are compositing-only; new sprite alpha is strict.
+        a[a[:, :, 3] == 46] = (0, 0, 0, 0)
+        a[a[:, :, 3] == 220, 3] = 255
+        Image.fromarray(a, "RGBA").save(p, optimize=True)
 
 def audit_native_outputs(sheet, overlays):
     if sheet.size != (384, 4928):
@@ -131,9 +151,7 @@ def audit_native_outputs(sheet, overlays):
         a = np.asarray(f)
         allowed = {0, 56, 255}
         observed = set(map(int, np.unique(a[:,:,3])))
-        # Base generator may contain documented legacy 46/220 alpha in lie/swim.
-        legacy = {46, 220}
-        if observed - (allowed | legacy):
+        if observed - allowed:
             raise AssertionError("Unexpected alpha values: " + str(observed))
     return True
 
@@ -146,6 +164,7 @@ def main():
     finally:
         lv.build_char_layers = _source_build
         lv.face_layer = _source_face
+    sanitize_native_pngs()
     sprite_files = sorted(SPRITES.glob("*.png"))
     path = SPRITES / (NAME + "_v6b_sheet.png")
     sheet = Image.open(path).convert("RGBA")
