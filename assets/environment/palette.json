@@ -1,0 +1,226 @@
+{
+ "ad": {
+  "void": "#0B0E13",
+  "floor_dk": "#10141B",
+  "floor_lt": "#1C2330",
+  "wall_shd": "#2A3242",
+  "wall_lit": "#3A4458",
+  "wall_top": "#5A6577",
+  "grey": "#8D97A8",
+  "paper": "#E7EBF2",
+  "wal_dk": "#3D2A1E",
+  "wal": "#6B4F3A",
+  "wal_lt": "#94704F",
+  "skin_lt": "#F1D3B5",
+  "skin_mid": "#D9A47E",
+  "skin_dp": "#8A5A3C",
+  "brass_shd": "#6B5320",
+  "brass": "#C99A2E",
+  "brass_lt": "#E0A526",
+  "glow": "#FFD166",
+  "baize": "#1F7A55",
+  "oxblood": "#7A2E35",
+  "plum": "#5B3F73",
+  "steel": "#3E6FA8",
+  "gallery": "#EDE6D8",
+  "ember": "#FF8A3D"
+ },
+ "accent_shades": {
+  "baize_lt": {
+   "hex": "#5B9C84",
+   "old": "#2F8F5B",
+   "computed": "#5B9C84",
+   "status": "approved: computed, identical to chars"
+  },
+  "baize_dk": {
+   "hex": "#175C4B",
+   "old": "#155C3F",
+   "computed": "#175C4B",
+   "status": "approved: computed, identical to chars"
+  },
+  "oxblood_lt": {
+   "hex": "#A25F44",
+   "old": "#96424A",
+   "computed": "#A25F44",
+   "status": "approved: computed (warm -> #FFD166), identical to chars"
+  },
+  "oxblood_dk": {
+   "hex": "#5C2231",
+   "old": "#521E24",
+   "computed": "#5C2231",
+   "status": "approved: computed, identical to chars"
+  },
+  "plum_lt": {
+   "hex": "#857399",
+   "old": "#74578E",
+   "computed": "#857399",
+   "status": "approved: computed, identical to chars"
+  },
+  "plum_dk": {
+   "hex": "#3E2F56",
+   "old": "#3E2A50",
+   "computed": "#3E2F56",
+   "status": "approved: computed, identical to chars"
+  },
+  "steel_lt": {
+   "hex": "#7194BE",
+   "old": "#5B8CC4",
+   "computed": "#7194BE",
+   "status": "approved: computed, identical to chars"
+  },
+  "steel_dk": {
+   "hex": "#2F467E",
+   "old": "#2A4C75",
+   "computed": "#2F4A7E",
+   "status": "approved: chars value #2F467E reused (computed #2F4A7E differs by 4 in G only; identical-to-chars wins)"
+  },
+  "gallery_mid": {
+   "hex": "#CFC6B4",
+   "old": "#CFC6B4",
+   "computed": "#C9BF8B",
+   "status": "EXCEPTION: hand shade kept",
+   "reason": "x0.75 HLS lightness keeps saturation, so the near-white warm grey turns mustard (#C9BF8B); on the gallery walls/plinths (largest light areas on screen) it reads as yellow staining, not shadow"
+  },
+  "gallery_dk": {
+   "hex": "#A89F8D",
+   "old": "#A89F8D",
+   "computed": "#ADAE51",
+   "status": "EXCEPTION: hand shade kept",
+   "reason": "second shadow step of gallery (rule applied twice) becomes olive #ADAE51; reads as a different, saturated colour and breaks the calm museum wall"
+  },
+  "ember_dk": {
+   "hex": "#B3561F",
+   "old": "#B3561F",
+   "computed": "#ED3700",
+   "status": "EXCEPTION: hand shade kept",
+   "reason": "ember is fully saturated, so x0.75 lightness gives a neon red-orange #ED3700 that is barely darker in value than ember (fails the 3-value read on the fire bed/rug ring and the no-neon rule)"
+  }
+ },
+ "rule": "shadow = L x0.75, hue 10 deg toward #1C2330; hilite = 30% toward paper / #FFD166 (warm)",
+ "approved_by": "Bima (AD), 21 Oct 2026, env v1.1",
+ "v13_accents": {
+  "hexes": {
+   "coral_lt": "#F4A182",
+   "coral": "#E8745A",
+   "coral_dk": "#A9484C",
+   "teal_lt": "#6FA9A9",
+   "teal": "#3D7A80",
+   "teal_dk": "#2A5266",
+   "water_dp": "#1B4F6B",
+   "water": "#2D8FB0",
+   "water_glow": "#7FE0E8"
+  },
+  "status": "APPROVED (pre-approved in style-sheet v1.3 by Bima): spark coral (brainstorm), slate teal (meeting), pool water ramp"
+ },
+ "v13_computed": {
+  "hexes": {
+   "coral_fa": "#2A2023",
+   "coral_fb": "#342D35",
+   "teal_fa": "#152027",
+   "teal_fb": "#202D3A",
+   "teal_glass": "#2C3B49",
+   "grass_dk": "#134B3D",
+   "grass_md": "#196345"
+  },
+  "status": "computed by v1.2/v1.3 rules: <acc>_fa/_fb = 12% floor tint; teal_glass = wall_shd (1 navy step lighter) at 12% teal (glass fill); grass_dk/md = baize shadow/mid x0.81 (2 night steps of x0.9; AD outdoor review asked one more step)"
+ },
+ "v13_parasol": {
+  "hexes": {
+   "parasol_lt": "#E3C376",
+   "parasol": "#D7BD7D",
+   "parasol_dk": "#A1995E"
+  },
+  "status": "APPROVED by Bima (AD), outdoor review 21 Oct 2026. Computed: mid = mix(glow, cool_grey, .35); shadow = rule (HSV value x0.75, hue 10 deg to navy); light = 30% to #FFD166"
+ },
+ "floor_tints": {
+  "hexes": {
+   "plum_fa": "#191926",
+   "plum_fb": "#242638",
+   "steel_fa": "#161F2C",
+   "steel_fb": "#202C3E",
+   "oxblood_fa": "#1D171E",
+   "oxblood_fb": "#272431",
+   "baize_fa": "#122022",
+   "baize_fb": "#1C2D34",
+   "gallery_fa": "#2B2D32",
+   "gallery_fb": "#353A44",
+   "wal_b": "#644936"
+  },
+  "status": "computed: <acc>_fa = mix(floor_dk, accent, 0.12), <acc>_fb = mix(floor_lt, accent, 0.12); wal_b = mix(wal, wal_dk, 0.15). Per AD in-context review (floor tint <= 10-15%), APPROVED by Bima (AD), 21 Oct 2026, floors v1.2"
+ },
+ "v2_bright_pop": {
+  "version": "2.0",
+  "note": "Oct 28 2026: bright pop remap of every v1.x hex (1:1, vo-patch/pop_recolor.py). Outline stays dark for character contrast.",
+  "map": {
+   "#0B0E13": "#2A2438",
+   "#10141B": "#3B3752",
+   "#1C2330": "#4C4868",
+   "#2A3242": "#CFC3A8",
+   "#3A4458": "#E8DEC6",
+   "#5A6577": "#FFF7E4",
+   "#8D97A8": "#A7B2C4",
+   "#E7EBF2": "#FFFFFF",
+   "#3D2A1E": "#9A6A3E",
+   "#6B4F3A": "#D49A5E",
+   "#94704F": "#F0C08A",
+   "#644936": "#C98E56",
+   "#5B3F73": "#3F63E8",
+   "#857399": "#7C95FF",
+   "#3E2F56": "#2D45B4",
+   "#3E6FA8": "#3AA6F2",
+   "#7194BE": "#86CCFF",
+   "#2F467E": "#2479CC",
+   "#1F7A55": "#35C46A",
+   "#5B9C84": "#86E59A",
+   "#175C4B": "#22984C",
+   "#134B3D": "#1E8442",
+   "#196345": "#2CAA54",
+   "#7A2E35": "#EE4D72",
+   "#A25F44": "#FF8AA2",
+   "#5C2231": "#BE2F56",
+   "#3D7A80": "#2EC3C3",
+   "#2A5266": "#1C8FA0",
+   "#6FA9A9": "#86EDE6",
+   "#2C3B49": "#A6DDF0",
+   "#2D8FB0": "#3CBDF5",
+   "#1B4F6B": "#2289D6",
+   "#7FE0E8": "#C2F6FF",
+   "#E8745A": "#FF7A5C",
+   "#A9484C": "#D94B4B",
+   "#F4A182": "#FFB394",
+   "#C99A2E": "#F2B530",
+   "#6B5320": "#B07A1C",
+   "#E0A526": "#FFC93C",
+   "#FFD166": "#FFE27A",
+   "#FF8A3D": "#FF9440",
+   "#B3561F": "#D9682A",
+   "#CFC6B4": "#E6DCC6",
+   "#A89F8D": "#C8BC9F",
+   "#EDE6D8": "#FFF8EA",
+   "#D7BD7D": "#FFD86B",
+   "#A1995E": "#E0A93A",
+   "#E3C376": "#FFE79A",
+   "#D9A47E": "#E8B48C",
+   "#122022": "#9FE3B4",
+   "#1C2D34": "#B3EBC4",
+   "#1D171E": "#FFC2B8",
+   "#272431": "#FFD2CA",
+   "#191926": "#BFD0FF",
+   "#242638": "#CEDBFF",
+   "#161F2C": "#A9D6F5",
+   "#202C3E": "#BCE1F8",
+   "#2B2D32": "#F4EBDA",
+   "#353A44": "#FAF3E5",
+   "#152027": "#9CE6DE",
+   "#202D3A": "#B2EEE7",
+   "#2A2023": "#FFD0A8",
+   "#342D35": "#FFDDBE"
+  },
+  "floor_tile_overrides": {
+   "#10141B": "#8ECDEB",
+   "#1C2330": "#A4D9F2",
+   "#2A3242": "#BFD8E4",
+   "#3A4458": "#D3E6EE"
+  }
+ }
+}

@@ -1,0 +1,5418 @@
+{
+ "nama": "barista_famima",
+ "status": "USULAN / preview (belum dipakai di index.html)",
+ "gaya": "v6b: tanpa outline hitam, cahaya dari kiri, 4-5 tone, bayangan alpha 56, glow 90, tanpa anti-aliasing",
+ "sumber_menu": [
+  {
+   "judul": "Daftar Menu Kopi Family Mart Terbaru 2026, Enak dan Murah (Rumah123, 25 Feb 2026)",
+   "url": "https://artikel.rumah123.com/daftar-menu-kopi-family-mart-terbaru-2026-enak-dan-murah",
+   "isi": "Kopi Series Hot/Cold harga reguler/large (KSK 16.000/19.000, Americano 13.000/16.000, Caramel Macchiato, Dolce, Cappuccino, Cafe Latte, Vanilla, Creamy Hazelnut 16.000/19.000); add-on Espresso Rp3.000"
+  },
+  {
+   "judul": "Daftar Menu Kopi di Family Mart (IDN Times)",
+   "url": "https://www.idntimes.com/food/dining-guide/fina-wahibatun-nisa-1/daftar-menu-kopi-di-family-mart",
+   "isi": "Regular/Large; Premium Chocolate 16.000/19.000, Green Tea Latte 16.000/19.000 (non-kopi)"
+  },
+  {
+   "judul": "Daftar Harga Menu Delivery FamilyMart Grand Indonesia (MenuKuliner.net)",
+   "url": "https://menukuliner.net/menu/323382/familymart-grand-indonesia",
+   "isi": "deskripsi bahan (Americano = single shot espresso + water, Cappuccino = espresso + fresh milk + milk foam, Dolce = espresso + fresh milk + dolce sauce), level gula No/Less/Normal/Extra Sweet, extra Espresso +Rp3.000"
+  },
+  {
+   "judul": "Promo FamilyMart Hari Ini, Bayar Suka-Suka untuk FamiCafe Beverage Regular (Kompas.com, 1 Apr 2026)",
+   "url": "https://www.kompas.com/jawa-barat/read/2026/04/01/084401788/promo-familymart-hari-ini-bayar-suka-suka-untuk-famicaf-beverage",
+   "isi": "nama FamiCafe dan daftar minuman: Premium Chocolate, Matcha Latte, Kopi Susu Keluarga, Caramel Macchiato, Dolce Latte, Coconut Latte, Americano"
+  }
+ ],
+ "npc": {
+  "name": "barista_famima",
+  "frame": [
+   64,
+   112
+  ],
+  "pivot": [
+   32,
+   100
+  ],
+  "sheet": "npc/barista_famima_sheet.png",
+  "cols": 6,
+  "dirs": [
+   "se",
+   "sw",
+   "ne",
+   "nw"
+  ],
+  "rows": {
+   "idle": 0,
+   "walk": 4,
+   "giling": 8,
+   "steam_tuang": 12,
+   "seduh": 16,
+   "serah": 20,
+   "ramah": 24
+  },
+  "anims": {
+   "idle": {
+    "frames": 4,
+    "frame_ms": 300,
+    "loop": true
+   },
+   "walk": {
+    "frames": 6,
+    "frame_ms": 150,
+    "loop": true
+   },
+   "giling": {
+    "frames": 4,
+    "frame_ms": 180,
+    "loop": true
+   },
+   "steam_tuang": {
+    "frames": 4,
+    "frame_ms": 260,
+    "loop": true
+   },
+   "seduh": {
+    "frames": 4,
+    "frame_ms": 240,
+    "loop": true
+   },
+   "serah": {
+    "frames": 4,
+    "frame_ms": 220,
+    "loop": true
+   },
+   "ramah": {
+    "frames": 4,
+    "frame_ms": 240,
+    "loop": true
+   }
+  },
+  "cfg": {
+   "body": "m",
+   "skin": "light",
+   "hair": "short",
+   "hc": "black",
+   "top": "tee",
+   "tc": "#F4F4F0",
+   "pants": "trousers",
+   "pc": "#2A3242",
+   "shoes": "shoes",
+   "sc": "night",
+   "cap": [
+    "#105824",
+    "#1FA34A",
+    "#7FD99A"
+   ],
+   "facial": {},
+   "top_style": "tee"
+  }
+ },
+ "props": {
+  "grid": "isometrik 64x32 per tile (engine street_buildings), pivot = piksel tanah tengah footprint",
+  "sprite": {
+   "gelas_hot_R_sw": {
+    "file": "props/gelas_hot_R_sw.png",
+    "size": [
+     14,
+     14
+    ],
+    "pivot": [
+     3,
+     10
+    ],
+    "anchor_n": [
+     3,
+     -6
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "gelas kertas FamiCafe R terbuka (pita hijau, garis biru, stiker label menu)",
+    "group": "famicafe"
+   },
+   "gelas_hot_R_se": {
+    "file": "props/gelas_hot_R_se.png",
+    "size": [
+     14,
+     14
+    ],
+    "pivot": [
+     3,
+     10
+    ],
+    "anchor_n": [
+     3,
+     -6
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "gelas kertas FamiCafe R terbuka (pita hijau, garis biru, stiker label menu)",
+    "group": "famicafe"
+   },
+   "gelas_hot_R_ne": {
+    "file": "props/gelas_hot_R_ne.png",
+    "size": [
+     14,
+     14
+    ],
+    "pivot": [
+     3,
+     10
+    ],
+    "anchor_n": [
+     3,
+     -6
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "gelas kertas FamiCafe R terbuka (pita hijau, garis biru, stiker label menu)",
+    "group": "famicafe"
+   },
+   "gelas_hot_R_nw": {
+    "file": "props/gelas_hot_R_nw.png",
+    "size": [
+     14,
+     14
+    ],
+    "pivot": [
+     3,
+     10
+    ],
+    "anchor_n": [
+     3,
+     -6
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "gelas kertas FamiCafe R terbuka (pita hijau, garis biru, stiker label menu)",
+    "group": "famicafe"
+   },
+   "cup_tutup_R_sw": {
+    "file": "props/cup_tutup_R_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "gelas kertas FamiCafe R + tutup (siap diserahkan)",
+    "group": "famicafe"
+   },
+   "cup_tutup_R_se": {
+    "file": "props/cup_tutup_R_se.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "gelas kertas FamiCafe R + tutup (siap diserahkan)",
+    "group": "famicafe"
+   },
+   "cup_tutup_R_ne": {
+    "file": "props/cup_tutup_R_ne.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "gelas kertas FamiCafe R + tutup (siap diserahkan)",
+    "group": "famicafe"
+   },
+   "cup_tutup_R_nw": {
+    "file": "props/cup_tutup_R_nw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "gelas kertas FamiCafe R + tutup (siap diserahkan)",
+    "group": "famicafe"
+   },
+   "gelas_es_R_sw": {
+    "file": "props/gelas_es_R_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "gelas plastik es R: isi berlapis, tutup datar, sedotan hijau, stiker label",
+    "group": "famicafe"
+   },
+   "gelas_es_R_se": {
+    "file": "props/gelas_es_R_se.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "gelas plastik es R: isi berlapis, tutup datar, sedotan hijau, stiker label",
+    "group": "famicafe"
+   },
+   "gelas_es_R_ne": {
+    "file": "props/gelas_es_R_ne.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "gelas plastik es R: isi berlapis, tutup datar, sedotan hijau, stiker label",
+    "group": "famicafe"
+   },
+   "gelas_es_R_nw": {
+    "file": "props/gelas_es_R_nw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "gelas plastik es R: isi berlapis, tutup datar, sedotan hijau, stiker label",
+    "group": "famicafe"
+   },
+   "cup_tutup_R_americano_sw": {
+    "file": "props/cup_tutup_R_americano_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Americano hot R, tutup, stiker DARK",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_americano_sw": {
+    "file": "props/gelas_es_R_americano_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Americano es R, stiker DARK",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_kopi_susu_keluarga_sw": {
+    "file": "props/cup_tutup_R_kopi_susu_keluarga_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Kopi Susu Keluarga hot R, tutup, stiker CARD",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_kopi_susu_keluarga_sw": {
+    "file": "props/gelas_es_R_kopi_susu_keluarga_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Kopi Susu Keluarga es R, stiker CARD",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_cafe_latte_sw": {
+    "file": "props/cup_tutup_R_cafe_latte_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Cafe Latte hot R, tutup, stiker LITE",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_cafe_latte_sw": {
+    "file": "props/gelas_es_R_cafe_latte_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Cafe Latte es R, stiker LITE",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_cappuccino_sw": {
+    "file": "props/cup_tutup_R_cappuccino_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Cappuccino hot R, tutup, stiker WOOD",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_cappuccino_sw": {
+    "file": "props/gelas_es_R_cappuccino_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Cappuccino es R, stiker WOOD",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_caramel_macchiato_sw": {
+    "file": "props/cup_tutup_R_caramel_macchiato_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Caramel Macchiato hot R, tutup, stiker GOLD",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_caramel_macchiato_sw": {
+    "file": "props/gelas_es_R_caramel_macchiato_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Caramel Macchiato es R, stiker GOLD",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_dolce_latte_sw": {
+    "file": "props/cup_tutup_R_dolce_latte_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Dolce Latte hot R, tutup, stiker BLUE",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_dolce_latte_sw": {
+    "file": "props/gelas_es_R_dolce_latte_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Dolce Latte es R, stiker BLUE",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_vanilla_latte_sw": {
+    "file": "props/cup_tutup_R_vanilla_latte_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Vanilla Latte hot R, tutup, stiker LITE",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_vanilla_latte_sw": {
+    "file": "props/gelas_es_R_vanilla_latte_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Vanilla Latte es R, stiker LITE",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_hazelnut_latte_sw": {
+    "file": "props/cup_tutup_R_hazelnut_latte_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Creamy Hazelnut Latte hot R, tutup, stiker SOIL",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_hazelnut_latte_sw": {
+    "file": "props/gelas_es_R_hazelnut_latte_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Creamy Hazelnut Latte es R, stiker SOIL",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_premium_chocolate_sw": {
+    "file": "props/cup_tutup_R_premium_chocolate_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Premium Chocolate hot R, tutup, stiker SOIL",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_premium_chocolate_sw": {
+    "file": "props/gelas_es_R_premium_chocolate_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Premium Chocolate es R, stiker SOIL",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_R_matcha_latte_sw": {
+    "file": "props/cup_tutup_R_matcha_latte_sw.png",
+    "size": [
+     14,
+     16
+    ],
+    "pivot": [
+     4,
+     12
+    ],
+    "anchor_n": [
+     4,
+     -4
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Matcha Latte hot R, tutup, stiker FMG",
+    "group": "famicafe_label"
+   },
+   "gelas_es_R_matcha_latte_sw": {
+    "file": "props/gelas_es_R_matcha_latte_sw.png",
+    "size": [
+     14,
+     22
+    ],
+    "pivot": [
+     4,
+     18
+    ],
+    "anchor_n": [
+     4,
+     2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Matcha Latte es R, stiker FMG",
+    "group": "famicafe_label"
+   },
+   "gelas_hot_L_sw": {
+    "file": "props/gelas_hot_L_sw.png",
+    "size": [
+     14,
+     18
+    ],
+    "pivot": [
+     4,
+     14
+    ],
+    "anchor_n": [
+     4,
+     -2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "gelas kertas FamiCafe L terbuka (pita hijau, garis biru, stiker label menu)",
+    "group": "famicafe"
+   },
+   "gelas_hot_L_se": {
+    "file": "props/gelas_hot_L_se.png",
+    "size": [
+     14,
+     18
+    ],
+    "pivot": [
+     4,
+     14
+    ],
+    "anchor_n": [
+     4,
+     -2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "gelas kertas FamiCafe L terbuka (pita hijau, garis biru, stiker label menu)",
+    "group": "famicafe"
+   },
+   "gelas_hot_L_ne": {
+    "file": "props/gelas_hot_L_ne.png",
+    "size": [
+     14,
+     18
+    ],
+    "pivot": [
+     4,
+     14
+    ],
+    "anchor_n": [
+     4,
+     -2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "gelas kertas FamiCafe L terbuka (pita hijau, garis biru, stiker label menu)",
+    "group": "famicafe"
+   },
+   "gelas_hot_L_nw": {
+    "file": "props/gelas_hot_L_nw.png",
+    "size": [
+     14,
+     18
+    ],
+    "pivot": [
+     4,
+     14
+    ],
+    "anchor_n": [
+     4,
+     -2
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "gelas kertas FamiCafe L terbuka (pita hijau, garis biru, stiker label menu)",
+    "group": "famicafe"
+   },
+   "cup_tutup_L_sw": {
+    "file": "props/cup_tutup_L_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "gelas kertas FamiCafe L + tutup (siap diserahkan)",
+    "group": "famicafe"
+   },
+   "cup_tutup_L_se": {
+    "file": "props/cup_tutup_L_se.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "gelas kertas FamiCafe L + tutup (siap diserahkan)",
+    "group": "famicafe"
+   },
+   "cup_tutup_L_ne": {
+    "file": "props/cup_tutup_L_ne.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "gelas kertas FamiCafe L + tutup (siap diserahkan)",
+    "group": "famicafe"
+   },
+   "cup_tutup_L_nw": {
+    "file": "props/cup_tutup_L_nw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "gelas kertas FamiCafe L + tutup (siap diserahkan)",
+    "group": "famicafe"
+   },
+   "gelas_es_L_sw": {
+    "file": "props/gelas_es_L_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "gelas plastik es L: isi berlapis, tutup datar, sedotan hijau, stiker label",
+    "group": "famicafe"
+   },
+   "gelas_es_L_se": {
+    "file": "props/gelas_es_L_se.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "gelas plastik es L: isi berlapis, tutup datar, sedotan hijau, stiker label",
+    "group": "famicafe"
+   },
+   "gelas_es_L_ne": {
+    "file": "props/gelas_es_L_ne.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "gelas plastik es L: isi berlapis, tutup datar, sedotan hijau, stiker label",
+    "group": "famicafe"
+   },
+   "gelas_es_L_nw": {
+    "file": "props/gelas_es_L_nw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "gelas plastik es L: isi berlapis, tutup datar, sedotan hijau, stiker label",
+    "group": "famicafe"
+   },
+   "cup_tutup_L_americano_sw": {
+    "file": "props/cup_tutup_L_americano_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Americano hot L, tutup, stiker DARK",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_americano_sw": {
+    "file": "props/gelas_es_L_americano_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Americano es L, stiker DARK",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_kopi_susu_keluarga_sw": {
+    "file": "props/cup_tutup_L_kopi_susu_keluarga_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Kopi Susu Keluarga hot L, tutup, stiker CARD",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_kopi_susu_keluarga_sw": {
+    "file": "props/gelas_es_L_kopi_susu_keluarga_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Kopi Susu Keluarga es L, stiker CARD",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_cafe_latte_sw": {
+    "file": "props/cup_tutup_L_cafe_latte_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Cafe Latte hot L, tutup, stiker LITE",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_cafe_latte_sw": {
+    "file": "props/gelas_es_L_cafe_latte_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Cafe Latte es L, stiker LITE",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_cappuccino_sw": {
+    "file": "props/cup_tutup_L_cappuccino_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Cappuccino hot L, tutup, stiker WOOD",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_cappuccino_sw": {
+    "file": "props/gelas_es_L_cappuccino_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Cappuccino es L, stiker WOOD",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_caramel_macchiato_sw": {
+    "file": "props/cup_tutup_L_caramel_macchiato_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Caramel Macchiato hot L, tutup, stiker GOLD",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_caramel_macchiato_sw": {
+    "file": "props/gelas_es_L_caramel_macchiato_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Caramel Macchiato es L, stiker GOLD",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_dolce_latte_sw": {
+    "file": "props/cup_tutup_L_dolce_latte_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Dolce Latte hot L, tutup, stiker BLUE",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_dolce_latte_sw": {
+    "file": "props/gelas_es_L_dolce_latte_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Dolce Latte es L, stiker BLUE",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_vanilla_latte_sw": {
+    "file": "props/cup_tutup_L_vanilla_latte_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Vanilla Latte hot L, tutup, stiker LITE",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_vanilla_latte_sw": {
+    "file": "props/gelas_es_L_vanilla_latte_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Vanilla Latte es L, stiker LITE",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_hazelnut_latte_sw": {
+    "file": "props/cup_tutup_L_hazelnut_latte_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Creamy Hazelnut Latte hot L, tutup, stiker SOIL",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_hazelnut_latte_sw": {
+    "file": "props/gelas_es_L_hazelnut_latte_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Creamy Hazelnut Latte es L, stiker SOIL",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_premium_chocolate_sw": {
+    "file": "props/cup_tutup_L_premium_chocolate_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Premium Chocolate hot L, tutup, stiker SOIL",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_premium_chocolate_sw": {
+    "file": "props/gelas_es_L_premium_chocolate_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Premium Chocolate es L, stiker SOIL",
+    "group": "famicafe_label"
+   },
+   "cup_tutup_L_matcha_latte_sw": {
+    "file": "props/cup_tutup_L_matcha_latte_sw.png",
+    "size": [
+     14,
+     20
+    ],
+    "pivot": [
+     4,
+     15
+    ],
+    "anchor_n": [
+     4,
+     -1
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Matcha Latte hot L, tutup, stiker FMG",
+    "group": "famicafe_label"
+   },
+   "gelas_es_L_matcha_latte_sw": {
+    "file": "props/gelas_es_L_matcha_latte_sw.png",
+    "size": [
+     14,
+     26
+    ],
+    "pivot": [
+     4,
+     21
+    ],
+    "anchor_n": [
+     4,
+     5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "Matcha Latte es L, stiker FMG",
+    "group": "famicafe_label"
+   },
+   "mesin_espresso_sw": {
+    "file": "props/mesin_espresso_sw.png",
+    "size": [
+     58,
+     50
+    ],
+    "pivot": [
+     26,
+     38
+    ],
+    "anchor_n": [
+     26,
+     22
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "mesin espresso 2 group: badan stainless, panel hijau FamilyMart, 2 portafilter, nampan tetes, steam wand, cangkir di atas. diletakkan di atas counter (z +37)",
+    "group": "famicafe",
+    "glow": "props/mesin_espresso_sw__glow.png"
+   },
+   "mesin_espresso_se": {
+    "file": "props/mesin_espresso_se.png",
+    "size": [
+     54,
+     50
+    ],
+    "pivot": [
+     21,
+     38
+    ],
+    "anchor_n": [
+     21,
+     22
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "mesin espresso 2 group: badan stainless, panel hijau FamilyMart, 2 portafilter, nampan tetes, steam wand, cangkir di atas. diletakkan di atas counter (z +37)",
+    "group": "famicafe",
+    "glow": "props/mesin_espresso_se__glow.png"
+   },
+   "mesin_espresso_ne": {
+    "file": "props/mesin_espresso_ne.png",
+    "size": [
+     54,
+     50
+    ],
+    "pivot": [
+     21,
+     38
+    ],
+    "anchor_n": [
+     21,
+     22
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "mesin espresso 2 group: badan stainless, panel hijau FamilyMart, 2 portafilter, nampan tetes, steam wand, cangkir di atas. diletakkan di atas counter (z +37)",
+    "group": "famicafe"
+   },
+   "mesin_espresso_nw": {
+    "file": "props/mesin_espresso_nw.png",
+    "size": [
+     58,
+     50
+    ],
+    "pivot": [
+     26,
+     38
+    ],
+    "anchor_n": [
+     26,
+     22
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "mesin espresso 2 group: badan stainless, panel hijau FamilyMart, 2 portafilter, nampan tetes, steam wand, cangkir di atas. diletakkan di atas counter (z +37)",
+    "group": "famicafe"
+   },
+   "grinder_sw": {
+    "file": "props/grinder_sw.png",
+    "size": [
+     30,
+     40
+    ],
+    "pivot": [
+     12,
+     34
+    ],
+    "anchor_n": [
+     12,
+     18
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "grinder kopi: badan gelap, hopper bening berisi biji kopi, corong ke portafilter. di atas counter",
+    "group": "famicafe"
+   },
+   "grinder_se": {
+    "file": "props/grinder_se.png",
+    "size": [
+     28,
+     40
+    ],
+    "pivot": [
+     10,
+     34
+    ],
+    "anchor_n": [
+     10,
+     18
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "grinder kopi: badan gelap, hopper bening berisi biji kopi, corong ke portafilter. di atas counter",
+    "group": "famicafe"
+   },
+   "grinder_ne": {
+    "file": "props/grinder_ne.png",
+    "size": [
+     28,
+     40
+    ],
+    "pivot": [
+     10,
+     34
+    ],
+    "anchor_n": [
+     10,
+     18
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "grinder kopi: badan gelap, hopper bening berisi biji kopi, corong ke portafilter. di atas counter",
+    "group": "famicafe"
+   },
+   "grinder_nw": {
+    "file": "props/grinder_nw.png",
+    "size": [
+     30,
+     40
+    ],
+    "pivot": [
+     12,
+     34
+    ],
+    "anchor_n": [
+     12,
+     18
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "grinder kopi: badan gelap, hopper bening berisi biji kopi, corong ke portafilter. di atas counter",
+    "group": "famicafe"
+   },
+   "pitcher_susu_sw": {
+    "file": "props/pitcher_susu_sw.png",
+    "size": [
+     12,
+     14
+    ],
+    "pivot": [
+     3,
+     10
+    ],
+    "anchor_n": [
+     3,
+     -6
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "sw",
+    "note": "pitcher susu stainless (ujung tuang + gagang)",
+    "group": "famicafe"
+   },
+   "pitcher_susu_se": {
+    "file": "props/pitcher_susu_se.png",
+    "size": [
+     14,
+     14
+    ],
+    "pivot": [
+     4,
+     10
+    ],
+    "anchor_n": [
+     4,
+     -6
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "se",
+    "note": "pitcher susu stainless (ujung tuang + gagang)",
+    "group": "famicafe"
+   },
+   "pitcher_susu_ne": {
+    "file": "props/pitcher_susu_ne.png",
+    "size": [
+     14,
+     14
+    ],
+    "pivot": [
+     4,
+     11
+    ],
+    "anchor_n": [
+     4,
+     -5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "ne",
+    "note": "pitcher susu stainless (ujung tuang + gagang)",
+    "group": "famicafe"
+   },
+   "pitcher_susu_nw": {
+    "file": "props/pitcher_susu_nw.png",
+    "size": [
+     12,
+     14
+    ],
+    "pivot": [
+     3,
+     11
+    ],
+    "anchor_n": [
+     3,
+     -5
+    ],
+    "footprint": [
+     1,
+     1
+    ],
+    "facing": "nw",
+    "note": "pitcher susu stainless (ujung tuang + gagang)",
+    "group": "famicafe"
+   },
+   "counter_barista_sw": {
+    "file": "props/counter_barista_sw.png",
+    "size": [
+     138,
+     102
+    ],
+    "pivot": [
+     62,
+     69
+    ],
+    "anchor_n": [
+     30,
+     37
+    ],
+    "footprint": [
+     3,
+     1
+    ],
+    "facing": "sw",
+    "note": "counter barista FamiCafe 3 sel: badan putih, panel depan hijau + garis biru, tulisan FAMICAFE, top putih (z 37). ne/nw = sisi barista (rak bawah)",
+    "group": "famicafe",
+    "interact_local_ab": {
+     "barista_stand": [
+      1.5,
+      1.35
+     ],
+     "pelanggan": [
+      1.5,
+      -0.35
+     ]
+    }
+   },
+   "counter_barista_se": {
+    "file": "props/counter_barista_se.png",
+    "size": [
+     140,
+     102
+    ],
+    "pivot": [
+     64,
+     69
+    ],
+    "anchor_n": [
+     96,
+     37
+    ],
+    "footprint": [
+     3,
+     1
+    ],
+    "facing": "se",
+    "note": "counter barista FamiCafe 3 sel: badan putih, panel depan hijau + garis biru, tulisan FAMICAFE, top putih (z 37). ne/nw = sisi barista (rak bawah)",
+    "group": "famicafe",
+    "interact_local_ab": {
+     "barista_stand": [
+      1.5,
+      1.35
+     ],
+     "pelanggan": [
+      1.5,
+      -0.35
+     ]
+    }
+   },
+   "counter_barista_ne": {
+    "file": "props/counter_barista_ne.png",
+    "size": [
+     140,
+     98
+    ],
+    "pivot": [
+     64,
+     66
+    ],
+    "anchor_n": [
+     32,
+     34
+    ],
+    "footprint": [
+     3,
+     1
+    ],
+    "facing": "ne",
+    "note": "counter barista FamiCafe 3 sel: badan putih, panel depan hijau + garis biru, tulisan FAMICAFE, top putih (z 37). ne/nw = sisi barista (rak bawah)",
+    "group": "famicafe",
+    "interact_local_ab": {
+     "barista_stand": [
+      1.5,
+      1.35
+     ],
+     "pelanggan": [
+      1.5,
+      -0.35
+     ]
+    }
+   },
+   "counter_barista_nw": {
+    "file": "props/counter_barista_nw.png",
+    "size": [
+     138,
+     98
+    ],
+    "pivot": [
+     62,
+     66
+    ],
+    "anchor_n": [
+     94,
+     34
+    ],
+    "footprint": [
+     3,
+     1
+    ],
+    "facing": "nw",
+    "note": "counter barista FamiCafe 3 sel: badan putih, panel depan hijau + garis biru, tulisan FAMICAFE, top putih (z 37). ne/nw = sisi barista (rak bawah)",
+    "group": "famicafe",
+    "interact_local_ab": {
+     "barista_stand": [
+      1.5,
+      1.35
+     ],
+     "pelanggan": [
+      1.5,
+      -0.35
+     ]
+    }
+   },
+   "counter_kasir_sw": {
+    "file": "props/counter_kasir_sw.png",
+    "size": [
+     106,
+     86
+    ],
+    "pivot": [
+     46,
+     61
+    ],
+    "anchor_n": [
+     30,
+     37
+    ],
+    "footprint": [
+     2,
+     1
+    ],
+    "facing": "sw",
+    "note": "counter kasir 2 sel: sama dengan counter barista + mesin kasir (layar hijau toska), EDC, tulisan KASIR",
+    "group": "famicafe",
+    "glow": "props/counter_kasir_sw__glow.png",
+    "interact_local_ab": {
+     "kasir_stand": [
+      1.0,
+      1.35
+     ],
+     "pelanggan": [
+      1.0,
+      -0.35
+     ]
+    }
+   },
+   "counter_kasir_se": {
+    "file": "props/counter_kasir_se.png",
+    "size": [
+     108,
+     86
+    ],
+    "pivot": [
+     48,
+     61
+    ],
+    "anchor_n": [
+     64,
+     37
+    ],
+    "footprint": [
+     2,
+     1
+    ],
+    "facing": "se",
+    "note": "counter kasir 2 sel: sama dengan counter barista + mesin kasir (layar hijau toska), EDC, tulisan KASIR",
+    "group": "famicafe",
+    "glow": "props/counter_kasir_se__glow.png",
+    "interact_local_ab": {
+     "kasir_stand": [
+      1.0,
+      1.35
+     ],
+     "pelanggan": [
+      1.0,
+      -0.35
+     ]
+    }
+   },
+   "counter_kasir_ne": {
+    "file": "props/counter_kasir_ne.png",
+    "size": [
+     108,
+     82
+    ],
+    "pivot": [
+     48,
+     58
+    ],
+    "anchor_n": [
+     32,
+     34
+    ],
+    "footprint": [
+     2,
+     1
+    ],
+    "facing": "ne",
+    "note": "counter kasir 2 sel: sama dengan counter barista + mesin kasir (layar hijau toska), EDC, tulisan KASIR",
+    "group": "famicafe",
+    "interact_local_ab": {
+     "kasir_stand": [
+      1.0,
+      1.35
+     ],
+     "pelanggan": [
+      1.0,
+      -0.35
+     ]
+    }
+   },
+   "counter_kasir_nw": {
+    "file": "props/counter_kasir_nw.png",
+    "size": [
+     106,
+     82
+    ],
+    "pivot": [
+     46,
+     58
+    ],
+    "anchor_n": [
+     62,
+     34
+    ],
+    "footprint": [
+     2,
+     1
+    ],
+    "facing": "nw",
+    "note": "counter kasir 2 sel: sama dengan counter barista + mesin kasir (layar hijau toska), EDC, tulisan KASIR",
+    "group": "famicafe",
+    "interact_local_ab": {
+     "kasir_stand": [
+      1.0,
+      1.35
+     ],
+     "pelanggan": [
+      1.0,
+      -0.35
+     ]
+    }
+   }
+  }
+ },
+ "ikon": {
+  "ukuran": [
+   32,
+   32
+  ],
+  "file": [
+   "icons/bahan_air.png",
+   "icons/bahan_biji_kopi.png",
+   "icons/bahan_cokelat.png",
+   "icons/bahan_es_batu.png",
+   "icons/bahan_espresso.png",
+   "icons/bahan_gula.png",
+   "icons/bahan_gula_aren.png",
+   "icons/bahan_matcha.png",
+   "icons/bahan_saus_dolce.png",
+   "icons/bahan_saus_karamel.png",
+   "icons/bahan_sirup_hazelnut.png",
+   "icons/bahan_sirup_vanila.png",
+   "icons/bahan_susu.png",
+   "icons/menu_americano_es_L.png",
+   "icons/menu_americano_es_R.png",
+   "icons/menu_americano_hot_L.png",
+   "icons/menu_americano_hot_R.png",
+   "icons/menu_cafe_latte_es_L.png",
+   "icons/menu_cafe_latte_es_R.png",
+   "icons/menu_cafe_latte_hot_L.png",
+   "icons/menu_cafe_latte_hot_R.png",
+   "icons/menu_cappuccino_es_L.png",
+   "icons/menu_cappuccino_es_R.png",
+   "icons/menu_cappuccino_hot_L.png",
+   "icons/menu_cappuccino_hot_R.png",
+   "icons/menu_caramel_macchiato_es_L.png",
+   "icons/menu_caramel_macchiato_es_R.png",
+   "icons/menu_caramel_macchiato_hot_L.png",
+   "icons/menu_caramel_macchiato_hot_R.png",
+   "icons/menu_dolce_latte_es_L.png",
+   "icons/menu_dolce_latte_es_R.png",
+   "icons/menu_dolce_latte_hot_L.png",
+   "icons/menu_dolce_latte_hot_R.png",
+   "icons/menu_hazelnut_latte_es_L.png",
+   "icons/menu_hazelnut_latte_es_R.png",
+   "icons/menu_hazelnut_latte_hot_L.png",
+   "icons/menu_hazelnut_latte_hot_R.png",
+   "icons/menu_kopi_susu_keluarga_es_L.png",
+   "icons/menu_kopi_susu_keluarga_es_R.png",
+   "icons/menu_kopi_susu_keluarga_hot_L.png",
+   "icons/menu_kopi_susu_keluarga_hot_R.png",
+   "icons/menu_matcha_latte_es_L.png",
+   "icons/menu_matcha_latte_es_R.png",
+   "icons/menu_matcha_latte_hot_L.png",
+   "icons/menu_matcha_latte_hot_R.png",
+   "icons/menu_premium_chocolate_es_L.png",
+   "icons/menu_premium_chocolate_es_R.png",
+   "icons/menu_premium_chocolate_hot_L.png",
+   "icons/menu_premium_chocolate_hot_R.png",
+   "icons/menu_vanilla_latte_es_L.png",
+   "icons/menu_vanilla_latte_es_R.png",
+   "icons/menu_vanilla_latte_hot_L.png",
+   "icons/menu_vanilla_latte_hot_R.png",
+   "icons/mod_gula_less.png",
+   "icons/mod_gula_no.png",
+   "icons/mod_gula_normal.png",
+   "icons/mod_shot_1.png",
+   "icons/mod_shot_2.png",
+   "icons/mod_ukuran_L.png",
+   "icons/mod_ukuran_R.png"
+  ],
+  "pola": {
+   "menu": "icons/menu_{id}_{hot|es}_{R|L}.png",
+   "bahan": "icons/bahan_{id}.png",
+   "modifier": "icons/mod_{ukuran_R|ukuran_L|gula_normal|gula_less|gula_no|shot_1|shot_2}.png"
+  }
+ },
+ "bahan": [
+  {
+   "id": "biji_kopi",
+   "nama": "Biji kopi",
+   "ikon": "icons/bahan_biji_kopi.png"
+  },
+  {
+   "id": "espresso",
+   "nama": "Shot espresso",
+   "ikon": "icons/bahan_espresso.png"
+  },
+  {
+   "id": "susu",
+   "nama": "Susu segar",
+   "ikon": "icons/bahan_susu.png"
+  },
+  {
+   "id": "gula",
+   "nama": "Gula",
+   "ikon": "icons/bahan_gula.png"
+  },
+  {
+   "id": "gula_aren",
+   "nama": "Gula aren",
+   "ikon": "icons/bahan_gula_aren.png"
+  },
+  {
+   "id": "es_batu",
+   "nama": "Es batu",
+   "ikon": "icons/bahan_es_batu.png"
+  },
+  {
+   "id": "cokelat",
+   "nama": "Bubuk cokelat",
+   "ikon": "icons/bahan_cokelat.png"
+  },
+  {
+   "id": "air",
+   "nama": "Air panas",
+   "ikon": "icons/bahan_air.png"
+  },
+  {
+   "id": "matcha",
+   "nama": "Bubuk matcha",
+   "ikon": "icons/bahan_matcha.png"
+  },
+  {
+   "id": "sirup_vanila",
+   "nama": "Sirup vanila",
+   "ikon": "icons/bahan_sirup_vanila.png"
+  },
+  {
+   "id": "sirup_hazelnut",
+   "nama": "Sirup hazelnut",
+   "ikon": "icons/bahan_sirup_hazelnut.png"
+  },
+  {
+   "id": "saus_karamel",
+   "nama": "Saus karamel",
+   "ikon": "icons/bahan_saus_karamel.png"
+  },
+  {
+   "id": "saus_dolce",
+   "nama": "Saus dolce",
+   "ikon": "icons/bahan_saus_dolce.png"
+  }
+ ],
+ "menu": [
+  {
+   "id": "americano",
+   "nama": "Americano",
+   "harga_rp": {
+    "R": 13000,
+    "L": 16000
+   },
+   "ket": "espresso + air",
+   "kopi": true,
+   "bahan": [
+    "biji_kopi",
+    "air"
+   ],
+   "latte_art": null,
+   "ikon": {
+    "hot_R": "icons/menu_americano_hot_R.png",
+    "hot_L": "icons/menu_americano_hot_L.png",
+    "es_R": "icons/menu_americano_es_R.png",
+    "es_L": "icons/menu_americano_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_americano_sw.png",
+    "hot_L": "props/cup_tutup_L_americano_sw.png",
+    "es_R": "props/gelas_es_R_americano_sw.png",
+    "es_L": "props/gelas_es_L_americano_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "air",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "air",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "air",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "air",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "es",
+      "air",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "air",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   }
+  },
+  {
+   "id": "kopi_susu_keluarga",
+   "nama": "Kopi Susu Keluarga",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "espresso + susu segar + gula aren (signature)",
+   "kopi": true,
+   "bahan": [
+    "biji_kopi",
+    "susu",
+    "gula_aren"
+   ],
+   "latte_art": "heart",
+   "ikon": {
+    "hot_R": "icons/menu_kopi_susu_keluarga_hot_R.png",
+    "hot_L": "icons/menu_kopi_susu_keluarga_hot_L.png",
+    "es_R": "icons/menu_kopi_susu_keluarga_es_R.png",
+    "es_L": "icons/menu_kopi_susu_keluarga_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_kopi_susu_keluarga_sw.png",
+    "hot_L": "props/cup_tutup_L_kopi_susu_keluarga_sw.png",
+    "es_R": "props/gelas_es_R_kopi_susu_keluarga_sw.png",
+    "es_L": "props/gelas_es_L_kopi_susu_keluarga_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   }
+  },
+  {
+   "id": "cafe_latte",
+   "nama": "Cafe Latte",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "espresso + susu segar",
+   "kopi": true,
+   "bahan": [
+    "biji_kopi",
+    "susu"
+   ],
+   "latte_art": "rosetta",
+   "ikon": {
+    "hot_R": "icons/menu_cafe_latte_hot_R.png",
+    "hot_L": "icons/menu_cafe_latte_hot_L.png",
+    "es_R": "icons/menu_cafe_latte_es_R.png",
+    "es_L": "icons/menu_cafe_latte_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_cafe_latte_sw.png",
+    "hot_L": "props/cup_tutup_L_cafe_latte_sw.png",
+    "es_R": "props/gelas_es_R_cafe_latte_sw.png",
+    "es_L": "props/gelas_es_L_cafe_latte_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "steam",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "es",
+      "susu_dingin",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   }
+  },
+  {
+   "id": "cappuccino",
+   "nama": "Cappuccino",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "espresso + susu + busa susu tebal",
+   "kopi": true,
+   "bahan": [
+    "biji_kopi",
+    "susu"
+   ],
+   "latte_art": "heart_foam",
+   "ikon": {
+    "hot_R": "icons/menu_cappuccino_hot_R.png",
+    "hot_L": "icons/menu_cappuccino_hot_L.png",
+    "es_R": "icons/menu_cappuccino_es_R.png",
+    "es_L": "icons/menu_cappuccino_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_cappuccino_sw.png",
+    "hot_L": "props/cup_tutup_L_cappuccino_sw.png",
+    "es_R": "props/gelas_es_R_cappuccino_sw.png",
+    "es_L": "props/gelas_es_L_cappuccino_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "steam",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "es",
+      "susu_dingin",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   }
+  },
+  {
+   "id": "caramel_macchiato",
+   "nama": "Caramel Macchiato",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "susu + vanila, espresso di atas, saus karamel",
+   "kopi": true,
+   "bahan": [
+    "biji_kopi",
+    "susu",
+    "sirup_vanila",
+    "saus_karamel"
+   ],
+   "latte_art": null,
+   "ikon": {
+    "hot_R": "icons/menu_caramel_macchiato_hot_R.png",
+    "hot_L": "icons/menu_caramel_macchiato_hot_L.png",
+    "es_R": "icons/menu_caramel_macchiato_es_R.png",
+    "es_L": "icons/menu_caramel_macchiato_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_caramel_macchiato_sw.png",
+    "hot_L": "props/cup_tutup_L_caramel_macchiato_sw.png",
+    "es_R": "props/gelas_es_R_caramel_macchiato_sw.png",
+    "es_L": "props/gelas_es_L_caramel_macchiato_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   }
+  },
+  {
+   "id": "dolce_latte",
+   "nama": "Dolce Latte",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "espresso + susu + saus dolce (susu kental manis)",
+   "kopi": true,
+   "bahan": [
+    "biji_kopi",
+    "susu",
+    "saus_dolce"
+   ],
+   "latte_art": "tulip",
+   "ikon": {
+    "hot_R": "icons/menu_dolce_latte_hot_R.png",
+    "hot_L": "icons/menu_dolce_latte_hot_L.png",
+    "es_R": "icons/menu_dolce_latte_es_R.png",
+    "es_L": "icons/menu_dolce_latte_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_dolce_latte_sw.png",
+    "hot_L": "props/cup_tutup_L_dolce_latte_sw.png",
+    "es_R": "props/gelas_es_R_dolce_latte_sw.png",
+    "es_L": "props/gelas_es_L_dolce_latte_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   }
+  },
+  {
+   "id": "vanilla_latte",
+   "nama": "Vanilla Latte",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "espresso + susu + sirup vanila",
+   "kopi": true,
+   "bahan": [
+    "biji_kopi",
+    "susu",
+    "sirup_vanila"
+   ],
+   "latte_art": "rosetta",
+   "ikon": {
+    "hot_R": "icons/menu_vanilla_latte_hot_R.png",
+    "hot_L": "icons/menu_vanilla_latte_hot_L.png",
+    "es_R": "icons/menu_vanilla_latte_es_R.png",
+    "es_L": "icons/menu_vanilla_latte_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_vanilla_latte_sw.png",
+    "hot_L": "props/cup_tutup_L_vanilla_latte_sw.png",
+    "es_R": "props/gelas_es_R_vanilla_latte_sw.png",
+    "es_L": "props/gelas_es_L_vanilla_latte_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   }
+  },
+  {
+   "id": "hazelnut_latte",
+   "nama": "Creamy Hazelnut Latte",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "espresso + susu + sirup hazelnut",
+   "kopi": true,
+   "bahan": [
+    "biji_kopi",
+    "susu",
+    "sirup_hazelnut"
+   ],
+   "latte_art": "tulip",
+   "ikon": {
+    "hot_R": "icons/menu_hazelnut_latte_hot_R.png",
+    "hot_L": "icons/menu_hazelnut_latte_hot_L.png",
+    "es_R": "icons/menu_hazelnut_latte_es_R.png",
+    "es_L": "icons/menu_hazelnut_latte_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_hazelnut_latte_sw.png",
+    "hot_L": "props/cup_tutup_L_hazelnut_latte_sw.png",
+    "es_R": "props/gelas_es_R_hazelnut_latte_sw.png",
+    "es_L": "props/gelas_es_L_hazelnut_latte_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "steam",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": [
+      "giling",
+      "tamper",
+      "seduh",
+      "seduh_2",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_no_sugar": [
+      "giling",
+      "tamper",
+      "seduh",
+      "es",
+      "susu_dingin",
+      "sirup",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   }
+  },
+  {
+   "id": "premium_chocolate",
+   "nama": "Premium Chocolate",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "cokelat + susu segar (tanpa kopi)",
+   "kopi": false,
+   "bahan": [
+    "cokelat",
+    "susu"
+   ],
+   "latte_art": "heart",
+   "ikon": {
+    "hot_R": "icons/menu_premium_chocolate_hot_R.png",
+    "hot_L": "icons/menu_premium_chocolate_hot_L.png",
+    "es_R": "icons/menu_premium_chocolate_es_R.png",
+    "es_L": "icons/menu_premium_chocolate_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_premium_chocolate_sw.png",
+    "hot_L": "props/cup_tutup_L_premium_chocolate_sw.png",
+    "es_R": "props/gelas_es_R_premium_chocolate_sw.png",
+    "es_L": "props/gelas_es_L_premium_chocolate_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "larut",
+      "steam",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": null,
+     "langkah_no_sugar": [
+      "larut",
+      "steam",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "larut",
+      "es",
+      "susu_dingin",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": null,
+     "langkah_no_sugar": [
+      "larut",
+      "es",
+      "susu_dingin",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   },
+   "catatan_harga": "IDN Times (artikel lebih lama dari 2026; bisa berubah)"
+  },
+  {
+   "id": "matcha_latte",
+   "nama": "Matcha Latte",
+   "harga_rp": {
+    "R": 16000,
+    "L": 19000
+   },
+   "ket": "matcha (green tea) + susu segar (tanpa kopi)",
+   "kopi": false,
+   "bahan": [
+    "matcha",
+    "susu"
+   ],
+   "latte_art": "heart",
+   "ikon": {
+    "hot_R": "icons/menu_matcha_latte_hot_R.png",
+    "hot_L": "icons/menu_matcha_latte_hot_L.png",
+    "es_R": "icons/menu_matcha_latte_es_R.png",
+    "es_L": "icons/menu_matcha_latte_es_L.png"
+   },
+   "gelas_label": {
+    "hot_R": "props/cup_tutup_R_matcha_latte_sw.png",
+    "hot_L": "props/cup_tutup_L_matcha_latte_sw.png",
+    "es_R": "props/gelas_es_R_matcha_latte_sw.png",
+    "es_L": "props/gelas_es_L_matcha_latte_sw.png"
+   },
+   "resep": {
+    "hot": {
+     "langkah_dasar": [
+      "larut",
+      "steam",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": null,
+     "langkah_no_sugar": [
+      "larut",
+      "steam",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    },
+    "es": {
+     "langkah_dasar": [
+      "larut",
+      "es",
+      "susu_dingin",
+      "gula",
+      "tuang",
+      "tutup",
+      "serah"
+     ],
+     "langkah_double_shot": null,
+     "langkah_no_sugar": [
+      "larut",
+      "es",
+      "susu_dingin",
+      "tuang",
+      "tutup",
+      "serah"
+     ]
+    }
+   },
+   "catatan_harga": "harga dari Green Tea Latte (IDN Times); nama Matcha Latte dari Kompas 2026 (diasumsikan menu yang sama)"
+  }
+ ],
+ "langkah": {
+  "giling": "Giling biji kopi (tahan sampai takaran pas)",
+  "tamper": "Tekan / tamper bubuk di portafilter (tekanan rata)",
+  "seduh": "Seduh espresso (bar timing 25-30 dtk)",
+  "seduh_2": "Seduh shot kedua (double shot)",
+  "steam": "Steam susu (suhu 60-65 C, bar timing)",
+  "susu_dingin": "Tuang susu dingin + es",
+  "es": "Isi es batu ke gelas",
+  "larut": "Larutkan bubuk (cokelat / matcha) dengan sedikit air panas",
+  "air": "Tambah air (panas / dingin)",
+  "sirup": "Tambah sirup / saus (takaran sesuai gula)",
+  "gula": "Gula sesuai pesanan (Normal / Less / No)",
+  "tuang": "Tuang ke gelas (latte art untuk hot)",
+  "tutup": "Pilih gelas (R/L), tutup, cek stiker",
+  "serah": "Serahkan ke pelanggan"
+ },
+ "langkah_ui": {
+  "giling": "02_giling",
+  "tamper": "03_tamper",
+  "seduh": "04_seduh",
+  "seduh_2": "04_seduh (Shot 2/2)",
+  "steam": "05_steam",
+  "tuang": "06_tuang_latteart",
+  "tutup": "07_tutup_serahkan",
+  "serah": "07_tutup_serahkan",
+  "es": "06_tuang_latteart (varian es: bar isi gelas)",
+  "susu_dingin": "06_tuang_latteart (varian es)",
+  "larut": "02_giling (varian: bar takaran bubuk)",
+  "air": "06_tuang_latteart (bar isi)",
+  "sirup": "07_tutup_serahkan (pilihan gula)",
+  "gula": "07_tutup_serahkan (pilihan gula)"
+ },
+ "modifier": {
+  "ukuran": {
+   "R": {
+    "nama": "Regular",
+    "ml_hot": 240,
+    "ml_es": 360,
+    "susu_ml": [
+     150,
+     200
+    ],
+    "ikon": "icons/mod_ukuran_R.png",
+    "harga": "harga[0]",
+    "upah_tambah_rp": 0,
+    "waktu_tunggu_dtk": 45
+   },
+   "L": {
+    "nama": "Large",
+    "ml_hot": 360,
+    "ml_es": 480,
+    "susu_ml": [
+     220,
+     280
+    ],
+    "ikon": "icons/mod_ukuran_L.png",
+    "harga": "harga[1]",
+    "upah_tambah_rp": 500,
+    "waktu_tunggu_dtk": 50
+   }
+  },
+  "gula": {
+   "normal": {
+    "nama": "Normal",
+    "takaran": 1.0,
+    "ikon": "icons/mod_gula_normal.png"
+   },
+   "less": {
+    "nama": "Less Sugar",
+    "takaran": 0.5,
+    "ikon": "icons/mod_gula_less.png"
+   },
+   "no": {
+    "nama": "No Sugar",
+    "takaran": 0.0,
+    "ikon": "icons/mod_gula_no.png",
+    "catatan": "langkah gula dilewati; menu bersirup tetap pakai sirup/saus tapi takaran 0 untuk gula tambahan"
+   }
+  },
+  "double_shot": {
+   "false": {
+    "nama": "Tidak",
+    "shot": 1,
+    "ikon": "icons/mod_shot_1.png",
+    "upah_tambah_rp": 0,
+    "harga_tambah_rp": 0
+   },
+   "true": {
+    "nama": "Ya",
+    "shot": 2,
+    "ikon": "icons/mod_shot_2.png",
+    "upah_tambah_rp": 500,
+    "harga_tambah_rp": 3000,
+    "waktu_tambah_dtk": 8,
+    "langkah_tambah": "seduh_2",
+    "catatan": "hanya menu berkopi; harga add-on espresso Rp3.000 dari sumber"
+   }
+  },
+  "aturan": [
+   "modifier tampil di tiket (chip Ukuran / Gula / Double Shot) dan dipilih ulang di langkah 07 Tutup & serahkan",
+   "tiap modifier yang tidak cocok saat diserahkan: -1 bintang (tip turun), upah tetap dibayar",
+   "menu salah / waktu habis / shot gosong (>33 dtk) = gagal: 0 upah, 0 tip"
+  ]
+ },
+ "ekonomi": {
+  "upah_dasar_rp": 2500,
+  "upah_large_rp": 500,
+  "upah_double_rp": 500,
+  "upah_es_rp": 0,
+  "tip_per_bintang_rp": [
+   0,
+   0,
+   500,
+   1000,
+   2000,
+   3000
+  ],
+  "bonus_combo_rp": 500,
+  "bintang_dari_akurasi": [
+   [
+    0.9,
+    5
+   ],
+   [
+    0.75,
+    4
+   ],
+   [
+    0.6,
+    3
+   ],
+   [
+    0.4,
+    2
+   ],
+   [
+    0.0,
+    1
+   ]
+  ],
+  "salah_modifier": "-1 bintang per modifier salah (ukuran / gula / shot), salah menu = gagal (0 upah, pelanggan pergi)",
+  "waktu_tunggu_dtk": {
+   "R": 45,
+   "L": 50,
+   "double": 8
+  },
+  "catatan": "upah dibayar per gelas selesai (shift barista), tip dari pelanggan; dibulatkan Rp 100",
+  "contoh": {
+   "pesanan": "Hot Cafe Latte Large, Less Sugar, Double Shot, 4 bintang",
+   "upah_rp": 3500,
+   "tip_rp": 2000
+  },
+  "zona_timing": {
+   "seduh_dtk": {
+    "merah": [
+     0,
+     20
+    ],
+    "kuning": [
+     20,
+     25
+    ],
+    "hijau": [
+     25,
+     30
+    ],
+    "kuning2": [
+     30,
+     33
+    ],
+    "merah2": [
+     33,
+     40
+    ]
+   },
+   "steam_c": {
+    "kurang": [
+     20,
+     53
+    ],
+    "kuning": [
+     53,
+     59
+    ],
+    "hijau": [
+     59,
+     64
+    ],
+    "kuning2": [
+     64,
+     70
+    ],
+    "merah": [
+     70,
+     80
+    ]
+   },
+   "giling_g": {
+    "hijau": [
+     16.8,
+     19.7
+    ]
+   },
+   "skor": {
+    "hijau": 1.0,
+    "kuning": 0.6,
+    "merah": 0.15
+   }
+  }
+ },
+ "ui": {
+  "gaya": "HUD Vista ui_y2k (kaca, Tahoma 11 Wine), piksel 1x, pratinjau 2x nearest",
+  "resolusi": [
+   "844x390",
+   "667x375"
+  ],
+  "layar": [
+   "01_pesanan",
+   "02_giling",
+   "03_tamper",
+   "04_seduh",
+   "05_steam",
+   "06_tuang_latteart",
+   "07_tutup_serahkan",
+   "07b_serahkan_salah",
+   "08_hasil_sukses",
+   "09_hasil_gagal"
+  ],
+  "file": {
+   "pratinjau_2x": "ui/{layar}.png",
+   "native_1x": "ui/1x_native/{layar}.png",
+   "native_667": "ui/1x_native/{layar}_667x375.png",
+   "pratinjau_667": "ui/667x375/{layar}_667x375@2x.png",
+   "komponen_4x": "ui/30_komponen_4x.png"
+  },
+  "slices": {
+   "tiket_order": {
+    "file": "ui/slices/tiket_order.png",
+    "size": [
+     150,
+     214
+    ]
+   },
+   "tiket_antre": {
+    "file": "ui/slices/tiket_antre.png",
+    "size": [
+     150,
+     34
+    ]
+   },
+   "chip_on": {
+    "file": "ui/slices/chip_on.png",
+    "size": [
+     44,
+     17
+    ]
+   },
+   "chip_off": {
+    "file": "ui/slices/chip_off.png",
+    "size": [
+     44,
+     17
+    ]
+   },
+   "bintang_0": {
+    "file": "ui/slices/bintang_0.png",
+    "size": [
+     130,
+     24
+    ]
+   },
+   "bintang_1": {
+    "file": "ui/slices/bintang_1.png",
+    "size": [
+     130,
+     24
+    ]
+   },
+   "bintang_2": {
+    "file": "ui/slices/bintang_2.png",
+    "size": [
+     130,
+     24
+    ]
+   },
+   "bintang_3": {
+    "file": "ui/slices/bintang_3.png",
+    "size": [
+     130,
+     24
+    ]
+   },
+   "bintang_4": {
+    "file": "ui/slices/bintang_4.png",
+    "size": [
+     130,
+     24
+    ]
+   },
+   "bintang_5": {
+    "file": "ui/slices/bintang_5.png",
+    "size": [
+     130,
+     24
+    ]
+   },
+   "bintang_isi": {
+    "file": "ui/slices/bintang_isi.png",
+    "size": [
+     23,
+     23
+    ]
+   },
+   "bintang_kosong": {
+    "file": "ui/slices/bintang_kosong.png",
+    "size": [
+     23,
+     23
+    ]
+   },
+   "bar_zona_seduh": {
+    "file": "ui/slices/bar_zona_seduh.png",
+    "size": [
+     240,
+     18
+    ]
+   },
+   "penanda_bar": {
+    "file": "ui/slices/penanda_bar.png",
+    "size": [
+     9,
+     26
+    ]
+   }
+  },
+  "warna": {
+   "zona_merah": "#E0434A",
+   "zona_kuning": "#F5D547",
+   "zona_hijau": "#3DDC84",
+   "kertas": "#FAF3E5",
+   "tepi_kertas": "#C8BC9F",
+   "tinta": "#2A3242",
+   "famima_hijau": "#1FA34A",
+   "famima_biru": "#2C6BD8",
+   "bintang": "#FFD166"
+  },
+  "rect": {
+   "844x390": {
+    "01_pesanan": {
+     "panel": [
+      122,
+      18,
+      600,
+      354
+     ],
+     "potret_barista": [
+      129,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      653,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      130,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      135,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      190,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      135,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      188,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      225,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      135,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      161,
+      247,
+      40,
+      17
+     ],
+     "tiket_antre_0": [
+      290,
+      74,
+      209,
+      34
+     ],
+     "tiket_antre_1": [
+      505,
+      74,
+      209,
+      34
+     ],
+     "resep_langkah": [
+      290,
+      131,
+      424,
+      96
+     ],
+     "bar_sabar": [
+      290,
+      233,
+      200,
+      26
+     ],
+     "btn_mulai": [
+      564,
+      338,
+      150,
+      26
+     ],
+     "btn_tolak": [
+      460,
+      338,
+      96,
+      26
+     ],
+     "btn_menu": [
+      290,
+      338,
+      120,
+      26
+     ]
+    },
+    "02_giling": {
+     "panel": [
+      122,
+      18,
+      600,
+      354
+     ],
+     "potret_barista": [
+      129,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      653,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      130,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      135,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      190,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      135,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      188,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      225,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      135,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      161,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      290,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      290,
+      86,
+      424,
+      278
+     ],
+     "bar_takaran": [
+      386,
+      106,
+      312,
+      44
+     ],
+     "btn_tahan": [
+      546,
+      330,
+      160,
+      26
+     ]
+    },
+    "03_tamper": {
+     "panel": [
+      122,
+      18,
+      600,
+      354
+     ],
+     "potret_barista": [
+      129,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      653,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      130,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      135,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      190,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      135,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      188,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      225,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      135,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      161,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      290,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      290,
+      86,
+      424,
+      278
+     ],
+     "portafilter_atas": [
+      312,
+      110,
+      108,
+      76
+     ],
+     "bar_tekanan": [
+      420,
+      102,
+      278,
+      44
+     ],
+     "bar_miring": [
+      420,
+      164,
+      278,
+      44
+     ],
+     "btn_tekan": [
+      546,
+      330,
+      160,
+      26
+     ]
+    },
+    "04_seduh": {
+     "panel": [
+      122,
+      18,
+      600,
+      354
+     ],
+     "potret_barista": [
+      129,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      653,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      130,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      135,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      190,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      135,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      188,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      225,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      135,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      161,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      290,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      290,
+      86,
+      424,
+      278
+     ],
+     "shot_counter": [
+      426,
+      88,
+      140,
+      32
+     ],
+     "timer_seduh": [
+      634,
+      92,
+      70,
+      16
+     ],
+     "bar_seduh": [
+      426,
+      134,
+      278,
+      48
+     ],
+     "hasil_shot_1": [
+      426,
+      198,
+      160,
+      14
+     ],
+     "btn_stop": [
+      546,
+      330,
+      160,
+      26
+     ]
+    },
+    "05_steam": {
+     "panel": [
+      122,
+      18,
+      600,
+      354
+     ],
+     "potret_barista": [
+      129,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      653,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      130,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      135,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      190,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      135,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      188,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      225,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      135,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      161,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      290,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      290,
+      86,
+      424,
+      278
+     ],
+     "bar_suhu": [
+      426,
+      102,
+      278,
+      48
+     ],
+     "bar_busa": [
+      426,
+      186,
+      278,
+      12
+     ],
+     "btn_tahan_steam": [
+      546,
+      330,
+      160,
+      26
+     ]
+    },
+    "06_tuang_latteart": {
+     "panel": [
+      122,
+      18,
+      600,
+      354
+     ],
+     "potret_barista": [
+      129,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      653,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      130,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      135,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      190,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      135,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      188,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      225,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      135,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      161,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      290,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      290,
+      86,
+      424,
+      278
+     ],
+     "permukaan_latte": [
+      300,
+      108,
+      121,
+      89
+     ],
+     "bar_tuang": [
+      440,
+      102,
+      264,
+      44
+     ],
+     "bar_isi": [
+      440,
+      176,
+      264,
+      12
+     ],
+     "btn_tahan_tuang": [
+      546,
+      330,
+      160,
+      26
+     ],
+     "btn_tarik": [
+      418,
+      330,
+      120,
+      26
+     ]
+    },
+    "07_tutup_serahkan": {
+     "panel": [
+      122,
+      18,
+      600,
+      354
+     ],
+     "potret_barista": [
+      129,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      653,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      130,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      135,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      190,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      135,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      188,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      225,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      135,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      161,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      290,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      290,
+      86,
+      424,
+      278
+     ],
+     "pilih_ukuran_R": [
+      298,
+      106,
+      200,
+      36
+     ],
+     "pilih_ukuran_L": [
+      506,
+      106,
+      200,
+      36
+     ],
+     "pilih_gula_normal": [
+      298,
+      162,
+      130,
+      36
+     ],
+     "pilih_gula_less": [
+      436,
+      162,
+      130,
+      36
+     ],
+     "pilih_gula_no": [
+      574,
+      162,
+      130,
+      36
+     ],
+     "pilih_shot_true": [
+      298,
+      218,
+      130,
+      36
+     ],
+     "pilih_shot_false": [
+      436,
+      218,
+      130,
+      36
+     ],
+     "pilih_tutup": [
+      574,
+      218,
+      130,
+      36
+     ],
+     "btn_serahkan": [
+      546,
+      330,
+      160,
+      26
+     ]
+    },
+    "07b_serahkan_salah": {
+     "panel": [
+      122,
+      18,
+      600,
+      354
+     ],
+     "potret_barista": [
+      129,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      653,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      130,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      135,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      190,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      135,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      188,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      225,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      135,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      161,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      290,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      290,
+      86,
+      424,
+      278
+     ],
+     "pilih_ukuran_R": [
+      298,
+      106,
+      200,
+      36
+     ],
+     "pilih_ukuran_L": [
+      506,
+      106,
+      200,
+      36
+     ],
+     "pilih_gula_normal": [
+      298,
+      162,
+      130,
+      36
+     ],
+     "pilih_gula_less": [
+      436,
+      162,
+      130,
+      36
+     ],
+     "pilih_gula_no": [
+      574,
+      162,
+      130,
+      36
+     ],
+     "pilih_shot_true": [
+      298,
+      218,
+      130,
+      36
+     ],
+     "pilih_shot_false": [
+      436,
+      218,
+      130,
+      36
+     ],
+     "pilih_tutup": [
+      574,
+      218,
+      130,
+      36
+     ],
+     "btn_serahkan": [
+      546,
+      330,
+      160,
+      26
+     ]
+    },
+    "08_hasil_sukses": {
+     "popup_hasil": [
+      252,
+      45,
+      340,
+      300
+     ],
+     "bintang": [
+      359,
+      87,
+      130,
+      24
+     ],
+     "rincian_akurasi": [
+      262,
+      135,
+      320,
+      100
+     ],
+     "rincian_upah": [
+      262,
+      241,
+      320,
+      62
+     ],
+     "btn_berikut": [
+      262,
+      311,
+      156,
+      26
+     ],
+     "btn_selesai": [
+      426,
+      311,
+      156,
+      26
+     ]
+    },
+    "09_hasil_gagal": {
+     "popup_hasil": [
+      252,
+      45,
+      340,
+      300
+     ],
+     "bintang": [
+      359,
+      87,
+      130,
+      24
+     ],
+     "rincian_akurasi": [
+      262,
+      135,
+      320,
+      100
+     ],
+     "rincian_upah": [
+      262,
+      241,
+      320,
+      62
+     ],
+     "btn_coba_lagi": [
+      262,
+      311,
+      156,
+      26
+     ],
+     "btn_selesai": [
+      426,
+      311,
+      156,
+      26
+     ]
+    }
+   },
+   "667x375": {
+    "01_pesanan": {
+     "panel": [
+      33,
+      18,
+      600,
+      339
+     ],
+     "potret_barista": [
+      40,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      564,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      41,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      46,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      101,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      46,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      99,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      136,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      46,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      72,
+      247,
+      40,
+      17
+     ],
+     "tiket_antre_0": [
+      201,
+      74,
+      209,
+      34
+     ],
+     "tiket_antre_1": [
+      416,
+      74,
+      209,
+      34
+     ],
+     "resep_langkah": [
+      201,
+      131,
+      424,
+      96
+     ],
+     "bar_sabar": [
+      201,
+      233,
+      200,
+      26
+     ],
+     "btn_mulai": [
+      475,
+      323,
+      150,
+      26
+     ],
+     "btn_tolak": [
+      371,
+      323,
+      96,
+      26
+     ],
+     "btn_menu": [
+      201,
+      323,
+      120,
+      26
+     ]
+    },
+    "02_giling": {
+     "panel": [
+      33,
+      18,
+      600,
+      339
+     ],
+     "potret_barista": [
+      40,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      564,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      41,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      46,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      101,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      46,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      99,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      136,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      46,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      72,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      201,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      201,
+      86,
+      424,
+      263
+     ],
+     "bar_takaran": [
+      297,
+      106,
+      312,
+      44
+     ],
+     "btn_tahan": [
+      457,
+      315,
+      160,
+      26
+     ]
+    },
+    "03_tamper": {
+     "panel": [
+      33,
+      18,
+      600,
+      339
+     ],
+     "potret_barista": [
+      40,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      564,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      41,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      46,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      101,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      46,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      99,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      136,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      46,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      72,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      201,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      201,
+      86,
+      424,
+      263
+     ],
+     "portafilter_atas": [
+      223,
+      110,
+      108,
+      76
+     ],
+     "bar_tekanan": [
+      331,
+      102,
+      278,
+      44
+     ],
+     "bar_miring": [
+      331,
+      164,
+      278,
+      44
+     ],
+     "btn_tekan": [
+      457,
+      315,
+      160,
+      26
+     ]
+    },
+    "04_seduh": {
+     "panel": [
+      33,
+      18,
+      600,
+      339
+     ],
+     "potret_barista": [
+      40,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      564,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      41,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      46,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      101,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      46,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      99,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      136,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      46,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      72,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      201,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      201,
+      86,
+      424,
+      263
+     ],
+     "shot_counter": [
+      337,
+      88,
+      140,
+      32
+     ],
+     "timer_seduh": [
+      545,
+      92,
+      70,
+      16
+     ],
+     "bar_seduh": [
+      337,
+      134,
+      278,
+      48
+     ],
+     "hasil_shot_1": [
+      337,
+      198,
+      160,
+      14
+     ],
+     "btn_stop": [
+      457,
+      315,
+      160,
+      26
+     ]
+    },
+    "05_steam": {
+     "panel": [
+      33,
+      18,
+      600,
+      339
+     ],
+     "potret_barista": [
+      40,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      564,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      41,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      46,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      101,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      46,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      99,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      136,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      46,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      72,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      201,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      201,
+      86,
+      424,
+      263
+     ],
+     "bar_suhu": [
+      337,
+      102,
+      278,
+      48
+     ],
+     "bar_busa": [
+      337,
+      186,
+      278,
+      12
+     ],
+     "btn_tahan_steam": [
+      457,
+      315,
+      160,
+      26
+     ]
+    },
+    "06_tuang_latteart": {
+     "panel": [
+      33,
+      18,
+      600,
+      339
+     ],
+     "potret_barista": [
+      40,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      564,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      41,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      46,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      101,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      46,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      99,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      136,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      46,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      72,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      201,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      201,
+      86,
+      424,
+      263
+     ],
+     "permukaan_latte": [
+      211,
+      108,
+      121,
+      89
+     ],
+     "bar_tuang": [
+      351,
+      102,
+      264,
+      44
+     ],
+     "bar_isi": [
+      351,
+      176,
+      264,
+      12
+     ],
+     "btn_tahan_tuang": [
+      457,
+      315,
+      160,
+      26
+     ],
+     "btn_tarik": [
+      329,
+      315,
+      120,
+      26
+     ]
+    },
+    "07_tutup_serahkan": {
+     "panel": [
+      33,
+      18,
+      600,
+      339
+     ],
+     "potret_barista": [
+      40,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      564,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      41,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      46,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      101,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      46,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      99,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      136,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      46,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      72,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      201,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      201,
+      86,
+      424,
+      263
+     ],
+     "pilih_ukuran_R": [
+      209,
+      106,
+      200,
+      36
+     ],
+     "pilih_ukuran_L": [
+      417,
+      106,
+      200,
+      36
+     ],
+     "pilih_gula_normal": [
+      209,
+      162,
+      130,
+      36
+     ],
+     "pilih_gula_less": [
+      347,
+      162,
+      130,
+      36
+     ],
+     "pilih_gula_no": [
+      485,
+      162,
+      130,
+      36
+     ],
+     "pilih_shot_true": [
+      209,
+      218,
+      130,
+      36
+     ],
+     "pilih_shot_false": [
+      347,
+      218,
+      130,
+      36
+     ],
+     "pilih_tutup": [
+      485,
+      218,
+      130,
+      36
+     ],
+     "btn_serahkan": [
+      457,
+      315,
+      160,
+      26
+     ]
+    },
+    "07b_serahkan_salah": {
+     "panel": [
+      33,
+      18,
+      600,
+      339
+     ],
+     "potret_barista": [
+      40,
+      20,
+      30,
+      30
+     ],
+     "btn_berhenti": [
+      564,
+      25,
+      61,
+      20
+     ],
+     "tiket_order": [
+      41,
+      60,
+      150,
+      214
+     ],
+     "chip_ukuran_r": [
+      46,
+      179,
+      52,
+      17
+     ],
+     "chip_ukuran_l": [
+      101,
+      179,
+      41,
+      17
+     ],
+     "chip_gula_normal": [
+      46,
+      213,
+      50,
+      17
+     ],
+     "chip_gula_less": [
+      99,
+      213,
+      34,
+      17
+     ],
+     "chip_gula_no": [
+      136,
+      213,
+      25,
+      17
+     ],
+     "chip_double_true": [
+      46,
+      247,
+      23,
+      17
+     ],
+     "chip_double_false": [
+      72,
+      247,
+      40,
+      17
+     ],
+     "langkah": [
+      201,
+      60,
+      424,
+      20
+     ],
+     "area_langkah": [
+      201,
+      86,
+      424,
+      263
+     ],
+     "pilih_ukuran_R": [
+      209,
+      106,
+      200,
+      36
+     ],
+     "pilih_ukuran_L": [
+      417,
+      106,
+      200,
+      36
+     ],
+     "pilih_gula_normal": [
+      209,
+      162,
+      130,
+      36
+     ],
+     "pilih_gula_less": [
+      347,
+      162,
+      130,
+      36
+     ],
+     "pilih_gula_no": [
+      485,
+      162,
+      130,
+      36
+     ],
+     "pilih_shot_true": [
+      209,
+      218,
+      130,
+      36
+     ],
+     "pilih_shot_false": [
+      347,
+      218,
+      130,
+      36
+     ],
+     "pilih_tutup": [
+      485,
+      218,
+      130,
+      36
+     ],
+     "btn_serahkan": [
+      457,
+      315,
+      160,
+      26
+     ]
+    },
+    "08_hasil_sukses": {
+     "popup_hasil": [
+      163,
+      37,
+      340,
+      300
+     ],
+     "bintang": [
+      270,
+      79,
+      130,
+      24
+     ],
+     "rincian_akurasi": [
+      173,
+      127,
+      320,
+      100
+     ],
+     "rincian_upah": [
+      173,
+      233,
+      320,
+      62
+     ],
+     "btn_berikut": [
+      173,
+      303,
+      156,
+      26
+     ],
+     "btn_selesai": [
+      337,
+      303,
+      156,
+      26
+     ]
+    },
+    "09_hasil_gagal": {
+     "popup_hasil": [
+      163,
+      37,
+      340,
+      300
+     ],
+     "bintang": [
+      270,
+      79,
+      130,
+      24
+     ],
+     "rincian_akurasi": [
+      173,
+      127,
+      320,
+      100
+     ],
+     "rincian_upah": [
+      173,
+      233,
+      320,
+      62
+     ],
+     "btn_coba_lagi": [
+      173,
+      303,
+      156,
+      26
+     ],
+     "btn_selesai": [
+      337,
+      303,
+      156,
+      26
+     ]
+    }
+   }
+  }
+ },
+ "mock": {
+  "file": [
+   "mock_counter_famima_1x.png",
+   "mock_counter_famima_4x.png"
+  ],
+  "player_px": [
+   122,
+   215
+  ],
+  "barista_px": [
+   184,
+   185
+  ],
+  "size": [
+   384,
+   309
+  ]
+ },
+ "contact_sheet": "contact_sheet_barista_famima_4x.png"
+}

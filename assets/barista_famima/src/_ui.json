@@ -1,0 +1,3077 @@
+{
+ "rects": [
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "panel",
+   "x": 122,
+   "y": 18,
+   "w": 600,
+   "h": 354
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "potret_barista",
+   "x": 129,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "btn_berhenti",
+   "x": 653,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "tiket_order",
+   "x": 130,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "chip_ukuran_r",
+   "x": 135,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "chip_ukuran_l",
+   "x": 190,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "chip_gula_normal",
+   "x": 135,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "chip_gula_less",
+   "x": 188,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "chip_gula_no",
+   "x": 225,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "chip_double_true",
+   "x": 135,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "chip_double_false",
+   "x": 161,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "tiket_antre_0",
+   "x": 290,
+   "y": 74,
+   "w": 209,
+   "h": 34
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "tiket_antre_1",
+   "x": 505,
+   "y": 74,
+   "w": 209,
+   "h": 34
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "resep_langkah",
+   "x": 290,
+   "y": 131,
+   "w": 424,
+   "h": 96
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "bar_sabar",
+   "x": 290,
+   "y": 233,
+   "w": 200,
+   "h": 26
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "btn_mulai",
+   "x": 564,
+   "y": 338,
+   "w": 150,
+   "h": 26
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "btn_tolak",
+   "x": 460,
+   "y": 338,
+   "w": 96,
+   "h": 26
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "844x390",
+   "name": "btn_menu",
+   "x": 290,
+   "y": 338,
+   "w": 120,
+   "h": 26
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "panel",
+   "x": 122,
+   "y": 18,
+   "w": 600,
+   "h": 354
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "potret_barista",
+   "x": 129,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "btn_berhenti",
+   "x": 653,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "tiket_order",
+   "x": 130,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "chip_ukuran_r",
+   "x": 135,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "chip_ukuran_l",
+   "x": 190,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "chip_gula_normal",
+   "x": 135,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "chip_gula_less",
+   "x": 188,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "chip_gula_no",
+   "x": 225,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "chip_double_true",
+   "x": 135,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "chip_double_false",
+   "x": 161,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "langkah",
+   "x": 290,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "area_langkah",
+   "x": 290,
+   "y": 86,
+   "w": 424,
+   "h": 278
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "bar_takaran",
+   "x": 386,
+   "y": 106,
+   "w": 312,
+   "h": 44
+  },
+  {
+   "screen": "02_giling",
+   "size": "844x390",
+   "name": "btn_tahan",
+   "x": 546,
+   "y": 330,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "panel",
+   "x": 122,
+   "y": 18,
+   "w": 600,
+   "h": 354
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "potret_barista",
+   "x": 129,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "btn_berhenti",
+   "x": 653,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "tiket_order",
+   "x": 130,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "chip_ukuran_r",
+   "x": 135,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "chip_ukuran_l",
+   "x": 190,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "chip_gula_normal",
+   "x": 135,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "chip_gula_less",
+   "x": 188,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "chip_gula_no",
+   "x": 225,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "chip_double_true",
+   "x": 135,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "chip_double_false",
+   "x": 161,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "langkah",
+   "x": 290,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "area_langkah",
+   "x": 290,
+   "y": 86,
+   "w": 424,
+   "h": 278
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "portafilter_atas",
+   "x": 312,
+   "y": 110,
+   "w": 108,
+   "h": 76
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "bar_tekanan",
+   "x": 420,
+   "y": 102,
+   "w": 278,
+   "h": 44
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "bar_miring",
+   "x": 420,
+   "y": 164,
+   "w": 278,
+   "h": 44
+  },
+  {
+   "screen": "03_tamper",
+   "size": "844x390",
+   "name": "btn_tekan",
+   "x": 546,
+   "y": 330,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "panel",
+   "x": 122,
+   "y": 18,
+   "w": 600,
+   "h": 354
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "potret_barista",
+   "x": 129,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "btn_berhenti",
+   "x": 653,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "tiket_order",
+   "x": 130,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "chip_ukuran_r",
+   "x": 135,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "chip_ukuran_l",
+   "x": 190,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "chip_gula_normal",
+   "x": 135,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "chip_gula_less",
+   "x": 188,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "chip_gula_no",
+   "x": 225,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "chip_double_true",
+   "x": 135,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "chip_double_false",
+   "x": 161,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "langkah",
+   "x": 290,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "area_langkah",
+   "x": 290,
+   "y": 86,
+   "w": 424,
+   "h": 278
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "shot_counter",
+   "x": 426,
+   "y": 88,
+   "w": 140,
+   "h": 32
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "timer_seduh",
+   "x": 634,
+   "y": 92,
+   "w": 70,
+   "h": 16
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "bar_seduh",
+   "x": 426,
+   "y": 134,
+   "w": 278,
+   "h": 48
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "hasil_shot_1",
+   "x": 426,
+   "y": 198,
+   "w": 160,
+   "h": 14
+  },
+  {
+   "screen": "04_seduh",
+   "size": "844x390",
+   "name": "btn_stop",
+   "x": 546,
+   "y": 330,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "panel",
+   "x": 122,
+   "y": 18,
+   "w": 600,
+   "h": 354
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "potret_barista",
+   "x": 129,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "btn_berhenti",
+   "x": 653,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "tiket_order",
+   "x": 130,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "chip_ukuran_r",
+   "x": 135,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "chip_ukuran_l",
+   "x": 190,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "chip_gula_normal",
+   "x": 135,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "chip_gula_less",
+   "x": 188,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "chip_gula_no",
+   "x": 225,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "chip_double_true",
+   "x": 135,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "chip_double_false",
+   "x": 161,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "langkah",
+   "x": 290,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "area_langkah",
+   "x": 290,
+   "y": 86,
+   "w": 424,
+   "h": 278
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "bar_suhu",
+   "x": 426,
+   "y": 102,
+   "w": 278,
+   "h": 48
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "bar_busa",
+   "x": 426,
+   "y": 186,
+   "w": 278,
+   "h": 12
+  },
+  {
+   "screen": "05_steam",
+   "size": "844x390",
+   "name": "btn_tahan_steam",
+   "x": 546,
+   "y": 330,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "panel",
+   "x": 122,
+   "y": 18,
+   "w": 600,
+   "h": 354
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "potret_barista",
+   "x": 129,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "btn_berhenti",
+   "x": 653,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "tiket_order",
+   "x": 130,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "chip_ukuran_r",
+   "x": 135,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "chip_ukuran_l",
+   "x": 190,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "chip_gula_normal",
+   "x": 135,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "chip_gula_less",
+   "x": 188,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "chip_gula_no",
+   "x": 225,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "chip_double_true",
+   "x": 135,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "chip_double_false",
+   "x": 161,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "langkah",
+   "x": 290,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "area_langkah",
+   "x": 290,
+   "y": 86,
+   "w": 424,
+   "h": 278
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "permukaan_latte",
+   "x": 300,
+   "y": 108,
+   "w": 121,
+   "h": 89
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "bar_tuang",
+   "x": 440,
+   "y": 102,
+   "w": 264,
+   "h": 44
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "bar_isi",
+   "x": 440,
+   "y": 176,
+   "w": 264,
+   "h": 12
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "btn_tahan_tuang",
+   "x": 546,
+   "y": 330,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "844x390",
+   "name": "btn_tarik",
+   "x": 418,
+   "y": 330,
+   "w": 120,
+   "h": 26
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "panel",
+   "x": 122,
+   "y": 18,
+   "w": 600,
+   "h": 354
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "potret_barista",
+   "x": 129,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "btn_berhenti",
+   "x": 653,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "tiket_order",
+   "x": 130,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "chip_ukuran_r",
+   "x": 135,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "chip_ukuran_l",
+   "x": 190,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "chip_gula_normal",
+   "x": 135,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "chip_gula_less",
+   "x": 188,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "chip_gula_no",
+   "x": 225,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "chip_double_true",
+   "x": 135,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "chip_double_false",
+   "x": 161,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "langkah",
+   "x": 290,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "area_langkah",
+   "x": 290,
+   "y": 86,
+   "w": 424,
+   "h": 278
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "pilih_ukuran_R",
+   "x": 298,
+   "y": 106,
+   "w": 200,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "pilih_ukuran_L",
+   "x": 506,
+   "y": 106,
+   "w": 200,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "pilih_gula_normal",
+   "x": 298,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "pilih_gula_less",
+   "x": 436,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "pilih_gula_no",
+   "x": 574,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "pilih_shot_true",
+   "x": 298,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "pilih_shot_false",
+   "x": 436,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "pilih_tutup",
+   "x": 574,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "844x390",
+   "name": "btn_serahkan",
+   "x": 546,
+   "y": 330,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "panel",
+   "x": 122,
+   "y": 18,
+   "w": 600,
+   "h": 354
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "potret_barista",
+   "x": 129,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "btn_berhenti",
+   "x": 653,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "tiket_order",
+   "x": 130,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "chip_ukuran_r",
+   "x": 135,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "chip_ukuran_l",
+   "x": 190,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "chip_gula_normal",
+   "x": 135,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "chip_gula_less",
+   "x": 188,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "chip_gula_no",
+   "x": 225,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "chip_double_true",
+   "x": 135,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "chip_double_false",
+   "x": 161,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "langkah",
+   "x": 290,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "area_langkah",
+   "x": 290,
+   "y": 86,
+   "w": 424,
+   "h": 278
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "pilih_ukuran_R",
+   "x": 298,
+   "y": 106,
+   "w": 200,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "pilih_ukuran_L",
+   "x": 506,
+   "y": 106,
+   "w": 200,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "pilih_gula_normal",
+   "x": 298,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "pilih_gula_less",
+   "x": 436,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "pilih_gula_no",
+   "x": 574,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "pilih_shot_true",
+   "x": 298,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "pilih_shot_false",
+   "x": 436,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "pilih_tutup",
+   "x": 574,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "844x390",
+   "name": "btn_serahkan",
+   "x": 546,
+   "y": 330,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "844x390",
+   "name": "popup_hasil",
+   "x": 252,
+   "y": 45,
+   "w": 340,
+   "h": 300
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "844x390",
+   "name": "bintang",
+   "x": 359,
+   "y": 87,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "844x390",
+   "name": "rincian_akurasi",
+   "x": 262,
+   "y": 135,
+   "w": 320,
+   "h": 100
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "844x390",
+   "name": "rincian_upah",
+   "x": 262,
+   "y": 241,
+   "w": 320,
+   "h": 62
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "844x390",
+   "name": "btn_berikut",
+   "x": 262,
+   "y": 311,
+   "w": 156,
+   "h": 26
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "844x390",
+   "name": "btn_selesai",
+   "x": 426,
+   "y": 311,
+   "w": 156,
+   "h": 26
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "844x390",
+   "name": "popup_hasil",
+   "x": 252,
+   "y": 45,
+   "w": 340,
+   "h": 300
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "844x390",
+   "name": "bintang",
+   "x": 359,
+   "y": 87,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "844x390",
+   "name": "rincian_akurasi",
+   "x": 262,
+   "y": 135,
+   "w": 320,
+   "h": 100
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "844x390",
+   "name": "rincian_upah",
+   "x": 262,
+   "y": 241,
+   "w": 320,
+   "h": 62
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "844x390",
+   "name": "btn_coba_lagi",
+   "x": 262,
+   "y": 311,
+   "w": 156,
+   "h": 26
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "844x390",
+   "name": "btn_selesai",
+   "x": 426,
+   "y": 311,
+   "w": 156,
+   "h": 26
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "panel",
+   "x": 33,
+   "y": 18,
+   "w": 600,
+   "h": 339
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "potret_barista",
+   "x": 40,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "btn_berhenti",
+   "x": 564,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "tiket_order",
+   "x": 41,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "chip_ukuran_r",
+   "x": 46,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "chip_ukuran_l",
+   "x": 101,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "chip_gula_normal",
+   "x": 46,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "chip_gula_less",
+   "x": 99,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "chip_gula_no",
+   "x": 136,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "chip_double_true",
+   "x": 46,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "chip_double_false",
+   "x": 72,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "tiket_antre_0",
+   "x": 201,
+   "y": 74,
+   "w": 209,
+   "h": 34
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "tiket_antre_1",
+   "x": 416,
+   "y": 74,
+   "w": 209,
+   "h": 34
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "resep_langkah",
+   "x": 201,
+   "y": 131,
+   "w": 424,
+   "h": 96
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "bar_sabar",
+   "x": 201,
+   "y": 233,
+   "w": 200,
+   "h": 26
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "btn_mulai",
+   "x": 475,
+   "y": 323,
+   "w": 150,
+   "h": 26
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "btn_tolak",
+   "x": 371,
+   "y": 323,
+   "w": 96,
+   "h": 26
+  },
+  {
+   "screen": "01_pesanan",
+   "size": "667x375",
+   "name": "btn_menu",
+   "x": 201,
+   "y": 323,
+   "w": 120,
+   "h": 26
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "panel",
+   "x": 33,
+   "y": 18,
+   "w": 600,
+   "h": 339
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "potret_barista",
+   "x": 40,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "btn_berhenti",
+   "x": 564,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "tiket_order",
+   "x": 41,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "chip_ukuran_r",
+   "x": 46,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "chip_ukuran_l",
+   "x": 101,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "chip_gula_normal",
+   "x": 46,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "chip_gula_less",
+   "x": 99,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "chip_gula_no",
+   "x": 136,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "chip_double_true",
+   "x": 46,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "chip_double_false",
+   "x": 72,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "langkah",
+   "x": 201,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "area_langkah",
+   "x": 201,
+   "y": 86,
+   "w": 424,
+   "h": 263
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "bar_takaran",
+   "x": 297,
+   "y": 106,
+   "w": 312,
+   "h": 44
+  },
+  {
+   "screen": "02_giling",
+   "size": "667x375",
+   "name": "btn_tahan",
+   "x": 457,
+   "y": 315,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "panel",
+   "x": 33,
+   "y": 18,
+   "w": 600,
+   "h": 339
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "potret_barista",
+   "x": 40,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "btn_berhenti",
+   "x": 564,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "tiket_order",
+   "x": 41,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "chip_ukuran_r",
+   "x": 46,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "chip_ukuran_l",
+   "x": 101,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "chip_gula_normal",
+   "x": 46,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "chip_gula_less",
+   "x": 99,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "chip_gula_no",
+   "x": 136,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "chip_double_true",
+   "x": 46,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "chip_double_false",
+   "x": 72,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "langkah",
+   "x": 201,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "area_langkah",
+   "x": 201,
+   "y": 86,
+   "w": 424,
+   "h": 263
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "portafilter_atas",
+   "x": 223,
+   "y": 110,
+   "w": 108,
+   "h": 76
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "bar_tekanan",
+   "x": 331,
+   "y": 102,
+   "w": 278,
+   "h": 44
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "bar_miring",
+   "x": 331,
+   "y": 164,
+   "w": 278,
+   "h": 44
+  },
+  {
+   "screen": "03_tamper",
+   "size": "667x375",
+   "name": "btn_tekan",
+   "x": 457,
+   "y": 315,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "panel",
+   "x": 33,
+   "y": 18,
+   "w": 600,
+   "h": 339
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "potret_barista",
+   "x": 40,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "btn_berhenti",
+   "x": 564,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "tiket_order",
+   "x": 41,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "chip_ukuran_r",
+   "x": 46,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "chip_ukuran_l",
+   "x": 101,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "chip_gula_normal",
+   "x": 46,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "chip_gula_less",
+   "x": 99,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "chip_gula_no",
+   "x": 136,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "chip_double_true",
+   "x": 46,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "chip_double_false",
+   "x": 72,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "langkah",
+   "x": 201,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "area_langkah",
+   "x": 201,
+   "y": 86,
+   "w": 424,
+   "h": 263
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "shot_counter",
+   "x": 337,
+   "y": 88,
+   "w": 140,
+   "h": 32
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "timer_seduh",
+   "x": 545,
+   "y": 92,
+   "w": 70,
+   "h": 16
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "bar_seduh",
+   "x": 337,
+   "y": 134,
+   "w": 278,
+   "h": 48
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "hasil_shot_1",
+   "x": 337,
+   "y": 198,
+   "w": 160,
+   "h": 14
+  },
+  {
+   "screen": "04_seduh",
+   "size": "667x375",
+   "name": "btn_stop",
+   "x": 457,
+   "y": 315,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "panel",
+   "x": 33,
+   "y": 18,
+   "w": 600,
+   "h": 339
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "potret_barista",
+   "x": 40,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "btn_berhenti",
+   "x": 564,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "tiket_order",
+   "x": 41,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "chip_ukuran_r",
+   "x": 46,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "chip_ukuran_l",
+   "x": 101,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "chip_gula_normal",
+   "x": 46,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "chip_gula_less",
+   "x": 99,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "chip_gula_no",
+   "x": 136,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "chip_double_true",
+   "x": 46,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "chip_double_false",
+   "x": 72,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "langkah",
+   "x": 201,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "area_langkah",
+   "x": 201,
+   "y": 86,
+   "w": 424,
+   "h": 263
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "bar_suhu",
+   "x": 337,
+   "y": 102,
+   "w": 278,
+   "h": 48
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "bar_busa",
+   "x": 337,
+   "y": 186,
+   "w": 278,
+   "h": 12
+  },
+  {
+   "screen": "05_steam",
+   "size": "667x375",
+   "name": "btn_tahan_steam",
+   "x": 457,
+   "y": 315,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "panel",
+   "x": 33,
+   "y": 18,
+   "w": 600,
+   "h": 339
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "potret_barista",
+   "x": 40,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "btn_berhenti",
+   "x": 564,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "tiket_order",
+   "x": 41,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "chip_ukuran_r",
+   "x": 46,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "chip_ukuran_l",
+   "x": 101,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "chip_gula_normal",
+   "x": 46,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "chip_gula_less",
+   "x": 99,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "chip_gula_no",
+   "x": 136,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "chip_double_true",
+   "x": 46,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "chip_double_false",
+   "x": 72,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "langkah",
+   "x": 201,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "area_langkah",
+   "x": 201,
+   "y": 86,
+   "w": 424,
+   "h": 263
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "permukaan_latte",
+   "x": 211,
+   "y": 108,
+   "w": 121,
+   "h": 89
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "bar_tuang",
+   "x": 351,
+   "y": 102,
+   "w": 264,
+   "h": 44
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "bar_isi",
+   "x": 351,
+   "y": 176,
+   "w": 264,
+   "h": 12
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "btn_tahan_tuang",
+   "x": 457,
+   "y": 315,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "06_tuang_latteart",
+   "size": "667x375",
+   "name": "btn_tarik",
+   "x": 329,
+   "y": 315,
+   "w": 120,
+   "h": 26
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "panel",
+   "x": 33,
+   "y": 18,
+   "w": 600,
+   "h": 339
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "potret_barista",
+   "x": 40,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "btn_berhenti",
+   "x": 564,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "tiket_order",
+   "x": 41,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "chip_ukuran_r",
+   "x": 46,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "chip_ukuran_l",
+   "x": 101,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "chip_gula_normal",
+   "x": 46,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "chip_gula_less",
+   "x": 99,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "chip_gula_no",
+   "x": 136,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "chip_double_true",
+   "x": 46,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "chip_double_false",
+   "x": 72,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "langkah",
+   "x": 201,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "area_langkah",
+   "x": 201,
+   "y": 86,
+   "w": 424,
+   "h": 263
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "pilih_ukuran_R",
+   "x": 209,
+   "y": 106,
+   "w": 200,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "pilih_ukuran_L",
+   "x": 417,
+   "y": 106,
+   "w": 200,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "pilih_gula_normal",
+   "x": 209,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "pilih_gula_less",
+   "x": 347,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "pilih_gula_no",
+   "x": 485,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "pilih_shot_true",
+   "x": 209,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "pilih_shot_false",
+   "x": 347,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "pilih_tutup",
+   "x": 485,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07_tutup_serahkan",
+   "size": "667x375",
+   "name": "btn_serahkan",
+   "x": 457,
+   "y": 315,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "panel",
+   "x": 33,
+   "y": 18,
+   "w": 600,
+   "h": 339
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "potret_barista",
+   "x": 40,
+   "y": 20,
+   "w": 30,
+   "h": 30
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "btn_berhenti",
+   "x": 564,
+   "y": 25,
+   "w": 61,
+   "h": 20
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "tiket_order",
+   "x": 41,
+   "y": 60,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "chip_ukuran_r",
+   "x": 46,
+   "y": 179,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "chip_ukuran_l",
+   "x": 101,
+   "y": 179,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "chip_gula_normal",
+   "x": 46,
+   "y": 213,
+   "w": 50,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "chip_gula_less",
+   "x": 99,
+   "y": 213,
+   "w": 34,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "chip_gula_no",
+   "x": 136,
+   "y": 213,
+   "w": 25,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "chip_double_true",
+   "x": 46,
+   "y": 247,
+   "w": 23,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "chip_double_false",
+   "x": 72,
+   "y": 247,
+   "w": 40,
+   "h": 17
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "langkah",
+   "x": 201,
+   "y": 60,
+   "w": 424,
+   "h": 20
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "area_langkah",
+   "x": 201,
+   "y": 86,
+   "w": 424,
+   "h": 263
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "pilih_ukuran_R",
+   "x": 209,
+   "y": 106,
+   "w": 200,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "pilih_ukuran_L",
+   "x": 417,
+   "y": 106,
+   "w": 200,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "pilih_gula_normal",
+   "x": 209,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "pilih_gula_less",
+   "x": 347,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "pilih_gula_no",
+   "x": 485,
+   "y": 162,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "pilih_shot_true",
+   "x": 209,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "pilih_shot_false",
+   "x": 347,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "pilih_tutup",
+   "x": 485,
+   "y": 218,
+   "w": 130,
+   "h": 36
+  },
+  {
+   "screen": "07b_serahkan_salah",
+   "size": "667x375",
+   "name": "btn_serahkan",
+   "x": 457,
+   "y": 315,
+   "w": 160,
+   "h": 26
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "667x375",
+   "name": "popup_hasil",
+   "x": 163,
+   "y": 37,
+   "w": 340,
+   "h": 300
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "667x375",
+   "name": "bintang",
+   "x": 270,
+   "y": 79,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "667x375",
+   "name": "rincian_akurasi",
+   "x": 173,
+   "y": 127,
+   "w": 320,
+   "h": 100
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "667x375",
+   "name": "rincian_upah",
+   "x": 173,
+   "y": 233,
+   "w": 320,
+   "h": 62
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "667x375",
+   "name": "btn_berikut",
+   "x": 173,
+   "y": 303,
+   "w": 156,
+   "h": 26
+  },
+  {
+   "screen": "08_hasil_sukses",
+   "size": "667x375",
+   "name": "btn_selesai",
+   "x": 337,
+   "y": 303,
+   "w": 156,
+   "h": 26
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "667x375",
+   "name": "popup_hasil",
+   "x": 163,
+   "y": 37,
+   "w": 340,
+   "h": 300
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "667x375",
+   "name": "bintang",
+   "x": 270,
+   "y": 79,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "667x375",
+   "name": "rincian_akurasi",
+   "x": 173,
+   "y": 127,
+   "w": 320,
+   "h": 100
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "667x375",
+   "name": "rincian_upah",
+   "x": 173,
+   "y": 233,
+   "w": 320,
+   "h": 62
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "667x375",
+   "name": "btn_coba_lagi",
+   "x": 173,
+   "y": 303,
+   "w": 156,
+   "h": 26
+  },
+  {
+   "screen": "09_hasil_gagal",
+   "size": "667x375",
+   "name": "btn_selesai",
+   "x": 337,
+   "y": 303,
+   "w": 156,
+   "h": 26
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_tiket",
+   "x": 10,
+   "y": 10,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "tiket_antre_k",
+   "x": 10,
+   "y": 234,
+   "w": 150,
+   "h": 34
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_bar_timing",
+   "x": 168,
+   "y": 14,
+   "w": 120,
+   "h": 32
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_bintang",
+   "x": 168,
+   "y": 58,
+   "w": 105,
+   "h": 20
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_sabar",
+   "x": 168,
+   "y": 84,
+   "w": 120,
+   "h": 26
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_btn_normal",
+   "x": 168,
+   "y": 116,
+   "w": 120,
+   "h": 20
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_btn_hover",
+   "x": 168,
+   "y": 140,
+   "w": 120,
+   "h": 20
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_btn_pressed",
+   "x": 168,
+   "y": 164,
+   "w": 120,
+   "h": 20
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_btn_disabled",
+   "x": 168,
+   "y": 188,
+   "w": 120,
+   "h": 20
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_chip_on",
+   "x": 168,
+   "y": 214,
+   "w": 41,
+   "h": 17
+  },
+  {
+   "screen": "_komponen",
+   "size": "komponen",
+   "name": "k_chip_off",
+   "x": 220,
+   "y": 214,
+   "w": 52,
+   "h": 17
+  },
+  {
+   "screen": "_slice",
+   "size": "komponen",
+   "name": "s",
+   "x": 0,
+   "y": 0,
+   "w": 150,
+   "h": 214
+  },
+  {
+   "screen": "_slice",
+   "size": "komponen",
+   "name": "tiket_antre_s",
+   "x": 0,
+   "y": 0,
+   "w": 150,
+   "h": 34
+  },
+  {
+   "screen": "_slice",
+   "size": "komponen",
+   "name": "bintang",
+   "x": 0,
+   "y": 0,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "_slice",
+   "size": "komponen",
+   "name": "bintang",
+   "x": 0,
+   "y": 0,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "_slice",
+   "size": "komponen",
+   "name": "bintang",
+   "x": 0,
+   "y": 0,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "_slice",
+   "size": "komponen",
+   "name": "bintang",
+   "x": 0,
+   "y": 0,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "_slice",
+   "size": "komponen",
+   "name": "bintang",
+   "x": 0,
+   "y": 0,
+   "w": 130,
+   "h": 24
+  },
+  {
+   "screen": "_slice",
+   "size": "komponen",
+   "name": "bintang",
+   "x": 0,
+   "y": 0,
+   "w": 130,
+   "h": 24
+  }
+ ],
+ "slices": {
+  "tiket_order": [
+   150,
+   214
+  ],
+  "tiket_antre": [
+   150,
+   34
+  ],
+  "chip_on": [
+   44,
+   17
+  ],
+  "chip_off": [
+   44,
+   17
+  ],
+  "bintang_0": [
+   130,
+   24
+  ],
+  "bintang_1": [
+   130,
+   24
+  ],
+  "bintang_2": [
+   130,
+   24
+  ],
+  "bintang_3": [
+   130,
+   24
+  ],
+  "bintang_4": [
+   130,
+   24
+  ],
+  "bintang_5": [
+   130,
+   24
+  ],
+  "bintang_isi": [
+   23,
+   23
+  ],
+  "bintang_kosong": [
+   23,
+   23
+  ],
+  "bar_zona_seduh": [
+   240,
+   18
+  ],
+  "penanda_bar": [
+   9,
+   26
+  ]
+ }
+}

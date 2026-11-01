@@ -1,0 +1,56 @@
+{
+ "version": "1.3.1 (21 Oct 2026) - numbers unchanged; pool_light added; verified against chars swim/float/lie rows 28-39",
+ "units": "1x authored px; tile 64x32; z = px above deck plane (deck/coping top = z 0); character frame 64x112, pivot (32,100)",
+ "pool": {
+  "water_surface_z_px": -6,
+  "note_surface": "water top plane sits 6 px below the deck/coping top, so a 6px inner coping lip is visible on the far (back) edges of the pool",
+  "swim": {
+   "water_line_px": 40,
+   "meaning": "in the swim/float frames the water surface is at frame y = 100 - 40 = 60 (40 px above pivot, chest height per style sheet v1.3)",
+   "avatar_offset_y_px": 46,
+   "offset_meaning": "engine draws the swim/float frame 46 px LOWER than a standing frame on the same cell (40 + 6), so frame y 60 lands exactly on the water surface (z -6). Pivot stays at the water cell centre.",
+   "mask_rule": "engine (or the sheet) clips frame rows y > 60 (below the water line) and may draw the 2-value water overlay there; 1px #7FE0E8 glow line at y 60 where body meets water",
+   "float_water_line_px": 40,
+   "float_avatar_offset_y_px": 46
+  },
+  "swim_zone": "manifest asset entries with zone='swim' (pool_water*, pool_* edge/corner pieces have walkable_cells only on deck side). Water cells: walkable for swimmers only; pathfinding switches the avatar to swim anims when entering a swim cell"
+ },
+ "lounger": {
+  "footprint_tiles": [
+   1,
+   2
+  ],
+  "lie_seat_z_px": 12,
+  "lie_pivot": "midpoint of the 1x2 footprint (the shared edge of the two cells); seats[].point in manifest",
+  "lie_facing": "the direction the FEET point; the backrest (head end) is on the opposite cell",
+  "backrest": {
+   "angle_deg_from_horizontal": 35,
+   "top_z_px": 30,
+   "length_along_axis_tiles": 0.75
+  },
+  "avatar_offset_y_px": 0,
+  "frame_authoring": "lie frames: pelvis 12 px above pivot (frame y 88), head toward the backrest end, lifted to ~z 26-30; breathing +-1 px",
+  "layers": "lounger __back (frame, backrest, mattress) under the avatar; __front (front rail/foot end) over it",
+  "facings_provided": [
+   "se",
+   "sw",
+   "ne",
+   "nw"
+  ]
+ },
+ "high_stool": {
+  "seat_z_px": 26,
+  "avatar_offset_y_px": -12,
+  "note": "reuse 'sit' frames (authored for seat z 14) lifted 12 px; feet dangle on the footrest ring at z ~10"
+ },
+ "high_table_surface_z_px": 40,
+ "assets": {
+  "water_cell": "outdoor/pool_water_f0..f3.png (+__glow), floor tile 64x32 anchor (32,0), 4 frames @180 ms; manifest zone=\"swim\"",
+  "coping_overlays": "pool_edge_{n,e,s,w}, pool_corner_{n,e,s,w}, pool_inner_{n,e,s,w}: floor_overlay 64x32 anchor (32,0) drawn on the WATER cell; n=-r edge, e=+c, s=+r, w=-c",
+  "spill": "pool_spill (deck cells next to water, screen); door_spill (warm, in front of wall_*_glassdoor_outdoor)",
+  "loungers": "sun_lounger[_towel|_towel_coral]_{se,sw,ne,nw}, footprint 1x2; seats[0].pose=\"lie\", seat_z 12, point = footprint midpoint, facing = feet direction",
+  "stool": "brainstorm/high_stool seats[0].seat_z_px 26, avatar_offset_y_px -12",
+  "pool_light": "outdoor/pool_light_f0..f3.png: 2x2 floor_overlay (screen), 2 per pool on water cells ~1 tile from the far wall; same frame index as pool_water"
+ },
+ "draw_order_swim": "floor (pool_water) -> coping overlays -> pool_spill -> avatars (swim frames clipped at frame y 60) -> glows"
+}

@@ -1,0 +1,182 @@
+[
+ {
+  "file": "before/sedan_se_0.png",
+  "kind": "sedan",
+  "dir": 1,
+  "size": [
+   156,
+   128
+  ],
+  "pivot": [
+   52,
+   54
+  ],
+  "col": [
+   "#FF5A5F",
+   "#E0434A",
+   "#B8323A"
+  ]
+ },
+ {
+  "file": "before/sedan_nw_1.png",
+  "kind": "sedan",
+  "dir": -1,
+  "size": [
+   156,
+   128
+  ],
+  "pivot": [
+   52,
+   54
+  ],
+  "col": [
+   "#2EC4B6",
+   "#22A094",
+   "#1B7F76"
+  ]
+ },
+ {
+  "file": "before/taxi_se_2.png",
+  "kind": "taxi",
+  "dir": 1,
+  "size": [
+   162,
+   144
+  ],
+  "pivot": [
+   52,
+   66
+  ],
+  "col": [
+   "#45B3E6",
+   "#2F97CF",
+   "#2479AD"
+  ]
+ },
+ {
+  "file": "before/taxi_nw_3.png",
+  "kind": "taxi",
+  "dir": -1,
+  "size": [
+   162,
+   144
+  ],
+  "pivot": [
+   52,
+   66
+  ],
+  "col": [
+   "#45B3E6",
+   "#2F97CF",
+   "#2479AD"
+  ]
+ },
+ {
+  "file": "before/bus_se_4.png",
+  "kind": "bus",
+  "dir": 1,
+  "size": [
+   276,
+   248
+  ],
+  "pivot": [
+   54,
+   112
+  ],
+  "col": [
+   "#2C6BD8",
+   "#F4F1EA",
+   "#2457B8"
+  ]
+ },
+ {
+  "file": "before/bus_nw_5.png",
+  "kind": "bus",
+  "dir": -1,
+  "size": [
+   276,
+   248
+  ],
+  "pivot": [
+   54,
+   112
+  ],
+  "col": [
+   "#2C6BD8",
+   "#F4F1EA",
+   "#2457B8"
+  ]
+ },
+ {
+  "file": "before/sedan_nw_6.png",
+  "kind": "sedan",
+  "dir": -1,
+  "size": [
+   156,
+   128
+  ],
+  "pivot": [
+   52,
+   54
+  ],
+  "col": [
+   "#FF5A5F",
+   "#E0434A",
+   "#B8323A"
+  ]
+ },
+ {
+  "file": "before/sedan_se_7.png",
+  "kind": "sedan",
+  "dir": 1,
+  "size": [
+   156,
+   128
+  ],
+  "pivot": [
+   52,
+   54
+  ],
+  "col": [
+   "#2EC4B6",
+   "#22A094",
+   "#1B7F76"
+  ]
+ },
+ {
+  "file": "before/van_se_8.png",
+  "kind": "van",
+  "dir": 1,
+  "size": [
+   172,
+   162
+  ],
+  "pivot": [
+   52,
+   78
+  ],
+  "col": [
+   "#F4F1EA",
+   "#D9D3C7",
+   "#B8B2A6"
+  ]
+ },
+ {
+  "file": "before/moto_se_9.png",
+  "kind": "moto",
+  "dir": 1,
+  "size": [
+   68,
+   100
+  ],
+  "pivot": [
+   30,
+   62
+  ],
+  "col": [
+   "#E5484D",
+   "#B8323A",
+   "#7A2E35"
+  ]
+ }
+]

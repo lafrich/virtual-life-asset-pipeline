@@ -1,0 +1,722 @@
+{
+ "botol_plastik_bening": {
+  "item": "botol_plastik",
+  "varian": "bening",
+  "ground": "ground/botol_plastik_bening.png",
+  "ground_size": [
+   34,
+   19
+  ],
+  "ground_pivot": [
+   15,
+   14
+  ],
+  "icon": "icons/botol_plastik_bening.png",
+  "icon_scale_k": 1.45
+ },
+ "botol_plastik_hijau": {
+  "item": "botol_plastik",
+  "varian": "hijau",
+  "ground": "ground/botol_plastik_hijau.png",
+  "ground_size": [
+   34,
+   19
+  ],
+  "ground_pivot": [
+   15,
+   14
+  ],
+  "icon": "icons/botol_plastik_hijau.png",
+  "icon_scale_k": 1.45
+ },
+ "kaleng_minuman_merah": {
+  "item": "kaleng_minuman",
+  "varian": "merah",
+  "ground": "ground/kaleng_minuman_merah.png",
+  "ground_size": [
+   24,
+   16
+  ],
+  "ground_pivot": [
+   10,
+   11
+  ],
+  "icon": "icons/kaleng_minuman_merah.png",
+  "icon_scale_k": 2.1
+ },
+ "kaleng_minuman_hijau": {
+  "item": "kaleng_minuman",
+  "varian": "hijau",
+  "ground": "ground/kaleng_minuman_hijau.png",
+  "ground_size": [
+   24,
+   16
+  ],
+  "ground_pivot": [
+   10,
+   11
+  ],
+  "icon": "icons/kaleng_minuman_hijau.png",
+  "icon_scale_k": 2.1
+ },
+ "kardus_lipat": {
+  "item": "kardus_lipat",
+  "varian": null,
+  "ground": "ground/kardus_lipat.png",
+  "ground_size": [
+   40,
+   23
+  ],
+  "ground_pivot": [
+   20,
+   13
+  ],
+  "icon": "icons/kardus_lipat.png",
+  "icon_scale_k": 1.05
+ },
+ "koran_bekas": {
+  "item": "koran_bekas",
+  "varian": null,
+  "ground": "ground/koran_bekas.png",
+  "ground_size": [
+   36,
+   21
+  ],
+  "ground_pivot": [
+   18,
+   12
+  ],
+  "icon": "icons/koran_bekas.png",
+  "icon_scale_k": 1.09
+ },
+ "sandal_jepit_biru": {
+  "item": "sandal_jepit",
+  "varian": "biru",
+  "ground": "ground/sandal_jepit_biru.png",
+  "ground_size": [
+   32,
+   19
+  ],
+  "ground_pivot": [
+   14,
+   10
+  ],
+  "icon": "icons/sandal_jepit_biru.png",
+  "icon_scale_k": 1.62
+ },
+ "sandal_jepit_merah": {
+  "item": "sandal_jepit",
+  "varian": "merah",
+  "ground": "ground/sandal_jepit_merah.png",
+  "ground_size": [
+   32,
+   19
+  ],
+  "ground_pivot": [
+   14,
+   10
+  ],
+  "icon": "icons/sandal_jepit_merah.png",
+  "icon_scale_k": 1.62
+ },
+ "kabel_bekas": {
+  "item": "kabel_bekas",
+  "varian": null,
+  "ground": "ground/kabel_bekas.png",
+  "ground_size": [
+   30,
+   21
+  ],
+  "ground_pivot": [
+   13,
+   9
+  ],
+  "icon": "icons/kabel_bekas.png",
+  "icon_scale_k": 1.62
+ },
+ "charger_rusak": {
+  "item": "charger_rusak",
+  "varian": null,
+  "ground": "ground/charger_rusak.png",
+  "ground_size": [
+   22,
+   18
+  ],
+  "ground_pivot": [
+   8,
+   10
+  ],
+  "icon": "icons/charger_rusak.png",
+  "icon_scale_k": 2.33
+ },
+ "kaset_pita": {
+  "item": "kaset_pita",
+  "varian": null,
+  "ground": "ground/kaset_pita.png",
+  "ground_size": [
+   28,
+   18
+  ],
+  "ground_pivot": [
+   14,
+   9
+  ],
+  "icon": "icons/kaset_pita.png",
+  "icon_scale_k": 1.5
+ },
+ "buku_bekas_merah": {
+  "item": "buku_bekas",
+  "varian": "merah",
+  "ground": "ground/buku_bekas_merah.png",
+  "ground_size": [
+   36,
+   22
+  ],
+  "ground_pivot": [
+   18,
+   13
+  ],
+  "icon": "icons/buku_bekas_merah.png",
+  "icon_scale_k": 1.17
+ },
+ "buku_bekas_biru": {
+  "item": "buku_bekas",
+  "varian": "biru",
+  "ground": "ground/buku_bekas_biru.png",
+  "ground_size": [
+   36,
+   22
+  ],
+  "ground_pivot": [
+   18,
+   13
+  ],
+  "icon": "icons/buku_bekas_biru.png",
+  "icon_scale_k": 1.17
+ },
+ "payung_rusak_ungu": {
+  "item": "payung_rusak",
+  "varian": "ungu",
+  "ground": "ground/payung_rusak_ungu.png",
+  "ground_size": [
+   42,
+   20
+  ],
+  "ground_pivot": [
+   20,
+   15
+  ],
+  "icon": "icons/payung_rusak_ungu.png",
+  "icon_scale_k": 1.17
+ },
+ "payung_rusak_hitam": {
+  "item": "payung_rusak",
+  "varian": "hitam",
+  "ground": "ground/payung_rusak_hitam.png",
+  "ground_size": [
+   42,
+   20
+  ],
+  "ground_pivot": [
+   20,
+   15
+  ],
+  "icon": "icons/payung_rusak_hitam.png",
+  "icon_scale_k": 1.17
+ },
+ "sepatu_bekas_putih": {
+  "item": "sepatu_bekas",
+  "varian": "putih",
+  "ground": "ground/sepatu_bekas_putih.png",
+  "ground_size": [
+   36,
+   28
+  ],
+  "ground_pivot": [
+   16,
+   20
+  ],
+  "icon": "icons/sepatu_bekas_putih.png",
+  "icon_scale_k": 1.31
+ },
+ "sepatu_bekas_hitam": {
+  "item": "sepatu_bekas",
+  "varian": "hitam",
+  "ground": "ground/sepatu_bekas_hitam.png",
+  "ground_size": [
+   36,
+   28
+  ],
+  "ground_pivot": [
+   16,
+   20
+  ],
+  "icon": "icons/sepatu_bekas_hitam.png",
+  "icon_scale_k": 1.31
+ },
+ "dompet_kosong": {
+  "item": "dompet_kosong",
+  "varian": null,
+  "ground": "ground/dompet_kosong.png",
+  "ground_size": [
+   28,
+   20
+  ],
+  "ground_pivot": [
+   14,
+   11
+  ],
+  "icon": "icons/dompet_kosong.png",
+  "icon_scale_k": 1.5
+ },
+ "gelas_plastik": {
+  "item": "gelas_plastik",
+  "varian": null,
+  "ground": "ground/gelas_plastik.png",
+  "ground_size": [
+   18,
+   24
+  ],
+  "ground_pivot": [
+   6,
+   19
+  ],
+  "icon": "icons/gelas_plastik.png",
+  "icon_scale_k": 1.91
+ },
+ "ember_bocor": {
+  "item": "ember_bocor",
+  "varian": null,
+  "ground": "ground/ember_bocor.png",
+  "ground_size": [
+   28,
+   32
+  ],
+  "ground_pivot": [
+   12,
+   25
+  ],
+  "icon": "icons/ember_bocor.png",
+  "icon_scale_k": 1.35
+ },
+ "hp_jadul_biru": {
+  "item": "hp_jadul",
+  "varian": "biru",
+  "ground": "ground/hp_jadul_biru.png",
+  "ground_size": [
+   24,
+   19
+  ],
+  "ground_pivot": [
+   12,
+   9
+  ],
+  "icon": "icons/hp_jadul_biru.png",
+  "icon_scale_k": 1.75
+ },
+ "hp_jadul_abu": {
+  "item": "hp_jadul",
+  "varian": "abu",
+  "ground": "ground/hp_jadul_abu.png",
+  "ground_size": [
+   24,
+   19
+  ],
+  "ground_pivot": [
+   12,
+   9
+  ],
+  "icon": "icons/hp_jadul_abu.png",
+  "icon_scale_k": 1.75
+ },
+ "jam_tangan_rusak": {
+  "item": "jam_tangan_rusak",
+  "varian": null,
+  "ground": "ground/jam_tangan_rusak.png",
+  "ground_size": [
+   24,
+   19
+  ],
+  "ground_pivot": [
+   12,
+   9
+  ],
+  "icon": "icons/jam_tangan_rusak.png",
+  "icon_scale_k": 1.75
+ },
+ "kacamata": {
+  "item": "kacamata",
+  "varian": null,
+  "ground": "ground/kacamata.png",
+  "ground_size": [
+   30,
+   16
+  ],
+  "ground_pivot": [
+   10,
+   11
+  ],
+  "icon": "icons/kacamata.png",
+  "icon_scale_k": 1.45
+ },
+ "kunci_lama": {
+  "item": "kunci_lama",
+  "varian": null,
+  "ground": "ground/kunci_lama.png",
+  "ground_size": [
+   24,
+   12
+  ],
+  "ground_pivot": [
+   10,
+   6
+  ],
+  "icon": "icons/kunci_lama.png",
+  "icon_scale_k": 2.1
+ },
+ "besi_tua": {
+  "item": "besi_tua",
+  "varian": null,
+  "ground": "ground/besi_tua.png",
+  "ground_size": [
+   40,
+   22
+  ],
+  "ground_pivot": [
+   19,
+   14
+  ],
+  "icon": "icons/besi_tua.png",
+  "icon_scale_k": 1.17
+ },
+ "helm_bekas_merah": {
+  "item": "helm_bekas",
+  "varian": "merah",
+  "ground": "ground/helm_bekas_merah.png",
+  "ground_size": [
+   34,
+   26
+  ],
+  "ground_pivot": [
+   16,
+   17
+  ],
+  "icon": "icons/helm_bekas_merah.png",
+  "icon_scale_k": 1.35
+ },
+ "helm_bekas_putih": {
+  "item": "helm_bekas",
+  "varian": "putih",
+  "ground": "ground/helm_bekas_putih.png",
+  "ground_size": [
+   34,
+   26
+  ],
+  "ground_pivot": [
+   16,
+   17
+  ],
+  "icon": "icons/helm_bekas_putih.png",
+  "icon_scale_k": 1.35
+ },
+ "helm_bekas_hitam": {
+  "item": "helm_bekas",
+  "varian": "hitam",
+  "ground": "ground/helm_bekas_hitam.png",
+  "ground_size": [
+   34,
+   26
+  ],
+  "ground_pivot": [
+   16,
+   17
+  ],
+  "icon": "icons/helm_bekas_hitam.png",
+  "icon_scale_k": 1.35
+ },
+ "tas_bekas_coklat": {
+  "item": "tas_bekas",
+  "varian": "coklat",
+  "ground": "ground/tas_bekas_coklat.png",
+  "ground_size": [
+   32,
+   35
+  ],
+  "ground_pivot": [
+   14,
+   26
+  ],
+  "icon": "icons/tas_bekas_coklat.png",
+  "icon_scale_k": 1.27
+ },
+ "tas_bekas_hitam": {
+  "item": "tas_bekas",
+  "varian": "hitam",
+  "ground": "ground/tas_bekas_hitam.png",
+  "ground_size": [
+   32,
+   35
+  ],
+  "ground_pivot": [
+   14,
+   26
+  ],
+  "icon": "icons/tas_bekas_hitam.png",
+  "icon_scale_k": 1.27
+ },
+ "boneka_kain": {
+  "item": "boneka_kain",
+  "varian": null,
+  "ground": "ground/boneka_kain.png",
+  "ground_size": [
+   28,
+   30
+  ],
+  "ground_pivot": [
+   13,
+   23
+  ],
+  "icon": "icons/boneka_kain.png",
+  "icon_scale_k": 1.4
+ },
+ "mainan_mobil_merah": {
+  "item": "mainan_mobil",
+  "varian": "merah",
+  "ground": "ground/mainan_mobil_merah.png",
+  "ground_size": [
+   34,
+   25
+  ],
+  "ground_pivot": [
+   16,
+   16
+  ],
+  "icon": "icons/mainan_mobil_merah.png",
+  "icon_scale_k": 1.4
+ },
+ "mainan_mobil_kuning": {
+  "item": "mainan_mobil",
+  "varian": "kuning",
+  "ground": "ground/mainan_mobil_kuning.png",
+  "ground_size": [
+   34,
+   25
+  ],
+  "ground_pivot": [
+   16,
+   16
+  ],
+  "icon": "icons/mainan_mobil_kuning.png",
+  "icon_scale_k": 1.4
+ },
+ "kipas_angin": {
+  "item": "kipas_angin",
+  "varian": null,
+  "ground": "ground/kipas_angin.png",
+  "ground_size": [
+   32,
+   44
+  ],
+  "ground_pivot": [
+   13,
+   35
+  ],
+  "icon": "icons/kipas_angin.png",
+  "icon_scale_k": 1.02
+ },
+ "setrika_lama": {
+  "item": "setrika_lama",
+  "varian": null,
+  "ground": "ground/setrika_lama.png",
+  "ground_size": [
+   36,
+   27
+  ],
+  "ground_pivot": [
+   17,
+   18
+  ],
+  "icon": "icons/setrika_lama.png",
+  "icon_scale_k": 1.35
+ },
+ "radio_tua": {
+  "item": "radio_tua",
+  "varian": null,
+  "ground": "ground/radio_tua.png",
+  "ground_size": [
+   34,
+   38
+  ],
+  "ground_pivot": [
+   14,
+   29
+  ],
+  "icon": "icons/radio_tua.png",
+  "icon_scale_k": 1.17
+ },
+ "jam_dinding": {
+  "item": "jam_dinding",
+  "varian": null,
+  "ground": "ground/jam_dinding.png",
+  "ground_size": [
+   30,
+   19
+  ],
+  "ground_pivot": [
+   14,
+   10
+  ],
+  "icon": "icons/jam_dinding.png",
+  "icon_scale_k": 1.5
+ },
+ "gembok_tua": {
+  "item": "gembok_tua",
+  "varian": null,
+  "ground": "ground/gembok_tua.png",
+  "ground_size": [
+   18,
+   20
+  ],
+  "ground_pivot": [
+   6,
+   15
+  ],
+  "icon": "icons/gembok_tua.png",
+  "icon_scale_k": 2.33
+ },
+ "senter_rusak": {
+  "item": "senter_rusak",
+  "varian": null,
+  "ground": "ground/senter_rusak.png",
+  "ground_size": [
+   32,
+   18
+  ],
+  "ground_pivot": [
+   14,
+   12
+  ],
+  "icon": "icons/senter_rusak.png",
+  "icon_scale_k": 1.5
+ },
+ "koin_kuno": {
+  "item": "koin_kuno",
+  "varian": null,
+  "ground": "ground/koin_kuno.png",
+  "ground_size": [
+   22,
+   11
+  ],
+  "ground_pivot": [
+   8,
+   5
+  ],
+  "icon": "icons/koin_kuno.png",
+  "icon_scale_k": 2.62
+ },
+ "tembaga_gulungan": {
+  "item": "tembaga_gulungan",
+  "varian": null,
+  "ground": "ground/tembaga_gulungan.png",
+  "ground_size": [
+   30,
+   21
+  ],
+  "ground_pivot": [
+   13,
+   12
+  ],
+  "icon": "icons/tembaga_gulungan.png",
+  "icon_scale_k": 1.62
+ },
+ "aki_bekas": {
+  "item": "aki_bekas",
+  "varian": null,
+  "ground": "ground/aki_bekas.png",
+  "ground_size": [
+   36,
+   32
+  ],
+  "ground_pivot": [
+   16,
+   22
+  ],
+  "icon": "icons/aki_bekas.png",
+  "icon_scale_k": 1.22
+ },
+ "kamera_analog": {
+  "item": "kamera_analog",
+  "varian": null,
+  "ground": "ground/kamera_analog.png",
+  "ground_size": [
+   30,
+   27
+  ],
+  "ground_pivot": [
+   13,
+   18
+  ],
+  "icon": "icons/kamera_analog.png",
+  "icon_scale_k": 1.68
+ },
+ "walkman": {
+  "item": "walkman",
+  "varian": null,
+  "ground": "ground/walkman.png",
+  "ground_size": [
+   28,
+   23
+  ],
+  "ground_pivot": [
+   14,
+   12
+  ],
+  "icon": "icons/walkman.png",
+  "icon_scale_k": 1.5
+ },
+ "piringan_hitam": {
+  "item": "piringan_hitam",
+  "varian": null,
+  "ground": "ground/piringan_hitam.png",
+  "ground_size": [
+   48,
+   26
+  ],
+  "ground_pivot": [
+   24,
+   14
+  ],
+  "icon": "icons/piringan_hitam.png",
+  "icon_scale_k": 0.81
+ },
+ "arloji_saku": {
+  "item": "arloji_saku",
+  "varian": null,
+  "ground": "ground/arloji_saku.png",
+  "ground_size": [
+   26,
+   15
+  ],
+  "ground_pivot": [
+   12,
+   8
+  ],
+  "icon": "icons/arloji_saku.png",
+  "icon_scale_k": 2.1
+ },
+ "lampu_petromaks": {
+  "item": "lampu_petromaks",
+  "varian": null,
+  "ground": "ground/lampu_petromaks.png",
+  "ground_size": [
+   22,
+   37
+  ],
+  "ground_pivot": [
+   8,
+   30
+  ],
+  "icon": "icons/lampu_petromaks.png",
+  "icon_scale_k": 1.24
+ }
+}

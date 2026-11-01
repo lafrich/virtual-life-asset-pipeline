@@ -1,0 +1,44 @@
+{
+ "pet_bed_grid": {
+  "size": [
+   50,
+   31
+  ],
+  "anchor": [
+   25,
+   2
+  ],
+  "floor_center_px": [
+   25.0,
+   18.0
+  ]
+ },
+ "pet_bowl_empty": {
+  "size": [
+   20,
+   13
+  ],
+  "anchor": [
+   10,
+   -8
+  ],
+  "floor_center_px": [
+   10.0,
+   8.0
+  ]
+ },
+ "pet_bowl_full": {
+  "size": [
+   20,
+   13
+  ],
+  "anchor": [
+   10,
+   -8
+  ],
+  "floor_center_px": [
+   10.0,
+   8.0
+  ]
+ }
+}

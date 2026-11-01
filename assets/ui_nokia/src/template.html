@@ -1,0 +1,39 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Virtual Life · HP Nokia (prototype)</title>
+<style>
+html,body{margin:0;background:#0B0E13;color:#E7EBF2;font:13px/1.4 Tahoma,Verdana,"DejaVu Sans",sans-serif}
+#wrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer;box-shadow:0 0 0 1px #2A3242}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
+button{background:#1C2330;color:#E7EBF2;border:1px solid #3A4458;padding:3px 9px;cursor:pointer;font:inherit}
+button.on{border-color:#C99A2E;color:#FFD166}
+.help{max-width:900px;color:#8D97A8;font-size:12px}
+kbd{background:#1C2330;border:1px solid #3A4458;padding:0 4px;border-radius:2px;color:#E7EBF2}
+</style></head><body><div id="wrap">
+<div class="bar"><span>Layar:</span><button id="d844" class="on">844x390</button><button id="d667">667x375</button>
+<span>Skala:</span><button data-s="1">1x</button><button data-s="2" class="on">2x</button><button data-s="3">3x</button><button data-s="0">pas layar</button>
+<button id="reset">Reset</button></div>
+<canvas id="c" width="844" height="390"></canvas>
+<div class="help">Klik tombol HP di gambar, atau keyboard: <kbd>↑</kbd><kbd>↓</kbd> gulir · <kbd>Enter</kbd>/<kbd>Space</kbd> = tombol tengah (OK) · <kbd>←</kbd>/<kbd>F1</kbd> = softkey kiri (Pilih) · <kbd>→</kbd>/<kbd>Backspace</kbd>/<kbd>F2</kbd> = softkey kanan (Kembali/Hapus) · <kbd>1</kbd>–<kbd>9</kbd> <kbd>0</kbd> <kbd>*</kbd> <kbd>#</kbd> keypad · <kbd>C</kbd> = Call (hijau) · <kbd>Esc</kbd>/<kbd>E</kbd> = End (merah: ke Standby, di Standby = tutup HP). Saat HP tertutup: klik tombol HP kanan atas atau tekan <kbd>Enter</kbd>/<kbd>H</kbd>. Semua nama, angka, teman, item = data contoh kecuali Rp 1.250.000 dan Basic Trading Course (Rp 300 / 90 detik / +40 Trading XP) dari brief.</div>
+</div>
+<script>window.BG={'844':'data:image/png;base64,__BG844__','667':'data:image/png;base64,__BG667__'};</script>
+<script>__PHONEJS__</script>
+<script>
+(function(){
+const c=document.getElementById('c'),ctx=c.getContext('2d');let dev='844',scale=2;const imgs={};let loaded=0;
+for(const k in BG){const i=new Image();i.onload=()=>{if(++loaded===2)draw()};i.src=BG[k];imgs[k]=i}
+function fitScale(){const D=VL.DEV[dev];return Math.max(1,Math.min(innerWidth/D.W,(innerHeight-90)/D.H))}
+function size(){const D=VL.DEV[dev];c.width=D.W;c.height=D.H;const s=scale||fitScale();c.style.width=D.W*s+'px';c.style.height=D.H*s+'px'}
+function draw(){if(loaded<2)return;VL.compose(ctx,dev,imgs[dev])}
+window.VLdraw=draw;window.VLsetDev=d=>{dev=d;size();draw()};
+let t=null;function hit(k){if(!k)return;VL.setPressed(k==='OPEN'?null:k);VL.press(k);draw();clearTimeout(t);t=setTimeout(()=>{VL.setPressed(null);draw()},130)}
+c.addEventListener('pointerdown',e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)*c.width/r.width,y=(e.clientY-r.top)*c.height/r.height;hit(VL.hitTest(dev,x,y))});
+const KM={ArrowUp:'U',ArrowDown:'D',Enter:'OK',' ':'OK',ArrowLeft:'L',F1:'L',ArrowRight:'R',Backspace:'R',F2:'R',Escape:'END',e:'END',E:'END',c:'CALL',C:'CALL','*':'*','#':'#'};
+addEventListener('keydown',e=>{let k=KM[e.key];if(/^[0-9]$/.test(e.key))k=e.key;if(!VL.isOpen()&&(e.key==='h'||e.key==='H'||e.key==='Enter'))k='OPEN';if(k){e.preventDefault();hit(k)}});
+document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{scale=+b.dataset.s;document.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('on',x===b));size()});
+['844','667'].forEach(d=>document.getElementById('d'+d).onclick=()=>{dev=d;document.getElementById('d844').classList.toggle('on',d==='844');document.getElementById('d667').classList.toggle('on',d==='667');size();draw()});
+document.getElementById('reset').onclick=()=>{VL.reset();draw()};
+addEventListener('resize',()=>{if(!scale)size()});
+setInterval(draw,250); size();
+})();
+</script></body></html>

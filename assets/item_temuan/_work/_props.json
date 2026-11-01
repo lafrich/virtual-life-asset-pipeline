@@ -1,0 +1,338 @@
+{
+ "tong_sampah_besi_sw": {
+  "file": "props_temuan/tong_sampah_besi_sw.png",
+  "kilau": [
+   "props_temuan/tong_sampah_besi_sw__kilau_f0.png",
+   "props_temuan/tong_sampah_besi_sw__kilau_f1.png",
+   "props_temuan/tong_sampah_besi_sw__kilau_f2.png"
+  ],
+  "size": [
+   40,
+   68
+  ],
+  "pivot": [
+   14,
+   54
+  ],
+  "footprint": [
+   1,
+   1
+  ],
+  "facing": "sw",
+  "nama": "Tong sampah",
+  "lokasi": [
+   "trotoar",
+   "taman",
+   "belakang_indomaret",
+   "sekitar_warung"
+  ],
+  "note": "tong sampah fiber hijau, tutup miring, kantong kresek menyembul, kaleng di tanah"
+ },
+ "tong_sampah_besi_se": {
+  "file": "props_temuan/tong_sampah_besi_se.png",
+  "kilau": [
+   "props_temuan/tong_sampah_besi_se__kilau_f0.png",
+   "props_temuan/tong_sampah_besi_se__kilau_f1.png",
+   "props_temuan/tong_sampah_besi_se__kilau_f2.png"
+  ],
+  "size": [
+   48,
+   62
+  ],
+  "pivot": [
+   20,
+   55
+  ],
+  "footprint": [
+   1,
+   1
+  ],
+  "facing": "se",
+  "nama": "Tong sampah",
+  "lokasi": [
+   "trotoar",
+   "taman",
+   "belakang_indomaret",
+   "sekitar_warung"
+  ],
+  "note": "tong sampah fiber hijau, tutup miring, kantong kresek menyembul, kaleng di tanah"
+ },
+ "tumpukan_kardus_sw": {
+  "file": "props_temuan/tumpukan_kardus_sw.png",
+  "kilau": [
+   "props_temuan/tumpukan_kardus_sw__kilau_f0.png",
+   "props_temuan/tumpukan_kardus_sw__kilau_f1.png",
+   "props_temuan/tumpukan_kardus_sw__kilau_f2.png"
+  ],
+  "size": [
+   52,
+   63
+  ],
+  "pivot": [
+   20,
+   54
+  ],
+  "footprint": [
+   1,
+   1
+  ],
+  "facing": "sw",
+  "nama": "Tumpukan kardus",
+  "lokasi": [
+   "belakang_indomaret",
+   "sekitar_warung",
+   "gang"
+  ],
+  "note": "tumpukan kardus bekas diikat tali rafia, satu kardus terbuka"
+ },
+ "tumpukan_kardus_se": {
+  "file": "props_temuan/tumpukan_kardus_se.png",
+  "kilau": [
+   "props_temuan/tumpukan_kardus_se__kilau_f0.png",
+   "props_temuan/tumpukan_kardus_se__kilau_f1.png",
+   "props_temuan/tumpukan_kardus_se__kilau_f2.png"
+  ],
+  "size": [
+   54,
+   61
+  ],
+  "pivot": [
+   22,
+   51
+  ],
+  "footprint": [
+   1,
+   1
+  ],
+  "facing": "se",
+  "nama": "Tumpukan kardus",
+  "lokasi": [
+   "belakang_indomaret",
+   "sekitar_warung",
+   "gang"
+  ],
+  "note": "tumpukan kardus bekas diikat tali rafia, satu kardus terbuka"
+ },
+ "kantong_kresek_sw": {
+  "file": "props_temuan/kantong_kresek_sw.png",
+  "kilau": [
+   "props_temuan/kantong_kresek_sw__kilau_f0.png",
+   "props_temuan/kantong_kresek_sw__kilau_f1.png",
+   "props_temuan/kantong_kresek_sw__kilau_f2.png"
+  ],
+  "size": [
+   44,
+   40
+  ],
+  "pivot": [
+   18,
+   32
+  ],
+  "footprint": [
+   1,
+   1
+  ],
+  "facing": "sw",
+  "nama": "Kantong kresek di sudut",
+  "lokasi": [
+   "gang",
+   "sekitar_warung",
+   "trotoar",
+   "belakang_indomaret"
+  ],
+  "note": "tiga kantong kresek (hitam, putih, merah) diikat, ditaruh di sudut"
+ },
+ "kantong_kresek_se": {
+  "file": "props_temuan/kantong_kresek_se.png",
+  "kilau": [
+   "props_temuan/kantong_kresek_se__kilau_f0.png",
+   "props_temuan/kantong_kresek_se__kilau_f1.png",
+   "props_temuan/kantong_kresek_se__kilau_f2.png"
+  ],
+  "size": [
+   42,
+   36
+  ],
+  "pivot": [
+   17,
+   27
+  ],
+  "footprint": [
+   1,
+   1
+  ],
+  "facing": "se",
+  "nama": "Kantong kresek di sudut",
+  "lokasi": [
+   "gang",
+   "sekitar_warung",
+   "trotoar",
+   "belakang_indomaret"
+  ],
+  "note": "tiga kantong kresek (hitam, putih, merah) diikat, ditaruh di sudut"
+ },
+ "got_kecil_sw": {
+  "file": "props_temuan/got_kecil_sw.png",
+  "kilau": [
+   "props_temuan/got_kecil_sw__kilau_f0.png",
+   "props_temuan/got_kecil_sw__kilau_f1.png",
+   "props_temuan/got_kecil_sw__kilau_f2.png"
+  ],
+  "size": [
+   96,
+   48
+  ],
+  "pivot": [
+   48,
+   24
+  ],
+  "footprint": [
+   2,
+   1
+  ],
+  "facing": "sw",
+  "nama": "Got kecil (selokan)",
+  "lokasi": [
+   "gang",
+   "trotoar",
+   "jalan"
+  ],
+  "note": "segmen got beton 2 sel dengan tutup besi berlubang, air keruh, sampah tersangkut"
+ },
+ "got_kecil_se": {
+  "file": "props_temuan/got_kecil_se.png",
+  "kilau": [
+   "props_temuan/got_kecil_se__kilau_f0.png",
+   "props_temuan/got_kecil_se__kilau_f1.png",
+   "props_temuan/got_kecil_se__kilau_f2.png"
+  ],
+  "size": [
+   96,
+   48
+  ],
+  "pivot": [
+   48,
+   24
+  ],
+  "footprint": [
+   2,
+   1
+  ],
+  "facing": "se",
+  "nama": "Got kecil (selokan)",
+  "lokasi": [
+   "gang",
+   "trotoar",
+   "jalan"
+  ],
+  "note": "segmen got beton 2 sel dengan tutup besi berlubang, air keruh, sampah tersangkut"
+ },
+ "kolong_bangku_sw": {
+  "file": "props_temuan/kolong_bangku_sw.png",
+  "kilau": [
+   "props_temuan/kolong_bangku_sw__kilau_f0.png",
+   "props_temuan/kolong_bangku_sw__kilau_f1.png",
+   "props_temuan/kolong_bangku_sw__kilau_f2.png"
+  ],
+  "size": [
+   72,
+   74
+  ],
+  "pivot": [
+   34,
+   57
+  ],
+  "footprint": [
+   2,
+   1
+  ],
+  "facing": "sw",
+  "nama": "Kolong bangku taman",
+  "lokasi": [
+   "taman"
+  ],
+  "note": "bangku taman (sama dengan street_buildings/taman/bangku_taman) dengan koran dan botol terselip di kolongnya"
+ },
+ "kolong_bangku_se": {
+  "file": "props_temuan/kolong_bangku_se.png",
+  "kilau": [
+   "props_temuan/kolong_bangku_se__kilau_f0.png",
+   "props_temuan/kolong_bangku_se__kilau_f1.png",
+   "props_temuan/kolong_bangku_se__kilau_f2.png"
+  ],
+  "size": [
+   74,
+   74
+  ],
+  "pivot": [
+   36,
+   57
+  ],
+  "footprint": [
+   2,
+   1
+  ],
+  "facing": "se",
+  "nama": "Kolong bangku taman",
+  "lokasi": [
+   "taman"
+  ],
+  "note": "bangku taman (sama dengan street_buildings/taman/bangku_taman) dengan koran dan botol terselip di kolongnya"
+ },
+ "karung_rongsok_sw": {
+  "file": "props_temuan/karung_rongsok_sw.png",
+  "kilau": [
+   "props_temuan/karung_rongsok_sw__kilau_f0.png",
+   "props_temuan/karung_rongsok_sw__kilau_f1.png",
+   "props_temuan/karung_rongsok_sw__kilau_f2.png"
+  ],
+  "size": [
+   38,
+   55
+  ],
+  "pivot": [
+   12,
+   47
+  ],
+  "footprint": [
+   1,
+   1
+  ],
+  "facing": "sw",
+  "nama": "Karung rongsokan",
+  "lokasi": [
+   "gang",
+   "sekitar_warung",
+   "belakang_indomaret"
+  ],
+  "note": "karung plastik putih bergaris berisi rongsokan, mulut karung terbuka"
+ },
+ "karung_rongsok_se": {
+  "file": "props_temuan/karung_rongsok_se.png",
+  "kilau": [
+   "props_temuan/karung_rongsok_se__kilau_f0.png",
+   "props_temuan/karung_rongsok_se__kilau_f1.png",
+   "props_temuan/karung_rongsok_se__kilau_f2.png"
+  ],
+  "size": [
+   44,
+   53
+  ],
+  "pivot": [
+   18,
+   45
+  ],
+  "footprint": [
+   1,
+   1
+  ],
+  "facing": "se",
+  "nama": "Karung rongsokan",
+  "lokasi": [
+   "gang",
+   "sekitar_warung",
+   "belakang_indomaret"
+  ],
+  "note": "karung plastik putih bergaris berisi rongsokan, mulut karung terbuka"
+ }
+}

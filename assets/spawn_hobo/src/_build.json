@@ -1,0 +1,578 @@
+{
+ "tent": {
+  "tenda_tutup_sw": {
+   "files": {
+    "utuh": "sprites/tenda_tutup_sw.png"
+   },
+   "size": [
+    148,
+    90
+   ],
+   "pivot": [
+    71,
+    64
+   ],
+   "anchors": {
+    "anchor_kiri_depan": [
+     -7,
+     64
+    ],
+    "pintu": [
+     39,
+     70
+    ],
+    "tidur": [
+     69,
+     55
+    ],
+    "keluar": [
+     15,
+     82
+    ],
+    "kantong": [
+     85,
+     83
+    ],
+    "cangkir": [
+     73,
+     87
+    ]
+   }
+  },
+  "tenda_tutup_se": {
+   "files": {
+    "utuh": "sprites/tenda_tutup_se.png"
+   },
+   "size": [
+    140,
+    90
+   ],
+   "pivot": [
+    80,
+    54
+   ],
+   "anchors": {
+    "anchor_kiri_depan": [
+     80,
+     93
+    ],
+    "pintu": [
+     91,
+     70
+    ],
+    "tidur": [
+     61,
+     55
+    ],
+    "keluar": [
+     115,
+     82
+    ],
+    "kantong": [
+     118,
+     47
+    ],
+    "cangkir": [
+     125,
+     53
+    ]
+   }
+  },
+  "tenda_buka_sw": {
+   "files": {
+    "belakang": "sprites/tenda_buka_sw__belakang.png",
+    "depan": "sprites/tenda_buka_sw__depan.png",
+    "utuh_preview": "sprites/tenda_buka_sw.png"
+   },
+   "size": [
+    148,
+    90
+   ],
+   "pivot": [
+    71,
+    64
+   ],
+   "anchors": {
+    "anchor_kiri_depan": [
+     -7,
+     64
+    ],
+    "pintu": [
+     39,
+     70
+    ],
+    "tidur": [
+     69,
+     55
+    ],
+    "keluar": [
+     15,
+     82
+    ],
+    "kantong": [
+     85,
+     83
+    ],
+    "cangkir": [
+     73,
+     87
+    ]
+   }
+  },
+  "tenda_buka_se": {
+   "files": {
+    "belakang": "sprites/tenda_buka_se__belakang.png",
+    "depan": "sprites/tenda_buka_se__depan.png",
+    "utuh_preview": "sprites/tenda_buka_se.png"
+   },
+   "size": [
+    140,
+    90
+   ],
+   "pivot": [
+    80,
+    54
+   ],
+   "anchors": {
+    "anchor_kiri_depan": [
+     80,
+     93
+    ],
+    "pintu": [
+     91,
+     70
+    ],
+    "tidur": [
+     61,
+     55
+    ],
+    "keluar": [
+     115,
+     82
+    ],
+    "kantong": [
+     118,
+     47
+    ],
+    "cangkir": [
+     125,
+     53
+    ]
+   }
+  }
+ },
+ "props": {
+  "alas_kardus_sw": {
+   "file": "props/alas_kardus_sw.png",
+   "size": [
+    76,
+    40
+   ],
+   "pivot": [
+    37,
+    20
+   ],
+   "anchor_sudut": [
+    48,
+    2
+   ]
+  },
+  "alas_kardus_se": {
+   "file": "props/alas_kardus_se.png",
+   "size": [
+    74,
+    40
+   ],
+   "pivot": [
+    35,
+    20
+   ],
+   "anchor_sudut": [
+    24,
+    2
+   ]
+  },
+  "kantong_plastik_sw": {
+   "file": "props/kantong_plastik_sw.png",
+   "size": [
+    16,
+    18
+   ],
+   "pivot": [
+    6,
+    14
+   ],
+   "anchor_sudut": [
+    6,
+    7
+   ]
+  },
+  "kantong_plastik_se": {
+   "file": "props/kantong_plastik_se.png",
+   "size": [
+    16,
+    18
+   ],
+   "pivot": [
+    6,
+    14
+   ],
+   "anchor_sudut": [
+    6,
+    7
+   ]
+  },
+  "cangkir_kaleng_sw": {
+   "file": "props/cangkir_kaleng_sw.png",
+   "size": [
+    12,
+    14
+   ],
+   "pivot": [
+    4,
+    11
+   ],
+   "anchor_sudut": [
+    4,
+    6
+   ]
+  },
+  "cangkir_kaleng_se": {
+   "file": "props/cangkir_kaleng_se.png",
+   "size": [
+    12,
+    14
+   ],
+   "pivot": [
+    4,
+    11
+   ],
+   "anchor_sudut": [
+    4,
+    6
+   ]
+  }
+ },
+ "sheets": {
+  "spawn_ichsan_se": {
+   "file": "sheets/spawn_ichsan_se.png",
+   "size": [
+    512,
+    560
+   ],
+   "cols": 8,
+   "rows": {
+    "bangun": 0,
+    "merangkak": 1,
+    "berdiri": 2,
+    "peregangan": 3,
+    "menoleh": 4
+   },
+   "frames": {
+    "bangun": 6,
+    "merangkak": 6,
+    "berdiri": 6,
+    "peregangan": 8,
+    "menoleh": 8
+   }
+  },
+  "spawn_ichsan_sw": {
+   "file": "sheets/spawn_ichsan_sw.png",
+   "size": [
+    512,
+    560
+   ],
+   "cols": 8,
+   "rows": {
+    "bangun": 0,
+    "merangkak": 1,
+    "berdiri": 2,
+    "peregangan": 3,
+    "menoleh": 4
+   },
+   "frames": {
+    "bangun": 6,
+    "merangkak": 6,
+    "berdiri": 6,
+    "peregangan": 8,
+    "menoleh": 8
+   }
+  },
+  "lusuh_ichsan": {
+   "file": "sheets/lusuh_ichsan_walk_idle.png",
+   "size": [
+    384,
+    896
+   ],
+   "cols": 6,
+   "rows": {
+    "walk_se": 0,
+    "walk_sw": 1,
+    "walk_ne": 2,
+    "walk_nw": 3,
+    "idle_se": 4,
+    "idle_sw": 5,
+    "idle_ne": 6,
+    "idle_nw": 7
+   },
+   "frames": {
+    "walk": 6,
+    "idle": 4
+   }
+  },
+  "spawn_npc_se": {
+   "file": "sheets/spawn_npc_se.png",
+   "size": [
+    512,
+    560
+   ],
+   "cols": 8,
+   "rows": {
+    "bangun": 0,
+    "merangkak": 1,
+    "berdiri": 2,
+    "peregangan": 3,
+    "menoleh": 4
+   },
+   "frames": {
+    "bangun": 6,
+    "merangkak": 6,
+    "berdiri": 6,
+    "peregangan": 8,
+    "menoleh": 8
+   }
+  },
+  "spawn_npc_sw": {
+   "file": "sheets/spawn_npc_sw.png",
+   "size": [
+    512,
+    560
+   ],
+   "cols": 8,
+   "rows": {
+    "bangun": 0,
+    "merangkak": 1,
+    "berdiri": 2,
+    "peregangan": 3,
+    "menoleh": 4
+   },
+   "frames": {
+    "bangun": 6,
+    "merangkak": 6,
+    "berdiri": 6,
+    "peregangan": 8,
+    "menoleh": 8
+   }
+  },
+  "lusuh_npc": {
+   "file": "sheets/lusuh_npc_walk_idle.png",
+   "size": [
+    384,
+    896
+   ],
+   "cols": 6,
+   "rows": {
+    "walk_se": 0,
+    "walk_sw": 1,
+    "walk_ne": 2,
+    "walk_nw": 3,
+    "idle_se": 4,
+    "idle_sw": 5,
+    "idle_ne": 6,
+    "idle_nw": 7
+   },
+   "frames": {
+    "walk": 6,
+    "idle": 4
+   }
+  }
+ },
+ "mock": {
+  "gif_ichsan_sw": {
+   "file": "mock/spawn_ichsan_tenda_sw_3x.gif",
+   "scale": 3,
+   "frames": 47,
+   "ms_total": 9650,
+   "bytes": 175557,
+   "size": [
+    1020,
+    780
+   ]
+  },
+  "still_sw_tutup": {
+   "file": "mock/mock_sw_tutup_4x.png",
+   "seq_index": 0,
+   "phase": "tenda_tutup"
+  },
+  "still_sw_bangun": {
+   "file": "mock/mock_sw_bangun_4x.png",
+   "seq_index": 3,
+   "phase": "bangun"
+  },
+  "still_sw_merangkak": {
+   "file": "mock/mock_sw_merangkak_4x.png",
+   "seq_index": 9,
+   "phase": "merangkak"
+  },
+  "still_sw_peregangan": {
+   "file": "mock/mock_sw_peregangan_4x.png",
+   "seq_index": 23,
+   "phase": "peregangan"
+  },
+  "still_sw_menoleh": {
+   "file": "mock/mock_sw_menoleh_4x.png",
+   "seq_index": 29,
+   "phase": "menoleh"
+  },
+  "gif_ichsan_se": {
+   "file": "mock/spawn_ichsan_tenda_se_3x.gif",
+   "scale": 3,
+   "frames": 47,
+   "ms_total": 9650,
+   "bytes": 175848,
+   "size": [
+    1020,
+    780
+   ]
+  },
+  "still_se_tutup": {
+   "file": "mock/mock_se_tutup_4x.png",
+   "seq_index": 0,
+   "phase": "tenda_tutup"
+  },
+  "still_se_bangun": {
+   "file": "mock/mock_se_bangun_4x.png",
+   "seq_index": 3,
+   "phase": "bangun"
+  },
+  "still_se_merangkak": {
+   "file": "mock/mock_se_merangkak_4x.png",
+   "seq_index": 9,
+   "phase": "merangkak"
+  },
+  "still_se_peregangan": {
+   "file": "mock/mock_se_peregangan_4x.png",
+   "seq_index": 23,
+   "phase": "peregangan"
+  },
+  "still_se_menoleh": {
+   "file": "mock/mock_se_menoleh_4x.png",
+   "seq_index": 29,
+   "phase": "menoleh"
+  },
+  "gif_npc_sw": {
+   "file": "mock/spawn_npc_tenda_sw_3x.gif",
+   "scale": 3,
+   "frames": 47,
+   "ms_total": 9650,
+   "bytes": 169128,
+   "size": [
+    1020,
+    780
+   ]
+  },
+  "gif_npc_se": {
+   "file": "mock/spawn_npc_tenda_se_3x.gif",
+   "scale": 3,
+   "frames": 47,
+   "ms_total": 9650,
+   "bytes": 170817,
+   "size": [
+    1020,
+    780
+   ]
+  },
+  "kontak_ichsan": {
+   "file": "mock/kontak_ichsan_4x.png",
+   "size": [
+    2736,
+    6512
+   ]
+  },
+  "kontak_npc": {
+   "file": "mock/kontak_npc_4x.png",
+   "size": [
+    2736,
+    6512
+   ]
+  },
+  "kontak_tenda_props": {
+   "file": "mock/kontak_tenda_props_4x.png",
+   "size": [
+    2464,
+    1008
+   ]
+  }
+ },
+ "spawn": {
+  "order": [
+   "bangun",
+   "merangkak",
+   "berdiri",
+   "peregangan",
+   "menoleh"
+  ],
+  "frames": {
+   "bangun": 6,
+   "merangkak": 6,
+   "berdiri": 6,
+   "peregangan": 8,
+   "menoleh": 8
+  },
+  "ms": {
+   "bangun": [
+    420,
+    320,
+    320,
+    260,
+    320,
+    380
+   ],
+   "merangkak": [
+    140,
+    140,
+    140,
+    140,
+    140,
+    140
+   ],
+   "berdiri": [
+    150,
+    150,
+    140,
+    140,
+    140,
+    220
+   ],
+   "peregangan": [
+    150,
+    140,
+    140,
+    260,
+    260,
+    160,
+    140,
+    220
+   ],
+   "menoleh": [
+    300,
+    240,
+    260,
+    260,
+    280,
+    220,
+    260,
+    340
+   ]
+  },
+  "mock_root_b": {
+   "tidur": 1.0,
+   "start": 1.0,
+   "end": -0.45
+  },
+  "bangun_pivot_offset": [
+   0,
+   14
+  ]
+ }
+}

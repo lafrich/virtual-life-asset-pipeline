@@ -1,0 +1,716 @@
+{
+ "sprites": {
+  "kamar_shell_ruang": {
+   "file": "sprites/kamar_shell_ruang.png",
+   "size": [
+    585,
+    460
+   ],
+   "origin_px": [
+    264,
+    168
+   ],
+   "origin_world": [
+    -21.6,
+    21.0
+   ],
+   "note": "kanvas sama untuk 3 layer; origin_px = titik lantai sudut belakang (c0,r0). px = origin + ((c-c0)-(r-r0))*32 , ((c-c0)+(r-r0))*16"
+  },
+  "kamar_shell_sekat_penuh": {
+   "file": "sprites/kamar_shell_sekat_penuh.png",
+   "size": [
+    585,
+    460
+   ],
+   "origin_px": [
+    264,
+    168
+   ],
+   "origin_world": [
+    -21.6,
+    21.0
+   ],
+   "note": "kanvas sama untuk 3 layer; origin_px = titik lantai sudut belakang (c0,r0). px = origin + ((c-c0)-(r-r0))*32 , ((c-c0)+(r-r0))*16"
+  },
+  "kamar_shell_sekat_rendah_cutaway": {
+   "file": "sprites/kamar_shell_sekat_rendah_cutaway.png",
+   "size": [
+    585,
+    460
+   ],
+   "origin_px": [
+    264,
+    168
+   ],
+   "origin_world": [
+    -21.6,
+    21.0
+   ],
+   "note": "kanvas sama untuk 3 layer; origin_px = titik lantai sudut belakang (c0,r0). px = origin + ((c-c0)-(r-r0))*32 , ((c-c0)+(r-r0))*16"
+  },
+  "kasur_kost_sw": {
+   "file": "sprites/kasur_kost_sw.png",
+   "size": [
+    136,
+    106
+   ],
+   "pivot": [
+    62,
+    73
+   ],
+   "anchor_n": [
+    83,
+    42
+   ],
+   "footprint": [
+    1.3,
+    2.6
+   ],
+   "facing": "sw",
+   "note": "kasur single kost: rangka kayu, kasur putih, bantal, selimut abu-biru terlipat di kaki. sandaran kepala di b=D (rapat dinding)"
+  },
+  "kasur_kost_se": {
+   "file": "sprites/kasur_kost_se.png",
+   "size": [
+    136,
+    106
+   ],
+   "pivot": [
+    63,
+    73
+   ],
+   "anchor_n": [
+    42,
+    42
+   ],
+   "footprint": [
+    1.3,
+    2.6
+   ],
+   "facing": "se",
+   "note": "kasur single kost: rangka kayu, kasur putih, bantal, selimut abu-biru terlipat di kaki. sandaran kepala di b=D (rapat dinding)"
+  },
+  "kasur_kost_ne": {
+   "file": "sprites/kasur_kost_ne.png",
+   "size": [
+    138,
+    84
+   ],
+   "pivot": [
+    63,
+    52
+   ],
+   "anchor_n": [
+    84,
+    21
+   ],
+   "footprint": [
+    1.3,
+    2.6
+   ],
+   "facing": "ne",
+   "note": "kasur single kost: rangka kayu, kasur putih, bantal, selimut abu-biru terlipat di kaki. sandaran kepala di b=D (rapat dinding)"
+  },
+  "kasur_kost_nw": {
+   "file": "sprites/kasur_kost_nw.png",
+   "size": [
+    136,
+    84
+   ],
+   "pivot": [
+    63,
+    52
+   ],
+   "anchor_n": [
+    42,
+    21
+   ],
+   "footprint": [
+    1.3,
+    2.6
+   ],
+   "facing": "nw",
+   "note": "kasur single kost: rangka kayu, kasur putih, bantal, selimut abu-biru terlipat di kaki. sandaran kepala di b=D (rapat dinding)"
+  },
+  "wc_gantung_sw": {
+   "file": "sprites/wc_gantung_sw.png",
+   "size": [
+    52,
+    60
+   ],
+   "pivot": [
+    20,
+    48
+   ],
+   "anchor_n": [
+    24,
+    38
+   ],
+   "footprint": [
+    0.53,
+    0.75
+   ],
+   "facing": "sw",
+   "note": "WC gantung (closet duduk) + panel tangki di dinding (b=D) + tombol flush; dudukan gelap, seperti WC kamar Cove v6e"
+  },
+  "wc_gantung_se": {
+   "file": "sprites/wc_gantung_se.png",
+   "size": [
+    52,
+    60
+   ],
+   "pivot": [
+    21,
+    48
+   ],
+   "anchor_n": [
+    17,
+    38
+   ],
+   "footprint": [
+    0.53,
+    0.75
+   ],
+   "facing": "se",
+   "note": "WC gantung (closet duduk) + panel tangki di dinding (b=D) + tombol flush; dudukan gelap, seperti WC kamar Cove v6e"
+  },
+  "wc_gantung_ne": {
+   "file": "sprites/wc_gantung_ne.png",
+   "size": [
+    52,
+    52
+   ],
+   "pivot": [
+    20,
+    40
+   ],
+   "anchor_n": [
+    24,
+    30
+   ],
+   "footprint": [
+    0.53,
+    0.75
+   ],
+   "facing": "ne",
+   "note": "WC gantung (closet duduk) + panel tangki di dinding (b=D) + tombol flush; dudukan gelap, seperti WC kamar Cove v6e"
+  },
+  "wc_gantung_nw": {
+   "file": "sprites/wc_gantung_nw.png",
+   "size": [
+    52,
+    52
+   ],
+   "pivot": [
+    21,
+    40
+   ],
+   "anchor_n": [
+    17,
+    30
+   ],
+   "footprint": [
+    0.53,
+    0.75
+   ],
+   "facing": "nw",
+   "note": "WC gantung (closet duduk) + panel tangki di dinding (b=D) + tombol flush; dudukan gelap, seperti WC kamar Cove v6e"
+  },
+  "papan_berdiri_belum_bisa_disewa_sw": {
+   "file": "sprites/papan_berdiri_belum_bisa_disewa_sw.png",
+   "size": [
+    50,
+    62
+   ],
+   "pivot": [
+    17,
+    52
+   ],
+   "anchor_n": [
+    6,
+    42
+   ],
+   "footprint": [
+    1.0,
+    0.3
+   ],
+   "facing": "sw",
+   "note": "papan berdiri kayu 'BELUM BISA DISEWA' di depan pintu kamar"
+  },
+  "papan_berdiri_belum_bisa_disewa_se": {
+   "file": "sprites/papan_berdiri_belum_bisa_disewa_se.png",
+   "size": [
+    50,
+    62
+   ],
+   "pivot": [
+    18,
+    52
+   ],
+   "anchor_n": [
+    29,
+    42
+   ],
+   "footprint": [
+    1.0,
+    0.3
+   ],
+   "facing": "se",
+   "note": "papan berdiri kayu 'BELUM BISA DISEWA' di depan pintu kamar"
+  },
+  "papan_berdiri_tersedia_sw": {
+   "file": "sprites/papan_berdiri_tersedia_sw.png",
+   "size": [
+    50,
+    62
+   ],
+   "pivot": [
+    17,
+    52
+   ],
+   "anchor_n": [
+    6,
+    42
+   ],
+   "footprint": [
+    1.0,
+    0.3
+   ],
+   "facing": "sw",
+   "note": "papan berdiri putih-hijau 'TERSEDIA UNTUK DIBELI'"
+  },
+  "papan_berdiri_tersedia_se": {
+   "file": "sprites/papan_berdiri_tersedia_se.png",
+   "size": [
+    50,
+    62
+   ],
+   "pivot": [
+    18,
+    52
+   ],
+   "anchor_n": [
+    29,
+    42
+   ],
+   "footprint": [
+    1.0,
+    0.3
+   ],
+   "facing": "se",
+   "note": "papan berdiri putih-hijau 'TERSEDIA UNTUK DIBELI'"
+  },
+  "pintu_lobi_milik_sw": {
+   "file": "sprites/pintu_lobi_milik_sw.png",
+   "size": [
+    36,
+    118
+   ],
+   "pivot": [
+    18,
+    109
+   ],
+   "facing": "sw",
+   "note": "muka pintu lobi (lebar 1.12 tile, tinggi 31.5 h = 101 px) ditempel di dinding lobi r=r0; pivot = tengah bawah di garis dinding"
+  },
+  "pintu_lobi_milik_orang_lain_sw": {
+   "file": "sprites/pintu_lobi_milik_orang_lain_sw.png",
+   "size": [
+    36,
+    118
+   ],
+   "pivot": [
+    18,
+    109
+   ],
+   "facing": "sw",
+   "note": "muka pintu lobi (lebar 1.12 tile, tinggi 31.5 h = 101 px) ditempel di dinding lobi r=r0; pivot = tengah bawah di garis dinding",
+   "glow": "sprites/pintu_lobi_milik_orang_lain_sw__glow.png"
+  },
+  "pintu_lobi_terkunci_sw": {
+   "file": "sprites/pintu_lobi_terkunci_sw.png",
+   "size": [
+    36,
+    118
+   ],
+   "pivot": [
+    18,
+    109
+   ],
+   "facing": "sw",
+   "note": "muka pintu lobi (lebar 1.12 tile, tinggi 31.5 h = 101 px) ditempel di dinding lobi r=r0; pivot = tengah bawah di garis dinding"
+  },
+  "pintu_lobi_tersedia_sw": {
+   "file": "sprites/pintu_lobi_tersedia_sw.png",
+   "size": [
+    36,
+    118
+   ],
+   "pivot": [
+    18,
+    109
+   ],
+   "facing": "sw",
+   "note": "muka pintu lobi (lebar 1.12 tile, tinggi 31.5 h = 101 px) ditempel di dinding lobi r=r0; pivot = tengah bawah di garis dinding"
+  }
+ },
+ "props": {
+  "ember_sw": {
+   "file": "props/ember_sw.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "sw",
+   "note": "ember plastik biru kosong, pegangan kawat rebah ke belakang"
+  },
+  "ember_se": {
+   "file": "props/ember_se.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "se",
+   "note": "ember plastik biru kosong, pegangan kawat rebah ke belakang"
+  },
+  "ember_ne": {
+   "file": "props/ember_ne.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "ne",
+   "note": "ember plastik biru kosong, pegangan kawat rebah ke belakang"
+  },
+  "ember_nw": {
+   "file": "props/ember_nw.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "nw",
+   "note": "ember plastik biru kosong, pegangan kawat rebah ke belakang"
+  },
+  "ember_air_sw": {
+   "file": "props/ember_air_sw.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "sw",
+   "note": "ember plastik biru berisi air"
+  },
+  "ember_air_se": {
+   "file": "props/ember_air_se.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "se",
+   "note": "ember plastik biru berisi air"
+  },
+  "ember_air_ne": {
+   "file": "props/ember_air_ne.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "ne",
+   "note": "ember plastik biru berisi air"
+  },
+  "ember_air_nw": {
+   "file": "props/ember_air_nw.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "nw",
+   "note": "ember plastik biru berisi air"
+  },
+  "ember_air_gayung_sw": {
+   "file": "props/ember_air_gayung_sw.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "sw",
+   "note": "ember berisi air + gayung terapung di dalam, gagang bersandar di bibir ember"
+  },
+  "ember_air_gayung_se": {
+   "file": "props/ember_air_gayung_se.png",
+   "size": [
+    24,
+    30
+   ],
+   "pivot": [
+    10,
+    25
+   ],
+   "anchor_n": [
+    10,
+    17
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "se",
+   "note": "ember berisi air + gayung terapung di dalam, gagang bersandar di bibir ember"
+  },
+  "ember_air_gayung_ne": {
+   "file": "props/ember_air_gayung_ne.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "ne",
+   "note": "ember berisi air + gayung terapung di dalam, gagang bersandar di bibir ember"
+  },
+  "ember_air_gayung_nw": {
+   "file": "props/ember_air_gayung_nw.png",
+   "size": [
+    24,
+    28
+   ],
+   "pivot": [
+    10,
+    22
+   ],
+   "anchor_n": [
+    10,
+    14
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "nw",
+   "note": "ember berisi air + gayung terapung di dalam, gagang bersandar di bibir ember"
+  },
+  "gayung_sw": {
+   "file": "props/gayung_sw.png",
+   "size": [
+    18,
+    16
+   ],
+   "pivot": [
+    6,
+    11
+   ],
+   "anchor_n": [
+    6,
+    3
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "sw",
+   "note": "gayung plastik pink berdiri di lantai, gagang lurus"
+  },
+  "gayung_se": {
+   "file": "props/gayung_se.png",
+   "size": [
+    22,
+    14
+   ],
+   "pivot": [
+    10,
+    9
+   ],
+   "anchor_n": [
+    10,
+    1
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "se",
+   "note": "gayung plastik pink berdiri di lantai, gagang lurus"
+  },
+  "gayung_ne": {
+   "file": "props/gayung_ne.png",
+   "size": [
+    22,
+    14
+   ],
+   "pivot": [
+    10,
+    10
+   ],
+   "anchor_n": [
+    10,
+    2
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "ne",
+   "note": "gayung plastik pink berdiri di lantai, gagang lurus"
+  },
+  "gayung_nw": {
+   "file": "props/gayung_nw.png",
+   "size": [
+    18,
+    16
+   ],
+   "pivot": [
+    6,
+    11
+   ],
+   "anchor_n": [
+    6,
+    3
+   ],
+   "footprint": [
+    0.5,
+    0.5
+   ],
+   "facing": "nw",
+   "note": "gayung plastik pink berdiri di lantai, gagang lurus"
+  }
+ },
+ "mock": {
+  "mock/mock_kamar_kosong_4x.png": "kamar kosong: kasur + WC + ember berisi air dengan gayung (sisi kanan kamar mandi, seberang depan WC, jauh dari pintu kamar mandi) + Ichsan (idle se), sekat versi cutaway",
+  "mock/mock_lobi_status_pintu_4x.png": "lobi Cove: kamar 1 terkunci (BELUM BISA DISEWA), 2 tersedia (TERSEDIA UNTUK DIBELI), 3 milik orang lain (RAKA, lampu merah), 4 milik Ichsan, 5 milik orang lain (NOOR); Ichsan di depan pintu 3",
+  "mock_kamar_ember_px": [
+   285,
+   364
+  ],
+  "mock_kamar_ember_local_cr": [
+   8.35,
+   6.45
+  ],
+  "mock_kamar_ember_sprite": "props/ember_air_gayung_sw.png",
+  "mock_kamar_ember_world_cr": [
+   -13.25,
+   27.45
+  ],
+  "lobby_ichsan_px": [
+   218,
+   213
+  ]
+ }
+}

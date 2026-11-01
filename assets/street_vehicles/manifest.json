@@ -1,0 +1,875 @@
+{
+ "projection": "iso 2:1, 1 tile = 64x32 px, 1 game height unit = 3.2 px (HS 1.6 x PPU 2)",
+ "sprites": {
+  "sedan_red_se": {
+   "file": "cars/sedan_red_se.png",
+   "size": [
+    146,
+    138
+   ],
+   "pivot_footprint_centre": [
+    73,
+    100
+   ],
+   "footprint_tiles": [
+    2.9,
+    1.05
+   ],
+   "game_equivalent": "vehicle('sedan',lane,dirn,['#FF5A5F','#E0434A','#B8323A'])",
+   "anchor_game_P0lane": [
+    45,
+    68
+   ]
+  },
+  "sedan_red_nw": {
+   "file": "cars/sedan_red_nw.png",
+   "size": [
+    146,
+    138
+   ],
+   "pivot_footprint_centre": [
+    73,
+    100
+   ],
+   "footprint_tiles": [
+    2.9,
+    1.05
+   ],
+   "game_equivalent": "vehicle('sedan',lane,dirn,['#FF5A5F','#E0434A','#B8323A'])",
+   "anchor_game_P0lane": [
+    45,
+    68
+   ]
+  },
+  "sedan_red_sw": {
+   "file": "cars/sedan_red_sw.png",
+   "size": [
+    146,
+    138
+   ],
+   "pivot_footprint_centre": [
+    73,
+    100
+   ],
+   "footprint_tiles": [
+    2.9,
+    1.05
+   ],
+   "game_equivalent": "vehicle('sedan',lane,dirn,['#FF5A5F','#E0434A','#B8323A'])"
+  },
+  "sedan_red_ne": {
+   "file": "cars/sedan_red_ne.png",
+   "size": [
+    146,
+    138
+   ],
+   "pivot_footprint_centre": [
+    73,
+    100
+   ],
+   "footprint_tiles": [
+    2.9,
+    1.05
+   ],
+   "game_equivalent": "vehicle('sedan',lane,dirn,['#FF5A5F','#E0434A','#B8323A'])"
+  },
+  "sedan_teal_se": {
+   "file": "cars/sedan_teal_se.png",
+   "size": [
+    146,
+    138
+   ],
+   "pivot_footprint_centre": [
+    73,
+    100
+   ],
+   "footprint_tiles": [
+    2.9,
+    1.05
+   ],
+   "game_equivalent": "vehicle('sedan',lane,dirn,['#2EC4B6','#22A094','#1B7F76'])",
+   "anchor_game_P0lane": [
+    45,
+    68
+   ]
+  },
+  "sedan_teal_nw": {
+   "file": "cars/sedan_teal_nw.png",
+   "size": [
+    146,
+    138
+   ],
+   "pivot_footprint_centre": [
+    73,
+    100
+   ],
+   "footprint_tiles": [
+    2.9,
+    1.05
+   ],
+   "game_equivalent": "vehicle('sedan',lane,dirn,['#2EC4B6','#22A094','#1B7F76'])",
+   "anchor_game_P0lane": [
+    45,
+    68
+   ]
+  },
+  "sedan_teal_sw": {
+   "file": "cars/sedan_teal_sw.png",
+   "size": [
+    146,
+    138
+   ],
+   "pivot_footprint_centre": [
+    73,
+    100
+   ],
+   "footprint_tiles": [
+    2.9,
+    1.05
+   ],
+   "game_equivalent": "vehicle('sedan',lane,dirn,['#2EC4B6','#22A094','#1B7F76'])"
+  },
+  "sedan_teal_ne": {
+   "file": "cars/sedan_teal_ne.png",
+   "size": [
+    146,
+    138
+   ],
+   "pivot_footprint_centre": [
+    73,
+    100
+   ],
+   "footprint_tiles": [
+    2.9,
+    1.05
+   ],
+   "game_equivalent": "vehicle('sedan',lane,dirn,['#2EC4B6','#22A094','#1B7F76'])"
+  },
+  "hatchback_orange_se": {
+   "file": "cars/hatchback_orange_se.png",
+   "size": [
+    136,
+    132
+   ],
+   "pivot_footprint_centre": [
+    68,
+    96
+   ],
+   "footprint_tiles": [
+    2.6,
+    1.05
+   ],
+   "game_equivalent": "new kind (no game equivalent)",
+   "anchor_game_P0lane": [
+    45,
+    66
+   ]
+  },
+  "hatchback_orange_nw": {
+   "file": "cars/hatchback_orange_nw.png",
+   "size": [
+    136,
+    132
+   ],
+   "pivot_footprint_centre": [
+    68,
+    96
+   ],
+   "footprint_tiles": [
+    2.6,
+    1.05
+   ],
+   "game_equivalent": "new kind (no game equivalent)",
+   "anchor_game_P0lane": [
+    45,
+    66
+   ]
+  },
+  "hatchback_orange_sw": {
+   "file": "cars/hatchback_orange_sw.png",
+   "size": [
+    136,
+    132
+   ],
+   "pivot_footprint_centre": [
+    68,
+    96
+   ],
+   "footprint_tiles": [
+    2.6,
+    1.05
+   ],
+   "game_equivalent": "new kind (no game equivalent)"
+  },
+  "hatchback_orange_ne": {
+   "file": "cars/hatchback_orange_ne.png",
+   "size": [
+    136,
+    132
+   ],
+   "pivot_footprint_centre": [
+    68,
+    96
+   ],
+   "footprint_tiles": [
+    2.6,
+    1.05
+   ],
+   "game_equivalent": "new kind (no game equivalent)"
+  },
+  "mpv_silver_se": {
+   "file": "cars/mpv_silver_se.png",
+   "size": [
+    152,
+    144
+   ],
+   "pivot_footprint_centre": [
+    76,
+    104
+   ],
+   "footprint_tiles": [
+    3.1,
+    1.08
+   ],
+   "game_equivalent": "new kind (no game equivalent)",
+   "anchor_game_P0lane": [
+    45,
+    70
+   ]
+  },
+  "mpv_silver_nw": {
+   "file": "cars/mpv_silver_nw.png",
+   "size": [
+    152,
+    144
+   ],
+   "pivot_footprint_centre": [
+    76,
+    104
+   ],
+   "footprint_tiles": [
+    3.1,
+    1.08
+   ],
+   "game_equivalent": "new kind (no game equivalent)",
+   "anchor_game_P0lane": [
+    45,
+    70
+   ]
+  },
+  "mpv_silver_sw": {
+   "file": "cars/mpv_silver_sw.png",
+   "size": [
+    152,
+    144
+   ],
+   "pivot_footprint_centre": [
+    76,
+    104
+   ],
+   "footprint_tiles": [
+    3.1,
+    1.08
+   ],
+   "game_equivalent": "new kind (no game equivalent)"
+  },
+  "mpv_silver_ne": {
+   "file": "cars/mpv_silver_ne.png",
+   "size": [
+    152,
+    144
+   ],
+   "pivot_footprint_centre": [
+    76,
+    104
+   ],
+   "footprint_tiles": [
+    3.1,
+    1.08
+   ],
+   "game_equivalent": "new kind (no game equivalent)"
+  },
+  "taxi_bluebird_se": {
+   "file": "cars/taxi_bluebird_se.png",
+   "size": [
+    152,
+    148
+   ],
+   "pivot_footprint_centre": [
+    76,
+    108
+   ],
+   "footprint_tiles": [
+    3.1,
+    1.05
+   ],
+   "game_equivalent": "vehicle('taxi',lane,dirn,['#45B3E6','#2F97CF','#2479AD']) (data-ng brand colours)",
+   "anchor_game_P0lane": [
+    45,
+    74
+   ]
+  },
+  "taxi_bluebird_nw": {
+   "file": "cars/taxi_bluebird_nw.png",
+   "size": [
+    152,
+    148
+   ],
+   "pivot_footprint_centre": [
+    76,
+    108
+   ],
+   "footprint_tiles": [
+    3.1,
+    1.05
+   ],
+   "game_equivalent": "vehicle('taxi',lane,dirn,['#45B3E6','#2F97CF','#2479AD']) (data-ng brand colours)",
+   "anchor_game_P0lane": [
+    45,
+    74
+   ]
+  },
+  "taxi_bluebird_sw": {
+   "file": "cars/taxi_bluebird_sw.png",
+   "size": [
+    152,
+    148
+   ],
+   "pivot_footprint_centre": [
+    76,
+    108
+   ],
+   "footprint_tiles": [
+    3.1,
+    1.05
+   ],
+   "game_equivalent": "vehicle('taxi',lane,dirn,['#45B3E6','#2F97CF','#2479AD']) (data-ng brand colours)"
+  },
+  "taxi_bluebird_ne": {
+   "file": "cars/taxi_bluebird_ne.png",
+   "size": [
+    152,
+    148
+   ],
+   "pivot_footprint_centre": [
+    76,
+    108
+   ],
+   "footprint_tiles": [
+    3.1,
+    1.05
+   ],
+   "game_equivalent": "vehicle('taxi',lane,dirn,['#45B3E6','#2F97CF','#2479AD']) (data-ng brand colours)"
+  },
+  "van_cream_se": {
+   "file": "cars/van_cream_se.png",
+   "size": [
+    162,
+    162
+   ],
+   "pivot_footprint_centre": [
+    81,
+    120
+   ],
+   "footprint_tiles": [
+    3.4,
+    1.1
+   ],
+   "game_equivalent": "vehicle('van',...) (in code, not in the current traffic list)",
+   "anchor_game_P0lane": [
+    46,
+    83
+   ]
+  },
+  "van_cream_nw": {
+   "file": "cars/van_cream_nw.png",
+   "size": [
+    162,
+    162
+   ],
+   "pivot_footprint_centre": [
+    81,
+    120
+   ],
+   "footprint_tiles": [
+    3.4,
+    1.1
+   ],
+   "game_equivalent": "vehicle('van',...) (in code, not in the current traffic list)",
+   "anchor_game_P0lane": [
+    46,
+    83
+   ]
+  },
+  "van_cream_sw": {
+   "file": "cars/van_cream_sw.png",
+   "size": [
+    162,
+    162
+   ],
+   "pivot_footprint_centre": [
+    81,
+    120
+   ],
+   "footprint_tiles": [
+    3.4,
+    1.1
+   ],
+   "game_equivalent": "vehicle('van',...) (in code, not in the current traffic list)"
+  },
+  "van_cream_ne": {
+   "file": "cars/van_cream_ne.png",
+   "size": [
+    162,
+    162
+   ],
+   "pivot_footprint_centre": [
+    81,
+    120
+   ],
+   "footprint_tiles": [
+    3.4,
+    1.1
+   ],
+   "game_equivalent": "vehicle('van',...) (in code, not in the current traffic list)"
+  },
+  "bus_transjakarta_se": {
+   "file": "cars/bus_transjakarta_se.png",
+   "size": [
+    272,
+    256
+   ],
+   "pivot_footprint_centre": [
+    136,
+    186
+   ],
+   "footprint_tiles": [
+    6.6,
+    1.3
+   ],
+   "game_equivalent": "vehicle('bus',lane,dirn,['#2C6BD8','#F4F1EA','#2457B8']) (data-ng brand colours)",
+   "anchor_game_P0lane": [
+    48,
+    124
+   ]
+  },
+  "bus_transjakarta_nw": {
+   "file": "cars/bus_transjakarta_nw.png",
+   "size": [
+    272,
+    256
+   ],
+   "pivot_footprint_centre": [
+    136,
+    186
+   ],
+   "footprint_tiles": [
+    6.6,
+    1.3
+   ],
+   "game_equivalent": "vehicle('bus',lane,dirn,['#2C6BD8','#F4F1EA','#2457B8']) (data-ng brand colours)",
+   "anchor_game_P0lane": [
+    48,
+    124
+   ]
+  },
+  "bus_transjakarta_sw": {
+   "file": "cars/bus_transjakarta_sw.png",
+   "size": [
+    272,
+    256
+   ],
+   "pivot_footprint_centre": [
+    136,
+    186
+   ],
+   "footprint_tiles": [
+    6.6,
+    1.3
+   ],
+   "game_equivalent": "vehicle('bus',lane,dirn,['#2C6BD8','#F4F1EA','#2457B8']) (data-ng brand colours)"
+  },
+  "bus_transjakarta_ne": {
+   "file": "cars/bus_transjakarta_ne.png",
+   "size": [
+    272,
+    256
+   ],
+   "pivot_footprint_centre": [
+    136,
+    186
+   ],
+   "footprint_tiles": [
+    6.6,
+    1.3
+   ],
+   "game_equivalent": "vehicle('bus',lane,dirn,['#2C6BD8','#F4F1EA','#2457B8']) (data-ng brand colours)"
+  },
+  "gojek_se": {
+   "file": "riders/gojek_se.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "replaces vehicle('moto',...) (in code, not in the current traffic list)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "gojek_nw": {
+   "file": "riders/gojek_nw.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "replaces vehicle('moto',...) (in code, not in the current traffic list)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "gojek_sw": {
+   "file": "riders/gojek_sw.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "replaces vehicle('moto',...) (in code, not in the current traffic list)"
+  },
+  "gojek_ne": {
+   "file": "riders/gojek_ne.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "replaces vehicle('moto',...) (in code, not in the current traffic list)"
+  },
+  "gojek_pax_se": {
+   "file": "riders/gojek_pax_se.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto + passenger)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "gojek_pax_nw": {
+   "file": "riders/gojek_pax_nw.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto + passenger)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "gojek_pax_sw": {
+   "file": "riders/gojek_pax_sw.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto + passenger)"
+  },
+  "gojek_pax_ne": {
+   "file": "riders/gojek_pax_ne.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto + passenger)"
+  },
+  "maxim_se": {
+   "file": "riders/maxim_se.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto variant)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "maxim_nw": {
+   "file": "riders/maxim_nw.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto variant)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "maxim_sw": {
+   "file": "riders/maxim_sw.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto variant)"
+  },
+  "maxim_ne": {
+   "file": "riders/maxim_ne.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto variant)"
+  },
+  "maxim_pax_se": {
+   "file": "riders/maxim_pax_se.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto + passenger)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "maxim_pax_nw": {
+   "file": "riders/maxim_pax_nw.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto + passenger)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "maxim_pax_sw": {
+   "file": "riders/maxim_pax_sw.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto + passenger)"
+  },
+  "maxim_pax_ne": {
+   "file": "riders/maxim_pax_ne.png",
+   "size": [
+    80,
+    116
+   ],
+   "pivot_footprint_centre": [
+    40,
+    94
+   ],
+   "footprint_tiles": [
+    1.3,
+    0.7
+   ],
+   "game_equivalent": "new (moto + passenger)"
+  },
+  "sma_triple_se": {
+   "file": "riders/sma_triple_se.png",
+   "size": [
+    88,
+    120
+   ],
+   "pivot_footprint_centre": [
+    44,
+    96
+   ],
+   "footprint_tiles": [
+    1.55,
+    0.7
+   ],
+   "game_equivalent": "new (moto variant, 3 riders)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "sma_triple_nw": {
+   "file": "riders/sma_triple_nw.png",
+   "size": [
+    88,
+    120
+   ],
+   "pivot_footprint_centre": [
+    44,
+    96
+   ],
+   "footprint_tiles": [
+    1.55,
+    0.7
+   ],
+   "game_equivalent": "new (moto variant, 3 riders)",
+   "anchor_game_P0lane": [
+    35,
+    76
+   ]
+  },
+  "sma_triple_sw": {
+   "file": "riders/sma_triple_sw.png",
+   "size": [
+    88,
+    120
+   ],
+   "pivot_footprint_centre": [
+    44,
+    96
+   ],
+   "footprint_tiles": [
+    1.55,
+    0.7
+   ],
+   "game_equivalent": "new (moto variant, 3 riders)"
+  },
+  "sma_triple_ne": {
+   "file": "riders/sma_triple_ne.png",
+   "size": [
+    88,
+    120
+   ],
+   "pivot_footprint_centre": [
+    44,
+    96
+   ],
+   "footprint_tiles": [
+    1.55,
+    0.7
+   ],
+   "game_equivalent": "new (moto variant, 3 riders)"
+  }
+ },
+ "notes": [
+  "pivot_footprint_centre: px of the ground point under the footprint centre (local origin)",
+  "anchor_game_P0lane (se/nw only): px of world point P(0,lane) at h=0, the origin the game vehicle() draws from; place the PNG at P(0,lane) - anchor/PPU in world units, width=size/PPU",
+  "se = driving +c (game dirn=+1, class cA), nw = driving -c (dirn=-1, cB). sw/ne are extra (the street runs along c only)",
+  "static sprites: the game moves vehicles with a CSS translate and has no per-vehicle frames"
+ ]
+}

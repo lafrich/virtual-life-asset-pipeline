@@ -1,0 +1,92 @@
+[
+ {
+  "screen": "01_akses_ditolak",
+  "size": "844x390",
+  "name": "dialog",
+  "x": 272,
+  "y": 117,
+  "w": 300,
+  "h": 136
+ },
+ {
+  "screen": "01_akses_ditolak",
+  "size": "844x390",
+  "name": "ikon_gembok",
+  "x": 287,
+  "y": 160,
+  "w": 38,
+  "h": 38
+ },
+ {
+  "screen": "01_akses_ditolak",
+  "size": "844x390",
+  "name": "btn_ok",
+  "x": 472,
+  "y": 219,
+  "w": 90,
+  "h": 26
+ },
+ {
+  "screen": "02_toast_belum_bisa_disewa",
+  "size": "844x390",
+  "name": "toast",
+  "x": 310,
+  "y": 12,
+  "w": 223,
+  "h": 40
+ },
+ {
+  "screen": "03_toast_tersedia_dibeli",
+  "size": "844x390",
+  "name": "toast",
+  "x": 274,
+  "y": 12,
+  "w": 295,
+  "h": 40
+ },
+ {
+  "screen": "01_akses_ditolak",
+  "size": "667x375",
+  "name": "dialog",
+  "x": 183,
+  "y": 109,
+  "w": 300,
+  "h": 136
+ },
+ {
+  "screen": "01_akses_ditolak",
+  "size": "667x375",
+  "name": "ikon_gembok",
+  "x": 198,
+  "y": 152,
+  "w": 38,
+  "h": 38
+ },
+ {
+  "screen": "01_akses_ditolak",
+  "size": "667x375",
+  "name": "btn_ok",
+  "x": 383,
+  "y": 211,
+  "w": 90,
+  "h": 26
+ },
+ {
+  "screen": "02_toast_belum_bisa_disewa",
+  "size": "667x375",
+  "name": "toast",
+  "x": 222,
+  "y": 12,
+  "w": 223,
+  "h": 40
+ },
+ {
+  "screen": "03_toast_tersedia_dibeli",
+  "size": "667x375",
+  "name": "toast",
+  "x": 186,
+  "y": 12,
+  "w": 295,
+  "h": 40
+ }
+]

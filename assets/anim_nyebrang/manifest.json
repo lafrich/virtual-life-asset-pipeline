@@ -1,0 +1,517 @@
+{
+ "name": "anim_nyebrang",
+ "preview_only": true,
+ "frame": [
+  64,
+  112
+ ],
+ "pivot": [
+  32,
+  100
+ ],
+ "dirs": [
+  "se",
+  "sw",
+  "ne",
+  "nw"
+ ],
+ "mirror": {
+  "sw": "se (flip horizontal)",
+  "nw": "ne (flip horizontal)"
+ },
+ "dir_rule_game": "index.html: dc>0 'se', dc<0 'nw', dr>0 'sw', dr<0 'ne'  (near -> far side = +r = 'sw', far -> near = 'ne')",
+ "files": {
+  "pattern": "frames/{char}_{anim}_{dir}_f{i}.png",
+  "chars": [
+   "ichsan",
+   "npc"
+  ],
+  "crossers": {
+   "penyeberang_a": {
+    "pattern": "frames/penyeberang_a_nyebrang_{dir}_f{i}.png",
+    "note": "ibu berhijab, jalan biasa (lengan generator)"
+   },
+   "penyeberang_b": {
+    "pattern": "frames/penyeberang_b_nyebrang_{dir}_f{i}.png",
+    "note": "pegawai kemeja putih, jalan sambil lihat HP (kepala menunduk)"
+   },
+   "penyeberang_c": {
+    "pattern": "frames/penyeberang_c_nyebrang_{dir}_f{i}.png",
+    "note": "pelajar, jalan sambil mengangkat tangan \"permisi\" ke mobil"
+   }
+  }
+ },
+ "chars": {
+  "ichsan": {
+   "source": "v6b/live/chars/ichsan.json via live_v6b (= assets/chars/ichsan_v6b_sheet.png)",
+   "diff_px_vs_game_sheet": {
+    "idle_se": 0,
+    "walk_se": 0,
+    "idle_ne": 0,
+    "walk_ne": 0
+   }
+  },
+  "npc": {
+   "source": "npc_v6b.make_cfg path",
+   "cfg": {
+    "body": "m",
+    "skin": "medium",
+    "hair": "short",
+    "hc": "black",
+    "top": "tee",
+    "tc": "steel",
+    "pants": "trousers",
+    "pc": "charcoal",
+    "shoes": "sneakers",
+    "sc": "paper"
+   }
+  }
+ },
+ "anims": {
+  "idle": {
+   "frames": 4,
+   "frame_ms": [
+    250,
+    250,
+    250,
+    250
+   ],
+   "fps": 4.0,
+   "loop": true,
+   "total_ms": 1000
+  },
+  "tunggu": {
+   "frames": 4,
+   "frame_ms": [
+    700,
+    700,
+    650,
+    900
+   ],
+   "fps": 1.36,
+   "loop": true,
+   "total_ms": 2950,
+   "frame_meaning": [
+    "lirik kiri",
+    "lirik kanan",
+    "lihat lampu (kepala naik)",
+    "lihat jam tangan"
+   ]
+  },
+  "tekan": {
+   "frames": 4,
+   "frame_ms": [
+    150,
+    160,
+    260,
+    200
+   ],
+   "fps": 5.19,
+   "loop": false,
+   "total_ms": 770,
+   "events": {
+    "tombol_ditekan": {
+     "frame": 2,
+     "t_ms": 310
+    },
+    "selesai": {
+     "frame": 3,
+     "t_ms": 770
+    }
+   },
+   "hand_px": {
+    "se": [
+     52,
+     53.5
+    ],
+    "sw": [
+     11,
+     53.5
+    ],
+    "ne": [
+     52,
+     53.5
+    ],
+    "nw": [
+     11,
+     53.5
+    ]
+   },
+   "note": "tangan kanan-layar maju ke kotak tombol; setelah tombol_ditekan game menyalakan LED / mulai hitung fase"
+  },
+  "jalan": {
+   "frames": 6,
+   "frame_ms": [
+    139,
+    139,
+    139,
+    139,
+    139,
+    139
+   ],
+   "fps": 7.19,
+   "loop": true,
+   "total_ms": 834,
+   "fps_game": 7.2,
+   "note": "= baris walk generator; game memutar walk 10 fps x 0.72 = 7.2 fps; frame_ms 139 = 7.2 fps. Kecepatan 1.95 sel/s (SPEED)"
+  },
+  "lari": {
+   "frames": 6,
+   "frame_ms": [
+    80,
+    80,
+    80,
+    80,
+    80,
+    80
+   ],
+   "fps": 12.5,
+   "loop": true,
+   "total_ms": 480,
+   "speed_cells_s": 3.12,
+   "note": "lari kecil saat hijau berkedip / merah sudah di zebra: 12.5 fps, kecepatan ~1.6x jalan"
+  },
+  "kaget": {
+   "frames": 4,
+   "frame_ms": [
+    100,
+    160,
+    420,
+    320
+   ],
+   "fps": 4.0,
+   "loop": false,
+   "total_ms": 1000,
+   "events": {
+    "mundur": {
+     "frame": 1
+    },
+    "pulih": {
+     "frame": 3
+    }
+   },
+   "note": "dipicu bila kendaraan lewat dekat; f1-f2 badan mundur 1-2 px (geser, tidak kompres); setelah selesai lanjut ke tunggu / jalan"
+  },
+  "terima_kasih": {
+   "frames": 4,
+   "frame_ms": [
+    180,
+    180,
+    180,
+    180
+   ],
+   "fps": 5.56,
+   "loop": false,
+   "total_ms": 720,
+   "note": "sekali jalan (720 ms) di tengah zebra ke kendaraan yang berhenti; avatar boleh berhenti sebentar atau game putar sambil diam di tempat"
+  },
+  "ragu": {
+   "frames": 4,
+   "frame_ms": [
+    420,
+    260,
+    420,
+    300
+   ],
+   "fps": 2.86,
+   "loop": true,
+   "total_ms": 1400,
+   "frame_meaning": [
+    "lirik kiri",
+    "setengah langkah maju",
+    "lirik kanan",
+    "mundur"
+   ]
+  },
+  "terobos": {
+   "frames": 6,
+   "frame_ms": [
+    80,
+    80,
+    80,
+    80,
+    80,
+    80
+   ],
+   "fps": 12.5,
+   "loop": true,
+   "total_ms": 480,
+   "speed_cells_s": 3.12,
+   "note": "menerobos merah: lari + telapak diangkat ke kendaraan; masuki dari ragu"
+  },
+  "nyebrang": {
+   "frames": 6,
+   "frame_ms": [
+    139,
+    139,
+    139,
+    139,
+    139,
+    139
+   ],
+   "fps": 7.19,
+   "loop": true,
+   "total_ms": 834
+  }
+ },
+ "crossing": {
+  "source": "street_buildings/manifest.json \"crossing\" (zebra index.html extBuild + ZEBRA_FIX strip sejajar jalan: r 33.1..35.7 tiap 0.5, tebal 0.28, c 21.2..23.9)",
+  "wait_points": {
+   "near_sidewalk": [
+    22.55,
+    32.15
+   ],
+   "far_sidewalk": [
+    22.55,
+    36.85
+   ]
+  },
+  "wait_dir": {
+   "near_sidewalk": "sw",
+   "far_sidewalk": "ne"
+  },
+  "path": {
+   "near_to_far": {
+    "from": [
+     22.55,
+     32.15
+    ],
+    "to": [
+     22.55,
+     36.85
+    ],
+    "dir": "sw",
+    "length_cells": 4.7,
+    "zebra_enter_r": 32.98,
+    "zebra_exit_r": 36.07,
+    "walk_s": 2.41
+   },
+   "far_to_near": {
+    "from": [
+     22.55,
+     36.85
+    ],
+    "to": [
+     22.55,
+     32.15
+    ],
+    "dir": "ne"
+   },
+   "lanes_c": "antre di c 21.5..23.6 (dalam zebra); jarak antar pejalan >= 0.45 sel"
+  },
+  "press_button_stand": {
+   "near_left": {
+    "pole_cell": [
+     20.45,
+     32.25
+    ],
+    "avatar_dir": "nw",
+    "avatar_cell": [
+     20.528,
+     31.484
+    ],
+    "button_px_from_pole_pivot": [
+     6.0,
+     -57.5
+    ]
+   },
+   "near_right": {
+    "pole_cell": [
+     24.55,
+     32.25
+    ],
+    "avatar_dir": "nw",
+    "avatar_cell": [
+     24.628,
+     31.484
+    ],
+    "button_px_from_pole_pivot": [
+     6.0,
+     -57.5
+    ]
+   },
+   "far_left": {
+    "pole_cell": [
+     20.45,
+     36.8
+    ],
+    "avatar_dir": "ne",
+    "avatar_cell": [
+     19.848,
+     36.964
+    ],
+    "button_px_from_pole_pivot": [
+     -4.5,
+     -53.5
+    ]
+   },
+   "far_right": {
+    "pole_cell": [
+     24.55,
+     36.8
+    ],
+    "avatar_dir": "ne",
+    "avatar_cell": [
+     23.948,
+     36.964
+    ],
+    "button_px_from_pole_pivot": [
+     -4.5,
+     -53.5
+    ]
+   }
+  },
+  "phases": [
+   {
+    "id": 1,
+    "nama": "kendaraan_hijau_pejalan_merah",
+    "s": null,
+    "mock": 10,
+    "lalin": "hijau",
+    "pejalan": "merah",
+    "avatar": "tunggu / ragu (boleh tekan tombol)",
+    "catatan": "default; tombol ditekan -> LED tombol menyala, minimal hijau kendaraan lalu lanjut ke fase 2"
+   },
+   {
+    "id": 2,
+    "nama": "kendaraan_kuning",
+    "s": 3.0,
+    "mock": 15,
+    "lalin": "kuning",
+    "pejalan": "merah",
+    "avatar": "tunggu",
+    "catatan": ""
+   },
+   {
+    "id": 3,
+    "nama": "semua_merah",
+    "s": 1.5,
+    "mock": 10,
+    "lalin": "merah",
+    "pejalan": "merah",
+    "avatar": "tunggu (lihat lampu: tunggu f2)",
+    "catatan": "jeda aman"
+   },
+   {
+    "id": 4,
+    "nama": "pejalan_hijau",
+    "s": 7.0,
+    "mock": 35,
+    "lalin": "merah",
+    "pejalan": "hijau",
+    "avatar": "jalan (boleh masuk zebra); terima_kasih ke mobil yang berhenti",
+    "catatan": ""
+   },
+   {
+    "id": 5,
+    "nama": "pejalan_hijau_kedip",
+    "s": 4.0,
+    "mock": 20,
+    "lalin": "merah",
+    "pejalan": "hijau <-> hijau_kedip_off tiap 400 ms",
+    "avatar": "yang sudah di zebra: lari; yang belum masuk: tunggu / ragu",
+    "catatan": "jangan mulai menyeberang"
+   },
+   {
+    "id": 6,
+    "nama": "pejalan_merah_semua_merah",
+    "s": 1.5,
+    "mock": 10,
+    "lalin": "merah",
+    "pejalan": "merah",
+    "avatar": "masih di zebra: lari; menerobos: terobos / kaget",
+    "catatan": "lalu kembali ke fase 1"
+   }
+  ],
+  "signal_sprites": {
+   "pejalan": "street_buildings/sinyal/lampu_pejalan_<merah|hijau|hijau_kedip_off|padam>_<dir>.png",
+   "kedip_ms": 400,
+   "lalin": "street_buildings/sinyal/lampu_lalin_<merah|kuning|hijau>_<dir>.png",
+   "poles": {
+    "near_left": {
+     "cell": [
+      20.45,
+      32.25
+     ],
+     "sprite": "lampu_pejalan_<state>_sw",
+     "why": "head faces +r (across the road) for people waiting on the far side; button box faces the near waiting area"
+    },
+    "near_right": {
+     "cell": [
+      24.55,
+      32.25
+     ],
+     "sprite": "lampu_pejalan_<state>_sw"
+    },
+    "far_left": {
+     "cell": [
+      20.45,
+      36.8
+     ],
+     "sprite": "lampu_pejalan_<state>_ne",
+     "why": "head faces -r toward the near side: camera sees the housing back + button"
+    },
+    "far_right": {
+     "cell": [
+      24.55,
+      36.8
+     ],
+     "sprite": "lampu_pejalan_<state>_ne"
+    }
+   },
+   "vehicle_poles": {
+    "for_lane_se_r33.05 (moves +c, stops at c 20.4)": {
+     "cell": [
+      20.0,
+      32.3
+     ],
+     "sprite": "lampu_lalin_<state>_nw",
+     "why": "faces -c toward oncoming +c traffic: back visible to camera"
+    },
+    "for_lane_nw_r34.85 (moves -c, stops at c 24.6)": {
+     "cell": [
+      25.0,
+      36.75
+     ],
+     "sprite": "lampu_lalin_<state>_se",
+     "why": "faces +c toward oncoming -c traffic: lamps visible"
+    }
+   }
+  },
+  "anim_per_phase": {
+   "1": "tunggu / ragu (boleh tekan tombol)",
+   "2": "tunggu",
+   "3": "tunggu (lihat lampu: tunggu f2)",
+   "4": "jalan (boleh masuk zebra); terima_kasih ke mobil yang berhenti",
+   "5": "yang sudah di zebra: lari; yang belum masuk: tunggu / ragu",
+   "6": "masih di zebra: lari; menerobos: terobos / kaget"
+  },
+  "vehicle_stop": {
+   "lane_r33.05_+c": "berhenti di c 20.4 (moncong); mock: pivot hatchback_orange_se c 18.95 r 33.6",
+   "lane_r34.85_-c": "berhenti di c 24.6 (moncong); mock: pivot taxi_bluebird_nw c 26.6 r 35.4"
+  },
+  "mock_vehicle_pole_se_cell": [
+   26.6,
+   36.75
+  ],
+  "mock": {
+   "file": "mock_nyebrang_4x.gif",
+   "tick_ms": 100,
+   "note": "durasi fase di mock dipadatkan (kolom mock, 100 ms/tick); angka s = usulan untuk game",
+   "press_tick": 13,
+   "phase_start_tick": {
+    "1": 13,
+    "2": 23,
+    "3": 38,
+    "4": 48,
+    "5": 83,
+    "6": 103
+   },
+   "press_stand": [
+    24.628,
+    31.484
+   ],
+   "ticks": 129
+  }
+ }
+}

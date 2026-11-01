@@ -1,0 +1,19 @@
+# generated outputs (re-create with make / run_all.md)
+*.png
+*.gif
+*.mp4
+*.webm
+*.npy
+*.pkl
+!examples/**
+!game/assets/chars/*.png
+!chars-iso/v6b/study/*.npy
+!assets/anim_nyebrang/_work/bg_zebra_1x.png
+__pycache__/
+*.pyc
+build/
+**/_prev*/
+.DS_Store
+# seed inputs produced by browser-only steps (ui_nokia export needs playwright + the game) - kept so ui_y2k runs offline
+!assets/ui_nokia/1x_native/01_standby.png
+!assets/ui_nokia/src/bg_844.png

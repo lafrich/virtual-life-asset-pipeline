@@ -1,0 +1,1368 @@
+{
+ "game": "Virtual Life",
+ "versi": "preview 1 Nov 2026",
+ "mata_uang": "IDR",
+ "rarity": {
+  "umum": {
+   "warna_label": "#86E59A",
+   "peluang_per_cari": 0.8
+  },
+  "jarang": {
+   "warna_label": "#86CCFF",
+   "peluang_per_cari": 0.17
+  },
+  "langka": {
+   "warna_label": "#FFD166",
+   "peluang_per_cari": 0.03
+  }
+ },
+ "lokasi": {
+  "jalan": "tepi jalan raya / jalan lokal",
+  "trotoar": "trotoar",
+  "taman": "taman seberang",
+  "gang": "gang loak & kampung",
+  "sekitar_warung": "sekitar warung madura / warung kopi",
+  "belakang_indomaret": "belakang/samping Indomaret",
+  "tong_sampah": "prop tong sampah",
+  "tumpukan_kardus": "prop tumpukan kardus",
+  "kantong_kresek": "prop kantong kresek",
+  "got": "prop got kecil",
+  "kolong_bangku": "prop kolong bangku taman",
+  "karung_rongsok": "prop karung rongsokan"
+ },
+ "item": [
+  {
+   "id": "botol_plastik",
+   "nama": "Botol plastik bekas",
+   "rarity": "umum",
+   "harga_jual_rp": 300,
+   "lokasi_temuan": [
+    "jalan",
+    "trotoar",
+    "taman",
+    "tong_sampah",
+    "belakang_indomaret"
+   ],
+   "bobot_spawn": 14,
+   "deskripsi": "botol air mineral kosong, penyok",
+   "varian": [
+    "bening",
+    "hijau"
+   ],
+   "sprite": {
+    "botol_plastik_bening": {
+     "icon": "icons/botol_plastik_bening.png",
+     "ground": "ground/botol_plastik_bening.png",
+     "ground_pivot": [
+      15,
+      14
+     ]
+    },
+    "botol_plastik_hijau": {
+     "icon": "icons/botol_plastik_hijau.png",
+     "ground": "ground/botol_plastik_hijau.png",
+     "ground_pivot": [
+      15,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "id": "kaleng_minuman",
+   "nama": "Kaleng minuman bekas",
+   "rarity": "umum",
+   "harga_jual_rp": 400,
+   "lokasi_temuan": [
+    "jalan",
+    "trotoar",
+    "taman",
+    "tong_sampah",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 12,
+   "deskripsi": "kaleng soda kosong, bisa dijual kiloan",
+   "varian": [
+    "merah",
+    "hijau"
+   ],
+   "sprite": {
+    "kaleng_minuman_merah": {
+     "icon": "icons/kaleng_minuman_merah.png",
+     "ground": "ground/kaleng_minuman_merah.png",
+     "ground_pivot": [
+      10,
+      11
+     ]
+    },
+    "kaleng_minuman_hijau": {
+     "icon": "icons/kaleng_minuman_hijau.png",
+     "ground": "ground/kaleng_minuman_hijau.png",
+     "ground_pivot": [
+      10,
+      11
+     ]
+    }
+   }
+  },
+  {
+   "id": "kardus_lipat",
+   "nama": "Kardus bekas dilipat",
+   "rarity": "umum",
+   "harga_jual_rp": 800,
+   "lokasi_temuan": [
+    "belakang_indomaret",
+    "sekitar_warung",
+    "tumpukan_kardus",
+    "gang"
+   ],
+   "bobot_spawn": 12,
+   "deskripsi": "kardus mi instan dilipat pipih",
+   "varian": null,
+   "sprite": {
+    "kardus_lipat": {
+     "icon": "icons/kardus_lipat.png",
+     "ground": "ground/kardus_lipat.png",
+     "ground_pivot": [
+      20,
+      13
+     ]
+    }
+   }
+  },
+  {
+   "id": "koran_bekas",
+   "nama": "Koran bekas",
+   "rarity": "umum",
+   "harga_jual_rp": 500,
+   "lokasi_temuan": [
+    "trotoar",
+    "taman",
+    "sekitar_warung",
+    "kolong_bangku"
+   ],
+   "bobot_spawn": 12,
+   "deskripsi": "koran lama terlipat, dijual kiloan",
+   "varian": null,
+   "sprite": {
+    "koran_bekas": {
+     "icon": "icons/koran_bekas.png",
+     "ground": "ground/koran_bekas.png",
+     "ground_pivot": [
+      18,
+      12
+     ]
+    }
+   }
+  },
+  {
+   "id": "sandal_jepit",
+   "nama": "Sandal jepit putus",
+   "rarity": "umum",
+   "harga_jual_rp": 300,
+   "lokasi_temuan": [
+    "jalan",
+    "trotoar",
+    "taman",
+    "got",
+    "gang"
+   ],
+   "bobot_spawn": 10,
+   "deskripsi": "sandal jepit karet, talinya putus",
+   "varian": [
+    "biru",
+    "merah"
+   ],
+   "sprite": {
+    "sandal_jepit_biru": {
+     "icon": "icons/sandal_jepit_biru.png",
+     "ground": "ground/sandal_jepit_biru.png",
+     "ground_pivot": [
+      14,
+      10
+     ]
+    },
+    "sandal_jepit_merah": {
+     "icon": "icons/sandal_jepit_merah.png",
+     "ground": "ground/sandal_jepit_merah.png",
+     "ground_pivot": [
+      14,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "id": "kabel_bekas",
+   "nama": "Gulungan kabel bekas",
+   "rarity": "umum",
+   "harga_jual_rp": 1500,
+   "lokasi_temuan": [
+    "gang",
+    "tong_sampah",
+    "got",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 9,
+   "deskripsi": "kabel listrik sisa, tembaganya bisa dijual",
+   "varian": null,
+   "sprite": {
+    "kabel_bekas": {
+     "icon": "icons/kabel_bekas.png",
+     "ground": "ground/kabel_bekas.png",
+     "ground_pivot": [
+      13,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "id": "charger_rusak",
+   "nama": "Charger HP rusak",
+   "rarity": "umum",
+   "harga_jual_rp": 1500,
+   "lokasi_temuan": [
+    "sekitar_warung",
+    "tong_sampah",
+    "trotoar",
+    "gang"
+   ],
+   "bobot_spawn": 8,
+   "deskripsi": "kepala charger putih, kabel terkelupas",
+   "varian": null,
+   "sprite": {
+    "charger_rusak": {
+     "icon": "icons/charger_rusak.png",
+     "ground": "ground/charger_rusak.png",
+     "ground_pivot": [
+      8,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "id": "kaset_pita",
+   "nama": "Kaset pita lama",
+   "rarity": "umum",
+   "harga_jual_rp": 2500,
+   "lokasi_temuan": [
+    "gang",
+    "tong_sampah",
+    "tumpukan_kardus",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 7,
+   "deskripsi": "kaset lagu lawas, pitanya sedikit kusut",
+   "varian": null,
+   "sprite": {
+    "kaset_pita": {
+     "icon": "icons/kaset_pita.png",
+     "ground": "ground/kaset_pita.png",
+     "ground_pivot": [
+      14,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "id": "buku_bekas",
+   "nama": "Buku bekas",
+   "rarity": "umum",
+   "harga_jual_rp": 2000,
+   "lokasi_temuan": [
+    "taman",
+    "kolong_bangku",
+    "tumpukan_kardus",
+    "gang"
+   ],
+   "bobot_spawn": 9,
+   "deskripsi": "buku pelajaran lama, sampulnya lecek",
+   "varian": [
+    "merah",
+    "biru"
+   ],
+   "sprite": {
+    "buku_bekas_merah": {
+     "icon": "icons/buku_bekas_merah.png",
+     "ground": "ground/buku_bekas_merah.png",
+     "ground_pivot": [
+      18,
+      13
+     ]
+    },
+    "buku_bekas_biru": {
+     "icon": "icons/buku_bekas_biru.png",
+     "ground": "ground/buku_bekas_biru.png",
+     "ground_pivot": [
+      18,
+      13
+     ]
+    }
+   }
+  },
+  {
+   "id": "payung_rusak",
+   "nama": "Payung rusak",
+   "rarity": "umum",
+   "harga_jual_rp": 2000,
+   "lokasi_temuan": [
+    "trotoar",
+    "taman",
+    "tong_sampah",
+    "jalan"
+   ],
+   "bobot_spawn": 6,
+   "deskripsi": "payung lipat, rangkanya patah",
+   "varian": [
+    "ungu",
+    "hitam"
+   ],
+   "sprite": {
+    "payung_rusak_ungu": {
+     "icon": "icons/payung_rusak_ungu.png",
+     "ground": "ground/payung_rusak_ungu.png",
+     "ground_pivot": [
+      20,
+      15
+     ]
+    },
+    "payung_rusak_hitam": {
+     "icon": "icons/payung_rusak_hitam.png",
+     "ground": "ground/payung_rusak_hitam.png",
+     "ground_pivot": [
+      20,
+      15
+     ]
+    }
+   }
+  },
+  {
+   "id": "sepatu_bekas",
+   "nama": "Sepatu bekas",
+   "rarity": "umum",
+   "harga_jual_rp": 3000,
+   "lokasi_temuan": [
+    "trotoar",
+    "taman",
+    "tong_sampah",
+    "gang"
+   ],
+   "bobot_spawn": 7,
+   "deskripsi": "sepatu kets sebelah, solnya mangap",
+   "varian": [
+    "putih",
+    "hitam"
+   ],
+   "sprite": {
+    "sepatu_bekas_putih": {
+     "icon": "icons/sepatu_bekas_putih.png",
+     "ground": "ground/sepatu_bekas_putih.png",
+     "ground_pivot": [
+      16,
+      20
+     ]
+    },
+    "sepatu_bekas_hitam": {
+     "icon": "icons/sepatu_bekas_hitam.png",
+     "ground": "ground/sepatu_bekas_hitam.png",
+     "ground_pivot": [
+      16,
+      20
+     ]
+    }
+   }
+  },
+  {
+   "id": "dompet_kosong",
+   "nama": "Dompet kosong",
+   "rarity": "umum",
+   "harga_jual_rp": 3000,
+   "lokasi_temuan": [
+    "trotoar",
+    "taman",
+    "kolong_bangku",
+    "got"
+   ],
+   "bobot_spawn": 6,
+   "deskripsi": "dompet kulit sintetis, isinya sudah tidak ada (KTP tidak ada)",
+   "varian": null,
+   "sprite": {
+    "dompet_kosong": {
+     "icon": "icons/dompet_kosong.png",
+     "ground": "ground/dompet_kosong.png",
+     "ground_pivot": [
+      14,
+      11
+     ]
+    }
+   }
+  },
+  {
+   "id": "gelas_plastik",
+   "nama": "Gelas plastik es teh",
+   "rarity": "umum",
+   "harga_jual_rp": 200,
+   "lokasi_temuan": [
+    "jalan",
+    "trotoar",
+    "sekitar_warung",
+    "tong_sampah"
+   ],
+   "bobot_spawn": 14,
+   "deskripsi": "gelas plastik bekas es teh, sedotannya masih nancep",
+   "varian": null,
+   "sprite": {
+    "gelas_plastik": {
+     "icon": "icons/gelas_plastik.png",
+     "ground": "ground/gelas_plastik.png",
+     "ground_pivot": [
+      6,
+      19
+     ]
+    }
+   }
+  },
+  {
+   "id": "ember_bocor",
+   "nama": "Ember bocor",
+   "rarity": "umum",
+   "harga_jual_rp": 2500,
+   "lokasi_temuan": [
+    "gang",
+    "sekitar_warung",
+    "tumpukan_kardus"
+   ],
+   "bobot_spawn": 6,
+   "deskripsi": "ember plastik hitam, dasarnya bolong",
+   "varian": null,
+   "sprite": {
+    "ember_bocor": {
+     "icon": "icons/ember_bocor.png",
+     "ground": "ground/ember_bocor.png",
+     "ground_pivot": [
+      12,
+      25
+     ]
+    }
+   }
+  },
+  {
+   "id": "hp_jadul",
+   "nama": "HP jadul rusak",
+   "rarity": "jarang",
+   "harga_jual_rp": 15000,
+   "lokasi_temuan": [
+    "trotoar",
+    "taman",
+    "kolong_bangku",
+    "got",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 5,
+   "deskripsi": "HP Nokia klasik, layarnya retak, masih bisa diservis",
+   "varian": [
+    "biru",
+    "abu"
+   ],
+   "sprite": {
+    "hp_jadul_biru": {
+     "icon": "icons/hp_jadul_biru.png",
+     "ground": "ground/hp_jadul_biru.png",
+     "ground_pivot": [
+      12,
+      9
+     ]
+    },
+    "hp_jadul_abu": {
+     "icon": "icons/hp_jadul_abu.png",
+     "ground": "ground/hp_jadul_abu.png",
+     "ground_pivot": [
+      12,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "id": "jam_tangan_rusak",
+   "nama": "Jam tangan rusak",
+   "rarity": "jarang",
+   "harga_jual_rp": 12000,
+   "lokasi_temuan": [
+    "trotoar",
+    "taman",
+    "kolong_bangku",
+    "got"
+   ],
+   "bobot_spawn": 5,
+   "deskripsi": "jam tangan analog, kacanya retak, talinya kulit",
+   "varian": null,
+   "sprite": {
+    "jam_tangan_rusak": {
+     "icon": "icons/jam_tangan_rusak.png",
+     "ground": "ground/jam_tangan_rusak.png",
+     "ground_pivot": [
+      12,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "id": "kacamata",
+   "nama": "Kacamata bekas",
+   "rarity": "jarang",
+   "harga_jual_rp": 8000,
+   "lokasi_temuan": [
+    "taman",
+    "kolong_bangku",
+    "trotoar"
+   ],
+   "bobot_spawn": 6,
+   "deskripsi": "kacamata minus, satu gagangnya longgar",
+   "varian": null,
+   "sprite": {
+    "kacamata": {
+     "icon": "icons/kacamata.png",
+     "ground": "ground/kacamata.png",
+     "ground_pivot": [
+      10,
+      11
+     ]
+    }
+   }
+  },
+  {
+   "id": "kunci_lama",
+   "nama": "Kunci lama",
+   "rarity": "jarang",
+   "harga_jual_rp": 5000,
+   "lokasi_temuan": [
+    "gang",
+    "got",
+    "trotoar",
+    "kolong_bangku"
+   ],
+   "bobot_spawn": 7,
+   "deskripsi": "dua anak kunci kuningan di ring besi",
+   "varian": null,
+   "sprite": {
+    "kunci_lama": {
+     "icon": "icons/kunci_lama.png",
+     "ground": "ground/kunci_lama.png",
+     "ground_pivot": [
+      10,
+      6
+     ]
+    }
+   }
+  },
+  {
+   "id": "besi_tua",
+   "nama": "Besi tua",
+   "rarity": "jarang",
+   "harga_jual_rp": 6000,
+   "lokasi_temuan": [
+    "gang",
+    "tumpukan_kardus",
+    "belakang_indomaret",
+    "got"
+   ],
+   "bobot_spawn": 8,
+   "deskripsi": "potongan pipa besi berkarat + mur, dijual kiloan",
+   "varian": null,
+   "sprite": {
+    "besi_tua": {
+     "icon": "icons/besi_tua.png",
+     "ground": "ground/besi_tua.png",
+     "ground_pivot": [
+      19,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "id": "helm_bekas",
+   "nama": "Helm bekas",
+   "rarity": "jarang",
+   "harga_jual_rp": 20000,
+   "lokasi_temuan": [
+    "trotoar",
+    "belakang_indomaret",
+    "sekitar_warung",
+    "tong_sampah"
+   ],
+   "bobot_spawn": 5,
+   "deskripsi": "helm half-face, kaca visornya baret",
+   "varian": [
+    "merah",
+    "putih",
+    "hitam"
+   ],
+   "sprite": {
+    "helm_bekas_merah": {
+     "icon": "icons/helm_bekas_merah.png",
+     "ground": "ground/helm_bekas_merah.png",
+     "ground_pivot": [
+      16,
+      17
+     ]
+    },
+    "helm_bekas_putih": {
+     "icon": "icons/helm_bekas_putih.png",
+     "ground": "ground/helm_bekas_putih.png",
+     "ground_pivot": [
+      16,
+      17
+     ]
+    },
+    "helm_bekas_hitam": {
+     "icon": "icons/helm_bekas_hitam.png",
+     "ground": "ground/helm_bekas_hitam.png",
+     "ground_pivot": [
+      16,
+      17
+     ]
+    }
+   }
+  },
+  {
+   "id": "tas_bekas",
+   "nama": "Tas bekas",
+   "rarity": "jarang",
+   "harga_jual_rp": 15000,
+   "lokasi_temuan": [
+    "taman",
+    "kolong_bangku",
+    "tong_sampah",
+    "gang"
+   ],
+   "bobot_spawn": 5,
+   "deskripsi": "tas selempang, resletingnya macet",
+   "varian": [
+    "coklat",
+    "hitam"
+   ],
+   "sprite": {
+    "tas_bekas_coklat": {
+     "icon": "icons/tas_bekas_coklat.png",
+     "ground": "ground/tas_bekas_coklat.png",
+     "ground_pivot": [
+      14,
+      26
+     ]
+    },
+    "tas_bekas_hitam": {
+     "icon": "icons/tas_bekas_hitam.png",
+     "ground": "ground/tas_bekas_hitam.png",
+     "ground_pivot": [
+      14,
+      26
+     ]
+    }
+   }
+  },
+  {
+   "id": "boneka_kain",
+   "nama": "Boneka beruang kumal",
+   "rarity": "jarang",
+   "harga_jual_rp": 7000,
+   "lokasi_temuan": [
+    "taman",
+    "kolong_bangku",
+    "tong_sampah",
+    "tumpukan_kardus"
+   ],
+   "bobot_spawn": 6,
+   "deskripsi": "boneka beruang kain, satu matanya copot",
+   "varian": null,
+   "sprite": {
+    "boneka_kain": {
+     "icon": "icons/boneka_kain.png",
+     "ground": "ground/boneka_kain.png",
+     "ground_pivot": [
+      13,
+      23
+     ]
+    }
+   }
+  },
+  {
+   "id": "mainan_mobil",
+   "nama": "Mobil-mobilan rusak",
+   "rarity": "jarang",
+   "harga_jual_rp": 6000,
+   "lokasi_temuan": [
+    "taman",
+    "gang",
+    "kolong_bangku",
+    "tumpukan_kardus"
+   ],
+   "bobot_spawn": 6,
+   "deskripsi": "mobil-mobilan plastik, satu rodanya hilang",
+   "varian": [
+    "merah",
+    "kuning"
+   ],
+   "sprite": {
+    "mainan_mobil_merah": {
+     "icon": "icons/mainan_mobil_merah.png",
+     "ground": "ground/mainan_mobil_merah.png",
+     "ground_pivot": [
+      16,
+      16
+     ]
+    },
+    "mainan_mobil_kuning": {
+     "icon": "icons/mainan_mobil_kuning.png",
+     "ground": "ground/mainan_mobil_kuning.png",
+     "ground_pivot": [
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "id": "kipas_angin",
+   "nama": "Kipas angin meja rusak",
+   "rarity": "jarang",
+   "harga_jual_rp": 25000,
+   "lokasi_temuan": [
+    "gang",
+    "tumpukan_kardus",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 4,
+   "deskripsi": "kipas angin meja, baling-balingnya patah satu",
+   "varian": null,
+   "sprite": {
+    "kipas_angin": {
+     "icon": "icons/kipas_angin.png",
+     "ground": "ground/kipas_angin.png",
+     "ground_pivot": [
+      13,
+      35
+     ]
+    }
+   }
+  },
+  {
+   "id": "setrika_lama",
+   "nama": "Setrika lama",
+   "rarity": "jarang",
+   "harga_jual_rp": 12000,
+   "lokasi_temuan": [
+    "gang",
+    "tumpukan_kardus",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 4,
+   "deskripsi": "setrika listrik jadul, kabelnya putus",
+   "varian": null,
+   "sprite": {
+    "setrika_lama": {
+     "icon": "icons/setrika_lama.png",
+     "ground": "ground/setrika_lama.png",
+     "ground_pivot": [
+      17,
+      18
+     ]
+    }
+   }
+  },
+  {
+   "id": "radio_tua",
+   "nama": "Radio tua",
+   "rarity": "jarang",
+   "harga_jual_rp": 30000,
+   "lokasi_temuan": [
+    "gang",
+    "tumpukan_kardus",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 3,
+   "deskripsi": "radio transistor kayu, masih ada bunyi kresek-kresek",
+   "varian": null,
+   "sprite": {
+    "radio_tua": {
+     "icon": "icons/radio_tua.png",
+     "ground": "ground/radio_tua.png",
+     "ground_pivot": [
+      14,
+      29
+     ]
+    }
+   }
+  },
+  {
+   "id": "jam_dinding",
+   "nama": "Jam dinding mati",
+   "rarity": "jarang",
+   "harga_jual_rp": 15000,
+   "lokasi_temuan": [
+    "gang",
+    "tumpukan_kardus",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 4,
+   "deskripsi": "jam dinding bulat, jarumnya berhenti di 10:10",
+   "varian": null,
+   "sprite": {
+    "jam_dinding": {
+     "icon": "icons/jam_dinding.png",
+     "ground": "ground/jam_dinding.png",
+     "ground_pivot": [
+      14,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "id": "gembok_tua",
+   "nama": "Gembok tua",
+   "rarity": "jarang",
+   "harga_jual_rp": 8000,
+   "lokasi_temuan": [
+    "gang",
+    "got",
+    "tumpukan_kardus"
+   ],
+   "bobot_spawn": 6,
+   "deskripsi": "gembok kuningan tanpa kunci",
+   "varian": null,
+   "sprite": {
+    "gembok_tua": {
+     "icon": "icons/gembok_tua.png",
+     "ground": "ground/gembok_tua.png",
+     "ground_pivot": [
+      6,
+      15
+     ]
+    }
+   }
+  },
+  {
+   "id": "senter_rusak",
+   "nama": "Senter rusak",
+   "rarity": "jarang",
+   "harga_jual_rp": 5000,
+   "lokasi_temuan": [
+    "gang",
+    "trotoar",
+    "kolong_bangku"
+   ],
+   "bobot_spawn": 6,
+   "deskripsi": "senter plastik kuning, baterainya bocor",
+   "varian": null,
+   "sprite": {
+    "senter_rusak": {
+     "icon": "icons/senter_rusak.png",
+     "ground": "ground/senter_rusak.png",
+     "ground_pivot": [
+      14,
+      12
+     ]
+    }
+   }
+  },
+  {
+   "id": "koin_kuno",
+   "nama": "Koin kuno",
+   "rarity": "langka",
+   "harga_jual_rp": 50000,
+   "lokasi_temuan": [
+    "taman",
+    "got",
+    "kolong_bangku",
+    "gang"
+   ],
+   "bobot_spawn": 2,
+   "deskripsi": "beberapa koin lama (100 rupiah 1973, sen Hindia Belanda)",
+   "varian": null,
+   "sprite": {
+    "koin_kuno": {
+     "icon": "icons/koin_kuno.png",
+     "ground": "ground/koin_kuno.png",
+     "ground_pivot": [
+      8,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "id": "tembaga_gulungan",
+   "nama": "Gulungan kawat tembaga",
+   "rarity": "langka",
+   "harga_jual_rp": 40000,
+   "lokasi_temuan": [
+    "gang",
+    "tumpukan_kardus",
+    "belakang_indomaret"
+   ],
+   "bobot_spawn": 3,
+   "deskripsi": "kawat tembaga bekas gulungan dinamo, mahal di pengepul",
+   "varian": null,
+   "sprite": {
+    "tembaga_gulungan": {
+     "icon": "icons/tembaga_gulungan.png",
+     "ground": "ground/tembaga_gulungan.png",
+     "ground_pivot": [
+      13,
+      12
+     ]
+    }
+   }
+  },
+  {
+   "id": "aki_bekas",
+   "nama": "Aki bekas",
+   "rarity": "langka",
+   "harga_jual_rp": 35000,
+   "lokasi_temuan": [
+    "gang",
+    "belakang_indomaret",
+    "sekitar_warung"
+   ],
+   "bobot_spawn": 3,
+   "deskripsi": "aki motor/mobil bekas, berat, dibeli pengepul",
+   "varian": null,
+   "sprite": {
+    "aki_bekas": {
+     "icon": "icons/aki_bekas.png",
+     "ground": "ground/aki_bekas.png",
+     "ground_pivot": [
+      16,
+      22
+     ]
+    }
+   }
+  },
+  {
+   "id": "kamera_analog",
+   "nama": "Kamera analog",
+   "rarity": "langka",
+   "harga_jual_rp": 80000,
+   "lokasi_temuan": [
+    "taman",
+    "kolong_bangku",
+    "tumpukan_kardus"
+   ],
+   "bobot_spawn": 2,
+   "deskripsi": "kamera film jadul, lensanya masih utuh",
+   "varian": null,
+   "sprite": {
+    "kamera_analog": {
+     "icon": "icons/kamera_analog.png",
+     "ground": "ground/kamera_analog.png",
+     "ground_pivot": [
+      13,
+      18
+     ]
+    }
+   }
+  },
+  {
+   "id": "walkman",
+   "nama": "Walkman kaset",
+   "rarity": "langka",
+   "harga_jual_rp": 60000,
+   "lokasi_temuan": [
+    "taman",
+    "kolong_bangku",
+    "tumpukan_kardus"
+   ],
+   "bobot_spawn": 2,
+   "deskripsi": "pemutar kaset portabel tahun 80-an",
+   "varian": null,
+   "sprite": {
+    "walkman": {
+     "icon": "icons/walkman.png",
+     "ground": "ground/walkman.png",
+     "ground_pivot": [
+      14,
+      12
+     ]
+    }
+   }
+  },
+  {
+   "id": "piringan_hitam",
+   "nama": "Piringan hitam",
+   "rarity": "langka",
+   "harga_jual_rp": 70000,
+   "lokasi_temuan": [
+    "gang",
+    "tumpukan_kardus"
+   ],
+   "bobot_spawn": 2,
+   "deskripsi": "piringan hitam lagu keroncong dalam sampul kertas",
+   "varian": null,
+   "sprite": {
+    "piringan_hitam": {
+     "icon": "icons/piringan_hitam.png",
+     "ground": "ground/piringan_hitam.png",
+     "ground_pivot": [
+      24,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "id": "arloji_saku",
+   "nama": "Arloji saku antik",
+   "rarity": "langka",
+   "harga_jual_rp": 120000,
+   "lokasi_temuan": [
+    "taman",
+    "got",
+    "kolong_bangku"
+   ],
+   "bobot_spawn": 1,
+   "deskripsi": "arloji saku kuningan dengan rantai, barang antik incaran kolektor",
+   "varian": null,
+   "sprite": {
+    "arloji_saku": {
+     "icon": "icons/arloji_saku.png",
+     "ground": "ground/arloji_saku.png",
+     "ground_pivot": [
+      12,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "id": "lampu_petromaks",
+   "nama": "Lampu petromaks",
+   "rarity": "langka",
+   "harga_jual_rp": 90000,
+   "lokasi_temuan": [
+    "gang",
+    "tumpukan_kardus"
+   ],
+   "bobot_spawn": 1,
+   "deskripsi": "lampu petromaks kuningan peninggalan pedagang malam",
+   "varian": null,
+   "sprite": {
+    "lampu_petromaks": {
+     "icon": "icons/lampu_petromaks.png",
+     "ground": "ground/lampu_petromaks.png",
+     "ground_pivot": [
+      8,
+      30
+     ]
+    }
+   }
+  }
+ ],
+ "tempat_temuan": {
+  "tong_sampah_besi": {
+   "nama": "Tong sampah",
+   "lokasi": [
+    "trotoar",
+    "taman",
+    "belakang_indomaret",
+    "sekitar_warung"
+   ],
+   "sprite": {
+    "sw": {
+     "file": "props_temuan/tong_sampah_besi_sw.png",
+     "kilau": [
+      "props_temuan/tong_sampah_besi_sw__kilau_f0.png",
+      "props_temuan/tong_sampah_besi_sw__kilau_f1.png",
+      "props_temuan/tong_sampah_besi_sw__kilau_f2.png"
+     ],
+     "pivot": [
+      14,
+      54
+     ]
+    },
+    "se": {
+     "file": "props_temuan/tong_sampah_besi_se.png",
+     "kilau": [
+      "props_temuan/tong_sampah_besi_se__kilau_f0.png",
+      "props_temuan/tong_sampah_besi_se__kilau_f1.png",
+      "props_temuan/tong_sampah_besi_se__kilau_f2.png"
+     ],
+     "pivot": [
+      20,
+      55
+     ]
+    }
+   },
+   "note": "tong sampah fiber hijau, tutup miring, kantong kresek menyembul, kaleng di tanah",
+   "pool_item": []
+  },
+  "tumpukan_kardus": {
+   "nama": "Tumpukan kardus",
+   "lokasi": [
+    "belakang_indomaret",
+    "sekitar_warung",
+    "gang"
+   ],
+   "sprite": {
+    "sw": {
+     "file": "props_temuan/tumpukan_kardus_sw.png",
+     "kilau": [
+      "props_temuan/tumpukan_kardus_sw__kilau_f0.png",
+      "props_temuan/tumpukan_kardus_sw__kilau_f1.png",
+      "props_temuan/tumpukan_kardus_sw__kilau_f2.png"
+     ],
+     "pivot": [
+      20,
+      54
+     ]
+    },
+    "se": {
+     "file": "props_temuan/tumpukan_kardus_se.png",
+     "kilau": [
+      "props_temuan/tumpukan_kardus_se__kilau_f0.png",
+      "props_temuan/tumpukan_kardus_se__kilau_f1.png",
+      "props_temuan/tumpukan_kardus_se__kilau_f2.png"
+     ],
+     "pivot": [
+      22,
+      51
+     ]
+    }
+   },
+   "note": "tumpukan kardus bekas diikat tali rafia, satu kardus terbuka",
+   "pool_item": [
+    "besi_tua",
+    "boneka_kain",
+    "buku_bekas",
+    "ember_bocor",
+    "gembok_tua",
+    "jam_dinding",
+    "kamera_analog",
+    "kardus_lipat",
+    "kaset_pita",
+    "kipas_angin",
+    "lampu_petromaks",
+    "mainan_mobil",
+    "piringan_hitam",
+    "radio_tua",
+    "setrika_lama",
+    "tembaga_gulungan",
+    "walkman"
+   ]
+  },
+  "kantong_kresek": {
+   "nama": "Kantong kresek di sudut",
+   "lokasi": [
+    "gang",
+    "sekitar_warung",
+    "trotoar",
+    "belakang_indomaret"
+   ],
+   "sprite": {
+    "sw": {
+     "file": "props_temuan/kantong_kresek_sw.png",
+     "kilau": [
+      "props_temuan/kantong_kresek_sw__kilau_f0.png",
+      "props_temuan/kantong_kresek_sw__kilau_f1.png",
+      "props_temuan/kantong_kresek_sw__kilau_f2.png"
+     ],
+     "pivot": [
+      18,
+      32
+     ]
+    },
+    "se": {
+     "file": "props_temuan/kantong_kresek_se.png",
+     "kilau": [
+      "props_temuan/kantong_kresek_se__kilau_f0.png",
+      "props_temuan/kantong_kresek_se__kilau_f1.png",
+      "props_temuan/kantong_kresek_se__kilau_f2.png"
+     ],
+     "pivot": [
+      17,
+      27
+     ]
+    }
+   },
+   "note": "tiga kantong kresek (hitam, putih, merah) diikat, ditaruh di sudut",
+   "pool_item": []
+  },
+  "got_kecil": {
+   "nama": "Got kecil (selokan)",
+   "lokasi": [
+    "gang",
+    "trotoar",
+    "jalan"
+   ],
+   "sprite": {
+    "sw": {
+     "file": "props_temuan/got_kecil_sw.png",
+     "kilau": [
+      "props_temuan/got_kecil_sw__kilau_f0.png",
+      "props_temuan/got_kecil_sw__kilau_f1.png",
+      "props_temuan/got_kecil_sw__kilau_f2.png"
+     ],
+     "pivot": [
+      48,
+      24
+     ]
+    },
+    "se": {
+     "file": "props_temuan/got_kecil_se.png",
+     "kilau": [
+      "props_temuan/got_kecil_se__kilau_f0.png",
+      "props_temuan/got_kecil_se__kilau_f1.png",
+      "props_temuan/got_kecil_se__kilau_f2.png"
+     ],
+     "pivot": [
+      48,
+      24
+     ]
+    }
+   },
+   "note": "segmen got beton 2 sel dengan tutup besi berlubang, air keruh, sampah tersangkut",
+   "pool_item": []
+  },
+  "kolong_bangku": {
+   "nama": "Kolong bangku taman",
+   "lokasi": [
+    "taman"
+   ],
+   "sprite": {
+    "sw": {
+     "file": "props_temuan/kolong_bangku_sw.png",
+     "kilau": [
+      "props_temuan/kolong_bangku_sw__kilau_f0.png",
+      "props_temuan/kolong_bangku_sw__kilau_f1.png",
+      "props_temuan/kolong_bangku_sw__kilau_f2.png"
+     ],
+     "pivot": [
+      34,
+      57
+     ]
+    },
+    "se": {
+     "file": "props_temuan/kolong_bangku_se.png",
+     "kilau": [
+      "props_temuan/kolong_bangku_se__kilau_f0.png",
+      "props_temuan/kolong_bangku_se__kilau_f1.png",
+      "props_temuan/kolong_bangku_se__kilau_f2.png"
+     ],
+     "pivot": [
+      36,
+      57
+     ]
+    }
+   },
+   "note": "bangku taman (sama dengan street_buildings/taman/bangku_taman) dengan koran dan botol terselip di kolongnya",
+   "pool_item": [
+    "arloji_saku",
+    "boneka_kain",
+    "buku_bekas",
+    "dompet_kosong",
+    "hp_jadul",
+    "jam_tangan_rusak",
+    "kacamata",
+    "kamera_analog",
+    "koin_kuno",
+    "koran_bekas",
+    "kunci_lama",
+    "mainan_mobil",
+    "senter_rusak",
+    "tas_bekas",
+    "walkman"
+   ]
+  },
+  "karung_rongsok": {
+   "nama": "Karung rongsokan",
+   "lokasi": [
+    "gang",
+    "sekitar_warung",
+    "belakang_indomaret"
+   ],
+   "sprite": {
+    "sw": {
+     "file": "props_temuan/karung_rongsok_sw.png",
+     "kilau": [
+      "props_temuan/karung_rongsok_sw__kilau_f0.png",
+      "props_temuan/karung_rongsok_sw__kilau_f1.png",
+      "props_temuan/karung_rongsok_sw__kilau_f2.png"
+     ],
+     "pivot": [
+      12,
+      47
+     ]
+    },
+    "se": {
+     "file": "props_temuan/karung_rongsok_se.png",
+     "kilau": [
+      "props_temuan/karung_rongsok_se__kilau_f0.png",
+      "props_temuan/karung_rongsok_se__kilau_f1.png",
+      "props_temuan/karung_rongsok_se__kilau_f2.png"
+     ],
+     "pivot": [
+      18,
+      45
+     ]
+    }
+   },
+   "note": "karung plastik putih bergaris berisi rongsokan, mulut karung terbuka",
+   "pool_item": [
+    "aki_bekas",
+    "besi_tua",
+    "gembok_tua",
+    "jam_dinding",
+    "kardus_lipat",
+    "kipas_angin",
+    "koin_kuno",
+    "kunci_lama",
+    "lampu_petromaks",
+    "mainan_mobil",
+    "piringan_hitam",
+    "radio_tua",
+    "senter_rusak",
+    "setrika_lama",
+    "tas_bekas",
+    "tembaga_gulungan"
+   ]
+  }
+ },
+ "sprite_umum": {
+  "kilau_item": [
+   "props_temuan/kilau_item_f0.png",
+   "props_temuan/kilau_item_f1.png",
+   "props_temuan/kilau_item_f2.png"
+  ]
+ },
+ "mekanik_usulan": {
+  "status": "USULAN, belum diimplementasi",
+  "cari_di_prop": "pemain berdiri di sel interaksi prop yang berkilau lalu tekan Cari (animasi jongkok 1.2 dtk); dapat 0-1 item dari pool_item prop itu",
+  "peluang_dapat": 0.7,
+  "peluang_rarity": {
+   "umum": 0.8,
+   "jarang": 0.17,
+   "langka": 0.03
+  },
+  "pilih_item": "dalam rarity terpilih, acak berbobot bobot_spawn dari item yang lokasi_temuan-nya cocok dengan prop/area",
+  "cooldown_cari_per_prop_menit": 10,
+  "kilau": "kilau tampil hanya saat prop siap (cooldown habis); habis dicari -> tanpa kilau",
+  "barang_tergeletak": "maks 6 item tergeletak di peta luar sekaligus, respawn tiap 3-5 menit di titik acak jalan/trotoar/taman/gang, pakai kilau_item_f0..2 di atasnya; diambil dengan jalan di atasnya + tombol Ambil",
+  "kapasitas_tas": {
+   "awal": 8,
+   "upgrade": [
+    12,
+    16
+   ],
+   "catatan": "item varian berbeda = slot berbeda; item sejenis menumpuk sampai 5"
+  },
+  "jual_ke_toko_loak": "bicara ke babeh pemilik di etalase (player_sell_cell toko_loak); harga = harga_jual_rp x (0.8-1.2 acak harian); bonus +20% untuk 3 langka pertama per hari",
+  "batas_harian": "maks 30 kali cari per hari game agar ekonomi tidak bocor",
+  "harga_rujukan": "kisaran harga pengepul/loak Jakarta (plastik ±Rp2-4rb/kg, kardus ±Rp1.5-3rb/kg, tembaga ±Rp70-100rb/kg) dipakai sebagai patokan kasar; harga per buah di sini disederhanakan untuk game, bukan harga pasar terverifikasi"
+ },
+ "aturan_gambar": "ikon 32x32 tanpa bayangan; ground 2 px/unit (skala barang dilebihkan x1.5), pivot = titik tanah di bawah pusat barang, bayangan hitam alpha 56; kilau = lapisan glow (inti 255, halo alpha 90)"
+}

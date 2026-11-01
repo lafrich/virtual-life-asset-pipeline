@@ -1,0 +1,7 @@
+# Python 3.11+ (developed on 3.13)
+pillow>=10
+numpy>=1.26
+# optional, only for the browser-driven steps (ui_nokia export, game captures):
+# playwright>=1.45   (then: python3 -m playwright install chromium)
+# System packages (Debian/Ubuntu): ffmpeg (MP4 builders), fonts-dejavu-core (labels on contact sheets),
+#   fonts-wine (Wine Tahoma clone, ui_y2k / ui_loak_tas)

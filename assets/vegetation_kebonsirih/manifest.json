@@ -1,0 +1,1486 @@
+{
+ "projection": "iso 2:1, 1 tile = 64x32 px, PPU 2 (1 game unit = 2 px), light from the left",
+ "anchor_rule": "pivot = ground point under the trunk/plant centre. Game draw: <image x=P(c,r).x - pivot[0]/2, y=P(c,r).y - pivot[1]/2, width=w/2, height=h/2> (PPU 2), same rule as street_vehicles. Depth sort key = c+r of the pivot.",
+ "tile_anchor_rule": "floor tiles 64x32, anchor (32,0) = top (north) corner of the diamond at P(c,r), same as environment/tiles/grass_a.png",
+ "shadow": "v2: 2-level flat black shadow baked into the PNG: alpha 56 = canopy/body projection (union of per-clump ellipses, shifted right/away from the left light), alpha 90 = small ground-contact patch under the trunk/stem. Alpha values used: 0/56/90/255. Where the shadow falls on the opaque grass skirt it is painted as darker grass tones instead of alpha.",
+ "sprites": {
+  "pohon_asam_L": {
+   "file": "trees/pohon_asam_L.png",
+   "group": "tree",
+   "size": [
+    190,
+    206
+   ],
+   "pivot": [
+    95,
+    177
+   ],
+   "name_id": "Asam jawa (besar, pohon utama)",
+   "latin": "Tamarindus indica",
+   "status": "active",
+   "shadow_rx": 52.0,
+   "game_size_units": [
+    95.0,
+    103.0
+   ]
+  },
+  "pohon_asam_M": {
+   "file": "trees/pohon_asam_M.png",
+   "group": "tree",
+   "size": [
+    148,
+    162
+   ],
+   "pivot": [
+    74,
+    139
+   ],
+   "name_id": "Asam jawa (sedang)",
+   "latin": "Tamarindus indica",
+   "status": "active",
+   "shadow_rx": 41.9,
+   "game_size_units": [
+    74.0,
+    81.0
+   ]
+  },
+  "pohon_asam_S": {
+   "file": "trees/pohon_asam_S.png",
+   "group": "tree",
+   "size": [
+    108,
+    119
+   ],
+   "pivot": [
+    54,
+    101
+   ],
+   "name_id": "Asam jawa (muda)",
+   "latin": "Tamarindus indica",
+   "status": "active",
+   "shadow_rx": 31.8,
+   "game_size_units": [
+    54.0,
+    59.5
+   ]
+  },
+  "pohon_trembesi_L": {
+   "file": "trees/pohon_trembesi_L.png",
+   "group": "tree",
+   "size": [
+    202,
+    145
+   ],
+   "pivot": [
+    101,
+    114
+   ],
+   "name_id": "Trembesi / ki hujan (besar)",
+   "latin": "Samanea saman",
+   "status": "active",
+   "shadow_rx": 64.0,
+   "game_size_units": [
+    101.0,
+    72.5
+   ]
+  },
+  "pohon_trembesi_M": {
+   "file": "trees/pohon_trembesi_M.png",
+   "group": "tree",
+   "size": [
+    140,
+    103
+   ],
+   "pivot": [
+    70,
+    78
+   ],
+   "name_id": "Trembesi / ki hujan (sedang)",
+   "latin": "Samanea saman",
+   "status": "active",
+   "shadow_rx": 45.4,
+   "game_size_units": [
+    70.0,
+    51.5
+   ]
+  },
+  "pohon_angsana_L": {
+   "file": "trees/pohon_angsana_L.png",
+   "group": "tree",
+   "size": [
+    140,
+    172
+   ],
+   "pivot": [
+    70,
+    146
+   ],
+   "name_id": "Angsana (besar)",
+   "latin": "Pterocarpus indicus",
+   "status": "active",
+   "shadow_rx": 47.0,
+   "game_size_units": [
+    70.0,
+    86.0
+   ]
+  },
+  "pohon_angsana_M": {
+   "file": "trees/pohon_angsana_M.png",
+   "group": "tree",
+   "size": [
+    102,
+    124
+   ],
+   "pivot": [
+    51,
+    104
+   ],
+   "name_id": "Angsana (sedang)",
+   "latin": "Pterocarpus indicus",
+   "status": "active",
+   "shadow_rx": 35.2,
+   "game_size_units": [
+    51.0,
+    62.0
+   ]
+  },
+  "pohon_mahoni_L": {
+   "file": "trees/pohon_mahoni_L.png",
+   "group": "tree",
+   "size": [
+    106,
+    180
+   ],
+   "pivot": [
+    53,
+    158
+   ],
+   "name_id": "Mahoni (besar)",
+   "latin": "Swietenia mahagoni",
+   "status": "active",
+   "shadow_rx": 39.0,
+   "game_size_units": [
+    53.0,
+    90.0
+   ]
+  },
+  "pohon_mahoni_M": {
+   "file": "trees/pohon_mahoni_M.png",
+   "group": "tree",
+   "size": [
+    78,
+    130
+   ],
+   "pivot": [
+    39,
+    113
+   ],
+   "name_id": "Mahoni (sedang)",
+   "latin": "Swietenia mahagoni",
+   "status": "active",
+   "shadow_rx": 29.5,
+   "game_size_units": [
+    39.0,
+    65.0
+   ]
+  },
+  "pohon_ketapang_kencana": {
+   "file": "trees/pohon_ketapang_kencana.png",
+   "group": "tree",
+   "size": [
+    110,
+    167
+   ],
+   "pivot": [
+    55,
+    149
+   ],
+   "name_id": "Ketapang kencana",
+   "latin": "Terminalia mantaly",
+   "status": "active",
+   "shadow_rx": 30,
+   "game_size_units": [
+    55.0,
+    83.5
+   ]
+  },
+  "pohon_beringin": {
+   "file": "trees/pohon_beringin.png",
+   "group": "tree",
+   "size": [
+    178,
+    187
+   ],
+   "pivot": [
+    89,
+    156
+   ],
+   "name_id": "Beringin",
+   "latin": "Ficus benjamina",
+   "status": "active",
+   "shadow_rx": 62,
+   "game_size_units": [
+    89.0,
+    93.5
+   ]
+  },
+  "pohon_kiara_payung": {
+   "file": "trees/pohon_kiara_payung.png",
+   "group": "tree",
+   "size": [
+    112,
+    118
+   ],
+   "pivot": [
+    56,
+    97
+   ],
+   "name_id": "Kiara payung",
+   "latin": "Filicium decipiens",
+   "status": "active",
+   "shadow_rx": 36,
+   "game_size_units": [
+    56.0,
+    59.0
+   ]
+  },
+  "pohon_flamboyan": {
+   "file": "trees/pohon_flamboyan.png",
+   "group": "tree",
+   "size": [
+    178,
+    137
+   ],
+   "pivot": [
+    89,
+    111
+   ],
+   "name_id": "Flamboyan",
+   "latin": "Delonix regia",
+   "status": "active",
+   "shadow_rx": 48,
+   "game_size_units": [
+    89.0,
+    68.5
+   ]
+  },
+  "pohon_tabebuya_kuning": {
+   "file": "trees/pohon_tabebuya_kuning.png",
+   "group": "tree",
+   "size": [
+    104,
+    156
+   ],
+   "pivot": [
+    52,
+    139
+   ],
+   "name_id": "Tabebuya kuning",
+   "latin": "Handroanthus chrysotrichus",
+   "status": "active",
+   "shadow_rx": 28,
+   "game_size_units": [
+    52.0,
+    78.0
+   ]
+  },
+  "pohon_palem_raja": {
+   "file": "trees/pohon_palem_raja.png",
+   "group": "tree",
+   "size": [
+    82,
+    210
+   ],
+   "pivot": [
+    41,
+    197
+   ],
+   "name_id": "Palem raja",
+   "latin": "Roystonea regia",
+   "status": "active",
+   "shadow_rx": 20,
+   "game_size_units": [
+    41.0,
+    105.0
+   ]
+  },
+  "pohon_bungur": {
+   "file": "trees/pohon_bungur.png",
+   "group": "tree",
+   "size": [
+    102,
+    143
+   ],
+   "pivot": [
+    51,
+    124
+   ],
+   "name_id": "Bungur",
+   "latin": "Lagerstroemia speciosa",
+   "status": "active",
+   "shadow_rx": 32,
+   "game_size_units": [
+    51.0,
+    71.5
+   ]
+  },
+  "pohon_glodokan_tiang": {
+   "file": "trees/pohon_glodokan_tiang.png",
+   "group": "tree",
+   "size": [
+    62,
+    186
+   ],
+   "pivot": [
+    31,
+    175
+   ],
+   "name_id": "Glodokan tiang",
+   "latin": "Monoon longifolium",
+   "status": "active",
+   "shadow_rx": 16,
+   "game_size_units": [
+    31.0,
+    93.0
+   ]
+  },
+  "semak_bugenvil": {
+   "file": "shrubs_ditahan/semak_bugenvil.png",
+   "group": "shrub",
+   "size": [
+    44,
+    47
+   ],
+   "pivot": [
+    22,
+    37
+   ],
+   "name_id": "Bugenvil",
+   "latin": "Bougainvillea spectabilis",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 14,
+   "game_size_units": [
+    22.0,
+    23.5
+   ]
+  },
+  "semak_soka": {
+   "file": "shrubs_ditahan/semak_soka.png",
+   "group": "shrub",
+   "size": [
+    44,
+    37
+   ],
+   "pivot": [
+    22,
+    28
+   ],
+   "name_id": "Soka",
+   "latin": "Ixora sp.",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 13,
+   "game_size_units": [
+    22.0,
+    18.5
+   ]
+  },
+  "semak_pucuk_merah": {
+   "file": "shrubs_ditahan/semak_pucuk_merah.png",
+   "group": "shrub",
+   "size": [
+    34,
+    55
+   ],
+   "pivot": [
+    17,
+    46
+   ],
+   "name_id": "Pucuk merah",
+   "latin": "Syzygium myrtifolium",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 12,
+   "game_size_units": [
+    17.0,
+    27.5
+   ]
+  },
+  "semak_teh_tehan_pagar": {
+   "file": "shrubs_ditahan/semak_teh_tehan_pagar.png",
+   "group": "shrub",
+   "size": [
+    74,
+    47
+   ],
+   "pivot": [
+    37,
+    30
+   ],
+   "name_id": "Teh-tehan (pagar pangkas)",
+   "latin": "Acalypha siamensis",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 0,
+   "game_size_units": [
+    37.0,
+    23.5
+   ]
+  },
+  "tanaman_heliconia": {
+   "file": "shrubs_ditahan/tanaman_heliconia.png",
+   "group": "shrub",
+   "size": [
+    40,
+    61
+   ],
+   "pivot": [
+    20,
+    51
+   ],
+   "name_id": "Pisang-pisangan / heliconia",
+   "latin": "Heliconia rostrata",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 14,
+   "game_size_units": [
+    20.0,
+    30.5
+   ]
+  },
+  "tanaman_lidah_mertua": {
+   "file": "shrubs_ditahan/tanaman_lidah_mertua.png",
+   "group": "shrub",
+   "size": [
+    32,
+    42
+   ],
+   "pivot": [
+    16,
+    34
+   ],
+   "name_id": "Lidah mertua",
+   "latin": "Dracaena trifasciata",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 10,
+   "game_size_units": [
+    16.0,
+    21.0
+   ]
+  },
+  "tanaman_kuping_gajah": {
+   "file": "shrubs_ditahan/tanaman_kuping_gajah.png",
+   "group": "shrub",
+   "size": [
+    54,
+    60
+   ],
+   "pivot": [
+    27,
+    51
+   ],
+   "name_id": "Kuping gajah / talas hias",
+   "latin": "Alocasia sp.",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 13,
+   "game_size_units": [
+    27.0,
+    30.0
+   ]
+  },
+  "tanaman_puring": {
+   "file": "shrubs_ditahan/tanaman_puring.png",
+   "group": "shrub",
+   "size": [
+    34,
+    36
+   ],
+   "pivot": [
+    17,
+    27
+   ],
+   "name_id": "Puring",
+   "latin": "Codiaeum variegatum",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 12,
+   "game_size_units": [
+    17.0,
+    18.0
+   ]
+  },
+  "tanaman_bakung": {
+   "file": "shrubs_ditahan/tanaman_bakung.png",
+   "group": "shrub",
+   "size": [
+    48,
+    44
+   ],
+   "pivot": [
+    24,
+    35
+   ],
+   "name_id": "Bakung",
+   "latin": "Crinum asiaticum",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 13,
+   "game_size_units": [
+    24.0,
+    22.0
+   ]
+  },
+  "tanaman_andong_merah": {
+   "file": "shrubs_ditahan/tanaman_andong_merah.png",
+   "group": "shrub",
+   "size": [
+    36,
+    43
+   ],
+   "pivot": [
+    18,
+    35
+   ],
+   "name_id": "Andong merah",
+   "latin": "Cordyline fruticosa",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 10,
+   "game_size_units": [
+    18.0,
+    21.5
+   ]
+  },
+  "tanaman_sirih": {
+   "file": "shrubs_ditahan/tanaman_sirih.png",
+   "group": "shrub",
+   "size": [
+    26,
+    57
+   ],
+   "pivot": [
+    13,
+    50
+   ],
+   "name_id": "Sirih (di tiang bambu)",
+   "latin": "Piper betle",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 9,
+   "game_size_units": [
+    13.0,
+    28.5
+   ]
+  },
+  "tanaman_lili_paris": {
+   "file": "shrubs_ditahan/tanaman_lili_paris.png",
+   "group": "shrub",
+   "size": [
+    28,
+    14
+   ],
+   "pivot": [
+    14,
+    6
+   ],
+   "name_id": "Lili paris",
+   "latin": "Chlorophytum comosum",
+   "status": "on hold (v3: tidak dipakai dulu, keputusan user 1 Nov 2026)",
+   "shadow_rx": 10,
+   "game_size_units": [
+    14.0,
+    7.0
+   ]
+  },
+  "tuft_rumput_a": {
+   "file": "ground/tuft_rumput_a.png",
+   "group": "ground",
+   "size": [
+    20,
+    13
+   ],
+   "pivot": [
+    10,
+    7
+   ],
+   "name_id": "Rumput gajah mini",
+   "latin": "Axonopus compressus",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    10.0,
+    6.5
+   ]
+  },
+  "tuft_rumput_b": {
+   "file": "ground/tuft_rumput_b.png",
+   "group": "ground",
+   "size": [
+    18,
+    11
+   ],
+   "pivot": [
+    9,
+    6
+   ],
+   "name_id": "Rumput (rumpun rapat)",
+   "latin": "Axonopus compressus",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    9.0,
+    5.5
+   ]
+  },
+  "tuft_ilalang": {
+   "file": "ground/tuft_ilalang.png",
+   "group": "ground",
+   "size": [
+    18,
+    17
+   ],
+   "pivot": [
+    9,
+    13
+   ],
+   "name_id": "Rumput liar tinggi",
+   "latin": "Imperata cylindrica",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    9.0,
+    8.5
+   ]
+  },
+  "tuft_daun_asam_gugur": {
+   "file": "ground/tuft_daun_asam_gugur.png",
+   "group": "ground",
+   "size": [
+    26,
+    11
+   ],
+   "pivot": [
+    13,
+    5
+   ],
+   "name_id": "Daun gugur",
+   "latin": "(serasah daun)",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    13.0,
+    5.5
+   ]
+  },
+  "tuft_rumput_c": {
+   "file": "ground/tuft_rumput_c.png",
+   "group": "ground",
+   "size": [
+    14,
+    8
+   ],
+   "pivot": [
+    7,
+    4
+   ],
+   "name_id": "Rumput (kecil)",
+   "latin": "Axonopus compressus",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    7.0,
+    4.0
+   ]
+  },
+  "tuft_rumput_d": {
+   "file": "ground/tuft_rumput_d.png",
+   "group": "ground",
+   "size": [
+    26,
+    13
+   ],
+   "pivot": [
+    13,
+    7
+   ],
+   "name_id": "Rumput (hamparan rendah)",
+   "latin": "Axonopus compressus",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    13.0,
+    6.5
+   ]
+  },
+  "tuft_rumput_e": {
+   "file": "ground/tuft_rumput_e.png",
+   "group": "ground",
+   "size": [
+    10,
+    11
+   ],
+   "pivot": [
+    5,
+    7
+   ],
+   "name_id": "Rumput (rumpun tinggi)",
+   "latin": "Axonopus compressus",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    5.0,
+    5.5
+   ]
+  },
+  "tuft_rumput_f": {
+   "file": "ground/tuft_rumput_f.png",
+   "group": "ground",
+   "size": [
+    18,
+    11
+   ],
+   "pivot": [
+    9,
+    6
+   ],
+   "name_id": "Rumput (sedang)",
+   "latin": "Axonopus compressus",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    9.0,
+    5.5
+   ]
+  },
+  "overlay_semanggi": {
+   "file": "ground/overlay_semanggi.png",
+   "group": "ground",
+   "size": [
+    20,
+    11
+   ],
+   "pivot": [
+    10,
+    5
+   ],
+   "name_id": "Semanggi / daun kecil",
+   "latin": "Oxalis sp. (tanpa bunga)",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    10.0,
+    5.5
+   ]
+  },
+  "overlay_rumput_kering": {
+   "file": "ground/overlay_rumput_kering.png",
+   "group": "ground",
+   "size": [
+    18,
+    10
+   ],
+   "pivot": [
+    9,
+    6
+   ],
+   "name_id": "Rumput kering hijau-kuning",
+   "latin": "Axonopus compressus",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    9.0,
+    5.0
+   ]
+  },
+  "overlay_tanah_terbuka": {
+   "file": "ground/overlay_tanah_terbuka.png",
+   "group": "ground",
+   "size": [
+    18,
+    9
+   ],
+   "pivot": [
+    9,
+    4
+   ],
+   "name_id": "Tanah terbuka kecil",
+   "latin": "(tanah)",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    9.0,
+    4.5
+   ]
+  },
+  "overlay_semanggi_b": {
+   "file": "ground/overlay_semanggi_b.png",
+   "group": "ground",
+   "size": [
+    26,
+    13
+   ],
+   "pivot": [
+    13,
+    6
+   ],
+   "name_id": "Semanggi hijau (hamparan)",
+   "latin": "Oxalis sp. (tanpa bunga)",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    13.0,
+    6.5
+   ]
+  },
+  "overlay_daun_kecil": {
+   "file": "ground/overlay_daun_kecil.png",
+   "group": "ground",
+   "size": [
+    26,
+    10
+   ],
+   "pivot": [
+    13,
+    4
+   ],
+   "name_id": "Daun kecil gugur",
+   "latin": "(serasah)",
+   "status": "active",
+   "shadow_rx": 0,
+   "game_size_units": [
+    13.0,
+    5.0
+   ]
+  },
+  "prop_kerikil": {
+   "file": "ground/prop_kerikil.png",
+   "group": "ground",
+   "size": [
+    20,
+    12
+   ],
+   "pivot": [
+    10,
+    6
+   ],
+   "name_id": "Kerikil",
+   "latin": "(batu)",
+   "status": "active",
+   "shadow_rx": 7,
+   "game_size_units": [
+    10.0,
+    6.0
+   ]
+  },
+  "prop_tunggul": {
+   "file": "ground/prop_tunggul.png",
+   "group": "ground",
+   "size": [
+    28,
+    21
+   ],
+   "pivot": [
+    14,
+    13
+   ],
+   "name_id": "Tunggul pohon",
+   "latin": "(potongan batang)",
+   "status": "active",
+   "shadow_rx": 10,
+   "game_size_units": [
+    14.0,
+    10.5
+   ]
+  }
+ },
+ "tiles": {
+  "grass_plain_a": {
+   "file": "tiles/grass_plain_a.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput polos A (bercak gelap/terang, rumpun)"
+  },
+  "grass_plain_b": {
+   "file": "tiles/grass_plain_b.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput polos B (bercak gelap/terang, rumpun)"
+  },
+  "grass_plain_c": {
+   "file": "tiles/grass_plain_c.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput polos C (bercak gelap/terang, rumpun)"
+  },
+  "grass_plain_d": {
+   "file": "tiles/grass_plain_d.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput polos D (bercak gelap/terang, rumpun)"
+  },
+  "grass_plain_e": {
+   "file": "tiles/grass_plain_e.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput polos E (bercak gelap/terang, rumpun)"
+  },
+  "grass_plain_f": {
+   "file": "tiles/grass_plain_f.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput polos F (bercak gelap/terang, rumpun)"
+  },
+  "grass_tufty_a": {
+   "file": "tiles/grass_tufty_a.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput rimbun (banyak rumpun) A"
+  },
+  "grass_tufty_b": {
+   "file": "tiles/grass_tufty_b.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput rimbun B"
+  },
+  "grass_patch_dark": {
+   "file": "tiles/grass_patch_dark.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Bercak gelap (lembap / teduh)"
+  },
+  "grass_patch_light": {
+   "file": "tiles/grass_patch_light.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Bercak terang (kena matahari)"
+  },
+  "grass_clover_a": {
+   "file": "tiles/grass_clover_a.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Semanggi / daun kecil A"
+  },
+  "grass_clover_b": {
+   "file": "tiles/grass_clover_b.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Semanggi / daun kecil B"
+  },
+  "grass_leaves_a": {
+   "file": "tiles/grass_leaves_a.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Daun kecil gugur A"
+  },
+  "grass_leaves_b": {
+   "file": "tiles/grass_leaves_b.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Daun asam gugur B (teduh)"
+  },
+  "grass_tufty_c": {
+   "file": "tiles/grass_tufty_c.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput rimbun C (terang)"
+  },
+  "grass_clover_c": {
+   "file": "tiles/grass_clover_c.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Semanggi hijau C"
+  },
+  "grass_leaves_c": {
+   "file": "tiles/grass_leaves_c.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Daun gugur + rumput kekuningan"
+  },
+  "grass_yellowgreen_a": {
+   "file": "tiles/grass_yellowgreen_a.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput hijau-kekuningan A"
+  },
+  "grass_yellowgreen_b": {
+   "file": "tiles/grass_yellowgreen_b.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput hijau-kekuningan B (kering sebagian)"
+  },
+  "grass_bare_a": {
+   "file": "tiles/grass_bare_a.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput + tanah terbuka kecil A"
+  },
+  "grass_bare_b": {
+   "file": "tiles/grass_bare_b.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput + tanah terbuka kecil B"
+  },
+  "grass_dry": {
+   "file": "tiles/grass_dry.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput kering / menguning"
+  },
+  "grass_dirt": {
+   "file": "tiles/grass_dirt.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Rumput botak (tanah)"
+  },
+  "grass_edge_sw": {
+   "file": "tiles/grass_edge_sw.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Tepi paving sisi SW / +r, ke trotoar"
+  },
+  "grass_edge_se": {
+   "file": "tiles/grass_edge_se.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Tepi paving sisi SE / +c"
+  },
+  "grass_edge_nw": {
+   "file": "tiles/grass_edge_nw.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Tepi paving sisi NW / -c"
+  },
+  "grass_edge_ne": {
+   "file": "tiles/grass_edge_ne.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Tepi paving sisi NE / -r"
+  },
+  "grass_corner_out_s": {
+   "file": "tiles/grass_corner_out_s.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Sudut luar S (paving di sw+se)"
+  },
+  "grass_corner_out_w": {
+   "file": "tiles/grass_corner_out_w.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Sudut luar W (paving di sw+nw)"
+  },
+  "grass_corner_out_n": {
+   "file": "tiles/grass_corner_out_n.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Sudut luar N (paving di nw+ne)"
+  },
+  "grass_corner_out_e": {
+   "file": "tiles/grass_corner_out_e.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Sudut luar E (paving di ne+se)"
+  },
+  "grass_corner_in_s": {
+   "file": "tiles/grass_corner_in_s.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Sudut dalam S (paving hanya di titik S)"
+  },
+  "grass_corner_in_w": {
+   "file": "tiles/grass_corner_in_w.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Sudut dalam W (paving hanya di titik W)"
+  },
+  "grass_corner_in_n": {
+   "file": "tiles/grass_corner_in_n.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Sudut dalam N (paving hanya di titik N)"
+  },
+  "grass_corner_in_e": {
+   "file": "tiles/grass_corner_in_e.png",
+   "kind": "floor",
+   "size": [
+    64,
+    32
+   ],
+   "anchor": [
+    32,
+    0
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "label": "Sudut dalam E (paving hanya di titik E)"
+  }
+ },
+ "notes_v3": "v3: no flowers in tiles/ground; shrubs moved to shrubs_ditahan/ (status on hold); trees unchanged from v2"
+}

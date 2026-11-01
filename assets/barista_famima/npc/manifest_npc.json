@@ -1,0 +1,84 @@
+{
+ "name": "barista_famima",
+ "frame": [
+  64,
+  112
+ ],
+ "pivot": [
+  32,
+  100
+ ],
+ "sheet": "npc/barista_famima_sheet.png",
+ "cols": 6,
+ "dirs": [
+  "se",
+  "sw",
+  "ne",
+  "nw"
+ ],
+ "rows": {
+  "idle": 0,
+  "walk": 4,
+  "giling": 8,
+  "steam_tuang": 12,
+  "seduh": 16,
+  "serah": 20,
+  "ramah": 24
+ },
+ "anims": {
+  "idle": {
+   "frames": 4,
+   "frame_ms": 300,
+   "loop": true
+  },
+  "walk": {
+   "frames": 6,
+   "frame_ms": 150,
+   "loop": true
+  },
+  "giling": {
+   "frames": 4,
+   "frame_ms": 180,
+   "loop": true
+  },
+  "steam_tuang": {
+   "frames": 4,
+   "frame_ms": 260,
+   "loop": true
+  },
+  "seduh": {
+   "frames": 4,
+   "frame_ms": 240,
+   "loop": true
+  },
+  "serah": {
+   "frames": 4,
+   "frame_ms": 220,
+   "loop": true
+  },
+  "ramah": {
+   "frames": 4,
+   "frame_ms": 240,
+   "loop": true
+  }
+ },
+ "cfg": {
+  "body": "m",
+  "skin": "light",
+  "hair": "short",
+  "hc": "black",
+  "top": "tee",
+  "tc": "#F4F4F0",
+  "pants": "trousers",
+  "pc": "#2A3242",
+  "shoes": "shoes",
+  "sc": "night",
+  "cap": [
+   "#105824",
+   "#1FA34A",
+   "#7FD99A"
+  ],
+  "facial": {},
+  "top_style": "tee"
+ }
+}

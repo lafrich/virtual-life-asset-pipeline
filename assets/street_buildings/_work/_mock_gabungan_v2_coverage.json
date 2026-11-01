@@ -1,0 +1,33 @@
+{
+ "F": 51.0,
+ "road_safe_r": 36.55,
+ "coverage_min_r": {
+  "mall_pendek_sw @(-23.50,47.50)": 37.87,
+  "hotel_pendek_sw @(-13.50,48.00)": 38.3,
+  "indomaret_sw @(-6.50,45.50)": 37.74,
+  "kafe_blue_doors_sw @(-1.00,48.50)": 39.87,
+  "bank_bca_pendek_sw @(4.50,48.00)": 38.43,
+  "kantor_a_pendek_sw @(11.00,48.00)": 38.3,
+  "ruko_c_pendek_sw @(16.00,48.00)": 38.49,
+  "ruko_a_pendek_sw @(27.00,48.00)": 38.49,
+  "masjid_sw @(33.00,47.50)": 36.55,
+  "gapura_gang_sw @(23.00,50.70)": 45.49,
+  "toko_loak_se @(19.75,48.50)": 42.8,
+  "babeh_pemilik @(19.95,48.65)": 46.37,
+  "etalase @(20.45,48.50)": 47.27,
+  "lapak_tas_se @(21.25,44.50)": 39.65,
+  "lapak_jam_dinding_se @(21.25,42.50)": 37.65,
+  "lapak_jam_tangan_nw @(24.75,48.00)": 43.54,
+  "lapak_mainan_nw @(24.75,46.00)": 41.54,
+  "lapak_barang_bekas_nw @(24.75,44.00)": 39.54,
+  "babeh_tas @(22.25,44.65)": 42.34,
+  "babeh_jam @(22.30,42.65)": 40.35,
+  "motor_matic_hitam_sw @(-9.17,49.45)": 47.74,
+  "motor_matic_merah_sw @(-8.50,49.45)": 47.71,
+  "motor_matic_biru_sw @(-7.83,49.45)": 47.73,
+  "motor_matic_putih_sw @(-7.17,49.45)": 47.74,
+  "motor_matic_abu_sw @(-4.17,49.45)": 47.74,
+  "kang_parkir @(-6.20,50.55)": 48.37,
+  "pemuda @(-8.45,47.35)": 45.13
+ }
+}

@@ -1,0 +1,80 @@
+{
+  "source": "Bima (Art Director), assets/art-direction/style-sheet.md v1 + palette.png (21 Oct 2026); derived tints signed off by Bima in review.md (21 Oct 2026)",
+  "colors": {
+    "void": "#0B0E13",
+    "floor_dk": "#10141B",
+    "floor_lt": "#1C2330",
+    "wall_shd": "#2A3242",
+    "wall_lit": "#3A4458",
+    "wall_top": "#5A6577",
+    "cool_grey": "#8D97A8",
+    "paper": "#E7EBF2",
+    "walnut_dk": "#3D2A1E",
+    "walnut": "#6B4F3A",
+    "walnut_lt": "#94704F",
+    "skin_lt": "#F1D3B5",
+    "skin_mid": "#D9A47E",
+    "skin_dp": "#8A5A3C",
+    "brass_shd": "#6B5320",
+    "brass": "#C99A2E",
+    "brass_lt": "#E0A526",
+    "glow": "#FFD166",
+    "workspace": "#1F7A55",
+    "library": "#7A2E35",
+    "lounge": "#5B3F73",
+    "coordination": "#3E6FA8",
+    "gallery": "#EDE6D8",
+    "sharing": "#FF8A3D",
+    "working": "#3DDC84",
+    "wait_user": "#F5B941",
+    "wait_bot": "#5CB8FF",
+    "idle": "#9AA4B2",
+    "error": "#E5484D"
+  },
+  "tints": {
+    "_comment": "Derived shades for single-value accents (room accents, status colours). Each is a straight RGB mix of a palette colour toward paper (lighten) or void (darken). Needs AD sign-off per style-sheet section 3.",
+    "light": [
+      "paper",
+      0.35
+    ],
+    "hover": [
+      "paper",
+      0.16
+    ],
+    "pressed": [
+      "void",
+      0.22
+    ],
+    "dark": [
+      "void",
+      0.42
+    ],
+    "shade": [
+      "void",
+      0.3
+    ],
+    "hilite": [
+      "paper",
+      0.4
+    ],
+    "_warm_comment": "AD rule 1: warm hues lighten toward glow instead of paper. AD rule 2: hilite capped at 40% toward paper."
+  },
+  "alpha": {
+    "bubble_light_fill": 224,
+    "bubble_dark_fill": 214,
+    "nametag_fill": 214,
+    "panel_fill": 238
+  },
+  "contact_sheet_bg": "wall_top",
+  "warm": {
+    "keys": [
+      "glow",
+      "sharing",
+      "wait_user",
+      "brass",
+      "brass_lt",
+      "brass_shd"
+    ],
+    "lighten_toward": "glow"
+  }
+}

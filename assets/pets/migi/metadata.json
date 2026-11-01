@@ -1,0 +1,321 @@
+{
+ "name": "migi",
+ "species": "cat",
+ "version": "1.0",
+ "style_sheet": "assets/art-direction/style-sheet.md (v1.4 + \"Migi (the user's cat)\" AD direction)",
+ "projection": "isometric 2:1 (dimetric), 64x32 floor tile, height step 32 px",
+ "frame": {
+  "width": 32,
+  "height": 32
+ },
+ "pivot": {
+  "x": 16,
+  "y": 24,
+  "note": "pivot = tile-centre foot point (same meaning as the characters' (32,100)). Draw the frame at (P.x - 16, P.y - 24) in sprite px; in index.html units (0.5 unit/px): <image x=P.x-8 y=P.y-12 width=16 height=16>."
+ },
+ "scale": {
+  "authored": "1x",
+  "integer_scaling_only": true,
+  "smoothing": "none (nearest-neighbour)",
+  "model_scale": 0.64,
+  "heights_px": {
+   "walk": 21,
+   "sit": 17,
+   "eat": 19,
+   "sleep": 9,
+   "meow": 17,
+   "loaf": 11
+  },
+  "vs_characters": "characters stand 84-88 px (knee ~23 px). Migi: ears ~17 px sitting (mid-shin to knee), ~21 px walking with the tail up, ~12 px loaf, ~9 px curled. Real cat/person ratio would be ~15 px, so he is drawn slightly larger than life like the other small props."
+ },
+ "sheet": {
+  "file": "migi_sheet.png",
+  "columns": 6,
+  "rows": 24,
+  "width": 192,
+  "height": 768,
+  "shadow_file": "migi_sheet_shadow.png",
+  "with_shadow_file": "migi_sheet_with_shadow.png"
+ },
+ "directions": [
+  "se",
+  "sw",
+  "ne",
+  "nw"
+ ],
+ "direction_notes": {
+  "se": "facing screen down-right (+c)",
+  "sw": "down-left (+r)",
+  "ne": "up-right (-r)",
+  "nw": "up-left (-c)",
+  "mirroring": "DO NOT MIRROR. All 4 directions are drawn explicitly because Migi's patches are asymmetric (big saddle + lower patch on his LEFT side, round heart patch on his RIGHT flank, black spot on the left hind leg). A mirrored row would move the patches to the wrong side and flip the top-left light."
+ },
+ "animations": {
+  "walk": {
+   "frames": 6,
+   "fps": 10,
+   "loop": true,
+   "note": "trot cycle, diagonal leg pairs, small body bob, tail sway",
+   "rows": {
+    "se": 0,
+    "sw": 1,
+    "ne": 2,
+    "nw": 3
+   }
+  },
+  "sit": {
+   "frames": 6,
+   "fps": 4,
+   "loop": true,
+   "note": "idle sit: f2 blink, f4-f5 tail-tip flick",
+   "rows": {
+    "se": 4,
+    "sw": 5,
+    "ne": 6,
+    "nw": 7
+   }
+  },
+  "eat": {
+   "frames": 4,
+   "fps": 6,
+   "loop": true,
+   "note": "head down to the bowl, chewing bob (f1/f3)",
+   "rows": {
+    "se": 8,
+    "sw": 9,
+    "ne": 10,
+    "nw": 11
+   }
+  },
+  "sleep": {
+   "frames": 4,
+   "fps": 2,
+   "loop": true,
+   "note": "curled ball, slow breathing (+1px), eyes closed",
+   "rows": {
+    "se": 12,
+    "sw": 13,
+    "ne": 14,
+    "nw": 15
+   }
+  },
+  "meow": {
+   "frames": 4,
+   "fps": 6,
+   "loop": false,
+   "note": "sit + mouth open (f1 small, f2 wide) + the wide-eyed stare; play once then return to sit",
+   "rows": {
+    "se": 16,
+    "sw": 17,
+    "ne": 18,
+    "nw": 19
+   }
+  },
+  "loaf": {
+   "frames": 4,
+   "fps": 3,
+   "loop": true,
+   "note": "lying loaf, paws tucked, breathing, f3 blink",
+   "rows": {
+    "se": 20,
+    "sw": 21,
+    "ne": 22,
+    "nw": 23
+   }
+  }
+ },
+ "row_map": [
+  {
+   "row": 0,
+   "animation": "walk",
+   "direction": "se",
+   "frames": 6
+  },
+  {
+   "row": 1,
+   "animation": "walk",
+   "direction": "sw",
+   "frames": 6
+  },
+  {
+   "row": 2,
+   "animation": "walk",
+   "direction": "ne",
+   "frames": 6
+  },
+  {
+   "row": 3,
+   "animation": "walk",
+   "direction": "nw",
+   "frames": 6
+  },
+  {
+   "row": 4,
+   "animation": "sit",
+   "direction": "se",
+   "frames": 6
+  },
+  {
+   "row": 5,
+   "animation": "sit",
+   "direction": "sw",
+   "frames": 6
+  },
+  {
+   "row": 6,
+   "animation": "sit",
+   "direction": "ne",
+   "frames": 6
+  },
+  {
+   "row": 7,
+   "animation": "sit",
+   "direction": "nw",
+   "frames": 6
+  },
+  {
+   "row": 8,
+   "animation": "eat",
+   "direction": "se",
+   "frames": 4
+  },
+  {
+   "row": 9,
+   "animation": "eat",
+   "direction": "sw",
+   "frames": 4
+  },
+  {
+   "row": 10,
+   "animation": "eat",
+   "direction": "ne",
+   "frames": 4
+  },
+  {
+   "row": 11,
+   "animation": "eat",
+   "direction": "nw",
+   "frames": 4
+  },
+  {
+   "row": 12,
+   "animation": "sleep",
+   "direction": "se",
+   "frames": 4
+  },
+  {
+   "row": 13,
+   "animation": "sleep",
+   "direction": "sw",
+   "frames": 4
+  },
+  {
+   "row": 14,
+   "animation": "sleep",
+   "direction": "ne",
+   "frames": 4
+  },
+  {
+   "row": 15,
+   "animation": "sleep",
+   "direction": "nw",
+   "frames": 4
+  },
+  {
+   "row": 16,
+   "animation": "meow",
+   "direction": "se",
+   "frames": 4
+  },
+  {
+   "row": 17,
+   "animation": "meow",
+   "direction": "sw",
+   "frames": 4
+  },
+  {
+   "row": 18,
+   "animation": "meow",
+   "direction": "ne",
+   "frames": 4
+  },
+  {
+   "row": 19,
+   "animation": "meow",
+   "direction": "nw",
+   "frames": 4
+  },
+  {
+   "row": 20,
+   "animation": "loaf",
+   "direction": "se",
+   "frames": 4
+  },
+  {
+   "row": 21,
+   "animation": "loaf",
+   "direction": "sw",
+   "frames": 4
+  },
+  {
+   "row": 22,
+   "animation": "loaf",
+   "direction": "ne",
+   "frames": 4
+  },
+  {
+   "row": 23,
+   "animation": "loaf",
+   "direction": "nw",
+   "frames": 4
+  }
+ ],
+ "frame_index_formula": "row = animIndex*4 + dirIndex ; index = row*6 + frame ; anims with 4 frames use columns 0-3",
+ "layer_order": [
+  "shadow (migi_sheet_shadow.png, same grid, #0B0E13 @ 40%)",
+  "sprite (migi_sheet.png)"
+ ],
+ "shadow_rule": "flat ellipse #0B0E13 alpha 102 centred on the pivot; draw it on the floor layer (before depth-sorted objects) or skip it if the engine draws its own.",
+ "depth": "key = pos.c + pos.r + 0.05 (same as avatars). On the bed, use the bed's use_point (key = bed c+r+0.95 < Migi).",
+ "palette": {
+  "rule": "official hexes only, no new hexes, nothing pending (AD direction)",
+  "used": {
+   "baize": "#1F7A55",
+   "baize_lt": "#5B9C84",
+   "coral_lt": "#F4A182",
+   "floor_lt": "#1C2330",
+   "grey": "#8D97A8",
+   "oxblood": "#7A2E35",
+   "oxblood_dk": "#5C2231",
+   "paper": "#E7EBF2",
+   "void": "#0B0E13",
+   "wall_lit": "#3A4458",
+   "wall_shd": "#2A3242"
+  },
+  "roles": {
+   "paper": "white fur light, eye glint, blaze",
+   "grey": "white fur mid/shadow, black-fur rim, closed-eye lids",
+   "wall_lit": "black fur light",
+   "wall_shd": "black fur mid",
+   "floor_lt": "black fur shadow",
+   "baize_lt": "eye light",
+   "baize": "eye mid",
+   "coral_lt": "nose, inner ears",
+   "oxblood": "open mouth (meow)",
+   "void": "outer outline, shadow (40%)"
+  },
+  "ramps": {
+   "white": [
+    "paper",
+    "grey",
+    "grey"
+   ],
+   "black": [
+    "wall_lit",
+    "wall_shd",
+    "floor_lt"
+   ]
+  }
+ },
+ "props_manifest": "manifest.json (environment schema)"
+}

@@ -1,0 +1,5444 @@
+{
+ "projection": "iso 2:1, tile 64x32 px, PPU 2 (1 game unit = 2 px), height in px (1 game h-unit*HS = 3.2 px), light from the left",
+ "scale": "upper floor 90 px, ground floor 104 px, avatar 86 px; same as street_vehicles / vegetation",
+ "anchor_rule": "pivot = ground pixel under the footprint centre. Game: <image x=P(c,r).x - pivot.x/2, y=P(c,r).y - pivot.y/2, width=w/2, height=h/2> with (c,r)=footprint centre. anchor_n = pixel of the footprint north corner (min c, min r) at ground, for tile-snapped placement: x=P(c0,r0).x-anchor_n.x/2 ...",
+ "footprint_rule": "footprint [W,D] cells: W along the facade, D depth (front edge = facade side incl. apron). sw: W along +c, D along r (facade at max r, faces +r). se: W along r, D along c (facade at max c, faces +c). ne/nw (signals only): same footprint as sw/se, lamp face turned away from the camera (camera sees the back).",
+ "shadow": "flat black alpha 56 baked (ground projection pushed right, away from the left light). Shadow on own ground apron = 1 tone darker. Alpha in base PNGs: 0/56/255 only.",
+ "glow": "<name>_<ori>__glow.png = emissive pixels only (sign panels, letters, lit windows, lamps) at alpha 255 + 2 px halo at alpha 90; draw above the base with mix-blend-mode screen/plus-lighter at night. Same size + pivot as the base.",
+ "sprites": {
+  "indomaret_sw": {
+   "file": "jalan_besar/indomaret_sw.png",
+   "group": "jalan",
+   "size": [
+    410,
+    344
+   ],
+   "pivot": [
+    192,
+    248
+   ],
+   "anchor_n": [
+    192,
+    152
+   ],
+   "footprint": [
+    6,
+    6
+   ],
+   "facing": "sw",
+   "note": "minimarket 1 lantai tinggi (v2, sesuai foto): fasad kaca, papan kayu cokelat + garis merah/biru/kuning, papan logo kotak merah-putih, kanopi baja hitam, kursi/meja hitam di teras (pixel approximation)",
+   "glow": "jalan_besar/indomaret_sw__glow.png"
+  },
+  "indomaret_se": {
+   "file": "jalan_besar/indomaret_se.png",
+   "group": "jalan",
+   "size": [
+    384,
+    344
+   ],
+   "pivot": [
+    192,
+    248
+   ],
+   "anchor_n": [
+    192,
+    152
+   ],
+   "footprint": [
+    6,
+    6
+   ],
+   "facing": "se",
+   "note": "minimarket 1 lantai tinggi (v2, sesuai foto): fasad kaca, papan kayu cokelat + garis merah/biru/kuning, papan logo kotak merah-putih, kanopi baja hitam, kursi/meja hitam di teras (pixel approximation)",
+   "glow": "jalan_besar/indomaret_se__glow.png"
+  },
+  "kantor_a_sw": {
+   "file": "jalan_besar/kantor_a_sw.png",
+   "group": "jalan",
+   "size": [
+    474,
+    692
+   ],
+   "pivot": [
+    208,
+    588
+   ],
+   "anchor_n": [
+    192,
+    484
+   ],
+   "footprint": [
+    7,
+    6
+   ],
+   "facing": "sw",
+   "note": "gedung perkantoran 5 lantai, kaca biru + pita beton",
+   "glow": "jalan_besar/kantor_a_sw__glow.png"
+  },
+  "kantor_a_se": {
+   "file": "jalan_besar/kantor_a_se.png",
+   "group": "jalan",
+   "size": [
+    434,
+    692
+   ],
+   "pivot": [
+    208,
+    588
+   ],
+   "anchor_n": [
+    224,
+    484
+   ],
+   "footprint": [
+    7,
+    6
+   ],
+   "facing": "se",
+   "note": "gedung perkantoran 5 lantai, kaca biru + pita beton",
+   "glow": "jalan_besar/kantor_a_se__glow.png"
+  },
+  "kantor_b_sw": {
+   "file": "jalan_besar/kantor_b_sw.png",
+   "group": "jalan",
+   "size": [
+    442,
+    950
+   ],
+   "pivot": [
+    192,
+    854
+   ],
+   "anchor_n": [
+    192,
+    758
+   ],
+   "footprint": [
+    6,
+    6
+   ],
+   "facing": "sw",
+   "note": "gedung perkantoran 8 lantai, sirip vertikal, mahkota atap",
+   "glow": "jalan_besar/kantor_b_sw__glow.png"
+  },
+  "kantor_b_se": {
+   "file": "jalan_besar/kantor_b_se.png",
+   "group": "jalan",
+   "size": [
+    402,
+    952
+   ],
+   "pivot": [
+    192,
+    855
+   ],
+   "anchor_n": [
+    192,
+    759
+   ],
+   "footprint": [
+    6,
+    6
+   ],
+   "facing": "se",
+   "note": "gedung perkantoran 8 lantai, sirip vertikal, mahkota atap",
+   "glow": "jalan_besar/kantor_b_se__glow.png"
+  },
+  "bank_bca_sw": {
+   "file": "jalan_besar/bank_bca_sw.png",
+   "group": "jalan",
+   "size": [
+    428,
+    492
+   ],
+   "pivot": [
+    192,
+    396
+   ],
+   "anchor_n": [
+    192,
+    300
+   ],
+   "footprint": [
+    6,
+    6
+   ],
+   "facing": "sw",
+   "note": "bank BCA: biru, papan BCA (pixel approximation), galeri ATM",
+   "glow": "jalan_besar/bank_bca_sw__glow.png"
+  },
+  "bank_bca_se": {
+   "file": "jalan_besar/bank_bca_se.png",
+   "group": "jalan",
+   "size": [
+    388,
+    492
+   ],
+   "pivot": [
+    192,
+    396
+   ],
+   "anchor_n": [
+    192,
+    300
+   ],
+   "footprint": [
+    6,
+    6
+   ],
+   "facing": "se",
+   "note": "bank BCA: biru, papan BCA (pixel approximation), galeri ATM",
+   "glow": "jalan_besar/bank_bca_se__glow.png"
+  },
+  "masjid_sw": {
+   "file": "jalan_besar/masjid_sw.png",
+   "group": "jalan",
+   "size": [
+    512,
+    430
+   ],
+   "pivot": [
+    256,
+    301
+   ],
+   "anchor_n": [
+    224,
+    173
+   ],
+   "footprint": [
+    9,
+    7
+   ],
+   "facing": "sw",
+   "note": "masjid: kubah hijau, menara, gerbang + pagar, tanpa figur"
+  },
+  "masjid_se": {
+   "file": "jalan_besar/masjid_se.png",
+   "group": "jalan",
+   "size": [
+    512,
+    552
+   ],
+   "pivot": [
+    256,
+    423
+   ],
+   "anchor_n": [
+    288,
+    295
+   ],
+   "footprint": [
+    9,
+    7
+   ],
+   "facing": "se",
+   "note": "masjid: kubah hijau, menara, gerbang + pagar, tanpa figur"
+  },
+  "kafe_blue_doors_sw": {
+   "file": "jalan_besar/kafe_blue_doors_sw.png",
+   "group": "jalan",
+   "size": [
+    352,
+    356
+   ],
+   "pivot": [
+    160,
+    276
+   ],
+   "anchor_n": [
+    160,
+    196
+   ],
+   "footprint": [
+    5,
+    5
+   ],
+   "facing": "sw",
+   "note": "kafe kekinian: pintu-pintu biru, kursi luar (pixel approximation)",
+   "glow": "jalan_besar/kafe_blue_doors_sw__glow.png"
+  },
+  "kafe_blue_doors_se": {
+   "file": "jalan_besar/kafe_blue_doors_se.png",
+   "group": "jalan",
+   "size": [
+    320,
+    356
+   ],
+   "pivot": [
+    160,
+    276
+   ],
+   "anchor_n": [
+    160,
+    196
+   ],
+   "footprint": [
+    5,
+    5
+   ],
+   "facing": "se",
+   "note": "kafe kekinian: pintu-pintu biru, kursi luar (pixel approximation)",
+   "glow": "jalan_besar/kafe_blue_doors_se__glow.png"
+  },
+  "hotel_sw": {
+   "file": "jalan_besar/hotel_sw.png",
+   "group": "jalan",
+   "size": [
+    504,
+    798
+   ],
+   "pivot": [
+    224,
+    686
+   ],
+   "anchor_n": [
+    192,
+    574
+   ],
+   "footprint": [
+    8,
+    6
+   ],
+   "facing": "sw",
+   "note": "hotel 6 lantai, balkon, papan HOTEL vertikal, porte-cochere",
+   "glow": "jalan_besar/hotel_sw__glow.png"
+  },
+  "hotel_se": {
+   "file": "jalan_besar/hotel_se.png",
+   "group": "jalan",
+   "size": [
+    458,
+    798
+   ],
+   "pivot": [
+    224,
+    686
+   ],
+   "anchor_n": [
+    256,
+    574
+   ],
+   "footprint": [
+    8,
+    6
+   ],
+   "facing": "se",
+   "note": "hotel 6 lantai, balkon, papan HOTEL vertikal, porte-cochere",
+   "glow": "jalan_besar/hotel_se__glow.png"
+  },
+  "mall_sw": {
+   "file": "jalan_besar/mall_sw.png",
+   "group": "jalan",
+   "size": [
+    568,
+    720
+   ],
+   "pivot": [
+    304,
+    568
+   ],
+   "anchor_n": [
+    224,
+    416
+   ],
+   "footprint": [
+    12,
+    7
+   ],
+   "facing": "sw",
+   "note": "mal 4 lantai, atrium kaca, panel iklan, papan SIRIH MALL",
+   "glow": "jalan_besar/mall_sw__glow.png"
+  },
+  "mall_se": {
+   "file": "jalan_besar/mall_se.png",
+   "group": "jalan",
+   "size": [
+    614,
+    720
+   ],
+   "pivot": [
+    304,
+    568
+   ],
+   "anchor_n": [
+    384,
+    416
+   ],
+   "footprint": [
+    12,
+    7
+   ],
+   "facing": "se",
+   "note": "mal 4 lantai, atrium kaca, panel iklan, papan SIRIH MALL",
+   "glow": "jalan_besar/mall_se__glow.png"
+  },
+  "ruko_a_sw": {
+   "file": "jalan_besar/ruko_a_sw.png",
+   "group": "jalan",
+   "size": [
+    332,
+    442
+   ],
+   "pivot": [
+    144,
+    370
+   ],
+   "anchor_n": [
+    192,
+    298
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "sw",
+   "note": "ruko 3 lantai, rolling door, papan toko FOTOKOPI",
+   "glow": "jalan_besar/ruko_a_sw__glow.png"
+  },
+  "ruko_a_se": {
+   "file": "jalan_besar/ruko_a_se.png",
+   "group": "jalan",
+   "size": [
+    294,
+    442
+   ],
+   "pivot": [
+    144,
+    370
+   ],
+   "anchor_n": [
+    96,
+    298
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "se",
+   "note": "ruko 3 lantai, rolling door, papan toko FOTOKOPI",
+   "glow": "jalan_besar/ruko_a_se__glow.png"
+  },
+  "ruko_b_sw": {
+   "file": "jalan_besar/ruko_b_sw.png",
+   "group": "jalan",
+   "size": [
+    322,
+    352
+   ],
+   "pivot": [
+    144,
+    280
+   ],
+   "anchor_n": [
+    192,
+    208
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "sw",
+   "note": "ruko 2 lantai, APOTEK",
+   "glow": "jalan_besar/ruko_b_sw__glow.png"
+  },
+  "ruko_b_se": {
+   "file": "jalan_besar/ruko_b_se.png",
+   "group": "jalan",
+   "size": [
+    288,
+    352
+   ],
+   "pivot": [
+    144,
+    280
+   ],
+   "anchor_n": [
+    96,
+    208
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "se",
+   "note": "ruko 2 lantai, APOTEK",
+   "glow": "jalan_besar/ruko_b_se__glow.png"
+  },
+  "ruko_c_sw": {
+   "file": "jalan_besar/ruko_c_sw.png",
+   "group": "jalan",
+   "size": [
+    332,
+    442
+   ],
+   "pivot": [
+    144,
+    370
+   ],
+   "anchor_n": [
+    192,
+    298
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "sw",
+   "note": "ruko 3 lantai, warung kopi / RUMAH MAKAN",
+   "glow": "jalan_besar/ruko_c_sw__glow.png"
+  },
+  "ruko_c_se": {
+   "file": "jalan_besar/ruko_c_se.png",
+   "group": "jalan",
+   "size": [
+    294,
+    442
+   ],
+   "pivot": [
+    144,
+    370
+   ],
+   "anchor_n": [
+    96,
+    298
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "se",
+   "note": "ruko 3 lantai, warung kopi / RUMAH MAKAN",
+   "glow": "jalan_besar/ruko_c_se__glow.png"
+  },
+  "lapak_tas_sw": {
+   "file": "pasar_loak/lapak_tas_sw.png",
+   "group": "loak",
+   "size": [
+    128,
+    180
+   ],
+   "pivot": [
+    56,
+    152
+   ],
+   "anchor_n": [
+    48,
+    124
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "lapak tas: rak gantung penuh tas, terpal biru"
+  },
+  "lapak_tas_se": {
+   "file": "pasar_loak/lapak_tas_se.png",
+   "group": "loak",
+   "size": [
+    112,
+    180
+   ],
+   "pivot": [
+    56,
+    152
+   ],
+   "anchor_n": [
+    64,
+    124
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "lapak tas: rak gantung penuh tas, terpal biru"
+  },
+  "lapak_tas_b_sw": {
+   "file": "pasar_loak/lapak_tas_b_sw.png",
+   "group": "loak",
+   "size": [
+    128,
+    180
+   ],
+   "pivot": [
+    56,
+    152
+   ],
+   "anchor_n": [
+    48,
+    124
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "lapak tas varian: tas + koper di depan, terpal merah, pedagang duduk"
+  },
+  "lapak_tas_b_se": {
+   "file": "pasar_loak/lapak_tas_b_se.png",
+   "group": "loak",
+   "size": [
+    112,
+    180
+   ],
+   "pivot": [
+    56,
+    152
+   ],
+   "anchor_n": [
+    64,
+    124
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "lapak tas varian: tas + koper di depan, terpal merah, pedagang duduk"
+  },
+  "lapak_jam_dinding_sw": {
+   "file": "pasar_loak/lapak_jam_dinding_sw.png",
+   "group": "loak",
+   "size": [
+    128,
+    180
+   ],
+   "pivot": [
+    56,
+    152
+   ],
+   "anchor_n": [
+    48,
+    124
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "lapak jam dinding: papan penuh jam, meja jam, terpal merah"
+  },
+  "lapak_jam_dinding_se": {
+   "file": "pasar_loak/lapak_jam_dinding_se.png",
+   "group": "loak",
+   "size": [
+    112,
+    180
+   ],
+   "pivot": [
+    56,
+    152
+   ],
+   "anchor_n": [
+    64,
+    124
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "lapak jam dinding: papan penuh jam, meja jam, terpal merah"
+  },
+  "lapak_aksesori_sw": {
+   "file": "pasar_loak/lapak_aksesori_sw.png",
+   "group": "loak",
+   "size": [
+    128,
+    180
+   ],
+   "pivot": [
+    56,
+    152
+   ],
+   "anchor_n": [
+    48,
+    124
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "lapak aksesori: untaian manik/gelang tergantung, meja aksesori, terpal oranye"
+  },
+  "lapak_aksesori_se": {
+   "file": "pasar_loak/lapak_aksesori_se.png",
+   "group": "loak",
+   "size": [
+    112,
+    180
+   ],
+   "pivot": [
+    56,
+    152
+   ],
+   "anchor_n": [
+    64,
+    124
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "lapak aksesori: untaian manik/gelang tergantung, meja aksesori, terpal oranye"
+  },
+  "lapak_jam_tangan_sw": {
+   "file": "pasar_loak/lapak_jam_tangan_sw.png",
+   "group": "loak",
+   "size": [
+    112,
+    168
+   ],
+   "pivot": [
+    56,
+    140
+   ],
+   "anchor_n": [
+    48,
+    112
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "lapak jam tangan: etalase kaca rendah, terpal oranye di belakang (barang terlihat dari atas)"
+  },
+  "lapak_jam_tangan_se": {
+   "file": "pasar_loak/lapak_jam_tangan_se.png",
+   "group": "loak",
+   "size": [
+    112,
+    168
+   ],
+   "pivot": [
+    56,
+    140
+   ],
+   "anchor_n": [
+    64,
+    112
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "lapak jam tangan: etalase kaca rendah, terpal oranye di belakang (barang terlihat dari atas)"
+  },
+  "lapak_jam_tangan_ne": {
+   "file": "pasar_loak/lapak_jam_tangan_ne.png",
+   "group": "loak",
+   "size": [
+    112,
+    146
+   ],
+   "pivot": [
+    56,
+    117
+   ],
+   "anchor_n": [
+    48,
+    89
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "ne",
+   "note": "lapak jam tangan: etalase kaca rendah, terpal oranye di belakang (barang terlihat dari atas)"
+  },
+  "lapak_jam_tangan_nw": {
+   "file": "pasar_loak/lapak_jam_tangan_nw.png",
+   "group": "loak",
+   "size": [
+    112,
+    146
+   ],
+   "pivot": [
+    56,
+    117
+   ],
+   "anchor_n": [
+    64,
+    89
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "nw",
+   "note": "lapak jam tangan: etalase kaca rendah, terpal oranye di belakang (barang terlihat dari atas)"
+  },
+  "lapak_mainan_sw": {
+   "file": "pasar_loak/lapak_mainan_sw.png",
+   "group": "loak",
+   "size": [
+    112,
+    168
+   ],
+   "pivot": [
+    56,
+    140
+   ],
+   "anchor_n": [
+    48,
+    112
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "lapak mainan bekas: meja penuh mainan warna-warni, terpal biru"
+  },
+  "lapak_mainan_se": {
+   "file": "pasar_loak/lapak_mainan_se.png",
+   "group": "loak",
+   "size": [
+    112,
+    168
+   ],
+   "pivot": [
+    56,
+    140
+   ],
+   "anchor_n": [
+    64,
+    112
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "lapak mainan bekas: meja penuh mainan warna-warni, terpal biru"
+  },
+  "lapak_mainan_ne": {
+   "file": "pasar_loak/lapak_mainan_ne.png",
+   "group": "loak",
+   "size": [
+    112,
+    146
+   ],
+   "pivot": [
+    56,
+    117
+   ],
+   "anchor_n": [
+    48,
+    89
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "ne",
+   "note": "lapak mainan bekas: meja penuh mainan warna-warni, terpal biru"
+  },
+  "lapak_mainan_nw": {
+   "file": "pasar_loak/lapak_mainan_nw.png",
+   "group": "loak",
+   "size": [
+    112,
+    146
+   ],
+   "pivot": [
+    56,
+    117
+   ],
+   "anchor_n": [
+    64,
+    89
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "nw",
+   "note": "lapak mainan bekas: meja penuh mainan warna-warni, terpal biru"
+  },
+  "lapak_barang_bekas_sw": {
+   "file": "pasar_loak/lapak_barang_bekas_sw.png",
+   "group": "loak",
+   "size": [
+    112,
+    168
+   ],
+   "pivot": [
+    56,
+    140
+   ],
+   "anchor_n": [
+    48,
+    112
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "lapak barang bekas campur (radio, ketel, sepatu), terpal biru, pedagang"
+  },
+  "lapak_barang_bekas_se": {
+   "file": "pasar_loak/lapak_barang_bekas_se.png",
+   "group": "loak",
+   "size": [
+    112,
+    168
+   ],
+   "pivot": [
+    56,
+    140
+   ],
+   "anchor_n": [
+    64,
+    112
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "lapak barang bekas campur (radio, ketel, sepatu), terpal biru, pedagang"
+  },
+  "lapak_barang_bekas_ne": {
+   "file": "pasar_loak/lapak_barang_bekas_ne.png",
+   "group": "loak",
+   "size": [
+    112,
+    146
+   ],
+   "pivot": [
+    56,
+    117
+   ],
+   "anchor_n": [
+    48,
+    89
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "ne",
+   "note": "lapak barang bekas campur (radio, ketel, sepatu), terpal biru, pedagang"
+  },
+  "lapak_barang_bekas_nw": {
+   "file": "pasar_loak/lapak_barang_bekas_nw.png",
+   "group": "loak",
+   "size": [
+    112,
+    146
+   ],
+   "pivot": [
+    56,
+    117
+   ],
+   "anchor_n": [
+    64,
+    89
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "nw",
+   "note": "lapak barang bekas campur (radio, ketel, sepatu), terpal biru, pedagang"
+  },
+  "toko_loak_sw": {
+   "file": "pasar_loak/toko_loak_sw.png",
+   "group": "loak",
+   "size": [
+    264,
+    238
+   ],
+   "pivot": [
+    120,
+    178
+   ],
+   "anchor_n": [
+    112,
+    118
+   ],
+   "footprint": [
+    4,
+    3.5
+   ],
+   "facing": "sw",
+   "note": "Toko Loak utama (tempat pemain jual barang): papan LOAK / BELI BARANG BEKAS, meja etalase",
+   "interact_cells_from_north_corner": {
+    "npc_buyer_cell": [
+     2.0,
+     2.95
+    ],
+    "player_sell_cell": [
+     2.0,
+     3.3
+    ],
+    "counter_rect": [
+     0.6,
+     2.25,
+     3.4,
+     2.65
+    ]
+   }
+  },
+  "toko_loak_se": {
+   "file": "pasar_loak/toko_loak_se.png",
+   "group": "loak",
+   "size": [
+    240,
+    238
+   ],
+   "pivot": [
+    120,
+    178
+   ],
+   "anchor_n": [
+    128,
+    118
+   ],
+   "footprint": [
+    4,
+    3.5
+   ],
+   "facing": "se",
+   "note": "Toko Loak utama (tempat pemain jual barang): papan LOAK / BELI BARANG BEKAS, meja etalase",
+   "interact_cells_from_north_corner": {
+    "npc_buyer_cell": [
+     2.95,
+     2.0
+    ],
+    "player_sell_cell": [
+     3.3,
+     2.0
+    ],
+    "counter_rect": [
+     2.25,
+     0.6,
+     2.65,
+     3.4
+    ]
+   }
+  },
+  "warung_madura_sw": {
+   "file": "kampung/warung_madura_sw.png",
+   "group": "kampung",
+   "size": [
+    214,
+    196
+   ],
+   "pivot": [
+    96,
+    148
+   ],
+   "anchor_n": [
+    96,
+    100
+   ],
+   "footprint": [
+    3,
+    3
+   ],
+   "facing": "sw",
+   "note": "warung madura: rolling door terbuka, rak rokok/snack, galon, bangku, buka 24 jam",
+   "glow": "kampung/warung_madura_sw__glow.png"
+  },
+  "warung_madura_se": {
+   "file": "kampung/warung_madura_se.png",
+   "group": "kampung",
+   "size": [
+    192,
+    196
+   ],
+   "pivot": [
+    96,
+    148
+   ],
+   "anchor_n": [
+    96,
+    100
+   ],
+   "footprint": [
+    3,
+    3
+   ],
+   "facing": "se",
+   "note": "warung madura: rolling door terbuka, rak rokok/snack, galon, bangku, buka 24 jam",
+   "glow": "kampung/warung_madura_se__glow.png"
+  },
+  "rumah_kampung_a_sw": {
+   "file": "kampung/rumah_kampung_a_sw.png",
+   "group": "kampung",
+   "size": [
+    222,
+    222
+   ],
+   "pivot": [
+    99,
+    172
+   ],
+   "anchor_n": [
+    102,
+    122
+   ],
+   "footprint": [
+    3,
+    3.2
+   ],
+   "facing": "sw",
+   "note": "rumah kampung: tembok krem pudar, genteng, pagar besi hijau, pot hijau"
+  },
+  "rumah_kampung_a_se": {
+   "file": "kampung/rumah_kampung_a_se.png",
+   "group": "kampung",
+   "size": [
+    206,
+    222
+   ],
+   "pivot": [
+    107,
+    172
+   ],
+   "anchor_n": [
+    104,
+    122
+   ],
+   "footprint": [
+    3,
+    3.2
+   ],
+   "facing": "se",
+   "note": "rumah kampung: tembok krem pudar, genteng, pagar besi hijau, pot hijau"
+  },
+  "rumah_kampung_b_sw": {
+   "file": "kampung/rumah_kampung_b_sw.png",
+   "group": "kampung",
+   "size": [
+    222,
+    222
+   ],
+   "pivot": [
+    99,
+    172
+   ],
+   "anchor_n": [
+    102,
+    122
+   ],
+   "footprint": [
+    3,
+    3.2
+   ],
+   "facing": "sw",
+   "note": "rumah kampung: tembok biru pudar, atap seng, jemuran"
+  },
+  "rumah_kampung_b_se": {
+   "file": "kampung/rumah_kampung_b_se.png",
+   "group": "kampung",
+   "size": [
+    206,
+    222
+   ],
+   "pivot": [
+    107,
+    172
+   ],
+   "anchor_n": [
+    104,
+    122
+   ],
+   "footprint": [
+    3,
+    3.2
+   ],
+   "facing": "se",
+   "note": "rumah kampung: tembok biru pudar, atap seng, jemuran"
+  },
+  "rumah_kampung_c_sw": {
+   "file": "kampung/rumah_kampung_c_sw.png",
+   "group": "kampung",
+   "size": [
+    232,
+    312
+   ],
+   "pivot": [
+    99,
+    262
+   ],
+   "anchor_n": [
+    102,
+    212
+   ],
+   "footprint": [
+    3,
+    3.2
+   ],
+   "facing": "sw",
+   "note": "rumah 2 lantai sempit: tembok pink pudar, genteng, pagar"
+  },
+  "rumah_kampung_c_se": {
+   "file": "kampung/rumah_kampung_c_se.png",
+   "group": "kampung",
+   "size": [
+    212,
+    312
+   ],
+   "pivot": [
+    107,
+    262
+   ],
+   "anchor_n": [
+    104,
+    212
+   ],
+   "footprint": [
+    3,
+    3.2
+   ],
+   "facing": "se",
+   "note": "rumah 2 lantai sempit: tembok pink pudar, genteng, pagar"
+  },
+  "rumah_kampung_d_sw": {
+   "file": "kampung/rumah_kampung_d_sw.png",
+   "group": "kampung",
+   "size": [
+    254,
+    238
+   ],
+   "pivot": [
+    115,
+    180
+   ],
+   "anchor_n": [
+    102,
+    122
+   ],
+   "footprint": [
+    4,
+    3.2
+   ],
+   "facing": "sw",
+   "note": "rumah kampung: tembok hijau pudar, genteng, motor parkir, pagar"
+  },
+  "rumah_kampung_d_se": {
+   "file": "kampung/rumah_kampung_d_se.png",
+   "group": "kampung",
+   "size": [
+    238,
+    238
+   ],
+   "pivot": [
+    123,
+    180
+   ],
+   "anchor_n": [
+    136,
+    122
+   ],
+   "footprint": [
+    4,
+    3.2
+   ],
+   "facing": "se",
+   "note": "rumah kampung: tembok hijau pudar, genteng, motor parkir, pagar"
+  },
+  "rumah_kampung_e_sw": {
+   "file": "kampung/rumah_kampung_e_sw.png",
+   "group": "kampung",
+   "size": [
+    222,
+    222
+   ],
+   "pivot": [
+    99,
+    172
+   ],
+   "anchor_n": [
+    102,
+    122
+   ],
+   "footprint": [
+    3,
+    3.2
+   ],
+   "facing": "sw",
+   "note": "rumah setengah jadi: bata ekspos, atap seng, pot hijau"
+  },
+  "rumah_kampung_e_se": {
+   "file": "kampung/rumah_kampung_e_se.png",
+   "group": "kampung",
+   "size": [
+    206,
+    222
+   ],
+   "pivot": [
+    107,
+    172
+   ],
+   "anchor_n": [
+    104,
+    122
+   ],
+   "footprint": [
+    3,
+    3.2
+   ],
+   "facing": "se",
+   "note": "rumah setengah jadi: bata ekspos, atap seng, pot hijau"
+  },
+  "pos_ronda_sw": {
+   "file": "kampung/pos_ronda_sw.png",
+   "group": "kampung",
+   "size": [
+    128,
+    168
+   ],
+   "pivot": [
+    64,
+    135
+   ],
+   "anchor_n": [
+    64,
+    103
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "sw",
+   "note": "pos ronda: bale kayu, atap seng, kentongan"
+  },
+  "pos_ronda_se": {
+   "file": "kampung/pos_ronda_se.png",
+   "group": "kampung",
+   "size": [
+    128,
+    168
+   ],
+   "pivot": [
+    64,
+    135
+   ],
+   "anchor_n": [
+    64,
+    103
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "se",
+   "note": "pos ronda: bale kayu, atap seng, kentongan"
+  },
+  "gapura_gang_sw": {
+   "file": "gang/gapura_gang_sw.png",
+   "group": "gang",
+   "size": [
+    116,
+    216
+   ],
+   "pivot": [
+    58,
+    186
+   ],
+   "anchor_n": [
+    20,
+    157
+   ],
+   "footprint": [
+    3,
+    0.6
+   ],
+   "facing": "sw",
+   "note": "gapura mulut gang: GG. SIRIH II, RT 005 / RW 02, spanduk PASAR LOAK"
+  },
+  "gapura_gang_se": {
+   "file": "gang/gapura_gang_se.png",
+   "group": "gang",
+   "size": [
+    116,
+    216
+   ],
+   "pivot": [
+    58,
+    186
+   ],
+   "anchor_n": [
+    96,
+    157
+   ],
+   "footprint": [
+    3,
+    0.6
+   ],
+   "facing": "se",
+   "note": "gapura mulut gang: GG. SIRIH II, RT 005 / RW 02, spanduk PASAR LOAK"
+  },
+  "tembok_gang_a_sw": {
+   "file": "gang/tembok_gang_a_sw.png",
+   "group": "gang",
+   "size": [
+    74,
+    102
+   ],
+   "pivot": [
+    37,
+    82
+   ],
+   "anchor_n": [
+    10,
+    64
+   ],
+   "footprint": [
+    2,
+    0.3
+   ],
+   "facing": "sw",
+   "note": "tembok gang 2 sel: cat pudar, noda lumut, meteran listrik"
+  },
+  "tembok_gang_a_se": {
+   "file": "gang/tembok_gang_a_se.png",
+   "group": "gang",
+   "size": [
+    74,
+    102
+   ],
+   "pivot": [
+    37,
+    82
+   ],
+   "anchor_n": [
+    64,
+    64
+   ],
+   "footprint": [
+    2,
+    0.3
+   ],
+   "facing": "se",
+   "note": "tembok gang 2 sel: cat pudar, noda lumut, meteran listrik"
+  },
+  "tembok_gang_b_sw": {
+   "file": "gang/tembok_gang_b_sw.png",
+   "group": "gang",
+   "size": [
+    74,
+    102
+   ],
+   "pivot": [
+    37,
+    82
+   ],
+   "anchor_n": [
+    10,
+    64
+   ],
+   "footprint": [
+    2,
+    0.3
+   ],
+   "facing": "sw",
+   "note": "tembok gang 2 sel: bata ekspos sebagian, poster"
+  },
+  "tembok_gang_b_se": {
+   "file": "gang/tembok_gang_b_se.png",
+   "group": "gang",
+   "size": [
+    74,
+    102
+   ],
+   "pivot": [
+    37,
+    82
+   ],
+   "anchor_n": [
+    64,
+    64
+   ],
+   "footprint": [
+    2,
+    0.3
+   ],
+   "facing": "se",
+   "note": "tembok gang 2 sel: bata ekspos sebagian, poster"
+  },
+  "lorong_lurus_sw": {
+   "file": "gang/lorong_lurus_sw.png",
+   "group": "gang",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "sw",
+   "note": "modul lorong lurus 2x4 sel: cor beton retak + selokan kiri-kanan. _sw = memanjang arah r (masuk ke kanan-atas), _se = memanjang arah c"
+  },
+  "lorong_lurus_se": {
+   "file": "gang/lorong_lurus_se.png",
+   "group": "gang",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "se",
+   "note": "modul lorong lurus 2x4 sel: cor beton retak + selokan kiri-kanan. _sw = memanjang arah r (masuk ke kanan-atas), _se = memanjang arah c"
+  },
+  "lorong_ujung_sw": {
+   "file": "gang/lorong_ujung_sw.png",
+   "group": "gang",
+   "size": [
+    128,
+    128
+   ],
+   "pivot": [
+    64,
+    96
+   ],
+   "anchor_n": [
+    64,
+    64
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "sw",
+   "note": "modul ujung lorong 2x2: selokan + tembok buntu dengan pintu kayu"
+  },
+  "lorong_ujung_se": {
+   "file": "gang/lorong_ujung_se.png",
+   "group": "gang",
+   "size": [
+    128,
+    128
+   ],
+   "pivot": [
+    64,
+    96
+   ],
+   "anchor_n": [
+    64,
+    64
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "se",
+   "note": "modul ujung lorong 2x2: selokan + tembok buntu dengan pintu kayu"
+  },
+  "lorong_tikungan_sw": {
+   "file": "gang/lorong_tikungan_sw.png",
+   "group": "gang",
+   "size": [
+    128,
+    64
+   ],
+   "pivot": [
+    64,
+    32
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "sw",
+   "note": "modul tikungan lorong 2x2 (belok), selokan mengikuti sisi luar"
+  },
+  "lorong_tikungan_se": {
+   "file": "gang/lorong_tikungan_se.png",
+   "group": "gang",
+   "size": [
+    128,
+    64
+   ],
+   "pivot": [
+    64,
+    32
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "se",
+   "note": "modul tikungan lorong 2x2 (belok), selokan mengikuti sisi luar"
+  },
+  "tiang_listrik_sw": {
+   "file": "props/tiang_listrik_sw.png",
+   "group": "prop",
+   "size": [
+    46,
+    238
+   ],
+   "pivot": [
+    16,
+    232
+   ],
+   "anchor_n": [
+    16,
+    216
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang listrik beton + palang + isolator + ujung kabel"
+  },
+  "tiang_listrik_se": {
+   "file": "props/tiang_listrik_se.png",
+   "group": "prop",
+   "size": [
+    48,
+    238
+   ],
+   "pivot": [
+    28,
+    232
+   ],
+   "anchor_n": [
+    28,
+    216
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang listrik beton + palang + isolator + ujung kabel"
+  },
+  "tiang_trafo_sw": {
+   "file": "props/tiang_trafo_sw.png",
+   "group": "prop",
+   "size": [
+    46,
+    238
+   ],
+   "pivot": [
+    16,
+    232
+   ],
+   "anchor_n": [
+    16,
+    216
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang listrik dengan trafo (gardu tiang)"
+  },
+  "tiang_trafo_se": {
+   "file": "props/tiang_trafo_se.png",
+   "group": "prop",
+   "size": [
+    48,
+    238
+   ],
+   "pivot": [
+    28,
+    232
+   ],
+   "anchor_n": [
+    28,
+    216
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang listrik dengan trafo (gardu tiang)"
+  },
+  "kabel_4_sw": {
+   "file": "props/kabel_4_sw.png",
+   "group": "prop",
+   "size": [
+    128,
+    82
+   ],
+   "pivot": [
+    64,
+    260
+   ],
+   "anchor_n": [
+    16,
+    220
+   ],
+   "footprint": [
+    4,
+    1
+   ],
+   "facing": "sw",
+   "note": "kabel listrik melendut antar tiang (4 sel), _sw sepanjang c, _se sepanjang r; z sambungan 222 px"
+  },
+  "kabel_4_se": {
+   "file": "props/kabel_4_se.png",
+   "group": "prop",
+   "size": [
+    128,
+    82
+   ],
+   "pivot": [
+    64,
+    259
+   ],
+   "anchor_n": [
+    112,
+    219
+   ],
+   "footprint": [
+    4,
+    1
+   ],
+   "facing": "se",
+   "note": "kabel listrik melendut antar tiang (4 sel), _sw sepanjang c, _se sepanjang r; z sambungan 222 px"
+  },
+  "bangku_plastik_merah_sw": {
+   "file": "props/bangku_plastik_merah_sw.png",
+   "group": "prop",
+   "size": [
+    20,
+    34
+   ],
+   "pivot": [
+    8,
+    30
+   ],
+   "anchor_n": [
+    8,
+    14
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "bangku plastik merah"
+  },
+  "bangku_plastik_merah_se": {
+   "file": "props/bangku_plastik_merah_se.png",
+   "group": "prop",
+   "size": [
+    20,
+    34
+   ],
+   "pivot": [
+    8,
+    30
+   ],
+   "anchor_n": [
+    8,
+    14
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "bangku plastik merah"
+  },
+  "bangku_plastik_merah_ne": {
+   "file": "props/bangku_plastik_merah_ne.png",
+   "group": "prop",
+   "size": [
+    20,
+    34
+   ],
+   "pivot": [
+    8,
+    30
+   ],
+   "anchor_n": [
+    8,
+    14
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "bangku plastik merah"
+  },
+  "bangku_plastik_merah_nw": {
+   "file": "props/bangku_plastik_merah_nw.png",
+   "group": "prop",
+   "size": [
+    20,
+    34
+   ],
+   "pivot": [
+    8,
+    30
+   ],
+   "anchor_n": [
+    8,
+    14
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "bangku plastik merah"
+  },
+  "bangku_plastik_biru_sw": {
+   "file": "props/bangku_plastik_biru_sw.png",
+   "group": "prop",
+   "size": [
+    20,
+    34
+   ],
+   "pivot": [
+    8,
+    30
+   ],
+   "anchor_n": [
+    8,
+    14
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "bangku plastik biru"
+  },
+  "bangku_plastik_biru_se": {
+   "file": "props/bangku_plastik_biru_se.png",
+   "group": "prop",
+   "size": [
+    20,
+    34
+   ],
+   "pivot": [
+    8,
+    30
+   ],
+   "anchor_n": [
+    8,
+    14
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "bangku plastik biru"
+  },
+  "bangku_plastik_biru_ne": {
+   "file": "props/bangku_plastik_biru_ne.png",
+   "group": "prop",
+   "size": [
+    20,
+    34
+   ],
+   "pivot": [
+    8,
+    30
+   ],
+   "anchor_n": [
+    8,
+    14
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "bangku plastik biru"
+  },
+  "bangku_plastik_biru_nw": {
+   "file": "props/bangku_plastik_biru_nw.png",
+   "group": "prop",
+   "size": [
+    20,
+    34
+   ],
+   "pivot": [
+    8,
+    30
+   ],
+   "anchor_n": [
+    8,
+    14
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "bangku plastik biru"
+  },
+  "kardus_tumpuk_sw": {
+   "file": "props/kardus_tumpuk_sw.png",
+   "group": "prop",
+   "size": [
+    28,
+    60
+   ],
+   "pivot": [
+    14,
+    54
+   ],
+   "anchor_n": [
+    14,
+    38
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tumpukan kardus"
+  },
+  "kardus_tumpuk_se": {
+   "file": "props/kardus_tumpuk_se.png",
+   "group": "prop",
+   "size": [
+    30,
+    60
+   ],
+   "pivot": [
+    12,
+    52
+   ],
+   "anchor_n": [
+    12,
+    36
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tumpukan kardus"
+  },
+  "motor_parkir_hitam_sw": {
+   "file": "props/motor_parkir_hitam_sw.png",
+   "group": "prop",
+   "size": [
+    54,
+    60
+   ],
+   "pivot": [
+    23,
+    52
+   ],
+   "anchor_n": [
+    7,
+    28
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "sw",
+   "note": "motor bebek/matic parkir, hitam (sumbu panjang searah muka)"
+  },
+  "motor_parkir_hitam_se": {
+   "file": "props/motor_parkir_hitam_se.png",
+   "group": "prop",
+   "size": [
+    56,
+    50
+   ],
+   "pivot": [
+    24,
+    43
+   ],
+   "anchor_n": [
+    40,
+    19
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "se",
+   "note": "motor bebek/matic parkir, hitam (sumbu panjang searah muka)"
+  },
+  "motor_parkir_hitam_ne": {
+   "file": "props/motor_parkir_hitam_ne.png",
+   "group": "prop",
+   "size": [
+    56,
+    60
+   ],
+   "pivot": [
+    24,
+    52
+   ],
+   "anchor_n": [
+    8,
+    28
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "ne",
+   "note": "motor bebek/matic parkir, hitam (sumbu panjang searah muka)"
+  },
+  "motor_parkir_hitam_nw": {
+   "file": "props/motor_parkir_hitam_nw.png",
+   "group": "prop",
+   "size": [
+    54,
+    50
+   ],
+   "pivot": [
+    23,
+    43
+   ],
+   "anchor_n": [
+    39,
+    19
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "nw",
+   "note": "motor bebek/matic parkir, hitam (sumbu panjang searah muka)"
+  },
+  "motor_parkir_merah_sw": {
+   "file": "props/motor_parkir_merah_sw.png",
+   "group": "prop",
+   "size": [
+    54,
+    60
+   ],
+   "pivot": [
+    23,
+    52
+   ],
+   "anchor_n": [
+    7,
+    28
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "sw",
+   "note": "motor parkir merah"
+  },
+  "motor_parkir_merah_se": {
+   "file": "props/motor_parkir_merah_se.png",
+   "group": "prop",
+   "size": [
+    56,
+    50
+   ],
+   "pivot": [
+    24,
+    43
+   ],
+   "anchor_n": [
+    40,
+    19
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "se",
+   "note": "motor parkir merah"
+  },
+  "motor_parkir_merah_ne": {
+   "file": "props/motor_parkir_merah_ne.png",
+   "group": "prop",
+   "size": [
+    56,
+    60
+   ],
+   "pivot": [
+    24,
+    52
+   ],
+   "anchor_n": [
+    8,
+    28
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "ne",
+   "note": "motor parkir merah"
+  },
+  "motor_parkir_merah_nw": {
+   "file": "props/motor_parkir_merah_nw.png",
+   "group": "prop",
+   "size": [
+    54,
+    50
+   ],
+   "pivot": [
+    23,
+    43
+   ],
+   "anchor_n": [
+    39,
+    19
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "nw",
+   "note": "motor parkir merah"
+  },
+  "pedagang_duduk_a_sw": {
+   "file": "props/pedagang_duduk_a_sw.png",
+   "group": "prop",
+   "size": [
+    30,
+    86
+   ],
+   "pivot": [
+    12,
+    77
+   ],
+   "anchor_n": [
+    12,
+    61
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "pedagang duduk di bangku plastik (siluet sederhana, kaos hijau)"
+  },
+  "pedagang_duduk_a_se": {
+   "file": "props/pedagang_duduk_a_se.png",
+   "group": "prop",
+   "size": [
+    26,
+    86
+   ],
+   "pivot": [
+    10,
+    79
+   ],
+   "anchor_n": [
+    10,
+    63
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "pedagang duduk di bangku plastik (siluet sederhana, kaos hijau)"
+  },
+  "pedagang_duduk_a_ne": {
+   "file": "props/pedagang_duduk_a_ne.png",
+   "group": "prop",
+   "size": [
+    26,
+    82
+   ],
+   "pivot": [
+    10,
+    76
+   ],
+   "anchor_n": [
+    10,
+    60
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "pedagang duduk di bangku plastik (siluet sederhana, kaos hijau)"
+  },
+  "pedagang_duduk_a_nw": {
+   "file": "props/pedagang_duduk_a_nw.png",
+   "group": "prop",
+   "size": [
+    30,
+    82
+   ],
+   "pivot": [
+    12,
+    77
+   ],
+   "anchor_n": [
+    12,
+    61
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "pedagang duduk di bangku plastik (siluet sederhana, kaos hijau)"
+  },
+  "pedagang_duduk_b_sw": {
+   "file": "props/pedagang_duduk_b_sw.png",
+   "group": "prop",
+   "size": [
+    30,
+    86
+   ],
+   "pivot": [
+    12,
+    77
+   ],
+   "anchor_n": [
+    12,
+    61
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "pedagang duduk (kaos biru, bangku biru)"
+  },
+  "pedagang_duduk_b_se": {
+   "file": "props/pedagang_duduk_b_se.png",
+   "group": "prop",
+   "size": [
+    26,
+    86
+   ],
+   "pivot": [
+    10,
+    79
+   ],
+   "anchor_n": [
+    10,
+    63
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "pedagang duduk (kaos biru, bangku biru)"
+  },
+  "pedagang_duduk_b_ne": {
+   "file": "props/pedagang_duduk_b_ne.png",
+   "group": "prop",
+   "size": [
+    26,
+    82
+   ],
+   "pivot": [
+    10,
+    76
+   ],
+   "anchor_n": [
+    10,
+    60
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "pedagang duduk (kaos biru, bangku biru)"
+  },
+  "pedagang_duduk_b_nw": {
+   "file": "props/pedagang_duduk_b_nw.png",
+   "group": "prop",
+   "size": [
+    30,
+    82
+   ],
+   "pivot": [
+    12,
+    77
+   ],
+   "anchor_n": [
+    12,
+    61
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "pedagang duduk (kaos biru, bangku biru)"
+  },
+  "rak_gantung_tas_sw": {
+   "file": "props/rak_gantung_tas_sw.png",
+   "group": "prop",
+   "size": [
+    40,
+    120
+   ],
+   "pivot": [
+    20,
+    109
+   ],
+   "anchor_n": [
+    14,
+    96
+   ],
+   "footprint": [
+    1,
+    0.6
+   ],
+   "facing": "sw",
+   "note": "rak gantung tas berdiri (bisa disusun)"
+  },
+  "rak_gantung_tas_se": {
+   "file": "props/rak_gantung_tas_se.png",
+   "group": "prop",
+   "size": [
+    40,
+    120
+   ],
+   "pivot": [
+    20,
+    109
+   ],
+   "anchor_n": [
+    26,
+    96
+   ],
+   "footprint": [
+    1,
+    0.6
+   ],
+   "facing": "se",
+   "note": "rak gantung tas berdiri (bisa disusun)"
+  },
+  "papan_jam_dinding_sw": {
+   "file": "props/papan_jam_dinding_sw.png",
+   "group": "prop",
+   "size": [
+    40,
+    120
+   ],
+   "pivot": [
+    20,
+    109
+   ],
+   "anchor_n": [
+    14,
+    96
+   ],
+   "footprint": [
+    1,
+    0.6
+   ],
+   "facing": "sw",
+   "note": "papan pajang jam dinding berdiri"
+  },
+  "papan_jam_dinding_se": {
+   "file": "props/papan_jam_dinding_se.png",
+   "group": "prop",
+   "size": [
+    40,
+    120
+   ],
+   "pivot": [
+    20,
+    109
+   ],
+   "anchor_n": [
+    26,
+    96
+   ],
+   "footprint": [
+    1,
+    0.6
+   ],
+   "facing": "se",
+   "note": "papan pajang jam dinding berdiri"
+  },
+  "nampan_jam_tangan_sw": {
+   "file": "props/nampan_jam_tangan_sw.png",
+   "group": "prop",
+   "size": [
+    40,
+    52
+   ],
+   "pivot": [
+    20,
+    41
+   ],
+   "anchor_n": [
+    20,
+    25
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "meja kaca kecil berisi jam tangan"
+  },
+  "nampan_jam_tangan_se": {
+   "file": "props/nampan_jam_tangan_se.png",
+   "group": "prop",
+   "size": [
+    40,
+    52
+   ],
+   "pivot": [
+    20,
+    41
+   ],
+   "anchor_n": [
+    20,
+    25
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "meja kaca kecil berisi jam tangan"
+  },
+  "meja_mainan_sw": {
+   "file": "props/meja_mainan_sw.png",
+   "group": "prop",
+   "size": [
+    40,
+    48
+   ],
+   "pivot": [
+    20,
+    38
+   ],
+   "anchor_n": [
+    20,
+    22
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "meja kecil berisi mainan"
+  },
+  "meja_mainan_se": {
+   "file": "props/meja_mainan_se.png",
+   "group": "prop",
+   "size": [
+    40,
+    48
+   ],
+   "pivot": [
+    20,
+    38
+   ],
+   "anchor_n": [
+    20,
+    22
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "meja kecil berisi mainan"
+  },
+  "terpal_biru_sw": {
+   "file": "props/terpal_biru_sw.png",
+   "group": "prop",
+   "size": [
+    106,
+    170
+   ],
+   "pivot": [
+    53,
+    144
+   ],
+   "anchor_n": [
+    45,
+    116
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "terpal biru di 4 tiang (pengisi atap lapak)"
+  },
+  "terpal_biru_se": {
+   "file": "props/terpal_biru_se.png",
+   "group": "prop",
+   "size": [
+    106,
+    170
+   ],
+   "pivot": [
+    53,
+    144
+   ],
+   "anchor_n": [
+    61,
+    116
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "terpal biru di 4 tiang (pengisi atap lapak)"
+  },
+  "terpal_merah_sw": {
+   "file": "props/terpal_merah_sw.png",
+   "group": "prop",
+   "size": [
+    106,
+    170
+   ],
+   "pivot": [
+    53,
+    144
+   ],
+   "anchor_n": [
+    45,
+    116
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "terpal merah"
+  },
+  "terpal_merah_se": {
+   "file": "props/terpal_merah_se.png",
+   "group": "prop",
+   "size": [
+    106,
+    170
+   ],
+   "pivot": [
+    53,
+    144
+   ],
+   "anchor_n": [
+    61,
+    116
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "terpal merah"
+  },
+  "terpal_oranye_sw": {
+   "file": "props/terpal_oranye_sw.png",
+   "group": "prop",
+   "size": [
+    106,
+    170
+   ],
+   "pivot": [
+    53,
+    144
+   ],
+   "anchor_n": [
+    45,
+    116
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "sw",
+   "note": "terpal oranye"
+  },
+  "terpal_oranye_se": {
+   "file": "props/terpal_oranye_se.png",
+   "group": "prop",
+   "size": [
+    106,
+    170
+   ],
+   "pivot": [
+    53,
+    144
+   ],
+   "anchor_n": [
+    61,
+    116
+   ],
+   "footprint": [
+    2,
+    1.5
+   ],
+   "facing": "se",
+   "note": "terpal oranye"
+  },
+  "pot_tanaman_sw": {
+   "file": "props/pot_tanaman_sw.png",
+   "group": "prop",
+   "size": [
+    28,
+    48
+   ],
+   "pivot": [
+    13,
+    43
+   ],
+   "anchor_n": [
+    13,
+    27
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "pot tanaman hijau (tanpa bunga)"
+  },
+  "pot_tanaman_se": {
+   "file": "props/pot_tanaman_se.png",
+   "group": "prop",
+   "size": [
+    28,
+    48
+   ],
+   "pivot": [
+    13,
+    43
+   ],
+   "anchor_n": [
+    13,
+    27
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "pot tanaman hijau (tanpa bunga)"
+  },
+  "jemuran_sw": {
+   "file": "props/jemuran_sw.png",
+   "group": "prop",
+   "size": [
+    58,
+    88
+   ],
+   "pivot": [
+    30,
+    72
+   ],
+   "anchor_n": [
+    6,
+    52
+   ],
+   "footprint": [
+    2,
+    0.5
+   ],
+   "facing": "sw",
+   "note": "jemuran baju di tiang"
+  },
+  "jemuran_se": {
+   "file": "props/jemuran_se.png",
+   "group": "prop",
+   "size": [
+    58,
+    88
+   ],
+   "pivot": [
+    28,
+    72
+   ],
+   "anchor_n": [
+    52,
+    52
+   ],
+   "footprint": [
+    2,
+    0.5
+   ],
+   "facing": "se",
+   "note": "jemuran baju di tiang"
+  },
+  "lampu_pejalan_merah_sw": {
+   "file": "sinyal/lampu_pejalan_merah_sw.png",
+   "group": "sinyal",
+   "size": [
+    28,
+    156
+   ],
+   "pivot": [
+    14,
+    151
+   ],
+   "anchor_n": [
+    14,
+    135
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang lampu penyeberangan pejalan kaki, state merah; tombol seberang kuning",
+   "glow": "sinyal/lampu_pejalan_merah_sw__glow.png"
+  },
+  "lampu_pejalan_merah_se": {
+   "file": "sinyal/lampu_pejalan_merah_se.png",
+   "group": "sinyal",
+   "size": [
+    26,
+    156
+   ],
+   "pivot": [
+    10,
+    151
+   ],
+   "anchor_n": [
+    10,
+    135
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang lampu penyeberangan pejalan kaki, state merah; tombol seberang kuning",
+   "glow": "sinyal/lampu_pejalan_merah_se__glow.png"
+  },
+  "lampu_pejalan_merah_ne": {
+   "file": "sinyal/lampu_pejalan_merah_ne.png",
+   "group": "sinyal",
+   "size": [
+    24,
+    156
+   ],
+   "pivot": [
+    10,
+    152
+   ],
+   "anchor_n": [
+    10,
+    136
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "tiang lampu penyeberangan pejalan kaki, state merah; tombol seberang kuning",
+   "glow": "sinyal/lampu_pejalan_merah_ne__glow.png"
+  },
+  "lampu_pejalan_merah_nw": {
+   "file": "sinyal/lampu_pejalan_merah_nw.png",
+   "group": "sinyal",
+   "size": [
+    26,
+    158
+   ],
+   "pivot": [
+    12,
+    153
+   ],
+   "anchor_n": [
+    12,
+    137
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "tiang lampu penyeberangan pejalan kaki, state merah; tombol seberang kuning",
+   "glow": "sinyal/lampu_pejalan_merah_nw__glow.png"
+  },
+  "lampu_pejalan_hijau_sw": {
+   "file": "sinyal/lampu_pejalan_hijau_sw.png",
+   "group": "sinyal",
+   "size": [
+    28,
+    156
+   ],
+   "pivot": [
+    14,
+    151
+   ],
+   "anchor_n": [
+    14,
+    135
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang lampu penyeberangan pejalan kaki, state hijau; tombol seberang kuning",
+   "glow": "sinyal/lampu_pejalan_hijau_sw__glow.png"
+  },
+  "lampu_pejalan_hijau_se": {
+   "file": "sinyal/lampu_pejalan_hijau_se.png",
+   "group": "sinyal",
+   "size": [
+    26,
+    156
+   ],
+   "pivot": [
+    10,
+    151
+   ],
+   "anchor_n": [
+    10,
+    135
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang lampu penyeberangan pejalan kaki, state hijau; tombol seberang kuning",
+   "glow": "sinyal/lampu_pejalan_hijau_se__glow.png"
+  },
+  "lampu_pejalan_hijau_ne": {
+   "file": "sinyal/lampu_pejalan_hijau_ne.png",
+   "group": "sinyal",
+   "size": [
+    24,
+    156
+   ],
+   "pivot": [
+    10,
+    152
+   ],
+   "anchor_n": [
+    10,
+    136
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "tiang lampu penyeberangan pejalan kaki, state hijau; tombol seberang kuning"
+  },
+  "lampu_pejalan_hijau_nw": {
+   "file": "sinyal/lampu_pejalan_hijau_nw.png",
+   "group": "sinyal",
+   "size": [
+    26,
+    158
+   ],
+   "pivot": [
+    12,
+    153
+   ],
+   "anchor_n": [
+    12,
+    137
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "tiang lampu penyeberangan pejalan kaki, state hijau; tombol seberang kuning"
+  },
+  "lampu_pejalan_hijau_kedip_off_sw": {
+   "file": "sinyal/lampu_pejalan_hijau_kedip_off_sw.png",
+   "group": "sinyal",
+   "size": [
+    28,
+    156
+   ],
+   "pivot": [
+    14,
+    151
+   ],
+   "anchor_n": [
+    14,
+    135
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang lampu penyeberangan pejalan kaki, state hijau_kedip_off; tombol seberang kuning"
+  },
+  "lampu_pejalan_hijau_kedip_off_se": {
+   "file": "sinyal/lampu_pejalan_hijau_kedip_off_se.png",
+   "group": "sinyal",
+   "size": [
+    26,
+    156
+   ],
+   "pivot": [
+    10,
+    151
+   ],
+   "anchor_n": [
+    10,
+    135
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang lampu penyeberangan pejalan kaki, state hijau_kedip_off; tombol seberang kuning"
+  },
+  "lampu_pejalan_hijau_kedip_off_ne": {
+   "file": "sinyal/lampu_pejalan_hijau_kedip_off_ne.png",
+   "group": "sinyal",
+   "size": [
+    24,
+    156
+   ],
+   "pivot": [
+    10,
+    152
+   ],
+   "anchor_n": [
+    10,
+    136
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "tiang lampu penyeberangan pejalan kaki, state hijau_kedip_off; tombol seberang kuning"
+  },
+  "lampu_pejalan_hijau_kedip_off_nw": {
+   "file": "sinyal/lampu_pejalan_hijau_kedip_off_nw.png",
+   "group": "sinyal",
+   "size": [
+    26,
+    158
+   ],
+   "pivot": [
+    12,
+    153
+   ],
+   "anchor_n": [
+    12,
+    137
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "tiang lampu penyeberangan pejalan kaki, state hijau_kedip_off; tombol seberang kuning"
+  },
+  "lampu_pejalan_padam_sw": {
+   "file": "sinyal/lampu_pejalan_padam_sw.png",
+   "group": "sinyal",
+   "size": [
+    28,
+    156
+   ],
+   "pivot": [
+    14,
+    151
+   ],
+   "anchor_n": [
+    14,
+    135
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang lampu penyeberangan pejalan kaki, state padam; tombol seberang kuning"
+  },
+  "lampu_pejalan_padam_se": {
+   "file": "sinyal/lampu_pejalan_padam_se.png",
+   "group": "sinyal",
+   "size": [
+    26,
+    156
+   ],
+   "pivot": [
+    10,
+    151
+   ],
+   "anchor_n": [
+    10,
+    135
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang lampu penyeberangan pejalan kaki, state padam; tombol seberang kuning"
+  },
+  "lampu_pejalan_padam_ne": {
+   "file": "sinyal/lampu_pejalan_padam_ne.png",
+   "group": "sinyal",
+   "size": [
+    24,
+    156
+   ],
+   "pivot": [
+    10,
+    152
+   ],
+   "anchor_n": [
+    10,
+    136
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "tiang lampu penyeberangan pejalan kaki, state padam; tombol seberang kuning"
+  },
+  "lampu_pejalan_padam_nw": {
+   "file": "sinyal/lampu_pejalan_padam_nw.png",
+   "group": "sinyal",
+   "size": [
+    26,
+    158
+   ],
+   "pivot": [
+    12,
+    153
+   ],
+   "anchor_n": [
+    12,
+    137
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "tiang lampu penyeberangan pejalan kaki, state padam; tombol seberang kuning"
+  },
+  "lampu_lalin_merah_sw": {
+   "file": "sinyal/lampu_lalin_merah_sw.png",
+   "group": "sinyal",
+   "size": [
+    58,
+    202
+   ],
+   "pivot": [
+    10,
+    198
+   ],
+   "anchor_n": [
+    10,
+    182
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state merah",
+   "glow": "sinyal/lampu_lalin_merah_sw__glow.png"
+  },
+  "lampu_lalin_merah_se": {
+   "file": "sinyal/lampu_lalin_merah_se.png",
+   "group": "sinyal",
+   "size": [
+    62,
+    220
+   ],
+   "pivot": [
+    10,
+    215
+   ],
+   "anchor_n": [
+    10,
+    199
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state merah",
+   "glow": "sinyal/lampu_lalin_merah_se__glow.png"
+  },
+  "lampu_lalin_merah_ne": {
+   "file": "sinyal/lampu_lalin_merah_ne.png",
+   "group": "sinyal",
+   "size": [
+    66,
+    220
+   ],
+   "pivot": [
+    48,
+    215
+   ],
+   "anchor_n": [
+    48,
+    199
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state merah"
+  },
+  "lampu_lalin_merah_nw": {
+   "file": "sinyal/lampu_lalin_merah_nw.png",
+   "group": "sinyal",
+   "size": [
+    66,
+    202
+   ],
+   "pivot": [
+    48,
+    198
+   ],
+   "anchor_n": [
+    48,
+    182
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state merah"
+  },
+  "lampu_lalin_kuning_sw": {
+   "file": "sinyal/lampu_lalin_kuning_sw.png",
+   "group": "sinyal",
+   "size": [
+    58,
+    202
+   ],
+   "pivot": [
+    10,
+    198
+   ],
+   "anchor_n": [
+    10,
+    182
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state kuning",
+   "glow": "sinyal/lampu_lalin_kuning_sw__glow.png"
+  },
+  "lampu_lalin_kuning_se": {
+   "file": "sinyal/lampu_lalin_kuning_se.png",
+   "group": "sinyal",
+   "size": [
+    62,
+    220
+   ],
+   "pivot": [
+    10,
+    215
+   ],
+   "anchor_n": [
+    10,
+    199
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state kuning",
+   "glow": "sinyal/lampu_lalin_kuning_se__glow.png"
+  },
+  "lampu_lalin_kuning_ne": {
+   "file": "sinyal/lampu_lalin_kuning_ne.png",
+   "group": "sinyal",
+   "size": [
+    66,
+    220
+   ],
+   "pivot": [
+    48,
+    215
+   ],
+   "anchor_n": [
+    48,
+    199
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state kuning"
+  },
+  "lampu_lalin_kuning_nw": {
+   "file": "sinyal/lampu_lalin_kuning_nw.png",
+   "group": "sinyal",
+   "size": [
+    66,
+    202
+   ],
+   "pivot": [
+    48,
+    198
+   ],
+   "anchor_n": [
+    48,
+    182
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state kuning"
+  },
+  "lampu_lalin_hijau_sw": {
+   "file": "sinyal/lampu_lalin_hijau_sw.png",
+   "group": "sinyal",
+   "size": [
+    58,
+    202
+   ],
+   "pivot": [
+    10,
+    198
+   ],
+   "anchor_n": [
+    10,
+    182
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state hijau",
+   "glow": "sinyal/lampu_lalin_hijau_sw__glow.png"
+  },
+  "lampu_lalin_hijau_se": {
+   "file": "sinyal/lampu_lalin_hijau_se.png",
+   "group": "sinyal",
+   "size": [
+    62,
+    220
+   ],
+   "pivot": [
+    10,
+    215
+   ],
+   "anchor_n": [
+    10,
+    199
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state hijau",
+   "glow": "sinyal/lampu_lalin_hijau_se__glow.png"
+  },
+  "lampu_lalin_hijau_ne": {
+   "file": "sinyal/lampu_lalin_hijau_ne.png",
+   "group": "sinyal",
+   "size": [
+    66,
+    220
+   ],
+   "pivot": [
+    48,
+    215
+   ],
+   "anchor_n": [
+    48,
+    199
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "ne",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state hijau"
+  },
+  "lampu_lalin_hijau_nw": {
+   "file": "sinyal/lampu_lalin_hijau_nw.png",
+   "group": "sinyal",
+   "size": [
+    66,
+    202
+   ],
+   "pivot": [
+    48,
+    198
+   ],
+   "anchor_n": [
+    48,
+    182
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "nw",
+   "note": "tiang lampu lalu lintas kendaraan (lengan + kepala 3 lampu + kepala rendah), state hijau"
+  },
+  "motor_matic_hitam_sw": {
+   "file": "parkir/motor_matic_hitam_sw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    68
+   ],
+   "pivot": [
+    22,
+    60
+   ],
+   "anchor_n": [
+    6,
+    36
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "sw",
+   "note": "motor matic parkir hitam (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_hitam_se": {
+   "file": "parkir/motor_matic_hitam_se.png",
+   "group": "parkir",
+   "size": [
+    54,
+    54
+   ],
+   "pivot": [
+    23,
+    46
+   ],
+   "anchor_n": [
+    39,
+    22
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "se",
+   "note": "motor matic parkir hitam (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_hitam_ne": {
+   "file": "parkir/motor_matic_hitam_ne.png",
+   "group": "parkir",
+   "size": [
+    54,
+    62
+   ],
+   "pivot": [
+    23,
+    55
+   ],
+   "anchor_n": [
+    7,
+    31
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "ne",
+   "note": "motor matic parkir hitam (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_hitam_nw": {
+   "file": "parkir/motor_matic_hitam_nw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    50
+   ],
+   "pivot": [
+    22,
+    43
+   ],
+   "anchor_n": [
+    38,
+    19
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "nw",
+   "note": "motor matic parkir hitam (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_merah_sw": {
+   "file": "parkir/motor_matic_merah_sw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    68
+   ],
+   "pivot": [
+    22,
+    60
+   ],
+   "anchor_n": [
+    6,
+    36
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "sw",
+   "note": "motor matic parkir merah, helm hitam di jok (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_merah_se": {
+   "file": "parkir/motor_matic_merah_se.png",
+   "group": "parkir",
+   "size": [
+    54,
+    54
+   ],
+   "pivot": [
+    23,
+    46
+   ],
+   "anchor_n": [
+    39,
+    22
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "se",
+   "note": "motor matic parkir merah, helm hitam di jok (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_merah_ne": {
+   "file": "parkir/motor_matic_merah_ne.png",
+   "group": "parkir",
+   "size": [
+    54,
+    62
+   ],
+   "pivot": [
+    23,
+    55
+   ],
+   "anchor_n": [
+    7,
+    31
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "ne",
+   "note": "motor matic parkir merah, helm hitam di jok (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_merah_nw": {
+   "file": "parkir/motor_matic_merah_nw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    52
+   ],
+   "pivot": [
+    22,
+    44
+   ],
+   "anchor_n": [
+    38,
+    20
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "nw",
+   "note": "motor matic parkir merah, helm hitam di jok (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_biru_sw": {
+   "file": "parkir/motor_matic_biru_sw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    68
+   ],
+   "pivot": [
+    22,
+    60
+   ],
+   "anchor_n": [
+    6,
+    36
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "sw",
+   "note": "motor matic parkir biru (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_biru_se": {
+   "file": "parkir/motor_matic_biru_se.png",
+   "group": "parkir",
+   "size": [
+    54,
+    54
+   ],
+   "pivot": [
+    23,
+    46
+   ],
+   "anchor_n": [
+    39,
+    22
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "se",
+   "note": "motor matic parkir biru (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_biru_ne": {
+   "file": "parkir/motor_matic_biru_ne.png",
+   "group": "parkir",
+   "size": [
+    54,
+    62
+   ],
+   "pivot": [
+    23,
+    55
+   ],
+   "anchor_n": [
+    7,
+    31
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "ne",
+   "note": "motor matic parkir biru (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_biru_nw": {
+   "file": "parkir/motor_matic_biru_nw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    50
+   ],
+   "pivot": [
+    22,
+    43
+   ],
+   "anchor_n": [
+    38,
+    19
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "nw",
+   "note": "motor matic parkir biru (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_putih_sw": {
+   "file": "parkir/motor_matic_putih_sw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    68
+   ],
+   "pivot": [
+    22,
+    60
+   ],
+   "anchor_n": [
+    6,
+    36
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "sw",
+   "note": "motor matic parkir putih, helm merah di jok (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_putih_se": {
+   "file": "parkir/motor_matic_putih_se.png",
+   "group": "parkir",
+   "size": [
+    54,
+    54
+   ],
+   "pivot": [
+    23,
+    46
+   ],
+   "anchor_n": [
+    39,
+    22
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "se",
+   "note": "motor matic parkir putih, helm merah di jok (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_putih_ne": {
+   "file": "parkir/motor_matic_putih_ne.png",
+   "group": "parkir",
+   "size": [
+    54,
+    62
+   ],
+   "pivot": [
+    23,
+    55
+   ],
+   "anchor_n": [
+    7,
+    31
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "ne",
+   "note": "motor matic parkir putih, helm merah di jok (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_putih_nw": {
+   "file": "parkir/motor_matic_putih_nw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    52
+   ],
+   "pivot": [
+    22,
+    44
+   ],
+   "anchor_n": [
+    38,
+    20
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "nw",
+   "note": "motor matic parkir putih, helm merah di jok (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_abu_sw": {
+   "file": "parkir/motor_matic_abu_sw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    68
+   ],
+   "pivot": [
+    22,
+    60
+   ],
+   "anchor_n": [
+    6,
+    36
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "sw",
+   "note": "motor matic parkir abu-abu (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_abu_se": {
+   "file": "parkir/motor_matic_abu_se.png",
+   "group": "parkir",
+   "size": [
+    54,
+    54
+   ],
+   "pivot": [
+    23,
+    46
+   ],
+   "anchor_n": [
+    39,
+    22
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "se",
+   "note": "motor matic parkir abu-abu (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_abu_ne": {
+   "file": "parkir/motor_matic_abu_ne.png",
+   "group": "parkir",
+   "size": [
+    54,
+    62
+   ],
+   "pivot": [
+    23,
+    55
+   ],
+   "anchor_n": [
+    7,
+    31
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "ne",
+   "note": "motor matic parkir abu-abu (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "motor_matic_abu_nw": {
+   "file": "parkir/motor_matic_abu_nw.png",
+   "group": "parkir",
+   "size": [
+    54,
+    50
+   ],
+   "pivot": [
+    22,
+    43
+   ],
+   "anchor_n": [
+    38,
+    19
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "nw",
+   "note": "motor matic parkir abu-abu (sumbu panjang searah W; ne/nw = membelakangi kamera)"
+  },
+  "jalan_lokal_lurus_sw": {
+   "file": "jalan_lokal/jalan_lokal_lurus_sw.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "sw",
+   "note": "jalan lokal lurus 2x4: trotoar 0.85 + kerb hitam-putih + aspal 2.3 sel (marka tengah putih putus-putus) + kerb + trotoar luar. d=0 = sisi muka gedung"
+  },
+  "jalan_lokal_lurus_se": {
+   "file": "jalan_lokal/jalan_lokal_lurus_se.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "se",
+   "note": "jalan lokal lurus 2x4: trotoar 0.85 + kerb hitam-putih + aspal 2.3 sel (marka tengah putih putus-putus) + kerb + trotoar luar. d=0 = sisi muka gedung"
+  },
+  "jalan_lokal_lurus_ne": {
+   "file": "jalan_lokal/jalan_lokal_lurus_ne.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "ne",
+   "note": "jalan lokal lurus 2x4: trotoar 0.85 + kerb hitam-putih + aspal 2.3 sel (marka tengah putih putus-putus) + kerb + trotoar luar. d=0 = sisi muka gedung"
+  },
+  "jalan_lokal_lurus_nw": {
+   "file": "jalan_lokal/jalan_lokal_lurus_nw.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "nw",
+   "note": "jalan lokal lurus 2x4: trotoar 0.85 + kerb hitam-putih + aspal 2.3 sel (marka tengah putih putus-putus) + kerb + trotoar luar. d=0 = sisi muka gedung"
+  },
+  "jalan_lokal_parkir_sw": {
+   "file": "jalan_lokal/jalan_lokal_parkir_sw.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "sw",
+   "note": "jalan lokal 2x4 dengan petak parkir motor (3 petak 0.66 sel, garis putih) di tepi aspal sisi gedung"
+  },
+  "jalan_lokal_parkir_se": {
+   "file": "jalan_lokal/jalan_lokal_parkir_se.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "se",
+   "note": "jalan lokal 2x4 dengan petak parkir motor (3 petak 0.66 sel, garis putih) di tepi aspal sisi gedung"
+  },
+  "jalan_lokal_parkir_ne": {
+   "file": "jalan_lokal/jalan_lokal_parkir_ne.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "ne",
+   "note": "jalan lokal 2x4 dengan petak parkir motor (3 petak 0.66 sel, garis putih) di tepi aspal sisi gedung"
+  },
+  "jalan_lokal_parkir_nw": {
+   "file": "jalan_lokal/jalan_lokal_parkir_nw.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "nw",
+   "note": "jalan lokal 2x4 dengan petak parkir motor (3 petak 0.66 sel, garis putih) di tepi aspal sisi gedung"
+  },
+  "jalan_lokal_zebra_sw": {
+   "file": "jalan_lokal/jalan_lokal_zebra_sw.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "sw",
+   "note": "jalan lokal 2x4 dengan zebra cross (5 strip putih sejajar arah lalu lintas, berjajar melintang) + kerb diturunkan (strip kuning) di kedua sisi"
+  },
+  "jalan_lokal_zebra_se": {
+   "file": "jalan_lokal/jalan_lokal_zebra_se.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "se",
+   "note": "jalan lokal 2x4 dengan zebra cross (5 strip putih sejajar arah lalu lintas, berjajar melintang) + kerb diturunkan (strip kuning) di kedua sisi"
+  },
+  "jalan_lokal_zebra_ne": {
+   "file": "jalan_lokal/jalan_lokal_zebra_ne.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "ne",
+   "note": "jalan lokal 2x4 dengan zebra cross (5 strip putih sejajar arah lalu lintas, berjajar melintang) + kerb diturunkan (strip kuning) di kedua sisi"
+  },
+  "jalan_lokal_zebra_nw": {
+   "file": "jalan_lokal/jalan_lokal_zebra_nw.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "nw",
+   "note": "jalan lokal 2x4 dengan zebra cross (5 strip putih sejajar arah lalu lintas, berjajar melintang) + kerb diturunkan (strip kuning) di kedua sisi"
+  },
+  "jalan_lokal_simpang_gang_sw": {
+   "file": "jalan_lokal/jalan_lokal_simpang_gang_sw.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "sw",
+   "note": "pertemuan lorong gang loak (lebar 2) dengan jalan lokal: lantai cor gang + selokan ditutup plat menembus trotoar, kerb diturunkan, zebra, garis henti"
+  },
+  "jalan_lokal_simpang_gang_se": {
+   "file": "jalan_lokal/jalan_lokal_simpang_gang_se.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "se",
+   "note": "pertemuan lorong gang loak (lebar 2) dengan jalan lokal: lantai cor gang + selokan ditutup plat menembus trotoar, kerb diturunkan, zebra, garis henti"
+  },
+  "jalan_lokal_simpang_gang_ne": {
+   "file": "jalan_lokal/jalan_lokal_simpang_gang_ne.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "ne",
+   "note": "pertemuan lorong gang loak (lebar 2) dengan jalan lokal: lantai cor gang + selokan ditutup plat menembus trotoar, kerb diturunkan, zebra, garis henti"
+  },
+  "jalan_lokal_simpang_gang_nw": {
+   "file": "jalan_lokal/jalan_lokal_simpang_gang_nw.png",
+   "group": "lokal",
+   "size": [
+    192,
+    96
+   ],
+   "pivot": [
+    96,
+    48
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    4
+   ],
+   "facing": "nw",
+   "note": "pertemuan lorong gang loak (lebar 2) dengan jalan lokal: lantai cor gang + selokan ditutup plat menembus trotoar, kerb diturunkan, zebra, garis henti"
+  },
+  "jalan_lokal_mulut_sw": {
+   "file": "jalan_lokal/jalan_lokal_mulut_sw.png",
+   "group": "lokal",
+   "size": [
+    160,
+    80
+   ],
+   "pivot": [
+    80,
+    40
+   ],
+   "anchor_n": [
+    32,
+    0
+   ],
+   "footprint": [
+    4,
+    1
+   ],
+   "facing": "sw",
+   "note": "mulut jalan samping 4x1 di trotoar jalan raya: aspal menembus trotoar (kerb diturunkan, strip kuning), trotoar kiri-kanan. _sw = jalan samping yang memanjang arah r (sisi gedung di c kecil), _ne = sisi gedung di c besar; _se/_nw = jalan samping memanjang arah c"
+  },
+  "jalan_lokal_mulut_se": {
+   "file": "jalan_lokal/jalan_lokal_mulut_se.png",
+   "group": "lokal",
+   "size": [
+    160,
+    80
+   ],
+   "pivot": [
+    80,
+    40
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    4,
+    1
+   ],
+   "facing": "se",
+   "note": "mulut jalan samping 4x1 di trotoar jalan raya: aspal menembus trotoar (kerb diturunkan, strip kuning), trotoar kiri-kanan. _sw = jalan samping yang memanjang arah r (sisi gedung di c kecil), _ne = sisi gedung di c besar; _se/_nw = jalan samping memanjang arah c"
+  },
+  "jalan_lokal_mulut_ne": {
+   "file": "jalan_lokal/jalan_lokal_mulut_ne.png",
+   "group": "lokal",
+   "size": [
+    160,
+    80
+   ],
+   "pivot": [
+    80,
+    40
+   ],
+   "anchor_n": [
+    32,
+    0
+   ],
+   "footprint": [
+    4,
+    1
+   ],
+   "facing": "ne",
+   "note": "mulut jalan samping 4x1 di trotoar jalan raya: aspal menembus trotoar (kerb diturunkan, strip kuning), trotoar kiri-kanan. _sw = jalan samping yang memanjang arah r (sisi gedung di c kecil), _ne = sisi gedung di c besar; _se/_nw = jalan samping memanjang arah c"
+  },
+  "jalan_lokal_mulut_nw": {
+   "file": "jalan_lokal/jalan_lokal_mulut_nw.png",
+   "group": "lokal",
+   "size": [
+    160,
+    80
+   ],
+   "pivot": [
+    80,
+    40
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    4,
+    1
+   ],
+   "facing": "nw",
+   "note": "mulut jalan samping 4x1 di trotoar jalan raya: aspal menembus trotoar (kerb diturunkan, strip kuning), trotoar kiri-kanan. _sw = jalan samping yang memanjang arah r (sisi gedung di c kecil), _ne = sisi gedung di c besar; _se/_nw = jalan samping memanjang arah c"
+  },
+  "jalan_lokal_tikungan_kanan_ke_raya_sw": {
+   "file": "jalan_lokal/jalan_lokal_tikungan_kanan_ke_raya_sw.png",
+   "group": "lokal",
+   "size": [
+    256,
+    128
+   ],
+   "pivot": [
+    128,
+    64
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    4,
+    4
+   ],
+   "facing": "sw",
+   "note": "tikungan 4x4 (seperempat lingkaran): datang dari -c, belok ke -r (ke jalan raya); ujung kanan deretan. Koordinat game langsung (x=c-c0, y=r-r0), hanya _sw"
+  },
+  "jalan_lokal_tikungan_kiri_ke_raya_sw": {
+   "file": "jalan_lokal/jalan_lokal_tikungan_kiri_ke_raya_sw.png",
+   "group": "lokal",
+   "size": [
+    256,
+    128
+   ],
+   "pivot": [
+    128,
+    64
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    4,
+    4
+   ],
+   "facing": "sw",
+   "note": "tikungan 4x4 (seperempat lingkaran): datang dari +c, belok ke -r (ke jalan raya); ujung kiri deretan. Koordinat game langsung (x=c-c0, y=r-r0), hanya _sw"
+  },
+  "jalan_lokal_tikungan_kanan_ke_belakang_sw": {
+   "file": "jalan_lokal/jalan_lokal_tikungan_kanan_ke_belakang_sw.png",
+   "group": "lokal",
+   "size": [
+    256,
+    128
+   ],
+   "pivot": [
+    128,
+    64
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    4,
+    4
+   ],
+   "facing": "sw",
+   "note": "tikungan 4x4 (seperempat lingkaran): datang dari -c, belok ke +r (menjauh dari jalan raya). Koordinat game langsung (x=c-c0, y=r-r0), hanya _sw"
+  },
+  "jalan_lokal_tikungan_kiri_ke_belakang_sw": {
+   "file": "jalan_lokal/jalan_lokal_tikungan_kiri_ke_belakang_sw.png",
+   "group": "lokal",
+   "size": [
+    256,
+    128
+   ],
+   "pivot": [
+    128,
+    64
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    4,
+    4
+   ],
+   "facing": "sw",
+   "note": "tikungan 4x4 (seperempat lingkaran): datang dari +c, belok ke +r. Koordinat game langsung (x=c-c0, y=r-r0), hanya _sw"
+  },
+  "kantor_a_pendek_sw": {
+   "file": "jalan_besar/pendek/kantor_a_pendek_sw.png",
+   "group": "pendek",
+   "size": [
+    450,
+    422
+   ],
+   "pivot": [
+    208,
+    318
+   ],
+   "anchor_n": [
+    192,
+    214
+   ],
+   "footprint": [
+    7,
+    6
+   ],
+   "facing": "sw",
+   "note": "kantor_a versi pendek 2 lantai (MENARA SIRIH), kaca biru + pita beton",
+   "glow": "jalan_besar/pendek/kantor_a_pendek_sw__glow.png"
+  },
+  "kantor_a_pendek_se": {
+   "file": "jalan_besar/pendek/kantor_a_pendek_se.png",
+   "group": "pendek",
+   "size": [
+    416,
+    422
+   ],
+   "pivot": [
+    208,
+    318
+   ],
+   "anchor_n": [
+    224,
+    214
+   ],
+   "footprint": [
+    7,
+    6
+   ],
+   "facing": "se",
+   "note": "kantor_a versi pendek 2 lantai (MENARA SIRIH), kaca biru + pita beton",
+   "glow": "jalan_besar/pendek/kantor_a_pendek_se__glow.png"
+  },
+  "bank_bca_pendek_sw": {
+   "file": "jalan_besar/pendek/bank_bca_pendek_sw.png",
+   "group": "pendek",
+   "size": [
+    418,
+    402
+   ],
+   "pivot": [
+    192,
+    306
+   ],
+   "anchor_n": [
+    192,
+    210
+   ],
+   "footprint": [
+    6,
+    6
+   ],
+   "facing": "sw",
+   "note": "bank BCA versi pendek 2 lantai, papan BCA di tepi atap lebih rendah",
+   "glow": "jalan_besar/pendek/bank_bca_pendek_sw__glow.png"
+  },
+  "bank_bca_pendek_se": {
+   "file": "jalan_besar/pendek/bank_bca_pendek_se.png",
+   "group": "pendek",
+   "size": [
+    384,
+    402
+   ],
+   "pivot": [
+    192,
+    306
+   ],
+   "anchor_n": [
+    192,
+    210
+   ],
+   "footprint": [
+    6,
+    6
+   ],
+   "facing": "se",
+   "note": "bank BCA versi pendek 2 lantai, papan BCA di tepi atap lebih rendah",
+   "glow": "jalan_besar/pendek/bank_bca_pendek_se__glow.png"
+  },
+  "hotel_pendek_sw": {
+   "file": "jalan_besar/pendek/hotel_pendek_sw.png",
+   "group": "pendek",
+   "size": [
+    482,
+    438
+   ],
+   "pivot": [
+    224,
+    326
+   ],
+   "anchor_n": [
+    192,
+    214
+   ],
+   "footprint": [
+    8,
+    6
+   ],
+   "facing": "sw",
+   "note": "hotel versi pendek 2 lantai, papan HOTEL vertikal lebih pendek, porte-cochere",
+   "glow": "jalan_besar/pendek/hotel_pendek_sw__glow.png"
+  },
+  "hotel_pendek_se": {
+   "file": "jalan_besar/pendek/hotel_pendek_se.png",
+   "group": "pendek",
+   "size": [
+    448,
+    438
+   ],
+   "pivot": [
+    224,
+    326
+   ],
+   "anchor_n": [
+    256,
+    214
+   ],
+   "footprint": [
+    8,
+    6
+   ],
+   "facing": "se",
+   "note": "hotel versi pendek 2 lantai, papan HOTEL vertikal lebih pendek, porte-cochere",
+   "glow": "jalan_besar/pendek/hotel_pendek_se__glow.png"
+  },
+  "mall_pendek_sw": {
+   "file": "jalan_besar/pendek/mall_pendek_sw.png",
+   "group": "pendek",
+   "size": [
+    568,
+    500
+   ],
+   "pivot": [
+    304,
+    348
+   ],
+   "anchor_n": [
+    224,
+    196
+   ],
+   "footprint": [
+    12,
+    7
+   ],
+   "facing": "sw",
+   "note": "mal versi pendek 2 lantai, atrium kaca, papan SIRIH MALL",
+   "glow": "jalan_besar/pendek/mall_pendek_sw__glow.png"
+  },
+  "mall_pendek_se": {
+   "file": "jalan_besar/pendek/mall_pendek_se.png",
+   "group": "pendek",
+   "size": [
+    608,
+    500
+   ],
+   "pivot": [
+    304,
+    348
+   ],
+   "anchor_n": [
+    384,
+    196
+   ],
+   "footprint": [
+    12,
+    7
+   ],
+   "facing": "se",
+   "note": "mal versi pendek 2 lantai, atrium kaca, papan SIRIH MALL",
+   "glow": "jalan_besar/pendek/mall_pendek_se__glow.png"
+  },
+  "ruko_a_pendek_sw": {
+   "file": "jalan_besar/pendek/ruko_a_pendek_sw.png",
+   "group": "pendek",
+   "size": [
+    322,
+    352
+   ],
+   "pivot": [
+    144,
+    280
+   ],
+   "anchor_n": [
+    192,
+    208
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "sw",
+   "note": "ruko_a versi 2 lantai (FOTOKOPI)",
+   "glow": "jalan_besar/pendek/ruko_a_pendek_sw__glow.png"
+  },
+  "ruko_a_pendek_se": {
+   "file": "jalan_besar/pendek/ruko_a_pendek_se.png",
+   "group": "pendek",
+   "size": [
+    288,
+    352
+   ],
+   "pivot": [
+    144,
+    280
+   ],
+   "anchor_n": [
+    96,
+    208
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "se",
+   "note": "ruko_a versi 2 lantai (FOTOKOPI)",
+   "glow": "jalan_besar/pendek/ruko_a_pendek_se__glow.png"
+  },
+  "ruko_c_pendek_sw": {
+   "file": "jalan_besar/pendek/ruko_c_pendek_sw.png",
+   "group": "pendek",
+   "size": [
+    322,
+    352
+   ],
+   "pivot": [
+    144,
+    280
+   ],
+   "anchor_n": [
+    192,
+    208
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "sw",
+   "note": "ruko_c versi 2 lantai (RM PADANG)",
+   "glow": "jalan_besar/pendek/ruko_c_pendek_sw__glow.png"
+  },
+  "ruko_c_pendek_se": {
+   "file": "jalan_besar/pendek/ruko_c_pendek_se.png",
+   "group": "pendek",
+   "size": [
+    288,
+    352
+   ],
+   "pivot": [
+    144,
+    280
+   ],
+   "anchor_n": [
+    96,
+    208
+   ],
+   "footprint": [
+    3,
+    6
+   ],
+   "facing": "se",
+   "note": "ruko_c versi 2 lantai (RM PADANG)",
+   "glow": "jalan_besar/pendek/ruko_c_pendek_se__glow.png"
+  },
+  "bangku_taman_sw": {
+   "file": "taman/bangku_taman_sw.png",
+   "group": "taman",
+   "size": [
+    72,
+    74
+   ],
+   "pivot": [
+    34,
+    57
+   ],
+   "anchor_n": [
+    18,
+    33
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "sw",
+   "note": "bangku taman 2 sel: dudukan & sandaran bilah kayu, kaki/rangka besi hitam. _sw/_se duduk menghadap kamera, _ne/_nw membelakangi"
+  },
+  "bangku_taman_se": {
+   "file": "taman/bangku_taman_se.png",
+   "group": "taman",
+   "size": [
+    74,
+    74
+   ],
+   "pivot": [
+    36,
+    57
+   ],
+   "anchor_n": [
+    52,
+    33
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "se",
+   "note": "bangku taman 2 sel: dudukan & sandaran bilah kayu, kaki/rangka besi hitam. _sw/_se duduk menghadap kamera, _ne/_nw membelakangi"
+  },
+  "bangku_taman_ne": {
+   "file": "taman/bangku_taman_ne.png",
+   "group": "taman",
+   "size": [
+    74,
+    66
+   ],
+   "pivot": [
+    36,
+    50
+   ],
+   "anchor_n": [
+    20,
+    26
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "ne",
+   "note": "bangku taman 2 sel: dudukan & sandaran bilah kayu, kaki/rangka besi hitam. _sw/_se duduk menghadap kamera, _ne/_nw membelakangi"
+  },
+  "bangku_taman_nw": {
+   "file": "taman/bangku_taman_nw.png",
+   "group": "taman",
+   "size": [
+    72,
+    66
+   ],
+   "pivot": [
+    34,
+    50
+   ],
+   "anchor_n": [
+    50,
+    26
+   ],
+   "footprint": [
+    2,
+    1
+   ],
+   "facing": "nw",
+   "note": "bangku taman 2 sel: dudukan & sandaran bilah kayu, kaki/rangka besi hitam. _sw/_se duduk menghadap kamera, _ne/_nw membelakangi"
+  },
+  "lampu_taman_sw": {
+   "file": "taman/lampu_taman_sw.png",
+   "group": "taman",
+   "size": [
+    22,
+    126
+   ],
+   "pivot": [
+    7,
+    121
+   ],
+   "anchor_n": [
+    7,
+    105
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "lampu taman: tiang besi hitam ramping, lentera kaca hangat (glow), tutup kubah",
+   "glow": "taman/lampu_taman_sw__glow.png"
+  },
+  "lampu_taman_se": {
+   "file": "taman/lampu_taman_se.png",
+   "group": "taman",
+   "size": [
+    22,
+    126
+   ],
+   "pivot": [
+    7,
+    121
+   ],
+   "anchor_n": [
+    7,
+    105
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "lampu taman: tiang besi hitam ramping, lentera kaca hangat (glow), tutup kubah",
+   "glow": "taman/lampu_taman_se__glow.png"
+  },
+  "tong_sampah_sw": {
+   "file": "taman/tong_sampah_sw.png",
+   "group": "taman",
+   "size": [
+    38,
+    52
+   ],
+   "pivot": [
+    16,
+    45
+   ],
+   "anchor_n": [
+    16,
+    29
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tong sampah taman 2 bak: hijau ORGANIK, kuning ANORGANIK, rangka besi hitam"
+  },
+  "tong_sampah_se": {
+   "file": "taman/tong_sampah_se.png",
+   "group": "taman",
+   "size": [
+    36,
+    52
+   ],
+   "pivot": [
+    14,
+    45
+   ],
+   "anchor_n": [
+    14,
+    29
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tong sampah taman 2 bak: hijau ORGANIK, kuning ANORGANIK, rangka besi hitam"
+  },
+  "meja_taman_sw": {
+   "file": "taman/meja_taman_sw.png",
+   "group": "taman",
+   "size": [
+    128,
+    70
+   ],
+   "pivot": [
+    64,
+    38
+   ],
+   "anchor_n": [
+    64,
+    6
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "sw",
+   "note": "area duduk: meja bundar beton + 4 bangku bulat beton di atas paving bulat"
+  },
+  "meja_taman_se": {
+   "file": "taman/meja_taman_se.png",
+   "group": "taman",
+   "size": [
+    128,
+    70
+   ],
+   "pivot": [
+    64,
+    38
+   ],
+   "anchor_n": [
+    64,
+    6
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "se",
+   "note": "area duduk: meja bundar beton + 4 bangku bulat beton di atas paving bulat"
+  },
+  "pergola_sw": {
+   "file": "taman/pergola_sw.png",
+   "group": "taman",
+   "size": [
+    192,
+    204
+   ],
+   "pivot": [
+    96,
+    155
+   ],
+   "anchor_n": [
+    96,
+    107
+   ],
+   "footprint": [
+    3,
+    3
+   ],
+   "facing": "sw",
+   "note": "pergola kayu terbuka 3x3 (tanpa tanaman rambat): 4 tiang, balok + kasau, 2 bangku taman di dalam, lantai paving"
+  },
+  "pergola_se": {
+   "file": "taman/pergola_se.png",
+   "group": "taman",
+   "size": [
+    192,
+    204
+   ],
+   "pivot": [
+    96,
+    155
+   ],
+   "anchor_n": [
+    96,
+    107
+   ],
+   "footprint": [
+    3,
+    3
+   ],
+   "facing": "se",
+   "note": "pergola kayu terbuka 3x3 (tanpa tanaman rambat): 4 tiang, balok + kasau, 2 bangku taman di dalam, lantai paving"
+  },
+  "gazebo_sw": {
+   "file": "taman/gazebo_sw.png",
+   "group": "taman",
+   "size": [
+    198,
+    210
+   ],
+   "pivot": [
+    100,
+    161
+   ],
+   "anchor_n": [
+    100,
+    113
+   ],
+   "footprint": [
+    3,
+    3
+   ],
+   "facing": "sw",
+   "note": "gazebo taman 3x3: lantai kayu panggung di atas umpak beton, 4 tiang, bangku keliling, atap genteng pelana"
+  },
+  "gazebo_se": {
+   "file": "taman/gazebo_se.png",
+   "group": "taman",
+   "size": [
+    198,
+    210
+   ],
+   "pivot": [
+    98,
+    161
+   ],
+   "anchor_n": [
+    98,
+    113
+   ],
+   "footprint": [
+    3,
+    3
+   ],
+   "facing": "se",
+   "note": "gazebo taman 3x3: lantai kayu panggung di atas umpak beton, 4 tiang, bangku keliling, atap genteng pelana"
+  },
+  "jalur_paving_lurus_sw": {
+   "file": "taman/jalur_paving_lurus_sw.png",
+   "group": "taman",
+   "size": [
+    128,
+    64
+   ],
+   "pivot": [
+    64,
+    32
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "sw",
+   "note": "jalur paving taman 2x2 lurus (blok 0.5 sel, pola terang tiap ke-3), kanstin beton di kedua tepi. _sw memanjang arah c, _se memanjang arah r"
+  },
+  "jalur_paving_lurus_se": {
+   "file": "taman/jalur_paving_lurus_se.png",
+   "group": "taman",
+   "size": [
+    128,
+    64
+   ],
+   "pivot": [
+    64,
+    32
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "se",
+   "note": "jalur paving taman 2x2 lurus (blok 0.5 sel, pola terang tiap ke-3), kanstin beton di kedua tepi. _sw memanjang arah c, _se memanjang arah r"
+  },
+  "jalur_paving_simpang_sw": {
+   "file": "taman/jalur_paving_simpang_sw.png",
+   "group": "taman",
+   "size": [
+    128,
+    64
+   ],
+   "pivot": [
+    64,
+    32
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "sw",
+   "note": "simpang jalur paving 2x2 (perempatan): kanstin hanya di 4 sudut"
+  },
+  "jalur_paving_simpang_se": {
+   "file": "taman/jalur_paving_simpang_se.png",
+   "group": "taman",
+   "size": [
+    128,
+    64
+   ],
+   "pivot": [
+    64,
+    32
+   ],
+   "anchor_n": [
+    64,
+    0
+   ],
+   "footprint": [
+    2,
+    2
+   ],
+   "facing": "se",
+   "note": "simpang jalur paving 2x2 (perempatan): kanstin hanya di 4 sudut"
+  },
+  "plaza_paving_sw": {
+   "file": "taman/plaza_paving_sw.png",
+   "group": "taman",
+   "size": [
+    256,
+    128
+   ],
+   "pivot": [
+    128,
+    64
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    4,
+    4
+   ],
+   "facing": "sw",
+   "note": "plaza paving 4x4: blok paving dengan cincin terang + kanstin beton (alas gazebo/pergola/area duduk)"
+  },
+  "plaza_paving_se": {
+   "file": "taman/plaza_paving_se.png",
+   "group": "taman",
+   "size": [
+    256,
+    128
+   ],
+   "pivot": [
+    128,
+    64
+   ],
+   "anchor_n": [
+    128,
+    0
+   ],
+   "footprint": [
+    4,
+    4
+   ],
+   "facing": "se",
+   "note": "plaza paving 4x4: blok paving dengan cincin terang + kanstin beton (alas gazebo/pergola/area duduk)"
+  },
+  "tiang_listrik_polos_sw": {
+   "file": "props/tiang_listrik_polos_sw.png",
+   "group": "prop",
+   "size": [
+    36,
+    238
+   ],
+   "pivot": [
+    16,
+    232
+   ],
+   "anchor_n": [
+    16,
+    216
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "sw",
+   "note": "tiang listrik tanpa ujung kabel menjuntai (untuk tiang yang kabelnya digambar terpisah antar tiang; tidak ada kabel putus)"
+  },
+  "tiang_listrik_polos_se": {
+   "file": "props/tiang_listrik_polos_se.png",
+   "group": "prop",
+   "size": [
+    36,
+    238
+   ],
+   "pivot": [
+    16,
+    232
+   ],
+   "anchor_n": [
+    16,
+    216
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "facing": "se",
+   "note": "tiang listrik tanpa ujung kabel menjuntai (untuk tiang yang kabelnya digambar terpisah antar tiang; tidak ada kabel putus)"
+  }
+ },
+ "crossing": {
+  "zebra_in_game": "SUDAH ADA di index.html extBuild(): stripes c 21.2..23.9 (every 0.6, 0.32 wide) from r 32.98 to 36.07; yellow warning strips c 20.6..24.4 at r 31.95..32.5 (near side) and r 36.55..37.0 (far side). No new zebra sprite needed.",
+  "waiting_cells": {
+   "near_sidewalk": [
+    22.55,
+    32.15
+   ],
+   "far_sidewalk": [
+    22.55,
+    36.85
+   ]
+  },
+  "ped_signal_poles": {
+   "near_left": {
+    "cell": [
+     20.45,
+     32.25
+    ],
+    "sprite": "lampu_pejalan_<state>_sw",
+    "why": "head faces +r (across the road) for people waiting on the far side; button box faces the near waiting area"
+   },
+   "near_right": {
+    "cell": [
+     24.55,
+     32.25
+    ],
+    "sprite": "lampu_pejalan_<state>_sw"
+   },
+   "far_left": {
+    "cell": [
+     20.45,
+     36.8
+    ],
+    "sprite": "lampu_pejalan_<state>_ne",
+    "why": "head faces -r toward the near side: camera sees the housing back + button"
+   },
+   "far_right": {
+    "cell": [
+     24.55,
+     36.8
+    ],
+    "sprite": "lampu_pejalan_<state>_ne"
+   }
+  },
+  "vehicle_signal_poles": {
+   "for_lane_se_r33.05 (moves +c, stops at c 20.4)": {
+    "cell": [
+     20.0,
+     32.3
+    ],
+    "sprite": "lampu_lalin_<state>_nw",
+    "why": "faces -c toward oncoming +c traffic: back visible to camera"
+   },
+   "for_lane_nw_r34.85 (moves -c, stops at c 24.6)": {
+    "cell": [
+     25.0,
+     36.75
+    ],
+    "sprite": "lampu_lalin_<state>_se",
+    "why": "faces +c toward oncoming -c traffic: lamps visible"
+   }
+  },
+  "phase_order_suggested_not_final": [
+   "1 kendaraan HIJAU / pejalan MERAH (default; tombol ditekan -> LED tombol menyala, mulai hitung)",
+   "2 kendaraan KUNING (~3 dtk)",
+   "3 semua MERAH (~1-2 dtk, jeda aman)",
+   "4 pejalan HIJAU (orang berjalan) - avatar boleh masuk zebra",
+   "5 pejalan HIJAU KEDIP (selang-seling lampu_pejalan_hijau / lampu_pejalan_hijau_kedip_off ~400 ms) - jangan mulai menyeberang",
+   "6 pejalan MERAH + semua merah (~1-2 dtk) -> kembali ke 1"
+  ],
+  "states": {
+   "lampu_pejalan": [
+    "merah",
+    "hijau",
+    "hijau_kedip_off",
+    "padam"
+   ],
+   "lampu_lalin": [
+    "merah",
+    "kuning",
+    "hijau"
+   ]
+  }
+ },
+ "jalan_lokal_layout": {
+  "note": "USULAN (preview, index.html tidak diubah). Kamera standar game. Deretan seberang pakai varian _sw, garis muka r 44.7; jalan lokal r 44.7..48.7 di depannya.",
+  "front_line_r": 44.7,
+  "lots_r": [
+   37.7,
+   44.7
+  ],
+  "jalan_lokal_r": {
+   "trotoar": [
+    44.7,
+    45.55
+   ],
+   "kerb": [
+    45.55,
+    45.7
+   ],
+   "aspal": [
+    45.7,
+    48.0
+   ],
+   "marka_tengah": [
+    46.81,
+    46.89
+   ],
+   "kerb_luar": [
+    48.0,
+    48.15
+   ],
+   "trotoar_luar": [
+    48.15,
+    48.7
+   ]
+  },
+  "buildings_sw": [
+   {
+    "key": "indomaret_sw",
+    "c": [
+     -9.5,
+     -3.5
+    ],
+    "r": [
+     38.7,
+     44.7
+    ],
+    "put_at": [
+     -6.5,
+     41.7
+    ],
+    "screen_cover_down_to_r": 33.95
+   },
+   {
+    "key": "kafe_blue_doors_sw",
+    "c": [
+     -3.5,
+     1.5
+    ],
+    "r": [
+     39.7,
+     44.7
+    ],
+    "put_at": [
+     -1.0,
+     42.2
+    ],
+    "screen_cover_down_to_r": 33.58
+   },
+   {
+    "key": "bank_bca_sw",
+    "c": [
+     1.5,
+     7.5
+    ],
+    "r": [
+     38.7,
+     44.7
+    ],
+    "put_at": [
+     4.5,
+     41.7
+    ],
+    "screen_cover_down_to_r": 29.33
+   },
+   {
+    "key": "kantor_a_sw",
+    "c": [
+     7.5,
+     14.5
+    ],
+    "r": [
+     38.7,
+     44.7
+    ],
+    "put_at": [
+     11.0,
+     41.7
+    ],
+    "screen_cover_down_to_r": 23.33
+   },
+   {
+    "key": "ruko_c_sw",
+    "c": [
+     14.5,
+     17.5
+    ],
+    "r": [
+     38.7,
+     44.7
+    ],
+    "put_at": [
+     16.0,
+     41.7
+    ],
+    "screen_cover_down_to_r": 30.14
+   },
+   {
+    "key": "ruko_b_sw",
+    "c": [
+     17.5,
+     20.5
+    ],
+    "r": [
+     38.7,
+     44.7
+    ],
+    "put_at": [
+     19.0,
+     41.7
+    ],
+    "screen_cover_down_to_r": 32.95
+   },
+   {
+    "key": "ruko_a_sw",
+    "c": [
+     25.5,
+     28.5
+    ],
+    "r": [
+     38.7,
+     44.7
+    ],
+    "put_at": [
+     27.0,
+     41.7
+    ],
+    "screen_cover_down_to_r": 30.14
+   },
+   {
+    "key": "masjid_sw",
+    "c": [
+     28.5,
+     37.5
+    ],
+    "r": [
+     37.7,
+     44.7
+    ],
+    "put_at": [
+     33.0,
+     41.2
+    ],
+    "screen_cover_down_to_r": 31.79
+   }
+  ],
+  "gang_loak": {
+   "lane_c": [
+    22,
+    24
+   ],
+   "r": [
+    37.7,
+    44.7
+   ],
+   "gapura": "gapura_gang_sw di (23, 44.4) menghadap jalan lokal",
+   "simpang": "jalan_lokal_simpang_gang_sw di (23, 46.7) + jalan_lokal_zebra_sw di (21, 46.7)"
+  },
+  "side_street_example": {
+   "tikungan": "jalan_lokal_tikungan_kanan_ke_raya_sw di (39.5, 46.7)",
+   "lurus": "jalan_lokal_lurus_se c 37.5..41.5, r 37.7..44.7",
+   "mulut": "jalan_lokal_mulut_sw di (39.5, 37.2) + kerb jalan raya diturunkan c 38.5..40.8"
+  },
+  "indomaret_front": {
+   "parkir": "jalan_lokal_parkir_sw c -10..-4",
+   "motor": "motor_matic_*_sw di r 46.2, petak c -8.5/-7.83/-6.5/-5.83/-4.5",
+   "kang_parkir": [
+    -7.15,
+    47.3
+   ],
+   "pemuda_golda": [
+    -8.45,
+    43.55
+   ]
+  },
+  "camera_bound_needed_y1": 830
+ },
+ "jalan_lokal_layout_v2": {
+  "note": "USULAN v2 (preview). Aturan: tiap sprite seberang menutup layar hanya sampai r >= 36.55 (kerb seberang), jadi jalan raya, zebra, kendaraan, dan sisi pemain tidak tertutup. Lihat README mock_gabungan_v2.",
+  "facade_line_r": 51.0,
+  "jalan_lokal_r": [
+   51.0,
+   55.0
+  ],
+  "lawn_belt": "r 37.7 .. belakang lot (rumput game, tanpa pohon)",
+  "row": [
+   [
+    "mall_pendek_sw",
+    -29.5,
+    -17.5
+   ],
+   [
+    "hotel_pendek_sw",
+    -17.5,
+    -9.5
+   ],
+   [
+    "indomaret_sw + halaman paving 2.5",
+    -9.5,
+    -3.5
+   ],
+   [
+    "kafe_blue_doors_sw",
+    -3.5,
+    1.5
+   ],
+   [
+    "bank_bca_pendek_sw",
+    1.5,
+    7.5
+   ],
+   [
+    "kantor_a_pendek_sw",
+    7.5,
+    14.5
+   ],
+   [
+    "ruko_c_pendek_sw",
+    14.5,
+    17.5
+   ],
+   [
+    "toko_loak_se (c 18..21.5, r F-4.5..F-0.5)",
+    18,
+    21.5
+   ],
+   [
+    "lorong c 22..24 + lapak",
+    20.5,
+    25.5
+   ],
+   [
+    "ruko_a_pendek_sw",
+    25.5,
+    28.5
+   ],
+   [
+    "masjid_sw",
+    28.5,
+    37.5
+   ],
+   [
+    "jalan samping",
+    37.5,
+    41.5
+   ]
+  ],
+  "coverage_min_r": {
+   "mall_pendek_sw @(-23.50,47.50)": 37.87,
+   "hotel_pendek_sw @(-13.50,48.00)": 38.3,
+   "indomaret_sw @(-6.50,45.50)": 37.74,
+   "kafe_blue_doors_sw @(-1.00,48.50)": 39.87,
+   "bank_bca_pendek_sw @(4.50,48.00)": 38.43,
+   "kantor_a_pendek_sw @(11.00,48.00)": 38.3,
+   "ruko_c_pendek_sw @(16.00,48.00)": 38.49,
+   "ruko_a_pendek_sw @(27.00,48.00)": 38.49,
+   "masjid_sw @(33.00,47.50)": 36.55,
+   "gapura_gang_sw @(23.00,50.70)": 45.49,
+   "toko_loak_se @(19.75,48.50)": 42.8,
+   "babeh_pemilik @(19.95,48.65)": 46.37,
+   "etalase @(20.45,48.50)": 47.27,
+   "lapak_tas_se @(21.25,44.50)": 39.65,
+   "lapak_jam_dinding_se @(21.25,42.50)": 37.65,
+   "lapak_jam_tangan_nw @(24.75,48.00)": 43.54,
+   "lapak_mainan_nw @(24.75,46.00)": 41.54,
+   "lapak_barang_bekas_nw @(24.75,44.00)": 39.54,
+   "babeh_tas @(22.25,44.65)": 42.34,
+   "babeh_jam @(22.30,42.65)": 40.35,
+   "motor_matic_hitam_sw @(-9.17,49.45)": 47.74,
+   "motor_matic_merah_sw @(-8.50,49.45)": 47.71,
+   "motor_matic_biru_sw @(-7.83,49.45)": 47.73,
+   "motor_matic_putih_sw @(-7.17,49.45)": 47.74,
+   "motor_matic_abu_sw @(-4.17,49.45)": 47.74,
+   "kang_parkir @(-6.20,50.55)": 48.37,
+   "pemuda @(-8.45,47.35)": 45.13
+  },
+  "camera_needed": {
+   "WB.y1": 880,
+   "WB.x0": -910
+  }
+ }
+}

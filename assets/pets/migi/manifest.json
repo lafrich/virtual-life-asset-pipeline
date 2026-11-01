@@ -1,0 +1,304 @@
+{
+ "_meta": {
+  "version": "1.0",
+  "schema": "environment/manifest.json (same fields; adds shadow, shadow_blend, pivot_px, pet_walkable_cells, use_points[].actor/anim/z_px/pet_offset_y_px, states)",
+  "style_sheet": "art-direction/style-sheet.md v1.4 + \"Migi (the user's cat)\" AD direction",
+  "projection": "isometric 2:1 (dimetric)",
+  "tile_px": [
+   64,
+   32
+  ],
+  "height_step_px": 32,
+  "screen_of_world": "sx = X0 + (c - r) * 32 ; sy = Y0 + (c + r) * 16 - z   (px at 1x; z up in px)",
+  "anchor_rule": "image top-left = P(c, r) - anchor, where (c, r) = min corner (north vertex) of the footprint. Wall items: R -> P(c0, 0), L -> P(0, r0).",
+  "depth_rule": "objects: key = c + r + depth_offset.back ; front slice: c + r + depth_offset.front ; avatar: pos.c + pos.r + 0.05 ; draw ascending ; pet (Migi): pos.c + pos.r + 0.05 (same as avatars)",
+  "layer_order": [
+   "floor tiles",
+   "floor_overlay (rugs)",
+   "floor light pools (screen)",
+   "SHADOW layers of pets/props (normal blend, #0B0E13 @ 40%)",
+   "back walls + wall_item",
+   "objects + avatars + Migi (depth sorted)",
+   "glow layers"
+  ],
+  "pet_actor": {
+   "id": "migi",
+   "metadata": "metadata.json",
+   "sheet": "migi_sheet.png",
+   "shadow_sheet": "migi_sheet_shadow.png",
+   "frame": [
+    32,
+    32
+   ],
+   "pivot": [
+    16,
+    24
+   ],
+   "draw_rule": "frame top-left = P(pos) - (16, 24) px (+ use_point.pet_offset_y_px); SVG units: x=P.x-8, y=P.y-12, w=h=16"
+  },
+  "palette": "official hexes only (no new hexes, nothing pending)"
+ },
+ "assets": [
+  {
+   "id": "pet_bowl_empty",
+   "base_id": "pet_bowl",
+   "area": "pets",
+   "kind": "object",
+   "facing": null,
+   "size": [
+    20,
+    13
+   ],
+   "anchor": [
+    10,
+    -8
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "main": "props/pet_bowl_empty.png",
+   "shadow": "props/pet_bowl_empty__shadow.png",
+   "shadow_blend": "normal",
+   "floor_center_px": [
+    10.0,
+    8.0
+   ],
+   "pivot_px": [
+    10.0,
+    8.0
+   ],
+   "anchor_note": "anchor = pixel on P(c,r) (north vertex of the footprint), exactly like environment/manifest.json; pivot_px = the tile-centre foot point P(c+0.5, r+0.5) in PNG px.",
+   "blocking": true,
+   "block_cells": [
+    [
+     0,
+     0
+    ]
+   ],
+   "pet_walkable_cells": [
+    [
+     0,
+     0
+    ]
+   ],
+   "state": "empty",
+   "states": {
+    "empty": "pet_bowl_empty",
+    "full": "pet_bowl_full"
+   },
+   "use_points": [
+    {
+     "point": [
+      0.5,
+      0.14
+     ],
+     "facing": "sw",
+     "actor": "pet",
+     "anim": "eat",
+     "recommended": true,
+     "note": "faces the camera; bowl draws over his chin"
+    },
+    {
+     "point": [
+      0.14,
+      0.5
+     ],
+     "facing": "se",
+     "actor": "pet",
+     "anim": "eat",
+     "recommended": true,
+     "note": "faces the camera; bowl draws over his chin"
+    },
+    {
+     "point": [
+      0.5,
+      0.86
+     ],
+     "facing": "ne",
+     "actor": "pet",
+     "anim": "eat",
+     "note": "back to the camera"
+    },
+    {
+     "point": [
+      0.86,
+      0.5
+     ],
+     "facing": "nw",
+     "actor": "pet",
+     "anim": "eat",
+     "note": "back to the camera"
+    }
+   ],
+   "depth_offset": {
+    "back": 1.0
+   }
+  },
+  {
+   "id": "pet_bowl_full",
+   "base_id": "pet_bowl",
+   "area": "pets",
+   "kind": "object",
+   "facing": null,
+   "size": [
+    20,
+    13
+   ],
+   "anchor": [
+    10,
+    -8
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "main": "props/pet_bowl_full.png",
+   "shadow": "props/pet_bowl_full__shadow.png",
+   "shadow_blend": "normal",
+   "floor_center_px": [
+    10.0,
+    8.0
+   ],
+   "pivot_px": [
+    10.0,
+    8.0
+   ],
+   "anchor_note": "anchor = pixel on P(c,r) (north vertex of the footprint), exactly like environment/manifest.json; pivot_px = the tile-centre foot point P(c+0.5, r+0.5) in PNG px.",
+   "blocking": true,
+   "block_cells": [
+    [
+     0,
+     0
+    ]
+   ],
+   "pet_walkable_cells": [
+    [
+     0,
+     0
+    ]
+   ],
+   "state": "full",
+   "states": {
+    "empty": "pet_bowl_empty",
+    "full": "pet_bowl_full"
+   },
+   "use_points": [
+    {
+     "point": [
+      0.5,
+      0.14
+     ],
+     "facing": "sw",
+     "actor": "pet",
+     "anim": "eat",
+     "recommended": true,
+     "note": "faces the camera; bowl draws over his chin"
+    },
+    {
+     "point": [
+      0.14,
+      0.5
+     ],
+     "facing": "se",
+     "actor": "pet",
+     "anim": "eat",
+     "recommended": true,
+     "note": "faces the camera; bowl draws over his chin"
+    },
+    {
+     "point": [
+      0.5,
+      0.86
+     ],
+     "facing": "ne",
+     "actor": "pet",
+     "anim": "eat",
+     "note": "back to the camera"
+    },
+    {
+     "point": [
+      0.86,
+      0.5
+     ],
+     "facing": "nw",
+     "actor": "pet",
+     "anim": "eat",
+     "note": "back to the camera"
+    }
+   ],
+   "depth_offset": {
+    "back": 1.0
+   }
+  },
+  {
+   "id": "pet_bed_grid",
+   "base_id": "pet_bed_grid",
+   "area": "pets",
+   "kind": "object",
+   "facing": null,
+   "size": [
+    50,
+    31
+   ],
+   "anchor": [
+    25,
+    2
+   ],
+   "footprint": [
+    1,
+    1
+   ],
+   "main": "props/pet_bed_grid.png",
+   "shadow": "props/pet_bed_grid__shadow.png",
+   "shadow_blend": "normal",
+   "floor_center_px": [
+    25.0,
+    18.0
+   ],
+   "pivot_px": [
+    25.0,
+    18.0
+   ],
+   "anchor_note": "anchor = pixel on P(c,r) (north vertex of the footprint), exactly like environment/manifest.json; pivot_px = the tile-centre foot point P(c+0.5, r+0.5) in PNG px.",
+   "blocking": true,
+   "block_cells": [
+    [
+     0,
+     0
+    ]
+   ],
+   "pet_walkable_cells": [
+    [
+     0,
+     0
+    ]
+   ],
+   "use_points": [
+    {
+     "point": [
+      0.5,
+      0.5
+     ],
+     "facing": "any",
+     "actor": "pet",
+     "anim": "sleep",
+     "anims": [
+      "sleep",
+      "loaf",
+      "sit"
+     ],
+     "z_px": 8,
+     "pet_offset_y_px": -8,
+     "recommended": true,
+     "note": "Migi lies ON the pillow: draw his frame 8 px higher (pet_offset_y_px, x0.5 in SVG units). Facing se/sw shows his face."
+    }
+   ],
+   "seat_z_px": 8,
+   "depth_offset": {
+    "back": 0.95
+   },
+   "note": "black pillow with a cream grid (Migi's real pillow), black-hair ramp + gallery_mid lines. Like floor_cushion_*: people do not walk through it."
+  }
+ ]
+}

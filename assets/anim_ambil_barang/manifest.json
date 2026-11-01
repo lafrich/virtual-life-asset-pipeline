@@ -1,0 +1,584 @@
+{
+ "name": "anim_ambil_barang",
+ "preview_only": true,
+ "frame": [
+  64,
+  112
+ ],
+ "pivot": [
+  32,
+  100
+ ],
+ "dirs": [
+  "se",
+  "sw",
+  "ne",
+  "nw"
+ ],
+ "mirror": {
+  "sw": "se (flip horizontal)",
+  "nw": "ne (flip horizontal)"
+ },
+ "chars": {
+  "ichsan": {
+   "source": "v6b/live/chars/ichsan.json via live_v6b (= assets/chars/ichsan_v6b_sheet.png)",
+   "idle_f0_diff_vs_game_sheet_px": {
+    "se": 0,
+    "ne": 0
+   }
+  },
+  "npc": {
+   "source": "npc_v6b.make_cfg + job_common.render (npc_v6b.build path)",
+   "cfg": {
+    "body": "m",
+    "skin": "medium",
+    "hair": "short",
+    "hc": "black",
+    "top": "tee",
+    "tc": "steel",
+    "pants": "trousers",
+    "pc": "charcoal",
+    "shoes": "sneakers",
+    "sc": "paper"
+   }
+  }
+ },
+ "anims": {
+  "ambil": {
+   "frames": 9,
+   "loop": false,
+   "fps_nominal": 5.9,
+   "frame_ms": [
+    260,
+    110,
+    110,
+    120,
+    260,
+    120,
+    110,
+    120,
+    320
+   ],
+   "total_ms": 1530,
+   "item_diambil": 4,
+   "events": {
+    "item_diambil": {
+     "frame": 4,
+     "t_ms": 600
+    },
+    "selesai": {
+     "frame": 8,
+     "t_ms": 1530
+    }
+   },
+   "files": {
+    "pattern": "frames/{char}_ambil_{item|kosong}_{dir}_f{i}.png"
+   },
+   "crouch_px": [
+    0,
+    3,
+    8,
+    12,
+    12,
+    11,
+    7,
+    2,
+    0
+   ],
+   "hand_px": {
+    "ichsan": {
+     "se": [
+      null,
+      [
+       45,
+       77
+      ],
+      [
+       46,
+       83
+      ],
+      [
+       46,
+       91
+      ],
+      [
+       45.5,
+       92
+      ],
+      [
+       44,
+       84
+      ],
+      [
+       40.5,
+       76
+      ],
+      [
+       39,
+       68
+      ],
+      [
+       39,
+       65.5
+      ]
+     ],
+     "sw": [
+      null,
+      [
+       18,
+       77
+      ],
+      [
+       17,
+       83
+      ],
+      [
+       17,
+       91
+      ],
+      [
+       17.5,
+       92
+      ],
+      [
+       19,
+       84
+      ],
+      [
+       22.5,
+       76
+      ],
+      [
+       24,
+       68
+      ],
+      [
+       24,
+       65.5
+      ]
+     ],
+     "ne": [
+      null,
+      [
+       43,
+       77
+      ],
+      [
+       45,
+       83
+      ],
+      [
+       46,
+       90.5
+      ],
+      [
+       45.5,
+       91.5
+      ],
+      [
+       45,
+       85
+      ],
+      [
+       44.5,
+       80
+      ],
+      [
+       44,
+       73.5
+      ],
+      [
+       44,
+       71.5
+      ]
+     ],
+     "nw": [
+      null,
+      [
+       20,
+       77
+      ],
+      [
+       18,
+       83
+      ],
+      [
+       17,
+       90.5
+      ],
+      [
+       17.5,
+       91.5
+      ],
+      [
+       18,
+       85
+      ],
+      [
+       18.5,
+       80
+      ],
+      [
+       19,
+       73.5
+      ],
+      [
+       19,
+       71.5
+      ]
+     ]
+    },
+    "npc": {
+     "se": [
+      null,
+      [
+       45,
+       77
+      ],
+      [
+       46,
+       83
+      ],
+      [
+       46,
+       91
+      ],
+      [
+       45.5,
+       92
+      ],
+      [
+       44,
+       84
+      ],
+      [
+       40.5,
+       76
+      ],
+      [
+       39,
+       68
+      ],
+      [
+       39,
+       65.5
+      ]
+     ],
+     "sw": [
+      null,
+      [
+       18,
+       77
+      ],
+      [
+       17,
+       83
+      ],
+      [
+       17,
+       91
+      ],
+      [
+       17.5,
+       92
+      ],
+      [
+       19,
+       84
+      ],
+      [
+       22.5,
+       76
+      ],
+      [
+       24,
+       68
+      ],
+      [
+       24,
+       65.5
+      ]
+     ],
+     "ne": [
+      null,
+      [
+       43,
+       77
+      ],
+      [
+       45,
+       83
+      ],
+      [
+       46,
+       90.5
+      ],
+      [
+       45.5,
+       91.5
+      ],
+      [
+       45,
+       85
+      ],
+      [
+       44.5,
+       80
+      ],
+      [
+       44,
+       73.5
+      ],
+      [
+       44,
+       71.5
+      ]
+     ],
+     "nw": [
+      null,
+      [
+       20,
+       77
+      ],
+      [
+       18,
+       83
+      ],
+      [
+       17,
+       90.5
+      ],
+      [
+       17.5,
+       91.5
+      ],
+      [
+       18,
+       85
+      ],
+      [
+       18.5,
+       80
+      ],
+      [
+       19,
+       73.5
+      ],
+      [
+       19,
+       71.5
+      ]
+     ]
+    }
+   },
+   "item_in_hand_frames": [
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "ground_item_offset_from_pivot": {
+    "se": [
+     13.5,
+     -5
+    ],
+    "sw": [
+     -14.5,
+     -5
+    ],
+    "ne": [
+     13.5,
+     -5.5
+    ],
+    "nw": [
+     -14.5,
+     -5.5
+    ]
+   },
+   "hand_px_note": "titik tengah tangan yang memegang barang (frame px, sudah dicerminkan untuk sw/nw); null = lengan bawaan generator (idle f0)"
+  },
+  "cari": {
+   "frames": 4,
+   "loop": true,
+   "fps_nominal": 7.1,
+   "frame_ms": [
+    140,
+    140,
+    140,
+    140
+   ],
+   "total_ms": 560,
+   "item_diambil": null,
+   "events": {
+    "loop_hint": "ulang 2-3x (±1,1-1,7 s); bila dapat barang lanjut ke ambil f3..f8 (item_diambil di f4), bila tidak dapat lanjut ambil f6..f8 dengan frame _kosong"
+   },
+   "files": {
+    "pattern": "frames/{char}_cari_{dir}_f{i}.png"
+   },
+   "crouch_px": [
+    9,
+    9,
+    9,
+    9
+   ],
+   "hand_px": {
+    "ichsan": {
+     "se": [
+      [
+       44.5,
+       75.5
+      ],
+      [
+       45,
+       82.5
+      ],
+      [
+       45.5,
+       88
+      ],
+      [
+       45,
+       81
+      ]
+     ],
+     "sw": [
+      [
+       18.5,
+       75.5
+      ],
+      [
+       18,
+       82.5
+      ],
+      [
+       17.5,
+       88
+      ],
+      [
+       18,
+       81
+      ]
+     ],
+     "ne": [
+      [
+       45.5,
+       87
+      ],
+      [
+       44.5,
+       82
+      ],
+      [
+       44.5,
+       77
+      ],
+      [
+       45,
+       83
+      ]
+     ],
+     "nw": [
+      [
+       17.5,
+       87
+      ],
+      [
+       18.5,
+       82
+      ],
+      [
+       18.5,
+       77
+      ],
+      [
+       18,
+       83
+      ]
+     ]
+    },
+    "npc": {
+     "se": [
+      [
+       44.5,
+       75.5
+      ],
+      [
+       45,
+       82.5
+      ],
+      [
+       45.5,
+       88
+      ],
+      [
+       45,
+       81
+      ]
+     ],
+     "sw": [
+      [
+       18.5,
+       75.5
+      ],
+      [
+       18,
+       82.5
+      ],
+      [
+       17.5,
+       88
+      ],
+      [
+       18,
+       81
+      ]
+     ],
+     "ne": [
+      [
+       45.5,
+       87
+      ],
+      [
+       44.5,
+       82
+      ],
+      [
+       44.5,
+       77
+      ],
+      [
+       45,
+       83
+      ]
+     ],
+     "nw": [
+      [
+       17.5,
+       87
+      ],
+      [
+       18.5,
+       82
+      ],
+      [
+       18.5,
+       77
+      ],
+      [
+       18,
+       83
+      ]
+     ]
+    }
+   },
+   "item_in_hand_frames": [],
+   "hand_px_note": "titik tengah tangan yang memegang barang (frame px, sudah dicerminkan untuk sw/nw); null = lengan bawaan generator (idle f0)"
+  }
+ },
+ "held_item_preview": {
+  "item": "kaleng_minuman_merah",
+  "scale_k": 0.75,
+  "note": "penanda posisi tangan; game boleh tempel ikon/ground sprite lain di hand_px"
+ }
+}

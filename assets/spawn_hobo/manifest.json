@@ -1,0 +1,664 @@
+{
+ "name": "spawn_hobo",
+ "project": "baymax Virtual Life",
+ "style": "v6b (iso 2:1, tile 64x32, tanpa outline, alpha 0/56/255)",
+ "status": "preview saja - belum diintegrasikan, index.html tidak diubah; mekanik spawn = Baymax",
+ "karakter": {
+  "frame": [
+   64,
+   112
+  ],
+  "pivot": [
+   32,
+   100
+  ],
+  "ichsan": "live_v6b + v6b/live/chars/ichsan.json (identik 0 px dengan ichsan_v6b_sheet game untuk outfit default)",
+  "npc": "npc_v6b lewat job_common.render (NPC generik dari anim_ambil_barang)",
+  "outfit_lusuh": "overlay: jaket kanvas khaki terbuka di atas kaus asli, ujung berjumbai, sobek, celana bertambal kayu + sobek; rambut/kacamata/wajah tidak diubah"
+ },
+ "spawn": {
+  "urutan": [
+   "bangun",
+   "merangkak",
+   "berdiri",
+   "peregangan",
+   "menoleh"
+  ],
+  "frames": {
+   "bangun": 6,
+   "merangkak": 6,
+   "berdiri": 6,
+   "peregangan": 8,
+   "menoleh": 8
+  },
+  "total_frames": 34,
+  "ms_per_frame": {
+   "bangun": [
+    420,
+    320,
+    320,
+    260,
+    320,
+    380
+   ],
+   "merangkak": [
+    140,
+    140,
+    140,
+    140,
+    140,
+    140
+   ],
+   "berdiri": [
+    150,
+    150,
+    140,
+    140,
+    140,
+    220
+   ],
+   "peregangan": [
+    150,
+    140,
+    140,
+    260,
+    260,
+    160,
+    140,
+    220
+   ],
+   "menoleh": [
+    300,
+    240,
+    260,
+    260,
+    280,
+    220,
+    260,
+    340
+   ]
+  },
+  "ms_per_fase": {
+   "bangun": 2020,
+   "merangkak": 840,
+   "berdiri": 940,
+   "peregangan": 1470,
+   "menoleh": 2160
+  },
+  "loop": false,
+  "arah": "se (asli) dan sw (cermin). Pintu tenda sw -> pakai sheet sw, tenda se -> sheet se",
+  "sheet_layout": "8 kolom x 5 baris (baris = fase sesuai urutan), sel 64x112, sel kosong transparan",
+  "akar_root": {
+   "bangun": "pivot (32,100) di anchor tenda 'tidur' + (0,+14) (sprite rebah berpusat di y 86)",
+   "merangkak": "maju 1.45 tile total ke arah hadap selama 6 frame (0.2417 tile/frame = sw (-7.7,+3.9) px, se (+7.7,+3.9) px per frame); di mock dari b=1.0 ke b=-0.45 (b = kedalaman tenda, 0 = depan kavling)",
+   "berdiri/peregangan/menoleh": "diam di titik akhir merangkak (anchor tenda 'keluar' kurang lebih)",
+   "setelah_spawn": "lanjut ke walk/idle lusuh"
+  },
+  "layer_tenda": "selama akar masih di dalam tenda (b > 0.5) karakter digambar di antara tenda_buka__belakang dan tenda_buka__depan; setelah keluar digambar di atas keduanya",
+  "detail_fase": {
+   "bangun": "rebah (lie_flat generator): blink, blink, sleepy, blink, sleepy, neutral naik 1px",
+   "merangkak": "jongkok d=12, badan condong, dua tangan bergantian menapak tanah",
+   "berdiri": "tangan di lutut, jongkok 12 -> 0",
+   "peregangan": "tangan naik ke atas kepala (V), ekspresi happy, tangan dibentang lalu turun",
+   "menoleh": "wajah geser kiri/kanan 1px + badan menoleh (cermin) 2 frame, ekspresi surprised/smile"
+  }
+ },
+ "sheets": {
+  "spawn_ichsan_se": {
+   "file": "sheets/spawn_ichsan_se.png",
+   "size": [
+    512,
+    560
+   ],
+   "cols": 8,
+   "rows": {
+    "bangun": 0,
+    "merangkak": 1,
+    "berdiri": 2,
+    "peregangan": 3,
+    "menoleh": 4
+   },
+   "frames": {
+    "bangun": 6,
+    "merangkak": 6,
+    "berdiri": 6,
+    "peregangan": 8,
+    "menoleh": 8
+   }
+  },
+  "spawn_ichsan_sw": {
+   "file": "sheets/spawn_ichsan_sw.png",
+   "size": [
+    512,
+    560
+   ],
+   "cols": 8,
+   "rows": {
+    "bangun": 0,
+    "merangkak": 1,
+    "berdiri": 2,
+    "peregangan": 3,
+    "menoleh": 4
+   },
+   "frames": {
+    "bangun": 6,
+    "merangkak": 6,
+    "berdiri": 6,
+    "peregangan": 8,
+    "menoleh": 8
+   }
+  },
+  "lusuh_ichsan": {
+   "file": "sheets/lusuh_ichsan_walk_idle.png",
+   "size": [
+    384,
+    896
+   ],
+   "cols": 6,
+   "rows": {
+    "walk_se": 0,
+    "walk_sw": 1,
+    "walk_ne": 2,
+    "walk_nw": 3,
+    "idle_se": 4,
+    "idle_sw": 5,
+    "idle_ne": 6,
+    "idle_nw": 7
+   },
+   "frames": {
+    "walk": 6,
+    "idle": 4
+   }
+  },
+  "spawn_npc_se": {
+   "file": "sheets/spawn_npc_se.png",
+   "size": [
+    512,
+    560
+   ],
+   "cols": 8,
+   "rows": {
+    "bangun": 0,
+    "merangkak": 1,
+    "berdiri": 2,
+    "peregangan": 3,
+    "menoleh": 4
+   },
+   "frames": {
+    "bangun": 6,
+    "merangkak": 6,
+    "berdiri": 6,
+    "peregangan": 8,
+    "menoleh": 8
+   }
+  },
+  "spawn_npc_sw": {
+   "file": "sheets/spawn_npc_sw.png",
+   "size": [
+    512,
+    560
+   ],
+   "cols": 8,
+   "rows": {
+    "bangun": 0,
+    "merangkak": 1,
+    "berdiri": 2,
+    "peregangan": 3,
+    "menoleh": 4
+   },
+   "frames": {
+    "bangun": 6,
+    "merangkak": 6,
+    "berdiri": 6,
+    "peregangan": 8,
+    "menoleh": 8
+   }
+  },
+  "lusuh_npc": {
+   "file": "sheets/lusuh_npc_walk_idle.png",
+   "size": [
+    384,
+    896
+   ],
+   "cols": 6,
+   "rows": {
+    "walk_se": 0,
+    "walk_sw": 1,
+    "walk_ne": 2,
+    "walk_nw": 3,
+    "idle_se": 4,
+    "idle_sw": 5,
+    "idle_ne": 6,
+    "idle_nw": 7
+   },
+   "frames": {
+    "walk": 6,
+    "idle": 4
+   }
+  }
+ },
+ "tenda": {
+  "footprint_tile": {
+   "W": 2.45,
+   "D": 2.45,
+   "tenda_a": [
+    0,
+    1.8
+   ],
+   "tenda_b": [
+    0.55,
+    2.45
+   ],
+   "kardus_samping": "a 1.9-2.4, b 1.35-2.0"
+  },
+  "tinggi_px": {
+   "dinding_kardus": 6,
+   "bubungan": 40,
+   "kanopi": "30-34"
+  },
+  "states": {
+   "tutup": "flap turun, jahitan + jepitan jemuran kayu, 1 file",
+   "buka": "flap diangkat jadi kanopi di 2 tongkat kayu; 2 layer (belakang/depan) + preview gabungan"
+  },
+  "sprites": {
+   "tenda_tutup_sw": {
+    "files": {
+     "utuh": "sprites/tenda_tutup_sw.png"
+    },
+    "size": [
+     148,
+     90
+    ],
+    "pivot": [
+     71,
+     64
+    ],
+    "anchors": {
+     "anchor_kiri_depan": [
+      -7,
+      64
+     ],
+     "pintu": [
+      39,
+      70
+     ],
+     "tidur": [
+      69,
+      55
+     ],
+     "keluar": [
+      15,
+      82
+     ],
+     "kantong": [
+      85,
+      83
+     ],
+     "cangkir": [
+      73,
+      87
+     ]
+    }
+   },
+   "tenda_tutup_se": {
+    "files": {
+     "utuh": "sprites/tenda_tutup_se.png"
+    },
+    "size": [
+     140,
+     90
+    ],
+    "pivot": [
+     80,
+     54
+    ],
+    "anchors": {
+     "anchor_kiri_depan": [
+      80,
+      93
+     ],
+     "pintu": [
+      91,
+      70
+     ],
+     "tidur": [
+      61,
+      55
+     ],
+     "keluar": [
+      115,
+      82
+     ],
+     "kantong": [
+      118,
+      47
+     ],
+     "cangkir": [
+      125,
+      53
+     ]
+    }
+   },
+   "tenda_buka_sw": {
+    "files": {
+     "belakang": "sprites/tenda_buka_sw__belakang.png",
+     "depan": "sprites/tenda_buka_sw__depan.png",
+     "utuh_preview": "sprites/tenda_buka_sw.png"
+    },
+    "size": [
+     148,
+     90
+    ],
+    "pivot": [
+     71,
+     64
+    ],
+    "anchors": {
+     "anchor_kiri_depan": [
+      -7,
+      64
+     ],
+     "pintu": [
+      39,
+      70
+     ],
+     "tidur": [
+      69,
+      55
+     ],
+     "keluar": [
+      15,
+      82
+     ],
+     "kantong": [
+      85,
+      83
+     ],
+     "cangkir": [
+      73,
+      87
+     ]
+    }
+   },
+   "tenda_buka_se": {
+    "files": {
+     "belakang": "sprites/tenda_buka_se__belakang.png",
+     "depan": "sprites/tenda_buka_se__depan.png",
+     "utuh_preview": "sprites/tenda_buka_se.png"
+    },
+    "size": [
+     140,
+     90
+    ],
+    "pivot": [
+     80,
+     54
+    ],
+    "anchors": {
+     "anchor_kiri_depan": [
+      80,
+      93
+     ],
+     "pintu": [
+      91,
+      70
+     ],
+     "tidur": [
+      61,
+      55
+     ],
+     "keluar": [
+      115,
+      82
+     ],
+     "kantong": [
+      118,
+      47
+     ],
+     "cangkir": [
+      125,
+      53
+     ]
+    }
+   }
+  },
+  "anchor_note": "semua anchor dalam px sprite; pivot = tengah kavling; pintu = tengah depan tenda di tanah; tidur = posisi rebah; keluar = 0.75 tile di depan pintu; kantong/cangkir = posisi props di mock"
+ },
+ "props": {
+  "alas_kardus_sw": {
+   "file": "props/alas_kardus_sw.png",
+   "size": [
+    76,
+    40
+   ],
+   "pivot": [
+    37,
+    20
+   ],
+   "anchor_sudut": [
+    48,
+    2
+   ]
+  },
+  "alas_kardus_se": {
+   "file": "props/alas_kardus_se.png",
+   "size": [
+    74,
+    40
+   ],
+   "pivot": [
+    35,
+    20
+   ],
+   "anchor_sudut": [
+    24,
+    2
+   ]
+  },
+  "kantong_plastik_sw": {
+   "file": "props/kantong_plastik_sw.png",
+   "size": [
+    16,
+    18
+   ],
+   "pivot": [
+    6,
+    14
+   ],
+   "anchor_sudut": [
+    6,
+    7
+   ]
+  },
+  "kantong_plastik_se": {
+   "file": "props/kantong_plastik_se.png",
+   "size": [
+    16,
+    18
+   ],
+   "pivot": [
+    6,
+    14
+   ],
+   "anchor_sudut": [
+    6,
+    7
+   ]
+  },
+  "cangkir_kaleng_sw": {
+   "file": "props/cangkir_kaleng_sw.png",
+   "size": [
+    12,
+    14
+   ],
+   "pivot": [
+    4,
+    11
+   ],
+   "anchor_sudut": [
+    4,
+    6
+   ]
+  },
+  "cangkir_kaleng_se": {
+   "file": "props/cangkir_kaleng_se.png",
+   "size": [
+    12,
+    14
+   ],
+   "pivot": [
+    4,
+    11
+   ],
+   "anchor_sudut": [
+    4,
+    6
+   ]
+  }
+ },
+ "mock": {
+  "gif_ichsan_sw": {
+   "file": "mock/spawn_ichsan_tenda_sw_3x.gif",
+   "scale": 3,
+   "frames": 47,
+   "ms_total": 9650,
+   "bytes": 175557,
+   "size": [
+    1020,
+    780
+   ]
+  },
+  "still_sw_tutup": {
+   "file": "mock/mock_sw_tutup_4x.png",
+   "seq_index": 0,
+   "phase": "tenda_tutup"
+  },
+  "still_sw_bangun": {
+   "file": "mock/mock_sw_bangun_4x.png",
+   "seq_index": 3,
+   "phase": "bangun"
+  },
+  "still_sw_merangkak": {
+   "file": "mock/mock_sw_merangkak_4x.png",
+   "seq_index": 9,
+   "phase": "merangkak"
+  },
+  "still_sw_peregangan": {
+   "file": "mock/mock_sw_peregangan_4x.png",
+   "seq_index": 23,
+   "phase": "peregangan"
+  },
+  "still_sw_menoleh": {
+   "file": "mock/mock_sw_menoleh_4x.png",
+   "seq_index": 29,
+   "phase": "menoleh"
+  },
+  "gif_ichsan_se": {
+   "file": "mock/spawn_ichsan_tenda_se_3x.gif",
+   "scale": 3,
+   "frames": 47,
+   "ms_total": 9650,
+   "bytes": 175848,
+   "size": [
+    1020,
+    780
+   ]
+  },
+  "still_se_tutup": {
+   "file": "mock/mock_se_tutup_4x.png",
+   "seq_index": 0,
+   "phase": "tenda_tutup"
+  },
+  "still_se_bangun": {
+   "file": "mock/mock_se_bangun_4x.png",
+   "seq_index": 3,
+   "phase": "bangun"
+  },
+  "still_se_merangkak": {
+   "file": "mock/mock_se_merangkak_4x.png",
+   "seq_index": 9,
+   "phase": "merangkak"
+  },
+  "still_se_peregangan": {
+   "file": "mock/mock_se_peregangan_4x.png",
+   "seq_index": 23,
+   "phase": "peregangan"
+  },
+  "still_se_menoleh": {
+   "file": "mock/mock_se_menoleh_4x.png",
+   "seq_index": 29,
+   "phase": "menoleh"
+  },
+  "gif_npc_sw": {
+   "file": "mock/spawn_npc_tenda_sw_3x.gif",
+   "scale": 3,
+   "frames": 47,
+   "ms_total": 9650,
+   "bytes": 169128,
+   "size": [
+    1020,
+    780
+   ]
+  },
+  "gif_npc_se": {
+   "file": "mock/spawn_npc_tenda_se_3x.gif",
+   "scale": 3,
+   "frames": 47,
+   "ms_total": 9650,
+   "bytes": 170817,
+   "size": [
+    1020,
+    780
+   ]
+  },
+  "kontak_ichsan": {
+   "file": "mock/kontak_ichsan_4x.png",
+   "size": [
+    2736,
+    6512
+   ]
+  },
+  "kontak_npc": {
+   "file": "mock/kontak_npc_4x.png",
+   "size": [
+    2736,
+    6512
+   ]
+  },
+  "kontak_tenda_props": {
+   "file": "mock/kontak_tenda_props_4x.png",
+   "size": [
+    2464,
+    1008
+   ]
+  }
+ },
+ "screens_states": [
+  {
+   "id": "tenda_tutup",
+   "isi": "tenda_tutup_{sw,se} + kantong_plastik + cangkir_kaleng (opsional alas_kardus)",
+   "kapan": "pemain tanpa rumah sedang offline/tidur"
+  },
+  {
+   "id": "spawn_bangun",
+   "isi": "tenda_buka belakang -> karakter fase bangun -> tenda_buka depan"
+  },
+  {
+   "id": "spawn_merangkak_keluar",
+   "isi": "fase merangkak, akar maju; pindah layer di atas tenda saat b < 0.5"
+  },
+  {
+   "id": "spawn_berdiri_peregangan_menoleh",
+   "isi": "3 fase di titik keluar"
+  },
+  {
+   "id": "bebas_jalan",
+   "isi": "sheet lusuh walk/idle 4 arah; tenda tetap terbuka atau kembali tutup (keputusan Baymax)"
+  },
+  {
+   "id": "kembali_tidur",
+   "isi": "bisa memakai urutan spawn terbalik (belum dibuat khusus)"
+  }
+ ],
+ "hex_baru": []
+}

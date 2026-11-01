@@ -1,0 +1,6 @@
+{"name": "noor", "hair_style": "wavy", "arms": "down", "sleeves": "long", "lash": true, "brow": "#141821",
+ "hair_map": {"0": "#0E1118", "1": "#1C2330", "2": "#232A38", "3": "#2A3242", "4": "#3E5F92"},
+ "skin_map": {"i": "#F1D3B5", "h": "#EBC8A8", "e": "#E0AE8A", "a": "#D9A47E", "7": "#A8704E", "5": "#8A5A3C"},
+ "outfits": {"default": {"shirt": {"id": "tee_black_inner", "type": "tee", "color": "#1C2330"}, "outer": {"id": "cardigan_charcoal_dots", "type": "cardigan", "color": "#2A3242", "dots": "#ECF0F4"}, "acc": null,
+   "pants": {"id": "pants_night", "type": "trousers", "color": "#1C2330"}, "shoes": {"id": "night", "color": "#1C2330"}, "held": null}},
+ "default_outfit": "default", "_live_ref": "examples/noor.json: base_light, black hair (now wavy), hoodie_charcoal + white bird-print dots, pants_night, shoes_night"}

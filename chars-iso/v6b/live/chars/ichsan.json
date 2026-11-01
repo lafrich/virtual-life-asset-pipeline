@@ -1,0 +1,53 @@
+{
+ "name": "ichsan",
+ "hair_style": "mid",
+ "arms": "down",
+ "glasses_default": true,
+ "glasses": "#4C5468",
+ "brow": "#141821",
+ "mustache": "#5E4636",
+ "hair_map": {
+  "0": "#10141B",
+  "1": "#1C2330",
+  "2": "#232A38",
+  "3": "#2A3242",
+  "4": "#3E5A88"
+ },
+ "skin_map": {
+  "i": "#F1D3B5",
+  "h": "#EBC8A8",
+  "e": "#E0AE8A",
+  "a": "#D9A47E",
+  "7": "#A8704E",
+  "5": "#8A5A3C"
+ },
+ "outfits": {
+  "default": {
+   "shirt": {
+    "id": "tee_charcoal",
+    "type": "tee",
+    "color": "#2A3242"
+   },
+   "outer": null,
+   "acc": null,
+   "pants": {
+    "id": "jeans_slate",
+    "type": "trousers",
+    "color": "#3A4458"
+   },
+   "shoes": {
+    "id": "walnut",
+    "color": "#5A412F"
+   },
+   "held": null
+  }
+ },
+ "default_outfit": "default",
+ "_live_ref": "examples/reference_man.json: base_light, shoulder_black hair, glasses_night, mustache2_darkwalnut, tee_charcoal, pants_slate, shoes_walnut",
+ "fringe": "curtain",
+ "glasses_shape": "round",
+ "stubble": [
+  "#D8B79C",
+  "#B08E76"
+ ]
+}
