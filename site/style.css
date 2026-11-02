@@ -329,3 +329,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px dotted #141
   .rig-workspace .details-panel{order:3}
   .rig-workspace .rig-canvas-area{height:min(90vw,450px)}
 }
+
+@media (min-width:781px){
+  .rig-workspace .asset-panel,.rig-workspace .canvas-panel,.rig-workspace .details-panel{min-height:0;overflow:hidden}
+  .rig-workspace .rig-canvas-area{min-height:0;flex:1 1 0}
+  .rig-workspace #rig-canvas{min-height:0;max-height:100%;min-width:0}
+}
