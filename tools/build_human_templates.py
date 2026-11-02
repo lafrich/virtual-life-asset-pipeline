@@ -12,6 +12,32 @@ DIRECTIONS=("se","sw","ne","nw")
 MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4}
 EXPRS=("neutral","happy","surprised","angry","sleepy")
 FRAME=(64,112)
+# Native v6b head begins at FY=31. y=53 is the start of the shoulders:
+# keep the scalp/face untouched and give the BODY an actual 1px contour.
+BODY_START_Y=53
+
+def outline_human_body(sprite:Image.Image,edge_tone:tuple[int,int,int]) -> Image.Image:
+    """Put a warm, one-native-pixel INNER silhouette on torso, arms, legs and
+    feet. The alpha mask and 64x112 pivot never change; no horizontal line is
+    painted below the head or across the neck.
+    """
+    pixels=np.asarray(sprite.convert("RGBA")).copy()
+    visible=pixels[...,3]>0
+    # An edge is a filled sprite pixel next to transparent space. Detect the
+    # complete silhouette *after* skin and body layers have been composited,
+    # so internal garment seams don't turn into arbitrary body stripes.
+    surrounded=np.zeros_like(visible)
+    surrounded[1:-1,1:-1]=(
+        visible[:-2,1:-1]&visible[2:,1:-1]&
+        visible[1:-1,:-2]&visible[1:-1,2:]
+    )
+    edge=visible & ~surrounded
+    edge[:BODY_START_Y,:]=False
+    # Use the darker native skin ramp rather than flat black: still clearly
+    # outlined, but consistent with the rest of the pixel-character family.
+    tone=np.clip(np.asarray(edge_tone,dtype=np.float32)*0.56,0,255).astype(np.uint8)
+    pixels[edge,:3]=tone
+    return Image.fromarray(pixels,"RGBA")
 
 def build_human_templates(root:Path,media:Path)->list[dict]:
     for folder in (root/"assets/npc_preview_v2",root/"assets/npc_gfunk",root/"chars-iso/v6b/tools"):
@@ -47,6 +73,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             for key in ("hair_back","body","arm_far","shoes","pants","shoes_over",
                         "rips","shirt","arm_near","body_front","face","hair_front","brows"):
                 if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
+            # A bald, skin-toned body still needs a pixel-art silhouette
+            # around its arms, torso, separated legs, and feet.
+            result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))
             # The body is intentionally featureless rather than anatomical.
             assert result.size==FRAME
             return result
