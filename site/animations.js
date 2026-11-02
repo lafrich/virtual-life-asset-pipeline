@@ -26,6 +26,11 @@
     tekan_tombol: "press_button",
     ambil_barang: "pick_up",
   };
+  // A library clip may be tied to a particular source actor. Use only an
+  // actual, published rig binding; never play another NPC's GIF as a substitute.
+  function actionForClip(clip) {
+    return clip?.action_id || MOTION_MAP[clip?.id] || "";
+  }
   function selectedTarget() {
     const id = el("animation-target-char").value;
     return targets.find(character => character.id === id) || null;
@@ -33,7 +38,7 @@
   function updateApply() {
     const button = el("animation-apply");
     const character = selectedTarget();
-    const actionId = selected ? MOTION_MAP[selected.id] : "";
+    const actionId = actionForClip(selected);
     const motion = character?.motions?.find(item => item.id === actionId);
     const available = Boolean(motion?.available);
     button.disabled = !available;
@@ -55,8 +60,9 @@
         option.textContent = character.name.toUpperCase();
         select.append(option);
       }
+      const sourceActor = selected?.actor && targets.find(c => c.id === selected.actor);
       const bowie = targets.find(c => c.id === "aladdin_sane");
-      if (bowie) select.value = bowie.id;
+      if (sourceActor || bowie) select.value = (sourceActor || bowie).id;
       updateApply();
     } catch (error) {
       el("animation-apply").textContent = "CHARACTER INDEX UNAVAILABLE";
@@ -122,6 +128,10 @@
 
   function choose(clip) {
     selected = clip;
+    // Default TRY ON to the clip's real actor when imported and rigged.
+    // Other targets remain selectable, but only compatible actions enable it.
+    const sourceActor = targets.find(c => c.id === clip.actor);
+    if (sourceActor) el("animation-target-char").value = sourceActor.id;
     playing = Boolean(clip.gif);
     writing("animation-canvas-title", clip.id.toUpperCase() + (clip.gif ? ".GIF" : ".TPL"));
     writing("animation-canvas-tag", clip.status === "template" ? "TEMPLATE / DRAFT" :
@@ -138,7 +148,9 @@
     writing("animation-review-status", clip.status === "template" ? "TEMPLATE / NO APPROVED POSES" :
       clip.status === "source_only" ? "SOURCE ONLY / NO FRAMES" :
       clip.status === "still" ? "STILL POSE / NO ANIMATION" : "PREVIEW ONLY / NOT IN GAME");
-    writing("animation-note", clip.note || "No additional metadata");
+    writing("animation-note", [clip.note || "No additional metadata",
+      clip.actor ? "SOURCE ACTOR: " + (targets.find(c => c.id === clip.actor)?.name || clip.actor).toUpperCase() : ""
+    ].filter(Boolean).join(" / "));
     el("animation-review-status").classList.toggle("is-template", clip.status !== "preview");
 
     const dl = el("animation-download");
@@ -233,7 +245,7 @@
   el("animation-target-char").addEventListener("change", updateApply);
   el("animation-apply").addEventListener("click", () => {
     const target = selectedTarget();
-    const actionId = selected && MOTION_MAP[selected.id];
+    const actionId = actionForClip(selected);
     const action = target?.motions?.find(item => item.id === actionId && item.available);
     if (!target || !action) return;
     selectCharacter(target);
