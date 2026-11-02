@@ -1,0 +1,523 @@
+{
+  "version": 1,
+  "format": "virtual-life-category-skeletons-v1",
+  "units": "pixels in canonical 64x112 V6B frame; coordinates relative to parent; up is negative y",
+  "semantics": [
+    "root",
+    "body",
+    "head",
+    "arm_l",
+    "arm_r",
+    "leg_l",
+    "leg_r"
+  ],
+  "skinning": "unbound",
+  "notes": "Bone presets define actual joints and category-specific mapping; character-specific sprite parts/weights and calibrated pivots are not yet authored. Bone pose output is NOT a finished pixel sprite animation.",
+  "types": {
+    "HUMANOID": {
+      "adapter": "native_v6b",
+      "bones": [
+        {
+          "id": "root",
+          "parent": null,
+          "xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "hips",
+          "parent": "root",
+          "xy": [
+            0,
+            -24
+          ]
+        },
+        {
+          "id": "torso",
+          "parent": "hips",
+          "xy": [
+            0,
+            -19
+          ]
+        },
+        {
+          "id": "neck",
+          "parent": "torso",
+          "xy": [
+            0,
+            -17
+          ]
+        },
+        {
+          "id": "head",
+          "parent": "neck",
+          "xy": [
+            0,
+            -10
+          ]
+        },
+        {
+          "id": "shoulder_l",
+          "parent": "torso",
+          "xy": [
+            -11,
+            -13
+          ]
+        },
+        {
+          "id": "elbow_l",
+          "parent": "shoulder_l",
+          "xy": [
+            -7,
+            12
+          ]
+        },
+        {
+          "id": "hand_l",
+          "parent": "elbow_l",
+          "xy": [
+            0,
+            12
+          ]
+        },
+        {
+          "id": "shoulder_r",
+          "parent": "torso",
+          "xy": [
+            11,
+            -13
+          ]
+        },
+        {
+          "id": "elbow_r",
+          "parent": "shoulder_r",
+          "xy": [
+            7,
+            12
+          ]
+        },
+        {
+          "id": "hand_r",
+          "parent": "elbow_r",
+          "xy": [
+            0,
+            12
+          ]
+        },
+        {
+          "id": "hip_l",
+          "parent": "hips",
+          "xy": [
+            -6,
+            5
+          ]
+        },
+        {
+          "id": "knee_l",
+          "parent": "hip_l",
+          "xy": [
+            0,
+            12
+          ]
+        },
+        {
+          "id": "foot_l",
+          "parent": "knee_l",
+          "xy": [
+            0,
+            13
+          ]
+        },
+        {
+          "id": "hip_r",
+          "parent": "hips",
+          "xy": [
+            6,
+            5
+          ]
+        },
+        {
+          "id": "knee_r",
+          "parent": "hip_r",
+          "xy": [
+            0,
+            12
+          ]
+        },
+        {
+          "id": "foot_r",
+          "parent": "knee_r",
+          "xy": [
+            0,
+            13
+          ]
+        }
+      ],
+      "channels": {
+        "root": "root",
+        "body": "torso",
+        "head": "head",
+        "arm_l": "shoulder_l",
+        "arm_r": "shoulder_r",
+        "leg_l": "hip_l",
+        "leg_r": "hip_r"
+      },
+      "rigid": [
+        "head"
+      ]
+    },
+    "MASCOT": {
+      "adapter": "costume_puppet",
+      "bones": [
+        {
+          "id": "root",
+          "parent": null,
+          "xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "costume_body",
+          "parent": "root",
+          "xy": [
+            0,
+            -41
+          ]
+        },
+        {
+          "id": "face_surface",
+          "parent": "costume_body",
+          "xy": [
+            0,
+            -15
+          ]
+        },
+        {
+          "id": "arm_socket_l",
+          "parent": "costume_body",
+          "xy": [
+            -21,
+            -4
+          ]
+        },
+        {
+          "id": "hand_l",
+          "parent": "arm_socket_l",
+          "xy": [
+            -7,
+            18
+          ]
+        },
+        {
+          "id": "arm_socket_r",
+          "parent": "costume_body",
+          "xy": [
+            21,
+            -4
+          ]
+        },
+        {
+          "id": "hand_r",
+          "parent": "arm_socket_r",
+          "xy": [
+            7,
+            18
+          ]
+        },
+        {
+          "id": "leg_socket_l",
+          "parent": "root",
+          "xy": [
+            -11,
+            -20
+          ]
+        },
+        {
+          "id": "foot_l",
+          "parent": "leg_socket_l",
+          "xy": [
+            0,
+            20
+          ]
+        },
+        {
+          "id": "leg_socket_r",
+          "parent": "root",
+          "xy": [
+            11,
+            -20
+          ]
+        },
+        {
+          "id": "foot_r",
+          "parent": "leg_socket_r",
+          "xy": [
+            0,
+            20
+          ]
+        }
+      ],
+      "channels": {
+        "root": "root",
+        "body": "costume_body",
+        "head": "face_surface",
+        "arm_l": "arm_socket_l",
+        "arm_r": "arm_socket_r",
+        "leg_l": "leg_socket_l",
+        "leg_r": "leg_socket_r"
+      },
+      "rigid": [
+        "costume_body",
+        "face_surface"
+      ]
+    },
+    "ALIEN_SUIT": {
+      "adapter": "alien_exosuit",
+      "bones": [
+        {
+          "id": "root",
+          "parent": null,
+          "xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "locomotion_base",
+          "parent": "root",
+          "xy": [
+            0,
+            -22
+          ]
+        },
+        {
+          "id": "suit_core",
+          "parent": "locomotion_base",
+          "xy": [
+            0,
+            -22
+          ]
+        },
+        {
+          "id": "head_unit",
+          "parent": "suit_core",
+          "xy": [
+            0,
+            -20
+          ]
+        },
+        {
+          "id": "helmet",
+          "parent": "head_unit",
+          "xy": [
+            0,
+            -5
+          ]
+        },
+        {
+          "id": "claw_l",
+          "parent": "suit_core",
+          "xy": [
+            -18,
+            -6
+          ]
+        },
+        {
+          "id": "pincer_l",
+          "parent": "claw_l",
+          "xy": [
+            -6,
+            15
+          ]
+        },
+        {
+          "id": "claw_r",
+          "parent": "suit_core",
+          "xy": [
+            18,
+            -6
+          ]
+        },
+        {
+          "id": "pincer_r",
+          "parent": "claw_r",
+          "xy": [
+            6,
+            15
+          ]
+        },
+        {
+          "id": "foot_pad_l",
+          "parent": "locomotion_base",
+          "xy": [
+            -9,
+            14
+          ]
+        },
+        {
+          "id": "foot_pad_r",
+          "parent": "locomotion_base",
+          "xy": [
+            9,
+            14
+          ]
+        },
+        {
+          "id": "accessory",
+          "parent": "suit_core",
+          "xy": [
+            0,
+            12
+          ]
+        }
+      ],
+      "channels": {
+        "root": "root",
+        "body": "suit_core",
+        "head": "head_unit",
+        "arm_l": "claw_l",
+        "arm_r": "claw_r",
+        "leg_l": "foot_pad_l",
+        "leg_r": "foot_pad_r"
+      },
+      "rigid": [
+        "suit_core",
+        "helmet",
+        "accessory"
+      ]
+    },
+    "HELMETED": {
+      "adapter": "helmeted_human",
+      "bones": [
+        {
+          "id": "root",
+          "parent": null,
+          "xy": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "hips",
+          "parent": "root",
+          "xy": [
+            0,
+            -22
+          ]
+        },
+        {
+          "id": "torso",
+          "parent": "hips",
+          "xy": [
+            0,
+            -19
+          ]
+        },
+        {
+          "id": "helmet",
+          "parent": "torso",
+          "xy": [
+            0,
+            -23
+          ]
+        },
+        {
+          "id": "face",
+          "parent": "helmet",
+          "xy": [
+            0,
+            -2
+          ]
+        },
+        {
+          "id": "arm_l",
+          "parent": "torso",
+          "xy": [
+            -15,
+            -12
+          ]
+        },
+        {
+          "id": "hand_l",
+          "parent": "arm_l",
+          "xy": [
+            -4,
+            25
+          ]
+        },
+        {
+          "id": "arm_r",
+          "parent": "torso",
+          "xy": [
+            15,
+            -12
+          ]
+        },
+        {
+          "id": "hand_r",
+          "parent": "arm_r",
+          "xy": [
+            4,
+            25
+          ]
+        },
+        {
+          "id": "leg_l",
+          "parent": "hips",
+          "xy": [
+            -6,
+            5
+          ]
+        },
+        {
+          "id": "foot_l",
+          "parent": "leg_l",
+          "xy": [
+            0,
+            27
+          ]
+        },
+        {
+          "id": "leg_r",
+          "parent": "hips",
+          "xy": [
+            6,
+            5
+          ]
+        },
+        {
+          "id": "foot_r",
+          "parent": "leg_r",
+          "xy": [
+            0,
+            27
+          ]
+        },
+        {
+          "id": "backpack",
+          "parent": "torso",
+          "xy": [
+            0,
+            5
+          ]
+        }
+      ],
+      "channels": {
+        "root": "root",
+        "body": "torso",
+        "head": "helmet",
+        "arm_l": "arm_l",
+        "arm_r": "arm_r",
+        "leg_l": "leg_l",
+        "leg_r": "leg_r"
+      },
+      "rigid": [
+        "helmet",
+        "face",
+        "backpack"
+      ]
+    }
+  }
+}
