@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#043d9e">
   <meta name="description" content="Virtual Life character stock. Pixel people, Windows Paint energy.">
   <title>character_stock.pnt — Paint</title>
-  <link rel="stylesheet" href="./style.css?v=astrofrich-modular-v1">
-  <script defer src="./app.js?v=astrofrich-modular-v1"></script>
+  <link rel="stylesheet" href="./style.css?v=human-char-20261103-v1">
+  <script defer src="./app.js?v=human-char-20261103-v1"></script>
   <script defer src="./animations.js?v=life-sim-roadmap-v1"></script>
 </head>
 <body>
@@ -142,18 +142,19 @@
             </section>
             <section id="custom-char-panel" role="tabpanel" aria-labelledby="tab-custom-char" hidden>
               <div class="property-label">CHARACTER CREATOR / MODULAR TEMPLATE</div>
-              <h2 class="accessory-panel-title">NEW CUSTOM CHAR <small>ASTROFRICH</small></h2>
-              <p class="motion-hint">Buat karakter bernama sendiri dari base Theodore botak berkacamata, dengan belt, emblem dada dan kelereng perut tetap utuh.</p>
+              <h2 class="accessory-panel-title">NEW CUSTOM CHAR <small id="custom-base-summary">ASTROFRICH / HUMAN</small></h2>
+              <p class="motion-hint">Buat karakter Astrofrich atau Human Male/Female. Base Human botak, tubuh polos tanpa pakaian bawaan; baju, celana, dan sepatu menjadi equipment modular saat gameplay.</p>
               <label class="custom-char-label">CATEGORY
-                <select id="custom-category"><option value="astrofrich">ASTROFRICH</option></select>
+                <select id="custom-category"><option value="astrofrich">ASTROFRICH</option><option value="human">HUMAN</option></select>
               </label>
               <label class="custom-char-label">BASE TEMPLATE
-                <select id="custom-base"><option value="astrofrich_base">THEODORE / BALD + GLASSES</option></select>
+                <select id="custom-base"><option value="astrofrich_base">THEODORE / BALD + GLASSES</option><option value="human_male_base">HUMAN / MALE (BALD)</option><option value="human_female_base">HUMAN / FEMALE (BALD)</option></select>
               </label>
               <label class="custom-char-label">CHARACTER NAME
                 <input id="custom-name" type="text" maxlength="40" placeholder="Nama karakter baru" autocomplete="off">
               </label>
-              <div class="property-label">ACCESSORIES / EACH WITH 4 DIRECTIONS</div>
+              <div class="property-label">CUSTOM OUTFIT / EACH WITH 4 DIRECTIONS</div>
+              <div id="astrofrich-outfit-slots">
               <div class="accessory-create-buttons">
                 <button type="button" class="chrome-button" id="custom-draw-helmet">✎ DRAW HELM / 4 SIDES</button>
                 <button type="button" class="chrome-button" id="custom-draw-bag">✎ DRAW TAS / 4 SIDES</button>
@@ -164,6 +165,22 @@
               <label class="custom-char-label">TAS
                 <select id="custom-bag"><option value="">— NO BAG —</option></select>
               </label>
+              <div id="human-outfit-slots">
+                <div class="accessory-create-buttons">
+                  <button type="button" class="chrome-button" id="custom-draw-shirt">✎ DRAW BAJU / 4 SIDES</button>
+                  <button type="button" class="chrome-button" id="custom-draw-pants">✎ DRAW CELANA / 4 SIDES</button>
+                  <button type="button" class="chrome-button" id="custom-draw-shoes">✎ DRAW SEPATU / 4 SIDES</button>
+                </div>
+                <label class="custom-char-label">BAJU
+                  <select id="custom-shirt"><option value="">— NO SHIRT —</option></select>
+                </label>
+                <label class="custom-char-label">CELANA
+                  <select id="custom-pants"><option value="">— NO PANTS —</option></select>
+                </label>
+                <label class="custom-char-label">SEPATU
+                  <select id="custom-shoes"><option value="">— NO SHOES —</option></select>
+                </label>
+              </div>
               <p id="custom-animation-count" class="accessory-note">BASE: 7 ANIMATIONS · 5 EXPRESSIONS · 4 DIRECTIONS</p>
               <div class="accessory-create-buttons">
                 <button type="button" class="chrome-button action-main" id="custom-save">↓ SAVE CHARACTER</button>
