@@ -19,6 +19,50 @@
   let query = "";
   let playing = true;
   let currentTab = "characters";
+  let targets = [];
+  const MOTION_MAP = {
+    jalan_nyebrang: "walk",
+    babeh_walk: "walk",
+    tekan_tombol: "press_button",
+    ambil_barang: "pick_up",
+  };
+  function selectedTarget() {
+    const id = el("animation-target-char").value;
+    return targets.find(character => character.id === id) || null;
+  }
+  function updateApply() {
+    const button = el("animation-apply");
+    const character = selectedTarget();
+    const actionId = selected ? MOTION_MAP[selected.id] : "";
+    const motion = character?.motions?.find(item => item.id === actionId);
+    const available = Boolean(motion?.available);
+    button.disabled = !available;
+    button.textContent = available ? "▶ TRY ON " + character.name.toUpperCase() :
+      actionId ? "NEEDS CHARACTER RIG" : "REFERENCE ONLY";
+    button.title = available ? "Switch to this character and play its own action poses" :
+      "No reviewed character-specific native pose sheet is registered yet";
+  }
+  async function loadTargets() {
+    try {
+      const response = await fetch("./catalog.json", {cache: "no-store"});
+      const catalog = await response.json();
+      targets = Array.isArray(catalog.characters) ? catalog.characters : [];
+      const select = el("animation-target-char");
+      select.replaceChildren();
+      for (const character of targets) {
+        const option = document.createElement("option");
+        option.value = character.id;
+        option.textContent = character.name.toUpperCase();
+        select.append(option);
+      }
+      const bowie = targets.find(c => c.id === "aladdin_sane");
+      if (bowie) select.value = bowie.id;
+      updateApply();
+    } catch (error) {
+      el("animation-apply").textContent = "CHARACTER INDEX UNAVAILABLE";
+    }
+  }
+
 
   const clipSet = () => library.filter(clip =>
     (group === "all" || (group === "template" ? clip.status === "template" : clip.group === group)) &&
@@ -112,6 +156,7 @@
 
     el("animation-loading").hidden = true;
     syncPlaying();
+    updateApply();
     renderList(false);
     el("status").textContent = "MOTION: " + clip.id.toUpperCase() + (clip.status === "template" ? " / DRAFT" : " / PREVIEW");
   }
@@ -175,6 +220,18 @@
     choose(records[(i + delta + records.length) % records.length]);
   }
 
+  el("animation-target-char").addEventListener("change", updateApply);
+  el("animation-apply").addEventListener("click", () => {
+    const target = selectedTarget();
+    const actionId = selected && MOTION_MAP[selected.id];
+    const action = target?.motions?.find(item => item.id === actionId && item.available);
+    if (!target || !action) return;
+    selectCharacter(target);
+    setInspectorTab("motions");
+    selectMotion(action);
+    setMode("characters");
+    location.hash = "#character";
+  });
   motionTab.addEventListener("click", () => setMode("animations"));
   characterTab.addEventListener("click", () => setMode("characters"));
   pause.addEventListener("click", togglePlayback);
@@ -237,6 +294,7 @@
       .style.setProperty("--canvas", swatch.style.backgroundColor);
   });
 
+  loadTargets();
   (async () => {
     try {
       const response = await fetch("./animations.json", {cache:"no-store"});
