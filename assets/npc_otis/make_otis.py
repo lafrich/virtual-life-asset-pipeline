@@ -135,7 +135,9 @@ def build() -> None:
         for kind in ("idle", "walk", *POSES):
             folder = "frames" if kind in ("idle", "walk") else "poses"
             for index in range(COUNTS[kind]):
-                source = THEODORE / folder / f"theodore_{view}_{kind}_f{index}.png"
+                source_name = (f"theodore_{view}_{kind}_f{index}.png" if folder == "frames"
+                               else f"theodore_{kind}_{view}_f{index}.png")
+                source = THEODORE / folder / source_name
                 if not source.is_file():
                     raise FileNotFoundError("Original Theodore pose missing: " + str(source))
                 with Image.open(source) as input_image:
