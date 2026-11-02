@@ -46,6 +46,10 @@ jobs:
           git add -f assets/npc_aladdin_sane/manifest.json
           if ! git diff --cached --quiet; then
             git commit -m "Store v6b Aladdin Sane sprites and walking previews [skip ci]"
+            # Baseline verify regenerates tracked outputs elsewhere. Discard
+            # those *unstaged* runner-only changes before rebase, without
+            # touching the newly committed character files.
+            git reset --hard HEAD
             # The branch can move while jobs are running; replay on latest
             # head before a non-forced push, preserving all other changes.
             for attempt in 1 2 3; do
