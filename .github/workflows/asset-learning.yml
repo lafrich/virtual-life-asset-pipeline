@@ -1,0 +1,66 @@
+name: Asset Learning — Validate reusable improvements
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "assets/**"
+      - "chars-iso/**"
+      - "tools/**"
+      - "tests/**"
+      - "docs/asset-lessons/**"
+      - "docs/pipeline-learning.md"
+      - "AGENTS.md"
+      - "STYLE.md"
+      - ".github/workflows/asset-learning.yml"
+  push:
+    branches:
+      - main
+      - feature/approved-asset-learning-pipeline
+    paths:
+      - "assets/**"
+      - "tools/**"
+      - "tests/**"
+      - "docs/asset-lessons/**"
+      - ".github/workflows/asset-learning.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-learning:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout approved asset pipeline
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install v6b native requirements
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-dejavu-core fonts-wine
+          python -m pip install -r requirements.txt
+      - name: Validate permanent asset-learning records
+        run: python tools/check_asset_lessons.py
+      - name: Enforce learning decision for changed generators
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}"
+            python tools/check_asset_lessons.py --base "origin/${{ github.base_ref }}" --require-approved
+          elif [ "${{ github.ref }}" = "refs/heads/feature/approved-asset-learning-pipeline" ]; then
+            git fetch origin main
+            python tools/check_asset_lessons.py --base origin/main --require-approved
+          fi
+      - name: Test shared isometric primitives
+        run: python -m unittest discover -s tests -p 'test_iso_asset_primitives.py' -v
+      - name: Rebuild approved Milk Mascot using shared helpers
+        run: python assets/npc_milk_mascot/src/make_milk_mascot.py
+      - name: Assert regenerated sprites equal committed approval pixel-for-pixel
+        run: python tools/check_generated_pixels.py 'assets/npc_milk_mascot/sprites/*.png'
+      - name: Audit pixel alpha, palette and shadow
+        run: python tools/audit_colors.py assets/npc_milk_mascot/sprites
