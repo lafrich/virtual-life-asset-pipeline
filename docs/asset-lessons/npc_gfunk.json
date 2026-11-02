@@ -1,0 +1,16 @@
+{
+  "asset_family": "npc_gfunk",
+  "asset_path": "assets/npc_gfunk",
+  "status": "approved",
+  "approval_context": "Owner requested import of all existing Virtual Life character and animation sources into a browsable preview database. The approved change is portability of OPTIONAL reference comparison crops; individual character art and motion poses are unchanged and not newly approved.",
+  "reusable_insights": [
+    "Do not make native sprite and animation builds depend on non-versioned, absolute paths to screenshots from a different workstation. Missing reference photos may be skipped only for optional comparison/contact artwork, preserving original rendered pixels."
+  ],
+  "promotion": "documented",
+  "promotion_rationale": "Per-generator conditional guards are intentionally local to historical optional reference comparison blocks. The actual native pixel renderer and visual pose system remain unchanged; no shared rendering abstraction is necessary.",
+  "source": [
+    "assets/npc_gfunk/make_gfunk.py"
+  ],
+  "compatibility": "Same character geometry, colors and animations; only optional historical comparison images are omitted when the private files cannot be found.",
+  "limitations": "Asset previews remain unintegrated into live game; older reference screenshots are not distributed with public repository."
+}
