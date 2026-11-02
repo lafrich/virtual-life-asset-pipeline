@@ -1,9 +1,9 @@
 # Milk Mascot — v6b stock NPC
 
-A new game-ready **anthropomorphic milk-carton costume** based on the uploaded image, reinterpreted as code-drawn pixel art. This is not a human head with milk-print clothing: the entire head and upper body are hidden inside a 3D gable-top carton. Slim white costume sleeves and small gloves animate around the rigid carton; white trousers and shoes use the native v6b leg rig.
+A new game-ready **anthropomorphic milk-carton costume** based on the uploaded image, reinterpreted as code-drawn pixel art. This is not a human head with milk-print clothing: the entire head and upper body are hidden inside a 3D gable-top carton. Slim white costume sleeves and small gloves now attach at the mid-height of the carton side panels, with visible 2px cuff connections; white trousers and shoes use the native v6b leg rig.
 
 - Front: cream and teal/blue milk branding, simple friendly eyes and smile. The word MILK is projected onto the panel's isometric slope, including the mirrored view.
-- Back: blue label and minimal packaging markings, **no duplicate smile**.
+- Back: blue label and minimal packaging markings, **no duplicate smile**. Barcode is sheared along the 7:27 isometric panel slope, with narrow tilted individual bars instead of flat stripes.
 - Sides/top: angled, readable isometric planes and carton fold.
 - Display text: `milk` made from pixel glyphs (the SW reflection follows v6b direction rules).
 - Movement: native `live_v6b` leg poses + procedural swinging mascot arms.
@@ -29,3 +29,7 @@ Walking, idle, and talk rows share the working carton rig. The remaining v6b ani
 ## Expression previews
 
 The face-expression overlay PNGs are stored beside the base sprite sheet. The Character Stock page composites overlays onto the native idle/SE sprite and shows an expandable **Expression Preview** selector (neutral plus the available expressions); no extra illustration or image-generation process is used.
+
+## Positioning revision
+
+Shoulder anchors now attach around body midpoint on the sides (not on the upper/back corner). Sleeve seams stay visible in front of the carton for a connected costume look. White-glove silhouette and 6-frame four-direction walk are retained.
