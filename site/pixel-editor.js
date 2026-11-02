@@ -221,7 +221,7 @@ function initControls(){
   try{if(file.size>15000000)throw Error("Patch larger than 15 MB");const data=JSON.parse(await file.text());await importObject(data);}
   catch(error){status("IMPORT FAILED: "+error.message,true);}finally{e.target.value="";}};
  $("clear-draft").onclick=()=>{if(!window.confirm("Discard all LOCAL Otis pixel edits? Existing files already downloaded will remain."))return;
-  state.edits.clear();state.history=[];state.redo=[];historyButtons();localStorage.removeItem(LOCAL);navigate();updateCounts();status("LOCAL DRAFT DELETED");};
+  clearTimeout(localTimer);state.edits.clear();state.history=[];state.redo=[];historyButtons();localStorage.removeItem(LOCAL);navigate();updateCounts();status("LOCAL DRAFT DELETED");};
  display.addEventListener("pointerdown",editStart);display.addEventListener("pointermove",editMove);
  display.addEventListener("pointerup",editEnd);display.addEventListener("pointercancel",editEnd);
  document.addEventListener("keydown",e=>{if(e.target.matches("input,textarea,select")||e.altKey||e.metaKey&&e.key.toLowerCase()!=="z")return;
