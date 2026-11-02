@@ -70,6 +70,12 @@ def helmet(source: Image.Image, view: str, phase: int = 0) -> Image.Image:
     head = Image.new("RGBA", (64, 112))
     d = ImageDraw.Draw(head)
     if front:
+        # Frontward cylindrical end has an opaque metal wall. In the authored
+        # left-facing pose this is x12..18; after SE flip it lands x45..51.
+        # This hides Theodore's old goggles/face at the newly forward edge
+        # without shifting or deleting any pixels of the red body.
+        d.rectangle((12, 43, 18, 53), fill=C["c_edge"])
+        d.line([(14, 44), (14, 51)], fill=C["c_dark"])
         # Compact almost-square shell, approximately equal to shoulder width.
         d.polygon([(21, 38), (23, 32), (28, 29), (44, 29),
                    (48, 32), (49, 39), (49, 42), (20, 42)],
