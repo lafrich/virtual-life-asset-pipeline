@@ -52,6 +52,20 @@ class MotionStudioTests(unittest.TestCase):
                     self.assertFalse(action.get("sheet"))
                     self.assertEqual(action["reason"],"NEEDS CHARACTER RIG")
 
+    def test_central_registry_exposes_all_plans_without_claiming_playability(self):
+        all_actions = motion_actions(include_planned=True)
+        self.assertEqual(len(all_actions), 203)
+        self.assertEqual(len(self.actions), 7)
+        plans = [a for a in all_actions if a.get("status") == "planned"]
+        self.assertEqual(len(plans), 196)
+        for a in plans:
+            self.assertEqual(a["type"], "planned")
+            self.assertEqual(a["frames"], 0)
+            self.assertEqual(a["frame_ms"], [])
+            self.assertTrue(a["needs_rig"])
+        self.assertNotIn("pee_wall", {a["id"] for a in self.choices("npc_aladdin_sane")})
+        self.assertNotIn("clock_in", {a["id"] for a in self.choices("npc_milk_mascot")})
+
     def test_invalid_native_action_row_is_rejected(self):
         src = ROOT / "assets" / "npc_aladdin_sane"
         data = json.loads((src / "manifest.json").read_text(encoding="utf-8"))
