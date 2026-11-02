@@ -540,7 +540,12 @@ def back_layers(se, C, O):
     for (x, y) in hair:
         c = '3'
         if (x - 1, y) not in hair or (x + 1, y) not in hair or (x, y - 1) not in hair: c = '1'
-        if (x, y + 1) not in hair: c = '0'
+        if (x, y + 1) not in hair:
+            # The back view already has the restored scalp underneath the
+            # short hairstyle. A near-black hair-hem stroke across its lower
+            # edge reads as an artificial horizontal line below the head.
+            # Finish the short nape in the normal hair material instead.
+            c = '3' if style == 'short' and y >= 15 else '0'
         hb[y, x] = c
     for (x, y) in [(5, 5), (6, 5), (5, 6), (6, 6), (7, 6), (8, 7), (10, 7), (11, 7), (12, 7), (16, 6), (17, 6), (18, 7), (19, 5), (20, 5), (20, 6), (8, 11), (13, 12), (19, 11), (11, 14), (16, 14)]:
         if hb[y, R(x)] == '3': hb[y, R(x)] = '4'
