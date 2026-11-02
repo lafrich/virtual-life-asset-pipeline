@@ -28,6 +28,8 @@ on:
       - "tools/build_rig_studio.py"
       - "tests/test_rig_studio.py"
       - "tests/test_otis_helmet.py"
+      - "tests/test_pixel_patch.py"
+      - "tests/test_pixel_editor.cjs"
       - "tests/test_rig_runtime.cjs"
       - "tests/test_shared_bone_runtime.cjs"
       - "assets/animation_library/category_skeletons.json"
