@@ -1,5 +1,33 @@
 # Virtual Life / Animation Library v1
 
+## Central animation registry — 203 action definitions
+
+The canonical registry `assets/animation_library/actions.json` now has
+**203 entries**: the original 7 reviewed/shared animation definitions and
+196 life-sim actions (status `planned`) from the production backlog.
+
+Each planned entry stores the action ID, label, movement vs facial modality,
+priority, phases, object requirements, gameplay event, synchronization type,
+direction/pivot contract, and `needs_rig: true`. Planned records carry
+`type: "planned"`, `frames: 0` and `frame_ms: []`: no authored frames
+are implied. Existing original action definitions are not overwritten.
+
+- `tools/build_character_catalog.py:motion_actions()` exposes only the
+  existing **7 reviewed/shared definitions** to per-character Motion
+  Studio; `motion_actions(include_planned=True)` returns all 203 entries.
+  This preserves existing valid native actions and avoids 196 false
+  per-character motion options.
+- `tools/animation_backlog.py:assert_backlog_synced()` ensures the
+  central registry and `backlog.json` match exactly. A change to priority
+  or requirements in only one file fails tests/build until reconciled.
+- The animation gallery shows all planned entries under **PLAN** or **P0**,
+  and never represents them as rendered/interactive GIFs.
+- A future original animation can be moved from `planned` to a
+  character-appropriate reviewed action only after producing, validating
+  and binding the real 64×112 sprite sheet (SE/SW/NE/NW). This is a
+  separate task from registration.
+
+
 ## Life Sim animation roadmap (196 additional specifications)
 
 The Animation Library now carries a separate, **unrendered production backlog** in
