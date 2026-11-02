@@ -716,7 +716,14 @@ $("edit-pixels").addEventListener("click", () => {
   const overlay = $("pixel-editor-overlay");
   overlay.hidden = false;
   document.body.classList.add("pixel-editor-open");
-  $("pixel-editor-embed").src = "./pixel-editor.html?actor=legacy_otis&embedded=1&ui=touch-cursor-select-1";
+  // Resolve the editor from the ORIGINAL landing page and force its HTML to refresh.
+  // Previous mobile tabs could reuse an outdated iframe with PAN-only controls.
+  const editorUrl = new URL("./pixel-editor.html", window.location.href);
+  editorUrl.searchParams.set("actor", "legacy_otis");
+  editorUrl.searchParams.set("embedded", "1");
+  editorUrl.searchParams.set("ui", "selection-move-flip-cursor-v2");
+  editorUrl.searchParams.set("refresh", String(Date.now()));
+  $("pixel-editor-embed").src = editorUrl.href;
   $("close-pixel-editor").focus();
 });
 async function closePixelEditor() {
