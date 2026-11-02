@@ -12,7 +12,9 @@ shows genuine historical GIFs from Ichsan, Babeh, etc.
    Available actions are rendered directly from that character's own native
    384×4928 sheet, preserving their unique body, face, hair, outfit and pivot.
 3. Click **FACE** to animate idle breathing and eye blink on top of the
-   character's own registered expression delta. Change SE/SW/NE/NW manually;
+   character's own registered expression delta. The selected facial expression
+   persists when you return to **MOTION**, so Bowie can walk, talk, sit or type
+   while smiling/blinking. Change SE/SW/NE/NW manually;
    rear views generally have no visible facial features and may have no delta.
 4. Use **Play / Pause**, facing direction, background palette and zoom. Export
    **MOTION SHEET.PNG** or **FACE SHEET.PNG** at native 1×, four-direction frames
@@ -48,6 +50,9 @@ they are not 3D facial rigs or a deep-learning retarget model.
   `assets/npc_<name>/motions/<action>_sheet.png` with 64×112 native tiles,
   4 directional rows SE, SW, NE, NW, columns equal to the action's frame count.
 - Existing GIF reference catalog: `assets/animation_library/library.json`.
+- Face/action combinations are only composed on native v6b rows with valid
+  same-character expression overlays. Custom rig action sheets need separately
+  authored expression alignment; no unsafe overlays are assumed.
 - The site's builder `tools/build_character_catalog.py` auto-discovers any
   character manifest with a matching binding file; no UI edits are needed.
 
