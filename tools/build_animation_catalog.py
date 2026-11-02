@@ -66,6 +66,13 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
     records: list[dict] = []
     ids: set[str] = set()
 
+    # Starter templates have metadata but deliberately NO fabricated GIF.
+    # New template specs are automatically listed when committed.
+    for template in sorted((ROOT / "assets" / "animation_library" / "templates").glob("*.json")):
+        entry = json.loads(template.read_text(encoding="utf-8"))
+        items.append({**entry, "manifest": template.relative_to(ROOT).as_posix(),
+                      "status": "template"})
+
     # New animations opt in without editing the legacy registry or site.
     for manifest_file in sorted((ROOT / "assets").glob("anim_*/manifest.json")):
         data = json.loads(manifest_file.read_text(encoding="utf-8"))
@@ -96,8 +103,13 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
         preview_rel = entry.get("preview")
         clip, poster, gif_frames = "", "", 0
         if preview_rel:
-            preview = safe_path(preview_rel)
-            clip, poster, gif_frames = poster_gif(preview, media, name)
+            # Draft templates are allowed to have no rendered frames yet.
+            path = ROOT / preview_rel
+            if path.is_file():
+                preview = safe_path(preview_rel)
+                clip, poster, gif_frames = poster_gif(preview, media, name)
+            elif entry.get("status") != "template":
+                raise ValueError(name + ": preview path missing: " + preview_rel)
         if not clip and entry.get("status") != "template":
             raise ValueError(name + ": preview clips need a real multi-frame GIF")
 
@@ -107,8 +119,8 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
         dirs = entry.get("directions", data.get("dirs", []))
         if not isinstance(dirs, list) or not dirs or any(x not in ("se", "sw", "ne", "nw") for x in dirs):
             raise ValueError(name + ": invalid directions")
-        frames = anim.get("frames", entry.get("frame_count", 0))
-        frame_ms = anim.get("frame_ms", entry.get("frame_ms", []))
+        frames = anim.get("frames", entry.get("frame_count", data.get("frame_count", 0)))
+        frame_ms = anim.get("frame_ms", entry.get("frame_ms", data.get("frame_ms", [])))
         if frame_ms:
             if not isinstance(frame_ms, list) or any(not isinstance(x, int) or x <= 0 for x in frame_ms):
                 raise ValueError(name + ": invalid frame_ms")
