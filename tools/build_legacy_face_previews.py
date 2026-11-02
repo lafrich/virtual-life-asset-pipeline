@@ -19,6 +19,7 @@ EXPRS = ("neutral", "happy", "surprised", "angry", "sleepy")
 FRAME = (64, 112)
 LOOP_FRAMES = 12
 BLINK_FRAME = 9
+EYES_BOX = (22, 35, 44, 49)  # Only eyes and brows; keep original mouth expression.
 ACTORS = {"gfunk", "theodore", "yerbies"}
 
 
@@ -90,7 +91,10 @@ def build_faces(root: Path, folder: Path, actor: str, media: Path,
             for fi in range(LOOP_FRAMES):
                 frame = regular[direction][fi % 4]
                 if fi == BLINK_FRAME and direction in blinking:
-                    frame = blinking[direction]
+                    # Copy the actor's genuine sleepy lids, not its mouth.
+                    # Both inputs are rendered from the SAME pose index.
+                    frame = frame.copy()
+                    frame.paste(blinking[direction].crop(EYES_BOX), EYES_BOX[:2])
                 sheet.paste(frame, (fi * 64, di * 112))
         slug = "legacy_" + actor + "-face-" + expression
         atlas = slug + "-4dir.png"
