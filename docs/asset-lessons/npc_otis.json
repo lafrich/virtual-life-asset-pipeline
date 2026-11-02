@@ -2,17 +2,18 @@
   "asset_family": "npc_otis",
   "asset_path": "assets/npc_otis",
   "status": "approved",
-  "approval_context": "The owner explicitly requested that Otis be developed and added as a new asset-pipeline character, supplied two helmet image references, and instructed that the body match Theodore exactly while only the cyan/chrome horned helmet changes, the cylindrical front muzzle visibly rotates, and original spectacles remain behind the visor. This approves implementing that specific variation and source-reuse technique; the first generated pixel rendition is a reviewable initial version, not a claim of separate visual sign-off.",
+  "approval_context": "Owner confirmed the preview visual direction for Otis and explicitly requested implementation in the actual V6B pixel pipeline. The original Theodore body, suit, backpack, motion and pivot must remain exact. Approved helmet silhouette: compact flat-top turquoise mechanical housing with two short red horns, opaque horizontal chrome visor without visible eyes/face, large circular side cap, short rotating front muzzle and plain square teal back. Previous transparent-goggles iteration was rejected and must not be presented as approved.",
   "reusable_insights": [
-    "For a character intended to share another NPC's body exactly, build the variation by loading and preserving every original 64x112 RGBA source frame, limiting authored redraws strictly to the visible helmet area rather than rerendering or approximating the body.",
-    "When the character has a mechanical rotating front-piece, encode phase-dependent spoke positions in every authored idle/walk/talk PNG itself; avoid metadata-only animation claims and ensure rear-facing sprites do not show a second muzzle.",
-    "Preserve original facial identity and spectacles under a visibly open visor, reuse genuine same-actor expression poses, and test that non-helmet trousers and boots remain byte-identical to the approved body."
+    "For a body-preserving variation, directly modify the source actor's true 64x112 RGBA frame at the head only; assert Theodore's lower body and grounded feet are pixel-for-pixel identical.",
+    "Pixel preview screenshots must not be mistaken for game-ready source assets: implement the owner-approved design in the actual per-actor generator and regenerate original four-way frame sets using the established catalog build.",
+    "A fully opaque helmet should not expose fake facial-expression presets; metal pixels must cover underlying eyes on both front directions and the face preview database must report zero visible expressions.",
+    "For a helmet with a protruding mechanical muzzle, rotate its cage in the actual authored PNG frames and omit the muzzle entirely on the back, while preserving a flat-topped rear square and constrained 64x112 silhouette."
   ],
   "promotion": "documented",
   "promotion_rationale": "The horned helmet and rotating snout are an intentionally actor-specific illustrated part; reuse Theodore source motions without altering existing approved generators, and keep shared motion/bone code unchanged.",
   "source": [
     "assets/npc_otis/make_otis.py"
   ],
-  "compatibility": "Theodore's source renderer and all committed Theodore pixels remain untouched. Otis is a new separate HELMETED actor with the same body and pivot. Full live game/NPC spawning is explicitly not modified.",
-  "limitations": "Helm and muzzle first-pass generated art has not received separate visual acceptance. Otis uses genuine source-specific pixel frames; it does not establish automatic bone skinning for new characters. User-provided references are not copied into the public repository."
+  "compatibility": "Theodore's original renderer, source images, grounded body motions and animation timings are unchanged. Otis remains an independent HELMETED actor. Game's encrypted production world is not altered.",
+  "limitations": "This integrates the approved static helmet design and available Theodore-based source motion frames, not a newly skinned automatic bone rig or an NPC spawned in the encrypted game."
 }

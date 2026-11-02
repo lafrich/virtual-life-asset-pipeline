@@ -16,6 +16,7 @@ on:
       - feature/register-life-sim-actions-in-motion-db
       - feature/mixamo-model-rig-studio-v1
       - feature/add-otis-helmeted-character
+      - fix/otis-compact-helmet-flat-rear
       - feature/shared-category-skeletons-remove-rig-ui
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
@@ -95,7 +96,7 @@ jobs:
           test -s _site/style.css
           test -s _site/app.js
           test -s _site/catalog.json
-          python -c 'import json, pathlib; from PIL import Image; root=pathlib.Path("assets"); cs={x["id"]:x for x in json.load(open("_site/catalog.json"))["characters"]}; o=cs["legacy_otis"]; t=cs["legacy_theodore"]; assert o["model_type"]=="HELMETED" and o["skeleton_profile"]=="HELMETED"; assert o["asset_status"]=="generated_preview" and o["rig_ready_count"]>=7 and len(o["expressions"])==5; assert (pathlib.Path("_site")/o["sheet"]).is_file(); dirs=("se","sw","ne","nw"); assert all((root/"npc_otis"/"frames"/f"otis_{d}_idle_f0.png").is_file() for d in dirs); a=Image.open(root/"npc_otis"/"frames"/"otis_se_idle_f0.png"); b=Image.open(root/"npc_theodore"/"frames"/"theodore_se_idle_f0.png"); assert a.size==b.size==(64,112) and a.crop((0,73,64,112)).tobytes()==b.crop((0,73,64,112)).tobytes(); print("Otis: 4-way exact Theodore body, original face expressions and rotating custom helmet verified")'
+          python -c 'import json, pathlib; from PIL import Image; root=pathlib.Path("assets"); cs={x["id"]:x for x in json.load(open("_site/catalog.json"))["characters"]}; o=cs["legacy_otis"]; t=cs["legacy_theodore"]; assert o["model_type"]=="HELMETED" and o["skeleton_profile"]=="HELMETED"; assert o["asset_status"]=="generated_preview" and o["rig_ready_count"]>=7 and len(o["expressions"])==0; assert (pathlib.Path("_site")/o["sheet"]).is_file(); dirs=("se","sw","ne","nw"); assert all((root/"npc_otis"/"frames"/f"otis_{d}_idle_f0.png").is_file() for d in dirs); a=Image.open(root/"npc_otis"/"frames"/"otis_se_idle_f0.png"); b=Image.open(root/"npc_theodore"/"frames"/"theodore_se_idle_f0.png"); assert a.size==b.size==(64,112) and a.crop((0,73,64,112)).tobytes()==b.crop((0,73,64,112)).tobytes(); print("Otis: 4-way exact Theodore body, opaque faceless visor and rotating custom muzzle verified")'
           test -s _site/animations.js
           test -s _site/rig-runtime.js
           test -s _site/shared-bone-runtime.js
