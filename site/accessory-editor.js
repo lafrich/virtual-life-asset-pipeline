@@ -4,15 +4,20 @@
 "use strict";
 const $=id=>document.getElementById(id),core=window.VirtualLifePixelEdit;
 if(!core)return;
-const W=64,H=112,DIRS=["se","sw","ne","nw"],KINDS=["helmet","bag"];
-const REGIONS={helmet:[13,22,52,56],bag:[8,43,56,91]};
-const LABELS={helmet:"HELM",bag:"TAS"};
+const W=64,H=112,DIRS=["se","sw","ne","nw"],KINDS=["helmet","bag","shirt","pants","shoes"];
+const REGIONS={helmet:[13,22,52,56],bag:[8,43,56,91],shirt:[12,49,53,84],pants:[11,72,54,101],shoes:[10,91,55,108]};
+const LABELS={helmet:"HELM",bag:"TAS",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU"};
 const STORE="virtual-life-accessories-v1",EQUIP="virtual-life-accessory-equipment-v1",DRAFT="virtual-life-accessory-drafts-v1";
 const COLORS=["#ffffff","#e9edf2","#bbc7d0","#82929f","#4d5d6f","#17283a","#111111",
  "#61b3c4","#95d7de","#418da5","#2b6479","#183f59","#d63e35","#f87d56",
  "#b15a36","#d28e5e","#f8d5b1","#c5bcae","#455f74","#6d4f50","#eab9b9","#c9d4e0"];
 const params=new URLSearchParams(location.search);
-const actor=/^[a-z0-9_-]{1,60}$/.test(params.get("actor")||"")?params.get("actor"):"legacy_theodore";
+const actor=/^[a-z0-9_-]{1,60}$/.test(params.get("actor")||"")?params.get("actor"):"astrofrich_base";
+const requestedBase=params.get("base")||"astrofrich_base";
+const base=["astrofrich_base","human_male_base","human_female_base"].includes(requestedBase)?requestedBase:"astrofrich_base";
+const human=base.startsWith("human_");
+const allowedKinds=human?["shirt","pants","shoes"]:["helmet","bag"];
+const DRAFT_KEY=DRAFT+"-"+base;
 const area=$("acc-scroller"),canvas=$("acc-canvas"),ctx=canvas.getContext("2d",{alpha:false});
 const preview=$("acc-preview"),pc=preview.getContext("2d",{alpha:false});
 const guide=new Image(),guideState={loaded:false};
@@ -23,8 +28,8 @@ const state={category:"helmet",dir:"se",tool:"pencil",mode:"replace",color:"#418
  zoom:MOBILE?4:6,cursorMode:MOBILE,pan:false,grid:false,alpha:.58,tolerance:0,connected:true,
  cursor:[32,38],selection:null,selectionAnchor:null,pointer:null,cursorMove:null,layers:makeLayers(),
  drafts:{},history:[],redo:[],savedId:null,manualZoom:false,loaded:false};
-state.drafts.helmet=state.layers;state.drafts.bag=makeLayers();
-if(KINDS.includes(params.get("category"))){
+for(const kind of KINDS)state.drafts[kind]=kind==="helmet"?state.layers:makeLayers();
+if(allowedKinds.includes(params.get("category"))){
  state.category=params.get("category");state.layers=state.drafts[state.category];
  const b=REGIONS[state.category];state.cursor=[Math.floor((b[0]+b[2])/2),Math.floor((b[1]+b[3])/2)];
 }
@@ -85,8 +90,7 @@ function updateControls(){
  $("acc-title").textContent=currentCategory()+" / "+state.dir.toUpperCase();
  $("acc-undo").disabled=!state.history.length;
  $("acc-redo").disabled=!state.redo.length;
- $("acc-helmet").classList.toggle("active",state.category==="helmet");
- $("acc-bag").classList.toggle("active",state.category==="bag");
+ for(const k of KINDS){const b=$("acc-"+k);b.hidden=!allowedKinds.includes(k);b.classList.toggle("active",state.category===k);}
  $("acc-position").textContent="X "+state.cursor[0]+" / Y "+state.cursor[1];
 }
 function draw(){
@@ -299,7 +303,7 @@ function up(e){
  updateControls();draw();
 }
 function setCategory(category,skipHistory=false){
- if(!KINDS.includes(category))return;
+ if(!allowedKinds.includes(category))return;
  state.drafts[state.category]=state.layers;
  state.category=category;state.cursorMove=null;state.pointer=null;state.layers=state.drafts[category]||makeLayers();
  state.drafts[category]=state.layers;state.selection=null;state.selectionAnchor=null;
@@ -315,7 +319,7 @@ let draftTimer=0;
 function draftSoon(){
  clearTimeout(draftTimer);
  draftTimer=setTimeout(()=>{
-  try{localStorage.setItem(DRAFT,JSON.stringify(Object.fromEntries(KINDS.map(k=>
+  try{localStorage.setItem(DRAFT_KEY,JSON.stringify(Object.fromEntries(KINDS.map(k=>
    [k,Object.fromEntries(DIRS.map(d=>[d,state.drafts[k][d].toDataURL("image/png")]))]))));}
   catch(e){status("STORAGE FULL · EXPORT PNG SHEET");}
  },500);
@@ -336,9 +340,10 @@ async function restoreLayers(frames,category){
  if(category===state.category)state.layers=layers;
  updateControls();draw();
 }
-function storageItems(){
+function allStorageItems(){
  const v=keysafeRead(STORE,[]);return Array.isArray(v)?v.filter(x=>x&&KINDS.includes(x.category)&&typeof x.id==="string"&&x.frames):[];
 }
+function storageItems(){return allStorageItems().filter(x=>(x.template_base||"astrofrich_base")===base&&allowedKinds.includes(x.category));}
 function renderStorage(){
  const list=$("acc-list"),items=storageItems();list.replaceChildren();
  const empty=document.createElement("option");empty.value="";empty.textContent="— NEW ACCESSORY —";list.append(empty);
@@ -353,14 +358,14 @@ function renderStorage(){
 function saveToStorage(){
  const missing=DIRS.filter(d=>!completedDirections().includes(d));
  if(missing.length){status("DRAW THE OTHER SIDES BEFORE SAVING: "+missing.map(x=>x.toUpperCase()).join(", "));return false;}
- const items=storageItems(),name=$("acc-name").value.trim().slice(0,44)||"CUSTOM "+currentCategory();
+ const items=allStorageItems(),name=$("acc-name").value.trim().slice(0,44)||"CUSTOM "+currentCategory();
  if(!state.savedId)state.savedId="acc-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
- const asset={id:state.savedId,category:state.category,name,
+ const asset={id:state.savedId,category:state.category,name,template_base:base,
   frames:Object.fromEntries(DIRS.map(d=>[d,state.layers[d].toDataURL("image/png")])),
-  updated:Date.now(),size:[W,H],guide:"theodore-bald-glasses-no-pack"};
+  updated:Date.now(),size:[W,H],guide:base};
  const existing=items.findIndex(x=>x.id===asset.id);
  if(existing>=0)items[existing]=asset;else items.unshift(asset);
- if(items.length>40){status("STORAGE LIMIT: 40 ITEMS. DELETE OLD ASSETS.");return false;}
+ if(items.length>100){status("STORAGE LIMIT: 100 ITEMS. DELETE OLD ASSETS.");return false;}
  try{localStorage.setItem(STORE,JSON.stringify(items));}
  catch(e){status("STORAGE FULL · EXPORT PNG SHEET");return false;}
  renderStorage();draftSoon();status("SAVED "+name+" · 4 DIRECTIONS / ACCESSORY ONLY");return true;
@@ -405,6 +410,13 @@ function init(){
  for(const b of document.querySelectorAll("[data-acc-dir]"))b.onclick=()=>setDirection(b.dataset.accDir);
  $("acc-helmet").onclick=()=>setCategory("helmet");
  $("acc-bag").onclick=()=>setCategory("bag");
+ for(const kind of ["shirt","pants","shoes"])$("acc-"+kind).onclick=()=>setCategory(kind);
+ for(const kind of KINDS)$("acc-"+kind).hidden=!allowedKinds.includes(kind);
+ if(!allowedKinds.includes(state.category)){state.category=allowedKinds[0];state.layers=state.drafts[state.category];}
+ $("acc-base-label").textContent=(human?"HUMAN / "+(base.includes("female")?"FEMALE":"MALE"):"ASTROFRICH")+" · 64×112";
+ $("acc-guide-description").textContent=human?
+  "HUMAN "+(base.includes("female")?"FEMALE":"MALE")+" / BALD BODY GUIDE. Draw BAJU, CELANA and SEPATU separately in 4 directions. Guide is not saved.":
+  "ASTROFRICH / BALD + GLASSES. HELM and TAS use four independent guides; original body is not saved.";
  $("acc-pan").onclick=()=>{state.pointer=null;state.pan=!state.pan;updateControls();draw();};
  $("acc-cursor").onclick=()=>{state.pointer=null;state.cursorMode=!state.cursorMode;state.pan=false;updateControls();draw();};
  $("acc-apply").onclick=cursorTap;
@@ -439,7 +451,7 @@ function init(){
  };
  $("acc-remove").onclick=()=>{
   const id=$("acc-list").value;if(!id||!confirm("Delete this saved accessory?"))return;
-  localStorage.setItem(STORE,JSON.stringify(storageItems().filter(x=>x.id!==id)));
+  localStorage.setItem(STORE,JSON.stringify(allStorageItems().filter(x=>x.id!==id)));
   if(state.savedId===id)state.savedId=null;
   const equipment=keysafeRead(EQUIP,{});
   for(const slots of Object.values(equipment))for(const category of KINDS)if(slots?.[category]===id)delete slots[category];
@@ -451,19 +463,21 @@ function init(){
  canvas.addEventListener("pointerup",up);canvas.addEventListener("pointercancel",up);
  window.addEventListener("resize",fitZoom);
  window.addEventListener("pagehide",()=>{clearTimeout(draftTimer);try{
-  localStorage.setItem(DRAFT,JSON.stringify(Object.fromEntries(KINDS.map(k=>[k,
+  localStorage.setItem(DRAFT_KEY,JSON.stringify(Object.fromEntries(KINDS.map(k=>[k,
    Object.fromEntries(DIRS.map(d=>[d,state.drafts[k][d].toDataURL("image/png")]))]))));
  }catch(e){}});
  guide.onload=()=>{if(guide.naturalWidth!==256||guide.naturalHeight!==112){status("GUIDE DIMENSIONS MISMATCH");return;}
-  guideState.loaded=true;state.loaded=true;status("THEODORE GUIDE READY · DRAW HELM OR TAS ABOVE GUIDE");draw();};
+  guideState.loaded=true;state.loaded=true;status("BASE GUIDE READY · "+base.toUpperCase()+" / SE SW NE NW");draw();};
  guide.onerror=()=>status("COULD NOT LOAD THEODORE GUIDE / CHECK SITE BUILD");
- guide.src="./media/theodore-accessory-fitting-guide.png";
- for(const [kind,frames] of Object.entries(keysafeRead(DRAFT,{})))if(KINDS.includes(kind))restoreLayers(frames,kind);
+ guide.src=human?"./media/human-"+(base.includes("female")?"female":"male")+"-base-guide.png":
+  "./media/theodore-accessory-fitting-guide.png";
+ for(const [kind,frames] of Object.entries(keysafeRead(DRAFT_KEY,base==="astrofrich_base"?keysafeRead(DRAFT,{}):{})))
+  if(allowedKinds.includes(kind))restoreLayers(frames,kind);
  renderStorage();updateControls();fitZoom();draw();
 }
 window.VirtualLifeAccessoryEditor={flush(){
  clearTimeout(draftTimer);
- localStorage.setItem(DRAFT,JSON.stringify(Object.fromEntries(KINDS.map(k=>[k,
+ localStorage.setItem(DRAFT_KEY,JSON.stringify(Object.fromEntries(KINDS.map(k=>[k,
   Object.fromEntries(DIRS.map(d=>[d,state.drafts[k][d].toDataURL("image/png")]))]))));
 }};
 init();
