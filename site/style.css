@@ -161,6 +161,3 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px dotted #141
   .tool{width:34px}.dir{font-size:9px}.status-right{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-
-/* Public preview mode: the game-ready sprite master and Python sources stay locked. */
-.is-locked{opacity:.58;cursor:not-allowed;pointer-events:none;background:#bab8b3;color:#494949}
