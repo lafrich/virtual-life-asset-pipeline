@@ -98,6 +98,7 @@ function selectCharacter(character) {
   $("tab-faces").disabled = !(character.expressions?.length);
   $("tool-expressions").disabled = !(character.expressions?.length);
   $("open-source").href = character.folder_url;
+  $("edit-pixels").hidden = character.id !== "legacy_otis" || !character.sheet;
   $("face-tab-count").textContent = String(character.expressions?.length || 0).padStart(2, "0");
   buildFaces(character);
   buildMotions(character);
