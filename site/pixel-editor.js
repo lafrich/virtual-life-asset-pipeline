@@ -245,24 +245,26 @@ function cursorTap(){
  const [x,y]=state.cursor;
  if(state.tool==="move"&&state.touchMoveAnchor){
   const d=state.touchMoveAnchor;state.touchMoveAnchor=null;
-  commit(d.before,d.box);status("MOVE APPLIED · UNDO AVAILABLE");return;
+  commit(d.before,d.box,d.mask);status("MOVE APPLIED · UNDO AVAILABLE");return;
  }
  if(!editable(x,y)){status("CURSOR OUTSIDE "+state.part.toUpperCase()+" AREA");return;}
+ if(state.tool==="wand"){colorSelection(x,y);return;}
  if(state.tool==="select"){
   if(!state.touchSelectAnchor){
-   state.touchSelectAnchor=[x,y];setSelection(core.selectionRect(x,y,x,y,selectedRegion()));
-   status("SELECT: MOVE CURSOR TO SECOND CORNER, THEN TAP");
+   state.touchSelectAnchor={start:[x,y],base:state.selectionMask?state.selectionMask.slice():null,mode:state.selectionMode};
+   render();status("RECT: MOVE CURSOR TO OPPOSITE CORNER, TAP TO CONFIRM");
   }else{
-   setSelection(core.selectionRect(...state.touchSelectAnchor,x,y,selectedRegion()));
-   state.touchSelectAnchor=null;status("SELECTION READY · MOVE OR FLIP");
+   const d=state.touchSelectAnchor;state.touchSelectAnchor=null;
+   setSelection(core.selectionRect(...d.start,x,y,selectedRegion()),d.base,d.mode);
+   status("RECT SELECTION · "+d.mode.toUpperCase());
   }
   return;
  }
  if(state.tool==="move"){
   if(!state.touchMoveAnchor){
-   if(!inBox([x,y],state.selection)){status("MOVE: TAP INSIDE SELECTION FIRST");return;}
-   state.touchMoveAnchor={start:[x,y],before:snapshot(),box:state.selection.slice()};
-   status("MOVE: DRAG CURSOR THEN TAP TO DROP");
+   if(!selectedPixel(x,y)){status("MOVE: TAP INSIDE SELECTED PIXELS");return;}
+   state.touchMoveAnchor={start:[x,y],before:snapshot(),box:state.selection.slice(),mask:state.selectionMask.slice()};
+   status("MOVE: DRAG CURSOR AND TAP AGAIN TO DROP");
   }return;
  }
  if(state.tool==="pick"){pickPixel(x,y);return;}
@@ -284,13 +286,14 @@ function editStart(e){
  if(state.loading||!state.current||state.syncing)return;
  const [x,y]=eventPos(e);if(!editable(x,y))return;
  e.preventDefault();display.setPointerCapture(e.pointerId);
+ if(state.tool==="wand"){colorSelection(x,y,activeSelectionMode(e));return;}
  if(state.tool==="select"){
-  state.selectionGesture={id:e.pointerId,start:[x,y]};
-  setSelection(core.selectionRect(x,y,x,y,selectedRegion()));return;
+  state.selectionGesture={id:e.pointerId,start:[x,y],base:state.selectionMask?state.selectionMask.slice():null,mode:activeSelectionMode(e)};
+  setSelection(core.selectionRect(x,y,x,y,selectedRegion()),state.selectionGesture.base,state.selectionGesture.mode);return;
  }
  if(state.tool==="move"){
-  if(!inBox([x,y],state.selection)){status("SELECT PIXELS, THEN DRAG INSIDE BOX WITH MOVE");return;}
-  state.moveGesture={id:e.pointerId,start:[x,y],before:snapshot(),box:state.selection.slice()};return;
+  if(!selectedPixel(x,y)){status("SELECT PIXELS, THEN DRAG INSIDE SHAPE WITH MOVE");return;}
+  state.moveGesture={id:e.pointerId,start:[x,y],before:snapshot(),box:state.selection.slice(),mask:state.selectionMask.slice()};return;
  }
  if(state.tool==="pick"){pickPixel(x,y);return;}
  state.drawing=state.tool!=="fill";state.previous=null;
@@ -323,12 +326,12 @@ function editMove(e){
  const [x,y]=eventPos(e);$("cursor-coord").textContent="X "+x+" / Y "+y;
  if(state.selectionGesture){
   if(e.pointerId!==state.selectionGesture.id)return;
-  const [sx,sy]=state.selectionGesture.start;
-  setSelection(core.selectionRect(sx,sy,x,y,selectedRegion()));e.preventDefault();return;
+  const d=state.selectionGesture,[sx,sy]=d.start;
+  setSelection(core.selectionRect(sx,sy,x,y,selectedRegion()),d.base,d.mode);e.preventDefault();return;
  }
  if(state.moveGesture){
   if(e.pointerId!==state.moveGesture.id)return;
-  const d=state.moveGesture;previewMove(d.before,d.box,x-d.start[0],y-d.start[1]);
+  const d=state.moveGesture;previewMove(d.before,d.box,x-d.start[0],y-d.start[1],d.mask);
   e.preventDefault();return;
  }
  if(!state.drawing||!state.current)return;
@@ -355,8 +358,8 @@ function editEnd(e){
   if(e&&e.pointerId!==state.moveGesture.id)return;
   const d=state.moveGesture;state.moveGesture=null;
   if(e&&e.type==="pointercancel"){
-   state.current=copy(d.before);state.selection=d.box.slice();updateSelectionUI();render();
-  }else commit(d.before,d.box);
+   state.current=copy(d.before);state.selection=d.box.slice();state.selectionMask=d.mask.slice();updateSelectionUI();render();
+  }else commit(d.before,d.box,d.mask);
   return;
  }
  if(!state.drawing)return;
@@ -595,7 +598,7 @@ function initControls(){
   if((e.ctrlKey||e.metaKey)&&k==="z"){e.preventDefault();historyApply(e.shiftKey?false:true);return;}
   if(e.ctrlKey)return;
   if(k==="enter"&&state.cursorMode){e.preventDefault();cursorTap();return;}
-  const b={b:"pencil",e:"erase",i:"pick",g:"fill",s:"select",m:"move"}[k];
+  const b={b:"pencil",e:"erase",i:"pick",g:"fill",s:"select",w:"wand",m:"move"}[k];
   if(b){document.querySelector('[data-tool="'+b+'"]').click();}
  });
 }
