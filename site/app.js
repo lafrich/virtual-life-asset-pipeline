@@ -126,6 +126,8 @@ function selectCharacter(character) {
     if (state.selected !== character) return;
     state.image = image;
     $("canvas-loading").hidden = true;
+    // Slow sprite loading must not override a FACE selection with WALK.
+    if (state.mode === "face") { draw(); return; }
     const first = character.motions?.find(a => a.id === "walk" && a.available) ||
       character.motions?.find(a => a.id === "idle" && a.available) ||
       character.motions?.find(a => a.available);
@@ -153,7 +155,7 @@ function buildFaces(character) {
     const img = new Image();
     img.loading = "lazy";
     img.alt = "";
-    img.src = face.sprite || face.image;
+    img.src = face.portrait || face.sprite || face.image;
     const label = document.createElement("span");
     label.textContent = String(face.label).toUpperCase();
     button.append(img, label);
@@ -236,6 +238,12 @@ function selectFace(face) {
   if (!state.selected || !face) return;
   state.mode = "face";
   state.expression = face;
+  // Expression pixels only exist on the front SE/SW source views. Show a
+  // visible face immediately instead of staying on an automatic/rear view.
+  if (face.sheet && (state.direction === "auto" || Number(state.direction) >= 2)) {
+    state.direction = "0";
+    syncDirectionButtons();
+  }
   state.faceImage = null;
   state.faceOverlay = null;
   state.blinkOverlay = null;
@@ -446,6 +454,29 @@ function renderFileList(pickFirst = true) {
   }
 }
 
+function drawFaceCloseup(image, direction, frame, label) {
+  // Pixel-perfect magnifier uses the selected actor's real face atlas.
+  // The body remains in the center; the visible expression has a close-up.
+  if (direction > 1) return; // Rear-view source contains no facial features.
+  const sourceX = frame * 64 + 17, sourceY = direction * 112 + 30;
+  const cropW = 31, cropH = 32, scale = 5;
+  const left = canvas.width - cropW * scale - 13, top = 36;
+  ctx.fillStyle = "#f8f6f0";
+  ctx.fillRect(left - 6, top - 21, cropW * scale + 12, cropH * scale + 44);
+  ctx.strokeStyle = "#8492a9";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(left - 6.5, top - 21.5, cropW * scale + 13, cropH * scale + 45);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(image, sourceX, sourceY, cropW, cropH,
+    left, top, cropW * scale, cropH * scale);
+  ctx.fillStyle = "#173b85";
+  ctx.textAlign = "left";
+  ctx.font = "bold 10px monospace";
+  ctx.fillText("FACE: " + label.toUpperCase(), left, top - 7);
+  ctx.font = "9px monospace";
+  ctx.fillText("5X PIXEL DETAIL", left, top + cropH * scale + 14);
+}
+
 function draw() {
   const w = canvas.width, h = canvas.height;
   ctx.imageSmoothingEnabled = false;
@@ -483,8 +514,16 @@ function draw() {
       // not the original Ichsan character or a photograph/video filter.
       const row = (state.selected.row_starts?.idle ?? 4) + d;
       const col = state.frame % Math.max(1,state.selected.idle_frames || 4);
-      if (state.expression?.sheet && state.faceImage?.naturalWidth) {
-        ctx.drawImage(state.faceImage,state.frame*64,d*112,64,112,x,y,64*z,112*z);
+      if (state.expression?.sheet) {
+        if (state.faceImage?.naturalWidth) {
+          ctx.drawImage(state.faceImage,state.frame*64,d*112,64,112,x,y,64*z,112*z);
+          drawFaceCloseup(state.faceImage,d,state.frame,state.expression.label);
+        } else {
+          ctx.fillStyle = "#173b85";
+          ctx.font = "bold 13px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("LOADING " + state.expression.label.toUpperCase() + " FACE...",w/2,h/2);
+        }
         return;
       }
       ctx.drawImage(state.image,col*64,row*112,64,112,x,y,64*z,112*z);
