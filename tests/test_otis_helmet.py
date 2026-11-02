@@ -33,6 +33,40 @@ class OtisVisualTests(unittest.TestCase):
         self.assertEqual(a.tobytes(), b.tobytes(),
                          "Do not add a spinning second snout to the back of helmet")
 
+    def test_helmet_is_compact_and_rear_is_flat_and_boxy(self):
+        # Use transparent source, so only explicitly authored helmet pixels
+        # appear. The source V6B body is not included in these silhouette bounds.
+        base = Image.new("RGBA", (64, 112))
+        for direction in ("se", "sw"):
+            image = O.helmet(base, direction, 0)
+            px = image.load()
+            top_pixels = [(x, y) for y in range(18, 54) for x in range(64)
+                          if px[x, y][3] != 0]
+            xs = [x for x, _ in top_pixels]
+            self.assertGreaterEqual(min(xs), 23)
+            self.assertLessEqual(max(xs), 53)
+            self.assertLessEqual(max(xs) - min(xs) + 1, 31,
+                                 "Otis head may not be wider than intended")
+            self.assertTrue(any(px[x, 60][3] for x in range(31, 45)),
+                            "Front must retain the rotating muzzle")
+        for direction in ("ne", "nw"):
+            image = O.helmet(base, direction, 0)
+            px = image.load()
+            self.assertEqual(max(x for x in range(64) for y in range(31, 38)
+                                 if px[x, y][3] != 0) -
+                             min(x for x in range(64) for y in range(31, 38)
+                                 if px[x, y][3] != 0) + 1, 23,
+                             "Rear shell must remain a compact flat box with its side port")
+            # A solid straight top edge / square back, not an arced roof.
+            self.assertEqual(image.getpixel((32, 33))[3], 255)
+            self.assertFalse(any(image.getpixel((x, 60))[3] for x in range(30, 45)),
+                             "No second muzzle visible on rear helmet")
+        # New muzzle is limited to y <= 66, never swallows chest/trousers.
+        for direction in O.VIEWS:
+            result = O.helmet(base, direction, 2)
+            self.assertFalse(any(result.getpixel((x, y))[3] for y in range(67, 112)
+                                 for x in range(64)))
+
     def test_face_window_keeps_theodores_glasses_pixels(self):
         base = Image.new("RGBA", (64, 112), (0, 0, 0, 0))
         from PIL import ImageDraw
