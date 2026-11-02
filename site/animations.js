@@ -308,7 +308,7 @@
   // Paint's global Edit and View menus retain meaningful behavior in motion
   // mode without triggering the hidden character inspector.
   el("menu-edit").addEventListener("click", event => {
-    if (currentTab !== "animations") return;
+    if (currentTab !== "animations" || !el("rig-workspace").hidden) return;
     event.stopImmediatePropagation();
     el("animation-search").value = "";
     query = "";
@@ -322,14 +322,14 @@
     el("status").textContent = "MOTION TEMPLATES";
   }, true);
   el("menu-view").addEventListener("click", event => {
-    if (currentTab !== "animations") return;
+    if (currentTab !== "animations" || !el("rig-workspace").hidden) return;
     event.stopImmediatePropagation();
     el("animation-canvas-space").classList.toggle("grid-on");
   }, true);
   // Capture before app.js's original character keyboard handlers: only the
   // active viewer should respond to Space/left/right shortcuts.
   document.addEventListener("keydown", event => {
-    if (currentTab !== "animations" || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (currentTab !== "animations" || !el("rig-workspace").hidden || event.altKey || event.ctrlKey || event.metaKey) return;
     const tag = event.target?.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || event.target?.isContentEditable) return;
     if (event.code === "Space" || event.key === "ArrowLeft" || event.key === "ArrowRight") {

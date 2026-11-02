@@ -730,6 +730,7 @@ $("menu-view").addEventListener("click", toggleGrid);
 $("return-walk").addEventListener("click", () => { startWalking(); setInspectorTab("info"); });
 
 document.addEventListener("keydown", event => {
+  if ($("character-workspace").hidden) return; // Rig Studio and Motion DB own their shortcuts.
   const target = event.target;
   if (event.altKey || event.ctrlKey || event.metaKey) return;
   if (target instanceof HTMLElement && (target.tagName === "INPUT" ||

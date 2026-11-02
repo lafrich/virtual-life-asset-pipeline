@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "description": "Model taxonomies and adapters for native 2D pixel characters. Model profile != approved retargeting. Only real original source frames are playable.",
+  "types": [
+    {
+      "id": "HUMANOID",
+      "name": "Humanoid / V6B",
+      "description": "Standard human skeleton; game-native 4-view poses and independently authored facial layers.",
+      "adapter": "native_v6b",
+      "topology": [
+        "root",
+        "hips",
+        "torso",
+        "neck",
+        "head",
+        "shoulder_l",
+        "elbow_l",
+        "hand_l",
+        "shoulder_r",
+        "elbow_r",
+        "hand_r",
+        "hip_l",
+        "knee_l",
+        "foot_l",
+        "hip_r",
+        "knee_r",
+        "foot_r"
+      ],
+      "capabilities": [
+        "locomotion",
+        "seat",
+        "bed",
+        "held_item",
+        "hands",
+        "face"
+      ],
+      "allow_unreviewed_retarget": false
+    },
+    {
+      "id": "MASCOT",
+      "name": "Mascot / Costume",
+      "description": "Carton/rigid body. Preserve head-body as one surface; arms and legs attach to costume sockets.",
+      "adapter": "costume_puppet",
+      "topology": [
+        "root",
+        "costume_body",
+        "face_surface",
+        "arm_socket_l",
+        "hand_l",
+        "arm_socket_r",
+        "hand_r",
+        "leg_socket_l",
+        "foot_l",
+        "leg_socket_r",
+        "foot_r"
+      ],
+      "capabilities": [
+        "locomotion",
+        "hands",
+        "face_surface"
+      ],
+      "allow_unreviewed_retarget": false
+    },
+    {
+      "id": "ALIEN_SUIT",
+      "name": "Alien / Exosuit",
+      "description": "Alien and machinery silhouette; head/helmet, claws, pads and shell need original renderer adapter.",
+      "adapter": "alien_exosuit",
+      "topology": [
+        "root",
+        "suit_core",
+        "head_unit",
+        "helmet",
+        "claw_l",
+        "claw_r",
+        "locomotion_base",
+        "accessory"
+      ],
+      "capabilities": [
+        "custom_locomotion",
+        "claws",
+        "face",
+        "accessories"
+      ],
+      "allow_unreviewed_retarget": false
+    },
+    {
+      "id": "HELMETED",
+      "name": "Helmeted / Astronaut",
+      "description": "Humanoid-driven body underneath rigid helmet, gloves and backpack; prevent layer breaks.",
+      "adapter": "helmeted_human",
+      "topology": [
+        "root",
+        "hips",
+        "torso",
+        "helmet",
+        "face",
+        "arm_l",
+        "hand_l",
+        "arm_r",
+        "hand_r",
+        "leg_l",
+        "leg_r",
+        "backpack"
+      ],
+      "capabilities": [
+        "locomotion",
+        "hands",
+        "helmet",
+        "face"
+      ],
+      "allow_unreviewed_retarget": false
+    }
+  ],
+  "overrides": {
+    "aladdin_sane": "HUMANOID",
+    "milk_mascot": "MASCOT",
+    "ichsan": "HUMANOID",
+    "legacy_gfunk": "ALIEN_SUIT",
+    "legacy_yerbies": "ALIEN_SUIT",
+    "legacy_theodore": "HELMETED"
+  },
+  "legacy_humanoid": [
+    "pak_ogah",
+    "kang_parkir",
+    "manusia_silver",
+    "pemuda_golda",
+    "babeh_pemilik",
+    "babeh_jam",
+    "babeh_tas",
+    "barista_famima"
+  ],
+  "fallback": "HUMANOID",
+  "coverage_note": "Fallback HUMANOID is provisional classification only; no retargeted frames or pose correctness are inferred."
+}

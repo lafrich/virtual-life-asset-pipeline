@@ -331,6 +331,8 @@ def build():
     if len(ids) != len(set(ids)):
         raise ValueError("Duplicate character catalog IDs")
     results.sort(key=lambda c: (-c["timestamp"], c["name"].lower()))
+    from build_rig_studio import build_rig_packs
+    build_rig_packs(OUT, results, ROOT)
     (OUT / "catalog.json").write_text(
         json.dumps({"version": 1, "characters": results}, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
