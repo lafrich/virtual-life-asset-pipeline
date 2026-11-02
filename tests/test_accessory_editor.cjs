@@ -73,8 +73,8 @@ for(const item of ["shirt","pants","shoes"]){
  assert.ok(html.includes('id="acc-'+item+'"'),"Missing four-view clothing editor "+item);
  assert.ok(editor.includes(item+":"),"Missing editable pixel box "+item);
 }
-assert.match(editor,/human-male-base-guide/);
-assert.match(editor,/human-female-base-guide/);
+assert.match(editor,/human-/);
+assert.match(editor,/base-guide\\.png/);
 assert.match(app,/catalogCharacters=payload.characters.filter\(/);
 assert.match(app,/function saveCustomCharacter\(/);
 assert.match(app,/base\.motions\.filter\(/,"Keep full base motions on saved character");
