@@ -44,7 +44,9 @@ def poster_gif(preview: Path, dest: Path, name: str) -> tuple[str, str, int]:
     with Image.open(preview) as image:
         if image.format != "GIF" or getattr(image, "n_frames", 1) < 2:
             raise ValueError("Not a playable multi-frame GIF: " + str(preview))
-        if image.width > 1400 or image.height > 1000:
+        # Four-up vendor/prop interaction previews (e.g. Babeh + etalase)
+        # can be wider than simple 4x64px actor views; keep actual pixels.
+        if image.width > 4096 or image.height > 2048:
             raise ValueError("Animation preview too large: " + str(preview))
         frame = image.convert("RGBA")
         frames = image.n_frames
