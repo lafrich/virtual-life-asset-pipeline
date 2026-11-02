@@ -1,0 +1,24 @@
+{
+  "asset_family": "npc_milk_mascot",
+  "asset_path": "assets/npc_milk_mascot",
+  "status": "approved",
+  "approval_context": "Owner-approved visual revisions to centered slim arms, perspective label, and direction-correct rear barcode.",
+  "reusable_insights": [
+    "Arm attachment points on a narrow isometric side must sit inside the side plane, rather than at its rear corner; keep the seam visible after compositing.",
+    "Glyphs on a slanted vertical package face retain upright stems; project each glyph pixel column along that plane's slope.",
+    "A rear barcode has vertical printed bars. Compute its pitch in final viewing coordinates, so NE and NW have opposite slopes after mirroring."
+  ],
+  "promotion": "shared",
+  "reusable_code": [
+    "tools/iso_asset_primitives.py"
+  ],
+  "regression_tests": [
+    "tests/test_iso_asset_primitives.py",
+    "tools/check_generated_pixels.py"
+  ],
+  "source": [
+    "assets/npc_milk_mascot/src/make_milk_mascot.py"
+  ],
+  "compatibility": "No visual change to approved 384x4928 v6b sheet or native expression overlays; compare regenerated PNGs pixel for pixel.",
+  "limitations": "Other non-walk animation rows remain simplified placeholders; this promotion does not certify those gameplay actions."
+}
