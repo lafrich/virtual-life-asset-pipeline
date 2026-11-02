@@ -6,6 +6,10 @@ on:
       - feature/aladdin-sane-v6b
   workflow_dispatch:
 
+concurrency:
+  group: aladdin-sane-v6b-character-stock
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
