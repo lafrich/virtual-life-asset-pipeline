@@ -341,3 +341,17 @@ body.pixel-editor-open{overflow:hidden}
  #tab-accessories{font-size:clamp(9px,2.25vw,11px)}
  .accessory-create-buttons button{min-height:37px}
 }
+
+/* XP New Custom Char / Astrofrich storage, aligned with old character inspector. */
+#tab-custom-char{font-size:9px;line-height:1.1;white-space:normal}
+.custom-char-label{display:flex;flex-direction:column;gap:5px;min-width:0;margin:10px 0;font:700 10px "Courier New",monospace}
+.custom-char-label input,.custom-char-label select{width:100%;min-width:0;max-width:100%;padding:7px;background:white;color:#161616;border:2px inset #999;border-radius:0;font:11px "Courier New",monospace}
+.custom-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px;align-items:center;background:#e2e0db;padding:6px;border:2px solid;border-color:white #777 #777 white}
+.custom-item strong{font:700 11px "Courier New",monospace;min-width:0;overflow-wrap:anywhere}
+.custom-item small{display:block;font:9px "Courier New",monospace;color:#666}
+.custom-item button{white-space:nowrap;padding:6px 4px;font-size:9px}
+@media(max-width:780px){
+ .detail-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}
+ .detail-tabs .detail-tab{width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;font-size:clamp(8px,2.1vw,10px);padding:5px 1px;min-height:38px}
+ #tab-custom-char{font-size:clamp(8px,2.08vw,10px)}
+}
