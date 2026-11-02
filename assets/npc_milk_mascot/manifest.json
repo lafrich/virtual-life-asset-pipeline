@@ -1,0 +1,75 @@
+{
+  "name": "milk_mascot",
+  "type": "npc",
+  "engine": "virtual-life-v6b",
+  "generator": "assets/npc_milk_mascot/src/make_milk_mascot.py",
+  "sheet": "sprites/milk_mascot_v6b_sheet.png",
+  "sprites": [
+    "sprites/milk_mascot_v6b_fangry.png",
+    "sprites/milk_mascot_v6b_fblink.png",
+    "sprites/milk_mascot_v6b_femb.png",
+    "sprites/milk_mascot_v6b_fhappy.png",
+    "sprites/milk_mascot_v6b_fsad.png",
+    "sprites/milk_mascot_v6b_fsleepy.png",
+    "sprites/milk_mascot_v6b_fsmile.png",
+    "sprites/milk_mascot_v6b_fsurpr.png",
+    "sprites/milk_mascot_v6b_sheet.png"
+  ],
+  "previews": [
+    "preview/milk_mascot_walk_4dirs_4x.gif",
+    "preview/walk_contact_4x.png"
+  ],
+  "width": 384,
+  "height": 4928,
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "columns": 6,
+  "rows": 44,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "row_starts": {
+    "walk": 0,
+    "idle": 4,
+    "talk": 8,
+    "sit": 12,
+    "sit_type": 16,
+    "sleep": 20,
+    "tired": 24,
+    "swim": 28,
+    "float": 32,
+    "lie": 36,
+    "perch": 40
+  },
+  "walk_frames": 6,
+  "idle_frames": 4,
+  "outfit": "blue-and-cream milk-carton costume, white arms, gloves, legs and shoes",
+  "hairstyle": "none \u2014 carton costume replaces head and torso",
+  "rig": "native live_v6b legs with code-drawn articulated mascot sleeves",
+  "supported_animated_actions": [
+    "walk",
+    "idle",
+    "talk"
+  ],
+  "experimental_rows": [
+    "sit",
+    "sit_type",
+    "sleep",
+    "tired",
+    "swim",
+    "float",
+    "lie",
+    "perch"
+  ],
+  "new_hex": [],
+  "notes": "Pixel-authored original milk carton, no image-generation. Costume panel reads MILK; other non-walk rows use simplified placeholder costume poses."
+}

@@ -1,0 +1,63 @@
+name: Milk Mascot — Verify and Store v6b
+
+on:
+  push:
+    branches:
+      - feature/milk-mascot-v6b
+  workflow_dispatch:
+
+concurrency:
+  group: milk-mascot-v6b-stock
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout assets
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install native requirements
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-dejavu-core fonts-wine
+          python -m pip install -r requirements.txt
+      - name: Render milk mascot pixel art
+        run: python assets/npc_milk_mascot/src/make_milk_mascot.py
+      - name: Audit game sprite colors, alpha and shadows
+        run: python tools/audit_colors.py assets/npc_milk_mascot/sprites
+      - name: Verify original v6b pipeline
+        run: bash ./run_all.sh verify
+      - name: Commit game-ready sprite sheet and GIF to GitHub
+        if: success() && github.ref == 'refs/heads/feature/milk-mascot-v6b'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f assets/npc_milk_mascot/sprites/*.png
+          git add -f assets/npc_milk_mascot/preview/*.png assets/npc_milk_mascot/preview/*.gif
+          git add assets/npc_milk_mascot/manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Store verified Milk Mascot v6b sprite sheets and walk GIF [skip ci]'
+            git reset --hard HEAD
+            git fetch origin feature/milk-mascot-v6b
+            git rebase origin/feature/milk-mascot-v6b
+            git push origin HEAD:feature/milk-mascot-v6b
+          fi
+      - name: Publish preview outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: milk-mascot-v6b-preview
+          path: |
+            assets/npc_milk_mascot/sprites/
+            assets/npc_milk_mascot/preview/
+            assets/npc_milk_mascot/manifest.json
+          if-no-files-found: warn
