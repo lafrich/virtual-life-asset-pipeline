@@ -344,8 +344,10 @@ function setInspectorTab(tab) {
     $(id).classList.toggle("active",active);
     $(id).setAttribute("aria-selected",String(active));
   }
-  if (isFace && state.selected && !state.expression && state.selected.expressions?.length) {
-    selectFace(state.selected.expressions[0]);
+  if (isFace && state.selected && state.selected.expressions?.length && state.mode !== "face") {
+    // A selected facial expression persists across MOTION, but its preview
+    // sprites are reloaded when returning to FACE (including custom atlases).
+    selectFace(state.expression || state.selected.expressions[0]);
   }
   if (isMotion && state.selected && state.mode === "face") {
     const choice = state.motion?.available ? state.motion :
