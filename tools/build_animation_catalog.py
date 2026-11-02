@@ -42,8 +42,8 @@ def read_manifest(relative: str | None) -> dict:
 def poster_gif(preview: Path, dest: Path, name: str) -> tuple[str, str, int]:
     """Copy the actual preview and save its first frame without redrawing."""
     with Image.open(preview) as image:
-        if image.format != "GIF" or getattr(image, "n_frames", 1) < 2:
-            raise ValueError("Not a playable multi-frame GIF: " + str(preview))
+        if image.format != "GIF":
+            raise ValueError("Not a GIF asset: " + str(preview))
         # Four-up vendor/prop interaction previews (e.g. Babeh + etalase)
         # can be wider than simple 4x64px actor views; keep actual pixels.
         if image.width > 4096 or image.height > 2048:
@@ -52,8 +52,12 @@ def poster_gif(preview: Path, dest: Path, name: str) -> tuple[str, str, int]:
         frames = image.n_frames
     gif = MEDIA_PREFIX + name + ".gif"
     poster = MEDIA_PREFIX + name + ".png"
-    shutil.copy2(preview, dest / gif)
     frame.save(dest / poster, optimize=True)
+    if frames < 2:
+        # Optimized GIFs may collapse duplicate frames; preserve the still
+        # as a legitimate pose preview instead of claiming it is animated.
+        return "", "media/" + poster, frames
+    shutil.copy2(preview, dest / gif)
     return "media/" + gif, "media/" + poster, frames
 
 
@@ -161,7 +165,10 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
                 clip, poster, gif_frames = poster_gif(preview, media, name)
             elif entry.get("status") not in ("template","source_only"):
                 raise ValueError(name + ": preview path missing: " + preview_rel)
-        if not clip and entry.get("status") not in ("template","source_only"):
+        status = entry.get("status","preview")
+        if status == "preview" and not clip and poster:
+            status = "still"
+        if not clip and status not in ("template","source_only","still"):
             raise ValueError(name + ": preview clips need a real multi-frame GIF")
 
         source = entry.get("source", entry.get("manifest", ""))
@@ -190,7 +197,7 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
             "name": str(entry.get("name", name.replace("_", " ").upper())),
             "kind": "animation",
             "group": entry["group"],
-            "status": entry.get("status", "preview"),
+            "status": status,
             "note": str(entry.get("note", "")),
             "gif": clip,
             "poster": poster,
