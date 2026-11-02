@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compile real, actor-specific 2D sprite motion packs for the Rig Studio.
+"""Compile original sprite packs and universal category-bone contracts.
 
 One shared action ID can be resolved against many model types, but a model
 type is NEVER treated as permission to copy/warp a different character's GIF.
@@ -85,6 +85,31 @@ def build_rig_packs(site: Path, characters: list[dict], root: Path) -> dict:
     if defs.get("version") != 1:
         raise ValueError("Invalid model type registry")
     actions = json.loads((root/"assets/animation_library/actions.json").read_text(encoding="utf-8"))["actions"]
+    # Publish shared bone animation data independently of per-actor sprite atlases.
+    # Future skinned sprites consume these same source actions across all rigs.
+    skeletons = json.loads((root/"assets/animation_library/category_skeletons.json").read_text(encoding="utf-8"))
+    shared = json.loads((root/"assets/animation_library/shared_bone_motions.json").read_text(encoding="utf-8"))
+    expected = {m["id"] for m in defs["types"]}
+    if skeletons.get("version") != 1 or set(skeletons["types"]) != expected:
+        raise ValueError("Category skeleton definitions differ from model types")
+    registered = {action["id"] for action in actions}
+    shared_ids = [clip["id"] for clip in shared["clips"]]
+    if len(shared_ids) != len(set(shared_ids)) or not set(shared_ids) <= registered:
+        raise ValueError("Shared bone actions must be unique registered actions")
+    for key, rig in skeletons["types"].items():
+        if rig["adapter"] != next(m["adapter"] for m in defs["types"] if m["id"] == key):
+            raise ValueError("Bone adapter does not match category")
+        defined = set()
+        for bone in rig["bones"]:
+            if bone["parent"] is not None and bone["parent"] not in defined:
+                raise ValueError("Bone must follow its parent")
+            if bone["id"] in defined:
+                raise ValueError("Duplicate bone")
+            defined.add(bone["id"])
+        if set(rig["channels"]) != set(skeletons["semantics"]) or not set(rig["channels"].values()) <= defined:
+            raise ValueError("Missing shared action bone binding")
+    (site/"category-skeletons.json").write_text(json.dumps(skeletons, indent=2)+"\n",encoding="utf-8")
+    (site/"shared-bone-motions.json").write_text(json.dumps(shared, indent=2)+"\n",encoding="utf-8")
     out = site/"motion-packs"
     out.mkdir(exist_ok=True)
     actors = []
@@ -97,6 +122,9 @@ def build_rig_packs(site: Path, characters: list[dict], root: Path) -> dict:
         character["model_type"] = kind
         character["rig_adapter"] = model["adapter"]
         character["rig_evidence"] = evidence
+        character["skeleton_profile"] = kind
+        character["bone_actions"] = list(shared_ids)
+        character["bone_skin_ready"] = False
         clips = []
         seen = set()
         for action in character.get("motions", []):
@@ -113,6 +141,8 @@ def build_rig_packs(site: Path, characters: list[dict], root: Path) -> dict:
             "source_evidence":evidence, "frame_size":list(FRAME),
             "pivot":list(PIVOT), "directions":list(DIRS),
             "clips":clips, "usable_in_game":bool(clips),
+            "skeleton_profile":kind,"shared_bone_actions":shared_ids,
+            "bone_skin_ready":False,
             "notes":"Only original actor sprites; model templates do not auto-generate new poses.",
         }
         (site/pack_path).write_text(json.dumps(pack,indent=2)+"\n",encoding="utf-8")
@@ -121,11 +151,17 @@ def build_rig_packs(site: Path, characters: list[dict], root: Path) -> dict:
         actors.append({"id":cid,"name":character["name"],"model_type":kind,
                        "adapter":model["adapter"],"source_evidence":evidence,
                        "ready_count":len(clips),"pack":pack_path,
+                       "skeleton_profile":kind,"shared_bone_actions":shared_ids,
+                       "bone_skin_ready":False,
                        "thumbnail":character.get("thumbnail", ""),
                        "source_only":not bool(character.get("sheet"))})
     spec = {
-        "version":1, "format":"virtual-life-rig-studio-v1",
+        "version":1, "format":"virtual-life-category-bones-v1",
         "types":defs["types"],"characters":actors,
+        "skeletons":"category-skeletons.json",
+        "shared_bone_motions":"shared-bone-motions.json",
+        "shared_bone_runtime":"shared-bone-runtime.js",
+        "shared_bone_actions":shared_ids,
         "registry": [{
             "id":a["id"],"label":a["label"],"category":a["category"],
             "status":a.get("status","registered"),
@@ -138,6 +174,6 @@ def build_rig_packs(site: Path, characters: list[dict], root: Path) -> dict:
         "notes":"Playable in preview only when original character-specific sprite frames exist. Importing a pack into gameplay remains an explicit step.",
     }
     (site/"rigs.json").write_text(json.dumps(spec,indent=2)+"\n",encoding="utf-8")
-    print("RIG STUDIO:",len(actors),"characters",len(defs["types"]),"model types",
+    print("SHARED BONE CATALOG:",len(actors),"characters",len(defs["types"]),"model types",
           sum(a["ready_count"] for a in actors),"original actor motion clips")
     return spec
