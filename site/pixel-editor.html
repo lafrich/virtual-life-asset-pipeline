@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#e9e7db">
 <title>Otis Pixel Editor — Virtual Life</title>
-<link rel="stylesheet" href="./pixel-editor.css?v=mobile-pan-2">
-<script defer src="./pixel-edit-core.js?v=master-parts-1"></script>
+<link rel="stylesheet" href="./pixel-editor.css?v=selection-move-flip-1">
+<script defer src="./pixel-edit-core.js?v=selection-move-flip-1"></script>
 <script defer src="./master-parts.js?v=master-parts-1"></script>
-<script defer src="./pixel-editor.js?v=mobile-pan-2"></script>
+<script defer src="./pixel-editor.js?v=selection-move-flip-1"></script>
 </head>
 <body>
 <main class="paint">
@@ -49,6 +49,8 @@
 <div class="drawing-tools-row">
 <div class="tools" role="group" aria-label="Paint tools">
 <button type="button" id="pan-toggle" aria-pressed="false" title="Move or scroll without painting">✋ PAN</button>
+<button type="button" data-tool="select" title="Drag to select a rectangle">▧ SELECT</button>
+<button type="button" data-tool="move" title="Drag selection to move pixels">↔ MOVE</button>
 <button type="button" data-tool="pencil" class="active">✎ PENCIL <kbd>B</kbd></button>
 <button type="button" data-tool="erase">▤ ERASER <kbd>E</kbd></button>
 <button type="button" data-tool="pick">◉ PICKER <kbd>I</kbd></button>
@@ -56,6 +58,18 @@
 </div>
 <div class="drawing-ink"><label for="color">INK COLOR</label><input id="color" type="color" value="#61b3c4"></div>
 <div class="drawing-brush"><label for="brush-size">BRUSH SIZE <output id="brush-label">1 PX</output></label><input id="brush-size" type="range" min="1" max="4" value="1"></div>
+</div>
+<div class="selection-actions" role="group" aria-label="Edit selection">
+<strong id="selection-info" aria-live="polite">NO SELECTION · USE SELECT THEN DRAG</strong>
+<div class="selection-buttons">
+<button type="button" id="nudge-left" disabled title="Move selected pixels 1px left">←</button>
+<button type="button" id="nudge-up" disabled title="Move selected pixels 1px up">↑</button>
+<button type="button" id="nudge-down" disabled title="Move selected pixels 1px down">↓</button>
+<button type="button" id="nudge-right" disabled title="Move selected pixels 1px right">→</button>
+<button type="button" id="flip-horizontal" disabled>⇄ FLIP H</button>
+<button type="button" id="flip-vertical" disabled>⇅ FLIP V</button>
+<button type="button" id="deselect" disabled>× CLEAR</button>
+</div>
 </div>
 <div id="swatches" class="swatches" aria-label="Otis color palette"></div>
 </div>
