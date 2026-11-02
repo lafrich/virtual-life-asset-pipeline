@@ -8,6 +8,7 @@ on:
       - feature/milk-mascot-arms-angled-label-expressions
       - feature/xp-paint-character-stock-ui
       - feature/animation-library-paint-and-templates
+      - feature/mixamo-character-motion-lab
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
@@ -59,6 +60,7 @@ jobs:
           test -s _site/animations.json
           test -s _site/animations.js
           python -m json.tool _site/catalog.json > /dev/null
+          python -c 'import json, pathlib; cs=json.load(open("_site/catalog.json"))["characters"]; assert cs; assert all("motions" in c and len(c["motions"])>=5 for c in cs); assert all(any(m["id"]=="walk" and m["available"] for m in c["motions"]) for c in cs); assert all(pathlib.Path("_site",e["overlay"]).is_file() for c in cs for e in c["expressions"] if e.get("overlay")); print("Validated",len(cs),"character rigs, animated expression layers and motion bindings")'
           python -m json.tool _site/animations.json > /dev/null
           python -c 'import json; d=json.load(open("_site/catalog.json")); assert d["characters"], "no characters found"; assert all(__import__("pathlib").Path("_site", c["walk"]).is_file() for c in d["characters"]); print("Validated", len(d["characters"]), "character(s)")'
           python -c 'import json, pathlib; d=json.load(open("_site/animations.json")); a=d["animations"]; assert len(a)>=10; assert sum(bool(x["gif"]) for x in a)>=7; assert all(not x["gif"] for x in a if x["status"]=="template"); assert all(pathlib.Path("_site", x["gif"]).is_file() for x in a if x["gif"]); print("Validated", len(a), "animation records")'
