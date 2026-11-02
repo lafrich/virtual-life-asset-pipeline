@@ -39,3 +39,7 @@ assets/npc_<slug>/
 - `aladdin_sane` — Bowie-inspired glam rock NPC; copper-red spiky mullet, Aladdin Sane face paint, shirtless, slate jeans, brown boots. Follow `assets/npc_aladdin_sane/manifest.json`.
 
 For future characters, commit the required sprite sheet, four-direction walking GIF, and manifest to the proper folder. The catalog auto-discovers the new character. Optionally add an `index.json` entry for its custom display name and description. Before Pages can be viewed for the first time, the repository owner must select **Settings → Pages → Build and deployment → Source: GitHub Actions**; if the first deployment failed, rerun the deploy workflow.
+
+## Landing page — Expressions
+
+Each catalog card has an expandable **Expression Preview** section. The site build automatically reads the committed `*_v6b_f*.png` facial-expression overlay sheets and composites them over the base character's front-facing idle frame. Available expressions are selectable and shown as enlarged nearest-neighbor pixel previews. Empty overlays are omitted rather than displayed as fake expressions. No HTML changes are necessary for new characters.
