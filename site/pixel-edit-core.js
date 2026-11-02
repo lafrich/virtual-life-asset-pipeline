@@ -96,5 +96,118 @@ function flipPixels(image,box,axis,region=REGION){
  return {data:after,box:box.slice()};
 }
 
-return Object.freeze({WIDTH,HEIGHT,REGION,ACTOR,DIRECTIONS,ACTIONS,key,isEditable,validatePatch,bresenham,flood,selectionRect,movePixels,flipPixels});
+
+/* Native-pixel mask selections. A mask has one byte per sprite pixel, so
+   magic-wand selections, rectangular additions and subtractions stay exact. */
+const AREA=WIDTH*HEIGHT;
+function checkedMask(mask){
+ if(!(mask instanceof Uint8Array)||mask.length!==AREA)throw Error("Invalid selection mask");
+ return mask;
+}
+function checkedRegion(region){
+ if(!Array.isArray(region)||region.length!==4||!region.every(Number.isInteger)||
+  region[0]<0||region[1]<0||region[2]>WIDTH||region[3]>HEIGHT||
+  region[0]>=region[2]||region[1]>=region[3])throw Error("Invalid edit region");
+ return region;
+}
+function maskRect(box,region=REGION){
+ validBox(box,region);
+ const mask=new Uint8Array(AREA);
+ for(let y=box[1];y<box[3];y++)for(let x=box[0];x<box[2];x++)mask[y*WIDTH+x]=1;
+ return mask;
+}
+function maskBounds(mask){
+ checkedMask(mask);
+ let minX=WIDTH,minY=HEIGHT,maxX=-1,maxY=-1;
+ for(let y=0;y<HEIGHT;y++)for(let x=0;x<WIDTH;x++)if(mask[y*WIDTH+x]){
+  minX=Math.min(x,minX);minY=Math.min(y,minY);
+  maxX=Math.max(x,maxX);maxY=Math.max(y,maxY);
+ }
+ return maxX<0?null:[minX,minY,maxX+1,maxY+1];
+}
+function maskCount(mask){checkedMask(mask);let n=0;for(const v of mask)if(v)n++;return n;}
+function checkedMaskedRegion(mask,region){
+ checkedMask(mask);checkedRegion(region);
+ for(let y=0;y<HEIGHT;y++)for(let x=0;x<WIDTH;x++)if(mask[y*WIDTH+x]&&
+  (x<region[0]||x>=region[2]||y<region[1]||y>=region[3]))throw Error("Selection outside edit region");
+}
+function wandMask(image,x,y,region=REGION,tolerance=0,contiguous=true){
+ const d=imageDataArray(image);checkedRegion(region);
+ if(!Number.isInteger(x)||!Number.isInteger(y)||x<region[0]||x>=region[2]||
+   y<region[1]||y>=region[3])throw Error("Wand point outside edit region");
+ if(!Number.isInteger(tolerance)||tolerance<0||tolerance>255)throw Error("Invalid wand tolerance");
+ const mask=new Uint8Array(AREA),start=(y*WIDTH+x)*4;
+ const rgba=d.slice(start,start+4);
+ const matches=(px,py)=>{
+  const i=(py*WIDTH+px)*4;
+  for(let c=0;c<4;c++)if(Math.abs(d[i+c]-rgba[c])>tolerance)return false;
+  return true;
+ };
+ if(!contiguous){
+  for(let yy=region[1];yy<region[3];yy++)for(let xx=region[0];xx<region[2];xx++)
+   if(matches(xx,yy))mask[yy*WIDTH+xx]=1;
+  return mask;
+ }
+ const visited=new Uint8Array(AREA),stack=[y*WIDTH+x];
+ while(stack.length){
+  const i=stack.pop();
+  if(visited[i])continue;visited[i]=1;
+  const xx=i%WIDTH,yy=Math.floor(i/WIDTH);
+  if(xx<region[0]||xx>=region[2]||yy<region[1]||yy>=region[3]||!matches(xx,yy))continue;
+  mask[i]=1;
+  if(xx>region[0])stack.push(i-1);
+  if(xx+1<region[2])stack.push(i+1);
+  if(yy>region[1])stack.push(i-WIDTH);
+  if(yy+1<region[3])stack.push(i+WIDTH);
+ }
+ return mask;
+}
+function combineMasks(base,incoming,mode="replace"){
+ checkedMask(incoming);
+ if(!["replace","add","subtract"].includes(mode))throw Error("Unknown selection mode");
+ const out=mode==="replace"?new Uint8Array(AREA):new Uint8Array(checkedMask(base||new Uint8Array(AREA)));
+ if(mode==="replace")out.set(incoming);
+ else for(let i=0;i<AREA;i++)if(incoming[i]){
+  if(mode==="add")out[i]=1;
+  else out[i]=0;
+ }
+ return out;
+}
+function moveMasked(image,mask,dx,dy,region=REGION){
+ const src=imageDataArray(image);checkedMaskedRegion(mask,region);
+ if(!Number.isInteger(dx)||!Number.isInteger(dy))throw Error("Pixel movement must be integer");
+ const box=maskBounds(mask),after=new Uint8ClampedArray(src),next=new Uint8Array(AREA);
+ if(!box)return {data:after,mask:next,box:null,dx:0,dy:0};
+ dx=Math.max(region[0]-box[0],Math.min(dx,region[2]-box[2]));
+ dy=Math.max(region[1]-box[1],Math.min(dy,region[3]-box[3]));
+ for(let y=box[1];y<box[3];y++)for(let x=box[0];x<box[2];x++)if(mask[y*WIDTH+x])
+  after.fill(0,(y*WIDTH+x)*4,(y*WIDTH+x)*4+4);
+ for(let y=box[1];y<box[3];y++)for(let x=box[0];x<box[2];x++)if(mask[y*WIDTH+x]){
+  const tx=x+dx,ty=y+dy;
+  const si=(y*WIDTH+x)*4,ti=(ty*WIDTH+tx)*4;
+  after.set(src.subarray(si,si+4),ti);
+  next[ty*WIDTH+tx]=1;
+ }
+ return {data:after,mask:next,box:maskBounds(next),dx,dy};
+}
+function flipMasked(image,mask,axis,region=REGION){
+ const src=imageDataArray(image);checkedMaskedRegion(mask,region);
+ if(axis!=="horizontal"&&axis!=="vertical")throw Error("Invalid flip axis");
+ const box=maskBounds(mask),after=new Uint8ClampedArray(src),next=new Uint8Array(AREA);
+ if(!box)return {data:after,mask:next,box:null};
+ for(let y=box[1];y<box[3];y++)for(let x=box[0];x<box[2];x++)if(mask[y*WIDTH+x])
+  after.fill(0,(y*WIDTH+x)*4,(y*WIDTH+x)*4+4);
+ for(let y=box[1];y<box[3];y++)for(let x=box[0];x<box[2];x++)if(mask[y*WIDTH+x]){
+  const tx=axis==="horizontal"?box[0]+box[2]-1-x:x;
+  const ty=axis==="vertical"?box[1]+box[3]-1-y:y;
+  if(tx<region[0]||tx>=region[2]||ty<region[1]||ty>=region[3])
+   throw Error("Flipped selection outside edit region");
+  const si=(y*WIDTH+x)*4,ti=(ty*WIDTH+tx)*4;
+  after.set(src.subarray(si,si+4),ti);
+  next[ty*WIDTH+tx]=1;
+ }
+ return {data:after,mask:next,box:maskBounds(next)};
+}
+
+return Object.freeze({WIDTH,HEIGHT,REGION,ACTOR,DIRECTIONS,ACTIONS,key,isEditable,validatePatch,bresenham,flood,selectionRect,movePixels,flipPixels,maskRect,maskBounds,maskCount,wandMask,combineMasks,moveMasked,flipMasked});
 });
