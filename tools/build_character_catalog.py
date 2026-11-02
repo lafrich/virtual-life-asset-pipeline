@@ -167,7 +167,10 @@ def build(public: bool = False):
         # Public menu targets the public gallery, not the locked asset repo.
         html = dest / "index.html"
         html.write_text(
-            html.read_text(encoding="utf-8").replace(REPO_URL, PUBLIC_REPO),
+            html.read_text(encoding="utf-8")
+                .replace(REPO_URL + "/tree/main/assets/character_stock", PUBLIC_REPO)
+                .replace(REPO_URL + "/blob/main/assets/character_stock/README.md", PUBLIC_REPO)
+                .replace(REPO_URL, PUBLIC_REPO),
             encoding="utf-8",
         )
         (dest / ".nojekyll").touch()
