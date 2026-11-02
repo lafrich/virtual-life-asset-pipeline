@@ -234,6 +234,15 @@ def bowie_spiky_mullet(se, ne):
                 for x in range(left_clear):
                     front[y, x] = ""
                     back[y, x] = ""
+        # NE/NW back view: the right-side overhang by the visible ear is
+        # inherited from the original broad mid-hair cap. Remove this outside
+        # curtain *only below the crown*, leaving the ear and central mullet.
+        # NW is rendered by the engine mirroring this same NE base view.
+        if backwards:
+            for y in range(12, 31):
+                for x in range(30, lv.CW):
+                    front[y, x] = ""
+                    back[y, x] = ""
         # Slender tapered sideburn just above the exposed ears.
         for x0 in (8, 30):
             for y in range(10,14):
@@ -297,6 +306,22 @@ def fix_walk_arms_and_boots(base, kind, t, view, C, O):
                 if 0 < edge - inner <= 5:
                     for x in range(inner+1,edge):
                         arm[y,x] = "e" if x < edge-1 else "7"
+    # Explicit right-shoulder seam for the NE back-facing rig: with no
+    # shirt the original sleeve shoulder is absent, creating a 2px transparent
+    # notch just above the right arm. Use native indexed skin pixels so it
+    # follows the bob and pose frames, not a frame-specific painted overlay.
+    # Frame offset x=15,y=31; the pose was shifted by NE_DX already.
+    if view == "ne":
+        seam = {
+            24: (23,), 25: (23, 24), 26: (23, 24, 25),
+            27: (23, 24, 25, 26), 28: (24, 25),
+        }
+        for y, cols in seam.items():
+            for x in cols:
+                # Avoid destroying silhouette near the neckline / ear.
+                if P["pants"][y, x] or P["hair_front"][y, x]:
+                    continue
+                P["body"][y, x] = "Ki" if x <= 24 else "Kh"
     # Original boot base reaches frame row 102 despite pivot y=100.
     # Keep the boot shaft and toe, remove only the 2px outsole overhang.
     P["shoes"][70:] = ""
