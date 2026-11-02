@@ -112,6 +112,10 @@
       mainImage.removeAttribute("src");
       mainImage.hidden = true;
       empty.hidden = false;
+      empty.querySelector("strong").textContent = selected?.status === "source_only" ? "SOURCE ONLY." : "NO FRAMES.";
+      empty.querySelector("span").textContent = selected?.status === "source_only"
+        ? "ANIMATION DEFINED IN SOURCE / RENDER NOT AVAILABLE"
+        : "TEMPLATE / EDIT POSES TO PREVIEW";
     }
   }
 
@@ -119,7 +123,8 @@
     selected = clip;
     playing = Boolean(clip.gif);
     writing("animation-canvas-title", clip.id.toUpperCase() + (clip.gif ? ".GIF" : ".TPL"));
-    writing("animation-canvas-tag", clip.status === "template" ? "TEMPLATE / DRAFT" : "PREVIEW / NOT IN GAME");
+    writing("animation-canvas-tag", clip.status === "template" ? "TEMPLATE / DRAFT" :
+      clip.status === "source_only" ? "SOURCE / NO RENDER" : "PREVIEW / NOT IN GAME");
     writing("animation-name", clip.name);
     writing("animation-type", clip.group.toUpperCase());
     writing("animation-frames", clip.frame_count ? String(clip.frame_count).padStart(2, "0") : "--");
@@ -128,9 +133,10 @@
     writing("animation-views", clip.directions.length + " DIR");
     writing("animation-directions", clip.layout === "four_up" ? "SE / SW / NE / NW  •  4-UP" : clip.directions.join(" / ").toUpperCase());
     writing("animation-frame-display", clip.gif ? "GIF" : "NO GIF");
-    writing("animation-review-status", clip.status === "template" ? "TEMPLATE / NO APPROVED POSES" : "PREVIEW ONLY / NOT IN GAME");
+    writing("animation-review-status", clip.status === "template" ? "TEMPLATE / NO APPROVED POSES" :
+      clip.status === "source_only" ? "SOURCE ONLY / NO FRAMES" : "PREVIEW ONLY / NOT IN GAME");
     writing("animation-note", clip.note || "No additional metadata");
-    el("animation-review-status").classList.toggle("is-template", clip.status === "template");
+    el("animation-review-status").classList.toggle("is-template", clip.status !== "preview");
 
     const dl = el("animation-download");
     if (clip.gif) {
@@ -188,15 +194,15 @@
         img.alt = "";
         preview.append(img);
       } else {
-        preview.textContent = "TPL";
+        preview.textContent = clip.status === "source_only" ? "SRC" : "TPL";
         preview.classList.add("animation-template-icon");
       }
       const label = document.createElement("span");
       label.className = "file-label";
       label.textContent = clip.name;
       const secondary = document.createElement("small");
-      secondary.textContent = (clip.status === "template" ? "TEMPLATE" : clip.group.toUpperCase()) +
-        " / " + (clip.gif ? "GIF" : "DRAFT");
+      secondary.textContent = clip.status === "template" ? "TEMPLATE / DRAFT" :
+        clip.status === "source_only" ? "SOURCE / NO GIF" : clip.group.toUpperCase() + " / GIF";
       label.append(secondary);
       item.append(preview, label);
       item.addEventListener("click", () => choose(clip));
