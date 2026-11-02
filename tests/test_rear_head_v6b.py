@@ -69,6 +69,23 @@ class RearHeadTests(unittest.TestCase):
                 self.assertTrue((hair[10]!="").any(),
                                 f"{style}: hairstyle shouldn't be removed")
 
+    def test_short_hair_has_no_flat_ink_line_under_head(self):
+        se,cfg,outfit=self.make_character("short")
+        result=lv.back_layers(se,cfg,outfit)
+        hair=result["hair_front"]
+        # The scalp has its own shape underneath. A row of code '0'
+        # (the darkest hair ink) at its lower edge reads as a black bar.
+        lower=[]
+        for y in range(15,23):
+            for x in range(lv.CW):
+                if hair[y,x] and (y+1>=lv.CH or not hair[y+1,x]):
+                    lower.append((x,y,hair[y,x]))
+        self.assertGreater(len(lower),3,"Fixture must show rear nape fringe")
+        self.assertFalse(any(color=="0" for _,_,color in lower),
+                         f"Unexpected heavy under-head outline: {lower}")
+        # No regeneration or changes to front-view hair source.
+        self.assertTrue(any(c=="3" for _,_,c in lower))
+
     def test_native_rear_directions_use_complete_back(self):
         se,cfg,outfit=self.make_character("short")
         ne=lv.back_layers(se,cfg,outfit)
