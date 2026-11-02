@@ -8,6 +8,7 @@
   <title>character_stock.pnt — Paint</title>
   <link rel="stylesheet" href="./style.css">
   <script defer src="./app.js"></script>
+  <script defer src="./animations.js"></script>
 </head>
 <body>
   <div class="desktop">
@@ -26,7 +27,12 @@
         <span class="menu-build">V6B // <span id="asset-total">00</span> FILES</span>
       </nav>
 
-      <div class="workspace">
+      <div class="library-tabs" role="tablist" aria-label="Asset libraries">
+        <button type="button" class="library-tab active" id="switch-chars" role="tab" aria-selected="true" aria-controls="character-workspace">01 / CHARACTERS</button>
+        <button type="button" class="library-tab" id="switch-animations" role="tab" aria-selected="false" aria-controls="animation-workspace">02 / ANIMATIONS <span id="animation-total">--</span></button>
+        <span class="library-version">.V6B / DATABASE</span>
+      </div>
+      <div class="workspace" id="character-workspace" role="tabpanel" aria-labelledby="switch-chars">
         <aside class="tools-panel" aria-label="Tools">
           <div class="tools-grid">
             <button type="button" class="tool active" id="tool-select" title="Select character (1)" aria-label="Select character" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 3 1 17 5-6 4 7 3-2-4-7 7-1z"/></svg></button>
@@ -108,6 +114,68 @@
           </div>
         </aside>
       </div>
+
+      <section class="workspace animation-workspace" id="animation-workspace" role="tabpanel" aria-labelledby="switch-animations" hidden>
+        <aside class="tools-panel animation-tools" aria-label="Animation tools">
+          <div class="tools-grid">
+            <button type="button" class="tool active" id="anim-tool-play" title="Play / pause animation (Space)" aria-label="Play or pause animation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 3 13 9-13 9z"/></svg></button>
+            <button type="button" class="tool" id="anim-tool-prev" aria-label="Previous animation" title="Previous animation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5 3 12l7 7V5ZM21 5l-8 7 8 7V5Z"/></svg></button>
+            <button type="button" class="tool" id="anim-tool-next" aria-label="Next animation" title="Next animation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7V5ZM3 5l8 7-8 7V5Z"/></svg></button>
+          </div>
+          <div class="tools-stamp"><span>▣</span><small>MOT<br>ION</small></div>
+        </aside>
+        <aside class="asset-panel" aria-label="Animation library files">
+          <div class="panel-heading"><strong>ANIM FILES</strong><span id="anim-file-count">00</span></div>
+          <label class="asset-search"><span>⌕</span><input id="animation-search" type="search" placeholder="Find motion..." autocomplete="off" aria-label="Search animation clips"></label>
+          <div class="file-filters animation-filters" role="group" aria-label="Animation categories">
+            <button type="button" class="anim-filter selected" data-anim-filter="all" aria-pressed="true">ALL</button>
+            <button type="button" class="anim-filter" data-anim-filter="action" aria-pressed="false">ACT</button>
+            <button type="button" class="anim-filter" data-anim-filter="npc" aria-pressed="false">NPC</button>
+            <button type="button" class="anim-filter" data-anim-filter="scene" aria-pressed="false">SCN</button>
+            <button type="button" class="anim-filter" data-anim-filter="template" aria-pressed="false">TPL</button>
+          </div>
+          <div id="animation-file-list" class="file-list" role="listbox" aria-label="Choose animation" tabindex="0"></div>
+          <a class="animation-create" href="https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/docs/animation-library.md" target="_blank" rel="noopener noreferrer">+ NEW TEMPLATE</a>
+        </aside>
+        <section class="canvas-panel" aria-label="Animation preview canvas">
+          <div class="canvas-head"><span class="canvas-name" id="animation-canvas-title">MOTION_001.GIF</span><span class="canvas-badge" id="animation-canvas-tag">PREVIEW ONLY</span></div>
+          <div class="canvas-space animation-canvas" id="animation-canvas-space">
+            <div class="selection-border animation-selection">
+              <img id="animation-main-image" class="animation-main-image" alt="Selected animation preview" />
+              <div class="animation-missing" id="animation-missing" hidden>
+                <strong>NO FRAMES.</strong><span>TEMPLATE / EDIT POSES TO PREVIEW</span>
+              </div>
+            </div>
+            <div class="canvas-corner-label">VIRTUAL LIFE / MOTION LIBRARY</div>
+            <p class="canvas-loading" id="animation-loading">LOADING ANIMATIONS...</p>
+          </div>
+          <div class="canvas-toolbar animation-toolbar">
+            <button type="button" id="animation-play-toggle" class="chrome-button primary-control" aria-pressed="true">Ⅱ <span>PAUSE</span></button>
+            <span class="animation-directions" id="animation-directions">SE / SW / NE / NW</span>
+            <span class="canvas-scale" id="animation-frame-display">GIF</span>
+          </div>
+        </section>
+        <aside class="details-panel" aria-label="Animation properties">
+          <div class="panel-heading inspector-title"><strong>MOTION INFO</strong><span>✕</span></div>
+          <div class="detail-content animation-inspector">
+            <div class="property-label">ANIMATION_001</div>
+            <h2 id="animation-name">SELECT MOTION</h2>
+            <span class="animation-status" id="animation-review-status">PREVIEW ONLY</span>
+            <div class="property-table animation-properties">
+              <div><span>CLASS</span><strong id="animation-type">—</strong></div>
+              <div><span>FRAMES</span><strong id="animation-frames">—</strong></div>
+              <div><span>LOOP</span><strong id="animation-loop">—</strong></div>
+              <div><span>TIME</span><strong id="animation-duration">—</strong></div>
+              <div><span>VIEWS</span><strong id="animation-views">—</strong></div>
+            </div>
+            <div class="animation-note" id="animation-note">PREVIEW ONLY / NOT IN LIVE GAME</div>
+            <div class="inspector-actions animation-actions">
+              <a class="chrome-button action-main" id="animation-download" href="#" download>↓ PREVIEW.GIF</a>
+              <a class="chrome-button" id="animation-source" href="#" target="_blank" rel="noopener noreferrer">↗ SOURCE</a>
+            </div>
+          </div>
+        </aside>
+      </section>
 
       <section class="palette-panel" aria-label="Canvas color palette">
         <div class="foreground-chip" title="Current canvas color"><span class="bg-color-chip" id="current-color"></span><small>BG</small></div>
