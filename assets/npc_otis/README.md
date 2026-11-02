@@ -6,9 +6,9 @@
 
 - **Body is exactly Theodore**: same original V6B (64 × 112 px, pivot 32,100), wine-red suit, red gloves, white boots, chest emblem and marble window, waist trim, backpack, grounding and per-frame pose. This generator never generates another body. It opens Theodore's **actual pixel PNG frames**, copies them unchanged and edits only the headpiece and its protruding muzzle.
 - **Face:** preserve Theodore's original round spectacles, skin, eyes, and five authored facial expressions, visible through the helmet visor.
-- **New helmet:** broad cyan/teal shell; two small red angled horns; white running lights; horizontal chrome visor enclosure; rounded chrome side-disc; black-red front port and rotating 4-spoke silver cage.
+- **Revised compact helmet:** cyan/teal cap reduced from an approximately 39 px-wide 25–44 px roof to a ~25 px-wide 30–42 px roof (full front including compact side socket spans about 31 px). Two shorter red horns, four miniature lights, smaller chrome side disk and narrower black-red rotating front port ending at y66. Head/body ratio follows the full-body reference rather than the initial oversized close-up crop.
 - **Animated rotation:** the forward muzzle's spokes change phase on each original idle, walk, talk, sit and other pose frame. A visible spin is encoded in the **actual generated sprite pixels**, not a CSS illusion or a renamed JSON animation.
-- **Directions:** SE/SW/NE/NW. West-facing images mirror the correctly authored east-facing shell, rear directions show proper helmet backing rather than an impossible second muzzle.
+- **Directions:** SE/SW/NE/NW. Front views retain the transparent goggle window and rotating snout. Both rear views use a **flat-topped, mostly plain turquoise rectangular helmet box** (not an oversized rounded helmet or second snout); the original silver backpack below the head is still Theodore's unchanged body part. West-facing images mirror the correctly authored east-facing geometry.
 - **Model category:** `HELMETED` (same semantic skeleton category as Theodore). This is **not** a newly created skeletal skin; it is a complete source-specific pixel sheet and motion library, with shared bone channels available separately.
 
 ## Generation
