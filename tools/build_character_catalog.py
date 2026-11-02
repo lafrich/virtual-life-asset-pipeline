@@ -158,6 +158,8 @@ def available_actions(folder: Path, data: dict, slug: str, media: Path,
     """Build actual character motion bindings; never substitute another actor."""
     bindings_file = folder / "motions.json"
     cfg = json.loads(bindings_file.read_text(encoding="utf-8")) if bindings_file.exists() else {}
+    if cfg and cfg.get("character") != folder.name:
+        raise ValueError(f"{slug}: motions.json character binding does not match folder")
     approved = cfg.get("approved_native_actions", ["idle", "walk"])
     if not isinstance(approved, list) or len(set(approved)) != len(approved):
         raise ValueError(f"{slug}: duplicate/invalid native action bindings")
@@ -177,7 +179,10 @@ def available_actions(folder: Path, data: dict, slug: str, media: Path,
             item.update(available=True, source="native", row=row, reason="")
         choices.append(item)
 
-    for entry in cfg.get("custom_actions", []):
+    custom_entries = cfg.get("custom_actions", [])
+    if not isinstance(custom_entries, list):
+        raise ValueError(f"{slug}: custom_actions must be a list")
+    for entry in custom_entries:
         if not isinstance(entry, dict) or entry.get("id") not in {a["id"] for a in actions}:
             raise ValueError(f"{slug}: invalid custom action id")
         target = next(a for a in choices if a["id"] == entry["id"])
@@ -290,6 +295,8 @@ def build():
             "timestamp": updated_timestamp(manifest_path),
             "frame_size": "64 × 112",
             "walk_frames": frame_count,
+            "idle_frames": int(data.get("idle_frames", 4)),
+            "row_starts": data.get("row_starts", {}),
             "expressions": expressions,
             "motions": motions,
         })
