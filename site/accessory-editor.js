@@ -21,7 +21,7 @@ const makeLayers=()=>Object.fromEntries(DIRS.map(d=>[d,makeLayer()]));
 const MOBILE=window.matchMedia("(max-width:900px) and (pointer:coarse)").matches;
 const state={category:"helmet",dir:"se",tool:"pencil",mode:"replace",color:"#418da5",brush:1,
  zoom:MOBILE?4:6,cursorMode:MOBILE,pan:false,grid:false,alpha:.58,tolerance:0,connected:true,
- cursor:[32,38],selection:null,selectionAnchor:null,pointer:null,layers:makeLayers(),
+ cursor:[32,38],selection:null,selectionAnchor:null,pointer:null,cursorMove:null,layers:makeLayers(),
  drafts:{},history:[],redo:[],savedId:null,manualZoom:false,loaded:false};
 state.drafts.helmet=state.layers;state.drafts.bag=makeLayers();
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -184,26 +184,27 @@ function cursorTap(){
   }return;
  }
  if(state.tool==="move"){
-  if(state.pointer?.kind==="cursor-move"){
-   const p=state.pointer;state.pointer=null;remember(p.before,p.mask);status("MOVE APPLIED");return;
+  if(state.cursorMove){
+   const p=state.cursorMove;state.cursorMove=null;remember(p.before,p.mask);status("MOVE APPLIED");return;
   }
   if(!state.selection?.[y*W+x]){status("SELECT HELM/TAS PIXELS FIRST");return;}
-  state.pointer={kind:"cursor-move",start:[x,y],before:image(),mask:state.selection.slice()};
+  state.cursorMove={start:[x,y],before:image(),mask:state.selection.slice()};
   status("MOVE CURSOR TO POSITION, TAP AGAIN TO DROP");return;
  }
  if(state.tool==="pick"){const d=image().data,i=pidx(x,y);if(!d[i+3])return;
   state.color="#"+[d[i],d[i+1],d[i+2]].map(v=>v.toString(16).padStart(2,"0")).join("");
   $("acc-color").value=state.color;selectSwatch();return;}
  const before=image();
- if(state.tool==="fill")core.flood(before,x,y,[...state.color.match(/[0-9a-f]{2}/gi).map(v=>parseInt(v,16)),255],false,region());
- else if(state.tool==="pencil"||state.tool==="erase")strokePixel(x,y,state.tool==="erase");
- if(state.tool==="fill")put(before);
- if(state.tool==="fill"){draw();draftSoon();return;}
+ if(state.tool==="fill"){
+  const filled=image();
+  core.flood(filled,x,y,[...state.color.match(/[0-9a-f]{2}/gi).map(v=>parseInt(v,16)),255],false,region());
+  put(filled);
+ }else if(state.tool==="pencil"||state.tool==="erase")strokePixel(x,y,state.tool==="erase");
  remember(before,null);draw();
 }
 function moveCursor(x,y){
  state.cursor=[clamp(x,0,W-1),clamp(y,0,H-1)];
- if(state.pointer?.kind==="cursor-move")previewMove(state.pointer,...state.cursor);
+ if(state.cursorMove)previewMove(state.cursorMove,...state.cursor);
  else draw();
  updateControls();
 }
@@ -233,8 +234,9 @@ function down(e){
  const before=image();
  state.pointer={id:e.pointerId,kind:"paint",start:[x,y],last:[x,y],before};
  if(state.tool==="fill"){
-  core.flood(before,x,y,[...state.color.match(/[0-9a-f]{2}/gi).map(v=>parseInt(v,16)),255],false,region());
-  put(before);draw();state.pointer=null;draftSoon();return;
+  const filled=image();
+  core.flood(filled,x,y,[...state.color.match(/[0-9a-f]{2}/gi).map(v=>parseInt(v,16)),255],false,region());
+  put(filled);draw();state.pointer=null;remember(before,null);return;
  }
  strokePixel(x,y,state.tool==="erase");draw();
  e.preventDefault();
@@ -278,7 +280,7 @@ function up(e){
 function setCategory(category,skipHistory=false){
  if(!KINDS.includes(category))return;
  state.drafts[state.category]=state.layers;
- state.category=category;state.layers=state.drafts[category]||makeLayers();
+ state.category=category;state.cursorMove=null;state.pointer=null;state.layers=state.drafts[category]||makeLayers();
  state.drafts[category]=state.layers;state.selection=null;state.selectionAnchor=null;
  if(!skipHistory){state.history=[];state.redo=[];state.savedId=null;}
  const r=region();state.cursor=[Math.floor((r[0]+r[2])/2),Math.floor((r[1]+r[3])/2)];
@@ -373,7 +375,7 @@ function init(){
  }
  selectSwatch();
  for(const b of document.querySelectorAll("[data-acc-tool]"))b.onclick=()=>{
-  if(state.pointer?.kind==="cursor-move"){put(state.pointer.before);state.selection=state.pointer.mask;}
+  if(state.cursorMove){put(state.cursorMove.before);state.selection=state.cursorMove.mask;state.cursorMove=null;}
   state.pointer=null;state.tool=b.dataset.accTool;state.pan=false;state.selectionAnchor=null;updateControls();draw();
  };
  for(const b of document.querySelectorAll("[data-acc-mode]"))b.onclick=()=>{state.mode=b.dataset.accMode;updateControls();};
@@ -436,5 +438,10 @@ function init(){
  for(const [kind,frames] of Object.entries(keysafeRead(DRAFT,{})))if(KINDS.includes(kind))restoreLayers(frames,kind);
  renderStorage();updateControls();fitZoom();draw();
 }
+window.VirtualLifeAccessoryEditor={flush(){
+ clearTimeout(draftTimer);
+ localStorage.setItem(DRAFT,JSON.stringify(Object.fromEntries(KINDS.map(k=>[k,
+  Object.fromEntries(DIRS.map(d=>[d,state.drafts[k][d].toDataURL("image/png")]))]))));
+}};
 init();
 })();
