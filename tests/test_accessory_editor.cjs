@@ -61,7 +61,22 @@ assert.match(app,/function renderCustomStorage\(\)/);
 assert.match(app,/virtual-life-character-storage-v1/);
 assert.match(app,/astrofrich_base/);
 assert.match(app,/\[\.\.\.catalogCharacters,/,"Custom characters must augment original assets");
-assert.match(app,/function baseAstrofrich\(\)/);
+assert.match(app,/function templateFor\(/);
+assert.match(app,/human_male_base/);
+assert.match(app,/human_female_base/);
+assert.match(app,/function syncCustomCategory\(/);
+assert.match(index,/id="human-outfit-slots"/);
+assert.match(index,/id="astrofrich-outfit-slots"/);
+for(const item of ["shirt","pants","shoes"]){
+ assert.ok(index.includes('id="custom-'+item+'"'),"Missing HUMAN clothing selector "+item);
+ assert.ok(index.includes('id="custom-draw-'+item+'"'),"Missing draw action "+item);
+ assert.ok(html.includes('id="acc-'+item+'"'),"Missing four-view clothing editor "+item);
+ assert.ok(editor.includes(item+":"),"Missing editable pixel box "+item);
+}
+assert.match(editor,/human-male-base-guide/);
+assert.match(editor,/human-female-base-guide/);
+assert.match(app,/catalogCharacters=payload.characters.filter\(/);
+assert.match(app,/function saveCustomCharacter\(/);
 assert.match(app,/base\.motions\.filter\(/,"Keep full base motions on saved character");
 assert.match(app,/base\.expressions\.length/,"Keep full expressions");
 assert.match(editor,/function completedDirections\(\)/,"4-sided accessories must be validated");
