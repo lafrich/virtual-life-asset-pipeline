@@ -97,3 +97,28 @@ def planned_records(path: Path, reserved_ids: set[str]) -> list[dict]:
         "type": item["type"],
         "rig_ready": False,
     } for item in actions]
+
+
+def assert_backlog_synced(path: Path, action_registry: list[dict]) -> None:
+    """Prevent planned records in actions.json and backlog.json drifting.
+
+    actions.json is the central animation registry. The full life-sim backlog
+    remains accessible for the production plan and gameplay workflows.
+    """
+    backlog = read_backlog(path)
+    planned_registry = {item["id"]: item for item in action_registry
+                        if item.get("status") == "planned"}
+    expected_ids = {item["id"] for item in backlog}
+    if set(planned_registry) != expected_ids or len(planned_registry) != sum(
+        item.get("status") == "planned" for item in action_registry
+    ):
+        raise ValueError("Planned action registry does not match backlog IDs")
+    for item in backlog:
+        registered = planned_registry[item["id"]]
+        expected = {
+            **item,
+            "type": "planned", "modality": item["type"],
+            "frames": 0, "frame_ms": [], "needs_rig": True,
+        }
+        if registered != expected:
+            raise ValueError(f"{item['id']}: planned registry differs from backlog specification")
