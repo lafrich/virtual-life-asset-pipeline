@@ -12,6 +12,7 @@ elsewhere; this repo only carries the small read-only bits the generators need (
 
 * Quick start: `pip install -r requirements.txt && make verify` (from the repo root). See `run_all.md`.
 * Rules for art: `STYLE.md`. Rules for an AI agent working here: `AGENTS.md`.
+* **Every approved asset improves the pipeline:** owner review → reusable code or documented learning → regression check. See `docs/pipeline-learning.md`, `docs/asset-lessons/`, and `tools/iso_asset_primitives.py`.
 * Small sample outputs: `examples/` (what the generators produce).
 
 ## Layout
