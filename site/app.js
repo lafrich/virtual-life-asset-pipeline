@@ -60,6 +60,7 @@ function matchingCharacters() {
 function selectCharacter(character) {
   if (!character) return;
   state.selected = character;
+  renderAccessoryStorage();
   state.mode = "walk";
   state.expression = null;
   state.motion = null;
@@ -344,14 +345,101 @@ function syncDirectionButtons() {
   });
 }
 
+
+/* Accessory V1: local, 4-view overlays on original 64x112 sprites.
+   Never rewrite NPC atlases. Storage is browser-local until exported. */
+const ACCESSORY_STORE="virtual-life-accessories-v1";
+const ACCESSORY_EQUIP="virtual-life-accessory-equipment-v1";
+const accessoryRuntime={items:[],equipment:{}};
+function readAccessoryJson(key,fallback){
+ try{const value=JSON.parse(localStorage.getItem(key));return value??fallback}
+ catch(error){return fallback}
+}
+function refreshAccessoryEquipment(){
+ const stored=readAccessoryJson(ACCESSORY_STORE,[]);
+ accessoryRuntime.items=Array.isArray(stored)?stored.filter(x=>x&&typeof x.id==="string"&&
+  (x.category==="helmet"||x.category==="bag")&&x.frames):[];
+ const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
+ accessoryRuntime.equipment=equipment&&typeof equipment==="object"?equipment:{};
+ renderAccessoryStorage();
+ draw();
+}
+window.VirtualLifeAccessoryRefresh=refreshAccessoryEquipment;
+function accessoryFor(actor,category){
+ const id=accessoryRuntime.equipment[actor]?.[category];
+ return accessoryRuntime.items.find(item=>item.id===id&&item.category===category);
+}
+function drawEquippedAccessory(x,y,z,dirIndex){
+ if(!state.selected)return;
+ const dirs=["se","sw","ne","nw"];
+ for(const category of ["bag","helmet"]){
+  const item=accessoryFor(state.selected.id,category),src=item?.frames?.[dirs[dirIndex]];
+  if(typeof src!=="string"||!src.startsWith("data:image/png;base64,")||src.length>100000)continue;
+  let image=state.imageCache.get(src);
+  if(!image)image=cachedImage(src,()=>draw());
+  if(image?.complete&&image.naturalWidth===64&&image.naturalHeight===112){
+   ctx.imageSmoothingEnabled=false;ctx.drawImage(image,x,y,64*z,112*z);
+  }
+ }
+}
+function renderAccessoryStorage(){
+ const list=$("accessory-storage-list");if(!list)return;
+ list.replaceChildren();
+ const actor=state.selected?.id||"";
+ const current=accessoryRuntime.equipment[actor]||{};
+ if(!accessoryRuntime.items.length){
+  const empty=document.createElement("p");empty.className="accessory-note";
+  empty.textContent="STORAGE EMPTY. CUSTOM HELM OR TAS TO START.";list.append(empty);
+ }
+ for(const item of accessoryRuntime.items){
+  const row=document.createElement("div");row.className="accessory-item";
+  const name=document.createElement("div");name.className="accessory-name";
+  name.textContent=item.name||"UNNAMED ACCESSORY";
+  const meta=document.createElement("small");meta.textContent=(item.category==="helmet"?"HELM":"TAS")+" / 4 VIEW / LOCAL STORAGE";
+  name.append(meta);
+  const button=document.createElement("button");button.className="chrome-button";
+  const active=current[item.category]===item.id;
+  button.textContent=active?"REMOVE":"+ WEAR";
+  button.classList.toggle("equipped",active);
+  button.disabled=!state.selected?.sheet;
+  button.onclick=()=>{
+   const all=readAccessoryJson(ACCESSORY_EQUIP,{});
+   const slots={...(all[actor]||{})};
+   if(active)delete slots[item.category];else slots[item.category]=item.id;
+   all[actor]=slots;
+   try{localStorage.setItem(ACCESSORY_EQUIP,JSON.stringify(all))}
+   catch(e){setStatus("EQUIPMENT STORAGE FULL");return}
+   refreshAccessoryEquipment();
+   setStatus((active?"REMOVED ":"EQUIPPED ")+(item.name||"ACCESSORY")+" ON "+actor.toUpperCase());
+  };
+  row.append(name,button);list.append(row);
+ }
+ const count=["helmet","bag"].map(k=>current[k]? (k==="helmet"?"HELM":"TAS")+": "+(accessoryRuntime.items.find(x=>x.id===current[k])?.name||"NONE"):"").filter(Boolean);
+ $("accessory-equipped").textContent=count.length?"EQUIPPED / "+count.join(" · "):"NO ACCESSORIES ATTACHED TO "+(actor||"CHARACTER").toUpperCase();
+}
+function openAccessoryEditor(category){
+ if(!["helmet","bag"].includes(category))return;
+ const overlay=$("pixel-editor-overlay");
+ overlay.hidden=false;document.body.classList.add("pixel-editor-open");
+ $("pixel-editor-heading-title").textContent="AKSESORIS / "+(category==="helmet"?"CUSTOM HELM":"CUSTOM TAS")+" — PAINT";
+ const url=new URL("./accessory-editor.html",window.location.href);
+ url.searchParams.set("embedded","1");url.searchParams.set("actor",state.selected?.id||"legacy_theodore");
+ url.searchParams.set("category",category);url.searchParams.set("version","accessories-v1");
+ url.searchParams.set("refresh",String(Date.now()));
+ $("pixel-editor-embed").src=url.href;$("close-pixel-editor").focus();
+}
+
 function setInspectorTab(tab) {
   const isFace = tab === "faces";
   const isMotion = tab === "motions";
-  $("info-panel").hidden = isFace || isMotion;
+  const isAccessories = tab === "accessories";
+  $("info-panel").hidden = isFace || isMotion || isAccessories;
   $("faces-panel").hidden = !isFace;
   $("motions-panel").hidden = !isMotion;
-  for (const [id,active] of [["tab-info", !isFace && !isMotion],
-                             ["tab-faces", isFace], ["tab-motions", isMotion]]) {
+  $("accessories-panel").hidden = !isAccessories;
+  for (const [id,active] of [["tab-info", !isFace && !isMotion && !isAccessories],
+                             ["tab-faces", isFace], ["tab-motions", isMotion],
+                             ["tab-accessories", isAccessories]]) {
     $(id).classList.toggle("active",active);
     $(id).setAttribute("aria-selected",String(active));
   }
@@ -365,6 +453,7 @@ function setInspectorTab(tab) {
       state.selected.motions?.find(m => m.id === "walk" && m.available);
     if (choice) selectMotion(choice);
   }
+  if(isAccessories)renderAccessoryStorage();
   syncTools();
 }
 
@@ -521,6 +610,7 @@ function draw() {
         if (state.faceImage?.naturalWidth) {
           ctx.drawImage(state.faceImage,state.frame*64,d*112,64,112,x,y,64*z,112*z);
           drawFaceCloseup(state.faceImage,d,state.frame,state.expression.label);
+          drawEquippedAccessory(x,y,z,d);
         } else {
           ctx.fillStyle = "#173b85";
           ctx.font = "bold 13px monospace";
@@ -558,6 +648,7 @@ function draw() {
       }
     }
   }
+  drawEquippedAccessory(x,y,z,d);
 }
 
 function tick(time) {
@@ -713,6 +804,7 @@ $("search").addEventListener("input", event => {
 });
 $("edit-pixels").addEventListener("click", () => {
   if (state.selected?.id !== "legacy_otis") return;
+  $("pixel-editor-heading-title").textContent="CHARACTER / PIXEL & MASTER PARTS EDITOR";
   const overlay = $("pixel-editor-overlay");
   overlay.hidden = false;
   document.body.classList.add("pixel-editor-open");
@@ -729,10 +821,12 @@ $("edit-pixels").addEventListener("click", () => {
 async function closePixelEditor() {
   try{
     await $("pixel-editor-embed").contentWindow?.VirtualLifePixelEditor?.flush?.();
-  }catch(error){setStatus("PIXEL DRAFT SAVE FAILED: USE EXPORT IN EDITOR");return;}
+    await $("pixel-editor-embed").contentWindow?.VirtualLifeAccessoryEditor?.flush?.();
+  }catch(error){setStatus("EDITOR DRAFT SAVE FAILED: EXPORT PNG BEFORE CLOSING");return;}
   $("pixel-editor-overlay").hidden = true;
   $("pixel-editor-embed").src = "about:blank";
   document.body.classList.remove("pixel-editor-open");
+  refreshAccessoryEquipment();
   if (!$("edit-pixels").hidden) $("edit-pixels").focus();
 }
 $("close-pixel-editor").addEventListener("click", closePixelEditor);
@@ -756,6 +850,12 @@ $("tool-next").addEventListener("click", () => selectNext(1));
 $("tab-info").addEventListener("click", () => setInspectorTab("info"));
 $("tab-faces").addEventListener("click", () => setInspectorTab("faces"));
 $("tab-motions").addEventListener("click", () => setInspectorTab("motions"));
+$("tab-accessories").addEventListener("click", () => setInspectorTab("accessories"));
+$("make-helmet").addEventListener("click", () => openAccessoryEditor("helmet"));
+$("make-bag").addEventListener("click", () => openAccessoryEditor("bag"));
+window.addEventListener("storage",event=>{
+ if(event.key===ACCESSORY_STORE||event.key===ACCESSORY_EQUIP)refreshAccessoryEquipment();
+});
 $("export-motion").addEventListener("click", exportActionSheet);
 $("export-face").addEventListener("click", exportFaceSheet);
 $("menu-edit").addEventListener("click", () => setInspectorTab("faces"));
@@ -789,6 +889,7 @@ document.addEventListener("keydown", event => {
 
 async function init() {
   renderPalette();
+  refreshAccessoryEquipment();
   syncPlaybackButton();
   draw();
   requestAnimationFrame(tick);
