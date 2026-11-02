@@ -38,6 +38,7 @@ const context = {
   $:id=>el[id],setStatus:v=>status=v,
   syncMotionSelection(){},syncPlaybackButton(){},syncTools(){},
   syncDirectionButtons(){directionSyncs++;},
+  drawEquippedAccessory(){/* Dynamic browser-local equipment is outside this FACE-only test */},
   cachedImage(src,ready) {const image = {src,naturalWidth:768,complete:true}; ready(image);return image;},
   getImageData:null
 };
