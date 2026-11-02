@@ -15,6 +15,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageChops
 from build_animation_catalog import build_animation_catalog
 from build_native_character_catalog import add_native_npcs
+from build_accessory_guide import build_accessory_guide
 from build_legacy_character_catalog import prepare_legacy_catalog
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -244,6 +245,7 @@ def build():
     shutil.copytree(SITE, OUT)
     media = OUT / "media"
     media.mkdir(exist_ok=True)
+    build_accessory_guide(ROOT, media)
 
     index_path = ROOT / "assets/character_stock/index.json"
     index = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else {}
