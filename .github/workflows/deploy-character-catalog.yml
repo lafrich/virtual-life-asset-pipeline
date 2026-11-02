@@ -23,6 +23,9 @@ on:
       - "tools/build_rig_studio.py"
       - "tests/test_rig_studio.py"
       - "tests/test_rig_runtime.cjs"
+      - "tests/test_shared_bone_runtime.cjs"
+      - "assets/animation_library/category_skeletons.json"
+      - "assets/animation_library/shared_bone_motions.json"
       - "tools/build_native_character_catalog.py"
       - "tools/build_legacy_character_catalog.py"
       - "tools/build_legacy_face_previews.py"
@@ -68,7 +71,8 @@ jobs:
           node --check site/app.js
           node --check site/animations.js
           node --check site/rig-runtime.js
-          node --check site/rig-studio.js
+          node --check site/shared-bone-runtime.js
+          node tests/test_shared_bone_runtime.cjs
           node tests/test_rig_runtime.cjs
           node tests/test_face_ui_interactions.cjs
           python -m py_compile tools/build_rig_studio.py tools/build_character_catalog.py tools/animation_backlog.py tools/build_animation_catalog.py tools/new_animation_template.py tools/pack_animation_preview.py tools/build_native_character_catalog.py tools/build_legacy_character_catalog.py tools/build_legacy_face_previews.py tools/generate_archive_previews.py
@@ -89,7 +93,11 @@ jobs:
           test -s _site/catalog.json
           test -s _site/animations.js
           test -s _site/rig-runtime.js
-          test -s _site/rig-studio.js
+          test -s _site/shared-bone-runtime.js
+          test -s _site/category-skeletons.json
+          test -s _site/shared-bone-motions.json
+          test ! -e _site/rig-studio.js
+          python -c 'import json; from pathlib import Path; p=Path("_site"); cats=json.loads((p/"category-skeletons.json").read_text()); m=json.loads((p/"shared-bone-motions.json").read_text()); cs=json.loads((p/"catalog.json").read_text())["characters"]; ids={x["id"] for x in m["clips"]}; assert set(cats["types"])=={"HUMANOID","MASCOT","ALIEN_SUIT","HELMETED"}; assert len(ids)==7; assert all(x["skeleton_profile"] in cats["types"] and set(x["bone_actions"])==ids and not x["bone_skin_ready"] for x in cs); print("Validated",len(cs),"actor skeleton assignments and",len(ids),"shared canonical actions")'
           test -s _site/rigs.json
           test -s _site/animations.json
           test -s _site/animations.js
