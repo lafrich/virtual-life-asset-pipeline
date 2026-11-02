@@ -47,4 +47,27 @@ assert.match(css,/min-width:0/);
 const keys=[...html.matchAll(/id="([^"]+)"/g)].map(x=>x[1]);
 assert.equal(new Set(keys).size,keys.length,"Duplicate accessory HTML IDs");
 assert.match(read("pixel-editor.css"),/--xp-face:#c9c8c4/,"Reuse classic XP theme");
-console.log("PASS: original AKSESORIS tab, 4-view helmet/bag editor, separate Theodore guide, storage/equip and touchpad controls");
+
+assert.match(index,/id="tab-custom-char"/,"NEW CUSTOM CHAR tab must be on original landing");
+assert.match(index,/id="custom-char-panel"/,"Custom character panel must exist");
+for(const id of ["custom-category","custom-base","custom-name","custom-helmet","custom-bag",
+ "custom-save","custom-new","custom-storage-list","custom-draw-helmet","custom-draw-bag"])
+ assert.ok(index.includes('id="'+id+'"'),"Missing Character Storage control "+id);
+assert.match(app,/function savedCustomCharacters\(\)/);
+assert.match(app,/function hydrateCharacter\(/);
+assert.match(app,/function saveCustomCharacter\(\)/);
+assert.match(app,/function rebuildCustomCharacters\(\)/);
+assert.match(app,/function renderCustomStorage\(\)/);
+assert.match(app,/virtual-life-character-storage-v1/);
+assert.match(app,/astrofrich_base/);
+assert.match(app,/\[\.\.\.catalogCharacters,/,"Custom characters must augment original assets");
+assert.match(app,/function baseAstrofrich\(\)/);
+assert.match(app,/base\.motions\.filter\(/,"Keep full base motions on saved character");
+assert.match(app,/base\.expressions\.length/,"Keep full expressions");
+assert.match(editor,/function completedDirections\(\)/,"4-sided accessories must be validated");
+assert.match(editor,/const missing=DIRS\.filter/,"Storage must require four complete authored sides");
+assert.match(editor,/drawImage\(guide,di\*W,0,W,H/,"Guide changes per individual direction");
+assert.match(editor,/frames:Object\.fromEntries\(DIRS\.map/,"All four directions saved as one asset");
+assert.match(html,/id="acc-direction-progress"/);
+console.log("PASS: Astrofrich New Custom Char, named Character Storage, inherited seven animations/five expressions, and separate 4-sided accessories");
+
