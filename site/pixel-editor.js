@@ -2,6 +2,7 @@
    Original 64x112 RGBA sprite frames, no CSS-only illusion or remote writes. */
 (()=>{
 "use strict";
+if(new URLSearchParams(location.search).get("embedded")==="1")document.body.classList.add("embedded");
 const core=window.VirtualLifePixelEdit;
 const parts=window.VirtualLifeMasterParts;
 if(!core)return;
