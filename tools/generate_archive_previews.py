@@ -16,6 +16,9 @@ STEPS = [
     ("ichsan_player", ["chars-iso/v6b/tools/live_v6b.py", "chars-iso/v6b/live/chars/ichsan.json"], 150, True),
     # Original game-native NPCS (18 named NPCs).
     ("native_v6b_roster", ["chars-iso/v6b/tools/npc_v6b.py"], 240, True),
+    # Theodore compares against historical Cosmo/Rocketta outputs (optional
+    # artwork), so build these preview prototypes before named families.
+    ("floating_proto_v2", ["assets/npc_preview_v2/make_npcs_v2.py"], 150, False),
     # Named characters with their own visual rig and multi-action frame sets.
     ("gfunk", ["assets/npc_gfunk/make_gfunk.py"], 120, False),
     ("yerbies", ["assets/npc_yerbies/make_yerbies.py"], 120, False),
@@ -26,7 +29,7 @@ STEPS = [
     ("manusia_silver", ["assets/npc_manusia_silver/make_manusia_silver.py"], 120, False),
     ("pemuda_golda", ["assets/npc_pemuda_golda/make_pemuda_golda.py"], 120, False),
     ("barista_famima", ["assets/barista_famima/src/barista.py"], 150, False),
-    ("floating_proto_v2", ["assets/npc_preview_v2/make_npcs_v2.py"], 150, False),
+
 ]
 def main():
     env = dict(os.environ, PYTHONUNBUFFERED="1", NP="4")
