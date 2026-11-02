@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "notes": "Visible, distinct original Virtual Life NPC families; old v2 prototype/archive entries excluded from the public catalog. Availability comes from real 64x112 generated frames.",
+  "notes": "Active, distinct original Virtual Life NPC families. Otis is archived and intentionally excluded from the active catalog; source files are retained.",
   "characters": [
     {
       "id": "gfunk",
@@ -25,14 +25,6 @@
       "note": "walk, talk, sit",
       "level": "source",
       "source": "assets/npc_theodore/make_theodore.py"
-    },
-    {
-      "id": "otis",
-      "name": "Otis",
-      "folder": "assets/npc_otis",
-      "note": "Theodore body; turquoise horned helmet with rotating snout; walk, idle, talk, sit, type",
-      "level": "source",
-      "source": "assets/npc_otis/make_otis.py"
     },
     {
       "id": "pak_ogah",
