@@ -223,7 +223,8 @@ function selectMotion(action) {
     });
   }
   $("motion-expression-active").textContent = "FACE: " +
-    (state.expression?.label?.toUpperCase() || "NEUTRAL") + " / SAME CHARACTER.";
+    (state.expression?.label?.toUpperCase() || "NEUTRAL") +
+    (state.expression?.sheet ? " / IDLE PREVIEW ONLY." : " / SAME CHARACTER.");
   syncMotionSelection();
   syncPlaybackButton();
   syncTools();
@@ -235,6 +236,7 @@ function selectFace(face) {
   if (!state.selected || !face) return;
   state.mode = "face";
   state.expression = face;
+  state.faceImage = null;
   state.faceOverlay = null;
   state.blinkOverlay = null;
   state.frame = 0;
@@ -245,6 +247,13 @@ function selectFace(face) {
   $("canvas-name").textContent = state.selected.id.toUpperCase() + " / " +
     face.id.toUpperCase() + ".FACE";
   const character = state.selected;
+  // Source-authored Gfunk / Theodore / Yerbies expression loops are full
+  // same-character 4-direction sprites, not generic v6b facial deltas.
+  if (face.sheet) cachedImage(face.sheet, image => {
+    if (state.selected !== character || state.expression !== face) return;
+    state.faceImage = image;
+    draw();
+  });
   const overlay = face.overlay;
   if (overlay) cachedImage(overlay, image => {
     if (state.selected !== character || state.expression !== face) return;
@@ -263,7 +272,7 @@ function selectFace(face) {
     button.setAttribute("aria-pressed",String(active));
   });
   $("motion-expression-active").textContent = "FACE: " + face.label.toUpperCase() +
-    " / ACTIVE ON NATIVE MOTIONS.";
+    (face.sheet ? " / ORIGINAL IDLE LOOP + BLINK." : " / ACTIVE ON NATIVE MOTIONS.");
   syncMotionSelection();
   syncPlaybackButton();
   syncTools();
@@ -472,6 +481,10 @@ function draw() {
       // not the original Ichsan character or a photograph/video filter.
       const row = (state.selected.row_starts?.idle ?? 4) + d;
       const col = state.frame % Math.max(1,state.selected.idle_frames || 4);
+      if (state.expression?.sheet && state.faceImage?.naturalWidth) {
+        ctx.drawImage(state.faceImage,state.frame*64,d*112,64,112,x,y,64*z,112*z);
+        return;
+      }
       ctx.drawImage(state.image,col*64,row*112,64,112,x,y,64*z,112*z);
       if (state.faceOverlay?.naturalWidth) {
         ctx.drawImage(state.faceOverlay,col*64,row*112,64,112,x,y,64*z,112*z);
@@ -508,8 +521,8 @@ function tick(time) {
     if (!state.lastFrameTime) state.lastFrameTime = time;
     let frames, duration, done, loop;
     if (state.mode === "face") {
-      frames = state.selected?.idle_frames || 4;
-      duration = 210;
+      frames = state.expression?.frames || state.selected?.idle_frames || 4;
+      duration = state.expression?.frame_ms?.[state.frame] || 210;
       loop = true;
       state.lastBlink = Math.floor(time / 200) % 24 === 19 ? 1 : 0;
     } else {
@@ -568,7 +581,7 @@ function exportActionSheet() {
     if (action.source === "native" && state.expression && state.faceOverlay?.naturalWidth) {
       context.drawImage(state.faceOverlay,frame*64,(action.row+dir)*112,64,112,
         frame*64,dir*112,64,112);
-      if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
+      if (!customFace && state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
         context.drawImage(state.blinkOverlay,frame*64,(action.row+dir)*112,64,112,
           frame*64,dir*112,64,112);
     }
@@ -579,7 +592,11 @@ function exportActionSheet() {
 
 function exportFaceSheet() {
   if (!state.selected || !state.expression || !state.image?.naturalWidth) return;
-  const frames = state.selected.idle_frames || 4;
+  const customFace = Boolean(state.expression.sheet);
+  const frames = customFace ? state.expression.frames : state.selected.idle_frames || 4;
+  if (customFace && !state.faceImage?.naturalWidth) {
+    return setStatus("FACE SPRITES NOT YET LOADED.");
+  }
   const out = document.createElement("canvas");
   out.width = frames * 64;
   out.height = 112 * 4;
@@ -587,11 +604,12 @@ function exportFaceSheet() {
   context.imageSmoothingEnabled = false;
   for (let dir = 0; dir < 4; dir++) {
     for (let frame = 0; frame < frames; frame++) {
-      const row = (state.selected.row_starts?.idle ?? 4) + dir;
+      const row = customFace ? dir : (state.selected.row_starts?.idle ?? 4) + dir;
       const sourceX = frame * 64, sourceY = row * 112;
       const x = frame * 64, y = dir * 112;
-      context.drawImage(state.image,sourceX,sourceY,64,112,x,y,64,112);
-      if (state.faceOverlay?.naturalWidth)
+      context.drawImage(customFace ? state.faceImage : state.image,
+        sourceX,sourceY,64,112,x,y,64,112);
+      if (!customFace && state.faceOverlay?.naturalWidth)
         context.drawImage(state.faceOverlay,sourceX,sourceY,64,112,x,y,64,112);
       // Showcase the blink on frame 2 of the native idle breathing cycle.
       if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
