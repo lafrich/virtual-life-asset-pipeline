@@ -79,6 +79,70 @@ def save_walk_preview(sheet_path: Path, gif_path: Path, poster_path: Path, row: 
     )
 
 
+EXPRESSION_LABELS = {
+    "angry": "Angry", "blink": "Blink", "emb": "Embarrassed",
+    "happy": "Happy", "sad": "Sad", "sleepy": "Sleepy",
+    "smile": "Smile", "surpr": "Surprised",
+}
+
+
+def save_expression_previews(folder: Path, data: dict, sheet_path: Path, media: Path, slug: str) -> list:
+    """Compose native expression overlays onto the SE idle frame at 1×.
+
+    A character's *_f*.png files are transparent change overlays, not
+    stand-alone sprites. Render the actual combined result to view them on
+    the site; preserve nearest-neighbor pixels without redrawing the face.
+    """
+    idle_row = int(data.get("row_starts", {}).get("idle", 4))
+    with Image.open(sheet_path) as im:
+        base = im.convert("RGBA").crop((0, idle_row * SIZE[1], SIZE[0],
+                                       (idle_row + 1) * SIZE[1]))
+
+    def create_panel(frame: Image.Image, filename: str) -> str:
+        tile = frame.resize((SIZE[0] * SCALE, SIZE[1] * SCALE),
+                            Image.Resampling.NEAREST)
+        canvas = Image.new("RGBA", PREVIEW_SIZE, (*BG, 255))
+        d = ImageDraw.Draw(canvas)
+        d.polygon([(175, 301), (290, 346), (175, 381), (60, 346)],
+                  fill=GROUND, outline=EDGE)
+        canvas.alpha_composite(tile, ((PREVIEW_SIZE[0] - tile.width) // 2, 10))
+        output = media / filename
+        canvas.convert("RGB").save(output, optimize=True)
+        return "media/" + filename
+
+    expressions = [{"id": "neutral", "label": "Neutral",
+                    "image": create_panel(base, slug + "-expression-neutral.png")}]
+    for name in data.get("sprites", []):
+        p = Path(name)
+        if not p.name.startswith(slug + "_v6b_f") or p.suffix.lower() != ".png":
+            continue
+        code = p.stem[len(slug + "_v6b_f"):]
+        label = EXPRESSION_LABELS.get(code)
+        if not label:
+            continue
+        path = checked_asset(folder, name)
+        with Image.open(path) as im:
+            if im.size != (384, 4928):
+                raise ValueError(f"{slug}: invalid expression overlay {name}")
+            overlay = im.convert("RGBA").crop((0, idle_row * SIZE[1], SIZE[0],
+                                               (idle_row + 1) * SIZE[1]))
+        # Skip blank placeholders; do not advertise expressions that have
+        # no actual visible pixel changes on the reference idle frame.
+        if not overlay.getchannel("A").getbbox():
+            continue
+        composite = base.copy()
+        composite.alpha_composite(overlay)
+        import numpy as np
+        if not np.any(np.asarray(composite) != np.asarray(base)):
+            continue
+        expressions.append({
+            "id": code,
+            "label": label,
+            "image": create_panel(composite, slug + "-expression-" + code + ".png")
+        })
+    return expressions
+
+
 def manifests():
     for pattern in ("npc_*/manifest.json", "player_*/manifest.json", "character_*/manifest.json"):
         yield from sorted((ROOT / "assets").glob(pattern))
@@ -129,6 +193,7 @@ def build():
         poster = media / (slug + "-poster.png")
         save_walk_preview(sheet, gif, poster, walk_row, frame_count)
         shutil.copy2(sheet, media / (slug + "-sheet.png"))
+        expressions = save_expression_previews(folder, data, sheet, media, slug)
 
         title = override.get("name") or slug.replace("_", " ").replace("-", " ").title()
         description = override.get("character_look") or data.get("notes", "")
@@ -150,6 +215,7 @@ def build():
             "timestamp": updated_timestamp(manifest_path),
             "frame_size": "64 × 112",
             "walk_frames": frame_count,
+            "expressions": expressions,
         })
         print("Added", slug, "->", gif.relative_to(OUT))
 
