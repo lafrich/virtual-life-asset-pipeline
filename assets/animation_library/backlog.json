@@ -6582,7 +6582,7 @@
       "type": "facial",
       "phases": [
         "enter",
-        "hold",
+        "loop",
         "exit"
       ],
       "loop": true,
@@ -6615,7 +6615,7 @@
       "type": "facial",
       "phases": [
         "enter",
-        "hold",
+        "loop",
         "exit"
       ],
       "loop": true,
@@ -6648,7 +6648,7 @@
       "type": "facial",
       "phases": [
         "enter",
-        "hold",
+        "loop",
         "exit"
       ],
       "loop": true,
