@@ -58,3 +58,27 @@ body.embedded .desktop-foot{display:none}
  .export-panel{order:2}
  .intro{display:none}
 }
+
+/* Precision cursor and rectangular selection controls. */
+.cursor-actions{display:grid;grid-template-columns:minmax(105px,1.4fr) repeat(4,minmax(27px,.55fr)) minmax(108px,1.4fr);gap:4px}
+.cursor-actions button{padding:6px 3px;min-height:35px}
+.cursor-actions .cursor-tap{background:#2857a0;color:#fff;border-color:#193b74}
+.cursor-actions .cursor-tap:disabled{background:#9ca8b5;color:#edf0f4}
+.selection-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#e5ebf0;border:1px solid #b0bfce;padding:6px}
+.selection-actions strong{font-size:10px;color:#27496c;flex:1 1 160px}
+.selection-buttons{display:flex;flex-wrap:wrap;gap:4px}
+.selection-buttons button{min-height:31px;padding:5px 7px;font-size:10px}
+.drawing-toolbar .tools{grid-template-columns:repeat(7,minmax(0,1fr))}
+@media(max-width:1050px){.drawing-toolbar .tools{grid-template-columns:repeat(7,minmax(0,1fr))}}
+@media(max-width:680px){
+ .drawing-toolbar .tools{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+ .drawing-toolbar .tools button{min-height:33px}
+ .cursor-actions{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .cursor-actions #cursor-toggle,.cursor-actions #cursor-tap{grid-column:span 2}
+ .cursor-actions button{min-height:36px}
+ .selection-actions{padding:5px}
+ .selection-buttons{display:grid;width:100%;grid-template-columns:repeat(4,minmax(0,1fr))}
+ .selection-buttons button{padding:4px 2px}
+ .selection-buttons #flip-horizontal,.selection-buttons #flip-vertical{grid-column:span 2}
+ .selection-buttons #deselect{grid-column:span 4}
+}
