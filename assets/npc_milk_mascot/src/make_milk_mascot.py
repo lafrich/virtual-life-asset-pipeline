@@ -13,7 +13,11 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "chars-iso" / "v6b" / "tools"))
+from tools.iso_asset_primitives import (
+    draw_slanted_pixel_text, iso_panel_barcode, iso_side_anchor_x
+)
 import live_v6b as lv
 import npc_v6b as nv
 
@@ -25,6 +29,8 @@ FW, FH, COLS, ROWS = 64, 112, 6, 44
 ROW_ANIMS = lv.ROWMAP
 DIRECTIONS = ("se", "sw", "ne", "nw")
 EXPRESSIONS = ("angry", "blink", "emb", "happy", "sad", "sleepy", "smile", "surpr")
+# Approved reusable position: midpoint inside right carton side, x=45.
+CARTON_SIDE_ANCHOR_X = iso_side_anchor_x(41, 50)
 
 # Exact source-game / existing-v6b colors, audited with tools/audit_colors.py.
 WHITE = (255, 255, 255)
@@ -63,23 +69,11 @@ def pixel_text(draw, txt, x, y, color, spacing=1):
         x += len(glyph[0]) + spacing
 
 def pixel_text_slanted(draw, txt, x0, y0, color, slope=0.26, spacing=1):
-    """Project a bitmap word onto a vertical isometric package face.
-    
-    Glyph uprights remain vertical; each successive x column follows the
-    panel's true perspective slope. No rotated image or antialiasing.
-    """
-    x = x0
-    for char in txt.lower():
-        glyph = PIXEL_FONT.get(char)
-        if not glyph:
-            x += 3 + spacing
-            continue
-        for gy, row in enumerate(glyph):
-            for gx, v in enumerate(row):
-                if v == "1":
-                    px = x + gx
-                    draw.point((px, y0 + gy + round((px - x0) * slope)), fill=color)
-        x += len(glyph[0]) + spacing
+    """Backward-compatible Milk Mascot label, now powered by shared iso geometry."""
+    draw_slanted_pixel_text(
+        draw, txt, PIXEL_FONT, x0, y0, color, slope=slope, spacing=spacing
+    )
+
 
 def make_rig():
     # The underlying v6b rig only supplies the *moving legs*; there is no
@@ -121,7 +115,7 @@ def draw_arms(layer, view, t, bob, kind):
             light = LIT
         else:
             # Midpoint of x41..50 side plane, not the far x50 corner.
-            shoulder = (45, 57 + bob)
+            shoulder = (CARTON_SIDE_ANCHOR_X, 57 + bob)
             elbow = (52 + s, 62 + bob)
             wrist = (54 + s, 69 + bob + s // 2)
             hx, hy = (55 + s, 71 + bob + s // 2)
@@ -142,7 +136,7 @@ def paint_attachments(frame, bob):
     d = ImageDraw.Draw(frame)
     # Near corner on face and midpoint of the narrow right-hand side face.
     d.line([(15, 55 + bob), (15, 57 + bob)], fill=LIT, width=2)
-    d.line([(45, 56 + bob), (45, 58 + bob)], fill=WHITE, width=2)
+    d.line([(CARTON_SIDE_ANCHOR_X, 56 + bob), (CARTON_SIDE_ANCHOR_X, 58 + bob)], fill=WHITE, width=2)
 
 def draw_native_legs(layer, rig, base, kind, frame, view):
     C, O = rig
@@ -263,25 +257,8 @@ def draw_carton(layer, rear, bob, expression="neutral", show_label=True):
     return layer
 
 def rear_barcode_geometry(direction, bob=0):
-    """Barcode columns aligned to the projected *rear panel* in each view.
-
-    NE back face: its bottom edge descends right 7px across 27px.
-    NW back face: the same physical plane descends left after mirroring.
-    Unlike the previous version, the barcode's bars are VERTICAL in both
-    views (printed onto a vertical cardboard panel), with their top and
-    bottom edges following the appropriate projected panel slope.
-    """
-    if direction not in ("ne", "nw"):
-        return []
-    heights = (5, 6, 5, 6, 4, 6, 5, 6, 5)
-    bars = []
-    for i, local_x in enumerate(range(19, 37, 2)):
-        x = local_x if direction == "ne" else (FW - 1 - local_x)
-        # Always compute from the same unmirrored physical carton coordinate.
-        # This produces a + slope in NE and a - slope in NW automatically.
-        y = 65 + bob + round((local_x - 14) * 7 / 27)
-        bars.append((x, y, heights[i]))
-    return bars
+    """Approved perspective-safe barcode geometry shared with future props."""
+    return iso_panel_barcode(direction, frame_width=FW, bob=bob)
 
 
 def draw_rear_barcode(frame, direction, bob):
