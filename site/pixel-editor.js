@@ -14,6 +14,8 @@ const PALETTE=["#61b3c4","#95d7de","#418da5","#2b6479","#183f59",
  "#b15a36","#d28e5e","#f8d5b1","#c5bcae","#455f74","#6d4f50",
  "#eab9b9","#c9d4e0"];
 const LOCAL="virtual-life-otis-master-parts-draft-v2";
+const MOBILE_TOUCH=window.matchMedia("(max-width:680px) and (pointer:coarse)").matches;
+const panGesture={id:null,lastX:0,lastY:0};
 const OLD_LOCAL="virtual-life-otis-pixel-draft-v1";
 const display=$("pixel-canvas"),dc=display.getContext("2d",{alpha:false});
 const mini=$("small-preview"),mc=mini.getContext("2d");
@@ -21,7 +23,7 @@ const renderCanvas=document.createElement("canvas");renderCanvas.width=WIDTH;ren
 const rc=renderCanvas.getContext("2d",{willReadFrequently:true});
 dc.imageSmoothingEnabled=false;mc.imageSmoothingEnabled=false;
 const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",part:"head",masterDiff:new Map(),syncPromise:Promise.resolve(),syncing:false,
- tool:"pencil",color:"#61b3c4",brush:1,zoom:8,grid:false,
+ tool:"pencil",panMode:MOBILE_TOUCH,color:"#61b3c4",brush:1,zoom:MOBILE_TOUCH?4:8,grid:false,
  originals:new Map(),edits:new Map(),imageRequests:new Map(),history:[],redo:[],
  current:null,loading:true,drawing:false,previous:null,before:null,seq:0};
 function status(s,error=false){$("editor-status").textContent=s;$("editor-status").classList.toggle("error",error);}
@@ -154,7 +156,12 @@ function commit(before){
  state.redo=[];saveCurrent();render();historyButtons();if(state.mode==="master")queueMasterSync();
 }
 function editStart(e){
- if(state.loading||!state.current||e.button!==0||state.syncing)return;
+ if(e.button!==0||e.isPrimary===false)return;
+ if(state.panMode){
+  panGesture.id=e.pointerId;panGesture.lastX=e.clientX;panGesture.lastY=e.clientY;
+  e.preventDefault();display.setPointerCapture(e.pointerId);return;
+ }
+ if(state.loading||!state.current||state.syncing)return;
  const [x,y]=eventPos(e);if(!editable(x,y))return;
  e.preventDefault();display.setPointerCapture(e.pointerId);
  if(state.tool==="pick"){pickPixel(x,y);return;}
@@ -164,12 +171,25 @@ function editStart(e){
  else drawStroke(x,y);
 }
 function editMove(e){
+ if(panGesture.id!==null){
+  if(e.pointerId!==panGesture.id)return;
+  const scroller=$("canvas-scroll"),dx=panGesture.lastX-e.clientX,dy=panGesture.lastY-e.clientY;
+  const oldTop=scroller.scrollTop;
+  scroller.scrollLeft+=dx;scroller.scrollTop+=dy;
+  const leftoverY=dy-(scroller.scrollTop-oldTop);
+  if(Math.abs(leftoverY)>0.5)window.scrollBy(0,leftoverY);
+  panGesture.lastX=e.clientX;panGesture.lastY=e.clientY;e.preventDefault();return;
+ }
  const [x,y]=eventPos(e);$("cursor-coord").textContent="X "+x+" / Y "+y;
  if(!state.drawing||!state.current)return;
  if(!editable(x,y)){state.previous=null;return;}
  e.preventDefault();drawStroke(x,y);
 }
-function editEnd(){
+function editEnd(e){
+ if(panGesture.id!==null){
+  if(e&&e.pointerId!==panGesture.id)return;
+  panGesture.id=null;return;
+ }
  if(!state.drawing)return;state.drawing=false;state.previous=null;
  commit(state.before);state.before=null;
 }
@@ -262,12 +282,26 @@ async function importObject(p,fromDraft=false){
  status((fromDraft?"RESTORED LOCAL DRAFT":"IMPORTED PIXEL PATCH")+" / "+imported.size+" FRAMES");
 }
 function markSwatches(){for(const b of $("swatches").children)b.classList.toggle("selected",b.dataset.color===state.color);}
+function refreshToolState(){
+ document.querySelectorAll("[data-tool]").forEach(b=>{
+  const active=!state.panMode&&b.dataset.tool===state.tool;
+  b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));
+ });
+ const pan=$("pan-toggle");pan.classList.toggle("active",state.panMode);
+ pan.setAttribute("aria-pressed",String(state.panMode));
+ $("gesture-hint").textContent=state.panMode?
+  "PAN ACTIVE · drag anywhere to scroll · tap a drawing tool to paint":
+  "DRAW ACTIVE · drag the empty margin to scroll · tap PAN to move the canvas";
+ display.style.cursor=state.panMode?"grab":"crosshair";
+}
 function initControls(){
+ $("zoom").value=String(state.zoom);
+ refreshToolState();
+ $("pan-toggle").onclick=()=>{state.panMode=!state.panMode;refreshToolState();};
  for(const color of PALETTE){const b=document.createElement("button");b.className="swatch";b.type="button";b.dataset.color=color;
   b.style.background=color;b.title=color;b.setAttribute("aria-label","Paint "+color);b.onclick=()=>{state.color=color;$("color").value=color;markSwatches();};$("swatches").append(b);}
  markSwatches();
- document.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>{state.tool=b.dataset.tool;
-  document.querySelectorAll("[data-tool]").forEach(x=>x.classList.toggle("active",x===b));});
+ document.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>{state.tool=b.dataset.tool;state.panMode=false;refreshToolState();});
  $("color").oninput=e=>{state.color=e.target.value;markSwatches();};
  $("brush-size").oninput=e=>{state.brush=Number(e.target.value);$("brush-label").textContent=state.brush+" PX";};
  $("edit-mode").onchange=async e=>{
