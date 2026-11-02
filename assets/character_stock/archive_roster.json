@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "notes": "Inventory of distinct legacy character families; actual availability is determined from generated 64x112 frames, not notes.",
+  "characters": [
+    {
+      "id": "gfunk",
+      "name": "Gfunk",
+      "folder": "assets/npc_gfunk",
+      "note": "float, talk, sit",
+      "level": "source",
+      "source": "assets/npc_gfunk/make_gfunk.py"
+    },
+    {
+      "id": "yerbies",
+      "name": "Yerbies",
+      "folder": "assets/npc_yerbies",
+      "note": "float, talk, sit",
+      "level": "source",
+      "source": "assets/npc_yerbies/make_yerbies.py"
+    },
+    {
+      "id": "theodore",
+      "name": "Theodore",
+      "folder": "assets/npc_theodore",
+      "note": "walk, talk, sit",
+      "level": "source",
+      "source": "assets/npc_theodore/make_theodore.py"
+    },
+    {
+      "id": "pak_ogah",
+      "name": "Pak Ogah",
+      "folder": "assets/npc_pak_ogah",
+      "note": "wave flag, stop car, walk",
+      "level": "source",
+      "source": "assets/npc_pak_ogah/make_pak_ogah.py"
+    },
+    {
+      "id": "kang_parkir",
+      "name": "Kang Parkir",
+      "folder": "assets/npc_kang_parkir",
+      "note": "whistle, direct, money",
+      "level": "source",
+      "source": "assets/npc_kang_parkir/make_kang_parkir.py"
+    },
+    {
+      "id": "manusia_silver",
+      "name": "Manusia Silver",
+      "folder": "assets/npc_manusia_silver",
+      "note": "statue, bow, walk",
+      "level": "source",
+      "source": "assets/npc_manusia_silver/make_manusia_silver.py"
+    },
+    {
+      "id": "pemuda_golda",
+      "name": "Pemuda Golda",
+      "folder": "assets/npc_pemuda_golda",
+      "note": "sit sad, drink",
+      "level": "source",
+      "source": "assets/npc_pemuda_golda/make_pemuda_golda.py"
+    },
+    {
+      "id": "babeh_pemilik",
+      "name": "Babeh Pemilik",
+      "folder": "assets/npc_babeh_loak",
+      "note": "offer, count, haggle, counter",
+      "level": "source",
+      "source": "assets/npc_babeh_loak/make_outputs.py"
+    },
+    {
+      "id": "babeh_jam",
+      "name": "Babeh Jam",
+      "folder": "assets/npc_babeh_loak",
+      "note": "offer, count, haggle",
+      "level": "source",
+      "source": "assets/npc_babeh_loak/make_outputs.py"
+    },
+    {
+      "id": "babeh_tas",
+      "name": "Babeh Tas",
+      "folder": "assets/npc_babeh_loak",
+      "note": "offer, count, haggle",
+      "level": "source",
+      "source": "assets/npc_babeh_loak/make_outputs.py"
+    },
+    {
+      "id": "barista_famima",
+      "name": "Barista Famima",
+      "folder": "assets/barista_famima",
+      "note": "brew, grind, pour, serve",
+      "level": "source",
+      "source": "assets/barista_famima/src/barista.py"
+    },
+    {
+      "id": "cosmo",
+      "name": "Cosmo / archived v2",
+      "folder": "assets/npc_preview_v2",
+      "note": "floating prototype",
+      "level": "archive",
+      "source": "assets/npc_preview_v2/make_npcs_v2.py"
+    },
+    {
+      "id": "rocketta",
+      "name": "Rocketta / archived v2",
+      "folder": "assets/npc_preview_v2",
+      "note": "floating prototype (reworked as Theodore)",
+      "level": "archive",
+      "source": "assets/npc_preview_v2/make_npcs_v2.py"
+    },
+    {
+      "id": "sol",
+      "name": "Sol / archived v2",
+      "folder": "assets/npc_preview_v2",
+      "note": "floating prototype",
+      "level": "archive",
+      "source": "assets/npc_preview_v2/make_npcs_v2.py"
+    },
+    {
+      "id": "zib",
+      "name": "Zib / archived v2",
+      "folder": "assets/npc_preview_v2",
+      "note": "floating prototype (reworked as Gfunk)",
+      "level": "archive",
+      "source": "assets/npc_preview_v2/make_npcs_v2.py"
+    },
+    {
+      "id": "klank",
+      "name": "Klank / archived v2",
+      "folder": "assets/npc_preview_v2",
+      "note": "floating prototype",
+      "level": "archive",
+      "source": "assets/npc_preview_v2/make_npcs_v2.py"
+    },
+    {
+      "id": "nebi",
+      "name": "Nebi / archived v2",
+      "folder": "assets/npc_preview_v2",
+      "note": "floating prototype",
+      "level": "archive",
+      "source": "assets/npc_preview_v2/make_npcs_v2.py"
+    }
+  ]
+}

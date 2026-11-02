@@ -45,6 +45,28 @@ class AnimationLibraryTests(unittest.TestCase):
             saved = json.loads((out / "animations.json").read_text(encoding="utf-8"))
             self.assertEqual(len(saved["animations"]), len(records))
 
+    def test_historical_clips_preserve_source_actor_and_exact_action(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            records = build_animation_catalog(Path(tmp), self.REPO)
+        clips = {item["id"]: item for item in records}
+        expected = {
+            "ambil_barang": ("ichsan", "pick_up"),
+            "tekan_tombol": ("ichsan", "press_button"),
+            "jalan_nyebrang": ("ichsan", "walk"),
+            "pak_ogah_wave": ("legacy_pak_ogah", "wave_flag"),
+            "parkir_whistle": ("legacy_kang_parkir", "whistle"),
+            "babeh_walk": ("legacy_babeh_pemilik", "walk"),
+        }
+        for key, (actor, action) in expected.items():
+            self.assertEqual((clips[key]["actor"], clips[key]["action_id"]),
+                             (actor, action))
+        self.assertFalse(clips["hobo_spawn"]["actor"])
+        self.assertFalse(clips["hobo_spawn"]["action_id"])
+        # Custom actions are only applied when the selected actor's catalog
+        # has the matching verified action; the GIF alone never enables TRY ON.
+        self.assertTrue(all(item["actor"] and item["action_id"]
+                            for item in clips.values() if item["id"] in expected))
+
     def test_scaffold_produces_editable_manifest_without_fake_animation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

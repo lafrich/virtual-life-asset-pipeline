@@ -42,16 +42,22 @@ def read_manifest(relative: str | None) -> dict:
 def poster_gif(preview: Path, dest: Path, name: str) -> tuple[str, str, int]:
     """Copy the actual preview and save its first frame without redrawing."""
     with Image.open(preview) as image:
-        if image.format != "GIF" or getattr(image, "n_frames", 1) < 2:
-            raise ValueError("Not a playable multi-frame GIF: " + str(preview))
-        if image.width > 1400 or image.height > 1000:
+        if image.format != "GIF":
+            raise ValueError("Not a GIF asset: " + str(preview))
+        # Four-up vendor/prop interaction previews (e.g. Babeh + etalase)
+        # can be wider than simple 4x64px actor views; keep actual pixels.
+        if image.width > 4096 or image.height > 2048:
             raise ValueError("Animation preview too large: " + str(preview))
         frame = image.convert("RGBA")
         frames = image.n_frames
     gif = MEDIA_PREFIX + name + ".gif"
     poster = MEDIA_PREFIX + name + ".png"
-    shutil.copy2(preview, dest / gif)
     frame.save(dest / poster, optimize=True)
+    if frames < 2:
+        # Optimized GIFs may collapse duplicate frames; preserve the still
+        # as a legitimate pose preview instead of claiming it is animated.
+        return "", "media/" + poster, frames
+    shutil.copy2(preview, dest / gif)
     return "media/" + gif, "media/" + poster, frames
 
 
@@ -86,6 +92,57 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
             "source": entry.get("source") or rel,
         })
 
+    # Every committed/or newly generated named NPC 4-view GIF becomes a real
+    # actor-specific preview in the MOTION DB. Existing curated legacy clips
+    # are kept once; no duplicate aliases for their reference GIFs.
+    historical_aliases = {
+        "pak_ogah_wave_flag": "pak_ogah_wave",
+        "kang_parkir_whistle": "parkir_whistle",
+        "babeh_pemilik_walk": "babeh_walk",
+    }
+    roster = json.loads(safe_path("assets/character_stock/archive_roster.json").read_text())
+    source_by_character = {a["id"]: a["source"] for a in roster["characters"]}
+    known_ids = {a["id"] for a in items}
+    for file in sorted((ROOT / "assets").glob("npc_*/*_4views_4x.gif")):
+        key = file.name.removesuffix("_4views_4x.gif")
+        if not valid_id(key) or key in known_ids or key in historical_aliases:
+            continue
+        actor = next((n for n in sorted(source_by_character,key=len,reverse=True)
+                      if key.startswith(n + "_")), "")
+        if not actor:
+            continue
+        items.append({
+            "id": key, "name": key[len(actor)+1:].replace("_"," ").upper(),
+            "group": "npc", "status": "preview",
+            "actor": "legacy_" + actor,
+            "action_id": key[len(actor)+1:],
+            "preview": file.relative_to(ROOT).as_posix(),
+            "source": source_by_character[actor],
+            "directions": ["se","sw","ne","nw"],
+            "layout":"four_up",
+            "note": actor.replace("_"," ").upper() + " / ACTUAL GENERATOR CLIP / PREVIEW ONLY",
+        })
+        known_ids.add(key)
+
+    # Manifests may contain well-defined timing/actions whose output PNG/GIFs
+    # have not been committed. Surface them as SOURCE ONLY, never playable.
+    for manifest_file in sorted((ROOT / "assets").glob("anim_*/manifest.json")):
+        manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+        for name, action in manifest.get("anims", {}).items():
+            key = manifest_file.parent.name + "_" + name
+            if not valid_id(key) or key in known_ids or not isinstance(action,dict):
+                continue
+            items.append({
+                "id":key, "name":name.replace("_"," ").upper(),
+                "group":"action", "status":"source_only",
+                "source":manifest_file.relative_to(ROOT).as_posix(),
+                "manifest":manifest_file.relative_to(ROOT).as_posix(),
+                "animation":name,
+                "directions":["se","sw","ne","nw"],"layout":"four_up",
+                "note":manifest_file.parent.name.upper()+" / TIMING + SOURCE ONLY / NOT RENDERED",
+            })
+            known_ids.add(key)
+
     for entry in items:
         name = entry.get("id")
         if not valid_id(name) or name in ids:
@@ -93,7 +150,7 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
         ids.add(name)
         if entry.get("group") not in {"action", "npc", "scene"}:
             raise ValueError(name + ": group must be action/npc/scene")
-        if entry.get("status", "preview") not in {"preview", "template"}:
+        if entry.get("status", "preview") not in {"preview", "template", "source_only"}:
             raise ValueError(name + ": unsupported review status")
         data = read_manifest(entry.get("manifest"))
         anim = data.get("anims", {}).get(entry.get("animation"), {}) if entry.get("animation") else {}
@@ -108,9 +165,12 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
             if path.is_file():
                 preview = safe_path(preview_rel)
                 clip, poster, gif_frames = poster_gif(preview, media, name)
-            elif entry.get("status") != "template":
+            elif entry.get("status") not in ("template","source_only"):
                 raise ValueError(name + ": preview path missing: " + preview_rel)
-        if not clip and entry.get("status") != "template":
+        status = entry.get("status","preview")
+        if status == "preview" and not clip and poster:
+            status = "still"
+        if not clip and status not in ("template","source_only","still"):
             raise ValueError(name + ": preview clips need a real multi-frame GIF")
 
         source = entry.get("source", entry.get("manifest", ""))
@@ -139,7 +199,7 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
             "name": str(entry.get("name", name.replace("_", " ").upper())),
             "kind": "animation",
             "group": entry["group"],
-            "status": entry.get("status", "preview"),
+            "status": status,
             "note": str(entry.get("note", "")),
             "gif": clip,
             "poster": poster,
@@ -153,6 +213,8 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
             "frame_ms": frame_ms if frame_ms else [],
             "duration_ms": duration,
             "preview_only": True,
+            "actor": str(entry.get("actor", "")),
+            "action_id": str(entry.get("action_id", "")),
         })
     (out / "animations.json").write_text(
         json.dumps({"version": 1, "animations": records}, indent=2, ensure_ascii=False) + "\n",

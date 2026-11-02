@@ -727,7 +727,12 @@ if __name__ == '__main__':
     refs = [('01M699F0ZHCPKAR3BYRRSVPPRB.jpg', (200, 300, 1615, 2560)), ('01M699EZG9G0YT0GAJ130GW1SX.jpg', (40, 40, 420, 640)), ('01M699EZBDGCSJKWKGNKQ5N8W4.jpg', (40, 40, 360, 440))]
     crops = []
     for fn, box in refs:
-        im = Image.open(REF + fn).convert('RGB').crop(box); crops.append(im.resize((round(im.width * H / im.height), H), Image.LANCZOS))
+        # Historical /cursor/stores/ screenshots are optional comparison art.
+        # Original pixel characters and animation frames render independently.
+        if not os.path.isfile(REF + fn):
+            continue
+        im = Image.open(REF + fn).convert('RGB').crop(box)
+        crops.append(im.resize((round(im.width * H / im.height), H), Image.LANCZOS))
     W = 16 + 6 * (FW * S + 12) + 36 + sum(c.width + 12 for c in crops)
     sh = Image.new('RGBA', (W, H + 64), BG); d = ImageDraw.Draw(sh)
     d.text((16, 8), 'YERBIES  ·  4x  ·  Yerbies se/sw/ne/nw idle f0  |  Gfunk se/ne  |  reference (original 3D art)', fill=(231, 235, 242), font=fb_); x = 16

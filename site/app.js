@@ -21,7 +21,7 @@ const state = {
   mode: "walk", expression: null, motion: null, direction: "auto", autoDir: 0,
   playing: !prefersReducedMotion, frame: 0, lastFrameTime: 0,
   zoom: 4, bg: "#f8f6f0", grid: false, image: null, motionImage: null,
-  faceImage: null, faceOverlay: null, blinkOverlay: null, lastBlink: 0,
+  faceImage: null, faceOverlay: null, blinkOverlay: null, archiveImage: null, lastBlink: 0,
   imageCache: new Map(), working: false
 };
 
@@ -67,6 +67,7 @@ function selectCharacter(character) {
   state.autoDir = 0;
   state.image = null;
   state.motionImage = null;
+  state.archiveImage = null;
   state.faceImage = null;
   state.faceOverlay = null;
   state.blinkOverlay = null;
@@ -76,10 +77,24 @@ function selectCharacter(character) {
   $("canvas-name").textContent = character.id.toUpperCase() + ".SPR";
   $("character-name").textContent = prettyName(character);
   $("prop-type").textContent = String(character.type || "npc").toUpperCase();
-  $("inspector-thumb").src = character.thumbnail || character.poster;
-  $("inspector-thumb").alt = character.name + " pixel-art preview";
-  $("download-sheet").href = character.sheet;
-  $("download-sheet").download = character.id + "_v6b_sheet.png";
+  const previewImage = character.thumbnail || character.poster;
+  const inspector = $("inspector-thumb");
+  inspector.closest(".inspector-art").classList.toggle("empty", !previewImage);
+  if (previewImage) inspector.src = previewImage; else inspector.removeAttribute("src");
+  inspector.alt = character.name + " pixel-art preview";
+  const sheetLink = $("download-sheet");
+  sheetLink.hidden = !character.sheet;
+  if (character.sheet) {
+    sheetLink.href = character.sheet;
+    sheetLink.download = character.id + "_v6b_sheet.png";
+  } else sheetLink.removeAttribute("href");
+  const renderStatus = character.asset_status || "verified";
+  const statusLabel = {"verified":"V6B / VERIFIED", "generated_preview":"GENERATED / PREVIEW",
+    "source_only":"SOURCE ONLY / NOT RENDERED", "archive_still":"ARCHIVE / STILL ONLY"}[renderStatus] || renderStatus.toUpperCase();
+  $("character-render-status").textContent = statusLabel;
+  $("character-render-status").classList.toggle("is-source", renderStatus === "source_only");
+  $("tab-faces").disabled = !(character.expressions?.length);
+  $("tool-expressions").disabled = !(character.expressions?.length);
   $("open-source").href = character.folder_url;
   $("face-tab-count").textContent = String(character.expressions?.length || 0).padStart(2, "0");
   buildFaces(character);
@@ -93,11 +108,33 @@ function selectCharacter(character) {
   setStatus("OPEN: " + character.id.toUpperCase() + ".SPR");
   canvas.setAttribute("aria-label", character.name + " sprite — 4 walk directions");
 
+  if (!character.sheet) {
+    state.playing = false;
+    syncPlaybackButton();
+    $("canvas-loading").hidden = true;
+    const imageSource = character.poster || character.thumbnail;
+    if (imageSource) cachedImage(imageSource, image => {
+      if (state.selected !== character) return;
+      state.archiveImage = image;
+      draw();
+    });
+    setStatus(character.id.toUpperCase() + " / SOURCE REGISTERED / NO NATIVE SPRITES");
+    draw();
+    return;
+  }
   cachedImage(character.sheet, image => {
     if (state.selected !== character) return;
     state.image = image;
     $("canvas-loading").hidden = true;
-    draw();
+    const first = character.motions?.find(a => a.id === "walk" && a.available) ||
+      character.motions?.find(a => a.id === "idle" && a.available) ||
+      character.motions?.find(a => a.available);
+    if (first) selectMotion(first);
+    else {
+      state.playing = false;
+      syncPlaybackButton();
+      draw();
+    }
   });
 }
 
@@ -236,6 +273,9 @@ function selectFace(face) {
 
 function startWalking() {
   if (!state.selected) return;
+  if (!state.selected.sheet) return setStatus("SOURCE ONLY / NO WALK SPRITES");
+  if (!state.selected.motions?.some(m=>m.id==="walk" && m.available))
+    return setStatus("NO AUTHORED WALK FOR THIS CHARACTER");
   const motion = state.selected.motions?.find(m => m.id === "walk" && m.available);
   if (motion) return selectMotion(motion);
   state.mode = "walk";
@@ -246,7 +286,7 @@ function startWalking() {
 }
 
 function togglePlayback() {
-  if (!state.selected) return;
+  if (!state.selected || !state.selected.sheet) return;
   // Replay the completed one-shot action when clicking PLAY.
   if (state.mode === "action" && !state.playing && state.motion?.loop === false &&
       state.frame >= state.motion.frames - 1) {
@@ -313,6 +353,7 @@ function syncTools() {
   $("tool-grid").classList.toggle("active",state.grid);
   $("tool-grid").setAttribute("aria-pressed",String(state.grid));
   $("tool-walk").classList.toggle("active",state.playing && state.mode !== "face");
+  $("tool-walk").disabled = !state.selected?.motions?.some(m=>m.id==="walk"&&m.available);
 }
 
 function applyZoom(next) {
@@ -365,14 +406,21 @@ function renderFileList(pickFirst = true) {
     const image = new Image();
     image.loading = index < 4 ? "eager" : "lazy";
     image.alt = "";
-    image.src = character.thumbnail || character.poster;
-    preview.append(image);
+    if (character.thumbnail || character.poster) {
+      image.src = character.thumbnail || character.poster;
+      preview.append(image);
+    } else {
+      preview.classList.add("file-source-only");
+      preview.textContent = "SRC";
+    }
     const label = document.createElement("span");
     label.className = "file-label";
     label.textContent = String(character.name).toUpperCase();
     const small = document.createElement("small");
-    small.textContent = (character.type || "npc").toUpperCase() + " / " +
-      String(index + 1).padStart(3, "0");
+    const condition = character.asset_status === "source_only" ? "SOURCE" :
+      character.asset_status === "archive_still" ? "STILL" :
+      character.asset_status === "generated_preview" ? "PREVIEW" : (character.type || "npc").toUpperCase();
+    small.textContent = condition + " / " + String(index + 1).padStart(3, "0");
     label.append(small);
     button.append(preview, label);
     button.addEventListener("click", () => selectCharacter(character));
@@ -400,6 +448,18 @@ function draw() {
     return;
   }
   const z = state.zoom, x = Math.round((w-64*z)/2), y = Math.round((h-112*z)/2)-9;
+  if (!state.selected.sheet) {
+    if (state.archiveImage?.naturalWidth) {
+      const source = state.archiveImage, aspect = source.width / source.height;
+      const h0 = Math.min(h - 60, 310), w0 = Math.min(w - 50,h0 * aspect);
+      ctx.drawImage(source,(w-w0)/2,(h-h0)/2,w0,h0);
+    } else {
+      ctx.fillStyle = "#1c3d80"; ctx.font = "bold 17px monospace"; ctx.textAlign="center";
+      ctx.fillText("SOURCE REGISTERED",w/2,h/2-10);
+      ctx.font="12px monospace"; ctx.fillText("NO REVIEWABLE SPRITE YET",w/2,h/2+15);
+    }
+    return;
+  }
   ctx.fillStyle = "#161b2640";
   ctx.beginPath();
   ctx.ellipse(x+32*z,y+100*z+6,27*z,Math.max(4,5*z),0,0,Math.PI*2);

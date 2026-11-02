@@ -17,7 +17,9 @@
         "nw"
       ],
       "layout": "four_up",
-      "note": "Pick up item / 4 facing"
+      "note": "Pick up item / 4 facing",
+      "actor": "ichsan",
+      "action_id": "pick_up"
     },
     {
       "id": "tekan_tombol",
@@ -35,7 +37,9 @@
         "nw"
       ],
       "layout": "four_up",
-      "note": "Crosswalk button"
+      "note": "Crosswalk button",
+      "actor": "ichsan",
+      "action_id": "press_button"
     },
     {
       "id": "jalan_nyebrang",
@@ -53,7 +57,9 @@
         "nw"
       ],
       "layout": "four_up",
-      "note": "Crossing / walk"
+      "note": "Crossing / walk",
+      "actor": "ichsan",
+      "action_id": "walk"
     },
     {
       "id": "pak_ogah_wave",
@@ -71,7 +77,9 @@
         "nw"
       ],
       "layout": "four_up",
-      "note": "Traffic hand signal"
+      "note": "Traffic hand signal",
+      "actor": "legacy_pak_ogah",
+      "action_id": "wave_flag"
     },
     {
       "id": "parkir_whistle",
@@ -89,7 +97,9 @@
         "nw"
       ],
       "layout": "four_up",
-      "note": "Parking attendant"
+      "note": "Parking attendant",
+      "actor": "legacy_kang_parkir",
+      "action_id": "whistle"
     },
     {
       "id": "babeh_walk",
@@ -107,7 +117,9 @@
         "nw"
       ],
       "layout": "four_up",
-      "note": "Merchant locomotion"
+      "note": "Merchant locomotion",
+      "actor": "legacy_babeh_pemilik",
+      "action_id": "walk"
     },
     {
       "id": "hobo_spawn",
