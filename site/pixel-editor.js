@@ -81,6 +81,52 @@ async function setFrame(action,dir,index){
  state.action=action;state.dir=dir;state.frame=Math.max(0,Math.min(index,activeClip()?.frames-1||0));
  $("action").value=action;$("direction").value=dir;await navigate();
 }
+/* Master edits are explicit changed pixels in a part region per facing.
+ * Frame motion is only translated by silhouette center. Rotations/occlusion
+ * still require manual frame corrections; never advertise auto bone skinning. */
+function queueMasterSync(){
+ if(state.mode!=="master"||!state.current)return;
+ const dir=state.dir,part=state.part,master=snapshot();
+ state.syncPromise=state.syncPromise.then(async()=>{
+  state.syncing=true;
+  const sourceClip=state.clips.find(clip=>clip.id==="idle");
+  if(!sourceClip)throw Error("Master needs original idle frames");
+  const sourceKey=core.key("idle",dir,0);
+  const source=await originalFor(sourceKey,sourceClip,dir,0);
+  const delta=parts.changed(source,master,part),mk=masterKey(dir,part);
+  const previous=state.masterDiff.get(mk)||[];
+  for(const clip of state.clips){
+   for(let i=0;i<clip.frames;i++){
+    const key=core.key(clip.id,dir,i),original=await originalFor(key,clip,dir,i);
+    const target=copy(state.edits.get(key)||original);
+    const shift=parts.offset(source,original,part);
+    parts.apply(target,original,previous,delta,shift,shift,part);
+    if(identical(target,original))state.edits.delete(key);
+    else state.edits.set(key,target);
+   }
+  }
+  state.masterDiff.set(mk,delta);
+  if(state.mode==="master"&&state.dir===dir&&state.part===part&&
+     state.action==="idle"&&state.frame===0){
+   state.current=copy(state.edits.get(sourceKey)||source);render();
+  }
+  updateCounts();scheduleSave();
+  $("master-status").textContent="AUTOSAVED / "+part.toUpperCase()+" / "+dir.toUpperCase()+
+   " → "+state.clips.reduce((sum,clip)=>sum+clip.frames,0)+
+   " FRAMES. CHECK ROTATIONS AND OVERLAPS IN FRAME MODE.";
+ }).catch(err=>status("MASTER SYNC FAILED: "+err.message,true))
+ .finally(()=>{state.syncing=false;});
+}
+function modeUI(){
+ const isMaster=state.mode==="master";
+ $("action").disabled=isMaster;$("frame").disabled=isMaster;
+ $("prev-frame").disabled=isMaster;$("next-frame").disabled=isMaster;
+ $("part-bounds").textContent=state.part.toUpperCase()+" / "+parts.PARTS[state.part].box.join(",")+" / EDIT REGION";
+ $("master-status").textContent=isMaster?
+   "MASTER: DRAW ON IDLE F0; ALL ORIGINAL ACTION FRAMES IN THIS DIRECTION INHERIT PIXEL DELTAS.":
+   "FRAME: FIX SPECIFIC POSES / AUTOSAVE TO THIS BROWSER.";
+ render();
+}
 function rgba(){const h=state.color.replace("#","");return [...[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)),255];}
 function paintPixel(x,y,erase=false){
  if(!state.current)return;
@@ -136,13 +182,13 @@ function render(){
  mc.clearRect(0,0,128,224);mc.fillStyle="#d4dde6";mc.fillRect(0,0,128,224);
  if(state.current){rc.putImageData(state.current,0,0);g.drawImage(renderCanvas,0,0,WIDTH*z,HEIGHT*z);
   mc.imageSmoothingEnabled=false;mc.drawImage(renderCanvas,0,0,128,224);}
- // Thin locked-region perimeter; body outside it cannot be painted.
+ // Thin boundary around the currently active semantic region.
+ const b=selectedRegion();
  g.strokeStyle="#2e6ca8";g.lineWidth=1;
- g.strokeRect(core.REGION[0]*z+.5,core.REGION[1]*z+.5,
-  (core.REGION[2]-core.REGION[0])*z,(core.REGION[3]-core.REGION[1])*z);
+ g.strokeRect(b[0]*z+.5,b[1]*z+.5,(b[2]-b[0])*z,(b[3]-b[1])*z);
  if(state.grid){g.strokeStyle="rgba(36,65,105,.23)";g.lineWidth=1;
-  for(let x=core.REGION[0]+1;x<core.REGION[2];x++) {g.beginPath();g.moveTo(x*z+.5,core.REGION[1]*z);g.lineTo(x*z+.5,core.REGION[3]*z);g.stroke();}
-  for(let y=core.REGION[1]+1;y<core.REGION[3];y++){g.beginPath();g.moveTo(core.REGION[0]*z,y*z+.5);g.lineTo(core.REGION[2]*z,y*z+.5);g.stroke();}}
+  for(let x=b[0]+1;x<b[2];x++){g.beginPath();g.moveTo(x*z+.5,b[1]*z);g.lineTo(x*z+.5,b[3]*z);g.stroke();}
+  for(let y=b[1]+1;y<b[3];y++){g.beginPath();g.moveTo(b[0]*z,y*z+.5);g.lineTo(b[2]*z,y*z+.5);g.stroke();}}
  $("frame-dirty").textContent=state.edits.has(currentKey())?"MODIFIED / LOCAL":"SOURCE PIXELS";
 }
 function updateCounts(){$("modified-count").textContent=state.edits.size+" MODIFIED FRAME"+(state.edits.size===1?"":"S");}
