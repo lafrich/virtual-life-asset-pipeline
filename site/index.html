@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#043d9e">
   <meta name="description" content="Virtual Life character stock. Pixel people, Windows Paint energy.">
   <title>character_stock.pnt — Paint</title>
-  <link rel="stylesheet" href="./style.css?v=accessories-v1-20261103">
-  <script defer src="./app.js?v=accessories-v1-20261103"></script>
+  <link rel="stylesheet" href="./style.css?v=astrofrich-modular-v1">
+  <script defer src="./app.js?v=astrofrich-modular-v1"></script>
   <script defer src="./animations.js?v=life-sim-roadmap-v1"></script>
 </head>
 <body>
@@ -88,6 +88,7 @@
             <button type="button" class="detail-tab" id="tab-faces" role="tab" aria-controls="faces-panel" aria-selected="false">FACE <span id="face-tab-count">00</span></button>
             <button type="button" class="detail-tab" id="tab-motions" role="tab" aria-controls="motions-panel" aria-selected="false">MOTION <span id="motion-tab-count">00</span></button>
             <button type="button" class="detail-tab" id="tab-accessories" role="tab" aria-controls="accessories-panel" aria-selected="false">AKSESORIS</button>
+            <button type="button" class="detail-tab" id="tab-custom-char" role="tab" aria-controls="custom-char-panel" aria-selected="false">NEW CUSTOM CHAR</button>
           </div>
           <div class="detail-content">
             <section id="info-panel" role="tabpanel" aria-labelledby="tab-info">
@@ -138,6 +139,35 @@
               <div id="accessory-storage-list" class="accessory-storage-list" aria-label="Saved helmets and bags"></div>
               <p id="accessory-equipped" class="accessory-equipped">NO ACCESSORIES ATTACHED</p>
               <p class="accessory-note">Hanya dua kategori untuk sekarang. PNG aksesori tersimpan terpisah dari sprite asli. Equipment preview lokal di browser ini; tiap arah 64×112.</p>
+            </section>
+            <section id="custom-char-panel" role="tabpanel" aria-labelledby="tab-custom-char" hidden>
+              <div class="property-label">CHARACTER CREATOR / MODULAR TEMPLATE</div>
+              <h2 class="accessory-panel-title">NEW CUSTOM CHAR <small>ASTROFRICH</small></h2>
+              <p class="motion-hint">Buat karakter bernama sendiri dari base Theodore botak berkacamata, dengan belt, emblem dada dan kelereng perut tetap utuh.</p>
+              <label class="custom-char-label">CATEGORY
+                <select id="custom-category"><option value="astrofrich">ASTROFRICH</option></select>
+              </label>
+              <label class="custom-char-label">BASE TEMPLATE
+                <select id="custom-base"><option value="astrofrich_base">THEODORE / BALD + GLASSES</option></select>
+              </label>
+              <label class="custom-char-label">CHARACTER NAME
+                <input id="custom-name" type="text" maxlength="40" placeholder="Nama karakter baru" autocomplete="off">
+              </label>
+              <div class="property-label">ACCESSORIES / EACH WITH 4 DIRECTIONS</div>
+              <label class="custom-char-label">HELM
+                <select id="custom-helmet"><option value="">— NO HELMET —</option></select>
+              </label>
+              <label class="custom-char-label">TAS
+                <select id="custom-bag"><option value="">— NO BAG —</option></select>
+              </label>
+              <p id="custom-animation-count" class="accessory-note">BASE: 7 ANIMATIONS · 5 EXPRESSIONS · 4 DIRECTIONS</p>
+              <div class="accessory-create-buttons">
+                <button type="button" class="chrome-button action-main" id="custom-save">↓ SAVE CHARACTER</button>
+                <button type="button" class="chrome-button" id="custom-new">+ NEW BLANK</button>
+              </div>
+              <div class="property-label">CHARACTER STORAGE / ASTROFRICH</div>
+              <div id="custom-storage-list" class="accessory-storage-list" aria-label="Saved Astrofrich custom characters"></div>
+              <p class="accessory-note">Karakter di Character Storage bisa dipilih di daftar karakter. Semua animasi dan ekspresi base dipertahankan; helm/tas adalah layer terpisah yang mengikuti arah gerak.</p>
             </section>
           </div>
         </aside>
