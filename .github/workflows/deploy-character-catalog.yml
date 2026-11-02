@@ -16,6 +16,7 @@ on:
       - feature/register-life-sim-actions-in-motion-db
       - feature/mixamo-model-rig-studio-v1
       - feature/add-otis-helmeted-character
+      - fix/otis-compact-helmet-flat-rear
       - feature/shared-category-skeletons-remove-rig-ui
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
