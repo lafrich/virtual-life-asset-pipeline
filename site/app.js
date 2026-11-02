@@ -719,7 +719,10 @@ $("edit-pixels").addEventListener("click", () => {
   $("pixel-editor-embed").src = "./pixel-editor.html?actor=legacy_otis&embedded=1";
   $("close-pixel-editor").focus();
 });
-function closePixelEditor() {
+async function closePixelEditor() {
+  try{
+    await $("pixel-editor-embed").contentWindow?.VirtualLifePixelEditor?.flush?.();
+  }catch(error){setStatus("PIXEL DRAFT SAVE FAILED: USE EXPORT IN EDITOR");return;}
   $("pixel-editor-overlay").hidden = true;
   $("pixel-editor-embed").src = "about:blank";
   document.body.classList.remove("pixel-editor-open");
