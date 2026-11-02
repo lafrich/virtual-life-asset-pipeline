@@ -31,6 +31,8 @@ on:
       - "tests/test_otis_helmet.py"
       - "tests/test_pixel_patch.py"
       - "tests/test_pixel_editor.cjs"
+      - "tests/test_accessory_editor.cjs"
+      - "tools/build_accessory_guide.py"
       - "tests/test_master_parts.cjs"
       - "tests/test_rig_runtime.cjs"
       - "tests/test_shared_bone_runtime.cjs"
