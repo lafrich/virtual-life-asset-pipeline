@@ -120,6 +120,7 @@
       "This character has no reviewed source rig for this action.";
     setText("rig-inspect-note",n);
     setText("rig-canvas-title",actor?.id.toUpperCase()+" / "+(item?.id.toUpperCase()||"—"));
+    $("status").textContent="RIG: "+(actor?.id.toUpperCase()||"—")+" / "+(item?.id.toUpperCase()||"—")+" / "+(item?.ready?"READY":"NEEDS RIG");
     $("rig-include").disabled=!item?.ready;
     $("rig-copy").disabled=!item?.ready;
     $("rig-canvas-overlay").hidden=Boolean(item?.ready);
