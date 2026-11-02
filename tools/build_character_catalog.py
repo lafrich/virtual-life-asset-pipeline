@@ -258,7 +258,7 @@ def build(public: bool = False):
             "walk_frames": frame_count,
             "expressions": expressions,
         })
-        print("Added", slug, "->", gif.relative_to(OUT))
+        print("Added", slug, "->", gif.relative_to(dest))
 
     results.sort(key=lambda c: (-c["timestamp"], c["name"].lower()))
     (dest / "catalog.json").write_text(
