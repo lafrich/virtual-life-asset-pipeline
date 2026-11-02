@@ -80,6 +80,7 @@ jobs:
           python -m py_compile tools/build_rig_studio.py tools/build_character_catalog.py tools/animation_backlog.py tools/build_animation_catalog.py tools/new_animation_template.py tools/pack_animation_preview.py tools/build_native_character_catalog.py tools/build_legacy_character_catalog.py tools/build_legacy_face_previews.py tools/generate_archive_previews.py
           python -m unittest discover -s tests -p 'test_animation_catalog.py' -v
           python -m unittest discover -s tests -p 'test_rig_studio.py' -v
+          python -m unittest discover -s tests -p 'test_otis_helmet.py' -v
           python -m unittest discover -s tests -p 'test_animation_backlog.py' -v
           python -m unittest discover -s tests -p 'test_character_motion_studio.py' -v
           python -m unittest discover -s tests -p 'test_legacy_face_previews.py' -v
