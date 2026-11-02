@@ -42,12 +42,15 @@
     const motion = character?.motions?.find(item => item.id === actionId);
     const planned = selected?.status === "planned";
     const available = !planned && Boolean(motion?.available);
-    button.disabled = !available;
+    const sharedBones = Boolean(actionId && character?.bone_actions?.includes(actionId));
+    button.disabled = !available; // real preview requires this actor's rendered pixels
     button.textContent = available ? "▶ TRY ON " + character.name.toUpperCase() :
-      planned ? "PLANNED / NO RIG" :
-      actionId ? "NEEDS CHARACTER RIG" : "REFERENCE ONLY";
-    button.title = available ? "Switch to this character and play its own action poses" :
-      "No reviewed character-specific native pose sheet is registered yet";
+      sharedBones ? "SHARED BONES / SKIN PENDING" :
+      planned ? "PLANNED / BONE MOTION NOT AUTHORED" :
+      actionId ? "BONE MOTION NOT AUTHORED" : "REFERENCE ONLY";
+    button.title = available ? "Switch to this character and play its original pixel motion" :
+      sharedBones ? "Shared skeletal keys support this model category, but this actor has no bound body-part sprites yet" :
+      "No authored shared skeletal keys and actor-specific rendered action are available";
   }
   async function loadTargets() {
     try {
