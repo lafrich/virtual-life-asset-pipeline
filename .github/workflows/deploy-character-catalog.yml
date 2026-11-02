@@ -90,7 +90,8 @@ jobs:
           test -s _site/animations.js
           test -s _site/rig-runtime.js
           test -s _site/rig-studio.js
-          test -s _site/rigs.jsonon
+          test -s _site/rigs.json
+          test -s _site/animations.json
           test -s _site/animations.js
           python -m json.tool _site/catalog.json > /dev/null
           python -c 'import json,pathlib; s=pathlib.Path("_site"); rigs=json.loads((s/"rigs.json").read_text()); cs=json.loads((s/"catalog.json").read_text())["characters"]; assert len(rigs["types"])==4 and len(rigs["characters"])==len(cs) and len(rigs["registry"])==203; assert all(c["model_type"] in {"HUMANOID","MASCOT","ALIEN_SUIT","HELMETED"} for c in cs); assert all((s/c["motion_pack"]).is_file() for c in cs); assert all((s/x["atlas"]).is_file() for c in cs for x in json.loads((s/c["motion_pack"]).read_text())["clips"]); assert {c["model_type"] for c in cs}=={"HUMANOID","MASCOT","ALIEN_SUIT","HELMETED"}; assert sum(c["rig_ready_count"] for c in cs)>50; print("Verified",len(cs),"source-authored rig packs across",len(rigs["types"]),"model types")'
