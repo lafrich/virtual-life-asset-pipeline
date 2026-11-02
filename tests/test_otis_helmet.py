@@ -60,6 +60,18 @@ class OtisVisualTests(unittest.TestCase):
                              O.helmet(base, direction, 1).tobytes(),
                              "No extra rotating muzzle on the back of the helmet")
 
+    def test_opposite_face_rim_is_not_exposed_after_flip(self):
+        for view, xstart in (("se", 45), ("sw", 12)):
+            source = Image.new("RGBA", (64, 112))
+            ImageDraw.Draw(source).rectangle((xstart, 44, xstart + 6, 51),
+                                              fill=(255, 0, 255, 255))
+            frame = O.helmet(source, view, 0)
+            for x in range(xstart, xstart + 7):
+                for y in range(44, 52):
+                    self.assertNotEqual(frame.getpixel((x, y))[:3],
+                                        (255, 0, 255),
+                                        "Theodore's old face must not peek at the new helmet rim")
+
     def test_side_disc_follows_theodore_body_facing(self):
         # Theodore's SE/NE V6B faces viewer-right, and SW/NW faces left.
         # Canonical Otis art was authored facing left; the previous code
