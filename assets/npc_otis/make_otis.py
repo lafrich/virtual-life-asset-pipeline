@@ -34,20 +34,23 @@ COUNTS = {"idle": 4, "walk": 6, **{kind: 4 for kind in POSES}}
 PIXEL_PATCH = HERE / "pixel_overrides.json"
 HEAD_REGION = (8, 18, 56, 72)
 PATCH_FORMAT = "virtual-life-pixel-patch-v1"
+PATCH_FORMAT_V2 = "virtual-life-pixel-patch-v2"
 
 
 def load_pixel_overrides(path: Path = PIXEL_PATCH) -> dict[tuple[str, str, int], Image.Image]:
-    """Validate exact original-frame PNGs; only head-region pixels can change."""
+    """Validate exact original Otis frame edits (v1 helmet only, v2 all parts)."""
     if not path.exists():
         return {}
     if path.stat().st_size > 15_000_000:
         raise ValueError("Otis overrides exceed 15 MB")
     data = json.loads(path.read_text(encoding="utf-8"))
-    if (data.get("format") != PATCH_FORMAT or data.get("version") != 1 or
+    version = data.get("version")
+    if (version not in (1, 2) or
+        data.get("format") != (PATCH_FORMAT if version == 1 else PATCH_FORMAT_V2) or
         data.get("actor") != "legacy_otis" or
         data.get("frame_size") != [64, 112] or
-        data.get("region") != list(HEAD_REGION)):
-        raise ValueError("Pixel overrides must target the original Otis V6B head only")
+        data.get("region") != (list(HEAD_REGION) if version == 1 else [0, 0, 64, 112])):
+        raise ValueError("Pixel overrides must target the original Otis V6B actor")
     frames = data.get("frames")
     if not isinstance(frames, list) or len(frames) > 140:
         raise ValueError("Too many pixel override frames")
@@ -72,7 +75,7 @@ def load_pixel_overrides(path: Path = PIXEL_PATCH) -> dict[tuple[str, str, int],
                 if image.format != "PNG" or image.size != (64, 112) or image.mode != "RGBA":
                     raise ValueError("Edited sprite must be a 64×112 RGBA PNG")
                 image.load()
-                result[key] = image.copy()
+                result[key] = (image.copy(), version == 2)
         except (OSError, ValueError, binascii.Error) as error:
             raise ValueError("Invalid edited original PNG frame") from error
     return result
@@ -87,10 +90,14 @@ def apply_pixel_override(image: Image.Image, view: str, kind: str,
         return image
     if image.size != (64, 112) or image.mode != "RGBA":
         raise ValueError("Source Otis frame is not original 64×112 RGBA")
-    # Only the editable head rectangle is transplanted. All suit pixels,
-    # shoes, grounding, backpacks and silhouettes outside it remain exact.
+    # Legacy head-only patch remains backwards compatible. V2 is an
+    # explicitly authored full-frame result, including selected body parts.
+    # Theodore SOURCE frames remain unchanged; only Otis output is replaced.
+    edited, full_frame = updated if isinstance(updated, tuple) else (updated, False)
+    if full_frame:
+        return edited.copy()
     out = image.copy()
-    out.paste(updated.crop(HEAD_REGION), HEAD_REGION[:2])
+    out.paste(edited.crop(HEAD_REGION), HEAD_REGION[:2])
     return out
 
 # Pixel-art palette only: solid RGBA, no antialiasing or interpolated colors.
