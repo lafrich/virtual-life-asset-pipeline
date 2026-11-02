@@ -1,0 +1,32 @@
+{
+  "id": "template_one_shot",
+  "name": "ONE SHOT",
+  "group": "action",
+  "status": "template",
+  "note": "POSE → ACTION → RECOVER • STARTER",
+  "source": "tools/new_animation_template.py",
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "layout": "four_up",
+  "frame_count": 6,
+  "frame_ms": [
+    180,
+    120,
+    120,
+    180,
+    170,
+    240
+  ],
+  "loop": false,
+  "preset": "action_one_shot",
+  "example_phases": [
+    "anticipate",
+    "perform",
+    "hold",
+    "recover"
+  ]
+}
