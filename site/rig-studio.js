@@ -152,10 +152,11 @@
     $("rig-canvas-overlay").hidden=false;
     $("rig-canvas-overlay").textContent="LOADING ORIGINAL ACTOR SPRITES...";
     try{
-      pack=await studio.fetchPack(actor.pack);
+      const nextPack=await studio.fetchPack(actor.pack);
       if(token!==generation)return;
-      if(pack.actor!==actor.id || pack.model_type!==actor.model_type)
+      if(nextPack.actor!==actor.id || nextPack.model_type!==actor.model_type)
         throw new Error("Motion pack and selected model mismatch");
+      pack=nextPack;
       filter="ready";
       document.querySelectorAll("[data-rig-filter]").forEach(b=>{
         const active=b.dataset.rigFilter==="ready";
