@@ -12,6 +12,10 @@ import re
 import shutil
 from pathlib import Path
 from PIL import Image
+try:
+    from .animation_backlog import planned_records
+except ImportError:  # Running the builder directly from tools/ as a script.
+    from animation_backlog import planned_records
 
 ROOT = Path(__file__).resolve().parents[1]
 MEDIA_PREFIX = "animation-"
@@ -216,6 +220,11 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
             "actor": str(entry.get("actor", "")),
             "action_id": str(entry.get("action_id", "")),
         })
+    # Roadmap actions are searchable in a distinct PLANNED view but must not
+    # masquerade as a GIF, approved motion, or working character binding.
+    action_registry = json.loads(safe_path("assets/animation_library/actions.json").read_text(encoding="utf-8"))
+    reserved = ids | {item["id"] for item in action_registry.get("actions", [])}
+    records.extend(planned_records(ROOT / "assets/animation_library/backlog.json", reserved))
     (out / "animations.json").write_text(
         json.dumps({"version": 1, "animations": records}, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",

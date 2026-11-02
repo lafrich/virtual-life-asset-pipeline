@@ -40,9 +40,11 @@
     const character = selectedTarget();
     const actionId = actionForClip(selected);
     const motion = character?.motions?.find(item => item.id === actionId);
-    const available = Boolean(motion?.available);
+    const planned = selected?.status === "planned";
+    const available = !planned && Boolean(motion?.available);
     button.disabled = !available;
     button.textContent = available ? "▶ TRY ON " + character.name.toUpperCase() :
+      planned ? "PLANNED / NO RIG" :
       actionId ? "NEEDS CHARACTER RIG" : "REFERENCE ONLY";
     button.title = available ? "Switch to this character and play its own action poses" :
       "No reviewed character-specific native pose sheet is registered yet";
@@ -70,9 +72,15 @@
   }
 
 
+  // Preserve the original real-preview view. Unrendered roadmapped actions
+  // belong only in PLANNED/P0 views, never mixed into working GIFs.
   const clipSet = () => library.filter(clip =>
-    (group === "all" || (group === "template" ? clip.status === "template" : clip.group === group)) &&
-    [clip.name, clip.id, clip.note, clip.group, clip.status].join(" ").toLowerCase().includes(query)
+    (group === "planned" ? clip.status === "planned" :
+      group === "p0" ? clip.status === "planned" && clip.priority === "P0" :
+      clip.status !== "planned" &&
+        (group === "all" || (group === "template" ? clip.status === "template" : clip.group === group))) &&
+    [clip.name, clip.id, clip.note, clip.group, clip.status,
+      clip.category, clip.priority, ...(clip.requirements || [])].join(" ").toLowerCase().includes(query)
   );
   const writing = (id, value) => { el(id).textContent = String(value ?? "—"); };
 
@@ -119,8 +127,11 @@
       mainImage.removeAttribute("src");
       mainImage.hidden = true;
       empty.hidden = false;
-      empty.querySelector("strong").textContent = selected?.status === "source_only" ? "SOURCE ONLY." : "NO FRAMES.";
-      empty.querySelector("span").textContent = selected?.status === "source_only"
+      empty.querySelector("strong").textContent = selected?.status === "planned" ? "PLANNED ACTION." :
+        selected?.status === "source_only" ? "SOURCE ONLY." : "NO FRAMES.";
+      empty.querySelector("span").textContent = selected?.status === "planned"
+        ? "GAMEPLAY CONTRACT ONLY / NO CHARACTER FRAMES OR PLAYABLE ANIMATION"
+        : selected?.status === "source_only"
         ? "ANIMATION DEFINED IN SOURCE / RENDER NOT AVAILABLE"
         : "TEMPLATE / EDIT POSES TO PREVIEW";
     }
@@ -133,8 +144,9 @@
     const sourceActor = targets.find(c => c.id === clip.actor);
     if (sourceActor) el("animation-target-char").value = sourceActor.id;
     playing = Boolean(clip.gif);
-    writing("animation-canvas-title", clip.id.toUpperCase() + (clip.gif ? ".GIF" : ".TPL"));
-    writing("animation-canvas-tag", clip.status === "template" ? "TEMPLATE / DRAFT" :
+    writing("animation-canvas-title", clip.id.toUpperCase() + (clip.gif ? ".GIF" : clip.status === "planned" ? ".PLAN" : ".TPL"));
+    writing("animation-canvas-tag", clip.status === "planned" ? "PLANNED / NO SPRITE" :
+      clip.status === "template" ? "TEMPLATE / DRAFT" :
       clip.status === "source_only" ? "SOURCE / NO RENDER" :
       clip.status === "still" ? "STILL / ONE FRAME" : "PREVIEW / NOT IN GAME");
     writing("animation-name", clip.name);
@@ -145,12 +157,24 @@
     writing("animation-views", clip.directions.length + " DIR");
     writing("animation-directions", clip.layout === "four_up" ? "SE / SW / NE / NW  •  4-UP" : clip.directions.join(" / ").toUpperCase());
     writing("animation-frame-display", clip.gif ? "GIF" : "NO GIF");
-    writing("animation-review-status", clip.status === "template" ? "TEMPLATE / NO APPROVED POSES" :
+    writing("animation-review-status", clip.status === "planned" ? "PLANNED / NO FRAMES / NOT IN GAME" :
+      clip.status === "template" ? "TEMPLATE / NO APPROVED POSES" :
       clip.status === "source_only" ? "SOURCE ONLY / NO FRAMES" :
       clip.status === "still" ? "STILL POSE / NO ANIMATION" : "PREVIEW ONLY / NOT IN GAME");
     writing("animation-note", [clip.note || "No additional metadata",
       clip.actor ? "SOURCE ACTOR: " + (targets.find(c => c.id === clip.actor)?.name || clip.actor).toUpperCase() : ""
     ].filter(Boolean).join(" / "));
+    const plannedMeta = el("animation-roadmap-meta");
+    plannedMeta.hidden = clip.status !== "planned";
+    if (clip.status === "planned") {
+      writing("animation-plan-priority", clip.priority + " / BATCH " + clip.batch);
+      writing("animation-plan-category", (clip.category || "").toUpperCase());
+      writing("animation-plan-phases", clip.phases.join(" → ").toUpperCase());
+      writing("animation-plan-requires", clip.requirements.length
+        ? clip.requirements.join(", ").replaceAll("_", " ").toUpperCase() : "NO PROP");
+      writing("animation-plan-event", clip.event?.name?.toUpperCase() || "NONE");
+      writing("animation-plan-sync", (clip.sync || "solo").toUpperCase());
+    }
     el("animation-review-status").classList.toggle("is-template", clip.status !== "preview");
 
     const dl = el("animation-download");
@@ -174,12 +198,17 @@
     } else {
       source.hidden = true;
     }
+    if (clip.status === "planned") {
+      source.href = "https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/assets/animation_library/backlog.json";
+      source.hidden = false;
+    }
 
     el("animation-loading").hidden = true;
     syncPlaying();
     updateApply();
     renderList(false);
-    el("status").textContent = "MOTION: " + clip.id.toUpperCase() + (clip.status === "template" ? " / DRAFT" : " / PREVIEW");
+    el("status").textContent = "MOTION: " + clip.id.toUpperCase() +
+      (clip.status === "planned" ? " / PLANNED / NOT PLAYABLE" : clip.status === "template" ? " / DRAFT" : " / PREVIEW");
   }
 
   function renderList(pickFirst = true) {
@@ -209,14 +238,16 @@
         img.alt = "";
         preview.append(img);
       } else {
-        preview.textContent = clip.status === "source_only" ? "SRC" : "TPL";
+        preview.textContent = clip.status === "planned" ? (clip.priority || "P?") :
+          clip.status === "source_only" ? "SRC" : "TPL";
         preview.classList.add("animation-template-icon");
       }
       const label = document.createElement("span");
       label.className = "file-label";
       label.textContent = clip.name;
       const secondary = document.createElement("small");
-      secondary.textContent = clip.status === "template" ? "TEMPLATE / DRAFT" :
+      secondary.textContent = clip.status === "planned" ? clip.priority + " / " + clip.category.toUpperCase() + " / PLAN" :
+        clip.status === "template" ? "TEMPLATE / DRAFT" :
         clip.status === "source_only" ? "SOURCE / NO GIF" :
         clip.status === "still" ? "POSE / 1 FRAME" : clip.group.toUpperCase() + " / GIF";
       label.append(secondary);
@@ -244,6 +275,7 @@
 
   el("animation-target-char").addEventListener("change", updateApply);
   el("animation-apply").addEventListener("click", () => {
+    if (selected?.status === "planned") return; // roadmap is never playable
     const target = selectedTarget();
     const actionId = actionForClip(selected);
     const action = target?.motions?.find(item => item.id === actionId && item.available);

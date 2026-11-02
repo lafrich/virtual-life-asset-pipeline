@@ -8,7 +8,7 @@
   <title>character_stock.pnt — Paint</title>
   <link rel="stylesheet" href="./style.css">
   <script defer src="./app.js?v=face-preview-fix-2"></script>
-  <script defer src="./animations.js"></script>
+  <script defer src="./animations.js?v=life-sim-roadmap-v1"></script>
 </head>
 <body>
   <div class="desktop">
@@ -146,6 +146,8 @@
             <button type="button" class="anim-filter" data-anim-filter="npc" aria-pressed="false">NPC</button>
             <button type="button" class="anim-filter" data-anim-filter="scene" aria-pressed="false">SCN</button>
             <button type="button" class="anim-filter" data-anim-filter="template" aria-pressed="false">TPL</button>
+            <button type="button" class="anim-filter" data-anim-filter="planned" aria-pressed="false">PLAN</button>
+            <button type="button" class="anim-filter" data-anim-filter="p0" aria-pressed="false">P0</button>
           </div>
           <div id="animation-file-list" class="file-list" role="listbox" aria-label="Choose animation" tabindex="0"></div>
           <a class="animation-create" href="https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/docs/animation-library.md" target="_blank" rel="noopener noreferrer">+ NEW TEMPLATE</a>
@@ -182,6 +184,15 @@
               <div><span>VIEWS</span><strong id="animation-views">—</strong></div>
             </div>
             <div class="animation-note" id="animation-note">PREVIEW ONLY / NOT IN LIVE GAME</div>
+            <div class="animation-roadmap-meta" id="animation-roadmap-meta" hidden>
+              <div class="animation-plan-heading">LIFE SIM / ACTION SPEC • NOT PLAYABLE</div>
+              <div><span>PRIORITY</span><strong id="animation-plan-priority">—</strong></div>
+              <div><span>SYSTEM</span><strong id="animation-plan-category">—</strong></div>
+              <div><span>PHASES</span><strong id="animation-plan-phases">—</strong></div>
+              <div><span>REQUIRES</span><strong id="animation-plan-requires">—</strong></div>
+              <div><span>EVENT</span><strong id="animation-plan-event">—</strong></div>
+              <div><span>SYNC</span><strong id="animation-plan-sync">—</strong></div>
+            </div>
             <div class="retarget-panel">
               <label for="animation-target-char">APPLY TO CHARACTER</label>
               <select id="animation-target-char" aria-label="Choose character to test this motion"></select>
