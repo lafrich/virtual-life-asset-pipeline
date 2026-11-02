@@ -1,7 +1,7 @@
 "use strict";
 
-// Character Stock Paint is a viewer, not a pixel editor. Source sprites and
-// facial-expression layers are read-only and auto-discovered by the builder.
+// Character Stock is a read-only viewer; Otis can open the dedicated pixel
+// editor through its own source-authored, patch-based editing workflow.
 const $ = (id) => document.getElementById(id);
 const canvas = $("sprite-canvas");
 const ctx = canvas.getContext("2d", { alpha: false });
