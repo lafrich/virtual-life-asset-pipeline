@@ -39,10 +39,26 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/npc_aladdin_sane/sprites/ assets/npc_aladdin_sane/preview/ assets/npc_aladdin_sane/manifest.json
+          # The repo ignores build output by default. Force-add this one
+          # reviewed character's game-ready binary assets to version control.
+          git add -f assets/npc_aladdin_sane/sprites/*.png
+          git add -f assets/npc_aladdin_sane/preview/*.png assets/npc_aladdin_sane/preview/*.gif
+          git add -f assets/npc_aladdin_sane/manifest.json
           if ! git diff --cached --quiet; then
             git commit -m "Store v6b Aladdin Sane sprites and walking previews [skip ci]"
-            git push origin HEAD:feature/aladdin-sane-v6b
+            # The branch can move while jobs are running; replay on latest
+            # head before a non-forced push, preserving all other changes.
+            for attempt in 1 2 3; do
+              git fetch origin feature/aladdin-sane-v6b
+              git rebase origin/feature/aladdin-sane-v6b
+              if git push origin HEAD:feature/aladdin-sane-v6b; then
+                break
+              fi
+              if [ "$attempt" = 3 ]; then
+                echo "Push failed after three attempts" >&2
+                exit 1
+              fi
+            done
           fi
       - name: Publish generated output for review
         if: always()
