@@ -37,7 +37,13 @@ C = {
 
 
 def helmet(source: Image.Image, view: str, phase: int = 0) -> Image.Image:
-    """Swap only the original helmet; preserve Theodore's goggles/face/body."""
+    """Compact Otis helmet / plain squared-off rear; untouched Theodore body.
+
+    New proportions are confined to original helmet/visor pixels:
+    turquoise shell x24..48, y30..42 versus old x17..52, y25..44;
+    chrome ear fits x45..53, and front muzzle now ends at y66, not y70.
+    Rear helmet is an intentionally flat plain box (no wraparound front glass).
+    """
     if source.size != (64, 112) or source.mode != "RGBA":
         raise ValueError("Otis requires Theodore's 64x112 RGBA source frame")
     if view not in VIEWS:
@@ -46,79 +52,83 @@ def helmet(source: Image.Image, view: str, phase: int = 0) -> Image.Image:
     mirror = view in ("sw", "nw")
     img = ImageOps.mirror(source) if mirror else source.copy()
     d = ImageDraw.Draw(img)
-    # Remove the previous short metal dome only. Never erase goggles or suit.
+    # Clear the original Theodore dome only. Keep face, glasses, red suit,
+    # arms, pack, trouser silhouettes, shoes and exact ground shadow pixels.
     d.rectangle((18, 26, 50, 42), fill=(0, 0, 0, 0))
 
-    # Wide turquoise machine shell with rounded-rect top and angled sloping brim.
-    d.polygon([(17, 40), (18, 35), (22, 29), (28, 26), (40, 25),
-               (46, 27), (50, 32), (52, 39), (51, 44), (18, 44)],
-              fill=C["shell_d"])
-    d.polygon([(18, 38), (20, 33), (25, 29), (30, 27),
-               (39, 26), (46, 28), (50, 33), (50, 38)], fill=C["shell_m"])
-    d.polygon([(19, 36), (21, 32), (26, 29), (31, 28),
-               (37, 28), (32, 31), (26, 34), (20, 39)], fill=C["shell_l"])
-    d.polygon([(31, 28), (40, 27), (47, 29), (50, 34),
-               (50, 36), (46, 35), (42, 33), (37, 33)], fill=C["shell_d"])
-    d.rectangle((19, 39, 51, 41), fill=C["shell_dark"])
-    d.line([(19, 39), (26, 39)], fill=C["chrome_hi"])
-
-    # Twin red conical horns, asymmetric as in reference.
-    d.polygon([(22, 31), (17, 21), (26, 28), (25, 34)], fill=C["red"])
-    d.polygon([(18, 22), (24, 29), (22, 28)], fill=C["red_hi"])
-    d.polygon([(42, 28), (46, 18), (47, 31), (44, 34)], fill=C["red"])
-    d.polygon([(46, 19), (46, 29), (44, 28)], fill=C["red_hi"])
-    d.point((25, 34), fill=C["red_d"])
-    d.point((44, 34), fill=C["red_d"])
-    for x in (30, 33, 36, 39):
-        d.rectangle((x, 38, x + 1, 39), fill=C["glow"])
-
-    # Cylindrical steel visor; center stays transparent so Theodore's original
-    # round spectacles and facial expressions remain VISIBLE inside the helmet.
-    d.rectangle((18, 42, 49, 43), fill=C["chrome_mid"])
-    d.line([(21, 42), (40, 42)], fill=C["chrome_hi"])
-    d.rectangle((18, 44, 20, 53), fill=C["chrome_d"])
-    d.line([(19, 45), (19, 51)], fill=C["chrome_hi"])
-    d.rectangle((47, 44, 49, 54), fill=C["chrome_d"])
-    d.line([(48, 45), (48, 50)], fill=C["chrome_l"])
-    d.line([(21, 53), (47, 53)], fill=C["chrome_d"])
-    d.line([(23, 54), (43, 54)], fill=C["chrome_mid"])
-    d.line([(23, 45), (27, 44)], fill=C["shell_l"])
-
-    # Heavy circular side socket / ear housing.
-    d.ellipse((46, 39, 55, 56), fill=C["chrome_dark"])
-    d.ellipse((47, 40, 54, 55), fill=C["chrome_mid"])
-    d.ellipse((48, 41, 53, 54), fill=C["chrome_l"])
-    d.line([(48, 43), (49, 42)], fill=C["chrome_hi"])
-
     if front:
-        # Forward-facing muzzle with dark hollow center and a rotating
-        # four-spoke metal cage; the underlying V6B suit remains untouched.
-        d.polygon([(34, 51), (44, 51), (48, 57), (46, 64),
-                   (39, 69), (33, 65), (31, 58)], fill=C["chrome_dark"])
-        d.polygon([(35, 51), (43, 50), (46, 54),
-                   (44, 61), (36, 63), (32, 58)], fill=C["chrome_mid"])
-        d.line([(36, 52), (42, 52)], fill=C["chrome_hi"])
-        d.ellipse((32, 55, 46, 70), fill=C["chrome_dark"])
-        d.ellipse((33, 56, 45, 69), fill=C["chrome_l"])
-        d.ellipse((35, 58, 44, 68), fill=C["ink"])
-        d.ellipse((37, 65, 42, 67), fill=C["red_d"])
-        d.line([(37, 65), (41, 65)], fill=C["red_hi"])
+        # Lower/narrower helmet relative to unchanged Theodore shoulders:
+        # no oversized rounded roof or massive overhanging chrome cylinders.
+        d.polygon([(24, 40), (24, 35), (27, 32), (32, 30),
+                   (44, 30), (48, 33), (48, 41)], fill=C["shell_d"])
+        d.polygon([(25, 36), (28, 33), (33, 31),
+                   (41, 31), (46, 33), (45, 36)], fill=C["shell_m"])
+        d.polygon([(26, 35), (30, 32), (34, 31),
+                   (39, 31), (35, 34), (29, 36)], fill=C["shell_l"])
+        d.polygon([(41, 31), (45, 32), (47, 35),
+                   (47, 40), (44, 37)], fill=C["shell_dark"])
+        d.rectangle((24, 39, 48, 41), fill=C["shell_dark"])
+        d.line([(24, 39), (37, 39)], fill=C["shell_l"])
+
+        # Retain paired red horns, but short and proportionate to the head.
+        d.polygon([(29, 33), (26, 25), (32, 31), (31, 34)], fill=C["red"])
+        d.line([(27, 27), (29, 31)], fill=C["red_hi"])
+        d.polygon([(42, 32), (45, 24), (45, 35), (42, 35)], fill=C["red"])
+        d.line([(45, 26), (44, 31)], fill=C["red_hi"])
+        for x in (33, 36, 39, 42):
+            d.point((x, 38), fill=C["glow"])
+
+        # Transparent chrome visor: never cover Theodore's original goggles.
+        d.rectangle((23, 42, 46, 43), fill=C["chrome_mid"])
+        d.line([(24, 42), (41, 42)], fill=C["chrome_hi"])
+        d.rectangle((23, 44, 24, 52), fill=C["chrome_d"])
+        d.line([(23, 46), (23, 50)], fill=C["chrome_l"])
+        d.rectangle((46, 44, 47, 52), fill=C["chrome_d"])
+        d.line([(46, 45), (46, 50)], fill=C["chrome_hi"])
+        d.line([(25, 53), (46, 53)], fill=C["chrome_d"])
+
+        # Smaller cylindrical ear joint, kept on one side only.
+        d.ellipse((45, 40, 53, 54), fill=C["chrome_dark"])
+        d.ellipse((46, 41, 52, 53), fill=C["chrome_mid"])
+        d.ellipse((47, 42, 51, 52), fill=C["chrome_l"])
+        d.line([(47, 43), (49, 42)], fill=C["chrome_hi"])
+
+        # Rotating snout stays mechanical, but no longer dominates the torso.
+        d.polygon([(35, 51), (42, 51), (45, 56), (43, 62),
+                   (36, 66), (31, 61), (31, 56)], fill=C["chrome_dark"])
+        d.polygon([(36, 51), (41, 51), (43, 55),
+                   (42, 60), (34, 60), (33, 55)], fill=C["chrome_mid"])
+        d.line([(35, 52), (40, 52)], fill=C["chrome_hi"])
+        d.ellipse((32, 55, 44, 66), fill=C["chrome_dark"])
+        d.ellipse((33, 56, 43, 65), fill=C["chrome_l"])
+        d.ellipse((35, 57, 42, 63), fill=C["ink"])
+        d.line([(36, 62), (41, 62)], fill=C["red_d"])
+        d.point((40, 62), fill=C["red_hi"])
         for spoke in range(4):
             theta = (phase % 8) * math.pi / 4 + spoke * math.pi / 2
-            x0 = round(39 + 6 * math.cos(theta))
-            y0 = round(63 + 6 * math.sin(theta))
-            x1 = round(39 + 8 * math.cos(theta))
-            y1 = round(63 + 8 * math.sin(theta))
-            d.line([(x0, y0), (x1, y1)], fill=C["chrome_hi"], width=2)
-        d.arc((32, 55, 46, 70), 15, 170, fill=C["chrome_d"], width=2)
-        d.arc((32, 55, 46, 70), 190, 350, fill=C["chrome_hi"])
+            x0 = round(38 + 4 * math.cos(theta))
+            y0 = round(60 + 4 * math.sin(theta))
+            x1 = round(38 + 6 * math.cos(theta))
+            y1 = round(60 + 6 * math.sin(theta))
+            d.line([(x0, y0), (x1, y1)], fill=C["chrome_hi"])
+        d.arc((32, 55, 44, 66), 20, 180, fill=C["chrome_d"])
     else:
-        # No magical second front snout on back-facing views.
-        d.rectangle((23, 43, 48, 49), fill=C["shell_m"])
-        d.line([(24, 44), (43, 44)], fill=C["shell_l"])
-        d.rectangle((23, 49, 49, 51), fill=C["chrome_mid"])
-        d.line([(25, 50), (45, 50)], fill=C["chrome_hi"])
+        # Reference rear: FLAT-TOPPED SOLID BOX, not a dome, visor or rear snout.
+        # The silver/white pack visible BELOW it belongs to Theodore's body
+        # and must remain untouched, as requested.
+        d.rectangle((25, 31, 47, 48), fill=C["shell_d"])
+        d.rectangle((26, 32, 45, 45), fill=C["shell_m"])
+        d.rectangle((26, 32, 43, 34), fill=C["shell_l"])
+        d.line([(25, 31), (47, 31)], fill=C["shell_hi"])
+        d.rectangle((25, 46, 47, 48), fill=C["shell_dark"])
+        # Tiny horn tips remain visible from behind, like the reference.
+        d.polygon([(29, 31), (28, 27), (31, 31)], fill=C["red_d"])
+        d.polygon([(43, 31), (44, 26), (45, 31)], fill=C["red"])
+        d.ellipse((45, 39, 52, 52), fill=C["chrome_dark"])
+        d.ellipse((46, 40, 51, 51), fill=C["chrome_mid"])
+        d.ellipse((47, 41, 50, 50), fill=C["chrome_l"])
     return ImageOps.mirror(img) if mirror else img
+
 
 
 def frame(view: str, kind: str = "idle", index: int = 0,
