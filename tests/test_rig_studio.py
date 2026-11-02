@@ -18,6 +18,7 @@ class RigStudioTests(unittest.TestCase):
             "aladdin_sane":"HUMANOID","ichsan":"HUMANOID",
             "milk_mascot":"MASCOT","legacy_gfunk":"ALIEN_SUIT",
             "legacy_yerbies":"ALIEN_SUIT","legacy_theodore":"HELMETED",
+            "legacy_otis":"HELMETED",
             "native_bowie":"HUMANOID","legacy_kang_parkir":"HUMANOID",
         }
         self.assertEqual(len(DEFS["types"]),4)

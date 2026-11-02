@@ -15,6 +15,7 @@ on:
       - feature/life-sim-animation-roadmap-v1
       - feature/register-life-sim-actions-in-motion-db
       - feature/mixamo-model-rig-studio-v1
+      - feature/add-otis-helmeted-character
       - feature/shared-category-skeletons-remove-rig-ui
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
@@ -23,6 +24,7 @@ on:
       - "tools/build_character_catalog.py"
       - "tools/build_rig_studio.py"
       - "tests/test_rig_studio.py"
+      - "tests/test_otis_helmet.py"
       - "tests/test_rig_runtime.cjs"
       - "tests/test_shared_bone_runtime.cjs"
       - "assets/animation_library/category_skeletons.json"
@@ -79,6 +81,7 @@ jobs:
           python -m py_compile tools/build_rig_studio.py tools/build_character_catalog.py tools/animation_backlog.py tools/build_animation_catalog.py tools/new_animation_template.py tools/pack_animation_preview.py tools/build_native_character_catalog.py tools/build_legacy_character_catalog.py tools/build_legacy_face_previews.py tools/generate_archive_previews.py
           python -m unittest discover -s tests -p 'test_animation_catalog.py' -v
           python -m unittest discover -s tests -p 'test_rig_studio.py' -v
+          python -m unittest discover -s tests -p 'test_otis_helmet.py' -v
           python -m unittest discover -s tests -p 'test_animation_backlog.py' -v
           python -m unittest discover -s tests -p 'test_character_motion_studio.py' -v
           python -m unittest discover -s tests -p 'test_legacy_face_previews.py' -v
@@ -92,6 +95,7 @@ jobs:
           test -s _site/style.css
           test -s _site/app.js
           test -s _site/catalog.json
+          python -c 'import json, pathlib; from PIL import Image; root=pathlib.Path("assets"); cs={x["id"]:x for x in json.load(open("_site/catalog.json"))["characters"]}; o=cs["legacy_otis"]; t=cs["legacy_theodore"]; assert o["model_type"]=="HELMETED" and o["skeleton_profile"]=="HELMETED"; assert o["asset_status"]=="generated_preview" and o["rig_ready_count"]>=7 and len(o["expressions"])==5; assert (pathlib.Path("_site")/o["sheet"]).is_file(); dirs=("se","sw","ne","nw"); assert all((root/"npc_otis"/"frames"/f"otis_{d}_idle_f0.png").is_file() for d in dirs); a=Image.open(root/"npc_otis"/"frames"/"otis_se_idle_f0.png"); b=Image.open(root/"npc_theodore"/"frames"/"theodore_se_idle_f0.png"); assert a.size==b.size==(64,112) and a.crop((0,73,64,112)).tobytes()==b.crop((0,73,64,112)).tobytes(); print("Otis: 4-way exact Theodore body, original face expressions and rotating custom helmet verified")'
           test -s _site/animations.js
           test -s _site/rig-runtime.js
           test -s _site/shared-bone-runtime.js

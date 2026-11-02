@@ -118,7 +118,8 @@
     "ichsan": "HUMANOID",
     "legacy_gfunk": "ALIEN_SUIT",
     "legacy_yerbies": "ALIEN_SUIT",
-    "legacy_theodore": "HELMETED"
+    "legacy_theodore": "HELMETED",
+    "legacy_otis": "HELMETED"
   },
   "legacy_humanoid": [
     "pak_ogah",

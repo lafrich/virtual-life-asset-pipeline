@@ -27,6 +27,14 @@
       "source": "assets/npc_theodore/make_theodore.py"
     },
     {
+      "id": "otis",
+      "name": "Otis",
+      "folder": "assets/npc_otis",
+      "note": "Theodore body; turquoise horned helmet with rotating snout; walk, idle, talk, sit, type",
+      "level": "source",
+      "source": "assets/npc_otis/make_otis.py"
+    },
+    {
       "id": "pak_ogah",
       "name": "Pak Ogah",
       "folder": "assets/npc_pak_ogah",
