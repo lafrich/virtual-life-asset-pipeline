@@ -36,8 +36,19 @@
     motionTab.setAttribute("aria-selected", String(animation));
     characterTab.setAttribute("aria-selected", String(!animation));
     // The original Paint palette remains available in either workspace.
-    el("asset-total").textContent = String(animation ? library.length :
-      (typeof state !== "undefined" ? state.characters.length : 0)).padStart(2, "0");
+    const total = animation ? library.length : (typeof state !== "undefined" ? state.characters.length : 0);
+    el("asset-total").textContent = String(total).padStart(2, "0");
+    el("status-asset-count").textContent = String(total).padStart(2, "0");
+    writing("status-object-label", animation ? "CLIPS" : "OBJECTS");
+    document.querySelector(".window-title strong").textContent = animation ? "MOTION_STOCK" : "CHAR_STOCK";
+    el("menu-file").href = animation
+      ? "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/animation_library"
+      : "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/character_stock";
+    el("menu-help").href = animation
+      ? "https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/docs/animation-library.md"
+      : "https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/assets/character_stock/README.md";
+    el("menu-edit").title = animation ? "Show motion templates" : "Expressions";
+    el("menu-view").title = animation ? "Toggle motion canvas grid" : "Toggle canvas grid";
     el("status").textContent = animation ? "ANIMATION DATABASE / PREVIEW MODE" : "CHARACTER STOCK / READY";
   }
 
@@ -183,6 +194,27 @@
     });
     renderList();
   }));
+  // Paint's global Edit and View menus retain meaningful behavior in motion
+  // mode without triggering the hidden character inspector.
+  el("menu-edit").addEventListener("click", event => {
+    if (currentTab !== "animations") return;
+    event.stopImmediatePropagation();
+    el("animation-search").value = "";
+    query = "";
+    group = "template";
+    document.querySelectorAll(".anim-filter").forEach(other => {
+      const active = other.dataset.animFilter === "template";
+      other.classList.toggle("selected", active);
+      other.setAttribute("aria-pressed", String(active));
+    });
+    renderList();
+    el("status").textContent = "MOTION TEMPLATES";
+  }, true);
+  el("menu-view").addEventListener("click", event => {
+    if (currentTab !== "animations") return;
+    event.stopImmediatePropagation();
+    el("animation-canvas-space").classList.toggle("grid-on");
+  }, true);
   // Capture before app.js's original character keyboard handlers: only the
   // active viewer should respond to Space/left/right shortcuts.
   document.addEventListener("keydown", event => {
