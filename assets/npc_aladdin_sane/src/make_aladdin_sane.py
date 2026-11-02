@@ -405,7 +405,9 @@ def make_animated_preview(sheet, bg):
     frames[0].save(PREVIEW / "aladdin_sane_walk_4dirs_4x.gif",
                    save_all=True, append_images=frames[1:],
                    duration=durations, loop=0, optimize=False)
-    # Only a walking animation preview is generated.\n\ndef sanitize_native_pngs():
+    # Walking is the only animation preview for review.
+
+def sanitize_native_pngs():
     """Snap renderer-derived one-offs to already-approved game colors.
     The original renderer's legacy water alpha 46/220 does not meet the new
     asset rule; quantize it before exporting this NPC, without editing game data.
