@@ -59,10 +59,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px dotted #141
 .canvas-name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.canvas-badge{border:1px solid #807d77;background:#ddd9d3;padding:4px 6px;flex:none}
 .canvas-space{flex:1;min-height:0;position:relative;margin:10px 11px;background:var(--canvas);border:2px inset #8b8883;overflow:hidden}
 .canvas-space.grid-on{background-color:var(--canvas);background-image:linear-gradient(#8882 1px,transparent 1px),linear-gradient(90deg,#8882 1px,transparent 1px);background-size:14px 14px}
-.selection-border{position:absolute;inset:14px;border:2px dashed #8b8985;display:flex;align-items:center;justify-content:center}
+.selection-border{position:absolute;inset:14px;display:flex;align-items:center;justify-content:center}
 #sprite-canvas{width:min(100%,540px);height:100%;max-height:100%;object-fit:contain;image-rendering:pixelated;display:block}
-.crosshair{position:absolute;color:#9aa6be;pointer-events:none;font-size:40px;font-family:"Courier New",monospace;font-weight:100;line-height:1;text-shadow:1px 1px #fff}
-.crosshair-a{left:5%;top:28%}.crosshair-b{right:5%;bottom:19%}
 .canvas-corner-label{position:absolute;bottom:22px;left:26px;font:bold 10px "Courier New",monospace;color:#a6a19a;letter-spacing:.09em}
 .canvas-loading{position:absolute;left:0;right:0;top:48%;text-align:center;font:bold 13px "Courier New",monospace;color:#434343}
 .canvas-toolbar{min-height:54px;padding:9px 11px;display:flex;align-items:center;gap:9px;border-top:2px solid #f0efeb;background:#cdcbc6}
@@ -139,7 +137,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px dotted #141
   .asset-footer{display:none}
   .canvas-panel{order:2;border-right:0;border-bottom:2px solid #777}
   .canvas-head{height:31px}.canvas-space{height:min(85vw,480px);min-height:300px;flex:none;margin:7px 8px}
-  .selection-border{inset:9px}.crosshair{font-size:27px}.canvas-corner-label{font-size:8px;left:17px;bottom:15px}
+  .selection-border{inset:9px}.canvas-corner-label{font-size:8px;left:17px;bottom:15px}
   .canvas-toolbar{min-height:48px;padding:6px;gap:5px}.primary-control{width:75px}.directions{gap:2px}
   .dir{padding:8px 4px;font-size:10px}.canvas-scale{font-size:10px}
   .details-panel{order:3;border-top:2px solid #f4f2ed}
@@ -309,7 +307,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px dotted #141
 .rig-item-ready{background:#acc5fc;color:#114188;border-color:#7190ce}
 .rig-canvas-area{display:flex;align-items:center;justify-content:center;background:#f2f3f6}
 .rig-canvas-area canvas{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
-.rig-canvas-overlay{position:absolute;left:8%;right:8%;top:44%;text-align:center;font:bold 12px/1.5 "Courier New",monospace;background:#f7f5f0e6;color:#284e8f;border:1px dashed #8795a8;padding:12px}
+.rig-canvas-overlay{position:absolute;left:8%;right:8%;top:44%;text-align:center;font:bold 12px/1.5 "Courier New",monospace;background:#f7f5f0e6;color:#284e8f;padding:12px}
 .rig-toolbar{gap:7px;flex-wrap:wrap}
 .rig-toolbar .directions{display:flex;flex-wrap:wrap;gap:2px}
 .rig-toolbar .dir{min-width:30px}
