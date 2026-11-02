@@ -123,8 +123,14 @@ class OtisVisualTests(unittest.TestCase):
         base = Image.new("RGBA", (64, 112))
         for direction in ("se", "sw"):
             image = O.helmet(base, direction)
+            # Bounds of the visible shell and chrome, not the thin dark
+            # occlusion wall behind the forward-facing mechanical visor.
+            palette = {tuple(bytes.fromhex(O.C[name].lstrip("#")))
+                       for name in ("hi", "light", "turquoise", "mid",
+                                    "c_hi", "c_light", "c_med")}
             upper = [(x, y) for y in range(20, 56) for x in range(64)
-                     if image.getpixel((x, y))[3] != 0]
+                     if image.getpixel((x, y))[:3] in palette
+                     and image.getpixel((x, y))[3] == 255]
             self.assertGreaterEqual(min(x for x, _ in upper), 10)
             self.assertLessEqual(max(x for x, _ in upper), 53)
             self.assertLessEqual(max(x for x, _ in upper) - min(x for x, _ in upper) + 1, 36)
