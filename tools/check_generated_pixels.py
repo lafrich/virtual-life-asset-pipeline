@@ -14,7 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageChops
+from PIL import Image
 
 
 def compare_file(file_name: str) -> None:
@@ -28,7 +28,7 @@ def compare_file(file_name: str) -> None:
     with Image.open(io.BytesIO(prior)) as old_image, Image.open(path) as fresh_image:
         old = old_image.convert("RGBA")
         fresh = fresh_image.convert("RGBA")
-        if old.size != fresh.size or ImageChops.difference(old, fresh).getbbox() is not None:
+        if old.size != fresh.size or old.tobytes() != fresh.tobytes():
             raise AssertionError(f"Pixel regression: {path}")
     print(f"PIXEL-EXACT: {path}")
 
