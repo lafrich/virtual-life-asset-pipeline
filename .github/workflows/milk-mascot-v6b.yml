@@ -3,11 +3,11 @@ name: Milk Mascot — Verify and Store v6b
 on:
   push:
     branches:
-      - feature/milk-mascot-v6b
+      - feature/milk-mascot-arms-angled-label-expressions
   workflow_dispatch:
 
 concurrency:
-  group: milk-mascot-v6b-stock
+  group: milk-mascot-v6b-refinement
   cancel-in-progress: true
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
       - name: Verify original v6b pipeline
         run: bash ./run_all.sh verify
       - name: Commit game-ready sprite sheet and GIF to GitHub
-        if: success() && github.ref == 'refs/heads/feature/milk-mascot-v6b'
+        if: success() && github.ref == 'refs/heads/feature/milk-mascot-arms-angled-label-expressions'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -47,9 +47,9 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m 'Store verified Milk Mascot v6b sprite sheets and walk GIF [skip ci]'
             git reset --hard HEAD
-            git fetch origin feature/milk-mascot-v6b
-            git rebase origin/feature/milk-mascot-v6b
-            git push origin HEAD:feature/milk-mascot-v6b
+            git fetch origin feature/milk-mascot-arms-angled-label-expressions
+            git rebase origin/feature/milk-mascot-arms-angled-label-expressions
+            git push origin HEAD:feature/milk-mascot-arms-angled-label-expressions
           fi
       - name: Publish preview outputs
         if: always()
