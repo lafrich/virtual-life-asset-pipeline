@@ -42,7 +42,7 @@ def load_renderer(root: Path, actor: str):
 
 
 def render_four(module, actor: str, view: str, expression: str) -> list[Image.Image]:
-    if actor == "theodore":
+    if actor in ("theodore", "otis"):
         poses = [module.frame(view, "idle", i, expression) for i in range(4)]
     else:
         poses = module.frames(view, "idle", expression)
