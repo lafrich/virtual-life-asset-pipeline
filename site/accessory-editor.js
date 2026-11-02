@@ -55,7 +55,24 @@ function selectWand(x,y){
  setMask(core.combineMasks(state.selection,mask,state.mode));
  status("COLOR SELECT · "+core.maskCount(mask)+" PX · "+state.mode.toUpperCase());
 }
+function completedDirections(){
+ return DIRS.filter(d=>{
+  const ctx=state.layers[d].getContext("2d",{willReadFrequently:true});
+  const data=ctx.getImageData(0,0,W,H).data;
+  for(let i=3;i<data.length;i+=4)if(data[i])return true;
+  return false;
+ });
+}
+function updateDirectionProgress(){
+ const done=completedDirections();
+ $("acc-direction-progress").textContent="4 VIEWS · "+
+  DIRS.map(d=>d.toUpperCase()+(done.includes(d)?" ✓":" ○")).join(" / ")+
+  (done.length===4?" · READY TO SAVE":" · COMPLETE ALL SIDES");
+ $("acc-save").disabled=done.length<4;
+ $("acc-equip").disabled=done.length<4;
+}
 function updateControls(){
+ updateDirectionProgress();
  const selected=state.selection&&core.maskCount(state.selection)>0;
  for(const id of ["acc-nudge-left","acc-nudge-right","acc-flip-h","acc-flip-v","acc-clear-selection"])$(id).disabled=!selected;
  for(const b of document.querySelectorAll("[data-acc-tool]"))b.classList.toggle("active",b.dataset.accTool===state.tool&&!state.pan);
@@ -334,6 +351,8 @@ function renderStorage(){
   KINDS.map(k=>LABELS[k]+" "+(items.find(x=>x.id===attachments[k])?.name||"—")).join(" · ");
 }
 function saveToStorage(){
+ const missing=DIRS.filter(d=>!completedDirections().includes(d));
+ if(missing.length){status("DRAW THE OTHER SIDES BEFORE SAVING: "+missing.map(x=>x.toUpperCase()).join(", "));return false;}
  const items=storageItems(),name=$("acc-name").value.trim().slice(0,44)||"CUSTOM "+currentCategory();
  if(!state.savedId)state.savedId="acc-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
  const asset={id:state.savedId,category:state.category,name,
