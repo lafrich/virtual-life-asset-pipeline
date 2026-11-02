@@ -17,6 +17,7 @@ from build_animation_catalog import build_animation_catalog
 from build_native_character_catalog import add_native_npcs
 from build_accessory_guide import build_accessory_guide
 from build_astrofrich import build_astrofrich
+from build_human_templates import build_human_templates
 from build_legacy_character_catalog import prepare_legacy_catalog
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -331,6 +332,7 @@ def build():
     results.extend(prepare_legacy_catalog(ROOT, media, REPO_URL,
                                           save_walk_preview, updated_timestamp))
     results.append(build_astrofrich(ROOT,media))
+    results.extend(build_human_templates(ROOT,media))
     ids = [c["id"] for c in results]
     if len(ids) != len(set(ids)):
         raise ValueError("Duplicate character catalog IDs")
