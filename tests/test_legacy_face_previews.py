@@ -51,6 +51,14 @@ class FaceSourceTests(unittest.TestCase):
             with mock.patch.object(faces, "load_renderer", return_value=original):
                 records = faces.build_faces(root, folder, "gfunk", media, idle)
             self.assertEqual([r["id"] for r in records], list(faces.EXPRS))
+            # Portrait thumbnails must reflect each selected original face;
+            # showing only full-body thumbnails made differences hard to see.
+            portrait_bytes = []
+            for record in records:
+                with Image.open(root / record["portrait"]) as portrait:
+                    self.assertEqual(portrait.size, (31, 32))
+                    portrait_bytes.append(portrait.tobytes())
+            self.assertEqual(len(set(portrait_bytes)), len(faces.EXPRS))
             for record in records:
                 self.assertEqual(record["frames"], 12)
                 self.assertEqual(record["preview_mode"], "custom_sheet")
