@@ -70,7 +70,7 @@
       const parent=bone.parent?joints[bone.parent]:null;
       const pa=parent?.world_angle||0;
       const radians=pa*Math.PI/180;
-      const x=(bone.xy[0]+local.dx)*mirror,y=bone.xy[1]+local.dy;
+      const x=bone.xy[0]*mirror+local.dx,y=bone.xy[1]+local.dy;
       const px=parent?.world_x||0,py=parent?.world_y||0;
       joints[bone.id]={
         parent:bone.parent,
