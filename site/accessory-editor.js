@@ -24,6 +24,10 @@ const state={category:"helmet",dir:"se",tool:"pencil",mode:"replace",color:"#418
  cursor:[32,38],selection:null,selectionAnchor:null,pointer:null,cursorMove:null,layers:makeLayers(),
  drafts:{},history:[],redo:[],savedId:null,manualZoom:false,loaded:false};
 state.drafts.helmet=state.layers;state.drafts.bag=makeLayers();
+if(KINDS.includes(params.get("category"))){
+ state.category=params.get("category");state.layers=state.drafts[state.category];
+ const b=REGIONS[state.category];state.cursor=[Math.floor((b[0]+b[2])/2),Math.floor((b[1]+b[3])/2)];
+}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const region=()=>REGIONS[state.category];
 const layer=()=>state.layers[state.dir],brushCtx=()=>layer().getContext("2d",{willReadFrequently:true});
@@ -171,8 +175,11 @@ function nudge(dx,dy){
  put(new ImageData(next.data,W,H));state.selection=next.mask;remember(before,mask);draw();
 }
 function cursorTap(){
- if(!inside(...state.cursor)){status("MOVE CURSOR INSIDE BLUE GUIDE BOX");return;}
  const [x,y]=state.cursor;
+ if(state.tool==="move"&&state.cursorMove){
+  const p=state.cursorMove;state.cursorMove=null;remember(p.before,p.mask);status("MOVE APPLIED");return;
+ }
+ if(!inside(x,y)){status("MOVE CURSOR INSIDE BLUE GUIDE BOX");return;}
  if(state.tool==="wand"){selectWand(x,y);return;}
  if(state.tool==="rect"){
   if(!state.selectionAnchor){
@@ -184,9 +191,6 @@ function cursorTap(){
   }return;
  }
  if(state.tool==="move"){
-  if(state.cursorMove){
-   const p=state.cursorMove;state.cursorMove=null;remember(p.before,p.mask);status("MOVE APPLIED");return;
-  }
   if(!state.selection?.[y*W+x]){status("SELECT HELM/TAS PIXELS FIRST");return;}
   state.cursorMove={start:[x,y],before:image(),mask:state.selection.slice()};
   status("MOVE CURSOR TO POSITION, TAP AGAIN TO DROP");return;
