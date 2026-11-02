@@ -1,0 +1,74 @@
+{
+  "name": "aladdin_sane",
+  "type": "npc",
+  "engine": "virtual-life-v6b",
+  "generator": "assets/npc_aladdin_sane/src/make_aladdin_sane.py",
+  "sheet": "sprites/aladdin_sane_v6b_sheet.png",
+  "width": 384,
+  "height": 4928,
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "columns": 6,
+  "rows": 44,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "row_starts": {
+    "walk": 0,
+    "idle": 4,
+    "talk": 8,
+    "sit": 12,
+    "sit_type": 16,
+    "sleep": 20,
+    "tired": 24,
+    "swim": 28,
+    "float": 32,
+    "lie": 36,
+    "perch": 40
+  },
+  "idle_frames": 4,
+  "walk_frames": 6,
+  "mirrored_views": {
+    "sw": "se",
+    "nw": "ne"
+  },
+  "sprites": [
+    "sprites/aladdin_sane_v6b_fangry.png",
+    "sprites/aladdin_sane_v6b_fblink.png",
+    "sprites/aladdin_sane_v6b_femb.png",
+    "sprites/aladdin_sane_v6b_fhappy.png",
+    "sprites/aladdin_sane_v6b_fsad.png",
+    "sprites/aladdin_sane_v6b_fsleepy.png",
+    "sprites/aladdin_sane_v6b_fsmile.png",
+    "sprites/aladdin_sane_v6b_fsurpr.png",
+    "sprites/aladdin_sane_v6b_sheet.png"
+  ],
+  "previews": [
+    "preview/aladdin_sane_walk_4dirs_4x.gif",
+    "preview/contact_sheet_4x.png",
+    "preview/mock_4x.png",
+    "preview/walk_se_4x.gif",
+    "preview/walk_sw_4x.gif",
+    "preview/walk_ne_4x.gif",
+    "preview/walk_nw_4x.gif"
+  ],
+  "outfit": "shirtless, slate jeans, brown boots",
+  "hairstyle": "copper-red swept spikes, slimmer sides, visible ears",
+  "new_hex": [],
+  "makeup_palette_existing_game": {
+    "LR": "#DC3228",
+    "LD": "#D7261E",
+    "LB": "#3E6FA8",
+    "LH": "#78BAF5"
+  },
+  "notes": "Generated from native v6b code. Walk-only GIF preview. Torso and arm joints repaired; outsole aligned to pivot."
+}
