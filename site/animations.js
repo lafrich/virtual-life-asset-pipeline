@@ -98,13 +98,14 @@
 
   function syncPlaying() {
     const playable = Boolean(selected && selected.gif);
+    const still = Boolean(selected && !selected.gif && selected.poster);
     pause.disabled = !playable;
     el("anim-tool-play").disabled = !playable;
     pause.innerHTML = playable && playing ? "Ⅱ <span>PAUSE</span>" : "▶ <span>PLAY</span>";
     pause.setAttribute("aria-pressed", String(playable && playing));
     el("anim-tool-play").classList.toggle("active", Boolean(playable && playing));
-    if (playable) {
-      mainImage.src = playing ? selected.gif : selected.poster;
+    if (playable || still) {
+      mainImage.src = playable && playing ? selected.gif : selected.poster;
       mainImage.alt = selected.name + (playing ? " — animated preview" : " — first frame");
       mainImage.hidden = false;
       empty.hidden = true;
@@ -124,7 +125,8 @@
     playing = Boolean(clip.gif);
     writing("animation-canvas-title", clip.id.toUpperCase() + (clip.gif ? ".GIF" : ".TPL"));
     writing("animation-canvas-tag", clip.status === "template" ? "TEMPLATE / DRAFT" :
-      clip.status === "source_only" ? "SOURCE / NO RENDER" : "PREVIEW / NOT IN GAME");
+      clip.status === "source_only" ? "SOURCE / NO RENDER" :
+      clip.status === "still" ? "STILL / ONE FRAME" : "PREVIEW / NOT IN GAME");
     writing("animation-name", clip.name);
     writing("animation-type", clip.group.toUpperCase());
     writing("animation-frames", clip.frame_count ? String(clip.frame_count).padStart(2, "0") : "--");
@@ -134,7 +136,8 @@
     writing("animation-directions", clip.layout === "four_up" ? "SE / SW / NE / NW  •  4-UP" : clip.directions.join(" / ").toUpperCase());
     writing("animation-frame-display", clip.gif ? "GIF" : "NO GIF");
     writing("animation-review-status", clip.status === "template" ? "TEMPLATE / NO APPROVED POSES" :
-      clip.status === "source_only" ? "SOURCE ONLY / NO FRAMES" : "PREVIEW ONLY / NOT IN GAME");
+      clip.status === "source_only" ? "SOURCE ONLY / NO FRAMES" :
+      clip.status === "still" ? "STILL POSE / NO ANIMATION" : "PREVIEW ONLY / NOT IN GAME");
     writing("animation-note", clip.note || "No additional metadata");
     el("animation-review-status").classList.toggle("is-template", clip.status !== "preview");
 
@@ -202,7 +205,8 @@
       label.textContent = clip.name;
       const secondary = document.createElement("small");
       secondary.textContent = clip.status === "template" ? "TEMPLATE / DRAFT" :
-        clip.status === "source_only" ? "SOURCE / NO GIF" : clip.group.toUpperCase() + " / GIF";
+        clip.status === "source_only" ? "SOURCE / NO GIF" :
+        clip.status === "still" ? "POSE / 1 FRAME" : clip.group.toUpperCase() + " / GIF";
       label.append(secondary);
       item.append(preview, label);
       item.addEventListener("click", () => choose(clip));
