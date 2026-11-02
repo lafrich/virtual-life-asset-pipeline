@@ -75,4 +75,51 @@ def add_native_npcs(root, media, actions, save_walk_preview,
             "walk_frames":6,"idle_frames":4,"row_starts":data["row_starts"],
             "expressions":faces,"motions":bindings,
         })
+    # The primary playable avatar also belongs to the character library,
+    # not just NPCs. Its sheet and expressions are built by live_v6b.py.
+    player_folder = root / "chars-iso" / "v6b" / "live"
+    player_sheet = player_folder / "ichsan_v6b_sheet.png"
+    if not player_sheet.is_file():
+        raise FileNotFoundError("Original Ichsan player sprite missing after v6b render")
+    with Image.open(player_sheet) as im:
+        if im.mode != "RGBA" or im.size != (384, 4928):
+            raise ValueError("Invalid native player 384x4928 RGBA sheet")
+    name = "ichsan"
+    player_data = {
+        "row_starts": dict(nv.lv.ROWMAP),
+        "sprites": [p.name for p in sorted(player_folder.glob("ichsan_v6b_f*.png"))],
+        "rows": 44,
+    }
+    player_walk = media / "ichsan-walk.gif"
+    player_poster = media / "ichsan-poster.png"
+    save_walk_preview(player_sheet, player_walk, player_poster, 0, 6)
+    (media/"ichsan-sheet.png").write_bytes(player_sheet.read_bytes())
+    with Image.open(player_sheet) as im:
+        im.crop((0,448,64,560)).save(media/"ichsan-thumb.png")
+    player_faces = save_expression_previews(player_folder,player_data,player_sheet,media,name)
+    player_motions = []
+    for action in actions:
+        row = nv.lv.ROWMAP.get(action.get("row","")) if action["type"] == "native_row" else None
+        player_motions.append({
+            "id":action["id"],"name":action["label"],"category":action["category"],
+            "frames":action["frames"],"frame_ms":action["frame_ms"],
+            "loop":action["loop"],"available":row is not None,
+            "source":"native" if row is not None else "",
+            "reason":"" if row is not None else "NEEDS CHARACTER RIG",
+            **({"row":row} if row is not None else {})
+        })
+    records.append({
+        "id":"ichsan","name":"ICHSAN","type":"player",
+        "origin":"virtual-life/live-v6b","asset_status":"generated_preview",
+        "description":"Original Virtual Life player avatar / game-native v6b rig",
+        "outfit":"","hairstyle":"","walk":"media/ichsan-walk.gif",
+        "poster":"media/ichsan-poster.png","thumbnail":"media/ichsan-thumb.png",
+        "sheet":"media/ichsan-sheet.png",
+        "folder_url":repo_url+"/tree/main/chars-iso/v6b/live/chars",
+        "source_url":repo_url+"/blob/main/chars-iso/v6b/tools/live_v6b.py",
+        "timestamp":updated_timestamp(root/"chars-iso/v6b/live/chars/ichsan.json"),
+        "frame_size":"64 × 112","walk_frames":6,"idle_frames":4,
+        "row_starts":player_data["row_starts"],
+        "expressions":player_faces,"motions":player_motions,
+    })
     return records
