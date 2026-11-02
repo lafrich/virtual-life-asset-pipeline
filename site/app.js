@@ -109,7 +109,7 @@ function buildFaces(character) {
     const img = new Image();
     img.loading = "lazy";
     img.alt = "";
-    img.src = face.image;
+    img.src = face.sprite || face.image;
     const label = document.createElement("span");
     label.textContent = String(face.label).toUpperCase();
     button.append(img, label);
