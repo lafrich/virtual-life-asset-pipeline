@@ -7,13 +7,14 @@
 <title>Otis Pixel Editor — Virtual Life</title>
 <link rel="stylesheet" href="./pixel-editor.css?v=otis-editor-1">
 <script defer src="./pixel-edit-core.js?v=otis-editor-1"></script>
-<script defer src="./pixel-editor.js?v=otis-editor-1"></script>
+<script defer src="./master-parts.js?v=master-parts-1"></script>
+<script defer src="./pixel-editor.js?v=master-parts-1"></script>
 </head>
 <body>
 <main class="paint">
 <header class="titlebar"><span>▣</span><strong>OTIS_PIXEL_EDITOR.PNT — Paint</strong><span class="window-buttons" aria-hidden="true">▬ □ ×</span></header>
 <nav class="menubar" aria-label="Editor links"><a href="./#characters">← CHARACTERS</a><span class="sep">|</span><span>FILE</span><span>EDIT</span><span>VIEW</span><span class="version">V6B · 64×112 ORIGINAL PIXELS</span></nav>
-<div class="intro"><div><h1>EDIT OTIS</h1><p>Draw directly on the original character's pixel frames. Theodore's body outside the head edit area stays locked.</p></div><div class="intro-tags"><span>HELMETED</span><span>HEAD EDIT AREA</span><span>4 DIRECTIONS</span></div></div>
+<div class="intro"><div><h1>OTIS / MASTER PARTS</h1><p>One master per body part and direction. Changes flow to source animation frames; review rotations and overlapping limbs manually.</p></div><div class="intro-tags"><span>HELMETED</span><span>6 EDIT PARTS</span><span>4 DIRECTIONS</span></div></div>
 <div id="editor-status" class="status" role="status">LOADING ORIGINAL OTIS SPRITES...</div>
 <div class="workspace">
 <aside class="controls">
@@ -27,6 +28,17 @@
 <div class="control"><label for="color">INK COLOR</label><input id="color" type="color" value="#61b3c4"></div>
 <div id="swatches" class="swatches" aria-label="Otis color palette"></div>
 <div class="control"><label for="brush-size">BRUSH SIZE <output id="brush-label">1 PX</output></label><input id="brush-size" type="range" min="1" max="4" value="1"></div>
+<div class="divider"></div>
+<h2>CHARACTER MASTER</h2>
+<div class="control"><label for="edit-mode">EDITING MODE</label><select id="edit-mode">
+<option value="master">MASTER / APPLY TO FRAMES</option>
+<option value="frame">FRAME / MANUAL FIX</option></select></div>
+<div class="control"><label for="part">SPLIT / EDIT PART</label><select id="part">
+<option value="head">HEAD / HELMET</option><option value="body">BODY / TORSO</option>
+<option value="arm_l">LEFT ARM</option><option value="arm_r">RIGHT ARM</option>
+<option value="leg_l">LEFT LEG</option><option value="leg_r">RIGHT LEG</option>
+</select></div>
+<p id="master-status" class="master-note">MASTER MODE: edits propagate to this direction's authored frames, with silhouette translation. Existing artwork is flattened; check each action's bends and overlaps.</p>
 <div class="divider"></div>
 <h2>FRAME</h2>
 <div class="control"><label for="action">ANIMATION</label><select id="action" aria-label="Action"></select></div>
@@ -51,7 +63,7 @@
 <aside class="export-panel">
 <h2>VIEW & SAVE</h2>
 <div class="mini-box"><canvas id="small-preview" width="128" height="224" aria-label="Actual 2x sprite preview"></canvas><p>2× PREVIEW</p></div>
-<div class="panel-note">Edits are saved as a draft in this browser. They do <strong>not</strong> change GitHub until your exported patch is committed.</div>
+<div class="panel-note"><strong>AUTOSAVE ON</strong> — changes are stored in this browser after each stroke. Master corrections are projected across actions; switch to FRAME to fix tricky poses. GitHub publication still requires your authorization.</div>
 <div class="button-stack">
 <button type="button" id="download-frame">↓ CURRENT FRAME.PNG</button>
 <button type="button" id="export-patch" class="primary">↓ SAVE PIXEL EDITS.JSON</button>
@@ -59,8 +71,8 @@
 <input type="file" id="patch-file" accept=".json,application/json" hidden>
 <button type="button" id="clear-draft">DELETE LOCAL DRAFT</button>
 </div>
-<div class="panel-note">To publish: download <strong>PIXEL EDITS.JSON</strong> and upload that file in our chat. I'll add it to Otis's source and rebuild the database.</div>
-<div class="meta"><strong id="modified-count">0 MODIFIED FRAMES</strong><span>HEAD EDITABLE: X8–55 · Y18–71</span><span>BODY/SHOES LOCKED</span><span id="source-state">SOURCE NOT LOADED</span></div>
+<div class="panel-note">To publish permanently: download <strong>PIXEL EDITS.JSON</strong> and send it here. I'll commit and deploy your actual master/frame corrections. GitHub Pages cannot write to your repo without authenticated backend access.</div>
+<div class="meta"><strong id="modified-count">0 MODIFIED FRAMES</strong><span id="part-bounds">SELECTED PART ONLY</span><span>OTHER AREAS LOCKED WHILE DRAWING</span><span id="source-state">SOURCE NOT LOADED</span></div>
 </aside>
 </div>
 <footer class="foot"><span>VIRTUAL LIFE / ORIGINAL SPRITE EDITOR</span><span>NO UNAPPROVED AUTOMATIC CHANGES TO THE LIVE GAME</span></footer>
