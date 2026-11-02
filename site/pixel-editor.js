@@ -26,7 +26,7 @@ const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",par
  tool:"pencil",panMode:false,color:"#61b3c4",brush:1,zoom:MOBILE_TOUCH?4:8,grid:false,
  originals:new Map(),edits:new Map(),imageRequests:new Map(),history:[],redo:[],
  current:null,loading:true,drawing:false,previous:null,before:null,seq:0,
- selection:null,selectionGesture:null,moveGesture:null,cursorMode:MOBILE_TOUCH,cursor:[32,42],
+ selection:null,selectionMask:null,selectionMode:"replace",wandContiguous:true,wandTolerance:0,selectionGesture:null,moveGesture:null,cursorMode:MOBILE_TOUCH,cursor:[32,42],
  trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null};
 function status(s,error=false){$("editor-status").textContent=s;$("editor-status").classList.toggle("error",error);}
 function activeClip(){return state.clips.find(c=>c.id===state.action);}
@@ -69,7 +69,7 @@ function saveCurrent(){
 }
 async function navigate(){
  const seq=++state.seq,clip=activeClip();if(!clip)return;
- state.loading=true;state.current=null;state.selection=null;state.touchSelectAnchor=null;state.touchMoveAnchor=null;
+ state.loading=true;state.current=null;state.selection=null;state.selectionMask=null;state.touchSelectAnchor=null;state.touchMoveAnchor=null;
  updateSelectionUI();
  $("frame").max=String(clip.frames-1);$("frame").value=String(state.frame);
  $("frame-label").textContent="FRAME "+(state.frame+1)+" / "+clip.frames;
@@ -154,57 +154,90 @@ function pickPixel(x,y){if(!state.current||!editable(x,y))return;
  status("PICKED "+color.toUpperCase());}
 function eventPos(event){const r=display.getBoundingClientRect();
  return [Math.floor((event.clientX-r.left)*WIDTH/r.width),Math.floor((event.clientY-r.top)*HEIGHT/r.height)];}
-function commit(before,selectionBefore=undefined){
+function commit(before,selectionBefore=undefined,maskBefore=undefined){
  if(!before||!state.current||identical(before,state.current))return;
  state.history.push({key:currentKey(),before,after:snapshot(),selectionBefore,
-  selectionAfter:selectionBefore===undefined?undefined:(state.selection?state.selection.slice():null)});
+  selectionAfter:selectionBefore===undefined?undefined:(state.selection?state.selection.slice():null),
+  maskBefore:maskBefore===undefined?undefined:(maskBefore?maskBefore.slice():null),
+  maskAfter:maskBefore===undefined?undefined:(state.selectionMask?state.selectionMask.slice():null)});
  if(state.history.length>40)state.history.shift();
  state.redo=[];saveCurrent();render();historyButtons();if(state.mode==="master")queueMasterSync();
 }
 
-function inBox(point,box){return Boolean(box&&point[0]>=box[0]&&point[0]<box[2]&&point[1]>=box[1]&&point[1]<box[3]);}
+
+function selectedPixel(x,y){
+ return Boolean(state.selectionMask&&x>=0&&x<WIDTH&&y>=0&&y<HEIGHT&&state.selectionMask[y*WIDTH+x]);
+}
+function activeSelectionMode(e){return e?.altKey?"subtract":e?.shiftKey?"add":state.selectionMode;}
+function setSelectionMask(mask){
+ state.selectionMask=mask&&core.maskCount(mask)?mask.slice():null;
+ state.selection=state.selectionMask?core.maskBounds(state.selectionMask):null;
+ updateSelectionUI();render();
+}
+function applySelection(incoming,mode=state.selectionMode,base=state.selectionMask){
+ setSelectionMask(core.combineMasks(base,incoming,mode));
+}
+function setSelection(box,base=state.selectionMask,mode=state.selectionMode){
+ if(!box){setSelectionMask(null);return;}
+ applySelection(core.maskRect(box,selectedRegion()),mode,base);
+}
+function colorSelection(x,y,mode=state.selectionMode){
+ if(!state.current||state.loading||state.syncing||!editable(x,y))return;
+ const mask=core.wandMask(state.current,x,y,selectedRegion(),state.wandTolerance,state.wandContiguous);
+ applySelection(mask,mode);
+ status("WAND · "+core.maskCount(mask)+" COLOR PIXELS · "+mode.toUpperCase()+" · "+(state.wandContiguous?"CONNECTED":"ALL MATCHES"));
+}
 function updateSelectionUI(){
  const b=state.selection,active=Boolean(b)&&!state.loading&&!state.syncing;
- $("selection-info").textContent=b?"SELECT "+(b[2]-b[0])+"×"+(b[3]-b[1])+"PX · X"+b[0]+" Y"+b[1]:"NO SELECTION · USE SELECT";
+ $("selection-info").textContent=b?
+  "SELECT "+core.maskCount(state.selectionMask)+" PX · "+(b[2]-b[0])+"×"+(b[3]-b[1])+" BOUNDS":
+  "NO SELECTION · RECT OR WAND";
  for(const id of ["flip-horizontal","flip-vertical","deselect","nudge-left","nudge-up","nudge-down","nudge-right"])
   $(id).disabled=!active;
+ for(const button of document.querySelectorAll("[data-select-mode]")){
+  const on=button.dataset.selectMode===state.selectionMode;
+  button.classList.toggle("active",on);button.setAttribute("aria-pressed",String(on));
+ }
 }
-function setSelection(box){state.selection=box?box.slice():null;updateSelectionUI();render();}
 function cancelTemporaryMove(){
  if(state.touchMoveAnchor){
   state.current=copy(state.touchMoveAnchor.before);
+  state.selectionMask=state.touchMoveAnchor.mask.slice();
   state.selection=state.touchMoveAnchor.box.slice();state.touchMoveAnchor=null;
  }
  if(state.moveGesture){
   state.current=copy(state.moveGesture.before);
+  state.selectionMask=state.moveGesture.mask.slice();
   state.selection=state.moveGesture.box.slice();state.moveGesture=null;
  }
  state.selectionGesture=null;state.touchSelectAnchor=null;state.trackpad=null;
  updateSelectionUI();if(state.current)render();
 }
-function previewMove(before,box,dx,dy){
- const moved=core.movePixels(before,box,dx,dy,selectedRegion());
+function previewMove(before,box,dx,dy,mask=state.selectionMask){
+ const moved=core.moveMasked(before,mask,dx,dy,selectedRegion());
  state.current=new ImageData(moved.data,WIDTH,HEIGHT);
- state.selection=moved.box;updateSelectionUI();render();
+ state.selectionMask=moved.mask;state.selection=moved.box;updateSelectionUI();render();
 }
 function nudgeSelection(dx,dy){
  if(!state.selection||!state.current||state.loading||state.syncing)return;
  cancelTemporaryMove();
- const before=snapshot(),box=state.selection.slice();
- previewMove(before,box,dx,dy);commit(before,box);
+ const before=snapshot(),box=state.selection.slice(),mask=state.selectionMask.slice();
+ previewMove(before,box,dx,dy,mask);commit(before,box,mask);
 }
 function flipSelection(axis){
  if(!state.selection||!state.current||state.loading||state.syncing)return;
  cancelTemporaryMove();
- const before=snapshot(),box=state.selection.slice();
- const result=core.flipPixels(before,box,axis,selectedRegion());
- state.current=new ImageData(result.data,WIDTH,HEIGHT);commit(before,box);render();
+ const before=snapshot(),box=state.selection.slice(),mask=state.selectionMask.slice();
+ const result=core.flipMasked(before,mask,axis,selectedRegion());
+ state.current=new ImageData(result.data,WIDTH,HEIGHT);
+ state.selectionMask=result.mask;state.selection=result.box;
+ commit(before,box,mask);updateSelectionUI();render();
 }
 function moveCursor(x,y){
  state.cursor=[Math.max(0,Math.min(WIDTH-1,x)),Math.max(0,Math.min(HEIGHT-1,y))];
  $("cursor-coord").textContent="CURSOR X "+state.cursor[0]+" / Y "+state.cursor[1];
  if(state.touchMoveAnchor){
-  const d=state.touchMoveAnchor;previewMove(d.before,d.box,state.cursor[0]-d.start[0],state.cursor[1]-d.start[1]);
+  const d=state.touchMoveAnchor;previewMove(d.before,d.box,state.cursor[0]-d.start[0],state.cursor[1]-d.start[1],d.mask);
  }else render();
 }
 function cursorTap(){
@@ -383,6 +416,9 @@ async function historyApply(isUndo){
  if(entry.selectionBefore!==undefined)state.selection=isUndo?
   (entry.selectionBefore?entry.selectionBefore.slice():null):
   (entry.selectionAfter?entry.selectionAfter.slice():null);
+ if(entry.maskBefore!==undefined)state.selectionMask=isUndo?
+  (entry.maskBefore?entry.maskBefore.slice():null):
+  (entry.maskAfter?entry.maskAfter.slice():null);
  updateSelectionUI();saveCurrent();render();historyButtons();
  if(state.mode==="master")queueMasterSync();
  status((isUndo?"UNDO":"REDO")+" / "+entry.key);
