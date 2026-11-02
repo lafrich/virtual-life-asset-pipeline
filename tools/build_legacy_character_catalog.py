@@ -180,7 +180,7 @@ def prepare_legacy_catalog(root: Path, media: Path, repo_url: str,
                         thumbnail=poster_url
                         preview_status="archive_still"
 
-        if groups.get("idle") and name in ("gfunk", "theodore", "yerbies", "otis"):
+        if groups.get("idle") and name in ("gfunk", "theodore", "yerbies"):
             # These three already author five genuine expression variants.
             # Export same-actor 4-view idle loops, not overlays from another rig.
             expressions = build_faces(root, folder, name, media, groups["idle"])
