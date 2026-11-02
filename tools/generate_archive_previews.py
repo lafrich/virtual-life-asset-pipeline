@@ -23,6 +23,9 @@ STEPS = [
     ("gfunk", ["assets/npc_gfunk/make_gfunk.py"], 120, False),
     ("yerbies", ["assets/npc_yerbies/make_yerbies.py"], 120, False),
     ("theodore", ["assets/npc_theodore/make_theodore.py"], 120, False),
+    # Otis reuses the EXACT original Theodore body and every source pose,
+    # replacing only the helmet pixels with the owner's new mechanism.
+    ("otis", ["assets/npc_otis/make_otis.py"], 120, True),
     ("babeh_loak_x3", ["assets/npc_babeh_loak/make_outputs.py"], 150, False),
     ("pak_ogah", ["assets/npc_pak_ogah/make_pak_ogah.py"], 120, False),
     ("kang_parkir", ["assets/npc_kang_parkir/make_kang_parkir.py"], 120, False),
