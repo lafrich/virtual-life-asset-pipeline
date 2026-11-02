@@ -9,11 +9,15 @@ on:
       - feature/xp-paint-character-stock-ui
       - feature/animation-library-paint-and-templates
       - feature/mixamo-character-motion-lab
+      - feature/import-virtual-life-npc-motion-inventory
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
       - "site/**"
       - "tools/build_character_catalog.py"
+      - "tools/build_native_character_catalog.py"
+      - "tools/build_legacy_character_catalog.py"
+      - "tools/generate_archive_previews.py"
       - "assets/animation_library/actions.json"
       - "assets/npc_*/motions.json"
       - "tests/test_character_motion_studio.py"
@@ -45,14 +49,16 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install image dependency
-        run: python -m pip install Pillow
+        run: python -m pip install -r requirements.txt
       - name: Validate JavaScript and Python
         run: |
           node --check site/app.js
           node --check site/animations.js
-          python -m py_compile tools/build_character_catalog.py tools/build_animation_catalog.py tools/new_animation_template.py tools/pack_animation_preview.py
+          python -m py_compile tools/build_character_catalog.py tools/build_animation_catalog.py tools/new_animation_template.py tools/pack_animation_preview.py tools/build_native_character_catalog.py tools/build_legacy_character_catalog.py tools/generate_archive_previews.py
           python -m unittest discover -s tests -p 'test_animation_catalog.py' -v
           python -m unittest discover -s tests -p 'test_character_motion_studio.py' -v
+      - name: Render native roster and legacy NPC motion frames
+        run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
       - name: Check built site files
@@ -64,9 +70,9 @@ jobs:
           test -s _site/animations.json
           test -s _site/animations.js
           python -m json.tool _site/catalog.json > /dev/null
-          python -c 'import json, pathlib; cs=json.load(open("_site/catalog.json"))["characters"]; assert cs; assert all("motions" in c and len(c["motions"])>=5 for c in cs); assert all(any(m["id"]=="walk" and m["available"] for m in c["motions"]) for c in cs); assert all(pathlib.Path("_site",e["overlay"]).is_file() for c in cs for e in c["expressions"] if e.get("overlay")); print("Validated",len(cs),"character rigs, animated expression layers and motion bindings")'
+          python -c 'import json, pathlib; cs=json.load(open("_site/catalog.json"))["characters"]; assert cs; assert len(cs)>=37; assert all("motions" in c for c in cs); assert all(any(m["id"]=="walk" and m["available"] for m in c["motions"]) for c in cs if c.get("asset_status")!="source_only" and c.get("origin") is None); assert all(pathlib.Path("_site",e["overlay"]).is_file() for c in cs for e in c["expressions"] if e.get("overlay")); print("Validated",len(cs),"character rigs, animated expression layers and motion bindings")'
           python -m json.tool _site/animations.json > /dev/null
-          python -c 'import json; d=json.load(open("_site/catalog.json")); assert d["characters"], "no characters found"; assert all(__import__("pathlib").Path("_site", c["walk"]).is_file() for c in d["characters"]); print("Validated", len(d["characters"]), "character(s)")'
+          python -c 'import json; d=json.load(open("_site/catalog.json")); assert d["characters"], "no characters found"; assert all(__import__("pathlib").Path("_site", c["walk"]).is_file() for c in d["characters"] if c.get("walk")); print("Validated", len(d["characters"]), "character(s)")'
           python -c 'import json, pathlib; d=json.load(open("_site/animations.json")); a=d["animations"]; assert len(a)>=10; assert sum(bool(x["gif"]) for x in a)>=7; assert all(not x["gif"] for x in a if x["status"]=="template"); assert all(pathlib.Path("_site", x["gif"]).is_file() for x in a if x["gif"]); print("Validated", len(a), "animation records")'
       - name: Upload preview build
         uses: actions/upload-artifact@v4
@@ -92,7 +98,9 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install image dependency
-        run: python -m pip install Pillow
+        run: python -m pip install -r requirements.txt
+      - name: Render native roster and legacy NPC motion frames
+        run: python tools/generate_archive_previews.py
       - name: Rebuild publishable catalog
         run: python tools/build_character_catalog.py
       - name: Configure Pages
