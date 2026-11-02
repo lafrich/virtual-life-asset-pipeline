@@ -39,6 +39,12 @@
   `assets/kamar_cove_kosong/src/props_kamar.py` (ember/gayung), `assets/spawn_hobo/src/tent.py`.
 * **UI:** `assets/ui_y2k/src/y2k.py` (glass panels, buttons, orbs, icons) as in `assets/kamar_cove_kosong/src/ui_kamar.py`.
 
+## Animation library templates
+* Saved action previews are discoverable in the Paint landing page's ANIMATIONS tab; registration for older examples lives at `assets/animation_library/library.json`.
+* To start a new action, use `python tools/new_animation_template.py --name <slug> --preset one_shot|emote_loop|interact_prop`. Author real native v6b 64×112 frames in all four directions; the generated packer rejects missing poses and builds the GIF only from authored frames.
+* Keep `animation_catalog.status = template` until the owner approves actual animation poses. The website distinguishes template drafts from real playable previews. Never claim a template includes finished action frames.
+* See `docs/animation-library.md` for metadata, event timing, naming and publishing conventions.
+
 ## Verify checklist
 - [ ] `python3 tools/audit_colors.py <sprite dir>` → new colours: none (or listed), alpha only 0/56/255, shadows black.
 - [ ] Characters: `python3 tools/diff_sheet.py <new sheet> game/assets/chars/<name>_v6b_sheet.png` → 0 px on frames you did not change.
