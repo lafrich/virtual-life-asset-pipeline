@@ -137,7 +137,7 @@ def draw_native_legs(layer, rig, base, kind, frame, view):
                 a[fy, fx] = (*(WHITE if cy % 4 else FOLD), 255)
     return Image.fromarray(a, "RGBA")
 
-def draw_carton(layer, rear, bob, expression="neutral", mirror_text=False):
+def draw_carton(layer, rear, bob, expression="neutral", show_label=True):
     d = ImageDraw.Draw(layer)
     def shift(poly):
         return [(x, y + bob) for x, y in poly]
@@ -175,7 +175,8 @@ def draw_carton(layer, rear, bob, expression="neutral", mirror_text=False):
         # Bar code: sparse readable stripes, 1× pixel strokes.
         for x in range(21, 34, 2):
             d.line([(x, 71 + bob), (x, 74 + bob)], fill=BLUE_DARK)
-        pixel_text(d, "milk", 17, 41 + bob, WHITE)
+        if show_label:
+            pixel_text(d, "milk", 17, 41 + bob, WHITE)
         polygon([(42, 46), (49, 41), (49, 57), (42, 61)], BLUE)
         line([(43, 56), (48, 52)], DARK)
     else:
@@ -188,7 +189,8 @@ def draw_carton(layer, rear, bob, expression="neutral", mirror_text=False):
         for y in range(57, 69, 3):
             line([(43, y), (48, y - 3)], BLUE_DARK)
         # The native 3×5 bitmap word is legible at 1×, on one solid plane.
-        pixel_text(d, "milk", 17, 42 + bob, WHITE)
+        if show_label:
+            pixel_text(d, "milk", 17, 42 + bob, WHITE)
         # Avoid fully circular eyeballs; chunky 5×5 pixel concentric eyes.
         for x, y in ((21, 61), (33, 64)):
             x, y = x, y + bob
@@ -238,10 +240,14 @@ def render_one(rig, se, ne, anim, t, direction, expression="neutral"):
     draw_arms(sleeves, view, t, bob, kind)
     frame.alpha_composite(sleeves)
     carton = Image.new("RGBA", (FW, FH))
-    draw_carton(carton, rear, bob, expression)
+    draw_carton(carton, rear, bob, expression, show_label=not mirrored)
     frame.alpha_composite(carton)
     if mirrored:
         frame = frame.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+        # v6b SW/NW mirror the physical character, but the carton typography
+        # must stay readable, not reverse into a fake brand.
+        d = ImageDraw.Draw(frame)
+        pixel_text(d, "milk", 29, (41 if rear else 42) + bob, WHITE)
     return frame
 
 def preview(sheet):
