@@ -11,6 +11,7 @@ on:
       - feature/mixamo-character-motion-lab
       - feature/import-virtual-life-npc-motion-inventory
       - fix/curate-legacy-and-animated-faces
+      - fix/facial-preview-click-feedback
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
