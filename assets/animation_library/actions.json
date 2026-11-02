@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "description": "Named reusable motions. New motions are bound to characters only after real native poses exist.",
+  "actions": [
+    {
+      "id": "idle",
+      "label": "IDLE",
+      "type": "native_row",
+      "row": "idle",
+      "frames": 4,
+      "frame_ms": [
+        250,
+        250,
+        250,
+        250
+      ],
+      "loop": true,
+      "category": "basic"
+    },
+    {
+      "id": "walk",
+      "label": "WALK",
+      "type": "native_row",
+      "row": "walk",
+      "frames": 6,
+      "frame_ms": [
+        140,
+        140,
+        140,
+        140,
+        140,
+        140
+      ],
+      "loop": true,
+      "category": "basic"
+    },
+    {
+      "id": "talk",
+      "label": "TALK",
+      "type": "native_row",
+      "row": "talk",
+      "frames": 4,
+      "frame_ms": [
+        180,
+        180,
+        180,
+        180
+      ],
+      "loop": true,
+      "category": "action"
+    },
+    {
+      "id": "sit",
+      "label": "SIT",
+      "type": "native_row",
+      "row": "sit",
+      "frames": 4,
+      "frame_ms": [
+        250,
+        250,
+        250,
+        250
+      ],
+      "loop": true,
+      "category": "action"
+    },
+    {
+      "id": "sit_type",
+      "label": "TYPE",
+      "type": "native_row",
+      "row": "sit_type",
+      "frames": 4,
+      "frame_ms": [
+        170,
+        170,
+        170,
+        170
+      ],
+      "loop": true,
+      "category": "action"
+    },
+    {
+      "id": "press_button",
+      "label": "PRESS BUTTON",
+      "type": "custom_sheet",
+      "frames": 4,
+      "frame_ms": [
+        150,
+        160,
+        260,
+        200
+      ],
+      "loop": false,
+      "category": "action",
+      "needs_rig": true,
+      "reference": "assets/anim_nyebrang/manifest.json"
+    },
+    {
+      "id": "pick_up",
+      "label": "PICK UP",
+      "type": "custom_sheet",
+      "frames": 9,
+      "frame_ms": [
+        260,
+        110,
+        110,
+        120,
+        260,
+        120,
+        110,
+        120,
+        320
+      ],
+      "loop": false,
+      "category": "action",
+      "needs_rig": true,
+      "reference": "assets/anim_ambil_barang/manifest.json"
+    }
+  ]
+}
