@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "notes": "Inventory of distinct legacy character families; actual availability is determined from generated 64x112 frames, not notes.",
+  "notes": "Visible, distinct original Virtual Life NPC families; old v2 prototype/archive entries excluded from the public catalog. Availability comes from real 64x112 generated frames.",
   "characters": [
     {
       "id": "gfunk",
@@ -89,54 +89,6 @@
       "note": "brew, grind, pour, serve",
       "level": "source",
       "source": "assets/barista_famima/src/barista.py"
-    },
-    {
-      "id": "cosmo",
-      "name": "Cosmo / archived v2",
-      "folder": "assets/npc_preview_v2",
-      "note": "floating prototype",
-      "level": "archive",
-      "source": "assets/npc_preview_v2/make_npcs_v2.py"
-    },
-    {
-      "id": "rocketta",
-      "name": "Rocketta / archived v2",
-      "folder": "assets/npc_preview_v2",
-      "note": "floating prototype (reworked as Theodore)",
-      "level": "archive",
-      "source": "assets/npc_preview_v2/make_npcs_v2.py"
-    },
-    {
-      "id": "sol",
-      "name": "Sol / archived v2",
-      "folder": "assets/npc_preview_v2",
-      "note": "floating prototype",
-      "level": "archive",
-      "source": "assets/npc_preview_v2/make_npcs_v2.py"
-    },
-    {
-      "id": "zib",
-      "name": "Zib / archived v2",
-      "folder": "assets/npc_preview_v2",
-      "note": "floating prototype (reworked as Gfunk)",
-      "level": "archive",
-      "source": "assets/npc_preview_v2/make_npcs_v2.py"
-    },
-    {
-      "id": "klank",
-      "name": "Klank / archived v2",
-      "folder": "assets/npc_preview_v2",
-      "note": "floating prototype",
-      "level": "archive",
-      "source": "assets/npc_preview_v2/make_npcs_v2.py"
-    },
-    {
-      "id": "nebi",
-      "name": "Nebi / archived v2",
-      "folder": "assets/npc_preview_v2",
-      "note": "floating prototype",
-      "level": "archive",
-      "source": "assets/npc_preview_v2/make_npcs_v2.py"
     }
   ]
 }
