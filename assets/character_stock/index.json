@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "name": "Virtual Life — v6b Character Stock",
+  "style": "v6b",
+  "asset_root": "assets/",
+  "frame": {
+    "width": 64,
+    "height": 112,
+    "pivot": [
+      32,
+      100
+    ],
+    "directions": [
+      "se",
+      "sw",
+      "ne",
+      "nw"
+    ],
+    "columns": 6,
+    "rows": 44
+  },
+  "characters": [
+    {
+      "id": "aladdin_sane",
+      "name": "Aladdin Sane",
+      "type": "npc",
+      "folder": "assets/npc_aladdin_sane",
+      "generator": "assets/npc_aladdin_sane/src/make_aladdin_sane.py",
+      "manifest": "assets/npc_aladdin_sane/manifest.json",
+      "sprite_sheet": "assets/npc_aladdin_sane/sprites/aladdin_sane_v6b_sheet.png",
+      "walking_gif": "assets/npc_aladdin_sane/preview/aladdin_sane_walk_4dirs_4x.gif",
+      "character_look": "copper-red spiky mullet, lightning makeup, bare torso, slate jeans, brown boots",
+      "validation": "GitHub Actions verify + palette audit"
+    }
+  ]
+}
