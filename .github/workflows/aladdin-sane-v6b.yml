@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -30,6 +30,16 @@ jobs:
         run: python assets/npc_aladdin_sane/src/make_aladdin_sane.py
       - name: Audit sprite pixels
         run: python tools/audit_colors.py assets/npc_aladdin_sane/sprites
+      - name: Store character sprite sheets and GIF permanently in GitHub
+        if: success() && github.ref == 'refs/heads/feature/aladdin-sane-v6b'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/npc_aladdin_sane/sprites/ assets/npc_aladdin_sane/preview/ assets/npc_aladdin_sane/manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Store v6b Aladdin Sane sprites and walking previews [skip ci]"
+            git push origin HEAD:feature/aladdin-sane-v6b
+          fi
       - name: Publish generated output for review
         if: always()
         uses: actions/upload-artifact@v4
