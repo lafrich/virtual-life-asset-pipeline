@@ -386,16 +386,26 @@ function render(){
  if(state.grid){g.strokeStyle="rgba(36,65,105,.23)";g.lineWidth=1;
   for(let x=b[0]+1;x<b[2];x++){g.beginPath();g.moveTo(x*z+.5,b[1]*z);g.lineTo(x*z+.5,b[3]*z);g.stroke();}
   for(let y=b[1]+1;y<b[3];y++){g.beginPath();g.moveTo(b[0]*z,y*z+.5);g.lineTo(b[2]*z,y*z+.5);g.stroke();}}
- if(state.selection||state.touchSelectAnchor){
-  const b=state.touchSelectAnchor?
-   core.selectionRect(...state.touchSelectAnchor,...state.cursor,selectedRegion()):state.selection;
-  if(b){
-   g.save();g.lineWidth=1.5;g.setLineDash([4,4]);g.strokeStyle="#ffffff";
-   g.strokeRect(b[0]*z+.5,b[1]*z+.5,(b[2]-b[0])*z,(b[3]-b[1])*z);
-   g.lineDashOffset=4;g.strokeStyle="#174a8a";
-   g.strokeRect(b[0]*z+.5,b[1]*z+.5,(b[2]-b[0])*z,(b[3]-b[1])*z);
-   g.restore();
+
+ // Draw each selected pixel boundary instead of drawing only a rectangle.
+ if(state.selectionMask&&state.selection){
+  const mask=state.selectionMask,bb=state.selection;
+  g.save();g.beginPath();g.lineWidth=Math.max(1,z/3);
+  for(let y=bb[1];y<bb[3];y++)for(let x=bb[0];x<bb[2];x++)if(mask[y*WIDTH+x]){
+   const i=y*WIDTH+x,l=x*z,t=y*z;
+   if(x===0||!mask[i-1]){g.moveTo(l,t);g.lineTo(l,t+z);}
+   if(x===WIDTH-1||!mask[i+1]){g.moveTo(l+z,t);g.lineTo(l+z,t+z);}
+   if(y===0||!mask[i-WIDTH]){g.moveTo(l,t);g.lineTo(l+z,t);}
+   if(y===HEIGHT-1||!mask[i+WIDTH]){g.moveTo(l,t+z);g.lineTo(l+z,t+z);}
   }
+  g.strokeStyle="#ffffff";g.stroke();g.strokeStyle="#16418b";g.lineWidth=1;
+  g.setLineDash([Math.max(2,z),Math.max(2,z)]);g.stroke();g.restore();
+ }
+ if(state.touchSelectAnchor){
+  const b=core.selectionRect(...state.touchSelectAnchor.start,...state.cursor,selectedRegion());
+  g.save();g.lineWidth=1;g.setLineDash([4,4]);g.strokeStyle="#fff";
+  g.strokeRect(b[0]*z+.5,b[1]*z+.5,(b[2]-b[0])*z,(b[3]-b[1])*z);
+  g.restore();
  }
  if(state.cursorMode&&!state.panMode){
   const [cx,cy]=state.cursor,xx=(cx+.5)*z,yy=(cy+.5)*z;
@@ -498,8 +508,8 @@ function refreshToolState(){
  for(const id of ["cursor-left","cursor-up","cursor-down","cursor-right"])
   $(id).disabled=!state.cursorMode||state.panMode;
  $("gesture-hint").textContent=state.panMode?"PAN · drag to scroll without painting":
-  state.cursorMode?"CURSOR · drag canvas to move crosshair, TAP to edit":
-  "DIRECT · drag to paint/select; empty margin scrolls";
+  state.cursorMode?"CURSOR · drag to aim, TAP to WAND/RECT/edit":
+  "DIRECT · tap WAND for color, drag RECT, empty margin scrolls";
  display.style.cursor=state.panMode?"grab":state.cursorMode?"none":"crosshair";
 }
 
@@ -531,6 +541,15 @@ function initControls(){
  $("pan-toggle").onclick=()=>{cancelTemporaryMove();state.panMode=!state.panMode;refreshToolState();render();};
  $("cursor-toggle").onclick=()=>{cancelTemporaryMove();state.cursorMode=!state.cursorMode;state.panMode=false;refreshToolState();render();};
  $("cursor-tap").onclick=cursorTap;
+ for(const button of document.querySelectorAll("[data-select-mode]"))button.onclick=()=>{
+  state.selectionMode=button.dataset.selectMode;updateSelectionUI();
+  status("SELECTION MODE · "+state.selectionMode.toUpperCase());
+ };
+ $("wand-contiguous").onchange=e=>{state.wandContiguous=e.target.checked;};
+ $("wand-tolerance").oninput=e=>{
+  state.wandTolerance=Number(e.target.value);
+  $("wand-tolerance-value").textContent=String(state.wandTolerance);
+ };
  for(const [id,dx,dy] of [["cursor-left",-1,0],["cursor-right",1,0],["cursor-up",0,-1],["cursor-down",0,1]])
   $(id).onclick=()=>{if(state.cursorMode&&!state.panMode)moveCursor(state.cursor[0]+dx,state.cursor[1]+dy);};
  for(const [id,dx,dy] of [["nudge-left",-1,0],["nudge-right",1,0],["nudge-up",0,-1],["nudge-down",0,1]])
