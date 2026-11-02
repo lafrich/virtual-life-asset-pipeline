@@ -312,3 +312,10 @@ body.pixel-editor-open{overflow:hidden}
  .pixel-editor-heading button{flex:none;border:2px solid;border-color:white #777 #777 white;background:#d4d2ce;color:#111;font:700 11px Tahoma,Verdana,Arial,sans-serif;min-height:30px}
  #pixel-editor-embed{flex:1 1 0;width:100%;max-width:100%;min-width:0;height:0;min-height:0;border:0}
 }
+
+/* Keep the original XP inspector action row inside the phone width. */
+@media(max-width:780px){
+  .details-panel,.detail-content,#info-panel,.inspector-actions{min-width:0;max-width:100%}
+  .inspector-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}
+  .inspector-actions>.chrome-button{display:flex;min-width:0;width:100%;max-width:100%;padding:7px 3px;font-size:clamp(9px,2.4vw,11px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
