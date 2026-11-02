@@ -204,16 +204,8 @@ def draw_carton(layer, rear, bob, expression="neutral", show_label=True):
         line([(16, 58 + bob), (38, 65 + bob)], BLUE, 1)
         line([(16, 61 + bob), (36, 67 + bob)], GREY, 1)
         line([(16, 64 + bob), (37, 70 + bob)], GREY, 1)
-        # Barcode quiet zone deliberately clear of information lines.
-        # The broad back carton face rises 7 px from left to right (27 px).
-        # The base line therefore follows the same isometric shear as MILK.
-        # Each bar is a tiny tilted pixel column, not a flat row of stripes.
-        for i, x in enumerate(range(20, 36, 2)):
-            y_top = 68 + bob + round((x - 16) * 7 / 27)
-            height = (5, 6, 4, 6, 5, 6, 4, 5)[i]
-            d.line([(x, y_top), (x + 1, y_top + height)], fill=BLUE_DARK, width=1)
-            if i in (2, 5):
-                d.point((x + 1, y_top + height - 1), fill=BLUE_DARK)
+        # Barcode is painted after the final NE/NW facing is established,
+        # not inside the pre-mirrored carton. See draw_rear_barcode().
         if show_label:
             pixel_text_slanted(d, "milk", 18, 41 + bob, WHITE, slope=7/27)
         polygon([(42, 46), (49, 41), (49, 57), (42, 61)], BLUE)
@@ -270,6 +262,36 @@ def draw_carton(layer, rear, bob, expression="neutral", show_label=True):
     # Grounded, unbranded feet are below the carton front; no costume head.
     return layer
 
+def rear_barcode_geometry(direction, bob=0):
+    """Barcode columns aligned to the projected *rear panel* in each view.
+
+    NE back face: its bottom edge descends right 7px across 27px.
+    NW back face: the same physical plane descends left after mirroring.
+    Unlike the previous version, the barcode's bars are VERTICAL in both
+    views (printed onto a vertical cardboard panel), with their top and
+    bottom edges following the appropriate projected panel slope.
+    """
+    if direction not in ("ne", "nw"):
+        return []
+    heights = (5, 6, 5, 6, 4, 6, 5, 6, 5)
+    bars = []
+    for i, local_x in enumerate(range(19, 37, 2)):
+        x = local_x if direction == "ne" else (FW - 1 - local_x)
+        # Always compute from the same unmirrored physical carton coordinate.
+        # This produces a + slope in NE and a - slope in NW automatically.
+        y = 65 + bob + round((local_x - 14) * 7 / 27)
+        bars.append((x, y, heights[i]))
+    return bars
+
+
+def draw_rear_barcode(frame, direction, bob):
+    if direction not in ("ne", "nw"):
+        return
+    d = ImageDraw.Draw(frame)
+    for x, y, height in rear_barcode_geometry(direction, bob):
+        d.line([(x, y), (x, y + height)], fill=BLUE_DARK, width=1)
+
+
 def render_one(rig, se, ne, anim, t, direction, expression="neutral"):
     rear = direction in ("ne", "nw")
     mirrored = direction in ("sw", "nw")
@@ -300,6 +322,9 @@ def render_one(rig, se, ne, anim, t, direction, expression="neutral"):
         # must stay readable, not reverse into a fake brand.
         d = ImageDraw.Draw(frame)
         pixel_text_slanted(d, "milk", 26, 45 + bob, WHITE, slope=-7/27)
+    # Draw once in final screen coordinates, after mirroring and typography.
+    # Ensures barcode pitch always agrees with the visible back-panel edges.
+    draw_rear_barcode(frame, direction, bob)
     return frame
 
 def preview(sheet):
@@ -335,6 +360,13 @@ def preview(sheet):
     return frames
 
 def build():
+    # Prevent regression: rear barcode top edge has opposite slopes for
+    # mirrored views, and each printed bar remains vertical.
+    ne = sorted(rear_barcode_geometry("ne"))
+    nw = sorted(rear_barcode_geometry("nw"))
+    assert len(ne) == len(nw) == 9
+    assert ne[-1][1] > ne[0][1], "NE barcode must slope down to the right"
+    assert nw[-1][1] < nw[0][1], "NW barcode must slope down to the left"
     SPRITES.mkdir(parents=True, exist_ok=True)
     C, O, se, ne = make_rig()
     sheet = Image.new("RGBA", (FW * COLS, FH * ROWS))
@@ -383,7 +415,7 @@ def build():
       "supported_animated_actions": ["walk", "idle", "talk"],
       "experimental_rows": ["sit", "sit_type", "sleep", "tired", "swim", "float", "lie", "perch"],
       "new_hex": [],
-      "notes": "Pixel-authored milk carton; sleeves attached at the side-body midpoints; printed MILK label and back barcode follow the isometric carton face; non-walk action rows remain simplified placeholders."
+      "notes": "Pixel-authored milk carton, centered side arm sockets, perspective-aligned MILK lettering and vertical rear barcode bars with direction-correct NE/NW slants; non-walk rows remain placeholders."
     }
     (FOLDER / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print("BUILT", base, "sprites", len(outputs), "walk rows", 4, "frames each", 6)
