@@ -290,3 +290,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px dotted #141
 .inspector-art.empty::after{content:"SRC / NO PREVIEW";font:bold 13px "Courier New",monospace;color:#41609b;text-align:center;line-height:1.5;padding:9px;position:absolute;inset:0;display:grid;place-items:center}
 .file-source-only{display:grid!important;place-items:center;background:#d1d3da!important;font:bold 21px "Courier New",monospace;color:#28458a;letter-spacing:-1px}
 .detail-tab:disabled,.tool:disabled{cursor:not-allowed;opacity:.45}
+
+/* Inline, full-screen character authoring workspace (original Characters tab). */
+body.pixel-editor-open{overflow:hidden}
+.pixel-editor-overlay[hidden]{display:none!important}
+.pixel-editor-overlay{position:fixed;inset:0;z-index:999;background:rgba(7,18,39,.8);padding:14px;display:flex;align-items:stretch;justify-content:center}
+.pixel-editor-dialog{display:flex;flex-direction:column;max-width:1450px;width:100%;min-height:0;background:#e8e9e6;border:2px solid #aebbd0;box-shadow:0 8px 40px rgba(0,0,0,.45)}
+.pixel-editor-heading{background:linear-gradient(90deg,#163d83,#4c84c1);color:#fff;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;font:700 12px/1.4 "Courier New",monospace}
+.pixel-editor-heading button{border:1px solid white;padding:5px 12px;font:inherit;cursor:pointer;background:#eef3fb;color:#1b3975}
+#pixel-editor-embed{display:block;width:100%;flex:1;min-height:0;border:0;background:#d4dfe7}
+@media(max-width:700px){.pixel-editor-overlay{padding:0}.pixel-editor-heading{font-size:10px}.pixel-editor-dialog{border:0}}

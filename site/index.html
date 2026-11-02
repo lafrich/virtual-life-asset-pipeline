@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#043d9e">
   <meta name="description" content="Virtual Life character stock. Pixel people, Windows Paint energy.">
   <title>character_stock.pnt — Paint</title>
-  <link rel="stylesheet" href="./style.css?v=shared-skeletons-v1">
-  <script defer src="./app.js?v=face-preview-fix-2"></script>
+  <link rel="stylesheet" href="./style.css?v=master-parts-1">
+  <script defer src="./app.js?v=master-parts-1"></script>
   <script defer src="./animations.js?v=life-sim-roadmap-v1"></script>
 </head>
 <body>
@@ -105,7 +105,7 @@
               <div class="inspector-actions">
                 <a class="chrome-button action-main" id="download-sheet" download href="#">↓ SPRITE.PNG</a>
                 <a class="chrome-button" id="open-source" target="_blank" rel="noopener noreferrer" href="#">↗ SOURCE</a>
-                <a class="chrome-button action-main" id="edit-pixels" href="./pixel-editor.html?actor=legacy_otis" hidden>✎ EDIT OTIS PIXELS</a>
+                <button type="button" class="chrome-button action-main" id="edit-pixels" hidden>✎ EDIT PIXELS / MASTER PARTS</button>
               </div>
             </section>
             <section id="faces-panel" role="tabpanel" aria-labelledby="tab-faces" hidden>
@@ -219,5 +219,11 @@
     </main>
     <div class="desktop-foot"><span>© VIRTUAL LIFE</span><span>MADE OF PIXELS, NOT PROMISES.</span></div>
   </div>
+  <section id="pixel-editor-overlay" class="pixel-editor-overlay" role="dialog" aria-modal="true" aria-label="Virtual Life character pixel editor" hidden>
+    <div class="pixel-editor-dialog">
+      <div class="pixel-editor-heading"><strong>CHARACTER / PIXEL & MASTER PARTS EDITOR</strong><button type="button" id="close-pixel-editor" aria-label="Close pixel editor">× CLOSE</button></div>
+      <iframe id="pixel-editor-embed" title="Otis pixel and master part editor" loading="lazy" src="about:blank"></iframe>
+    </div>
+  </section>
 </body>
 </html>

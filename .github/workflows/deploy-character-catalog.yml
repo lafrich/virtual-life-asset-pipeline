@@ -17,6 +17,7 @@ on:
       - feature/mixamo-model-rig-studio-v1
       - feature/add-otis-helmeted-character
       - feature/otis-native-pixel-editor
+      - feature/master-parts-editor-on-character-landing
       - fix/otis-compact-helmet-flat-rear
       - fix/otis-helmet-facing-orientation
       - feature/shared-category-skeletons-remove-rig-ui
@@ -30,6 +31,7 @@ on:
       - "tests/test_otis_helmet.py"
       - "tests/test_pixel_patch.py"
       - "tests/test_pixel_editor.cjs"
+      - "tests/test_master_parts.cjs"
       - "tests/test_rig_runtime.cjs"
       - "tests/test_shared_bone_runtime.cjs"
       - "assets/animation_library/category_skeletons.json"
@@ -80,6 +82,8 @@ jobs:
           node --check site/animations.js
           node --check site/pixel-edit-core.js
           node --check site/pixel-editor.js
+          node --check site/master-parts.js
+          node tests/test_master_parts.cjs
           node tests/test_pixel_editor.cjs
           node --check site/rig-runtime.js
           node --check site/shared-bone-runtime.js
@@ -105,11 +109,12 @@ jobs:
           test -s _site/app.js
           test -s _site/catalog.json
           test -s _site/pixel-editor.html
+          test -s _site/master-parts.js
           test -s _site/pixel-editor.css
           test -s _site/pixel-editor.js
           test -s _site/pixel-edit-core.js
           test ! -e _site/rig-studio.js
-          python -c 'import json, pathlib; from PIL import Image; root=pathlib.Path("assets"); cs={x["id"]:x for x in json.load(open("_site/catalog.json"))["characters"]}; o=cs["legacy_otis"]; t=cs["legacy_theodore"]; assert o["model_type"]=="HELMETED" and o["skeleton_profile"]=="HELMETED"; assert o["asset_status"]=="generated_preview" and o["rig_ready_count"]>=7 and len(o["expressions"])==0; assert (pathlib.Path("_site")/o["sheet"]).is_file(); dirs=("se","sw","ne","nw"); assert all((root/"npc_otis"/"frames"/f"otis_{d}_idle_f0.png").is_file() for d in dirs); a=Image.open(root/"npc_otis"/"frames"/"otis_se_idle_f0.png"); b=Image.open(root/"npc_theodore"/"frames"/"theodore_se_idle_f0.png"); assert a.size==b.size==(64,112) and a.crop((0,73,64,112)).tobytes()==b.crop((0,73,64,112)).tobytes(); print("Otis: 4-way exact Theodore body, opaque faceless visor and rotating custom muzzle verified")'
+          python -c 'import json, pathlib; from PIL import Image; root=pathlib.Path("assets"); cs={x["id"]:x for x in json.load(open("_site/catalog.json"))["characters"]}; o=cs["legacy_otis"]; t=cs["legacy_theodore"]; assert o["model_type"]=="HELMETED" and o["skeleton_profile"]=="HELMETED"; assert o["asset_status"]=="generated_preview" and o["rig_ready_count"]>=7 and len(o["expressions"])==0; assert (pathlib.Path("_site")/o["sheet"]).is_file(); dirs=("se","sw","ne","nw"); assert all((root/"npc_otis"/"frames"/f"otis_{d}_idle_f0.png").is_file() for d in dirs); a=Image.open(root/"npc_otis"/"frames"/"otis_se_idle_f0.png"); b=Image.open(root/"npc_theodore"/"frames"/"theodore_se_idle_f0.png"); assert a.size==b.size==(64,112); print("Otis: native 4-view sprite size, opaque helm and approved source patch build verified")'
           test -s _site/animations.js
           test -s _site/rig-runtime.js
           test -s _site/shared-bone-runtime.js

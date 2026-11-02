@@ -1,46 +1,54 @@
-# Otis Pixel Editor — 64×112 original source frames
+# Virtual Life — Master Parts Pixel Editor (Otis)
 
-The owner asked to manually correct pixel positioning after repeated automated helmet errors. This is a **real pixel editor**, not a new game mode and not another Rig Studio. It is available at:
+**Location:** Characters → Otis → **EDIT PIXELS / MASTER PARTS**. The editor opens inside the existing landing page, with no added app/game mode. It can also be opened directly at `/pixel-editor.html`.
 
-- https://lafrich.github.io/virtual-life-asset-pipeline/pixel-editor.html
-- Or **Characters → Otis → EDIT OTIS PIXELS**.
+## One master, multiple animation frames
 
-## Editing
+The editor has two modes:
 
-- Choose any Otis **source motion action**, direction **SE/SW/NE/NW**, and frame.
-- Paint with pencil (B), erase (E), sample from the sprite (I), or flood-fill inside the allowed head rectangle (G). Brush sizes 1–4 original pixels.
-- The screen view zooms 4×, 6×, 8× or 10× using nearest-neighbor pixels. Grid is optional. A 2× preview shows the exact output.
-- Undo/Redo work on previous edit gestures, including after switching directions or frames. `Ctrl/Cmd+Z` reverses the most recent gesture.
-- Your **head pixels** are editable within [x8..55, y18..71]. Body, hands, shoes, shadows and pivot elsewhere are locked for Theodore fidelity. To edit the body intentionally, extend the protected editing design in source rather than silently modifying approved artwork.
-- The browser stores a local draft via `localStorage` for convenience. **Drafts are device/browser-local** and are not automatically uploaded to GitHub. Clearing your browser data may erase them.
-- **CURRENT FRAME.PNG** downloads the selected rendered 64×112 RGBA frame. For a permanent change, use **SAVE PIXEL EDITS.JSON**, not only the PNG.
-- **LOAD PIXEL EDITS.JSON** loads existing patches from a file. Drafts may also restore on reopening the page.
+1. **MASTER / APPLY TO FRAMES** — select a body region (HEAD, BODY, LEFT ARM, RIGHT ARM, LEFT LEG, RIGHT LEG) and a facing (SE/SW/NE/NW). Paint the canonical idle frame. After each stroke, the changed pixels are projected onto every authored source action/frame **for that same facing**. The projection uses the source frame's approximate silhouette-center translation, limited per part, so existing body motion is retained. Changes are not indiscriminately mirrored to opposite facings because this previously caused Otis's helmet to face the wrong way.
+2. **FRAME / MANUAL FIX** — choose an actual existing action and frame to correct local overlaps, bent arms or rotations that a translation-only master cannot solve.
 
-## Publishing changes to the pipeline
+This is an **honest first-stage editable body-part overlay**, not fully separated PNG body pieces or weighted skeletal skinning. The older NPC artwork is flattened. The currently selectable regions are edit masks, not truly extracted arms/legs. A single torso or arm change may still need corrections on extreme poses. Automatic bone-based rotation/occlusion, split source layers and universal cross-character retargeting require additional authoring work.
 
-This website is hosted on static GitHub Pages: it does not have a GitHub write API or a server database, and therefore **cannot auto-commit changes**. The editor never asks for your GitHub password or token.
+All drawing occurs at the original **64×112 RGBA** V6B resolution, with the original gait and pivot preserved unless you explicitly edit those pixels. The six edit regions are distinct controls but may overlap where the original sprite overlaps.
 
-1. Finish editing any Otis directions / animation frames.
-2. Click **SAVE PIXEL EDITS.JSON**, producing `otis_pixel_edits.json`.
-3. Upload that JSON here in our ChatGPT conversation, and ask me to apply it to Otis.
-4. I will commit it to `assets/npc_otis/pixel_overrides.json`, run validation and the character asset pipeline. The generator reads that same file every build and patches each matched frame *before* its sprite atlas and GIF files are assembled.
-5. The finished committed changes then appear on the public Characters page after GitHub Pages deployment.
+## Tools
 
-No future animation rig status is fabricated: pixel patches only affect the **specific actual source action/direction/frame** you edited; they do not automatically retarget every other action or NPC.
+Pencil, eraser, eyedropper, bounded fill, color palette, 1–4 px brush, grid, 4×–10× zoom, 2× native preview, undo/redo, frame scrub, reset, PNG export, patch JSON import/export. Changing selected parts restricts drawing to that region.
 
-## Stable format
+## Save architecture
+
+- **Immediate editing feedback:** every gesture updates the displayed sprite and projects a master to existing frames.
+- **Autosave:** a browser-local draft is saved to `localStorage` after changes (debounced). You can close the embedded editor and reopen it later **in the same browser/device**; the draft will restore. This is not a server account backup; browser clearing/private browsing/other devices can lose it.
+- **Portable save:** click `SAVE PIXEL EDITS.JSON` to download a **v2** patch containing actual complete edited 64×112 frame PNGs plus master region metadata for reopening. Load the patch with the `LOAD PIXEL EDITS.JSON` control.
+- **Publish to shared GitHub database:** the static GitHub Pages site has no authenticated write backend. It **does not and cannot automatically commit** after a stroke or after saving a local draft. Upload exported `otis_pixel_edits.json` to this chat and ask for publishing; the GitHub integration can commit to `assets/npc_otis/pixel_overrides.json`, run tests and deploy. Do not put GitHub credentials in frontend code or browser localStorage.
+
+### Source pipeline behavior
+
+`assets/npc_otis/make_otis.py` accepts both head-only patch v1 and full Otis frame patch v2. Every patch record has a registered action, direction, frame number and exact 64×112 RGBA PNG. The builder applies it to Otis's generated image before sprite atlases/preview GIFs are packed. Theodore's original sprite files are **not changed**. Master metadata is an editor aid; the published material is the explicit per-frame PNGs generated by the UI.
+
+### Why no direct cloud Save button yet?
+
+To automatically commit a change from a public GitHub Pages site requires a **secure authenticated write service** (for example GitHub App with user-scoped authorization and installation permissions). A repo token hardcoded into the website or stored persistently in the browser is unsafe. Autosave and downloadable patch work now; authenticated cloud publishing would be a separate backend feature.
+
+### Frame data and patch format
 
 ```json
 {
-  "format": "virtual-life-pixel-patch-v1",
-  "version": 1,
+  "format": "virtual-life-pixel-patch-v2",
+  "version": 2,
   "actor": "legacy_otis",
-  "frame_size": [64,112],
-  "region": [8,18,56,72],
+  "frame_size": [64, 112],
+  "region": [0, 0, 64, 112],
+  "masters": [
+    {"direction":"se","part":"head","diff":[[35,42,50,100,160,255]]}
+  ],
   "frames": [
-    {"action":"walk","direction":"se","frame":0,"png":"data:image/png;base64,..."}
+    {"action":"walk","direction":"se","frame":0,
+     "png":"data:image/png;base64,..."}
   ]
 }
 ```
 
-The PNG data URL holds a complete 64×112 RGBA sprite for accurate edit re-import. The generator copies **only the bounded head rectangle** out of that frame. Files with invalid action IDs, directions, indexes, image dimensions, actor ID or missing PNG pixels fail validation. Thus an old/suspicious patch cannot overwrite Theodore's approved body.
+Existing patches with `format: virtual-life-pixel-patch-v1` remain supported, with original head-only bounds.

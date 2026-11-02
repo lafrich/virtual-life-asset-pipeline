@@ -2,7 +2,9 @@
    Original 64x112 RGBA sprite frames, no CSS-only illusion or remote writes. */
 (()=>{
 "use strict";
+if(new URLSearchParams(location.search).get("embedded")==="1")document.body.classList.add("embedded");
 const core=window.VirtualLifePixelEdit;
+const parts=window.VirtualLifeMasterParts;
 if(!core)return;
 const $=id=>document.getElementById(id);
 const DIRECTIONS=core.DIRECTIONS,WIDTH=64,HEIGHT=112;
@@ -11,13 +13,14 @@ const PALETTE=["#61b3c4","#95d7de","#418da5","#2b6479","#183f59",
  "#d63e35","#f87d56","#101a2a","#fef4d4","#ffffff","#000000",
  "#b15a36","#d28e5e","#f8d5b1","#c5bcae","#455f74","#6d4f50",
  "#eab9b9","#c9d4e0"];
-const LOCAL="virtual-life-otis-pixel-draft-v1";
+const LOCAL="virtual-life-otis-master-parts-draft-v2";
+const OLD_LOCAL="virtual-life-otis-pixel-draft-v1";
 const display=$("pixel-canvas"),dc=display.getContext("2d",{alpha:false});
 const mini=$("small-preview"),mc=mini.getContext("2d");
 const renderCanvas=document.createElement("canvas");renderCanvas.width=WIDTH;renderCanvas.height=HEIGHT;
 const rc=renderCanvas.getContext("2d",{willReadFrequently:true});
 dc.imageSmoothingEnabled=false;mc.imageSmoothingEnabled=false;
-const state={pack:null,clips:[],action:"walk",dir:"se",frame:0,
+const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",part:"head",masterDiff:new Map(),syncPromise:Promise.resolve(),syncing:false,
  tool:"pencil",color:"#61b3c4",brush:1,zoom:8,grid:false,
  originals:new Map(),edits:new Map(),imageRequests:new Map(),history:[],redo:[],
  current:null,loading:true,drawing:false,previous:null,before:null,seq:0};
@@ -28,6 +31,9 @@ function frameCount(){return activeClip()?.frames||1;}
 function copy(data){return new ImageData(new Uint8ClampedArray(data.data),WIDTH,HEIGHT);}
 function identical(a,b){if(!a||!b)return false;const x=a.data,y=b.data;if(x.length!==y.length)return false;for(let i=0;i<x.length;i++)if(x[i]!==y[i])return false;return true;}
 function snapshot(){return state.current?copy(state.current):null;}
+function editable(x,y){return parts.contains(state.part,x,y);}
+function selectedRegion(){return parts.PARTS[state.part].box;}
+function masterKey(dir,part){return dir+"|"+part;}
 function imageFor(atlas){if(state.imageRequests.has(atlas))return state.imageRequests.get(atlas);
  if(typeof atlas!=="string"||!/^media\/[a-zA-Z0-9_.-]+\.png$/.test(atlas))throw Error("Unsafe atlas path");
  const promise=new Promise((resolve,reject)=>{
@@ -76,19 +82,65 @@ async function setFrame(action,dir,index){
  state.action=action;state.dir=dir;state.frame=Math.max(0,Math.min(index,activeClip()?.frames-1||0));
  $("action").value=action;$("direction").value=dir;await navigate();
 }
+/* Master edits are explicit changed pixels in a part region per facing.
+ * Frame motion is only translated by silhouette center. Rotations/occlusion
+ * still require manual frame corrections; never advertise auto bone skinning. */
+function queueMasterSync(){
+ if(state.mode!=="master"||!state.current)return;
+ const dir=state.dir,part=state.part,master=snapshot();
+ state.syncPromise=state.syncPromise.then(async()=>{
+  state.syncing=true;
+  const sourceClip=state.clips.find(clip=>clip.id==="idle");
+  if(!sourceClip)throw Error("Master needs original idle frames");
+  const sourceKey=core.key("idle",dir,0);
+  const source=await originalFor(sourceKey,sourceClip,dir,0);
+  const delta=parts.changed(source,master,part),mk=masterKey(dir,part);
+  const previous=state.masterDiff.get(mk)||[];
+  for(const clip of state.clips){
+   for(let i=0;i<clip.frames;i++){
+    const key=core.key(clip.id,dir,i),original=await originalFor(key,clip,dir,i);
+    const target=copy(state.edits.get(key)||original);
+    const shift=parts.offset(source,original,part);
+    parts.apply(target,original,previous,delta,shift,shift,part);
+    if(identical(target,original))state.edits.delete(key);
+    else state.edits.set(key,target);
+   }
+  }
+  state.masterDiff.set(mk,delta);
+  if(state.mode==="master"&&state.dir===dir&&state.part===part&&
+     state.action==="idle"&&state.frame===0){
+   state.current=copy(state.edits.get(sourceKey)||source);render();
+  }
+  updateCounts();scheduleSave();
+  $("master-status").textContent="AUTOSAVED / "+part.toUpperCase()+" / "+dir.toUpperCase()+
+   " → "+state.clips.reduce((sum,clip)=>sum+clip.frames,0)+
+   " FRAMES. CHECK ROTATIONS AND OVERLAPS IN FRAME MODE.";
+ }).catch(err=>status("MASTER SYNC FAILED: "+err.message,true))
+ .finally(()=>{state.syncing=false;});
+}
+function modeUI(){
+ const isMaster=state.mode==="master";
+ $("action").disabled=isMaster;$("frame").disabled=isMaster;
+ $("prev-frame").disabled=isMaster;$("next-frame").disabled=isMaster;
+ $("part-bounds").textContent=state.part.toUpperCase()+" / "+parts.PARTS[state.part].box.join(",")+" / EDIT REGION";
+ $("master-status").textContent=isMaster?
+   "MASTER: DRAW ON IDLE F0; ALL ORIGINAL ACTION FRAMES IN THIS DIRECTION INHERIT PIXEL DELTAS.":
+   "FRAME: FIX SPECIFIC POSES / AUTOSAVE TO THIS BROWSER.";
+ render();
+}
 function rgba(){const h=state.color.replace("#","");return [...[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)),255];}
 function paintPixel(x,y,erase=false){
  if(!state.current)return;
  const p=state.current.data,half=Math.floor(state.brush/2),v=rgba();
  for(let yy=y-half;yy<y-half+state.brush;yy++)for(let xx=x-half;xx<x-half+state.brush;xx++){
-  if(!core.isEditable(xx,yy))continue;const i=(yy*WIDTH+xx)*4;
+  if(!editable(xx,yy))continue;const i=(yy*WIDTH+xx)*4;
   for(let k=0;k<4;k++)p[i+k]=erase?0:v[k];
  }
 }
 function drawStroke(x,y){if(state.previous){for(const [px,py]of core.bresenham(state.previous[0],state.previous[1],x,y))paintPixel(px,py,state.tool==="erase");}
  else paintPixel(x,y,state.tool==="erase");
  state.previous=[x,y];render();}
-function pickPixel(x,y){if(!state.current||!core.isEditable(x,y))return;
+function pickPixel(x,y){if(!state.current||!editable(x,y))return;
  const d=state.current.data,i=(y*WIDTH+x)*4;
  if(!d[i+3]){status("TRANSPARENT PIXEL / PICK AN OPAQUE COLOR");return;}
  const color="#"+[d[i],d[i+1],d[i+2]].map(v=>v.toString(16).padStart(2,"0")).join("");
@@ -99,22 +151,22 @@ function eventPos(event){const r=display.getBoundingClientRect();
 function commit(before){
  if(!before||!state.current||identical(before,state.current))return;
  state.history.push({key:currentKey(),before,after:snapshot()});if(state.history.length>40)state.history.shift();
- state.redo=[];saveCurrent();render();historyButtons();
+ state.redo=[];saveCurrent();render();historyButtons();if(state.mode==="master")queueMasterSync();
 }
 function editStart(e){
- if(state.loading||!state.current||e.button!==0)return;
- const [x,y]=eventPos(e);if(!core.isEditable(x,y))return;
+ if(state.loading||!state.current||e.button!==0||state.syncing)return;
+ const [x,y]=eventPos(e);if(!editable(x,y))return;
  e.preventDefault();display.setPointerCapture(e.pointerId);
  if(state.tool==="pick"){pickPixel(x,y);return;}
  state.drawing=state.tool!=="fill";state.previous=null;
  state.before=snapshot();
- if(state.tool==="fill"){core.flood(state.current,x,y,rgba());render();commit(state.before);state.before=null;}
+ if(state.tool==="fill"){core.flood(state.current,x,y,rgba(),false,selectedRegion());render();commit(state.before);state.before=null;}
  else drawStroke(x,y);
 }
 function editMove(e){
  const [x,y]=eventPos(e);$("cursor-coord").textContent="X "+x+" / Y "+y;
  if(!state.drawing||!state.current)return;
- if(!core.isEditable(x,y)){state.previous=null;return;}
+ if(!editable(x,y)){state.previous=null;return;}
  e.preventDefault();drawStroke(x,y);
 }
 function editEnd(){
@@ -131,13 +183,13 @@ function render(){
  mc.clearRect(0,0,128,224);mc.fillStyle="#d4dde6";mc.fillRect(0,0,128,224);
  if(state.current){rc.putImageData(state.current,0,0);g.drawImage(renderCanvas,0,0,WIDTH*z,HEIGHT*z);
   mc.imageSmoothingEnabled=false;mc.drawImage(renderCanvas,0,0,128,224);}
- // Thin locked-region perimeter; body outside it cannot be painted.
+ // Thin boundary around the currently active semantic region.
+ const b=selectedRegion();
  g.strokeStyle="#2e6ca8";g.lineWidth=1;
- g.strokeRect(core.REGION[0]*z+.5,core.REGION[1]*z+.5,
-  (core.REGION[2]-core.REGION[0])*z,(core.REGION[3]-core.REGION[1])*z);
+ g.strokeRect(b[0]*z+.5,b[1]*z+.5,(b[2]-b[0])*z,(b[3]-b[1])*z);
  if(state.grid){g.strokeStyle="rgba(36,65,105,.23)";g.lineWidth=1;
-  for(let x=core.REGION[0]+1;x<core.REGION[2];x++) {g.beginPath();g.moveTo(x*z+.5,core.REGION[1]*z);g.lineTo(x*z+.5,core.REGION[3]*z);g.stroke();}
-  for(let y=core.REGION[1]+1;y<core.REGION[3];y++){g.beginPath();g.moveTo(core.REGION[0]*z,y*z+.5);g.lineTo(core.REGION[2]*z,y*z+.5);g.stroke();}}
+  for(let x=b[0]+1;x<b[2];x++){g.beginPath();g.moveTo(x*z+.5,b[1]*z);g.lineTo(x*z+.5,b[3]*z);g.stroke();}
+  for(let y=b[1]+1;y<b[3];y++){g.beginPath();g.moveTo(b[0]*z,y*z+.5);g.lineTo(b[2]*z,y*z+.5);g.stroke();}}
  $("frame-dirty").textContent=state.edits.has(currentKey())?"MODIFIED / LOCAL":"SOURCE PIXELS";
 }
 function updateCounts(){$("modified-count").textContent=state.edits.size+" MODIFIED FRAME"+(state.edits.size===1?"":"S");}
@@ -148,6 +200,7 @@ async function historyApply(isUndo){
  const [action,dir,n]=entry.key.split("|");
  if(currentKey()!==entry.key)await setFrame(action,dir,Number(n));
  state.current=copy(isUndo?entry.before:entry.after);saveCurrent();render();historyButtons();
+ if(state.mode==="master")queueMasterSync();
  status((isUndo?"UNDO":"REDO")+" / "+entry.key);
 }
 function toPNG(data){const c=document.createElement("canvas");c.width=WIDTH;c.height=HEIGHT;c.getContext("2d").putImageData(data,0,0);return c.toDataURL("image/png");}
@@ -157,9 +210,10 @@ async function fromPNG(url){return new Promise((resolve,reject)=>{
   g.drawImage(img,0,0);resolve(g.getImageData(0,0,64,112));};
  img.onerror=()=>reject(Error("Invalid PNG frame"));img.src=url;
  });}
-function patchObject(){return {format:"virtual-life-pixel-patch-v1",version:1,actor:core.ACTOR,
- frame_size:[64,112],region:[...core.REGION],
- note:"Character head pixels only. Upload JSON to the assistant to commit into assets/npc_otis/pixel_overrides.json.",
+function patchObject(){return {format:"virtual-life-pixel-patch-v2",version:2,actor:core.ACTOR,
+ frame_size:[64,112],region:[0,0,64,112],
+ note:"Author-approved per-frame images; master part metadata supports re-editing. Upload JSON to publish.",
+ masters:[...state.masterDiff.entries()].map(([key,diff])=>({direction:key.split("|")[0],part:key.split("|")[1],diff})),
  frames:[...state.edits.entries()].sort(([a],[b])=>a.localeCompare(b)).map(([k,data])=>{
   const [action,direction,frame]=k.split("|");return {action,direction,frame:Number(frame),png:toPNG(data)};})};}
 function downloadText(content,filename,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob);
@@ -183,12 +237,26 @@ async function importObject(p,fromDraft=false){
   const k=core.key(item.action,item.direction,item.frame);
   const original=await originalFor(k,clip,item.direction,item.frame);
   for(let y=0;y<HEIGHT;y++)for(let x=0;x<WIDTH;x++){
-   if(core.isEditable(x,y))continue;
+   if(p.version===2||core.isEditable(x,y))continue;
    const i=(y*WIDTH+x)*4;for(let q=0;q<4;q++)frame.data[i+q]=original.data[i+q];
   }
   if(!identical(frame,original))imported.set(k,frame);
  }
- state.edits=imported;state.history=[];state.redo=[];historyButtons();updateCounts();
+ const masters=new Map();
+ if(p.version===2&&p.masters!==undefined){
+  if(!Array.isArray(p.masters)||p.masters.length>24)throw Error("Invalid master data");
+  for(const m of p.masters){
+   if(!DIRECTIONS.includes(m.direction)||!parts.PARTS[m.part]||!Array.isArray(m.diff)||
+      m.diff.length>64*112)throw Error("Invalid master");
+   const k=masterKey(m.direction,m.part);
+   if(masters.has(k))throw Error("Duplicate master");
+   for(const item of m.diff)if(!Array.isArray(item)||item.length!==6||
+     !parts.contains(m.part,item[0],item[1])||!item.every(Number.isInteger)||
+     item.slice(2).some(v=>v<0||v>255))throw Error("Invalid master pixel");
+   masters.set(k,m.diff);
+  }
+ }
+ state.edits=imported;state.masterDiff=masters;state.history=[];state.redo=[];historyButtons();updateCounts();
  await navigate();
  if(!fromDraft)scheduleSave();
  status((fromDraft?"RESTORED LOCAL DRAFT":"IMPORTED PIXEL PATCH")+" / "+imported.size+" FRAMES");
@@ -202,8 +270,23 @@ function initControls(){
   document.querySelectorAll("[data-tool]").forEach(x=>x.classList.toggle("active",x===b));});
  $("color").oninput=e=>{state.color=e.target.value;markSwatches();};
  $("brush-size").oninput=e=>{state.brush=Number(e.target.value);$("brush-label").textContent=state.brush+" PX";};
+ $("edit-mode").onchange=async e=>{
+  await state.syncPromise;
+  if(!state.loading)saveCurrent();
+  state.mode=e.target.value;
+  if(state.mode==="master"){
+   if(!state.clips.some(clip=>clip.id==="idle")){
+    state.mode="frame";$("edit-mode").value="frame";status("NO ORIGINAL IDLE MASTER",true);
+   }else await setFrame("idle",state.dir,0);
+  }
+  modeUI();
+ };
+ $("part").onchange=e=>{if(!state.loading)saveCurrent();state.part=e.target.value;modeUI();};
  $("action").onchange=e=>setFrame(e.target.value,state.dir,0);
- $("direction").onchange=e=>setFrame(state.action,e.target.value,state.frame);
+ $("direction").onchange=async e=>{
+  await state.syncPromise;
+  await setFrame(state.mode==="master"?"idle":state.action,e.target.value,state.mode==="master"?0:state.frame);
+ };
  $("frame").oninput=e=>setFrame(state.action,state.dir,Number(e.target.value));
  $("prev-frame").onclick=()=>setFrame(state.action,state.dir,(state.frame+frameCount()-1)%frameCount());
  $("next-frame").onclick=()=>setFrame(state.action,state.dir,(state.frame+1)%frameCount());
@@ -211,9 +294,16 @@ function initControls(){
  $("grid").onchange=e=>{state.grid=e.target.checked;render();};
  $("undo").onclick=()=>historyApply(true);$("redo").onclick=()=>historyApply(false);
  $("reset-frame").onclick=()=>{if(!state.current)return;
-  const before=snapshot();state.current=copy(state.originals.get(currentKey()));commit(before);status("RESET CURRENT FRAME");};
+  const before=snapshot(),base=state.originals.get(currentKey());
+  if(state.mode==="master"){
+   const b=selectedRegion();
+   for(let y=b[1];y<b[3];y++)for(let x=b[0];x<b[2];x++){
+    const i=(y*WIDTH+x)*4;for(let j=0;j<4;j++)state.current.data[i+j]=base.data[i+j];
+   }
+  }else state.current=copy(base);
+  commit(before);status("RESET "+(state.mode==="master"?state.part.toUpperCase():"CURRENT FRAME"));};
  $("download-frame").onclick=()=>{if(state.current)downloadCanvas("otis_"+state.action+"_"+state.dir+"_f"+state.frame+".png");};
- $("export-patch").onclick=()=>{if(!state.loading)saveCurrent();
+ $("export-patch").onclick=async()=>{await state.syncPromise;if(!state.loading)saveCurrent();
   const patch=patchObject();core.validatePatch(patch);
   downloadText(JSON.stringify(patch,null,2)+"\n","otis_pixel_edits.json","application/json");status("EXPORTED "+patch.frames.length+" PIXEL FRAMES / SHARE FILE IN CHAT TO PUBLISH");};
  $("import-patch").onclick=()=>$("patch-file").click();
@@ -221,7 +311,7 @@ function initControls(){
   try{if(file.size>15000000)throw Error("Patch larger than 15 MB");const data=JSON.parse(await file.text());await importObject(data);}
   catch(error){status("IMPORT FAILED: "+error.message,true);}finally{e.target.value="";}};
  $("clear-draft").onclick=()=>{if(!window.confirm("Discard all LOCAL Otis pixel edits? Existing files already downloaded will remain."))return;
-  clearTimeout(localTimer);state.edits.clear();state.history=[];state.redo=[];historyButtons();localStorage.removeItem(LOCAL);navigate();updateCounts();status("LOCAL DRAFT DELETED");};
+  clearTimeout(localTimer);state.edits.clear();state.masterDiff.clear();state.history=[];state.redo=[];historyButtons();localStorage.removeItem(LOCAL);navigate();updateCounts();status("LOCAL DRAFT DELETED");};
  display.addEventListener("pointerdown",editStart);display.addEventListener("pointermove",editMove);
  display.addEventListener("pointerup",editEnd);display.addEventListener("pointercancel",editEnd);
  document.addEventListener("keydown",e=>{if(e.target.matches("input,textarea,select")||e.altKey||e.metaKey&&e.key.toLowerCase()!=="z")return;
@@ -244,11 +334,23 @@ async function init(){
   if(!state.clips.length)throw Error("No editable original Otis frames");
   for(const clip of state.clips){const o=document.createElement("option");o.value=clip.id;
    o.textContent=clip.name+" ("+clip.frames+" FRAMES)";$("action").append(o);}
-  state.action=state.clips.some(c=>c.id==="walk")?"walk":state.clips[0].id;
-  await navigate();$("source-state").textContent=state.clips.length+" ORIGINAL OTIS ACTIONS";
-  try{const draft=localStorage.getItem(LOCAL);if(draft)await importObject(JSON.parse(draft),true);}
+  state.action=state.clips.some(c=>c.id==="idle")?"idle":state.clips[0].id;
+  await navigate();modeUI();$("source-state").textContent=state.clips.length+" ORIGINAL OTIS ACTIONS";
+  try{const draft=localStorage.getItem(LOCAL)||localStorage.getItem(OLD_LOCAL);if(draft)await importObject(JSON.parse(draft),true);}
   catch(e){status("DRAFT INVALID (SOURCE SAFE) / "+e.message,true);}
  }catch(e){status("EDITOR NOT READY: "+e.message,true);}
 }
+window.VirtualLifePixelEditor={
+ async flush(){
+  await state.syncPromise;
+  if(!state.loading)saveCurrent();
+  clearTimeout(localTimer);
+  try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}
+  catch(error){status("LOCAL SAVE FAILED: EXPORT YOUR PATCH JSON",true);throw error;}
+ }
+};
+window.addEventListener("pagehide",()=>{if(state.loading)return;
+ try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}
+ catch(error){/* user can still explicitly export a patch */}});
 init();
 })();
