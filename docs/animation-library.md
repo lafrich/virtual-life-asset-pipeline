@@ -1,5 +1,67 @@
 # Virtual Life / Animation Library v1
 
+## Life Sim animation roadmap (196 additional specifications)
+
+The Animation Library now carries a separate, **unrendered production backlog** in
+[`assets/animation_library/backlog.json`](../assets/animation_library/backlog.json).
+These are **196 newly defined action requests**, not 196 new sprites or playable GIFs.
+The 7 existing registered shared action definitions remain unchanged.
+
+- **P0 (55)**: practical essentials for navigation, needs, hygiene, phone, office,
+  jobs, commerce, city/NPC behaviors, and distinctive Indonesian sandbox actions.
+- **P1 (112)**: greater context and richer domestic/social/economic activities.
+- **P2 (29)**: specialist, humorous, expensive or non-essential variants.
+- **13 categories**: movement, posture, objects, food, hygiene, social, office,
+  trading, phone, city, funny, NPC-specific, and facial.
+- **16 design-only action workflows** in
+  [`assets/animation_library/workflows.json`](../assets/animation_library/workflows.json)
+  describe ordering, prop reservations and important gameplay events.
+  They are **not** a live state machine or automatic NPC behavior.
+
+### How to browse the roadmap
+
+Open the site's **ANIMATIONS** tab. **ALL / ACT / NPC / SCN / TPL** retain
+their existing real/reference previews (no enormous wall of fake placeholder
+GIFs). Select **PLAN** to see every unrendered life-sim action, or **P0** for
+the first production candidates. Search works by ID, name, category,
+priority and required prop. The right inspector shows priority/batch,
+`enter → loop/contact → exit` phases, prerequisites, trigger event,
+and whether synchronization with another actor is needed. The **TRY ON**
+button stays disabled for all `planned` items, including cases where a
+separate actor-specific GIF happens to use an identical action ID.
+No footage is invented.
+
+### Stable source-of-truth / approval path
+
+1. **Planned specification:** `backlog.json` action ID, category,
+   priority, batch, phases, requirements, gameplay event, loop and sync.
+   There is **no** frame timing yet because no original sprites have been made.
+2. **Source authoring:** use native 64×112 pixel rig and pivot (32,100);
+   author specific SE/SW/NE/NW poses without replacing the character's
+   design. Existing rigs may reuse pose logic but never receive copied
+   pixels from another actor.
+3. **Review:** inspect 1× and 4× alpha, layers, pivots, object contact,
+   timing, character facing and transitions. In paired interactions,
+   both actors must agree on the contact marker.
+4. **Preview:** after original pose frames are approved, publish real
+   actor-specific GIFs/PNG sheets and their per-character
+   `motions.json` binding. Review status must come from real files.
+5. **Game:** install/enable gameplay transitions and event markers
+   separately from the public library; event effects and economy/network
+   logic are never inferred from an animation name.
+
+For a toilet or bed, `enter` approaches and aligns, `loop` sustains
+the action, and `exit` returns the avatar to a valid standing position.
+For a transaction, `contact` marks the **single atomic inventory/money
+transfer**. For `pee_wall`, the wall must be within range and the character
+must face it; an away-facing action is invalid and should abort.
+
+*Facial backlog items are shared-coverage goals, not claims that no
+character currently has expressions.* Existing Gfunk, Theodore, Yerbies,
+Bowie and Milk source-specific face assets are not overwritten by this
+planning data.
+
+
 The **ANIMATIONS** tab in the public Paint catalog exposes saved motion
 previews from the existing pipeline, without changing any live game logic.
 Existing preview-only assets are NOT automatically gameplay-ready.
