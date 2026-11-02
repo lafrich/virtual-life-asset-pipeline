@@ -83,6 +83,30 @@ class OtisVisualTests(unittest.TestCase):
         self.assertEqual(updated.crop((0, 73, 64, 112)).tobytes(),
                          original.crop((0, 73, 64, 112)).tobytes())
 
+    def test_helmet_tracks_original_head_bob_not_static_overlay(self):
+        # Source head advances by one pixel in Theodore's existing walk
+        # poses. The entire Otis helmet must advance with it, in both front
+        # views, without translating the red suit/feet.
+        palette = {tuple(bytes.fromhex(O.C[name].lstrip("#")))
+                   for name in ("light", "turquoise", "mid", "hi")}
+        for direction in ("se", "sw", "ne", "nw"):
+            sources = []
+            for y in (30, 29):
+                source = Image.new("RGBA", (64, 112))
+                ImageDraw.Draw(source).rectangle((20, y, 45, y + 10),
+                                                fill=(120, 120, 120, 255))
+                sources.append(source)
+            frames = [O.helmet(src, direction) for src in sources]
+            def shell_top(im):
+                return min(y for y in range(24, 43) for x in range(64)
+                           if im.getpixel((x, y))[:3] in palette
+                           and im.getpixel((x, y))[3] == 255)
+            self.assertEqual(shell_top(frames[1]), shell_top(frames[0]) - 1,
+                             f"{direction}: helmet must follow Theodore head bob")
+            for frame, src in zip(frames, sources):
+                self.assertEqual(frame.crop((0, 73, 64, 112)).tobytes(),
+                                 src.crop((0, 73, 64, 112)).tobytes())
+
     def test_compact_helmet_and_flat_square_rear(self):
         base = Image.new("RGBA", (64, 112))
         for direction in ("se", "sw"):
