@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#e9e7db">
 <title>Otis Pixel Editor — Virtual Life</title>
-<link rel="stylesheet" href="./pixel-editor.css?v=toolbar-under-canvas-1">
+<link rel="stylesheet" href="./pixel-editor.css?v=mobile-pan-2">
 <script defer src="./pixel-edit-core.js?v=master-parts-1"></script>
 <script defer src="./master-parts.js?v=master-parts-1"></script>
-<script defer src="./pixel-editor.js?v=master-parts-1"></script>
+<script defer src="./pixel-editor.js?v=mobile-pan-2"></script>
 </head>
 <body>
 <main class="paint">
@@ -40,12 +40,15 @@
 </aside>
 <section class="canvas-column" aria-label="Editable pixel sprite">
 <div class="canvas-header"><strong id="canvas-title">OTIS / IDLE / SE / F0</strong><span id="frame-dirty">SOURCE PIXELS</span></div>
-<div id="canvas-scroll" class="canvas-scroll">
-<canvas id="pixel-canvas" width="512" height="896" aria-label="Editable pixel sprite. Drag to paint at 8x zoom."></canvas>
+<div id="canvas-scroll" class="canvas-scroll" aria-label="Scroll or pan the sprite workspace">
+<div id="canvas-stage" class="canvas-stage">
+<canvas id="pixel-canvas" width="512" height="896" aria-label="Editable pixel sprite. In Pan mode drag to scroll; choose Pencil, Eraser, Picker or Fill to edit."></canvas>
+</div>
 </div>
 <div class="drawing-toolbar" aria-label="Pixel drawing tools">
 <div class="drawing-tools-row">
 <div class="tools" role="group" aria-label="Paint tools">
+<button type="button" id="pan-toggle" aria-pressed="false" title="Move or scroll without painting">✋ PAN</button>
 <button type="button" data-tool="pencil" class="active">✎ PENCIL <kbd>B</kbd></button>
 <button type="button" data-tool="erase">▤ ERASER <kbd>E</kbd></button>
 <button type="button" data-tool="pick">◉ PICKER <kbd>I</kbd></button>
@@ -60,6 +63,7 @@
 <label>ZOOM <select id="zoom"><option value="4">4×</option><option value="6">6×</option><option value="8" selected>8×</option><option value="10">10×</option></select></label>
 <label class="check"><input id="grid" type="checkbox"> PIXEL GRID</label>
 <span id="cursor-coord">X -- / Y --</span>
+<span id="gesture-hint" class="gesture-hint" role="status">Drag the empty margin to scroll · PAN moves without painting</span>
 </div>
 </section>
 <aside class="export-panel">
