@@ -245,7 +245,7 @@ function editStart(e){
   e.preventDefault();display.setPointerCapture(e.pointerId);return;
  }
  if(state.cursorMode){
-  state.trackpad={id:e.pointerId,lastX:e.clientX,lastY:e.clientY,carryX:0,carryY:0};
+  state.trackpad={id:e.pointerId,lastX:e.clientX,lastY:e.clientY,carryX:0,carryY:0,travel:0};
   e.preventDefault();display.setPointerCapture(e.pointerId);return;
  }
  if(state.loading||!state.current||state.syncing)return;
@@ -278,6 +278,7 @@ function editMove(e){
  if(state.trackpad){
   if(e.pointerId!==state.trackpad.id)return;
   const d=state.trackpad;
+  d.travel+=Math.hypot(e.clientX-d.lastX,e.clientY-d.lastY);
   d.carryX+=(e.clientX-d.lastX)/state.zoom;
   d.carryY+=(e.clientY-d.lastY)/state.zoom;
   d.lastX=e.clientX;d.lastY=e.clientY;
@@ -308,7 +309,10 @@ function editEnd(e){
  }
  if(state.trackpad){
   if(e&&e.pointerId!==state.trackpad.id)return;
-  state.trackpad=null;return;
+  const tapped=state.trackpad.travel<6&&(!e||e.type!=="pointercancel");
+  state.trackpad=null;
+  if(tapped)cursorTap();
+  return;
  }
  if(state.selectionGesture){
   if(e&&e.pointerId!==state.selectionGesture.id)return;
@@ -492,7 +496,9 @@ function initControls(){
   }
   modeUI();
  };
- $("part").onchange=e=>{cancelTemporaryMove();if(!state.loading)saveCurrent();state.part=e.target.value;setSelection(null);modeUI();};
+ $("part").onchange=e=>{cancelTemporaryMove();if(!state.loading)saveCurrent();state.part=e.target.value;setSelection(null);
+  const b=selectedRegion();state.cursor=[Math.floor((b[0]+b[2]-1)/2),Math.floor((b[1]+b[3]-1)/2)];
+  $("cursor-coord").textContent="CURSOR X "+state.cursor[0]+" / Y "+state.cursor[1];modeUI();};
  $("action").onchange=e=>setFrame(e.target.value,state.dir,0);
  $("direction").onchange=async e=>{
   await state.syncPromise;
