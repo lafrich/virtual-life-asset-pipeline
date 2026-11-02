@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "clips": [
+    {
+      "id": "ambil_barang",
+      "name": "PICK UP",
+      "group": "action",
+      "status": "preview",
+      "preview": "examples/anim_ambil_barang/ichsan_ambil_4arah_4x.gif",
+      "source": "assets/anim_ambil_barang/make_anim_ambil_barang.py",
+      "manifest": "assets/anim_ambil_barang/manifest.json",
+      "animation": "ambil",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "layout": "four_up",
+      "note": "Pick up item / 4 facing"
+    },
+    {
+      "id": "tekan_tombol",
+      "name": "PRESS BUTTON",
+      "group": "action",
+      "status": "preview",
+      "preview": "examples/anim_nyebrang/ichsan_tekan_4arah_4x.gif",
+      "source": "assets/anim_nyebrang/make_anim_nyebrang.py",
+      "manifest": "assets/anim_nyebrang/manifest.json",
+      "animation": "tekan",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "layout": "four_up",
+      "note": "Crosswalk button"
+    },
+    {
+      "id": "jalan_nyebrang",
+      "name": "CROSS WALK",
+      "group": "action",
+      "status": "preview",
+      "preview": "examples/anim_nyebrang/ichsan_jalan_4arah_4x.gif",
+      "source": "assets/anim_nyebrang/make_anim_nyebrang.py",
+      "manifest": "assets/anim_nyebrang/manifest.json",
+      "animation": "jalan",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "layout": "four_up",
+      "note": "Crossing / walk"
+    },
+    {
+      "id": "pak_ogah_wave",
+      "name": "FLAG WAVE",
+      "group": "npc",
+      "status": "preview",
+      "preview": "examples/npc_pak_ogah/pak_ogah_wave_flag_4views_4x.gif",
+      "source": "assets/npc_pak_ogah/make_pak_ogah.py",
+      "frame_count": 6,
+      "loop": true,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "layout": "four_up",
+      "note": "Traffic hand signal"
+    },
+    {
+      "id": "parkir_whistle",
+      "name": "WHISTLE",
+      "group": "npc",
+      "status": "preview",
+      "preview": "examples/npc_kang_parkir/kang_parkir_whistle_4views_4x.gif",
+      "source": "assets/npc_kang_parkir/make_kang_parkir.py",
+      "frame_count": 4,
+      "loop": false,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "layout": "four_up",
+      "note": "Parking attendant"
+    },
+    {
+      "id": "babeh_walk",
+      "name": "BABEH WALK",
+      "group": "npc",
+      "status": "preview",
+      "preview": "examples/npc_babeh_loak/babeh_pemilik_walk_4views_4x.gif",
+      "source": "assets/npc_babeh_loak/make_outputs.py",
+      "frame_count": 6,
+      "loop": true,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "layout": "four_up",
+      "note": "Merchant locomotion"
+    },
+    {
+      "id": "hobo_spawn",
+      "name": "HOBO SPAWN",
+      "group": "scene",
+      "status": "preview",
+      "preview": "examples/spawn_hobo/spawn_ichsan_tenda_sw_3x.gif",
+      "source": "assets/spawn_hobo/src/build_b.py",
+      "manifest": "assets/spawn_hobo/manifest.json",
+      "frame_count": 34,
+      "loop": false,
+      "directions": [
+        "sw"
+      ],
+      "layout": "scene",
+      "note": "Tent-to-street sequence"
+    }
+  ]
+}
