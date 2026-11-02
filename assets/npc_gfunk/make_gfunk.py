@@ -573,7 +573,12 @@ if __name__ == '__main__':
     refs = [('01M69856CNYQSWV5WNJZAXQFKV.jpg', (250, 600, 2330, 3660)), ('01M69855SFXHNQD55BJ9XSWNMY.jpg', (290, 0, 1330, 2900)), ('01M69855P1D0HPMRD846456P8X.jpg', (60, 0, 1460, 2248))]
     crops = []
     for fn, box in refs:
-        im = Image.open(REF + fn).convert('RGB').crop(box); crops.append(im.resize((round(im.width * H / im.height), H), Image.LANCZOS))
+        # Historical /cursor/stores/ screenshots are optional comparison art.
+        # Original pixel characters and animation frames render independently.
+        if not os.path.isfile(REF + fn):
+            continue
+        im = Image.open(REF + fn).convert('RGB').crop(box)
+        crops.append(im.resize((round(im.width * H / im.height), H), Image.LANCZOS))
     W = 16 + 4 * (FW * S + 12) + 24 + sum(c.width + 12 for c in crops)
     sh = Image.new('RGBA', (W, H + 64), BG); d = ImageDraw.Draw(sh)
     d.text((16, 8), 'GFUNK v3  ·  4x  ·  se / sw / ne / nw idle f0   |   reference (original 3D art)', fill=(231, 235, 242), font=fb_); x = 16
