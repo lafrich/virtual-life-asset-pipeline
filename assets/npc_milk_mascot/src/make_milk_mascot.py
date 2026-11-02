@@ -218,6 +218,17 @@ def draw_carton(layer, rear, bob, expression="neutral", show_label=True):
         # Small brows; smile + different expression marks.
         line([(18, 56), (22, 55)], BLUE)
         line([(32, 59), (36, 60)], BLUE)
+        if expression == "emb":
+            # Minimal blushing cheeks: ensure the expression overlay is not
+            # an empty placeholder, while preserving the established palette.
+            for x, y in ((17, 67), (18, 68), (36, 70), (37, 70)):
+                d.point((x, y + bob), fill=(224, 174, 138))
+        if expression == "happy":
+            for x, y in ((20, 62), (34, 65)):
+                d.point((x, y + bob), fill=BLUE)
+        if expression == "sleepy":
+            for x, y in ((20, 63), (34, 66)):
+                d.line([(x - 2, y + bob), (x + 2, y + bob)], fill=BLUE_DARK)
         if expression == "angry":
             line([(21, 72), (28, 71), (36, 74)], DARK)
         elif expression == "sad":
