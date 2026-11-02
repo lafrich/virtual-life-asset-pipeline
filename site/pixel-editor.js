@@ -241,7 +241,21 @@ async function importObject(p,fromDraft=false){
   }
   if(!identical(frame,original))imported.set(k,frame);
  }
- state.edits=imported;state.history=[];state.redo=[];historyButtons();updateCounts();
+ const masters=new Map();
+ if(p.version===2&&p.masters!==undefined){
+  if(!Array.isArray(p.masters)||p.masters.length>24)throw Error("Invalid master data");
+  for(const m of p.masters){
+   if(!DIRECTIONS.includes(m.direction)||!parts.PARTS[m.part]||!Array.isArray(m.diff)||
+      m.diff.length>64*112)throw Error("Invalid master");
+   const k=masterKey(m.direction,m.part);
+   if(masters.has(k))throw Error("Duplicate master");
+   for(const item of m.diff)if(!Array.isArray(item)||item.length!==6||
+     !parts.contains(m.part,item[0],item[1])||!item.every(Number.isInteger)||
+     item.slice(2).some(v=>v<0||v>255))throw Error("Invalid master pixel");
+   masters.set(k,m.diff);
+  }
+ }
+ state.edits=imported;state.masterDiff=masters;state.history=[];state.redo=[];historyButtons();updateCounts();
  await navigate();
  if(!fromDraft)scheduleSave();
  status((fromDraft?"RESTORED LOCAL DRAFT":"IMPORTED PIXEL PATCH")+" / "+imported.size+" FRAMES");
@@ -255,8 +269,23 @@ function initControls(){
   document.querySelectorAll("[data-tool]").forEach(x=>x.classList.toggle("active",x===b));});
  $("color").oninput=e=>{state.color=e.target.value;markSwatches();};
  $("brush-size").oninput=e=>{state.brush=Number(e.target.value);$("brush-label").textContent=state.brush+" PX";};
+ $("edit-mode").onchange=async e=>{
+  await state.syncPromise;
+  if(!state.loading)saveCurrent();
+  state.mode=e.target.value;
+  if(state.mode==="master"){
+   if(!state.clips.some(clip=>clip.id==="idle")){
+    state.mode="frame";$("edit-mode").value="frame";status("NO ORIGINAL IDLE MASTER",true);
+   }else await setFrame("idle",state.dir,0);
+  }
+  modeUI();
+ };
+ $("part").onchange=e=>{if(!state.loading)saveCurrent();state.part=e.target.value;modeUI();};
  $("action").onchange=e=>setFrame(e.target.value,state.dir,0);
- $("direction").onchange=e=>setFrame(state.action,e.target.value,state.frame);
+ $("direction").onchange=async e=>{
+  await state.syncPromise;
+  await setFrame(state.mode==="master"?"idle":state.action,e.target.value,state.mode==="master"?0:state.frame);
+ };
  $("frame").oninput=e=>setFrame(state.action,state.dir,Number(e.target.value));
  $("prev-frame").onclick=()=>setFrame(state.action,state.dir,(state.frame+frameCount()-1)%frameCount());
  $("next-frame").onclick=()=>setFrame(state.action,state.dir,(state.frame+1)%frameCount());
@@ -264,9 +293,16 @@ function initControls(){
  $("grid").onchange=e=>{state.grid=e.target.checked;render();};
  $("undo").onclick=()=>historyApply(true);$("redo").onclick=()=>historyApply(false);
  $("reset-frame").onclick=()=>{if(!state.current)return;
-  const before=snapshot();state.current=copy(state.originals.get(currentKey()));commit(before);status("RESET CURRENT FRAME");};
+  const before=snapshot(),base=state.originals.get(currentKey());
+  if(state.mode==="master"){
+   const b=selectedRegion();
+   for(let y=b[1];y<b[3];y++)for(let x=b[0];x<b[2];x++){
+    const i=(y*WIDTH+x)*4;for(let j=0;j<4;j++)state.current.data[i+j]=base.data[i+j];
+   }
+  }else state.current=copy(base);
+  commit(before);status("RESET "+(state.mode==="master"?state.part.toUpperCase():"CURRENT FRAME"));};
  $("download-frame").onclick=()=>{if(state.current)downloadCanvas("otis_"+state.action+"_"+state.dir+"_f"+state.frame+".png");};
- $("export-patch").onclick=()=>{if(!state.loading)saveCurrent();
+ $("export-patch").onclick=async()=>{await state.syncPromise;if(!state.loading)saveCurrent();
   const patch=patchObject();core.validatePatch(patch);
   downloadText(JSON.stringify(patch,null,2)+"\n","otis_pixel_edits.json","application/json");status("EXPORTED "+patch.frames.length+" PIXEL FRAMES / SHARE FILE IN CHAT TO PUBLISH");};
  $("import-patch").onclick=()=>$("patch-file").click();
@@ -298,8 +334,8 @@ async function init(){
   for(const clip of state.clips){const o=document.createElement("option");o.value=clip.id;
    o.textContent=clip.name+" ("+clip.frames+" FRAMES)";$("action").append(o);}
   state.action=state.clips.some(c=>c.id==="idle")?"idle":state.clips[0].id;
-  await navigate();$("source-state").textContent=state.clips.length+" ORIGINAL OTIS ACTIONS";
-  try{const draft=localStorage.getItem(LOCAL);if(draft)await importObject(JSON.parse(draft),true);}
+  await navigate();modeUI();$("source-state").textContent=state.clips.length+" ORIGINAL OTIS ACTIONS";
+  try{const draft=localStorage.getItem(LOCAL)||localStorage.getItem(OLD_LOCAL);if(draft)await importObject(JSON.parse(draft),true);}
   catch(e){status("DRAFT INVALID (SOURCE SAFE) / "+e.message,true);}
  }catch(e){status("EDITOR NOT READY: "+e.message,true);}
 }
