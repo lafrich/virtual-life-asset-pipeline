@@ -1,0 +1,18 @@
+{
+  "asset_family": "npc_otis",
+  "asset_path": "assets/npc_otis",
+  "status": "approved",
+  "approval_context": "The owner explicitly requested that Otis be developed and added as a new asset-pipeline character, supplied two helmet image references, and instructed that the body match Theodore exactly while only the cyan/chrome horned helmet changes, the cylindrical front muzzle visibly rotates, and original spectacles remain behind the visor. This approves implementing that specific variation and source-reuse technique; the first generated pixel rendition is a reviewable initial version, not a claim of separate visual sign-off.",
+  "reusable_insights": [
+    "For a character intended to share another NPC's body exactly, build the variation by loading and preserving every original 64x112 RGBA source frame, limiting authored redraws strictly to the visible helmet area rather than rerendering or approximating the body.",
+    "When the character has a mechanical rotating front-piece, encode phase-dependent spoke positions in every authored idle/walk/talk PNG itself; avoid metadata-only animation claims and ensure rear-facing sprites do not show a second muzzle.",
+    "Preserve original facial identity and spectacles under a visibly open visor, reuse genuine same-actor expression poses, and test that non-helmet trousers and boots remain byte-identical to the approved body."
+  ],
+  "promotion": "documented",
+  "promotion_rationale": "The horned helmet and rotating snout are an intentionally actor-specific illustrated part; reuse Theodore source motions without altering existing approved generators, and keep shared motion/bone code unchanged.",
+  "source": [
+    "assets/npc_otis/make_otis.py"
+  ],
+  "compatibility": "Theodore's source renderer and all committed Theodore pixels remain untouched. Otis is a new separate HELMETED actor with the same body and pivot. Full live game/NPC spawning is explicitly not modified.",
+  "limitations": "Helm and muzzle first-pass generated art has not received separate visual acceptance. Otis uses genuine source-specific pixel frames; it does not establish automatic bone skinning for new characters. User-provided references are not copied into the public repository."
+}
