@@ -1,0 +1,718 @@
+{
+  "version": 1,
+  "status": "design_only",
+  "description": "Gameplay choreography examples built from planned and native action IDs. These are NOT an implemented queue/AI/synchronization system.",
+  "workflows": [
+    {
+      "id": "wake_and_morning",
+      "label": "Wake up and morning needs",
+      "batch": 1,
+      "status": "design_only",
+      "requirements": [
+        "bed",
+        "toilet",
+        "sink",
+        "food"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "wake_up",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "get_up",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "stretch",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "toilet_sit",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "flush_toilet",
+          "role": "actor"
+        },
+        {
+          "order": 6,
+          "action_id": "wash_hands",
+          "role": "actor"
+        },
+        {
+          "order": 7,
+          "action_id": "eat",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "bedtime",
+      "label": "Going to sleep",
+      "batch": 1,
+      "status": "design_only",
+      "requirements": [
+        "bed"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "lie_down",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "sleep",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "wake_up",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "get_up",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "workday_clock",
+      "label": "Office attendance and work",
+      "batch": 2,
+      "status": "design_only",
+      "requirements": [
+        "workplace",
+        "attendance_terminal",
+        "desk"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "clock_in",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "office_type",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "read_document",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "meeting_listen",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "clock_out",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "mobile_online_course",
+      "label": "Study using the phone",
+      "batch": 1,
+      "status": "design_only",
+      "requirements": [
+        "phone"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "phone_takeout",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "phone_scroll",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "study_online",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "phone_putaway",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "bathroom_toilet",
+      "label": "Toilet visit hygiene",
+      "batch": 1,
+      "status": "design_only",
+      "requirements": [
+        "door",
+        "toilet",
+        "sink"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "open_door",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "toilet_sit",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "flush_toilet",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "wash_hands",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "close_door",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "kitchen_home_meal",
+      "label": "Cook and eat at home",
+      "batch": 1,
+      "status": "design_only",
+      "requirements": [
+        "fridge",
+        "counter",
+        "stove",
+        "sink"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "open_fridge",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "prepare_food",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "chop_food",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "cook_stir",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "serve_food",
+          "role": "actor"
+        },
+        {
+          "order": 6,
+          "action_id": "eat",
+          "role": "actor"
+        },
+        {
+          "order": 7,
+          "action_id": "wash_dishes",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "street_food_stall",
+      "label": "Open a nasi kuning stall",
+      "batch": 2,
+      "status": "design_only",
+      "requirements": [
+        "stall",
+        "stock",
+        "customer",
+        "cash"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "open_stall",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "restock",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "take_order",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "cook_stir",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "serve_plate",
+          "role": "actor"
+        },
+        {
+          "order": 6,
+          "action_id": "accept_payment",
+          "role": "actor"
+        },
+        {
+          "order": 7,
+          "action_id": "give_change",
+          "role": "actor"
+        },
+        {
+          "order": 8,
+          "action_id": "close_stall",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "convenience_store",
+      "label": "Buy something at a shop",
+      "batch": 2,
+      "status": "design_only",
+      "requirements": [
+        "store",
+        "shopkeeper",
+        "goods"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "browse_item",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "queue_idle",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "accept_payment",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "give_item",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "receive_item",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "casual_conversation",
+      "label": "Social exchange",
+      "batch": 3,
+      "status": "design_only",
+      "requirements": [
+        "other_actor"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "greet_wave",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "talk",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "listen",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "laugh",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "greet_wave",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "argument",
+      "label": "Two NPC argument",
+      "batch": 3,
+      "status": "design_only",
+      "requirements": [
+        "other_actor"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "greet_wave",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "argue",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "point",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "shake_head",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "talk",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "pee_wall_restricted",
+      "label": "Emergency pee at a wall",
+      "batch": 4,
+      "status": "design_only",
+      "requirements": [
+        "wall",
+        "facing_wall",
+        "wall_in_reach"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "stop",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "turn",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "pee_wall",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "pee_finish",
+          "role": "actor"
+        },
+        {
+          "order": 5,
+          "action_id": "turn",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": "Must confirm the avatar is facing an actual wall and abort if turned away; do not spawn a pee effect on the wrong side."
+    },
+    {
+      "id": "street_comedy",
+      "label": "NPC random idles",
+      "batch": 4,
+      "status": "design_only",
+      "requirements": [],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "scratch_head",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "fart",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "react_smell",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "awkward_wave",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "cat_pet_care",
+      "label": "Care for a cat",
+      "batch": 3,
+      "status": "design_only",
+      "requirements": [
+        "cat",
+        "pet_food"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "pet_cat",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "feed_cat",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "laugh",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "transport_motorcycle",
+      "label": "Take a motorcycle trip",
+      "batch": 2,
+      "status": "design_only",
+      "requirements": [
+        "motorcycle"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "enter_vehicle",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "ride_motor",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "exit_vehicle",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "delivery",
+      "label": "Courier handoff",
+      "batch": 2,
+      "status": "design_only",
+      "requirements": [
+        "parcel",
+        "recipient"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "carry_small",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "delivery_handover",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "give_item",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "receive_item",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    },
+    {
+      "id": "guard_patrol",
+      "label": "Security NPC day job",
+      "batch": 2,
+      "status": "design_only",
+      "requirements": [
+        "patrol_route"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "action_id": "guard_idle",
+          "role": "actor"
+        },
+        {
+          "order": 2,
+          "action_id": "walk",
+          "role": "actor"
+        },
+        {
+          "order": 3,
+          "action_id": "security_stop",
+          "role": "actor"
+        },
+        {
+          "order": 4,
+          "action_id": "direct_traffic",
+          "role": "actor"
+        }
+      ],
+      "rules": {
+        "reserve_prop_before_enter": true,
+        "commit_gameplay_at_event_marker": true,
+        "revalidate_targets_at_contact": true,
+        "release_reserved_prop_on_cancel": true,
+        "never_teleport_between_phases": true
+      },
+      "note": ""
+    }
+  ]
+}
