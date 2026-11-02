@@ -167,3 +167,31 @@ button:disabled{color:#888;opacity:.6}
  .export-panel .panel-note,.export-panel .meta{margin:8px 0}
  .foot{display:none}
 }
+
+
+/* XP Paint / Photoshop-style color-selection strip; no modern cards or overflow. */
+.drawing-toolbar .tools{grid-template-columns:repeat(8,minmax(0,1fr))}
+.selection-options{width:100%;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px;background:#d4d2ce;border:2px inset #9d9b95;padding:5px 7px;font:700 10px "Courier New",monospace}
+.selection-options-title{color:#242424;white-space:nowrap}
+.selection-modes{display:flex;gap:3px;flex:0 1 auto;min-width:0}
+.selection-modes button{min-height:29px;white-space:nowrap;padding:4px 8px;font:700 10px Tahoma,Verdana,Arial,sans-serif}
+.selection-modes button.active{background:#214caa;color:white;border-color:#17396c #f8f8f8 #f8f8f8 #17396c;box-shadow:inset 1px 1px #001d65}
+.wand-setting{display:flex;align-items:center;gap:4px;min-width:0;white-space:nowrap;color:#282828}
+.wand-setting input[type=checkbox]{width:15px;height:15px;margin:0;accent-color:#184ca8}
+.wand-tolerance{margin-left:auto}
+.wand-tolerance input[type=range]{width:83px;max-width:20vw;min-width:45px;accent-color:#174995}
+.wand-tolerance output{min-width:16px;font-variant-numeric:tabular-nums;text-align:right}
+@media(max-width:1050px){
+ .drawing-toolbar .tools{grid-template-columns:repeat(8,minmax(0,1fr))}
+ .drawing-toolbar .tools button{min-width:0;white-space:normal;overflow-wrap:anywhere}
+}
+@media(max-width:700px){
+ .drawing-toolbar .tools{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .selection-options{padding:5px;gap:6px}
+ .selection-options-title{flex:1 0 auto}
+ .selection-modes{width:100%;order:2}
+ .selection-modes button{flex:1;min-width:0}
+ .wand-setting{font-size:10px}
+ .wand-tolerance{margin-left:0;flex:1 0 120px}
+ .wand-tolerance input[type=range]{width:100%;max-width:110px}
+}
