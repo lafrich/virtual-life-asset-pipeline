@@ -6,6 +6,7 @@ on:
       - main
       - feature/character-stock-landing
       - feature/milk-mascot-arms-angled-label-expressions
+      - feature/xp-paint-character-stock-ui
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
