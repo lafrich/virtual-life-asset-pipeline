@@ -1,88 +1,125 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#111318" />
-  <meta name="description" content="A living library of game-ready v6b pixel-art characters from Virtual Life." />
-  <title>Character Stock — Virtual Life</title>
-  <link rel="stylesheet" href="./style.css" />
-  <script src="./app.js" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#043d9e">
+  <meta name="description" content="Virtual Life character stock. Pixel people, Windows Paint energy.">
+  <title>character_stock.pnt — Paint</title>
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./app.js"></script>
 </head>
 <body>
-  <div class="site-shell">
-    <header class="topbar">
-      <a class="brand" href="./" aria-label="Character Stock home"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span><span>VIRTUAL LIFE <span class="brand-separator">/</span> CHARACTER STOCK</span></a>
-      <a class="repo-link" href="https://github.com/lafrich/virtual-life-asset-pipeline" target="_blank" rel="noopener noreferrer">REPOSITORY <span aria-hidden="true">↗</span></a>
-    </header>
+  <div class="desktop">
+    <main class="window" aria-label="Virtual Life Character Stock">
+      <header class="titlebar">
+        <div class="window-icon" aria-hidden="true"><span>✳</span></div>
+        <div class="window-title"><strong>CHAR_STOCK</strong><span class="title-extra">.PNT — Paint</span></div>
+        <div class="window-controls" aria-hidden="true"><span>_</span><span>□</span><span class="close-mark">×</span></div>
+      </header>
 
-    <main>
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-inner">
-          <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> LIVING ASSET LIBRARY <span class="eyebrow-number">/ V6B SYSTEM</span></p>
-          <h1 id="hero-title">A place for <em>every</em><br />character.</h1>
-          <p class="hero-copy">An ever-growing archive of pixel people.<br />Built from code, ready for the game.</p>
-        </div>
-        <div class="hero-meta" aria-label="Library statistics">
-          <div><span class="meta-value" id="total-count">—</span><span class="meta-key">CHARACTERS</span></div>
-          <div><span class="meta-value">04</span><span class="meta-key">WALK DIRECTIONS</span></div>
-          <div><span class="meta-value">64<span class="meta-times">×</span>112</span><span class="meta-key">SPRITE FRAME</span></div>
-        </div>
-      </section>
+      <nav class="menubar" aria-label="Paint menus">
+        <a href="https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/character_stock" target="_blank" rel="noopener noreferrer" title="Open character stock repository"><u>F</u>ile</a>
+        <button type="button" id="menu-edit" title="Expressions"><u>E</u>dit</button>
+        <button type="button" id="menu-view" title="Toggle canvas grid"><u>V</u>iew</button>
+        <a href="https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/assets/character_stock/README.md" target="_blank" rel="noopener noreferrer"><u>H</u>elp</a>
+        <span class="menu-build">V6B // <span id="asset-total">00</span> FILES</span>
+      </nav>
 
-      <section class="collection" aria-labelledby="collection-title">
-        <div class="section-header">
-          <div class="heading-block"><p class="section-label">01 / THE COLLECTION</p><h2 id="collection-title">Character catalog<span class="count-pill" id="count-pill">—</span></h2></div>
-          <div class="view-label"><span class="view-dot"></span> AUTO-SYNCED FROM GITHUB</div>
-        </div>
-
-        <div class="toolbar">
-          <label class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg><input id="search" type="search" placeholder="Search characters..." autocomplete="off" aria-label="Search characters" /><kbd>/</kbd></label>
-          <div class="filters" role="group" aria-label="Character type">
-            <button type="button" class="filter is-active" data-filter="all" aria-pressed="true">All</button>
-            <button type="button" class="filter" data-filter="npc" aria-pressed="false">NPCs</button>
-            <button type="button" class="filter" data-filter="player" aria-pressed="false">Players</button>
+      <div class="workspace">
+        <aside class="tools-panel" aria-label="Tools">
+          <div class="tools-grid">
+            <button type="button" class="tool active" id="tool-select" title="Select character (1)" aria-label="Select character" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 3 1 17 5-6 4 7 3-2-4-7 7-1z"/></svg></button>
+            <button type="button" class="tool" id="tool-expressions" title="Expressions (E)" aria-label="Expressions"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 9h.1M16 9h.1M7 14q5 6 10 0"/></svg></button>
+            <button type="button" class="tool" id="tool-zoom-in" title="Zoom in (+)" aria-label="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M10 7v6M7 10h6"/></svg></button>
+            <button type="button" class="tool" id="tool-zoom-out" title="Zoom out (-)" aria-label="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6M7 10h6"/></svg></button>
+            <button type="button" class="tool" id="tool-walk" title="Play walk (Space)" aria-label="Play animation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 3 13 9-13 9z"/></svg></button>
+            <button type="button" class="tool" id="tool-grid" title="Canvas grid (G)" aria-label="Toggle canvas grid" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></button>
+            <button type="button" class="tool" id="tool-rewind" title="Previous character (←)" aria-label="Previous character"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5 3 12l7 7V5ZM21 5l-8 7 8 7V5Z"/></svg></button>
+            <button type="button" class="tool" id="tool-next" title="Next character (→)" aria-label="Next character"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7V5ZM3 5l8 7-8 7V5Z"/></svg></button>
           </div>
-        </div>
+          <div class="tools-stamp"><span>✳</span><small>V/L<br>STK</small></div>
+        </aside>
 
-        <div class="collection-grid" id="grid" aria-live="polite" aria-busy="true"></div>
-        <div id="empty" class="empty" hidden><span>✳</span><h3>No characters found.</h3><p>Try another keyword or filter.</p></div>
-        <p class="library-status" id="status">Loading character stock…</p>
-      </section>
+        <aside class="asset-panel" aria-label="Character files">
+          <div class="panel-heading"><strong>FILES</strong><span id="file-count">00</span></div>
+          <label class="asset-search"><span>⌕</span><input id="search" type="search" placeholder="Find..." autocomplete="off" aria-label="Search characters"><kbd>/</kbd></label>
+          <div class="file-filters" aria-label="Character types" role="group">
+            <button type="button" class="file-filter selected" data-filter="all" aria-pressed="true">ALL</button>
+            <button type="button" class="file-filter" data-filter="npc" aria-pressed="false">NPC</button>
+            <button type="button" class="file-filter" data-filter="player" aria-pressed="false">PLAYER</button>
+          </div>
+          <div id="file-list" class="file-list" role="listbox" aria-label="Choose a character" tabindex="0"></div>
+          <div class="asset-footer">ASSETS / <span id="asset-current-count">00</span></div>
+        </aside>
 
-      <section class="note">
-        <div><p class="section-label">02 / THE PIPELINE</p><h2>One style.<br />Infinite stories.</h2></div>
-        <div class="note-copy"><p>Every character in this catalog uses the same v6b pixel language: consistent proportions, lighting, palettes, and animations.</p><p>When a new verified character is committed to the asset repository, this catalog rebuilds and adds it automatically.</p><a href="https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/character_stock" target="_blank" rel="noopener noreferrer">EXPLORE THE STOCK LIBRARY <span aria-hidden="true">↗</span></a></div>
-      </section>
-    </main>
-
-    <footer class="footer"><span>VIRTUAL LIFE <span class="footer-dim">© CHARACTER STOCK</span></span><span>CODE-DRAWN PIXELS / V6B</span><a href="https://github.com/lafrich/virtual-life-asset-pipeline" target="_blank" rel="noopener noreferrer">GITHUB ↗</a></footer>
-  </div>
-  <template id="character-template">
-    <article class="character-card">
-      <div class="character-stage">
-        <div class="stage-top"><span class="stage-index">001</span><span class="stage-type">NPC</span></div>
-        <img class="character-image" loading="lazy" alt="" />
-        <button class="motion-toggle" type="button" aria-label="Pause animation" aria-pressed="false">Ⅱ <span>PAUSE</span></button>
-        <span class="stage-direction">WALK / 4 DIRECTIONS</span>
-      </div>
-      <div class="card-info">
-        <div class="card-title-line"><h3></h3><span class="card-id"></span></div>
-        <p class="description"></p>
-        <div class="tags"><span>V6B</span><span>64×112</span><span>4 DIRECTIONS</span></div>
-        <details class="expression-details">
-          <summary class="expression-summary"><span>EXPRESSION PREVIEW</span><span class="expression-meta"><span class="expression-count">0</span> FACES <span aria-hidden="true">＋</span></span></summary>
-          <div class="expression-content">
-            <div class="expression-selected">
-              <img class="expression-feature-image" loading="lazy" alt="Expression preview" />
-              <span class="expression-feature-label">NEUTRAL</span>
+        <section class="canvas-panel" aria-label="Character canvas">
+          <div class="canvas-head"><span class="canvas-name" id="canvas-name">UNTITLED_001</span><span class="canvas-badge">100% PIXELS</span></div>
+          <div class="canvas-space" id="canvas-space">
+            <div class="selection-border">
+              <canvas id="sprite-canvas" width="440" height="450" role="img" aria-label="Selected character walking pixel animation">Pixel sprite preview.</canvas>
             </div>
-            <div class="expression-grid" role="group" aria-label="Choose character expression"></div>
+            <div class="crosshair crosshair-a" aria-hidden="true">✳</div>
+            <div class="crosshair crosshair-b" aria-hidden="true">✳</div>
+            <div class="canvas-corner-label">VIRTUAL LIFE®</div>
+            <p class="canvas-loading" id="canvas-loading">LOADING SPRITES...</p>
           </div>
-        </details>
-        <div class="card-links"><a class="source-link" target="_blank" rel="noopener noreferrer">VIEW FILES <span aria-hidden="true">↗</span></a><a class="download-link" download>SPRITE PNG <span aria-hidden="true">↓</span></a></div>
+          <div class="canvas-toolbar" aria-label="Animation controls">
+            <button type="button" id="play-toggle" class="chrome-button primary-control" aria-pressed="true">Ⅱ <span>PAUSE</span></button>
+            <div class="directions" role="group" aria-label="Walk direction">
+              <button type="button" class="dir active" data-dir="auto" aria-pressed="true">AUTO</button>
+              <button type="button" class="dir" data-dir="0" aria-pressed="false">SE</button>
+              <button type="button" class="dir" data-dir="1" aria-pressed="false">SW</button>
+              <button type="button" class="dir" data-dir="2" aria-pressed="false">NE</button>
+              <button type="button" class="dir" data-dir="3" aria-pressed="false">NW</button>
+            </div>
+            <span class="canvas-scale" id="zoom-label">4X</span>
+          </div>
+        </section>
+
+        <aside class="details-panel" aria-label="Character inspector">
+          <div class="panel-heading inspector-title"><strong>PROPERTIES</strong><span>✕</span></div>
+          <div class="detail-tabs" role="tablist" aria-label="Inspector">
+            <button type="button" class="detail-tab active" id="tab-info" role="tab" aria-controls="info-panel" aria-selected="true">CHAR</button>
+            <button type="button" class="detail-tab" id="tab-faces" role="tab" aria-controls="faces-panel" aria-selected="false">FACE <span id="face-tab-count">00</span></button>
+          </div>
+          <div class="detail-content">
+            <section id="info-panel" role="tabpanel" aria-labelledby="tab-info">
+              <div class="inspector-art"><img id="inspector-thumb" alt="" src="" /></div>
+              <div class="property-label">OBJECT_001</div>
+              <h1 id="character-name">SELECT A FILE</h1>
+              <div class="property-table">
+                <div><span>TYPE</span><strong id="prop-type">—</strong></div>
+                <div><span>STYLE</span><strong>V6B</strong></div>
+                <div><span>SIZE</span><strong>64×112</strong></div>
+                <div><span>WALK</span><strong>4-WAY</strong></div>
+              </div>
+              <div class="inspector-actions">
+                <a class="chrome-button action-main" id="download-sheet" download href="#">↓ SPRITE.PNG</a>
+                <a class="chrome-button" id="open-source" target="_blank" rel="noopener noreferrer" href="#">↗ SOURCE</a>
+              </div>
+            </section>
+            <section id="faces-panel" role="tabpanel" aria-labelledby="tab-faces" hidden>
+              <div class="property-label">FACE_LAYERS</div>
+              <h2 class="face-heading">EXPRESSIONS<span id="face-count">00</span></h2>
+              <div class="face-grid" id="face-grid" role="group" aria-label="Select a facial expression"></div>
+              <button type="button" class="chrome-button face-back" id="return-walk">▶ BACK TO WALK</button>
+            </section>
+          </div>
+        </aside>
       </div>
-    </article>
-  </template>
+
+      <section class="palette-panel" aria-label="Canvas color palette">
+        <div class="foreground-chip" title="Current canvas color"><span class="bg-color-chip" id="current-color"></span><small>BG</small></div>
+        <div class="swatches" id="swatches" role="group" aria-label="Canvas background color"></div>
+        <div class="palette-note">PICK A COLOR.</div>
+      </section>
+      <footer class="statusbar" role="status">
+        <span class="status-left" id="status">READY.</span>
+        <span class="status-right"><span id="status-asset-count">00</span> OBJECTS <span class="status-divider">|</span> 64×112 PX <span class="status-divider">|</span> V6B</span>
+      </footer>
+    </main>
+    <div class="desktop-foot"><span>© VIRTUAL LIFE</span><span>MADE OF PIXELS, NOT PROMISES.</span></div>
+  </div>
 </body>
 </html>
