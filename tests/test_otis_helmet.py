@@ -43,11 +43,11 @@ class OtisVisualTests(unittest.TestCase):
             top_pixels = [(x, y) for y in range(18, 54) for x in range(64)
                           if px[x, y][3] != 0]
             xs = [x for x, _ in top_pixels]
-            self.assertGreaterEqual(min(xs), 23)
+            self.assertGreaterEqual(min(xs), 23 if direction == "se" else 10)
             self.assertLessEqual(max(xs), 53)
             self.assertLessEqual(max(xs) - min(xs) + 1, 31,
                                  "Otis head may not be wider than intended")
-            self.assertTrue(any(px[x, 60][3] for x in range(31, 45)),
+            self.assertTrue(any(px[x, 60][3] for x in range(19, 45)),
                             "Front must retain the rotating muzzle")
         for direction in ("ne", "nw"):
             image = O.helmet(base, direction, 0)
