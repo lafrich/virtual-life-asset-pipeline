@@ -33,6 +33,7 @@ on:
       - "tests/test_pixel_editor.cjs"
       - "tests/test_accessory_editor.cjs"
       - "tools/build_accessory_guide.py"
+      - "tools/build_astrofrich.py"
       - "tests/test_master_parts.cjs"
       - "tests/test_rig_runtime.cjs"
       - "tests/test_shared_bone_runtime.cjs"
@@ -94,7 +95,7 @@ jobs:
           node tests/test_shared_bone_runtime.cjs
           node tests/test_rig_runtime.cjs
           node tests/test_face_ui_interactions.cjs
-          python -m py_compile tools/build_accessory_guide.py
+          python -m py_compile tools/build_accessory_guide.py tools/build_astrofrich.py
           python -m py_compile tools/build_rig_studio.py tools/build_character_catalog.py tools/animation_backlog.py tools/build_animation_catalog.py tools/new_animation_template.py tools/pack_animation_preview.py tools/build_native_character_catalog.py tools/build_legacy_character_catalog.py tools/build_legacy_face_previews.py tools/generate_archive_previews.py
           python -m unittest discover -s tests -p 'test_animation_catalog.py' -v
           python -m unittest discover -s tests -p 'test_rig_studio.py' -v
@@ -118,6 +119,11 @@ jobs:
           test -s _site/accessory-editor.css
           test -s _site/accessory-editor.js
           test -s _site/media/theodore-accessory-fitting-guide.png
+          test -s _site/media/astrofrich-base-sheet.png
+          test -s _site/media/astrofrich-base-thumb.png
+          test -s _site/media/astrofrich-base-expression-happy.png
+          test -s _site/media/astrofrich-base-action-sit_type.png
+          python -c 'import json; from pathlib import Path; from PIL import Image; data=json.loads(Path("_site/catalog.json").read_text()); chars=[c for c in data["characters"] if c["id"]=="astrofrich_base"]; assert len(chars)==1; ch=chars[0]; assert ch["template_category"]=="astrofrich" and len(ch["expressions"])==5; assert set(m["id"] for m in ch["motions"] if m["available"])=={"walk","idle","sit","sit_type","sleep_seat","nap_stand","talk"}; sheet=Image.open("_site/media/astrofrich-base-sheet.png"); assert sheet.size==(384,4928); assert Image.open("_site/media/astrofrich-base-action-talk.png").size==(256,448); print("Astrofrich base: 4 directions / 7 authored actions / 5 expressions")'
           python -c 'from PIL import Image; im=Image.open("_site/media/theodore-accessory-fitting-guide.png"); assert im.size==(256,112) and im.mode=="RGBA"; assert all(im.crop((64*i,0,64*(i+1),112)).getchannel("A").getbbox() for i in range(4)); assert im.getpixel((0,0))[3]==0; print("Theodore 4-view bald-glasses, no fixed helmet/backpack fitting guide available")'
           test -s _site/master-parts.js
           test -s _site/pixel-editor.css
