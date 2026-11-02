@@ -77,6 +77,8 @@ function selectCharacter(character) {
   $("canvas-name").textContent = character.id.toUpperCase() + ".SPR";
   $("character-name").textContent = prettyName(character);
   $("prop-type").textContent = String(character.type || "npc").toUpperCase();
+  $("prop-bone-model").textContent = character.skeleton_profile || "UNASSIGNED";
+  $("prop-bone-skin").textContent = character.bone_skin_ready ? "BOUND / QA" : "PENDING PARTS";
   const previewImage = character.thumbnail || character.poster;
   const inspector = $("inspector-thumb");
   inspector.closest(".inspector-art").classList.toggle("empty", !previewImage);
