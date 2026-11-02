@@ -21,7 +21,7 @@ LOOP_FRAMES = 12
 BLINK_FRAME = 9
 EYES_BOX = (22, 35, 44, 49)  # Only eyes and brows; keep original mouth expression.
 PORTRAIT_BOX = (17, 30, 48, 62)  # Full authentic face, not the whole body.
-ACTORS = {"gfunk", "theodore", "yerbies"}
+ACTORS = {"gfunk", "theodore", "yerbies", "otis"}
 
 
 def load_renderer(root: Path, actor: str):
