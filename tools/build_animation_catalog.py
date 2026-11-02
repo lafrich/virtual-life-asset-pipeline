@@ -114,6 +114,8 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
         items.append({
             "id": key, "name": key[len(actor)+1:].replace("_"," ").upper(),
             "group": "npc", "status": "preview",
+            "actor": "legacy_" + actor,
+            "action_id": key[len(actor)+1:],
             "preview": file.relative_to(ROOT).as_posix(),
             "source": source_by_character[actor],
             "directions": ["se","sw","ne","nw"],
@@ -211,7 +213,8 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
             "frame_ms": frame_ms if frame_ms else [],
             "duration_ms": duration,
             "preview_only": True,
-            "actor": actor if "actor" in entry else "",
+            "actor": str(entry.get("actor", "")),
+            "action_id": str(entry.get("action_id", "")),
         })
     (out / "animations.json").write_text(
         json.dumps({"version": 1, "animations": records}, indent=2, ensure_ascii=False) + "\n",
