@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools.animation_backlog import read_backlog, planned_records
+from tools.animation_backlog import read_backlog, planned_records, assert_backlog_synced
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKLOG = ROOT / "assets" / "animation_library" / "backlog.json"
@@ -31,6 +31,21 @@ class LifeSimBacklogTests(unittest.TestCase):
         self.assertEqual(by_id["give_item"]["sync"], "paired")
         self.assertEqual(by_id["sleep"]["phases"], ["enter", "loop", "exit"])
         self.assertEqual(by_id["face_blink"]["type"], "facial")
+
+    def test_all_plans_registered_in_canonical_motion_database(self):
+        registry_path = BACKLOG.parent / "actions.json"
+        source = json.loads(registry_path.read_text(encoding="utf-8"))
+        self.assertEqual(source["version"], 2)
+        actions = source["actions"]
+        self.assertEqual(len(actions), 203)
+        self.assertEqual(len({a["id"] for a in actions}), len(actions))
+        assert_backlog_synced(BACKLOG, actions)
+        self.assertEqual(sum(a.get("status") == "planned" for a in actions), 196)
+        self.assertEqual(sum(a.get("status") != "planned" for a in actions), 7)
+        corrupt = json.loads(json.dumps(actions))
+        next(a for a in corrupt if a.get("status") == "planned")["priority"] = "P2"
+        with self.assertRaisesRegex(ValueError, "differs"):
+            assert_backlog_synced(BACKLOG, corrupt)
 
     def test_planned_catalog_has_no_sprite_or_approvals(self):
         records = planned_records(BACKLOG, set())

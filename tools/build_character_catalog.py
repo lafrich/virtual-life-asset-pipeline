@@ -200,21 +200,37 @@ def available_actions(folder: Path, data: dict, slug: str, media: Path,
     return choices
 
 
-def motion_actions() -> list[dict]:
+def motion_actions(include_planned: bool = False) -> list[dict]:
+    """Read the full animation DB, but bind only authored motions to actors.
+
+    Planned specifications have no real sprites or frame timings. They remain
+    in actions.json and the PLAN library; inserting an unbuilt pose into every
+    character's motion list would make the Mixamo-style viewer misleading.
+    """
     filepath = ROOT / "assets" / "animation_library" / "actions.json"
     data = json.loads(filepath.read_text(encoding="utf-8"))
     result = data.get("actions")
     if not isinstance(result, list) or not result:
         raise ValueError("Empty shared animation action registry")
     ids = set()
+    reviewed = []
     for action in result:
         aid = action.get("id")
         if not isinstance(aid, str) or not aid.replace("_", "").isalnum() or aid in ids:
             raise ValueError(f"Invalid duplicate motion id: {aid}")
         ids.add(aid)
-        if len(action.get("frame_ms", [])) != action.get("frames", -1):
+        if action.get("status") == "planned":
+            if (action.get("type") != "planned" or action.get("frames") != 0
+                    or action.get("frame_ms") != [] or action.get("needs_rig") is not True):
+                raise ValueError(f"{aid}: planned actions must have no approved frames")
+            continue
+        if action.get("type") not in ("native_row", "custom_sheet"):
+            raise ValueError(f"{aid}: only original rigged motion types are playable")
+        if (not isinstance(action.get("frames"), int) or action["frames"] < 1
+                or len(action.get("frame_ms", [])) != action["frames"]):
             raise ValueError(f"{aid}: frame count/timing mismatch")
-    return result
+        reviewed.append(action)
+    return result if include_planned else reviewed
 
 
 def manifests():

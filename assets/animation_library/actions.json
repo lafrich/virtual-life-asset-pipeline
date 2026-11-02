@@ -1,6 +1,12 @@
 {
-  "version": 1,
-  "description": "Named reusable motions. New motions are bound to characters only after real native poses exist.",
+  "version": 2,
+  "description": "Central registry of existing reviewed motion action definitions and planned life-sim actions. A planned entry is NOT playable or a sprite. Only reviewed native_row/custom_sheet actions are passed to character Motion Studio.",
+  "planned_specification": "assets/animation_library/backlog.json",
+  "counts": {
+    "registered": 203,
+    "existing": 7,
+    "planned": 196
+  },
   "actions": [
     {
       "id": "idle",
@@ -115,6 +121,7503 @@
       "category": "action",
       "needs_rig": true,
       "reference": "assets/anim_ambil_barang/manifest.json"
+    },
+    {
+      "id": "run",
+      "label": "RUN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "movement",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "turn",
+      "label": "TURN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "stop",
+      "label": "STOP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "crouch",
+      "label": "CROUCH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "sneak",
+      "label": "SNEAK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "movement",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "stairs_up",
+      "label": "STAIRS UP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "stairs_down",
+      "label": "STAIRS DOWN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "stumble",
+      "label": "STUMBLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "slip",
+      "label": "SLIP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "fall",
+      "label": "FALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "jump",
+      "label": "JUMP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "dash",
+      "label": "DASH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "slow_walk",
+      "label": "SLOW WALK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "movement",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "backstep",
+      "label": "BACKSTEP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "movement",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "sit_down",
+      "label": "SIT DOWN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "chair"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "stand_up",
+      "label": "STAND UP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "chair"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "sit_idle",
+      "label": "SIT IDLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "posture",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "chair"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "lie_down",
+      "label": "LIE DOWN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "bed"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "get_up",
+      "label": "GET UP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "bed"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "sleep",
+      "label": "SLEEP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "posture",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "bed"
+      ],
+      "event": {
+        "name": "energy_recovery",
+        "phase": "loop"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "wake_up",
+      "label": "WAKE UP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "bed"
+      ],
+      "event": {
+        "name": "awake",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "nap",
+      "label": "NAP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "posture",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "bed"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "stretch",
+      "label": "STRETCH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "yawn",
+      "label": "YAWN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "lean_wall",
+      "label": "LEAN WALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "posture",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "faint",
+      "label": "FAINT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "recover",
+      "label": "RECOVER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "lie_idle",
+      "label": "LIE IDLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "posture",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "bed_enter",
+      "label": "BED ENTER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "bed"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "bed_exit",
+      "label": "BED EXIT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "posture",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "bed"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "reach",
+      "label": "REACH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "put_down",
+      "label": "PUT DOWN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": {
+        "name": "release_item",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "carry_small",
+      "label": "CARRY SMALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "objects",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "open_door",
+      "label": "OPEN DOOR",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "door",
+        "interaction_range"
+      ],
+      "event": {
+        "name": "door_open",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "close_door",
+      "label": "CLOSE DOOR",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "door",
+        "interaction_range"
+      ],
+      "event": {
+        "name": "door_close",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "carry_heavy",
+      "label": "CARRY HEAVY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "push",
+      "label": "PUSH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "pull",
+      "label": "PULL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "inspect_item",
+      "label": "INSPECT ITEM",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "place_item",
+      "label": "PLACE ITEM",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": {
+        "name": "place_item",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "throw_item",
+      "label": "THROW ITEM",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "open_bag",
+      "label": "OPEN BAG",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "open_drawer",
+      "label": "OPEN DRAWER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "close_drawer",
+      "label": "CLOSE DRAWER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "take_from_shelf",
+      "label": "TAKE FROM SHELF",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "use_switch",
+      "label": "USE SWITCH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "objects",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "eat",
+      "label": "EAT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "food",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "food"
+      ],
+      "event": {
+        "name": "consume_food",
+        "phase": "loop"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "drink",
+      "label": "DRINK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "food",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "drink"
+      ],
+      "event": {
+        "name": "consume_drink",
+        "phase": "loop"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cook_stir",
+      "label": "COOK STIR",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "food",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "stove",
+        "cookware"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "serve_food",
+      "label": "SERVE FOOD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "food",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "chop_food",
+      "label": "CHOP FOOD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "counter",
+        "food"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cook_fry",
+      "label": "COOK FRY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "stove",
+        "cookware"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "wash_dishes",
+      "label": "WASH DISHES",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "sink"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "open_fridge",
+      "label": "OPEN FRIDGE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "fridge"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "prepare_food",
+      "label": "PREPARE FOOD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "clean_table",
+      "label": "CLEAN TABLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "eat_seated",
+      "label": "EAT SEATED",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "food",
+        "chair"
+      ],
+      "event": {
+        "name": "consume_food",
+        "phase": "loop"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "drink_cup",
+      "label": "DRINK CUP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "cup"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "put_food_on_table",
+      "label": "PUT FOOD ON TABLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "wash_vegetables",
+      "label": "WASH VEGETABLES",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "food",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "pee_stand",
+      "label": "PEE STAND",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "toilet",
+        "facing_toilet"
+      ],
+      "event": {
+        "name": "bladder_relief",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "toilet_sit",
+      "label": "TOILET SIT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "toilet"
+      ],
+      "event": {
+        "name": "bladder_relief",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "wash_hands",
+      "label": "WASH HANDS",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "sink"
+      ],
+      "event": {
+        "name": "hygiene_complete",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "shower",
+      "label": "SHOWER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "hygiene",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "shower"
+      ],
+      "event": {
+        "name": "hygiene_complete",
+        "phase": "loop"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "flush_toilet",
+      "label": "FLUSH TOILET",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "toilet"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "brush_teeth",
+      "label": "BRUSH TEETH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "sink"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "wash_face",
+      "label": "WASH FACE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "sink"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "bath",
+      "label": "BATH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "bathtub"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "change_clothes",
+      "label": "CHANGE CLOTHES",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "mop",
+      "label": "MOP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "hygiene",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "sweep",
+      "label": "SWEEP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "hygiene",
+      "priority": "P2",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "wipe_counter",
+      "label": "WIPE COUNTER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "toilet_paper",
+      "label": "TOILET PAPER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "dry_hands",
+      "label": "DRY HANDS",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "pee_finish",
+      "label": "PEE FINISH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "hygiene",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "toilet"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "greet_wave",
+      "label": "GREET WAVE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P0",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "listen",
+      "label": "LISTEN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "social",
+      "priority": "P0",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "give_item",
+      "label": "GIVE ITEM",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P0",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "other_actor",
+        "item"
+      ],
+      "event": {
+        "name": "transfer_item",
+        "phase": "contact"
+      },
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "receive_item",
+      "label": "RECEIVE ITEM",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P0",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "other_actor",
+        "item"
+      ],
+      "event": {
+        "name": "receive_item",
+        "phase": "contact"
+      },
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "laugh",
+      "label": "LAUGH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P0",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "handshake",
+      "label": "HANDSHAKE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "other_actor"
+      ],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "hug",
+      "label": "HUG",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P2",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "other_actor"
+      ],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "flirt",
+      "label": "FLIRT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P2",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "argue",
+      "label": "ARGUE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "social",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cry",
+      "label": "CRY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "social",
+      "priority": "P2",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "gossip",
+      "label": "GOSSIP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "social",
+      "priority": "P2",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "point",
+      "label": "POINT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "kiss",
+      "label": "KISS",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P2",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "high_five",
+      "label": "HIGH FIVE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "nod",
+      "label": "NOD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "shake_head",
+      "label": "SHAKE HEAD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cheer",
+      "label": "CHEER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "shrug",
+      "label": "SHRUG",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "applaud",
+      "label": "APPLAUD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "social",
+      "priority": "P2",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "clock_in",
+      "label": "CLOCK IN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "attendance_terminal",
+        "workplace"
+      ],
+      "event": {
+        "name": "attendance_check",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "clock_out",
+      "label": "CLOCK OUT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "attendance_terminal",
+        "workplace"
+      ],
+      "event": {
+        "name": "attendance_check",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "read_document",
+      "label": "READ DOCUMENT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "document"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "phone_work",
+      "label": "PHONE WORK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "office",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "phone"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "meeting_listen",
+      "label": "MEETING LISTEN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "meeting_spot"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "presentation",
+      "label": "PRESENTATION",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "print_document",
+      "label": "PRINT DOCUMENT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "file_document",
+      "label": "FILE DOCUMENT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "brew_coffee",
+      "label": "BREW COFFEE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "clean_desk",
+      "label": "CLEAN DESK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "carry_box",
+      "label": "CARRY BOX",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "office_type",
+      "label": "OFFICE TYPE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "desk",
+        "computer"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "office_idle",
+      "label": "OFFICE IDLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "meeting_talk",
+      "label": "MEETING TALK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "coffee_break",
+      "label": "COFFEE BREAK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "office",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "take_order",
+      "label": "TAKE ORDER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "customer",
+        "sales_spot"
+      ],
+      "event": {
+        "name": "accept_order",
+        "phase": "contact"
+      },
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "accept_payment",
+      "label": "ACCEPT PAYMENT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "customer",
+        "payment"
+      ],
+      "event": {
+        "name": "transfer_money",
+        "phase": "contact"
+      },
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "serve_plate",
+      "label": "SERVE PLATE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "plate",
+        "customer"
+      ],
+      "event": {
+        "name": "deliver_order",
+        "phase": "contact"
+      },
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "give_change",
+      "label": "GIVE CHANGE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "customer",
+        "cash"
+      ],
+      "event": {
+        "name": "transfer_money",
+        "phase": "contact"
+      },
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "open_stall",
+      "label": "OPEN STALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "stall"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "close_stall",
+      "label": "CLOSE STALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "stall"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "pack_order",
+      "label": "PACK ORDER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "order",
+        "packaging"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "restock",
+      "label": "RESTOCK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "stall",
+        "goods"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "count_money",
+      "label": "COUNT MONEY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P2",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "browse_item",
+      "label": "BROWSE ITEM",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "haggle",
+      "label": "HAGGLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P2",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cook_stall",
+      "label": "COOK STALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P2",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "hand_over_food",
+      "label": "HAND OVER FOOD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cash_register",
+      "label": "CASH REGISTER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "register"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "display_goods",
+      "label": "DISPLAY GOODS",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "trading",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "phone_takeout",
+      "label": "PHONE TAKEOUT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "phone",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "phone"
+      ],
+      "event": {
+        "name": "equip_phone",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "phone_scroll",
+      "label": "PHONE SCROLL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "phone",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "phone"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "phone_type",
+      "label": "PHONE TYPE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "phone",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "phone"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "phone_call",
+      "label": "PHONE CALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "phone"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "video_call",
+      "label": "VIDEO CALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "phone"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "study_online",
+      "label": "STUDY ONLINE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "read_book",
+      "label": "READ BOOK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "take_photo",
+      "label": "TAKE PHOTO",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "phone"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "play_mobile_game",
+      "label": "PLAY MOBILE GAME",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "write_journal",
+      "label": "WRITE JOURNAL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "phone_putaway",
+      "label": "PHONE PUTAWAY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "phone"
+      ],
+      "event": {
+        "name": "unequip_phone",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "read_screen",
+      "label": "READ SCREEN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "phone",
+      "priority": "P1",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "queue_idle",
+      "label": "QUEUE IDLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "city",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "enter_vehicle",
+      "label": "ENTER VEHICLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "vehicle"
+      ],
+      "event": {
+        "name": "mount_vehicle",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "exit_vehicle",
+      "label": "EXIT VEHICLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "vehicle"
+      ],
+      "event": {
+        "name": "dismount_vehicle",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "ride_motor",
+      "label": "RIDE MOTOR",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "city",
+      "priority": "P0",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "motorcycle"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "ride_bicycle",
+      "label": "RIDE BICYCLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "city",
+      "priority": "P2",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "bicycle"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "drive_car",
+      "label": "DRIVE CAR",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "city",
+      "priority": "P2",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "car"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "wait_bus",
+      "label": "WAIT BUS",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "city",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "hail_ojek",
+      "label": "HAIL OJEK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "roadside"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cross_road",
+      "label": "CROSS ROAD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "crossing"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "knock_door",
+      "label": "KNOCK DOOR",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "door"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "open_umbrella",
+      "label": "OPEN UMBRELLA",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "umbrella"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "close_umbrella",
+      "label": "CLOSE UMBRELLA",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P2",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "mount_bike",
+      "label": "MOUNT BIKE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "dismount_bike",
+      "label": "DISMOUNT BIKE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "city",
+      "priority": "P1",
+      "batch": 2,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "fart",
+      "label": "FART",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P0",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": {
+        "name": "play_fart_effect",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "pee_wall",
+      "label": "PEE WALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P0",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "wall",
+        "facing_wall",
+        "wall_in_reach"
+      ],
+      "event": {
+        "name": "bladder_relief",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "scratch_head",
+      "label": "SCRATCH HEAD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P0",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "burp",
+      "label": "BURP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P0",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": {
+        "name": "play_burp_effect",
+        "phase": "contact"
+      },
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "react_smell",
+      "label": "REACT SMELL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P0",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "pick_nose",
+      "label": "PICK NOSE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P2",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "sneeze",
+      "label": "SNEEZE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cough",
+      "label": "COUGH",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "scratch_butt",
+      "label": "SCRATCH BUTT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P2",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "vomit",
+      "label": "VOMIT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P2",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "dance",
+      "label": "DANCE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "funny",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "panic",
+      "label": "PANIC",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "awkward_wave",
+      "label": "AWKWARD WAVE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "stink_react",
+      "label": "STINK REACT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "sudden_jolt",
+      "label": "SUDDEN JOLT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "funny",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "vendor_idle",
+      "label": "VENDOR IDLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "npc",
+      "priority": "P0",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "guard_idle",
+      "label": "GUARD IDLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "npc",
+      "priority": "P0",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "cleaner_sweep",
+      "label": "CLEANER SWEEP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "npc",
+      "priority": "P0",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "parking_signal",
+      "label": "PARKING SIGNAL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "npc",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "whistle",
+      "label": "WHISTLE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "npc",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "delivery_handover",
+      "label": "DELIVERY HANDOVER",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "npc",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "pet_cat",
+      "label": "PET CAT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "npc",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "cat",
+        "interaction_range"
+      ],
+      "event": null,
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "feed_cat",
+      "label": "FEED CAT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "npc",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [
+        "cat",
+        "pet_food"
+      ],
+      "event": {
+        "name": "consume_pet_food",
+        "phase": "contact"
+      },
+      "sync": "paired",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "busker_play",
+      "label": "BUSKER PLAY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "npc",
+      "priority": "P2",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "begging",
+      "label": "BEGGING",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "npc",
+      "priority": "P2",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "street_seller_call",
+      "label": "STREET SELLER CALL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "npc",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "animal_react",
+      "label": "ANIMAL REACT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "npc",
+      "priority": "P2",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "security_stop",
+      "label": "SECURITY STOP",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "npc",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "direct_traffic",
+      "label": "DIRECT TRAFFIC",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "npc",
+      "priority": "P1",
+      "batch": 4,
+      "phases": [
+        "enter",
+        "contact",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Needs original, actor-specific frames and compatibility review before use."
+    },
+    {
+      "id": "face_neutral",
+      "label": "FACE NEUTRAL",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_happy",
+      "label": "FACE HAPPY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_sad",
+      "label": "FACE SAD",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_angry",
+      "label": "FACE ANGRY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_surprised",
+      "label": "FACE SURPRISED",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_confused",
+      "label": "FACE CONFUSED",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_disgusted",
+      "label": "FACE DISGUSTED",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_embarrassed",
+      "label": "FACE EMBARRASSED",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_sleepy",
+      "label": "FACE SLEEPY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_tired",
+      "label": "FACE TIRED",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_flirty",
+      "label": "FACE FLIRTY",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P2",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_scared",
+      "label": "FACE SCARED",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P2",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_blink",
+      "label": "FACE BLINK",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "facial",
+      "priority": "P0",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_talk_open",
+      "label": "FACE TALK OPEN",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "facial",
+      "priority": "P0",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_talk_closed",
+      "label": "FACE TALK CLOSED",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": true,
+      "category": "facial",
+      "priority": "P0",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_look_left",
+      "label": "FACE LOOK LEFT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
+    },
+    {
+      "id": "face_look_right",
+      "label": "FACE LOOK RIGHT",
+      "type": "planned",
+      "status": "planned",
+      "modality": "facial",
+      "frames": 0,
+      "frame_ms": [],
+      "loop": false,
+      "category": "facial",
+      "priority": "P1",
+      "batch": 3,
+      "phases": [
+        "enter",
+        "hold",
+        "exit"
+      ],
+      "requirements": [],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Planned shared facial-coverage target; some existing characters have their own authored expressions."
     }
   ]
 }
