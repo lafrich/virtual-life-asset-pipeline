@@ -257,7 +257,12 @@ if __name__ == '__main__':
     REF = G.REF; refs = [('01M69A8PYEM149T966YWGWWMXQ.jpg', (222, 695, 682, 1516)), ('01M69A8Q2D1DRTZH4FGH09V2DJ.jpg', (222, 695, 682, 1516)), ('01M69A8Q83MCGMYMRY4KY4HSZC.jpg', (222, 695, 682, 1516))]
     crops = []
     for fn, box in refs:
-        im = Image.open(REF + fn).convert('RGB').crop(box); crops.append(im.resize((round(im.width * H / im.height), H), Image.LANCZOS))
+        # Historical /cursor/stores/ screenshots are optional comparison art.
+        # Original pixel characters and animation frames render independently.
+        if not os.path.isfile(REF + fn):
+            continue
+        im = Image.open(REF + fn).convert('RGB').crop(box)
+        crops.append(im.resize((round(im.width * H / im.height), H), Image.LANCZOS))
     P2 = 'assets/'
     items = [('Theodore se', FR['se', 'idle'][0]), ('Theodore ne', FR['ne', 'idle'][0]), ('NPC 1 Cosmo', Image.open(P2 + 'npc_preview_v2/npc_1_cosmo.png')),
              ('old NPC 2 Rocketta', Image.open(P2 + 'npc_preview_v2/npc_2_rocketta.png')), ('Gfunk se', Image.open(P2 + 'npc_gfunk/gfunk_se.png'))]
