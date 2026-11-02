@@ -14,6 +14,9 @@ on:
       - "assets/**"
       - "site/**"
       - "tools/build_character_catalog.py"
+      - "assets/animation_library/actions.json"
+      - "assets/npc_*/motions.json"
+      - "tests/test_character_motion_studio.py"
       - "tools/build_animation_catalog.py"
       - "tools/new_animation_template.py"
       - "tools/pack_animation_preview.py"
@@ -49,6 +52,7 @@ jobs:
           node --check site/animations.js
           python -m py_compile tools/build_character_catalog.py tools/build_animation_catalog.py tools/new_animation_template.py tools/pack_animation_preview.py
           python -m unittest discover -s tests -p 'test_animation_catalog.py' -v
+          python -m unittest discover -s tests -p 'test_character_motion_studio.py' -v
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
       - name: Check built site files
