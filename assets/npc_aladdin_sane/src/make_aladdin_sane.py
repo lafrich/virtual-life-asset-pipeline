@@ -39,15 +39,20 @@ BLUE_EDGE = {9: (17,), 10: (16,), 11: (15,), 12: (15,),
 
 # Shared game NPC templates, original v6b skin, hair, jeans, shoe primitives.
 nv.NPCS[NAME] = dict(
-    body="m", skin="light", hair="mid", hc="walnut",
+    body="m", skin="light", hair="mid", hc="bowie_copper",
     top="tee", tc="paper", pants="trousers", pc="slate",
     shoes="boots", sc="walnut", quiff=True, tufts=True,
 )
+# All five copper/rust tones are established colors in the existing game's palette.
+nv.HR["bowie_copper"] = [
+    "#6E2F1B", "#8A1F22", "#A33A26", "#C85F2A", "#E07A3F"
+]
 nv.OUT = str(SPRITES)
 _source_build = lv.build_char_layers
 _source_face = lv.face_layer
 _source_back = lv.back_layers
 _source_quiff = nv.quiff
+_source_pose = lv.pose_layers
 face_silhouette = set()
 
 def bare_torso(L, back=False):
@@ -220,6 +225,15 @@ def bowie_spiky_mullet(se, ne):
                 if 0 <= x < lv.CW and 0 <= y < lv.CH:
                     front[y,x] = ""
                     back[y,x] = ""
+        # Back-left cleanup: remove the redundant tuft on the OUTSIDE of the
+        # visible left ear. The haircut grows down the centre nape, not as
+        # another lock before the ear. Mirroring gives the matching NW view.
+        if backwards:
+            for y in range(13, 32):
+                left_clear = 9 if y <= 20 else 12
+                for x in range(left_clear):
+                    front[y, x] = ""
+                    back[y, x] = ""
         # Slender tapered sideburn just above the exposed ears.
         for x0 in (8, 30):
             for y in range(10,14):
@@ -234,6 +248,59 @@ def bowie_spiky_mullet(se, ne):
                 if y > 27:
                     for x in xs[-trim:]: front[y,int(x)] = ""
 
+
+def fix_walk_arms_and_boots(base, kind, t, view, C, O):
+    """Repair native pose geometry rather than painting over final frames.
+
+    The shared sleeved rig starts hanging arms at row 32. For a bare torso,
+    shoulder edges must connect a little higher on BOTH arms. Keep hands,
+    steps and the original articulated walk pose unchanged.
+    """
+    P = _source_pose(base, kind, t, view, C, O)
+    if kind not in ("idle", "idle0", "walk", "talk", "tired"):
+        return P
+    torso = P["body"]
+    for key in ("arm_near", "arm_far"):
+        arm = P[key]
+        ys, xs = np.nonzero(arm != "")
+        use = ys[(ys >= 27) & (ys <= 46)]
+        if not len(use):
+            continue
+        top = int(use.min())
+        xr = np.flatnonzero(arm[top] != "")
+        # Continue the shoulder upward to meet the shirtless chest.
+        for y in range(max(26, top - 3), top):
+            for x in xr:
+                arm[y, int(x)] = arm[top, int(x)]
+        # Bridge any one/two-pixel tear between the torso and upper arm,
+        # respecting which side of the torso that arm belongs to.
+        for y in range(max(26, top-3), min(42, top+5)):
+            ax = np.flatnonzero(arm[y] != "")
+            bx = np.flatnonzero(torso[y] != "")
+            if not len(ax) or not len(bx):
+                continue
+            am = (int(ax.min()) + int(ax.max())) / 2
+            bm = (int(bx.min()) + int(bx.max())) / 2
+            if am < bm:
+                edge = int(ax.max())
+                inside = bx[bx >= edge]
+                if not len(inside): continue
+                inner = int(inside.min())
+                if 0 < inner - edge <= 5:
+                    for x in range(edge+1,inner):
+                        arm[y,x] = "i" if x < inner-1 else "h"
+            else:
+                edge = int(ax.min())
+                inside = bx[bx <= edge]
+                if not len(inside): continue
+                inner = int(inside.max())
+                if 0 < edge - inner <= 5:
+                    for x in range(inner+1,edge):
+                        arm[y,x] = "e" if x < edge-1 else "7"
+    # Original boot base reaches frame row 102 despite pivot y=100.
+    # Keep the boot shaft and toe, remove only the 2px outsole overhang.
+    P["shoes"][70:] = ""
+    return P
 
 def build_with_makeup_palette(C, O):
     global face_silhouette
@@ -338,25 +405,7 @@ def make_animated_preview(sheet, bg):
     frames[0].save(PREVIEW / "aladdin_sane_walk_4dirs_4x.gif",
                    save_all=True, append_images=frames[1:],
                    duration=durations, loop=0, optimize=False)
-    # Idle GIF in four directions, so the owner can inspect the bare torso in place.
-    frames = []
-    for di, direction in enumerate(lv.DIRS):
-        for f in range(4):
-            o = Image.new("RGBA", size, bg)
-            d = ImageDraw.Draw(o)
-            d.text((24,24),"ALADDIN SANE  /  V6B",fill=(235,235,236,255))
-            d.text((24,52),"IDLE " + direction.upper(),fill=(235,235,236,255))
-            d.polygon([(216,350),(340,412),(216,474),(92,412)],
-                      fill=(61,76,95,255),outline=(89,109,129,255))
-            tile = native_frame(sheet, 4+di, f).resize(
-                (64*scale,112*scale), Image.Resampling.NEAREST)
-            o.alpha_composite(tile,(88,18))
-            frames.append(o.convert("RGB"))
-    frames[0].save(PREVIEW / "aladdin_sane_idle_4dirs_4x.gif",
-                   save_all=True, append_images=frames[1:],
-                   duration=180, loop=0, optimize=False)
-
-def sanitize_native_pngs():
+    # Only a walking animation preview is generated.\n\ndef sanitize_native_pngs():
     """Snap renderer-derived one-offs to already-approved game colors.
     The original renderer's legacy water alpha 46/220 does not meet the new
     asset rule; quantize it before exporting this NPC, without editing game data.
@@ -396,6 +445,7 @@ def main():
     lv.build_char_layers = build_with_makeup_palette
     lv.face_layer = face_with_lightning
     lv.back_layers = back_without_shirt
+    lv.pose_layers = fix_walk_arms_and_boots
     nv.quiff = bowie_spiky_mullet
     try:
         nv.build(NAME)
@@ -403,6 +453,7 @@ def main():
         lv.build_char_layers = _source_build
         lv.face_layer = _source_face
         lv.back_layers = _source_back
+        lv.pose_layers = _source_pose
         nv.quiff = _source_quiff
     sanitize_native_pngs()
     sprite_files = sorted(SPRITES.glob("*.png"))
@@ -410,6 +461,11 @@ def main():
     sheet = Image.open(path).convert("RGBA")
     overlays = [Image.open(p).convert("RGBA") for p in sprite_files if p != path]
     audit_native_outputs(sheet, overlays)
+    for d in range(4):
+        for f in range(6):
+            frame = np.asarray(native_frame(sheet, d, f))
+            if np.any(frame[101:, :, 3] == 255):
+                raise AssertionError("Boot pixels exceed y=100 foot pivot")
     make_previews(sheet)
     metadata = {
         "name": NAME, "type": "npc", "engine": "virtual-life-v6b",
@@ -422,18 +478,17 @@ def main():
         "sprites": ["sprites/" + p.name for p in sprite_files],
         "previews": [
             "preview/aladdin_sane_walk_4dirs_4x.gif",
-            "preview/aladdin_sane_idle_4dirs_4x.gif",
-            "preview/contact_sheet_4x.png", "preview/mock_4x.png"
+             "preview/contact_sheet_4x.png", "preview/mock_4x.png"
         ] + [
             "preview/walk_" + d + "_4x.gif" for d in lv.DIRS
         ],
         "outfit": "shirtless, slate jeans, brown boots",
-        "hairstyle": "v6b mid-length spiky mullet with swept quiff",
+        "hairstyle": "copper-red swept spikes, slimmer sides, visible ears",
         "new_hex": [],
         "makeup_palette_existing_game": {
             k: "#" + "".join(f"{v:02X}" for v in rgb) for k, rgb in MAKEUP.items()
         },
-        "notes": "Generated from the game's v6b character renderer; not from image generation."
+        "notes": "Generated from native v6b code. Walk-only GIF preview. Torso and arm joints repaired; outsole aligned to pivot."
     }
     (FAMILY / "manifest.json").write_text(json.dumps(metadata, indent=2) + "\n")
     print("BUILT", path, "sprites", len(sprite_files), "directions 4, walk 6, idle 4")
