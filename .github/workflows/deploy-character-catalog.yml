@@ -6,6 +6,7 @@ on:
       - main
       - feature/character-stock-landing
       - feature/milk-mascot-arms-angled-label-expressions
+      - feature/split-private-source-public-catalog
       - feature/xp-paint-character-stock-ui
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
@@ -42,20 +43,22 @@ jobs:
           node --check site/app.js
           python -m py_compile tools/build_character_catalog.py
       - name: Build auto-discovered character catalog
-        run: python tools/build_character_catalog.py
+        run: python tools/build_character_catalog.py --public
+      - name: Verify no private source or master sprite is exported
+        run: python tools/audit_public_catalog.py _public_site
       - name: Check built site files
         run: |
-          test -s _site/index.html
-          test -s _site/style.css
-          test -s _site/app.js
-          test -s _site/catalog.json
-          python -m json.tool _site/catalog.json > /dev/null
-          python -c 'import json; d=json.load(open("_site/catalog.json")); assert d["characters"], "no characters found"; assert all(__import__("pathlib").Path("_site", c["walk"]).is_file() for c in d["characters"]); print("Validated", len(d["characters"]), "character(s)")'
+          test -s _public_site/index.html
+          test -s _public_site/style.css
+          test -s _public_site/app.js
+          test -s _public_site/catalog.json
+          python -m json.tool _public_site/catalog.json > /dev/null
+          python -c 'import json; d=json.load(open("_public_site/catalog.json")); assert d["characters"], "no characters found"; assert all(__import__("pathlib").Path("_public_site", c["walk"]).is_file() for c in d["characters"]); print("Validated", len(d["characters"]), "character(s)")'
       - name: Upload preview build
         uses: actions/upload-artifact@v4
         with:
           name: character-stock-static-site
-          path: _site/
+          path: _public_site/
           retention-days: 7
 
   deploy:
@@ -77,13 +80,15 @@ jobs:
       - name: Install image dependency
         run: python -m pip install Pillow
       - name: Rebuild publishable catalog
-        run: python tools/build_character_catalog.py
+        run: python tools/build_character_catalog.py --public
+      - name: Verify sanitized Pages output
+        run: python tools/audit_public_catalog.py _public_site
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: _site/
+          path: _public_site/
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
