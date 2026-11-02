@@ -158,10 +158,17 @@ class OtisVisualTests(unittest.TestCase):
             if not source.is_file() or not output.is_file():
                 self.skipTest("Generated sprites are validated in full build")
             with Image.open(source) as original, Image.open(output) as otis:
+                src = original.convert("RGBA")
+                source_before = src.tobytes()
+                expected = O.apply_pixel_override(
+                    O.helmet(src, direction, 0), direction, "idle", 0,
+                    O.load_pixel_overrides())
                 self.assertEqual(original.size, otis.size)
-                self.assertEqual(original.crop((0, 73, 64, 112)).tobytes(),
-                                 otis.crop((0, 73, 64, 112)).tobytes())
-                self.assertNotEqual(original.crop((18, 24, 54, 69)).tobytes(),
+                self.assertEqual(expected.tobytes(), otis.convert("RGBA").tobytes(),
+                                 "The output must match the authorized head/body frame patch")
+                self.assertEqual(src.tobytes(), source_before,
+                                 "Original Theodore source must never change")
+                self.assertNotEqual(src.crop((18, 24, 54, 69)).tobytes(),
                                     otis.crop((18, 24, 54, 69)).tobytes())
 
 
