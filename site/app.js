@@ -435,120 +435,146 @@ function openAccessoryEditor(category){
 /* Astrofrich Custom Characters: immutable original base sprite + equipment
    references. Saved characters inherit all source-authored motions/faces. */
 const CHAR_STORAGE="virtual-life-character-storage-v1";
+const HUMAN_BASES=["human_male_base","human_female_base"];
+const CUSTOM_BASES=["astrofrich_base",...HUMAN_BASES];
+const EQUIPMENT_SLOTS=["shoes","pants","shirt","bag","helmet"];
 let catalogCharacters=[],workingCustomId=null;
+function templateFor(id){return catalogCharacters.find(x=>x.id===id&&x.template)||null;}
+function customBaseId(){return CUSTOM_BASES.includes($("custom-base").value)?$("custom-base").value:"astrofrich_base";}
 function savedCustomCharacters(){
  const rows=readAccessoryJson(CHAR_STORAGE,[]);
  return Array.isArray(rows)?rows.filter(x=>x&&typeof x.id==="string"&&
-  /^custom_astro_[a-z0-9-]+$/.test(x.id)&&typeof x.name==="string"&&
-  x.name.length<=40&&x.base==="astrofrich_base").slice(0,60):[];
+  /^custom_(astro|human)_[a-z0-9-]+$/.test(x.id)&&typeof x.name==="string"&&
+  x.name.length<=40&&CUSTOM_BASES.includes(x.base)).slice(0,60):[];
 }
-function baseAstrofrich(){return catalogCharacters.find(x=>x.id==="astrofrich_base")||null;}
 function hydrateCharacter(row,base){
  return {...base,id:row.id,name:row.name,type:"npc",template:false,
-  template_category:"astrofrich",custom_character:true,base_id:base.id,
-  description:"Astrofrich · "+row.name+" · modular 4-view equipment · original motion & expression atlas"};
+  template_category:base.template_category,custom_character:true,base_id:base.id,
+  description:base.template_category.toUpperCase()+" · "+row.name+" · 4-direction modular outfit / original motion & face atlases"};
 }
 function rebuildCustomCharacters(){
- const base=baseAstrofrich(),oldId=state.selected?.id;
+ const oldId=state.selected?.id;
  state.characters=[...catalogCharacters,
-  ...(base?savedCustomCharacters().map(row=>hydrateCharacter(row,base)):[])];
- const updated=state.characters.find(x=>x.id===oldId);
- if(updated&&state.selected?.custom_character)state.selected=updated;
+  ...savedCustomCharacters().map(row=>{
+   const base=templateFor(row.base);return base?hydrateCharacter(row,base):null;
+  }).filter(Boolean)];
+ if(state.selected?.custom_character){
+  const updated=state.characters.find(x=>x.id===oldId);
+  if(updated)state.selected=updated;
+ }
  const total=String(state.characters.length).padStart(2,"0");
  $("asset-total").textContent=total;$("status-asset-count").textContent=total;
  renderCustomStorage();renderFileList(false);
 }
-function populateCustomAccessories(){
- const selectedHelmet=$("custom-helmet").value,selectedBag=$("custom-bag").value;
- for(const [id,kind,active] of [["custom-helmet","helmet",selectedHelmet],["custom-bag","bag",selectedBag]]){
-  const select=$(id);select.replaceChildren();
-  const blank=document.createElement("option");blank.value="";blank.textContent=kind==="helmet"?"— NO HELMET —":"— NO BAG —";
-  select.append(blank);
-  for(const a of accessoryRuntime.items.filter(x=>x.category===kind)){
-   const option=document.createElement("option");option.value=a.id;option.textContent=a.name||"UNNAMED";
-   select.append(option);
-  }
-  select.value=Array.from(select.options).some(x=>x.value===active)?active:"";
+function filterEquippedOptions(base,category,previous=""){
+ const select=$("custom-"+category);select.replaceChildren();
+ const blank=document.createElement("option");
+ blank.value="";blank.textContent="— NO "+({shirt:"BAJU",pants:"CELANA",shoes:"SEPATU",
+   helmet:"HELM",bag:"TAS"}[category]||category.toUpperCase())+" —";
+ select.append(blank);
+ const options=accessoryRuntime.items.filter(x=>x.category===category&&
+  (x.template_base||"astrofrich_base")===base);
+ for(const entry of options){
+  const option=document.createElement("option");option.value=entry.id;
+  option.textContent=entry.name||"UNNAMED";select.append(option);
  }
- const base=baseAstrofrich();
+ select.value=options.some(x=>x.id===previous)?previous:"";
+}
+function populateCustomAccessories(){
+ const baseId=customBaseId(),human=HUMAN_BASES.includes(baseId);
+ $("astrofrich-outfit-slots").hidden=human;$("human-outfit-slots").hidden=!human;
+ $("custom-base-summary").textContent=human?"HUMAN":"ASTROFRICH";
+ for(const kind of EQUIPMENT_SLOTS)filterEquippedOptions(baseId,kind,$("custom-"+kind).value);
+ const base=templateFor(baseId);
  $("custom-animation-count").textContent=base?
-  "ASTROFRICH · "+base.motions.filter(x=>x.available).length+" ANIMATIONS · "+
-   base.expressions.length+" EXPRESSIONS · 4 DIRECTIONS":
-  "ASTROFRICH TEMPLATE LOADING";
+  base.template_category.toUpperCase()+" · "+base.motions.filter(m=>m.available).length+
+  " ANIMATIONS · "+base.expressions.length+" EXPRESSIONS · 4 DIRECTIONS":
+  "TEMPLATE LOADING";
+}
+function syncCustomCategory(){
+ const category=$("custom-category").value;
+ const desired=category==="human"?"human_male_base":"astrofrich_base";
+ if((category==="human")!==HUMAN_BASES.includes(customBaseId()))$("custom-base").value=desired;
+ for(const opt of $("custom-base").options)opt.hidden=(category==="human")!==(HUMAN_BASES.includes(opt.value));
+ populateCustomAccessories();
 }
 function editCustomCharacter(id){
  const row=savedCustomCharacters().find(x=>x.id===id);if(!row)return;
- workingCustomId=row.id;
- $("custom-name").value=row.name;
+ workingCustomId=row.id;$("custom-name").value=row.name;
+ $("custom-category").value=HUMAN_BASES.includes(row.base)?"human":"astrofrich";
+ $("custom-base").value=row.base;syncCustomCategory();
  const equipped=accessoryRuntime.equipment[row.id]||{};
- populateCustomAccessories();
- $("custom-helmet").value=equipped.helmet||"";
- $("custom-bag").value=equipped.bag||"";
- setInspectorTab("custom");
- setStatus("EDIT CUSTOM CHAR: "+row.name.toUpperCase());
+ for(const kind of EQUIPMENT_SLOTS)filterEquippedOptions(row.base,kind,equipped[kind]);
+ setInspectorTab("custom");setStatus("EDIT CUSTOM CHAR: "+row.name.toUpperCase());
 }
 function resetCustomForm(){
  workingCustomId=null;$("custom-name").value="";
  $("custom-category").value="astrofrich";$("custom-base").value="astrofrich_base";
- populateCustomAccessories();
- $("custom-helmet").value="";$("custom-bag").value="";
+ syncCustomCategory();
+ for(const kind of EQUIPMENT_SLOTS)$("custom-"+kind).value="";
 }
 function saveCustomCharacter(){
- const base=baseAstrofrich();
- if(!base){setStatus("ASTROFRICH BASE NOT YET AVAILABLE");return}
+ const baseId=customBaseId(),base=templateFor(baseId);
+ if(!base){setStatus("CUSTOM BASE NOT YET AVAILABLE: "+baseId);return}
  const name=$("custom-name").value.trim().replace(/\s+/g," ").slice(0,40);
  if(!name){setStatus("ENTER A CHARACTER NAME BEFORE SAVING");$("custom-name").focus();return}
- if(savedCustomCharacters().length>=60&&!workingCustomId){setStatus("CHARACTER STORAGE LIMIT: 60");return}
  const rows=savedCustomCharacters();
+ if(rows.length>=60&&!workingCustomId){setStatus("CHARACTER STORAGE LIMIT: 60");return}
  let id=workingCustomId;
  if(!id||!rows.some(x=>x.id===id)){
-  id="custom_astro_"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
+  id="custom_"+(base.template_category==="human"?"human":"astro")+"_"+
+    Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
  }
- const record={id,name,base:"astrofrich_base",category:"astrofrich",updated:Date.now()};
+ const record={id,name,base:baseId,category:base.template_category,updated:Date.now()};
  const index=rows.findIndex(x=>x.id===id);
  if(index<0)rows.unshift(record);else rows[index]=record;
- const slots={helmet:$("custom-helmet").value,bag:$("custom-bag").value};
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
- equipment[id]={...slots};
- try{
-  localStorage.setItem(CHAR_STORAGE,JSON.stringify(rows));
-  localStorage.setItem(ACCESSORY_EQUIP,JSON.stringify(equipment));
- }catch(error){setStatus("CHARACTER STORAGE FULL · EXPORT ACCESSORIES AND CLEAR OLD ITEMS");return}
- workingCustomId=id;
- accessoryRuntime.equipment=equipment;
+ const slots={};
+ for(const kind of EQUIPMENT_SLOTS){
+  const found=accessoryRuntime.items.find(x=>x.id===$("custom-"+kind).value &&
+   (x.template_base||"astrofrich_base")===baseId && x.category===kind);
+  if(found)slots[kind]=found.id;
+ }
+ equipment[id]=slots;
+ try{localStorage.setItem(CHAR_STORAGE,JSON.stringify(rows));
+  localStorage.setItem(ACCESSORY_EQUIP,JSON.stringify(equipment));}
+ catch(e){setStatus("CHARACTER STORAGE FULL: CLEAR OLD ITEMS OR EXPORT PNG");return}
+ workingCustomId=id;accessoryRuntime.equipment=equipment;
  rebuildCustomCharacters();
- const character=state.characters.find(x=>x.id===id);
- if(character){selectCharacter(character);setInspectorTab("custom")}
- setStatus("SAVED "+name.toUpperCase()+" TO CHARACTER STORAGE · "+
-  base.motions.filter(x=>x.available).length+" MOTIONS / "+base.expressions.length+" FACES / 4 DIRECTIONS");
+ const actor=state.characters.find(x=>x.id===id);
+ if(actor){selectCharacter(actor);setInspectorTab("custom")}
+ setStatus("SAVED "+name.toUpperCase()+" / "+base.template_category.toUpperCase()+
+  " / "+base.motions.filter(x=>x.available).length+" MOTIONS / "+
+  base.expressions.length+" FACES / 4 DIRECTIONS");
 }
 function deleteCustomCharacter(id){
- const character=savedCustomCharacters().find(x=>x.id===id);
- if(!character||!confirm("Delete custom character "+character.name+"? Accessory assets remain in Storage."))return;
+ const record=savedCustomCharacters().find(x=>x.id===id);
+ if(!record||!confirm("Delete custom character "+record.name+"? Accessories remain in Storage."))return;
  const rows=savedCustomCharacters().filter(x=>x.id!==id);
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
  delete equipment[id];
  try{localStorage.setItem(CHAR_STORAGE,JSON.stringify(rows));
   localStorage.setItem(ACCESSORY_EQUIP,JSON.stringify(equipment));}
- catch(error){setStatus("STORAGE ERROR");return}
+ catch(e){setStatus("STORAGE ERROR");return}
  if(workingCustomId===id)resetCustomForm();
- if(state.selected?.id===id){const base=baseAstrofrich();if(base)selectCharacter(base)}
+ if(state.selected?.id===id){const original=templateFor(record.base);if(original)selectCharacter(original)}
  accessoryRuntime.equipment=equipment;rebuildCustomCharacters();
- setStatus("DELETED CUSTOM CHARACTER · ACCESSORIES RETAINED");
+ setStatus("DELETED CUSTOM CHARACTER, OUTFIT ASSETS RETAINED");
 }
 function renderCustomStorage(){
  const list=$("custom-storage-list");if(!list)return;
- list.replaceChildren();
- const rows=savedCustomCharacters();
+ list.replaceChildren();const rows=savedCustomCharacters();
  if(!rows.length){
   const p=document.createElement("p");p.className="accessory-note";
-  p.textContent="NO CUSTOM CHARACTERS YET. ENTER A NAME TO SAVE AN ASTROFRICH.";list.append(p);
+  p.textContent="NO CUSTOM CHARACTERS YET. CHOOSE ASTROFRICH OR HUMAN, NAME, AND SAVE.";list.append(p);
  }
  for(const row of rows){
-  const node=document.createElement("div");node.className="custom-item";
-  const heading=document.createElement("strong");heading.textContent=row.name;
-  const meta=document.createElement("small");meta.textContent="ASTROFRICH · 7 MOTIONS · 5 FACES";
-  heading.append(meta);
+  const item=document.createElement("div");item.className="custom-item";
+  const label=document.createElement("strong");label.textContent=row.name;
+  const meta=document.createElement("small");meta.textContent=
+   (HUMAN_BASES.includes(row.base)?"HUMAN "+(row.base.includes("female")?"FEMALE":"MALE"):"ASTROFRICH")+
+   " · 7 MOTIONS · 5 FACES";
+  label.append(meta);
   const open=document.createElement("button");open.type="button";open.className="chrome-button";
   open.textContent="OPEN";open.onclick=()=>{
    const actor=state.characters.find(x=>x.id===row.id);
@@ -556,9 +582,8 @@ function renderCustomStorage(){
    editCustomCharacter(row.id);
   };
   const del=document.createElement("button");del.type="button";del.className="chrome-button";
-  del.textContent="×";del.setAttribute("aria-label","Delete "+row.name);
-  del.onclick=()=>deleteCustomCharacter(row.id);
-  node.append(heading,open,del);list.append(node);
+  del.textContent="×";del.setAttribute("aria-label","Delete "+row.name);del.onclick=()=>deleteCustomCharacter(row.id);
+  item.append(label,open,del);list.append(item);
  }
 }
 
@@ -988,10 +1013,18 @@ $("tab-faces").addEventListener("click", () => setInspectorTab("faces"));
 $("tab-motions").addEventListener("click", () => setInspectorTab("motions"));
 $("tab-accessories").addEventListener("click", () => setInspectorTab("accessories"));
 $("tab-custom-char").addEventListener("click", () => setInspectorTab("custom"));
+$("custom-category").addEventListener("change",syncCustomCategory);
+$("custom-base").addEventListener("change",()=>{
+ $("custom-category").value=HUMAN_BASES.includes(customBaseId())?"human":"astrofrich";
+ syncCustomCategory();
+});
 $("custom-save").addEventListener("click",saveCustomCharacter);
 $("custom-new").addEventListener("click",()=>{resetCustomForm();setInspectorTab("custom");});
 $("custom-draw-helmet").addEventListener("click",()=>openAccessoryEditor("helmet"));
 $("custom-draw-bag").addEventListener("click",()=>openAccessoryEditor("bag"));
+$("custom-draw-shirt").addEventListener("click",()=>openAccessoryEditor("shirt"));
+$("custom-draw-pants").addEventListener("click",()=>openAccessoryEditor("pants"));
+$("custom-draw-shoes").addEventListener("click",()=>openAccessoryEditor("shoes"));
 
 $("make-helmet").addEventListener("click", () => openAccessoryEditor("helmet"));
 $("make-bag").addEventListener("click", () => openAccessoryEditor("bag"));
@@ -1047,7 +1080,7 @@ async function init() {
     const total = String(state.characters.length).padStart(2, "0");
     $("asset-total").textContent = total;
     $("status-asset-count").textContent = total;
-    populateCustomAccessories();
+    syncCustomCategory();
     renderFileList();
     if (!state.characters.length) {
       $("canvas-loading").hidden = true;
