@@ -374,8 +374,10 @@ function accessoryFor(actor,category){
 function drawEquippedAccessory(x,y,z,dirIndex){
  if(!state.selected)return;
  const dirs=["se","sw","ne","nw"];
- for(const category of ["bag","helmet"]){
+ for(const category of EQUIPMENT_SLOTS){
   const item=accessoryFor(state.selected.id,category),src=item?.frames?.[dirs[dirIndex]];
+  const selectedBase=state.selected.base_id||state.selected.id;
+  if(item&&(item.template_base||"astrofrich_base")!==selectedBase)continue;
   if(typeof src!=="string"||!src.startsWith("data:image/png;base64,")||src.length>100000)continue;
   let image=state.imageCache.get(src);
   if(!image)image=cachedImage(src,()=>draw());
@@ -388,12 +390,13 @@ function renderAccessoryStorage(){
  const list=$("accessory-storage-list");if(!list)return;
  list.replaceChildren();
  const actor=state.selected?.id||"";
+ const selectedBase=state.selected?.base_id||state.selected?.id||"";
  const current=accessoryRuntime.equipment[actor]||{};
  if(!accessoryRuntime.items.length){
   const empty=document.createElement("p");empty.className="accessory-note";
   empty.textContent="STORAGE EMPTY. CUSTOM HELM OR TAS TO START.";list.append(empty);
  }
- for(const item of accessoryRuntime.items){
+ for(const item of accessoryRuntime.items.filter(x=>(x.template_base||"astrofrich_base")===selectedBase)){
   const row=document.createElement("div");row.className="accessory-item";
   const name=document.createElement("div");name.className="accessory-name";
   name.textContent=item.name||"UNNAMED ACCESSORY";
@@ -420,13 +423,17 @@ function renderAccessoryStorage(){
  $("accessory-equipped").textContent=count.length?"EQUIPPED / "+count.join(" · "):"NO ACCESSORIES ATTACHED TO "+(actor||"CHARACTER").toUpperCase();
 }
 function openAccessoryEditor(category){
- if(!["helmet","bag"].includes(category))return;
+ if(!EQUIPMENT_SLOTS.includes(category))return;
  const overlay=$("pixel-editor-overlay");
  overlay.hidden=false;document.body.classList.add("pixel-editor-open");
- $("pixel-editor-heading-title").textContent="AKSESORIS / "+(category==="helmet"?"CUSTOM HELM":"CUSTOM TAS")+" — PAINT";
+ $("pixel-editor-heading-title").textContent="AKSESORIS / "+
+  ({helmet:"HELM",bag:"TAS",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU"}[category])+" — PAINT";
  const url=new URL("./accessory-editor.html",window.location.href);
  url.searchParams.set("embedded","1");url.searchParams.set("actor",state.selected?.id||"legacy_theodore");
- url.searchParams.set("category",category);url.searchParams.set("version","accessories-v1");
+ const base=(category==="helmet"||category==="bag")?"astrofrich_base":
+  (HUMAN_BASES.includes(customBaseId())?customBaseId():"human_male_base");
+ url.searchParams.set("category",category);url.searchParams.set("base",base);
+ url.searchParams.set("version","human-outfits-v1");
  url.searchParams.set("refresh",String(Date.now()));
  $("pixel-editor-embed").src=url.href;$("close-pixel-editor").focus();
 }
@@ -1074,7 +1081,7 @@ async function init() {
     if (!response.ok) throw new Error("HTTP " + response.status);
     const payload = await response.json();
     if (!Array.isArray(payload.characters)) throw new Error("BAD CATALOG");
-    catalogCharacters=payload.characters;
+    catalogCharacters=payload.characters.filter(c=>!["otis","legacy_otis"].includes(c.id));
     state.characters=payload.characters;
     rebuildCustomCharacters();
     const total = String(state.characters.length).padStart(2, "0");
