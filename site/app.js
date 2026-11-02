@@ -470,6 +470,62 @@ function tick(time) {
   requestAnimationFrame(tick);
 }
 
+function saveCanvasPNG(out, name) {
+  // User-initiated local export; no source sprites uploaded to any server.
+  const link = document.createElement("a");
+  link.download = name;
+  link.href = out.toDataURL("image/png");
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
+function exportActionSheet() {
+  const action = state.motion || state.selected?.motions?.find(m => m.id === "walk");
+  if (!state.selected || !action?.available || !state.image?.naturalWidth) {
+    setStatus("MOTION NOT RIGGED FOR THIS CHARACTER.");
+    return;
+  }
+  const source = action.source === "custom" ? state.motionImage : state.image;
+  if (!source?.naturalWidth) return setStatus("ACTION SPRITE NOT YET LOADED.");
+  const out = document.createElement("canvas");
+  out.width = 64 * action.frames;
+  out.height = 112 * 4;
+  const context = out.getContext("2d");
+  context.imageSmoothingEnabled = false;
+  for (let dir = 0; dir < 4; dir++) for (let frame = 0; frame < action.frames; frame++) {
+    context.drawImage(source, frame * 64, (action.row + dir) * 112, 64, 112,
+      frame * 64, dir * 112, 64, 112);
+  }
+  saveCanvasPNG(out, state.selected.id + "_" + action.id + "_4dir.png");
+  setStatus("EXPORTED: " + action.id.toUpperCase() + " / " + state.selected.id.toUpperCase());
+}
+
+function exportFaceSheet() {
+  if (!state.selected || !state.expression || !state.image?.naturalWidth) return;
+  const frames = state.selected.idle_frames || 4;
+  const out = document.createElement("canvas");
+  out.width = frames * 64;
+  out.height = 112 * 4;
+  const context = out.getContext("2d");
+  context.imageSmoothingEnabled = false;
+  for (let dir = 0; dir < 4; dir++) {
+    for (let frame = 0; frame < frames; frame++) {
+      const row = (state.selected.row_starts?.idle ?? 4) + dir;
+      const sourceX = frame * 64, sourceY = row * 112;
+      const x = frame * 64, y = dir * 112;
+      context.drawImage(state.image,sourceX,sourceY,64,112,x,y,64,112);
+      if (state.faceOverlay?.naturalWidth)
+        context.drawImage(state.faceOverlay,sourceX,sourceY,64,112,x,y,64,112);
+      // Showcase the blink on frame 2 of the native idle breathing cycle.
+      if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
+        context.drawImage(state.blinkOverlay,sourceX,sourceY,64,112,x,y,64,112);
+    }
+  }
+  saveCanvasPNG(out,state.selected.id + "_" + state.expression.id + "_face_4dir.png");
+  setStatus("EXPORTED: ANIMATED FACE / " + state.expression.id.toUpperCase());
+}
+
 function renderPalette() {
   const grid = $("swatches");
   grid.replaceChildren();
@@ -532,6 +588,8 @@ $("tool-next").addEventListener("click", () => selectNext(1));
 $("tab-info").addEventListener("click", () => setInspectorTab("info"));
 $("tab-faces").addEventListener("click", () => setInspectorTab("faces"));
 $("tab-motions").addEventListener("click", () => setInspectorTab("motions"));
+$("export-motion").addEventListener("click", exportActionSheet);
+$("export-face").addEventListener("click", exportFaceSheet);
 $("menu-edit").addEventListener("click", () => setInspectorTab("faces"));
 $("menu-view").addEventListener("click", toggleGrid);
 $("return-walk").addEventListener("click", () => { startWalking(); setInspectorTab("info"); });
