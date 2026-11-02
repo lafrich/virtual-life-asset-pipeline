@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#c9c8c4">
 <title>AKSESORIS — Virtual Life Paint</title>
 <link rel="stylesheet" href="./pixel-editor.css?v=accessories-v1">
-<link rel="stylesheet" href="./accessory-editor.css?v=astrofrich-4side-v1">
+<link rel="stylesheet" href="./accessory-editor.css?v=human-outfits-1">
 <script defer src="./pixel-edit-core.js?v=accessories-v1"></script>
-<script defer src="./accessory-editor.js?v=astrofrich-4side-v1"></script>
+<script defer src="./accessory-editor.js?v=human-outfits-1"></script>
 </head>
 <body class="embedded">
 <main class="paint accessory-paint">
-<div class="accessory-heading">AKSESORIS.PNT <span>THEODORE · BASE 64×112</span></div>
+<div class="accessory-heading">AKSESORIS.PNT <span id="acc-base-label">4-SIDE 64×112</span></div>
 <div class="accessory-status" id="acc-status" role="status">LOADING THEODORE FITTING GUIDE...</div>
 <div class="accessory-layout">
 <section class="acc-workarea">
@@ -67,9 +67,9 @@
 <div class="acc-panel-head">1. CATEGORY / VIEW</div>
 <div class="acc-categories" role="group" aria-label="Accessory category">
 <button id="acc-helmet" type="button" class="active">HELM</button>
-<button id="acc-bag" type="button">TAS</button>
+<button id="acc-bag" type="button">TAS</button><button id="acc-shirt" type="button">BAJU</button><button id="acc-pants" type="button">CELANA</button><button id="acc-shoes" type="button">SEPATU</button>
 </div>
-<div class="acc-note">BASE: Theodore, kepala botak + kacamata. <b>Tanpa helm dan tas bawaan</b>. Guide untuk SE, SW, NE, NW selalu mengikuti arah masing-masing, tidak dicerminkan otomatis. Guide tidak ikut tersimpan.</div>
+<div class="acc-note" id="acc-guide-description">Modular fitting guide for SE / SW / NE / NW. Only editable accessory pixels are saved—not the body guide.</div>
 <p id="acc-direction-progress" class="acc-note">4 VIEWS REQUIRED: SE · SW · NE · NW</p>
 <div class="acc-directions" role="group" aria-label="4-view sprite directions">
 <button type="button" data-acc-dir="se" class="active">SE</button>
@@ -99,7 +99,7 @@
 <div class="acc-note" id="acc-equipped">EQUIPMENT STATUS: NONE</div>
 <div class="acc-panel-head">4. LIVE PREVIEW</div>
 <canvas id="acc-preview" width="256" height="448" aria-label="Theodore wearing custom accessory, guide never included in export"></canvas>
-<div class="acc-note">Keempat sisi SE / SW / NE / NW wajib digambar sebelum SAVE TO STORAGE. Draft tetap otomatis tersimpan meskipun belum lengkap. Storage dan equipment tersimpan di browser ini. Original sprite tidak ditimpa.</div>
+<div class="acc-note">Keempat sisi SE / SW / NE / NW wajib digambar sebelum SAVE TO STORAGE. Baju, celana, sepatu hanya untuk base HUMAN dengan tubuh yang cocok. Draft tetap otomatis tersimpan meskipun belum lengkap. Storage dan equipment tersimpan di browser ini. Original sprite tidak ditimpa.</div>
 </aside>
 </div>
 </main>
