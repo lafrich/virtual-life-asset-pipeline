@@ -1,0 +1,30 @@
+{
+  "id": "template_emote_loop",
+  "name": "EMOTE LOOP",
+  "group": "action",
+  "status": "template",
+  "note": "IDLE → EXPRESSION → IDLE • STARTER",
+  "source": "tools/new_animation_template.py",
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "layout": "four_up",
+  "frame_count": 4,
+  "frame_ms": [
+    240,
+    180,
+    240,
+    300
+  ],
+  "loop": true,
+  "preset": "emote_loop",
+  "example_phases": [
+    "idle",
+    "emote",
+    "emote_hold",
+    "reset"
+  ]
+}
