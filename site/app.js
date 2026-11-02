@@ -362,6 +362,8 @@ function refreshAccessoryEquipment(){
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
  accessoryRuntime.equipment=equipment&&typeof equipment==="object"?equipment:{};
  renderAccessoryStorage();
+ populateCustomAccessories();
+ renderCustomStorage();
  draw();
 }
 window.VirtualLifeAccessoryRefresh=refreshAccessoryEquipment;
@@ -429,17 +431,150 @@ function openAccessoryEditor(category){
  $("pixel-editor-embed").src=url.href;$("close-pixel-editor").focus();
 }
 
+
+/* Astrofrich Custom Characters: immutable original base sprite + equipment
+   references. Saved characters inherit all source-authored motions/faces. */
+const CHAR_STORAGE="virtual-life-character-storage-v1";
+let catalogCharacters=[],workingCustomId=null;
+function savedCustomCharacters(){
+ const rows=readAccessoryJson(CHAR_STORAGE,[]);
+ return Array.isArray(rows)?rows.filter(x=>x&&typeof x.id==="string"&&
+  /^custom_astro_[a-z0-9-]+$/.test(x.id)&&typeof x.name==="string"&&
+  x.name.length<=40&&x.base==="astrofrich_base").slice(0,60):[];
+}
+function baseAstrofrich(){return catalogCharacters.find(x=>x.id==="astrofrich_base")||null;}
+function hydrateCharacter(row,base){
+ return {...base,id:row.id,name:row.name,type:"npc",template:false,
+  template_category:"astrofrich",custom_character:true,base_id:base.id,
+  description:"Astrofrich · "+row.name+" · modular 4-view equipment · original motion & expression atlas"};
+}
+function rebuildCustomCharacters(){
+ const base=baseAstrofrich(),oldId=state.selected?.id;
+ state.characters=[...catalogCharacters,
+  ...(base?savedCustomCharacters().map(row=>hydrateCharacter(row,base)):[])];
+ const updated=state.characters.find(x=>x.id===oldId);
+ if(updated&&state.selected?.custom_character)state.selected=updated;
+ const total=String(state.characters.length).padStart(2,"0");
+ $("asset-total").textContent=total;$("status-asset-count").textContent=total;
+ renderCustomStorage();renderFileList(false);
+}
+function populateCustomAccessories(){
+ const selectedHelmet=$("custom-helmet").value,selectedBag=$("custom-bag").value;
+ for(const [id,kind,active] of [["custom-helmet","helmet",selectedHelmet],["custom-bag","bag",selectedBag]]){
+  const select=$(id);select.replaceChildren();
+  const blank=document.createElement("option");blank.value="";blank.textContent=kind==="helmet"?"— NO HELMET —":"— NO BAG —";
+  select.append(blank);
+  for(const a of accessoryRuntime.items.filter(x=>x.category===kind)){
+   const option=document.createElement("option");option.value=a.id;option.textContent=a.name||"UNNAMED";
+   select.append(option);
+  }
+  select.value=Array.from(select.options).some(x=>x.value===active)?active:"";
+ }
+ const base=baseAstrofrich();
+ $("custom-animation-count").textContent=base?
+  "ASTROFRICH · "+base.motions.filter(x=>x.available).length+" ANIMATIONS · "+
+   base.expressions.length+" EXPRESSIONS · 4 DIRECTIONS":
+  "ASTROFRICH TEMPLATE LOADING";
+}
+function editCustomCharacter(id){
+ const row=savedCustomCharacters().find(x=>x.id===id);if(!row)return;
+ workingCustomId=row.id;
+ $("custom-name").value=row.name;
+ const equipped=accessoryRuntime.equipment[row.id]||{};
+ populateCustomAccessories();
+ $("custom-helmet").value=equipped.helmet||"";
+ $("custom-bag").value=equipped.bag||"";
+ setInspectorTab("custom");
+ setStatus("EDIT CUSTOM CHAR: "+row.name.toUpperCase());
+}
+function resetCustomForm(){
+ workingCustomId=null;$("custom-name").value="";
+ $("custom-category").value="astrofrich";$("custom-base").value="astrofrich_base";
+ populateCustomAccessories();
+ $("custom-helmet").value="";$("custom-bag").value="";
+}
+function saveCustomCharacter(){
+ const base=baseAstrofrich();
+ if(!base){setStatus("ASTROFRICH BASE NOT YET AVAILABLE");return}
+ const name=$("custom-name").value.trim().replace(/\s+/g," ").slice(0,40);
+ if(!name){setStatus("ENTER A CHARACTER NAME BEFORE SAVING");$("custom-name").focus();return}
+ if(savedCustomCharacters().length>=60&&!workingCustomId){setStatus("CHARACTER STORAGE LIMIT: 60");return}
+ const rows=savedCustomCharacters();
+ let id=workingCustomId;
+ if(!id||!rows.some(x=>x.id===id)){
+  id="custom_astro_"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
+ }
+ const record={id,name,base:"astrofrich_base",category:"astrofrich",updated:Date.now()};
+ const index=rows.findIndex(x=>x.id===id);
+ if(index<0)rows.unshift(record);else rows[index]=record;
+ const slots={helmet:$("custom-helmet").value,bag:$("custom-bag").value};
+ const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
+ equipment[id]={...slots};
+ try{
+  localStorage.setItem(CHAR_STORAGE,JSON.stringify(rows));
+  localStorage.setItem(ACCESSORY_EQUIP,JSON.stringify(equipment));
+ }catch(error){setStatus("CHARACTER STORAGE FULL · EXPORT ACCESSORIES AND CLEAR OLD ITEMS");return}
+ workingCustomId=id;
+ accessoryRuntime.equipment=equipment;
+ rebuildCustomCharacters();
+ const character=state.characters.find(x=>x.id===id);
+ if(character){selectCharacter(character);setInspectorTab("custom")}
+ setStatus("SAVED "+name.toUpperCase()+" TO CHARACTER STORAGE · "+
+  base.motions.filter(x=>x.available).length+" MOTIONS / "+base.expressions.length+" FACES / 4 DIRECTIONS");
+}
+function deleteCustomCharacter(id){
+ const character=savedCustomCharacters().find(x=>x.id===id);
+ if(!character||!confirm("Delete custom character "+character.name+"? Accessory assets remain in Storage."))return;
+ const rows=savedCustomCharacters().filter(x=>x.id!==id);
+ const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
+ delete equipment[id];
+ try{localStorage.setItem(CHAR_STORAGE,JSON.stringify(rows));
+  localStorage.setItem(ACCESSORY_EQUIP,JSON.stringify(equipment));}
+ catch(error){setStatus("STORAGE ERROR");return}
+ if(workingCustomId===id)resetCustomForm();
+ if(state.selected?.id===id){const base=baseAstrofrich();if(base)selectCharacter(base)}
+ accessoryRuntime.equipment=equipment;rebuildCustomCharacters();
+ setStatus("DELETED CUSTOM CHARACTER · ACCESSORIES RETAINED");
+}
+function renderCustomStorage(){
+ const list=$("custom-storage-list");if(!list)return;
+ list.replaceChildren();
+ const rows=savedCustomCharacters();
+ if(!rows.length){
+  const p=document.createElement("p");p.className="accessory-note";
+  p.textContent="NO CUSTOM CHARACTERS YET. ENTER A NAME TO SAVE AN ASTROFRICH.";list.append(p);
+ }
+ for(const row of rows){
+  const node=document.createElement("div");node.className="custom-item";
+  const heading=document.createElement("strong");heading.textContent=row.name;
+  const meta=document.createElement("small");meta.textContent="ASTROFRICH · 7 MOTIONS · 5 FACES";
+  heading.append(meta);
+  const open=document.createElement("button");open.type="button";open.className="chrome-button";
+  open.textContent="OPEN";open.onclick=()=>{
+   const actor=state.characters.find(x=>x.id===row.id);
+   if(actor)selectCharacter(actor);
+   editCustomCharacter(row.id);
+  };
+  const del=document.createElement("button");del.type="button";del.className="chrome-button";
+  del.textContent="×";del.setAttribute("aria-label","Delete "+row.name);
+  del.onclick=()=>deleteCustomCharacter(row.id);
+  node.append(heading,open,del);list.append(node);
+ }
+}
+
 function setInspectorTab(tab) {
   const isFace = tab === "faces";
   const isMotion = tab === "motions";
   const isAccessories = tab === "accessories";
-  $("info-panel").hidden = isFace || isMotion || isAccessories;
+  const isCustom = tab === "custom";
+  $("info-panel").hidden = isFace || isMotion || isAccessories || isCustom;
   $("faces-panel").hidden = !isFace;
   $("motions-panel").hidden = !isMotion;
   $("accessories-panel").hidden = !isAccessories;
-  for (const [id,active] of [["tab-info", !isFace && !isMotion && !isAccessories],
+  $("custom-char-panel").hidden = !isCustom;
+  for (const [id,active] of [["tab-info", !isFace && !isMotion && !isAccessories && !isCustom],
                              ["tab-faces", isFace], ["tab-motions", isMotion],
-                             ["tab-accessories", isAccessories]]) {
+                             ["tab-accessories", isAccessories],["tab-custom-char",isCustom]]) {
     $(id).classList.toggle("active",active);
     $(id).setAttribute("aria-selected",String(active));
   }
@@ -454,6 +589,7 @@ function setInspectorTab(tab) {
     if (choice) selectMotion(choice);
   }
   if(isAccessories)renderAccessoryStorage();
+  if(isCustom){populateCustomAccessories();renderCustomStorage();}
   syncTools();
 }
 
@@ -851,10 +987,15 @@ $("tab-info").addEventListener("click", () => setInspectorTab("info"));
 $("tab-faces").addEventListener("click", () => setInspectorTab("faces"));
 $("tab-motions").addEventListener("click", () => setInspectorTab("motions"));
 $("tab-accessories").addEventListener("click", () => setInspectorTab("accessories"));
+$("tab-custom-char").addEventListener("click", () => setInspectorTab("custom"));
+$("custom-save").addEventListener("click",saveCustomCharacter);
+$("custom-new").addEventListener("click",()=>{resetCustomForm();setInspectorTab("custom");});
+
 $("make-helmet").addEventListener("click", () => openAccessoryEditor("helmet"));
 $("make-bag").addEventListener("click", () => openAccessoryEditor("bag"));
 window.addEventListener("storage",event=>{
  if(event.key===ACCESSORY_STORE||event.key===ACCESSORY_EQUIP)refreshAccessoryEquipment();
+ if(event.key===CHAR_STORAGE)rebuildCustomCharacters();
 });
 $("export-motion").addEventListener("click", exportActionSheet);
 $("export-face").addEventListener("click", exportFaceSheet);
@@ -898,10 +1039,13 @@ async function init() {
     if (!response.ok) throw new Error("HTTP " + response.status);
     const payload = await response.json();
     if (!Array.isArray(payload.characters)) throw new Error("BAD CATALOG");
-    state.characters = payload.characters;
+    catalogCharacters=payload.characters;
+    state.characters=payload.characters;
+    rebuildCustomCharacters();
     const total = String(state.characters.length).padStart(2, "0");
     $("asset-total").textContent = total;
     $("status-asset-count").textContent = total;
+    populateCustomAccessories();
     renderFileList();
     if (!state.characters.length) {
       $("canvas-loading").hidden = true;
