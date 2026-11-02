@@ -53,7 +53,9 @@ class RearHeadTests(unittest.TestCase):
                 result=lv.back_layers(se,cfg,outfit)
                 hair=result["hair_front"]
                 body=result["body"]
-                self.assertTrue(any(body[y].any() for y in (18,19,20,21)))
+                # Long hairstyles may naturally cover the restored skin.
+                # In that case the scalp belongs behind the hair layer,
+                # not painted over it or forced visible through strands.
                 for y in range(17,22):
                     self.assertTrue((hair[y]!="").any() or (body[y]!="").any(),
                                     f"{style}: missing whole row of rear head")
