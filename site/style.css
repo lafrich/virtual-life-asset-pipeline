@@ -137,7 +137,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px dotted #141
   .asset-footer{display:none}
   .canvas-panel{order:2;border-right:0;border-bottom:2px solid #777}
   .canvas-head{height:31px}.canvas-space{height:min(85vw,480px);min-height:300px;flex:none;margin:7px 8px}
-  .selection-border{inset:9px}.crosshair{font-size:27px}.canvas-corner-label{font-size:8px;left:17px;bottom:15px}
+  .selection-border{inset:9px}.canvas-corner-label{font-size:8px;left:17px;bottom:15px}
   .canvas-toolbar{min-height:48px;padding:6px;gap:5px}.primary-control{width:75px}.directions{gap:2px}
   .dir{padding:8px 4px;font-size:10px}.canvas-scale{font-size:10px}
   .details-panel{order:3;border-top:2px solid #f4f2ed}
