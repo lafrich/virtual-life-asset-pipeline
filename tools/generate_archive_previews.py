@@ -12,6 +12,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 STEPS = [
+    # Original player avatar uses the same game-native 44-row v6b rig.
+    ("ichsan_player", ["chars-iso/v6b/tools/live_v6b.py", "chars-iso/v6b/live/chars/ichsan.json"], 150, True),
     # Original game-native NPCS (18 named NPCs).
     ("native_v6b_roster", ["chars-iso/v6b/tools/npc_v6b.py"], 240, True),
     # Named characters with their own visual rig and multi-action frame sets.
