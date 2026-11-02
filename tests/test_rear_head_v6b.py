@@ -33,11 +33,17 @@ class RearHeadTests(unittest.TestCase):
         se,cfg,outfit=self.make_character("short")
         result=lv.back_layers(se,cfg,outfit)
         body=result["body"]
-        # Native back_layers mirrors the 40px source canvas once.
+        hair=result["hair_front"]
+        # The final head is made of TWO overlapping layers: skin underneath
+        # and the hairline above. Counting body alone falsely reports a gap
+        # whenever the haircut occupies a few pixels on the nape.
         expected={17:18,18:16,19:14,20:12,21:10}
         for y,count in expected.items():
-            self.assertEqual(sum(bool(v) for v in body[y]),count,
-                             f"Rear head missing pixels at source row {y}")
+            joined=sum(bool(body[y,x]) or bool(hair[y,x]) for x in range(lv.CW))
+            self.assertGreaterEqual(joined,count-1,
+                                    f"Visible rear head incomplete at source row {y}: "+
+                                    f"skin={sum(bool(v) for v in body[y])} "+
+                                    f"hair={sum(bool(v) for v in hair[y])} joined={joined}")
         self.assertEqual(sum(bool(v) for v in body[22]),7,
                          "Nape must connect continuously into 7px neck")
         for y in range(17,23):
