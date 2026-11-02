@@ -33,7 +33,7 @@ class HumanOutlineTest(unittest.TestCase):
         self.assertEqual(out.size,(64,112))
         self.assertTrue(np.array_equal(result[...,3],pixels[...,3]),
                         "Silhouette cannot alter visible area/anchor")
-        for x,y in ((20,72),(43,72),(24,64),(39,64),(25,91),(39,91),
+        for x,y in ((20,72),(43,72),(24,54),(39,54),(25,91),(39,91),
                     (23,102),(42,102)):
             self.assertTrue(np.array_equal(result[y,x,:3],dark),
                             f"Missing one-pixel outline on anatomy at {(x,y)}")
