@@ -97,3 +97,9 @@ read `assets/...` (repo-root relative).
 ## Not included (on purpose)
 Generated outputs (PNG/GIF/MP4/frames — re-create them), old `_prev*` iterations, scratch files, reference photos
 (people, a pet, third-party brands), the game's `index.html`, test harnesses with logins, files > 600 KB. See `run_all.md` → "Known gaps".
+
+## Character Stock landing page
+
+View the automatically generated character gallery at **https://lafrich.github.io/virtual-life-asset-pipeline/** (after the repository's GitHub Pages is enabled).
+
+The site uses only static HTML/CSS/JavaScript. `tools/build_character_catalog.py` scans new committed v6b character manifests, validates their sprites, and generates the live catalog and walking-GIF thumbnails. The `.github/workflows/deploy-character-catalog.yml` workflow rebuilds it on commits to `main` and publishes through GitHub Pages. No manual edits to the landing page are required for new characters. See `assets/character_stock/README.md` for naming and required files.

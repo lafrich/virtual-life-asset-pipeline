@@ -4,7 +4,13 @@ This is the repository's **permanent, game-ready character library**. It is sepa
 
 ## Catalog
 
-The machine-readable index is `assets/character_stock/index.json`. Every character entry links to its source generator, transparent sprite sheet, walking GIF, and manifest.
+The landing page is built automatically from committed `assets/npc_*/manifest.json` and `assets/player_*/manifest.json` files by `tools/build_character_catalog.py`. It requires a transparent 384×4928 v6b sprite sheet and an original four-direction walking GIF, then generates a clean catalog preview from the sheet itself. **Do not edit the landing-page HTML to add a character.**
+
+The machine-readable `assets/character_stock/index.json` is optional for display-name / description overrides; **new valid characters are discovered even if they are not added to that index**. Existing listed entries keep their custom labels.
+
+Landing page (after GitHub Pages is enabled): **https://lafrich.github.io/virtual-life-asset-pipeline/**
+
+Every new commit to `main` touching `assets/**` triggers the [Character Stock — Build and Deploy](../../.github/workflows/deploy-character-catalog.yml) workflow. It rebuilds and deploys the landing page with no manual card updates.
 
 ## Required layout per character
 
@@ -32,4 +38,4 @@ assets/npc_<slug>/
 
 - `aladdin_sane` — Bowie-inspired glam rock NPC; copper-red spiky mullet, Aladdin Sane face paint, shirtless, slate jeans, brown boots. Follow `assets/npc_aladdin_sane/manifest.json`.
 
-For future characters, add one entry to `index.json`, check that all linked files are committed, and keep the same layout and validation requirements.
+For future characters, commit the required sprite sheet, four-direction walking GIF, and manifest to the proper folder. The catalog auto-discovers the new character. Optionally add an `index.json` entry for its custom display name and description. Before Pages can be viewed for the first time, the repository owner must select **Settings → Pages → Build and deployment → Source: GitHub Actions**; if the first deployment failed, rerun the deploy workflow.
