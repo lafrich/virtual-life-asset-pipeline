@@ -49,12 +49,16 @@ def helmet(source: Image.Image, view: str, phase: int = 0) -> Image.Image:
     if view not in VIEWS:
         raise ValueError("Unknown facing direction " + view)
     front = view in ("se", "sw")
-    mirror = view in ("sw", "nw")
+    # Theodore faces screen-right in SE/NE and screen-left in SW/NW.
+    # The canonical Otis helmet was drawn in the OPPOSITE orientation:
+    # end-cap right / nozzle left. Mirror the HEAD for SE/NE, not SW/NW.
+    # Source is double-mirrored to preserve the original Theodore body view.
+    mirror = view in ("se", "ne")
     im = ImageOps.mirror(source) if mirror else source.copy()
     d = ImageDraw.Draw(im)
-    # Clear ONLY the original helmet dome; underlaying face is covered by
-    # the solid visor, not rebuilt or exposed. Preserve body and backpack.
-    d.rectangle((18, 26, 50, 42), fill=(0, 0, 0, 0))
+    # Clear Theodore's old dome on both working orientations, without
+    # touching the costume/backpack below the head.
+    d.rectangle((13, 25, 51, 42), fill=(0, 0, 0, 0))
     if front:
         # Compact almost-square shell, approximately equal to shoulder width.
         d.polygon([(21, 38), (23, 32), (28, 29), (44, 29),
