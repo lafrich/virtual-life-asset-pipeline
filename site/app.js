@@ -51,8 +51,65 @@ function card(character, index) {
   }
   setPaused(motionReduced);
   toggle.addEventListener("click", () => {
-    setPaused(toggle.getAttribute("aria-pressed") !== "true");
+    const paused = toggle.getAttribute("aria-pressed") !== "true";
+    setPaused(paused);
+    if (!paused) {
+      node.querySelector(".stage-direction").textContent = "WALK / 4 DIRECTIONS";
+      node.querySelectorAll(".expression-choice").forEach(button => {
+        button.setAttribute("aria-pressed", "false");
+        button.classList.remove("is-selected");
+      });
+    }
   });
+
+  const choices = node.querySelector(".expression-grid");
+  const details = node.querySelector(".expression-details");
+  const faceList = Array.isArray(character.expressions) ? character.expressions : [];
+  node.querySelector(".expression-count").textContent = String(faceList.length).padStart(2, "0");
+  if (faceList.length === 0) {
+    details.hidden = true;
+  } else {
+    const selected = node.querySelector(".expression-feature-image");
+    const selectedLabel = node.querySelector(".expression-feature-label");
+    function showExpression(face, button) {
+      selected.src = face.image;
+      selected.alt = character.name + " showing " + face.label + " expression";
+      selectedLabel.textContent = face.label.toUpperCase();
+      setPaused(true);
+      image.src = face.image;
+      image.alt = selected.alt;
+      node.querySelector(".stage-direction").textContent = "EXPRESSION / " + face.label.toUpperCase();
+      choices.querySelectorAll(".expression-choice").forEach(item => {
+        const active = item === button;
+        item.setAttribute("aria-pressed", String(active));
+        item.classList.toggle("is-selected", active);
+      });
+    }
+    faceList.forEach((face, i) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "expression-choice";
+      button.setAttribute("aria-label", "Preview " + face.label + " expression");
+      button.setAttribute("aria-pressed", "false");
+      const thumb = document.createElement("img");
+      thumb.src = face.image;
+      thumb.alt = "";
+      thumb.loading = "lazy";
+      const label = document.createElement("span");
+      label.textContent = face.label;
+      button.append(thumb, label);
+      button.addEventListener("click", () => showExpression(face, button));
+      choices.appendChild(button);
+      if (i === 0) showExpression(face, button);
+    });
+    // Leave the normal animated walking GIF visible until Expressions opens.
+    setPaused(motionReduced);
+    image.alt = character.name + " — pixel art walking animation, four directions";
+    node.querySelector(".stage-direction").textContent = "WALK / 4 DIRECTIONS";
+    details.addEventListener("toggle", () => {
+      if (details.open) showExpression(faceList[0], choices.firstElementChild);
+    });
+  }
   return node;
 }
 
