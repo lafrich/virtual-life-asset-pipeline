@@ -110,8 +110,8 @@ def prepare_legacy_catalog(root: Path, media: Path, repo_url: str,
                 if n>slots: continue
                 region=sheet_from_frames(frames,n)
                 for di in range(4):
-                    source=region.crop((0,di*112,n*64,(di+1)*112))
-                    base.paste(source,(0,(row+di)*112))
+                    sliced_row=region.crop((0,di*112,n*64,(di+1)*112))
+                    base.paste(sliced_row,(0,(row+di)*112))
                 if animation=="walk":walk_count=n
                 if animation=="idle":idle_count=n
             if walk_count==0:
