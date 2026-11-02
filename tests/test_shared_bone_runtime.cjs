@@ -39,7 +39,7 @@ assert.equal(rt.resolve(src,motions,"MASCOT","pee_wall",500,"se"),null,
   "roadmapped motions must not be presented as authored");
 const walk=motions.clips.find(m=>m.id==="walk");
 const rig=src.types.HUMANOID;
-const a=rt.sample(rig,walk,180,"se"),b=rt.sample(rig,walk,180,"sw");
+const a=rt.sample(rig,walk,90,"se"),b=rt.sample(rig,walk,90,"sw");
 assert.notEqual(a.joints.shoulder_l.world_angle,b.joints.shoulder_l.world_angle,
   "rig player should mirror pose rotation");
 assert.equal(rt.sample(rig,motions.clips.find(m=>m.id==="sit"),9999,"se").ended,true);
