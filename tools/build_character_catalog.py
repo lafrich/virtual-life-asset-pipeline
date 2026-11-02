@@ -17,6 +17,7 @@ from PIL import Image, ImageDraw, ImageChops
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
 OUT = ROOT / "_site"
+PUBLIC_REPO = "https://github.com/lafrich/virtual-life-character-catalog"
 REPO_URL = "https://github.com/lafrich/virtual-life-asset-pipeline"
 SIZE = (64, 112)
 SCALE = 3
@@ -154,11 +155,22 @@ def manifests():
         yield from sorted((ROOT / "assets").glob(pattern))
 
 
-def build():
-    if OUT.exists():
-        shutil.rmtree(OUT)
-    shutil.copytree(SITE, OUT)
-    media = OUT / "media"
+def build(public: bool = False):
+    # A public build contains ONLY presentation assets. No source code,
+    # generator, manifest or full 44-row sprite sheet is copied to Pages.
+    dest = ROOT / ("_public_site" if public else "_site")
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(SITE, dest)
+    media = dest / "media"
+    if public:
+        # Public menu targets the public gallery, not the locked asset repo.
+        html = dest / "index.html"
+        html.write_text(
+            html.read_text(encoding="utf-8").replace(REPO_URL, PUBLIC_REPO),
+            encoding="utf-8",
+        )
+        (dest / ".nojekyll").touch()
     media.mkdir(exist_ok=True)
 
     index_path = ROOT / "assets/character_stock/index.json"
@@ -198,7 +210,20 @@ def build():
         gif = media / (slug + "-walk.gif")
         poster = media / (slug + "-poster.png")
         save_walk_preview(sheet, gif, poster, walk_row, frame_count)
-        shutil.copy2(sheet, media / (slug + "-sheet.png"))
+        if public:
+            # Export 24 WALK frames, not the 44-row game-ready master sheet.
+            # Viewer's source row=0..3 now refers to this small, public
+            # walk-only sheet, retaining interactive direction switching.
+            with Image.open(sheet) as native_image:
+                native = native_image.convert("RGBA")
+            walk_only = Image.new("RGBA", (SIZE[0] * 6, SIZE[1] * 4))
+            for direction in range(4):
+                crop = native.crop((0, (walk_row + direction) * SIZE[1],
+                                    SIZE[0] * 6, (walk_row + direction + 1) * SIZE[1]))
+                walk_only.paste(crop, (0, direction * SIZE[1]))
+            walk_only.save(media / (slug + "-walk-sheet.png"), optimize=True)
+        else:
+            shutil.copy2(sheet, media / (slug + "-sheet.png"))
         with Image.open(sheet) as native_sheet:
             frame_y = int(data.get("row_starts", {}).get("idle", 4)) * SIZE[1]
             native_sheet.convert("RGBA").crop(
@@ -221,9 +246,10 @@ def build():
             "walk": "media/" + gif.name,
             "poster": "media/" + poster.name,
             "thumbnail": "media/" + slug + "-thumb.png",
-            "sheet": "media/" + slug + "-sheet.png",
-            "folder_url": REPO_URL + "/tree/main/" + folder.relative_to(ROOT).as_posix(),
-            "source_url": REPO_URL + "/blob/main/" + data.get("generator", ""),
+            "sheet": "media/" + slug + ("-walk-sheet.png" if public else "-sheet.png"),
+            "folder_url": "" if public else REPO_URL + "/tree/main/" + folder.relative_to(ROOT).as_posix(),
+            "source_url": "" if public else REPO_URL + "/blob/main/" + data.get("generator", ""),
+            "public_preview_only": public,
             "timestamp": updated_timestamp(manifest_path),
             "frame_size": "64 × 112",
             "walk_frames": frame_count,
@@ -232,17 +258,19 @@ def build():
         print("Added", slug, "->", gif.relative_to(OUT))
 
     results.sort(key=lambda c: (-c["timestamp"], c["name"].lower()))
-    (OUT / "catalog.json").write_text(
+    (dest / "catalog.json").write_text(
         json.dumps({"version": 1, "characters": results}, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    print(f"Catalog ready: {len(results)} characters at {OUT}")
+    print(f"Catalog ready: {len(results)} characters at {dest} (public={public})")
     return results
 
 
 if __name__ == "__main__":
     try:
-        build()
+        if any(arg not in ("--public",) for arg in sys.argv[1:]):
+            raise ValueError("Usage: build_character_catalog.py [--public]")
+        build(public="--public" in sys.argv[1:])
     except Exception as err:
         print("Catalog build failed:", err, file=sys.stderr)
         raise SystemExit(1)
