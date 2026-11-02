@@ -9,6 +9,7 @@ import json
 import re
 from pathlib import Path
 from PIL import Image
+from build_legacy_face_previews import build_faces
 
 DIRS = ("se","sw","ne","nw")
 FRAME = (64,112)
@@ -165,7 +166,7 @@ def prepare_legacy_catalog(root: Path, media: Path, repo_url: str,
                         "reason":""
                     })
         else:
-            # Prototypes and unavailable generators: visible source, no bogus
+            # Unavailable generators: visible source, no bogus
             # native/44-row sprites or motion buttons.
             m = re.search(r"npc_(\d+)",name)
             proto={"cosmo":1,"rocketta":2,"sol":3,"zib":4,"klank":5,"nebi":6}.get(name)
@@ -179,6 +180,11 @@ def prepare_legacy_catalog(root: Path, media: Path, repo_url: str,
                         thumbnail=poster_url
                         preview_status="archive_still"
 
+        if groups.get("idle") and name in ("gfunk", "theodore", "yerbies"):
+            # These three already author five genuine expression variants.
+            # Export same-actor 4-view idle loops, not overlays from another rig.
+            expressions = build_faces(root, folder, name, media, groups["idle"])
+
         results.append({
             "id":id_,"name":entry["name"],"type":"npc",
             "origin":entry["folder"],"asset_status":preview_status,
@@ -190,5 +196,5 @@ def prepare_legacy_catalog(root: Path, media: Path, repo_url: str,
             "row_starts":row_starts,"frame_size":"64 × 112",
             "expressions":expressions,"motions":actions,
         })
-        print("ARCHIVE",name,preview_status,len(actions),"actions")
+        print("IMPORTED",name,preview_status,len(actions),"actions",len(expressions),"faces")
     return results
