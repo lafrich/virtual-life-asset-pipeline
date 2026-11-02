@@ -1,0 +1,26 @@
+{
+  "asset_family": "animation_library",
+  "asset_path": "assets/animation_library",
+  "status": "approved",
+  "approval_context": "Owner requested an animation database with previews in the existing Paint landing page, and reusable animation templates. This approves the catalog capability, not any individual unreviewed animation pose.",
+  "reusable_insights": [
+    "Animations need explicit provenance and playback previews: only real committed GIFs should be listed as playable, while unrendered preset specifications must be visibly distinguished as draft templates.",
+    "Use reusable timing/phase presets and a metadata manifest to auto-register future 4-direction native v6b animations without modifying front-end HTML.",
+    "The preview packager must reject missing or wrongly sized 64x112 native PNG frames rather than fabricate or imply completed action poses."
+  ],
+  "promotion": "shared",
+  "reusable_code": [
+    "tools/build_animation_catalog.py",
+    "tools/new_animation_template.py",
+    "tools/pack_animation_preview.py"
+  ],
+  "regression_tests": [
+    "tests/test_animation_catalog.py"
+  ],
+  "source": [
+    "assets/animation_library/library.json",
+    "assets/animation_library/templates/action_one_shot.json"
+  ],
+  "compatibility": "Does not alter approved character sprite outputs or game action logic.",
+  "limitations": "Old previews are sourced from examples and remain preview-only. Starter specs do not include new poses or GIFs until a developer authors frames and the owner reviews them."
+}
