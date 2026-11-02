@@ -20,7 +20,7 @@ const state = {
   characters: [], selected: null, type: "all", query: "",
   mode: "walk", expression: null, direction: "auto", autoDir: 0,
   playing: !prefersReducedMotion, frame: 0, lastFrameTime: 0,
-  zoom: 3, bg: "#f8f6f0", grid: false, image: null, faceImage: null,
+  zoom: 4, bg: "#f8f6f0", grid: false, image: null, faceImage: null,
   imageCache: new Map(), working: false
 };
 
@@ -211,7 +211,7 @@ function setInspectorTab(tab) {
 }
 
 function syncTools() {
-  $("tool-select").classList.toggle("active", !$("faces-panel").hidden === false);
+  $("tool-select").classList.toggle("active", $("faces-panel").hidden);
   $("tool-select").setAttribute("aria-pressed", String($("faces-panel").hidden));
   $("tool-expressions").classList.toggle("active", !$("faces-panel").hidden);
   $("tool-grid").classList.toggle("active", state.grid);
@@ -220,7 +220,7 @@ function syncTools() {
 }
 
 function applyZoom(next) {
-  state.zoom = Math.max(2, Math.min(4, next));
+  state.zoom = Math.max(2, Math.min(5, next));
   $("zoom-label").textContent = state.zoom + "X";
   draw();
   setStatus("ZOOM: " + state.zoom + "X");
