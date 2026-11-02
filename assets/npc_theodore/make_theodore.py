@@ -135,7 +135,7 @@ def pack(base):
     return a
 
 PY = 70   # trouser top (frame y) in the v6b body
-def build(view='se', anim='idle', f=0, expr='neutral', pulse=0):
+def build(view='se', anim='idle', f=0, expr='neutral', pulse=0, modular=False):
     L, pal, hd, base, suit = render(view, anim, f, expr)
     bodyd = BODYD
     sg = np.zeros((FH, FW, 4), np.uint8)                          # overlays that sit on the shirt, under the near arm
@@ -146,10 +146,10 @@ def build(view='se', anim='idle', f=0, expr='neutral', pulse=0):
     bl = np.zeros((FH, FW, 4), np.uint8); bl[PY - 1 + bodyd:PY + 1 + bodyd] = pa[PY - 1 + bodyd:PY + 1 + bodyd]
     L['shirt'] = Image.fromarray(shirt)
     acc = np.zeros((FH, FW, 4), np.uint8); collar(acc, base, suit); acc = np.roll(acc, bodyd, 0); acc = comp(bl, acc)
-    if base == 'ne': acc = comp(acc, np.roll(pack('ne'), bodyd, 0))
+    if base == 'ne' and not modular: acc = comp(acc, np.roll(pack('ne'), bodyd, 0))
     order = ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'shirt_graphic', 'outer']
     im = Image.new('RGBA', (FW, FH))
-    if base == 'se': im.alpha_composite(Image.fromarray(np.roll(pack('se'), bodyd, 0)))
+    if base == 'se' and not modular: im.alpha_composite(Image.fromarray(np.roll(pack('se'), bodyd, 0)))
     for k in order:
         if k in L: im.alpha_composite(L[k])
     im.alpha_composite(Image.fromarray(acc))
@@ -168,7 +168,7 @@ def build(view='se', anim='idle', f=0, expr='neutral', pulse=0):
             P(((34, 49), (35, 49), (36, 49), (33, 50), (37, 50), (34, 51), (35, 51), (36, 51)), lid); P(((34, 50), (35, 50), (36, 50)), mo)
         if expr == 'sleepy':                                   # small slack mouth
             P(((34, 50), (35, 50)), lid)
-    dome(a, base, hd)
+    if not modular: dome(a, base, hd)
     Mk = {k: np.array(L[k])[..., 3] == 255 for k in ('pants', 'shoes')}
     return a, Mk
 
@@ -184,15 +184,15 @@ def finish(a, Mk, view, anim, f, pulse=0, lift=0):
     if anim in ('sleep', 'tired'): im.alpha_composite(Image.fromarray(G.zz(anim, f, base, mir)))
     return im
 
-def frame(view, kind, i, expr='neutral'):
+def frame(view, kind, i, expr='neutral', modular=False):
     if kind in ('idle', 'walk'):                                   # the game's idle (4 f, 1 px breathing bob) / walk (6 f) rows
-        a, Mk = build(view, kind, i, expr); return finish(a, Mk, view, kind, i)
+        a, Mk = build(view, kind, i, expr, modular=modular); return finish(a, Mk, view, kind, i)
     if kind == 'nap_stand':                                        # the game's standing 'tired' row (head drop 2, z-z)
-        a, Mk = build(view, 'tired', i, 'blink'); return finish(a, Mk, view, 'tired', i)
+        a, Mk = build(view, 'tired', i, 'blink', modular=modular); return finish(a, Mk, view, 'tired', i)
     if kind == 'talk':
-        a, Mk = build(view, 'talk', i, ['talk_open', 'talk_closed', 'talk_open', 'talk_closed'][i]); return finish(a, Mk, view, 'talk', i)
+        a, Mk = build(view, 'talk', i, ['talk_open', 'talk_closed', 'talk_open', 'talk_closed'][i], modular=modular); return finish(a, Mk, view, 'talk', i)
     anim = 'sleep' if kind == 'sleep_seat' else kind
-    a, Mk = build(view, anim, i, 'blink' if anim == 'sleep' else expr); return finish(a, Mk, view, anim, i)
+    a, Mk = build(view, anim, i, 'blink' if anim == 'sleep' else expr, modular=modular); return finish(a, Mk, view, anim, i)
 
 VIEWS = ('se', 'sw', 'ne', 'nw'); EXPRS = ('neutral', 'happy', 'surprised', 'angry', 'sleepy')
 POSES = [('sit', 4), ('sit_type', 4), ('sleep_seat', 4), ('nap_stand', 4), ('talk', 4)]
