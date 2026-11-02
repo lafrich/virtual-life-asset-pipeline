@@ -102,29 +102,47 @@ def capsule(draw, points, light, mid, shade):
 
 
 def draw_arms(layer, view, t, bob, kind):
+    """Slim human-scale sleeves attached at the SIDE MIDPOINT of carton.
+
+    The broad front is x14..41, narrow side is x41..50. Shoulder anchors
+    sit at y56 (mid-height of the flat carton walls), not on the rear/top
+    fold at y49. The far shoulder is hidden by the box; elbow + hand remain
+    visible, with an explicit 2px side seam applied after compositing.
+    """
     d = ImageDraw.Draw(layer)
-    # Reduced from 6px arm / 7px glove to 3px sleeve / ~4px glove.
-    # Shorter forearms: a simple human-costume silhouette, not oversized mitts.
     swing = [0, 2, 1, 0, -2, -1][t % 6] if kind == "walk" else 0
     for left in (True, False):
         s = swing if left else -swing
         if left:
-            shoulder = (15, 49 + bob)
-            elbow = (12 - s, 57 + bob)
-            wrist = (10 - s, 65 + bob - s // 2)
-            hx, hy = 9 - s, 67 + bob - s // 2
+            shoulder = (16, 56 + bob)
+            elbow = (11 - s, 62 + bob)
+            wrist = (9 - s, 69 + bob - s // 2)
+            hx, hy = (8 - s, 71 + bob - s // 2)
             light = LIT
         else:
-            shoulder = (48, 49 + bob)
-            elbow = (51 + s, 57 + bob)
-            wrist = (53 + s, 65 + bob + s // 2)
-            hx, hy = 54 + s, 67 + bob + s // 2
+            # Midpoint of x41..50 side plane, not the far x50 corner.
+            shoulder = (45, 57 + bob)
+            elbow = (52 + s, 62 + bob)
+            wrist = (54 + s, 69 + bob + s // 2)
+            hx, hy = (55 + s, 71 + bob + s // 2)
             light = WHITE
         capsule(d, [shoulder, elbow, wrist], light, PAPER, GREY)
         d.rectangle((hx - 1, hy - 2, hx + 1, hy + 1), fill=GREY)
         d.rectangle((hx - 1, hy - 2, hx, hy), fill=light)
-        # One-pixel thumb detail; no bulky hand/finger blob.
         d.point((hx - 2 if left else hx + 2, hy - 1), fill=PAPER)
+
+
+def paint_attachments(frame, bob):
+    """Expose narrow sleeve cuffs *on top* of the carton at side midpoints.
+
+    Without this, the carton conceals the arm's first pixels and it looks
+    as if the arms originate on the rear of the box. These 2px seams are
+    only a connection joint, not additional large arms.
+    """
+    d = ImageDraw.Draw(frame)
+    # Near corner on face and midpoint of the narrow right-hand side face.
+    d.line([(15, 55 + bob), (15, 57 + bob)], fill=LIT, width=2)
+    d.line([(45, 56 + bob), (45, 58 + bob)], fill=WHITE, width=2)
 
 def draw_native_legs(layer, rig, base, kind, frame, view):
     C, O = rig
@@ -186,10 +204,16 @@ def draw_carton(layer, rear, bob, expression="neutral", show_label=True):
         line([(16, 58 + bob), (38, 65 + bob)], BLUE, 1)
         line([(16, 61 + bob), (36, 67 + bob)], GREY, 1)
         line([(16, 64 + bob), (37, 70 + bob)], GREY, 1)
-        line([(16, 68 + bob), (33, 73 + bob)], GREY, 1)
-        # Bar code: sparse readable stripes, 1× pixel strokes.
-        for x in range(21, 34, 2):
-            d.line([(x, 71 + bob), (x, 74 + bob)], fill=BLUE_DARK)
+        # Barcode quiet zone deliberately clear of information lines.
+        # The broad back carton face rises 7 px from left to right (27 px).
+        # The base line therefore follows the same isometric shear as MILK.
+        # Each bar is a tiny tilted pixel column, not a flat row of stripes.
+        for i, x in enumerate(range(20, 36, 2)):
+            y_top = 68 + bob + round((x - 16) * 7 / 27)
+            height = (5, 6, 4, 6, 5, 6, 4, 5)[i]
+            d.line([(x, y_top), (x + 1, y_top + height)], fill=BLUE_DARK, width=1)
+            if i in (2, 5):
+                d.point((x + 1, y_top + height - 1), fill=BLUE_DARK)
         if show_label:
             pixel_text_slanted(d, "milk", 18, 41 + bob, WHITE, slope=7/27)
         polygon([(42, 46), (49, 41), (49, 57), (42, 61)], BLUE)
@@ -269,6 +293,7 @@ def render_one(rig, se, ne, anim, t, direction, expression="neutral"):
     carton = Image.new("RGBA", (FW, FH))
     draw_carton(carton, rear, bob, expression, show_label=not mirrored)
     frame.alpha_composite(carton)
+    paint_attachments(frame, bob)
     if mirrored:
         frame = frame.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
         # v6b SW/NW mirror the physical character, but the carton typography
@@ -358,7 +383,7 @@ def build():
       "supported_animated_actions": ["walk", "idle", "talk"],
       "experimental_rows": ["sit", "sit_type", "sleep", "tired", "swim", "float", "lie", "perch"],
       "new_hex": [],
-      "notes": "Pixel-authored milk carton with slimmer sleeves and isometric perspective-aligned MILK label; other non-walk rows use simplified placeholder costume poses."
+      "notes": "Pixel-authored milk carton; sleeves attached at the side-body midpoints; printed MILK label and back barcode follow the isometric carton face; non-walk action rows remain simplified placeholders."
     }
     (FOLDER / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print("BUILT", base, "sprites", len(outputs), "walk rows", 4, "frames each", 6)
