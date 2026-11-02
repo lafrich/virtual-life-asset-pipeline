@@ -39,6 +39,26 @@ frames are authored and reviewed. Facial expressions reuse real face-overlay
 pixels from that character's full sheet, with idle frames and timed blink;
 they are not 3D facial rigs or a deep-learning retarget model.
 
+## Imported NPC facial animation (Gfunk, Theodore, Yerbies)
+
+The former v2 prototype/archive NPCs (Cosmo, Rocketta, Sol, Zib, Klank,
+Nebi) are excluded from the public Character Stock roster. Their source is
+not deleted; they just do not appear as selectable catalog characters.
+
+Gfunk, Theodore and Yerbies each have five original source-authored facial
+variants: **Neutral, Happy, Surprised, Angry and Sleepy**. At catalog build
+time, `tools/build_legacy_face_previews.py` renders actual original idle
+poses with each actor's own generator. The Face inspector plays 12-frame,
+four-direction sprite sheets (SE/SW/NE/NW); every ninth-frame blink uses the
+original sleepy eyelids while preserving the chosen mouth. Back views remain
+the genuine back-facing idle sprites with no imaginary facial detail.
+
+Use **FACE** on these characters for live preview and **FACE SHEET.PNG** for
+a native-pixel atlas. These are character-specific idle previews, **not**
+generic 44-row v6b facial overlay atlases: they are not automatically blended
+onto other actor motion rigs or installed in live gameplay. `motions.json`
+bindings and unrelated character generators are unchanged.
+
 ## Motion database and storage
 
 - Shared action definitions: `assets/animation_library/actions.json`.
