@@ -110,8 +110,14 @@ def save_expression_previews(folder: Path, data: dict, sheet_path: Path, media: 
         canvas.convert("RGB").save(output, optimize=True)
         return "media/" + filename
 
+    def raw_face(frame: Image.Image, code: str) -> str:
+        filename = slug + "-face-" + code + ".png"
+        frame.save(media / filename, optimize=True)
+        return "media/" + filename
+
     expressions = [{"id": "neutral", "label": "Neutral",
-                    "image": create_panel(base, slug + "-expression-neutral.png")}]
+                    "image": create_panel(base, slug + "-expression-neutral.png"),
+                    "sprite": raw_face(base, "neutral")}]
     for name in data.get("sprites", []):
         p = Path(name)
         if not p.name.startswith(slug + "_v6b_f") or p.suffix.lower() != ".png":
@@ -137,7 +143,8 @@ def save_expression_previews(folder: Path, data: dict, sheet_path: Path, media: 
         expressions.append({
             "id": code,
             "label": label,
-            "image": create_panel(composite, slug + "-expression-" + code + ".png")
+            "image": create_panel(composite, slug + "-expression-" + code + ".png"),
+            "sprite": raw_face(composite, code)
         })
     return expressions
 
@@ -192,6 +199,11 @@ def build():
         poster = media / (slug + "-poster.png")
         save_walk_preview(sheet, gif, poster, walk_row, frame_count)
         shutil.copy2(sheet, media / (slug + "-sheet.png"))
+        with Image.open(sheet) as native_sheet:
+            frame_y = int(data.get("row_starts", {}).get("idle", 4)) * SIZE[1]
+            native_sheet.convert("RGBA").crop(
+                (0, frame_y, SIZE[0], frame_y + SIZE[1])
+            ).save(media / (slug + "-thumb.png"), optimize=True)
         expressions = save_expression_previews(folder, data, sheet, media, slug)
 
         title = override.get("name") or slug.replace("_", " ").replace("-", " ").title()
@@ -208,6 +220,7 @@ def build():
             "hairstyle": str(data.get("hairstyle", "")),
             "walk": "media/" + gif.name,
             "poster": "media/" + poster.name,
+            "thumbnail": "media/" + slug + "-thumb.png",
             "sheet": "media/" + slug + "-sheet.png",
             "folder_url": REPO_URL + "/tree/main/" + folder.relative_to(ROOT).as_posix(),
             "source_url": REPO_URL + "/blob/main/" + data.get("generator", ""),

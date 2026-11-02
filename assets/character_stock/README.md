@@ -36,10 +36,13 @@ assets/npc_<slug>/
 
 ## Current character stock
 
-- `aladdin_sane` — Bowie-inspired glam rock NPC; copper-red spiky mullet, Aladdin Sane face paint, shirtless, slate jeans, brown boots. Follow `assets/npc_aladdin_sane/manifest.json`.
+- `aladdin_sane` — copper-red spiky mullet, lightning makeup, jeans, boots.
+- `milk_mascot` — walking anthropomorphic milk-carton costume; slim white arms, face panel, angled typography and barcode.
 
 For future characters, commit the required sprite sheet, four-direction walking GIF, and manifest to the proper folder. The catalog auto-discovers the new character. Optionally add an `index.json` entry for its custom display name and description. Before Pages can be viewed for the first time, the repository owner must select **Settings → Pages → Build and deployment → Source: GitHub Actions**; if the first deployment failed, rerun the deploy workflow.
 
-## Landing page — Expressions
+## Landing page — XP Paint-style viewer
 
-Each catalog card has an expandable **Expression Preview** section. The site build automatically reads the committed `*_v6b_f*.png` facial-expression overlay sheets and composites them over the base character's front-facing idle frame. Available expressions are selectable and shown as enlarged nearest-neighbor pixel previews. Empty overlays are omitted rather than displayed as fake expressions. No HTML changes are necessary for new characters.
+The gallery is a single Paint-inspired workspace: a character file drawer, native pixel canvas, sprite controls, an expression inspector and a clickable background-color palette. Use **Space** to play/pause, **←/→** to switch character, **E** for facial expressions, **G** for grid, **+/-** to zoom and **/** to search. The File and Help menus link to the GitHub library and instructions.
+
+The builder copies each character's native RGBA sheet for real-time four-direction walk rendering in the canvas. It also exports transparent 64x112 idle thumbnails and facial-expression sprites, compositing committed `*_v6b_f*.png` overlays onto the base idle sprite. The expression inspector only shows actual existing overlays. A new verified character in `assets/npc_*` or `assets/player_*` still appears automatically on the next Pages deployment, without adding HTML or JS.
