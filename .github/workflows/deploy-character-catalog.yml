@@ -17,6 +17,7 @@ on:
       - feature/mixamo-model-rig-studio-v1
       - feature/add-otis-helmeted-character
       - fix/otis-compact-helmet-flat-rear
+      - fix/otis-helmet-facing-orientation
       - feature/shared-category-skeletons-remove-rig-ui
     paths:
       - ".github/workflows/deploy-character-catalog.yml"

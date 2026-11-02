@@ -60,12 +60,77 @@ class OtisVisualTests(unittest.TestCase):
                              O.helmet(base, direction, 1).tobytes(),
                              "No extra rotating muzzle on the back of the helmet")
 
+    def test_opposite_face_rim_is_not_exposed_after_flip(self):
+        for view, xstart in (("se", 45), ("sw", 12)):
+            source = Image.new("RGBA", (64, 112))
+            ImageDraw.Draw(source).rectangle((xstart, 44, xstart + 6, 51),
+                                              fill=(255, 0, 255, 255))
+            frame = O.helmet(source, view, 0)
+            for x in range(xstart, xstart + 7):
+                for y in range(44, 52):
+                    self.assertNotEqual(frame.getpixel((x, y))[:3],
+                                        (255, 0, 255),
+                                        "Theodore's old face must not peek at the new helmet rim")
+
+    def test_side_disc_follows_theodore_body_facing(self):
+        # Theodore's SE/NE V6B faces viewer-right, and SW/NW faces left.
+        # Canonical Otis art was authored facing left; the previous code
+        # swapped only the HEAD mirror mapping and pointed the cap backward.
+        # Check the opaque circular ear/endcap's actual pixel location,
+        # rather than merely checking that SE and SW sheets differ.
+        empty = Image.new("RGBA", (64, 112))
+        for facing, side_x in (("se", 15), ("sw", 49),
+                               ("ne", 15), ("nw", 49)):
+            frame = O.helmet(empty, facing)
+            self.assertEqual(frame.getpixel((side_x, 48))[:3],
+                             tuple(bytes.fromhex(O.C["c_light"].lstrip("#"))),
+                             f"{facing}: helmet endcap must be on body's rearward side")
+            opposite = 49 if side_x == 15 else 15
+            self.assertNotEqual(frame.getpixel((opposite, 48))[:3],
+                                tuple(bytes.fromhex(O.C["c_light"].lstrip("#"))),
+                                f"{facing}: cannot leave endcap on forward side")
+        # No change to leg sprites or torso/face orientation.
+        original = O.T.frame("se", "idle", 0)
+        updated = O.helmet(original, "se")
+        self.assertEqual(updated.crop((0, 73, 64, 112)).tobytes(),
+                         original.crop((0, 73, 64, 112)).tobytes())
+
+    def test_helmet_tracks_original_head_bob_not_static_overlay(self):
+        # Source head advances by one pixel in Theodore's existing walk
+        # poses. The entire Otis helmet must advance with it, in both front
+        # views, without translating the red suit/feet.
+        palette = {tuple(bytes.fromhex(O.C[name].lstrip("#")))
+                   for name in ("light", "turquoise", "mid", "hi")}
+        for direction in ("se", "sw", "ne", "nw"):
+            sources = []
+            for y in (30, 29):
+                source = Image.new("RGBA", (64, 112))
+                ImageDraw.Draw(source).rectangle((20, y, 45, y + 10),
+                                                fill=(120, 120, 120, 255))
+                sources.append(source)
+            frames = [O.helmet(src, direction) for src in sources]
+            def shell_top(im):
+                return min(y for y in range(24, 43) for x in range(64)
+                           if im.getpixel((x, y))[:3] in palette
+                           and im.getpixel((x, y))[3] == 255)
+            self.assertEqual(shell_top(frames[1]), shell_top(frames[0]) - 1,
+                             f"{direction}: helmet must follow Theodore head bob")
+            for frame, src in zip(frames, sources):
+                self.assertEqual(frame.crop((0, 73, 64, 112)).tobytes(),
+                                 src.crop((0, 73, 64, 112)).tobytes())
+
     def test_compact_helmet_and_flat_square_rear(self):
         base = Image.new("RGBA", (64, 112))
         for direction in ("se", "sw"):
             image = O.helmet(base, direction)
+            # Bounds of the visible shell and chrome, not the thin dark
+            # occlusion wall behind the forward-facing mechanical visor.
+            palette = {tuple(bytes.fromhex(O.C[name].lstrip("#")))
+                       for name in ("hi", "light", "turquoise", "mid",
+                                    "c_hi", "c_light", "c_med")}
             upper = [(x, y) for y in range(20, 56) for x in range(64)
-                     if image.getpixel((x, y))[3] != 0]
+                     if image.getpixel((x, y))[:3] in palette
+                     and image.getpixel((x, y))[3] == 255]
             self.assertGreaterEqual(min(x for x, _ in upper), 10)
             self.assertLessEqual(max(x for x, _ in upper), 53)
             self.assertLessEqual(max(x for x, _ in upper) - min(x for x, _ in upper) + 1, 36)
@@ -74,7 +139,7 @@ class OtisVisualTests(unittest.TestCase):
             image = O.helmet(base, direction)
             self.assertEqual(image.getpixel((32, 33))[3], 255)
             # A continuous flat horizontal top at y31, no curved dome.
-            top_range = range(25, 45) if direction == "ne" else range(19, 39)
+            top_range = range(19, 39) if direction == "ne" else range(25, 45)
             self.assertTrue(all(image.getpixel((x, 31))[3] == 255
                                 for x in top_range))
             # A rear shell has no protruding black snorkel below y56.
