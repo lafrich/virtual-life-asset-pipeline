@@ -427,6 +427,18 @@ def sanitize_native_pngs():
         # Legacy water pixels are compositing-only; new sprite alpha is strict.
         a[a[:, :, 3] == 46] = (0, 0, 0, 0)
         a[a[:, :, 3] == 220, 3] = 255
+        # An inherited hair-part overlap is still visible under the boots
+        # after the base shoe layer is clipped (the source renderer bakes it
+        # into the composite). Clear only opaque out-of-pivot pixels on
+        # standing poses; preserve legitimate alpha-56 ground shadows.
+        for anim in ("walk", "idle", "talk", "tired"):
+            row_base = lv.ROWMAP[anim]
+            for di in range(4):
+                y0 = (row_base + di) * lv.FH
+                for f in range(6 if anim == "walk" else 4):
+                    x0 = f * lv.FW
+                    foot = a[y0 + 101:y0 + 112, x0:x0 + lv.FW]
+                    foot[foot[:, :, 3] == 255] = (0, 0, 0, 0)
         Image.fromarray(a, "RGBA").save(p, optimize=True)
 
 def audit_native_outputs(sheet, overlays):
