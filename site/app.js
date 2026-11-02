@@ -990,6 +990,8 @@ $("tab-accessories").addEventListener("click", () => setInspectorTab("accessorie
 $("tab-custom-char").addEventListener("click", () => setInspectorTab("custom"));
 $("custom-save").addEventListener("click",saveCustomCharacter);
 $("custom-new").addEventListener("click",()=>{resetCustomForm();setInspectorTab("custom");});
+$("custom-draw-helmet").addEventListener("click",()=>openAccessoryEditor("helmet"));
+$("custom-draw-bag").addEventListener("click",()=>openAccessoryEditor("bag"));
 
 $("make-helmet").addEventListener("click", () => openAccessoryEditor("helmet"));
 $("make-bag").addEventListener("click", () => openAccessoryEditor("bag"));
