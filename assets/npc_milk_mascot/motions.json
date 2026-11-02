@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "character": "npc_milk_mascot",
+  "approved_native_actions": [
+    "idle",
+    "walk",
+    "talk"
+  ],
+  "custom_actions": [],
+  "comment": "Only confirmed authored native action rows are selectable. Unrigged actions remain visible as unavailable; do not display an Ichsan animation as this character."
+}

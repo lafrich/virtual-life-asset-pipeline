@@ -18,9 +18,10 @@ const PALETTE = [
 
 const state = {
   characters: [], selected: null, type: "all", query: "",
-  mode: "walk", expression: null, direction: "auto", autoDir: 0,
+  mode: "walk", expression: null, motion: null, direction: "auto", autoDir: 0,
   playing: !prefersReducedMotion, frame: 0, lastFrameTime: 0,
-  zoom: 4, bg: "#f8f6f0", grid: false, image: null, faceImage: null,
+  zoom: 4, bg: "#f8f6f0", grid: false, image: null, motionImage: null,
+  faceImage: null, faceOverlay: null, blinkOverlay: null, lastBlink: 0,
   imageCache: new Map(), working: false
 };
 
@@ -61,10 +62,14 @@ function selectCharacter(character) {
   state.selected = character;
   state.mode = "walk";
   state.expression = null;
+  state.motion = null;
   state.frame = 0;
   state.autoDir = 0;
   state.image = null;
+  state.motionImage = null;
   state.faceImage = null;
+  state.faceOverlay = null;
+  state.blinkOverlay = null;
   state.playing = !prefersReducedMotion;
   $("canvas-loading").hidden = false;
 
@@ -78,7 +83,9 @@ function selectCharacter(character) {
   $("open-source").href = character.folder_url;
   $("face-tab-count").textContent = String(character.expressions?.length || 0).padStart(2, "0");
   buildFaces(character);
+  buildMotions(character);
   setInspectorTab("info");
+  state.motion = character.motions?.find(m => m.id === "walk" && m.available) || null;
   syncPlaybackButton();
   syncDirectionButtons();
   syncTools();
@@ -118,50 +125,133 @@ function buildFaces(character) {
   }
 }
 
+function buildMotions(character) {
+  const grid = $("motion-grid");
+  grid.replaceChildren();
+  const choices = Array.isArray(character.motions) ? character.motions : [];
+  const available = choices.filter(action => action.available);
+  $("motion-tab-count").textContent = String(available.length).padStart(2, "0");
+  $("motion-count").textContent = String(choices.length).padStart(2, "0");
+  choices.forEach(action => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "motion-option";
+    button.disabled = !action.available;
+    button.title = action.available ? "Use " + action.name + " on " + character.name :
+      action.name + " — needs an authored rig for this character";
+    button.setAttribute("aria-pressed", "false");
+    const glyph = document.createElement("span");
+    glyph.textContent = action.available ? "▶" : "⌁";
+    const label = document.createElement("strong");
+    label.textContent = action.name;
+    const tag = document.createElement("small");
+    tag.textContent = action.available ? action.frames + " FR / " +
+      (action.loop ? "LOOP" : "ONCE") : "NEEDS RIG";
+    button.append(glyph,label,tag);
+    button.addEventListener("click", () => selectMotion(action));
+    grid.append(button);
+  });
+  $("motion-availability-note").textContent =
+    available.length + " RIGGED  /  " + (choices.length - available.length) + " NEEDS WORK";
+}
+
+function syncMotionSelection() {
+  const motions = state.selected?.motions || [];
+  [...$("motion-grid").children].forEach((button,i) => {
+    const active = motions[i] === state.motion && state.mode === "action";
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-pressed",String(active));
+  });
+}
+
+function selectMotion(action) {
+  if (!state.selected || !action || !action.available) return;
+  state.mode = "action";
+  state.motion = action;
+  // Keep the chosen facial expression when switching body motion. Native
+  // v6b expression delta sheets cover EVERY authored animation row.
+  state.faceImage = null;
+  state.frame = 0;
+  state.autoDir = 0;
+  state.lastFrameTime = 0;
+  state.playing = !prefersReducedMotion;
+  state.motionImage = null;
+  $("canvas-name").textContent = state.selected.id.toUpperCase() + " / " + action.id.toUpperCase();
+  const character = state.selected;
+  if (action.source === "custom" && action.sheet) {
+    cachedImage(action.sheet, image => {
+      if (state.selected !== character || state.motion !== action) return;
+      state.motionImage = image;
+      draw();
+    });
+  }
+  $("motion-expression-active").textContent = "FACE: " +
+    (state.expression?.label?.toUpperCase() || "NEUTRAL") + " / SAME CHARACTER.";
+  syncMotionSelection();
+  syncPlaybackButton();
+  syncTools();
+  setStatus("MOTION: " + action.id.toUpperCase() + " / " + character.id.toUpperCase());
+  draw();
+}
+
 function selectFace(face) {
   if (!state.selected || !face) return;
   state.mode = "face";
   state.expression = face;
-  state.playing = false;
-  state.faceImage = null;
-  syncPlaybackButton();
-  syncTools();
-  const all = state.selected.expressions || [];
-  [...$("face-grid").children].forEach((button, index) => {
-    const active = all[index] === face;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
-  setStatus("FACE: " + face.label.toUpperCase());
-  const current = state.selected;
-  cachedImage(face.sprite || face.image, image => {
-    if (state.selected !== current || state.expression !== face) return;
-    state.faceImage = image;
+  state.faceOverlay = null;
+  state.blinkOverlay = null;
+  state.frame = 0;
+  state.autoDir = 0;
+  state.lastFrameTime = 0;
+  state.lastBlink = 0;
+  state.playing = !prefersReducedMotion;
+  $("canvas-name").textContent = state.selected.id.toUpperCase() + " / " +
+    face.id.toUpperCase() + ".FACE";
+  const character = state.selected;
+  const overlay = face.overlay;
+  if (overlay) cachedImage(overlay, image => {
+    if (state.selected !== character || state.expression !== face) return;
+    state.faceOverlay = image;
     draw();
   });
+  const blink = character.expressions?.find(x => x.id === "blink");
+  if (blink?.overlay) cachedImage(blink.overlay, image => {
+    if (state.selected !== character || state.expression !== face) return;
+    state.blinkOverlay = image;
+    draw();
+  });
+  [...$("face-grid").children].forEach((button,index) => {
+    const active = character.expressions[index] === face;
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-pressed",String(active));
+  });
+  $("motion-expression-active").textContent = "FACE: " + face.label.toUpperCase() +
+    " / ACTIVE ON NATIVE MOTIONS.";
+  syncMotionSelection();
+  syncPlaybackButton();
+  syncTools();
+  setStatus("ANIMATED FACE: " + face.label.toUpperCase());
   draw();
 }
 
 function startWalking() {
   if (!state.selected) return;
+  const motion = state.selected.motions?.find(m => m.id === "walk" && m.available);
+  if (motion) return selectMotion(motion);
   state.mode = "walk";
-  state.expression = null;
-  state.faceImage = null;
-  state.playing = true;
-  state.lastFrameTime = 0;
+  state.playing = !prefersReducedMotion;
+  state.frame = 0;
   syncPlaybackButton();
-  syncTools();
-  [...$("face-grid").children].forEach(b => {
-    b.classList.remove("active");
-    b.setAttribute("aria-pressed", "false");
-  });
   draw();
-  setStatus("WALK: " + state.selected.id.toUpperCase());
 }
 
 function togglePlayback() {
   if (!state.selected) return;
-  if (state.mode === "face") return startWalking();
+  // Replay the completed one-shot action when clicking PLAY.
+  if (state.mode === "action" && !state.playing && state.motion?.loop === false &&
+      state.frame >= state.motion.frames - 1) {
+    state.frame = 0;
+  }
   state.playing = !state.playing;
   state.lastFrameTime = 0;
   syncPlaybackButton();
@@ -172,9 +262,8 @@ function togglePlayback() {
 
 function syncPlaybackButton() {
   const b = $("play-toggle");
-  const playing = state.playing && state.mode === "walk";
-  b.innerHTML = playing ? "Ⅱ <span>PAUSE</span>" : "▶ <span>PLAY</span>";
-  b.setAttribute("aria-pressed", String(playing));
+  b.innerHTML = state.playing ? "Ⅱ <span>PAUSE</span>" : "▶ <span>PLAY</span>";
+  b.setAttribute("aria-pressed",String(state.playing));
 }
 
 function setDirection(value) {
@@ -182,7 +271,6 @@ function setDirection(value) {
   state.autoDir = value === "auto" ? 0 : Number(value);
   state.frame = 0;
   state.lastFrameTime = 0;
-  if (state.mode === "face") startWalking();
   syncDirectionButtons();
   setStatus("DIRECTION: " + (value === "auto" ? "AUTO" : DIRECTION_LABELS[Number(value)]));
   draw();
@@ -198,25 +286,33 @@ function syncDirectionButtons() {
 
 function setInspectorTab(tab) {
   const isFace = tab === "faces";
-  $("info-panel").hidden = isFace;
+  const isMotion = tab === "motions";
+  $("info-panel").hidden = isFace || isMotion;
   $("faces-panel").hidden = !isFace;
-  $("tab-faces").classList.toggle("active", isFace);
-  $("tab-info").classList.toggle("active", !isFace);
-  $("tab-faces").setAttribute("aria-selected", String(isFace));
-  $("tab-info").setAttribute("aria-selected", String(!isFace));
+  $("motions-panel").hidden = !isMotion;
+  for (const [id,active] of [["tab-info", !isFace && !isMotion],
+                             ["tab-faces", isFace], ["tab-motions", isMotion]]) {
+    $(id).classList.toggle("active",active);
+    $(id).setAttribute("aria-selected",String(active));
+  }
   if (isFace && state.selected && !state.expression && state.selected.expressions?.length) {
     selectFace(state.selected.expressions[0]);
+  }
+  if (isMotion && state.selected && state.mode === "face") {
+    const choice = state.motion?.available ? state.motion :
+      state.selected.motions?.find(m => m.id === "walk" && m.available);
+    if (choice) selectMotion(choice);
   }
   syncTools();
 }
 
 function syncTools() {
-  $("tool-select").classList.toggle("active", $("faces-panel").hidden);
-  $("tool-select").setAttribute("aria-pressed", String($("faces-panel").hidden));
+  $("tool-select").classList.toggle("active", $("info-panel").hidden === false);
+  $("tool-select").setAttribute("aria-pressed", String($("info-panel").hidden === false));
   $("tool-expressions").classList.toggle("active", !$("faces-panel").hidden);
-  $("tool-grid").classList.toggle("active", state.grid);
-  $("tool-grid").setAttribute("aria-pressed", String(state.grid));
-  $("tool-walk").classList.toggle("active", state.playing && state.mode === "walk");
+  $("tool-grid").classList.toggle("active",state.grid);
+  $("tool-grid").setAttribute("aria-pressed",String(state.grid));
+  $("tool-walk").classList.toggle("active",state.playing && state.mode !== "face");
 }
 
 function applyZoom(next) {
@@ -295,60 +391,155 @@ function draw() {
   const w = canvas.width, h = canvas.height;
   ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = state.bg;
-  ctx.fillRect(0, 0, w, h);
-
+  ctx.fillRect(0,0,w,h);
   if (!state.selected) {
     ctx.fillStyle = "#153fa0";
     ctx.font = "bold 17px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("OPEN A FILE.", w / 2, h / 2);
+    ctx.fillText("OPEN A FILE.",w/2,h/2);
     return;
   }
-
-  const z = state.zoom, x = Math.round((w - 64 * z) / 2);
-  const y = Math.round((h - 112 * z) / 2) - 9;
-  const footX = x + 32 * z, footY = y + 100 * z;
-
-  // Neutral floor shadow, separate from the source sprite itself.
+  const z = state.zoom, x = Math.round((w-64*z)/2), y = Math.round((h-112*z)/2)-9;
   ctx.fillStyle = "#161b2640";
   ctx.beginPath();
-  ctx.ellipse(footX, footY + 6, 27 * z, Math.max(4, 5 * z), 0, 0, Math.PI * 2);
+  ctx.ellipse(x+32*z,y+100*z+6,27*z,Math.max(4,5*z),0,0,Math.PI*2);
   ctx.fill();
 
-  if (state.mode === "face" && state.faceImage?.complete && state.faceImage.naturalWidth) {
-    const f = state.faceImage;
-    // Dedicated 64x112 transparent pixel preview; older builds have a 350x386
-    // framed fallback, which still renders cleanly.
-    if (f.naturalWidth === 64 && f.naturalHeight === 112) {
-      ctx.drawImage(f, x, y, 64 * z, 112 * z);
+  const d = state.direction === "auto" ? state.autoDir : Number(state.direction);
+  if (state.image?.complete && state.image.naturalWidth) {
+    if (state.mode === "face") {
+      // Actual character's own 4-frame idle / blink and expression overlays,
+      // not the original Ichsan character or a photograph/video filter.
+      const row = (state.selected.row_starts?.idle ?? 4) + d;
+      const col = state.frame % Math.max(1,state.selected.idle_frames || 4);
+      ctx.drawImage(state.image,col*64,row*112,64,112,x,y,64*z,112*z);
+      if (state.faceOverlay?.naturalWidth) {
+        ctx.drawImage(state.faceOverlay,col*64,row*112,64,112,x,y,64*z,112*z);
+      }
+      // A blink is applied as a second facial delta at a predictable interval.
+      const blinking = state.playing && state.expression?.id !== "blink" &&
+        state.blinkOverlay?.naturalWidth && state.lastBlink === 1;
+      if (blinking) {
+        ctx.drawImage(state.blinkOverlay,col*64,row*112,64,112,x,y,64*z,112*z);
+      }
     } else {
-      ctx.drawImage(f, x - 6 * z, y - 2 * z, 76 * z, 112 * z);
+      const motion = state.motion;
+      const custom = state.mode === "action" && motion?.source === "custom";
+      const source = custom ? state.motionImage : state.image;
+      if (source?.naturalWidth) {
+        const row = (motion?.row ?? 0) + d;
+        ctx.drawImage(source,state.frame*64,row*112,64,112,x,y,64*z,112*z);
+        // Expression blend is pixel-aligned on the selected actor's native
+        // 44-row sheet; never apply original-row deltas onto unrelated custom rigs.
+        if (!custom && state.expression && state.faceOverlay?.naturalWidth) {
+          ctx.drawImage(state.faceOverlay,state.frame*64,row*112,64,112,x,y,64*z,112*z);
+          if (state.expression.id !== "blink" && state.lastBlink === 1 &&
+              state.blinkOverlay?.naturalWidth) {
+            ctx.drawImage(state.blinkOverlay,state.frame*64,row*112,64,112,x,y,64*z,112*z);
+          }
+        }
+      }
     }
-  } else if (state.image?.complete && state.image.naturalWidth) {
-    const d = state.mode === "face" ? 0 :
-      state.direction === "auto" ? state.autoDir : Number(state.direction);
-    const row = (state.mode === "face" ? 4 : 0) + d;
-    const frame = state.mode === "face" ? 0 : state.frame;
-    ctx.drawImage(state.image, frame * 64, row * 112, 64, 112,
-                  x, y, 64 * z, 112 * z);
   }
 }
 
 function tick(time) {
-  if (state.playing && state.mode === "walk" && state.image?.naturalWidth) {
+  if (state.playing && state.image?.naturalWidth) {
     if (!state.lastFrameTime) state.lastFrameTime = time;
-    if (time - state.lastFrameTime >= 145) {
-      state.lastFrameTime = time;
-      const limit = Math.max(1, Math.min(6, state.selected?.walk_frames || 6));
-      state.frame++;
-      if (state.frame >= limit) {
-        state.frame = 0;
-        if (state.direction === "auto") state.autoDir = (state.autoDir + 1) % 4;
-      }
-      draw();
+    let frames, duration, done, loop;
+    if (state.mode === "face") {
+      frames = state.selected?.idle_frames || 4;
+      duration = 210;
+      loop = true;
+      state.lastBlink = Math.floor(time / 200) % 24 === 19 ? 1 : 0;
+    } else {
+      const motion = state.motion;
+      frames = motion?.frames || 6;
+      duration = motion?.frame_ms?.[state.frame] || 145;
+      loop = motion?.loop ?? true;
+      state.lastBlink = state.expression && Math.floor(time / 200) % 24 === 19 ? 1 : 0;
     }
+    if (time-state.lastFrameTime >= duration) {
+      state.lastFrameTime = time;
+      if (state.frame + 1 >= frames) {
+        if (loop) {
+          state.frame = 0;
+          if (state.mode !== "face" && state.direction === "auto") {
+            state.autoDir = (state.autoDir+1)%4;
+          }
+        } else {
+          state.frame = frames-1;
+          state.playing = false;
+          syncPlaybackButton();
+        }
+      } else state.frame++;
+    }
+    draw();
   }
   requestAnimationFrame(tick);
+}
+
+function saveCanvasPNG(out, name) {
+  // User-initiated local export; no source sprites uploaded to any server.
+  const link = document.createElement("a");
+  link.download = name;
+  link.href = out.toDataURL("image/png");
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
+function exportActionSheet() {
+  const action = state.motion || state.selected?.motions?.find(m => m.id === "walk");
+  if (!state.selected || !action?.available || !state.image?.naturalWidth) {
+    setStatus("MOTION NOT RIGGED FOR THIS CHARACTER.");
+    return;
+  }
+  const source = action.source === "custom" ? state.motionImage : state.image;
+  if (!source?.naturalWidth) return setStatus("ACTION SPRITE NOT YET LOADED.");
+  const out = document.createElement("canvas");
+  out.width = 64 * action.frames;
+  out.height = 112 * 4;
+  const context = out.getContext("2d");
+  context.imageSmoothingEnabled = false;
+  for (let dir = 0; dir < 4; dir++) for (let frame = 0; frame < action.frames; frame++) {
+    context.drawImage(source, frame * 64, (action.row + dir) * 112, 64, 112,
+      frame * 64, dir * 112, 64, 112);
+    if (action.source === "native" && state.expression && state.faceOverlay?.naturalWidth) {
+      context.drawImage(state.faceOverlay,frame*64,(action.row+dir)*112,64,112,
+        frame*64,dir*112,64,112);
+      if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
+        context.drawImage(state.blinkOverlay,frame*64,(action.row+dir)*112,64,112,
+          frame*64,dir*112,64,112);
+    }
+  }
+  saveCanvasPNG(out, state.selected.id + "_" + action.id + "_4dir.png");
+  setStatus("EXPORTED: " + action.id.toUpperCase() + " / " + state.selected.id.toUpperCase());
+}
+
+function exportFaceSheet() {
+  if (!state.selected || !state.expression || !state.image?.naturalWidth) return;
+  const frames = state.selected.idle_frames || 4;
+  const out = document.createElement("canvas");
+  out.width = frames * 64;
+  out.height = 112 * 4;
+  const context = out.getContext("2d");
+  context.imageSmoothingEnabled = false;
+  for (let dir = 0; dir < 4; dir++) {
+    for (let frame = 0; frame < frames; frame++) {
+      const row = (state.selected.row_starts?.idle ?? 4) + dir;
+      const sourceX = frame * 64, sourceY = row * 112;
+      const x = frame * 64, y = dir * 112;
+      context.drawImage(state.image,sourceX,sourceY,64,112,x,y,64,112);
+      if (state.faceOverlay?.naturalWidth)
+        context.drawImage(state.faceOverlay,sourceX,sourceY,64,112,x,y,64,112);
+      // Showcase the blink on frame 2 of the native idle breathing cycle.
+      if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
+        context.drawImage(state.blinkOverlay,sourceX,sourceY,64,112,x,y,64,112);
+    }
+  }
+  saveCanvasPNG(out,state.selected.id + "_" + state.expression.id + "_face_4dir.png");
+  setStatus("EXPORTED: ANIMATED FACE / " + state.expression.id.toUpperCase());
 }
 
 function renderPalette() {
@@ -412,6 +603,9 @@ $("tool-rewind").addEventListener("click", () => selectNext(-1));
 $("tool-next").addEventListener("click", () => selectNext(1));
 $("tab-info").addEventListener("click", () => setInspectorTab("info"));
 $("tab-faces").addEventListener("click", () => setInspectorTab("faces"));
+$("tab-motions").addEventListener("click", () => setInspectorTab("motions"));
+$("export-motion").addEventListener("click", exportActionSheet);
+$("export-face").addEventListener("click", exportFaceSheet);
 $("menu-edit").addEventListener("click", () => setInspectorTab("faces"));
 $("menu-view").addEventListener("click", toggleGrid);
 $("return-walk").addEventListener("click", () => { startWalking(); setInspectorTab("info"); });
@@ -434,6 +628,7 @@ document.addEventListener("keydown", event => {
   else if (event.key === "ArrowLeft") { event.preventDefault(); selectNext(-1); }
   else if (event.key === "ArrowRight") { event.preventDefault(); selectNext(1); }
   else if (event.key.toLowerCase() === "e") { setInspectorTab("faces"); }
+  else if (event.key.toLowerCase() === "m") { setInspectorTab("motions"); }
   else if (event.key.toLowerCase() === "g") { toggleGrid(); }
   else if (event.key === "+") { applyZoom(state.zoom + 1); }
   else if (event.key === "-") { applyZoom(state.zoom - 1); }

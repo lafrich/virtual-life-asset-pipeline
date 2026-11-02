@@ -118,7 +118,7 @@ def save_expression_previews(folder: Path, data: dict, sheet_path: Path, media: 
 
     expressions = [{"id": "neutral", "label": "Neutral",
                     "image": create_panel(base, slug + "-expression-neutral.png"),
-                    "sprite": raw_face(base, "neutral")}]
+                    "sprite": raw_face(base, "neutral"), "overlay": ""}]
     for name in data.get("sprites", []):
         p = Path(name)
         if not p.name.startswith(slug + "_v6b_f") or p.suffix.lower() != ".png":
@@ -141,13 +141,78 @@ def save_expression_previews(folder: Path, data: dict, sheet_path: Path, media: 
         composite.alpha_composite(overlay)
         if not ImageChops.difference(composite.convert("RGB"), base.convert("RGB")).getbbox():
             continue
+        overlay_name = slug + "-face-layer-" + code + ".png"
+        shutil.copy2(path, media / overlay_name)
         expressions.append({
             "id": code,
             "label": label,
             "image": create_panel(composite, slug + "-expression-" + code + ".png"),
-            "sprite": raw_face(composite, code)
+            "sprite": raw_face(composite, code),
+            "overlay": "media/" + overlay_name,
         })
     return expressions
+
+
+def available_actions(folder: Path, data: dict, slug: str, media: Path,
+                      actions: list[dict]) -> list[dict]:
+    """Build actual character motion bindings; never substitute another actor."""
+    bindings_file = folder / "motions.json"
+    cfg = json.loads(bindings_file.read_text(encoding="utf-8")) if bindings_file.exists() else {}
+    if cfg and cfg.get("character") != folder.name:
+        raise ValueError(f"{slug}: motions.json character binding does not match folder")
+    approved = cfg.get("approved_native_actions", ["idle", "walk"])
+    if not isinstance(approved, list) or len(set(approved)) != len(approved):
+        raise ValueError(f"{slug}: duplicate/invalid native action bindings")
+    choices = []
+    row_starts = data.get("row_starts", {})
+    for action in actions:
+        item = {
+            "id": action["id"], "name": action["label"], "category": action["category"],
+            "frames": action["frames"], "frame_ms": action["frame_ms"],
+            "loop": action["loop"], "available": False, "source": "",
+            "reason": "NEEDS CHARACTER RIG",
+        }
+        if action["type"] == "native_row" and action["id"] in approved:
+            row = row_starts.get(action["row"])
+            if not isinstance(row, int) or row < 0 or row + 4 > int(data.get("rows", 0)):
+                raise ValueError(f"{slug}: missing native sheet row for {action['id']}")
+            item.update(available=True, source="native", row=row, reason="")
+        choices.append(item)
+
+    custom_entries = cfg.get("custom_actions", [])
+    if not isinstance(custom_entries, list):
+        raise ValueError(f"{slug}: custom_actions must be a list")
+    for entry in custom_entries:
+        if not isinstance(entry, dict) or entry.get("id") not in {a["id"] for a in actions}:
+            raise ValueError(f"{slug}: invalid custom action id")
+        target = next(a for a in choices if a["id"] == entry["id"])
+        if target["available"]:
+            raise ValueError(f"{slug}: duplicate action binding {target['id']}")
+        sheet = checked_asset(folder, entry.get("sheet", ""))
+        with Image.open(sheet) as image:
+            if image.mode != "RGBA" or image.size != (64 * target["frames"], 112 * 4):
+                raise ValueError(f"{slug}: invalid custom sheet for {target['id']}")
+        filename = f"{slug}-action-{target['id']}.png"
+        shutil.copy2(sheet, media / filename)
+        target.update(available=True, source="custom", sheet="media/" + filename, row=0, reason="")
+    return choices
+
+
+def motion_actions() -> list[dict]:
+    filepath = ROOT / "assets" / "animation_library" / "actions.json"
+    data = json.loads(filepath.read_text(encoding="utf-8"))
+    result = data.get("actions")
+    if not isinstance(result, list) or not result:
+        raise ValueError("Empty shared animation action registry")
+    ids = set()
+    for action in result:
+        aid = action.get("id")
+        if not isinstance(aid, str) or not aid.replace("_", "").isalnum() or aid in ids:
+            raise ValueError(f"Invalid duplicate motion id: {aid}")
+        ids.add(aid)
+        if len(action.get("frame_ms", [])) != action.get("frames", -1):
+            raise ValueError(f"{aid}: frame count/timing mismatch")
+    return result
 
 
 def manifests():
@@ -166,6 +231,7 @@ def build():
     index = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else {}
     overrides = {v["id"]: v for v in index.get("characters", []) if isinstance(v, dict) and v.get("id")}
     results = []
+    actions = motion_actions()
     seen = set()
 
     for manifest_path in manifests():
@@ -206,6 +272,7 @@ def build():
                 (0, frame_y, SIZE[0], frame_y + SIZE[1])
             ).save(media / (slug + "-thumb.png"), optimize=True)
         expressions = save_expression_previews(folder, data, sheet, media, slug)
+        motions = available_actions(folder, data, slug, media, actions)
 
         title = override.get("name") or slug.replace("_", " ").replace("-", " ").title()
         description = override.get("character_look") or data.get("notes", "")
@@ -228,7 +295,10 @@ def build():
             "timestamp": updated_timestamp(manifest_path),
             "frame_size": "64 × 112",
             "walk_frames": frame_count,
+            "idle_frames": int(data.get("idle_frames", 4)),
+            "row_starts": data.get("row_starts", {}),
             "expressions": expressions,
+            "motions": motions,
         })
         print("Added", slug, "->", gif.relative_to(OUT))
 

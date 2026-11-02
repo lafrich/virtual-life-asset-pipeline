@@ -45,6 +45,13 @@
 * Keep `animation_catalog.status = template` until the owner approves actual animation poses. The website distinguishes template drafts from real playable previews. Never claim a template includes finished action frames.
 * See `docs/animation-library.md` for metadata, event timing, naming and publishing conventions.
 
+## Mixamo-style Character Motion Studio
+* Treat shared motion definitions (`assets/animation_library/actions.json`) and per-character compatibility (`assets/npc_*/motions.json`) as independent. Never replace a selected character with a GIF of another actor.
+* Native `walk/idle/talk/... ` actions are supported only where the character has real authored v6b rows and an explicit `approved_native_actions` binding. Non-native actions need a genuine per-character 64×112 × 4-direction pose sheet, preserved head/face/outfit, correct pivot, timing, and owner review.
+* Non-supported actions such as Press Button remain `NEEDS CHARACTER RIG`. New user-briefed actions belong in the shared registry, a character-specific pose source + PNG sheet, a `motions.json` mapping, and an approved learning record; then the UI discovers them automatically.
+* Expressions are genuine overlay sheets on the chosen character's idle frames with blink animation; do not import another character's eyes or skin.
+* See `docs/character-motion-studio.md` for the format and export controls.
+
 ## Verify checklist
 - [ ] `python3 tools/audit_colors.py <sprite dir>` → new colours: none (or listed), alpha only 0/56/255, shadows black.
 - [ ] Characters: `python3 tools/diff_sheet.py <new sheet> game/assets/chars/<name>_v6b_sheet.png` → 0 px on frames you did not change.

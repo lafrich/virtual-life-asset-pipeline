@@ -88,6 +88,7 @@
           <div class="detail-tabs" role="tablist" aria-label="Inspector">
             <button type="button" class="detail-tab active" id="tab-info" role="tab" aria-controls="info-panel" aria-selected="true">CHAR</button>
             <button type="button" class="detail-tab" id="tab-faces" role="tab" aria-controls="faces-panel" aria-selected="false">FACE <span id="face-tab-count">00</span></button>
+            <button type="button" class="detail-tab" id="tab-motions" role="tab" aria-controls="motions-panel" aria-selected="false">MOTION <span id="motion-tab-count">00</span></button>
           </div>
           <div class="detail-content">
             <section id="info-panel" role="tabpanel" aria-labelledby="tab-info">
@@ -108,8 +109,19 @@
             <section id="faces-panel" role="tabpanel" aria-labelledby="tab-faces" hidden>
               <div class="property-label">FACE_LAYERS</div>
               <h2 class="face-heading">EXPRESSIONS<span id="face-count">00</span></h2>
+              <p class="motion-hint">ANIMATED / BREATH + BLINK</p>
               <div class="face-grid" id="face-grid" role="group" aria-label="Select a facial expression"></div>
+              <button type="button" class="chrome-button face-back" id="export-face">↓ FACE SHEET.PNG</button>
               <button type="button" class="chrome-button face-back" id="return-walk">▶ BACK TO WALK</button>
+            </section>
+            <section id="motions-panel" role="tabpanel" aria-labelledby="tab-motions" hidden>
+              <div class="property-label">MOTION DATABASE / SELECT ACTION</div>
+              <h2 class="face-heading">TRY ON CHAR<span id="motion-count">00</span></h2>
+              <p class="motion-hint" id="motion-expression-active">FACE: NEUTRAL / SAME CHARACTER.</p>
+              <div id="motion-grid" class="motion-grid" role="group" aria-label="Apply motion to selected character"></div>
+              <button type="button" class="chrome-button face-back" id="export-motion">↓ MOTION SHEET.PNG</button>
+              <p id="motion-availability-note" class="motion-availability-note">Only rigged motion is playable.</p>
+              <a class="chrome-button face-back" target="_blank" rel="noopener noreferrer" href="https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/docs/character-motion-studio.md">+ NEW MOTION GUIDE</a>
             </section>
           </div>
         </aside>
@@ -169,6 +181,11 @@
               <div><span>VIEWS</span><strong id="animation-views">—</strong></div>
             </div>
             <div class="animation-note" id="animation-note">PREVIEW ONLY / NOT IN LIVE GAME</div>
+            <div class="retarget-panel">
+              <label for="animation-target-char">APPLY TO CHARACTER</label>
+              <select id="animation-target-char" aria-label="Choose character to test this motion"></select>
+              <button type="button" class="chrome-button action-main" id="animation-apply" disabled>NEEDS CHARACTER RIG</button>
+            </div>
             <div class="inspector-actions animation-actions">
               <a class="chrome-button action-main" id="animation-download" href="#" download>↓ PREVIEW.GIF</a>
               <a class="chrome-button" id="animation-source" href="#" target="_blank" rel="noopener noreferrer">↗ SOURCE</a>
