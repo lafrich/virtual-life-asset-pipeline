@@ -446,24 +446,41 @@ function refreshToolState(){
   const active=!state.panMode&&b.dataset.tool===state.tool;
   b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));
  });
- const pan=$("pan-toggle");pan.classList.toggle("active",state.panMode);
- pan.setAttribute("aria-pressed",String(state.panMode));
- $("gesture-hint").textContent=state.panMode?
-  "PAN ACTIVE · drag anywhere to scroll · tap a drawing tool to paint":
-  "DRAW ACTIVE · drag the empty margin to scroll · tap PAN to move the canvas";
- display.style.cursor=state.panMode?"grab":"crosshair";
+ const pan=$("pan-toggle");pan.classList.toggle("active",state.panMode);pan.setAttribute("aria-pressed",String(state.panMode));
+ const cursor=$("cursor-toggle");cursor.classList.toggle("active",state.cursorMode&&!state.panMode);
+ cursor.setAttribute("aria-pressed",String(state.cursorMode));
+ cursor.textContent=state.cursorMode?"⌖ CURSOR ON":"⌖ CURSOR OFF";
+ $("cursor-tap").disabled=!state.cursorMode||state.panMode||state.loading||state.syncing;
+ for(const id of ["cursor-left","cursor-up","cursor-down","cursor-right"])
+  $(id).disabled=!state.cursorMode||state.panMode;
+ $("gesture-hint").textContent=state.panMode?"PAN · drag to scroll without painting":
+  state.cursorMode?"CURSOR · drag canvas to move crosshair, TAP to edit":
+  "DIRECT · drag to paint/select; empty margin scrolls";
+ display.style.cursor=state.panMode?"grab":state.cursorMode?"none":"crosshair";
 }
 function initControls(){
  $("zoom").value=String(state.zoom);
  refreshToolState();
- $("pan-toggle").onclick=()=>{state.panMode=!state.panMode;refreshToolState();};
+ $("pan-toggle").onclick=()=>{cancelTemporaryMove();state.panMode=!state.panMode;refreshToolState();render();};
+ $("cursor-toggle").onclick=()=>{cancelTemporaryMove();state.cursorMode=!state.cursorMode;state.panMode=false;refreshToolState();render();};
+ $("cursor-tap").onclick=cursorTap;
+ for(const [id,dx,dy] of [["cursor-left",-1,0],["cursor-right",1,0],["cursor-up",0,-1],["cursor-down",0,1]])
+  $(id).onclick=()=>{if(state.cursorMode&&!state.panMode)moveCursor(state.cursor[0]+dx,state.cursor[1]+dy);};
+ for(const [id,dx,dy] of [["nudge-left",-1,0],["nudge-right",1,0],["nudge-up",0,-1],["nudge-down",0,1]])
+  $(id).onclick=()=>nudgeSelection(dx,dy);
+ $("flip-horizontal").onclick=()=>flipSelection("horizontal");
+ $("flip-vertical").onclick=()=>flipSelection("vertical");
+ $("deselect").onclick=()=>{cancelTemporaryMove();setSelection(null);};
  for(const color of PALETTE){const b=document.createElement("button");b.className="swatch";b.type="button";b.dataset.color=color;
   b.style.background=color;b.title=color;b.setAttribute("aria-label","Paint "+color);b.onclick=()=>{state.color=color;$("color").value=color;markSwatches();};$("swatches").append(b);}
  markSwatches();
- document.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>{state.tool=b.dataset.tool;state.panMode=false;refreshToolState();});
+ document.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>{
+  cancelTemporaryMove();state.tool=b.dataset.tool;state.panMode=false;refreshToolState();render();
+ });
  $("color").oninput=e=>{state.color=e.target.value;markSwatches();};
  $("brush-size").oninput=e=>{state.brush=Number(e.target.value);$("brush-label").textContent=state.brush+" PX";};
  $("edit-mode").onchange=async e=>{
+  cancelTemporaryMove();setSelection(null);
   await state.syncPromise;
   if(!state.loading)saveCurrent();
   state.mode=e.target.value;
@@ -474,7 +491,7 @@ function initControls(){
   }
   modeUI();
  };
- $("part").onchange=e=>{if(!state.loading)saveCurrent();state.part=e.target.value;modeUI();};
+ $("part").onchange=e=>{cancelTemporaryMove();if(!state.loading)saveCurrent();state.part=e.target.value;setSelection(null);modeUI();};
  $("action").onchange=e=>setFrame(e.target.value,state.dir,0);
  $("direction").onchange=async e=>{
   await state.syncPromise;
@@ -511,7 +528,8 @@ function initControls(){
   const k=e.key.toLowerCase();
   if((e.ctrlKey||e.metaKey)&&k==="z"){e.preventDefault();historyApply(e.shiftKey?false:true);return;}
   if(e.ctrlKey)return;
-  const b={b:"pencil",e:"erase",i:"pick",g:"fill"}[k];
+  if(k==="enter"&&state.cursorMode){e.preventDefault();cursorTap();return;}
+  const b={b:"pencil",e:"erase",i:"pick",g:"fill",s:"select",m:"move"}[k];
   if(b){document.querySelector('[data-tool="'+b+'"]').click();}
  });
 }
@@ -528,14 +546,14 @@ async function init(){
   for(const clip of state.clips){const o=document.createElement("option");o.value=clip.id;
    o.textContent=clip.name+" ("+clip.frames+" FRAMES)";$("action").append(o);}
   state.action=state.clips.some(c=>c.id==="idle")?"idle":state.clips[0].id;
-  await navigate();modeUI();$("source-state").textContent=state.clips.length+" ORIGINAL OTIS ACTIONS";
+  await navigate();modeUI();refreshToolState();$("source-state").textContent=state.clips.length+" ORIGINAL OTIS ACTIONS";
   try{const draft=localStorage.getItem(LOCAL)||localStorage.getItem(OLD_LOCAL);if(draft)await importObject(JSON.parse(draft),true);}
   catch(e){status("DRAFT INVALID (SOURCE SAFE) / "+e.message,true);}
  }catch(e){status("EDITOR NOT READY: "+e.message,true);}
 }
 window.VirtualLifePixelEditor={
  async flush(){
-  await state.syncPromise;
+  cancelTemporaryMove();await state.syncPromise;
   if(!state.loading)saveCurrent();
   clearTimeout(localTimer);
   try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}
@@ -543,6 +561,7 @@ window.VirtualLifePixelEditor={
  }
 };
 window.addEventListener("pagehide",()=>{if(state.loading)return;
+ cancelTemporaryMove();
  try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}
  catch(error){/* user can still explicitly export a patch */}});
 init();
