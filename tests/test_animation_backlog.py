@@ -62,6 +62,27 @@ class LifeSimBacklogTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     read_backlog(path)
 
+    def test_all_16_design_only_choreographies_reference_real_or_planned_ids(self):
+        flows = json.loads((BACKLOG.parent / "workflows.json").read_text(encoding="utf-8"))
+        self.assertEqual(flows["status"], "design_only")
+        self.assertEqual(len(flows["workflows"]), 16)
+        registry = json.loads((BACKLOG.parent / "actions.json").read_text(encoding="utf-8"))
+        ids = {a["id"] for a in read_backlog(BACKLOG)}
+        ids.update(a["id"] for a in registry["actions"])
+        seen = set()
+        for flow in flows["workflows"]:
+            self.assertEqual(flow["status"], "design_only")
+            self.assertNotIn(flow["id"], seen)
+            seen.add(flow["id"])
+            self.assertGreaterEqual(len(flow["steps"]), 3)
+            for index, step in enumerate(flow["steps"], 1):
+                self.assertEqual(step["order"], index)
+                self.assertIn(step["action_id"], ids)
+            self.assertTrue(flow["rules"]["commit_gameplay_at_event_marker"])
+            self.assertTrue(flow["rules"]["release_reserved_prop_on_cancel"])
+        restricted = next(f for f in flows["workflows"] if f["id"] == "pee_wall_restricted")
+        self.assertIn("facing_wall", restricted["requirements"])
+
     def test_planned_catalog_is_visible_but_never_a_fake_preview(self):
         # Production preview/legacy items are still loaded, and the expanded
         # catalog contains distinct, reviewable planned entries.
