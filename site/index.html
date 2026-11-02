@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="./style.css">
   <script defer src="./app.js?v=face-preview-fix-2"></script>
   <script defer src="./animations.js?v=life-sim-roadmap-v1"></script>
+  <script defer src="./rig-runtime.js?v=rig-studio-v1"></script>
+  <script defer src="./rig-studio.js?v=rig-studio-v1"></script>
 </head>
 <body>
   <div class="desktop">
@@ -30,6 +32,7 @@
       <div class="library-tabs" role="tablist" aria-label="Asset libraries">
         <button type="button" class="library-tab active" id="switch-chars" role="tab" aria-selected="true" aria-controls="character-workspace">01 / CHARACTERS</button>
         <button type="button" class="library-tab" id="switch-animations" role="tab" aria-selected="false" aria-controls="animation-workspace">02 / ANIMATIONS <span id="animation-total">--</span></button>
+        <button type="button" class="library-tab" id="switch-rigs" role="tab" aria-selected="false" aria-controls="rig-workspace">03 / RIG STUDIO</button>
         <span class="library-version">.V6B / DATABASE</span>
       </div>
       <div class="workspace" id="character-workspace" role="tabpanel" aria-labelledby="switch-chars">
@@ -202,6 +205,68 @@
               <a class="chrome-button action-main" id="animation-download" href="#" download>↓ PREVIEW.GIF</a>
               <a class="chrome-button" id="animation-source" href="#" target="_blank" rel="noopener noreferrer">↗ SOURCE</a>
             </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="workspace rig-workspace" id="rig-workspace" role="tabpanel" aria-labelledby="switch-rigs" hidden>
+        <aside class="tools-panel" aria-label="Rig studio tools">
+          <div class="tools-grid">
+            <button type="button" class="tool active" id="rig-toggle" title="Play / pause motion" aria-label="Play or pause">▶</button>
+            <button type="button" class="tool" id="rig-prev" title="Previous motion" aria-label="Previous motion">◀</button>
+            <button type="button" class="tool" id="rig-next" title="Next motion" aria-label="Next motion">▶</button>
+          </div>
+          <div class="tools-stamp"><span>✣</span><small>RIG<br>LAB</small></div>
+        </aside>
+        <aside class="asset-panel rig-assets" aria-label="Rig motion choices">
+          <div class="panel-heading"><strong>MOTION RIGS</strong><span id="rig-motion-total">--</span></div>
+          <label class="rig-selector-label" for="rig-character">CHARACTER / MODEL</label>
+          <select id="rig-character" class="rig-picker" aria-label="Choose character rig"></select>
+          <div class="rig-model-info"><strong id="rig-model-name">SELECT MODEL</strong><small id="rig-model-adapter">—</small></div>
+          <label class="asset-search"><span>⌕</span><input id="rig-search" type="search" placeholder="Find motion / prop..." aria-label="Search rig motions"></label>
+          <div class="file-filters animation-filters" role="group" aria-label="Filter motion compatibility">
+            <button type="button" class="anim-filter selected" data-rig-filter="ready" aria-pressed="true">READY</button>
+            <button type="button" class="anim-filter" data-rig-filter="planned" aria-pressed="false">PLAN</button>
+            <button type="button" class="anim-filter" data-rig-filter="all" aria-pressed="false">ALL</button>
+          </div>
+          <div class="file-list rig-motion-list" id="rig-motion-list" role="listbox" aria-label="Actor motion list"></div>
+        </aside>
+        <section class="canvas-panel" aria-label="Rig animation preview">
+          <div class="canvas-head"><span class="canvas-name" id="rig-canvas-title">RIG_PREVIEW</span><span class="canvas-badge">ORIGINAL PIXELS</span></div>
+          <div class="canvas-space rig-canvas-area">
+            <canvas id="rig-canvas" width="440" height="450" role="img" aria-label="Selected original character motion"></canvas>
+            <div class="rig-canvas-overlay" id="rig-canvas-overlay">CHOOSE A CHARACTER AND AN ACTION</div>
+          </div>
+          <div class="canvas-toolbar rig-toolbar">
+            <button type="button" class="chrome-button primary-control" id="rig-play">Ⅱ PAUSE</button>
+            <div class="directions" role="group" aria-label="Rig preview facing">
+              <button type="button" class="rig-dir dir active" data-rig-dir="se" aria-pressed="true">SE</button>
+              <button type="button" class="rig-dir dir" data-rig-dir="sw" aria-pressed="false">SW</button>
+              <button type="button" class="rig-dir dir" data-rig-dir="ne" aria-pressed="false">NE</button>
+              <button type="button" class="rig-dir dir" data-rig-dir="nw" aria-pressed="false">NW</button>
+            </div>
+            <span class="canvas-scale" id="rig-frame">--</span>
+          </div>
+        </section>
+        <aside class="details-panel" aria-label="Motion rig inspector">
+          <div class="panel-heading inspector-title"><strong>RIG PROPERTIES</strong><span>✕</span></div>
+          <div class="detail-content animation-inspector rig-inspector">
+            <div class="property-label">MODEL / ANIMATION</div>
+            <h2 id="rig-action-title">SELECT ANIMATION</h2>
+            <span class="animation-status" id="rig-ready-status">NOT SELECTED</span>
+            <div class="property-table animation-properties">
+              <div><span>MODEL</span><strong id="rig-inspect-model">—</strong></div>
+              <div><span>ADAPTER</span><strong id="rig-inspect-adapter">—</strong></div>
+              <div><span>FRAMES</span><strong id="rig-inspect-frames">—</strong></div>
+              <div><span>VIEWS</span><strong id="rig-inspect-views">4 DIR</strong></div>
+              <div><span>SOURCE</span><strong id="rig-inspect-source">—</strong></div>
+            </div>
+            <div class="animation-note" id="rig-inspect-note">Only real source-specific sprite atlases are available for playback.</div>
+            <div class="rig-actions">
+              <button type="button" class="chrome-button action-main" id="rig-include" disabled>↓ INCLUDE MOTION.JSON</button>
+              <button type="button" class="chrome-button" id="rig-copy" disabled>COPY IMPORT SNIPPET</button>
+            </div>
+            <p class="rig-disclaimer">READY = actual actor sprite frames. PLAN = needs original model adapter and pose authoring. Include exports an integration package; it does not change the live game.</p>
           </div>
         </aside>
       </section>
