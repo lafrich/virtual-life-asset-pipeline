@@ -32,7 +32,7 @@ class FaceSourceTests(unittest.TestCase):
                     out = []
                     for i in range(4):
                         im = Image.new("RGBA", (64, 112))
-                        im.putpixel((20 + i, 34), (colors[expr], 22, 33, 255))
+                        im.putpixel((30 + i, 40), (colors[expr], 22, 33, 255))
                         out.append(im)
                     return out
 
@@ -59,9 +59,9 @@ class FaceSourceTests(unittest.TestCase):
                     self.assertEqual(sheet.mode, "RGBA")
                     # Frame 9 temporarily uses the original closed/sleepy face.
                     if record["id"] != "sleepy":
-                        self.assertEqual(sheet.getpixel((9 * 64 + 21, 34))[0],
+                        self.assertEqual(sheet.getpixel((9 * 64 + 31, 40))[0],
                                          colors["sleepy"])
-                    self.assertEqual(sheet.getpixel((64 * 8 + 20, 34))[0],
+                    self.assertEqual(sheet.getpixel((64 * 8 + 30, 40))[0],
                                      colors[record["id"]])
                     self.assertEqual(sheet.getpixel((20, 2 * 112 + 34)),
                                      (12, 12, 12, 255))
