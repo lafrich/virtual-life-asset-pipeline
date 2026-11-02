@@ -561,12 +561,30 @@ def back_layers(se, C, O):
         for (x, y) in [(7, 20), (8, 21), (15, 22), (16, 23), (11, 27), (19, 26), (6, 30), (13, 31)]:
             if hb[y, R(x)] == '3': hb[y, R(x)] = '4'
     L['hair_front'] = hb
-    # ---- body: ear + neck + arms at the sides (forearms/hands are in front of the body -> hidden)
+    # ---- body: rear skull + ear + nape + neck, then arms at the sides.
+    # The reference rear hairstyle intentionally ends around y=16/17.
+    # Previously only a narrow 7px neck was drawn under it, leaving the
+    # *lower back of the head* absent (a flat cut on every short hairstyle).
+    # Complete the rounded scalp with skin beneath the existing hairstyle.
+    # These are 40x72 source-local coordinates; the four gameplay directions
+    # inherit the same silhouette through the native pose/mirror pipeline.
     body = empty()
-    for (x, y) in ear: body[y, x] = se['body'][y, x] or 'i'
+    for y, left, right in ((17, 5, 22), (18, 6, 21), (19, 7, 20),
+                           (20, 8, 19), (21, 9, 18)):
+        for x_local in range(left, right + 1):
+            x = R(x_local)
+            if (x, y) in hair:
+                continue                   # keep long/mid/wavy hair intact
+            edge = x_local in (left, right)
+            body[y, x] = '7' if edge else (
+                'e' if y >= 20 else ('h' if x_local >= 15 else 'i'))
+    for (x, y) in ear:
+        body[y, x] = se['body'][y, x] or 'i'
     for (x, y) in neck:
-        if (x, y) in hair: continue
-        body[y, x] = '7' if x in (R(10), R(16)) else ('e' if y >= 21 else ('h' if x >= R(14) else 'i'))
+        if (x, y) in hair:
+            continue
+        body[y, x] = '7' if x in (R(10), R(16)) else (
+            'e' if y >= 21 else ('h' if x >= R(14) else 'i'))
     for y in range(22, 45):
         for x in range(CW):
             c = se['body'][y, x]
