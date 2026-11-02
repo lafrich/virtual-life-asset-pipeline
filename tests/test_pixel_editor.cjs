@@ -72,4 +72,16 @@ assert.ok(controller.includes("core.movePixels("),"move must alter image data");
 assert.ok(controller.includes("commit(d.before,d.box)"),"move must support undo");
 assert.ok(controller.includes("cursorMode:MOBILE_TOUCH"),"mobile must use non-paint touchpad by default");
 
+
+const xpStyle=fs.readFileSync(path.join(base,"pixel-editor.css"),"utf8");
+const shellStyle=fs.readFileSync(path.join(base,"style.css"),"utf8");
+assert.ok(xpStyle.includes("--xp-face:#c9c8c4"),"editor must match original XP chrome");
+assert.ok(xpStyle.includes("html{width:100%;max-width:100%;min-width:0;overflow-x:hidden}"),"no horizontal page overflow on phones");
+assert.ok(xpStyle.includes("overflow:auto;padding:0"),"higher zooms scroll inside editor viewport");
+assert.ok(xpStyle.includes("padding:16px"),"canvas needs a non-paintable gutter on mobile");
+assert.ok(page.includes('<option value="2">2×</option>')&&page.includes('<option value="3">3×</option>'),"mobile needs smaller exact-pixel zoom values");
+assert.ok(controller.includes("function fitMobileZoom()")&&controller.includes("userSetZoom=true"),"mobile fit should yield to manual zoom");
+assert.ok(shellStyle.includes(".pixel-editor-overlay{inset:0;width:100%;max-width:100vw"),"original landing modal must fit the phone");
+assert.ok(app.includes('editorUrl.searchParams.set("embedded", "1")'),"original landing remains the editor entry point");
+
 console.log("PASS: real 64x112 pixel editor, region lock, brush/fill, validated import/export and Otis-only launch");
