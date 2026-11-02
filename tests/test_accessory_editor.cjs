@@ -74,7 +74,7 @@ for(const item of ["shirt","pants","shoes"]){
  assert.ok(editor.includes(item+":"),"Missing editable pixel box "+item);
 }
 assert.match(editor,/human-/);
-assert.match(editor,/base-guide\\.png/);
+assert.ok(editor.includes("base-guide.png"),"Human guide filename must match generated sprite guide");
 assert.match(app,/catalogCharacters=payload.characters.filter\(/);
 assert.match(app,/function saveCustomCharacter\(/);
 assert.match(app,/base\.motions\.filter\(/,"Keep full base motions on saved character");
