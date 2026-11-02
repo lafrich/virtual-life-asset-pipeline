@@ -116,3 +116,9 @@ python tools/new_animation_template.py --name scratch_head --preset emote_loop
 ```
 
 The scaffold contains an editable 4-direction timing manifest, frame paths and a GIF packager, **not fabricated pose animation**. See `docs/animation-library.md`.
+
+## Character Motion Studio (Mixamo-style)
+
+Character Stock → choose Bowie/Milk Mascot → **MOTION** or **FACE**. Native Walk/Idle/Talk/Sit motions run on the **selected character's real sprites**, and FACE cycles their idle frames with blinking expression overlays. Export playable action spritesheets and animated face 4-direction sheets directly from the browser. The old ANIMATIONS tab remains a reference library; **TRY ON CHARACTER** only activates for genuinely rigged actions (no fake substitution of Ichsan clips).
+
+New actions live in `assets/animation_library/actions.json`, with per-character compatibility in `assets/npc_*/motions.json`, and optional committed custom motion sheets. Read `docs/character-motion-studio.md`. Press Button / Pick Up are defined but NOT retargeted to Bowie or Milk yet and display **NEEDS RIG**.
