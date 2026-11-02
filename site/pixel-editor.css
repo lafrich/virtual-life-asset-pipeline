@@ -4,3 +4,29 @@
 body.embedded{padding:0;background:#e8e9e6}
 body.embedded .paint{border:0;box-shadow:none}
 body.embedded .desktop-foot{display:none}
+
+
+/* Drawing tools sit immediately beneath the scrollable sprite canvas. */
+.drawing-toolbar{background:#edf0f2;border-top:1px solid #99a8b8;padding:10px 12px;display:flex;flex-direction:column;gap:9px}
+.drawing-tools-row{display:grid;grid-template-columns:minmax(250px,1fr) 88px minmax(126px,.47fr);gap:10px;align-items:end}
+.drawing-toolbar .tools{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.drawing-toolbar .tools button{white-space:nowrap;padding:9px 5px;font-size:11px}
+.drawing-ink,.drawing-brush{display:flex;flex-direction:column;gap:4px;min-width:0}
+.drawing-ink label,.drawing-brush label{font-size:10px;font-weight:bold;color:#3a5070;white-space:nowrap}
+.drawing-ink input[type=color]{height:34px}
+.drawing-brush input[type=range]{height:27px;margin:0}
+.drawing-toolbar .swatches{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:4px;margin:0}
+.drawing-toolbar .swatch{height:22px;min-width:0;aspect-ratio:auto}
+@media(max-width:850px){
+ .drawing-tools-row{grid-template-columns:90px minmax(0,1fr)}
+ .drawing-toolbar .tools{grid-column:1/-1}
+ .drawing-toolbar .swatches{grid-template-columns:repeat(12,minmax(0,1fr))}
+}
+@media(max-width:680px){
+ .canvas-column{order:0}
+ .controls{order:1}
+ .export-panel{order:2}
+ .canvas-scroll{min-height:340px;max-height:52vh}
+ .drawing-toolbar{padding:9px}
+ .drawing-toolbar .tools button{font-size:10px}
+}
