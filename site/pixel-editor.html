@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#e9e7db">
 <title>Otis Pixel Editor — Virtual Life</title>
-<link rel="stylesheet" href="./pixel-editor.css?v=master-parts-1">
+<link rel="stylesheet" href="./pixel-editor.css?v=toolbar-under-canvas-1">
 <script defer src="./pixel-edit-core.js?v=master-parts-1"></script>
 <script defer src="./master-parts.js?v=master-parts-1"></script>
 <script defer src="./pixel-editor.js?v=master-parts-1"></script>
@@ -18,17 +18,6 @@
 <div id="editor-status" class="status" role="status">LOADING ORIGINAL OTIS SPRITES...</div>
 <div class="workspace">
 <aside class="controls">
-<h2>TOOLS</h2>
-<div class="tools">
-<button type="button" data-tool="pencil" class="active">✎ PENCIL <kbd>B</kbd></button>
-<button type="button" data-tool="erase">▤ ERASER <kbd>E</kbd></button>
-<button type="button" data-tool="pick">◉ PICKER <kbd>I</kbd></button>
-<button type="button" data-tool="fill">▣ FILL <kbd>G</kbd></button>
-</div>
-<div class="control"><label for="color">INK COLOR</label><input id="color" type="color" value="#61b3c4"></div>
-<div id="swatches" class="swatches" aria-label="Otis color palette"></div>
-<div class="control"><label for="brush-size">BRUSH SIZE <output id="brush-label">1 PX</output></label><input id="brush-size" type="range" min="1" max="4" value="1"></div>
-<div class="divider"></div>
 <h2>CHARACTER MASTER</h2>
 <div class="control"><label for="edit-mode">EDITING MODE</label><select id="edit-mode">
 <option value="master">MASTER / APPLY TO FRAMES</option>
@@ -53,6 +42,19 @@
 <div class="canvas-header"><strong id="canvas-title">OTIS / IDLE / SE / F0</strong><span id="frame-dirty">SOURCE PIXELS</span></div>
 <div id="canvas-scroll" class="canvas-scroll">
 <canvas id="pixel-canvas" width="512" height="896" aria-label="Editable pixel sprite. Drag to paint at 8x zoom."></canvas>
+</div>
+<div class="drawing-toolbar" aria-label="Pixel drawing tools">
+<div class="drawing-tools-row">
+<div class="tools" role="group" aria-label="Paint tools">
+<button type="button" data-tool="pencil" class="active">✎ PENCIL <kbd>B</kbd></button>
+<button type="button" data-tool="erase">▤ ERASER <kbd>E</kbd></button>
+<button type="button" data-tool="pick">◉ PICKER <kbd>I</kbd></button>
+<button type="button" data-tool="fill">▣ FILL <kbd>G</kbd></button>
+</div>
+<div class="drawing-ink"><label for="color">INK COLOR</label><input id="color" type="color" value="#61b3c4"></div>
+<div class="drawing-brush"><label for="brush-size">BRUSH SIZE <output id="brush-label">1 PX</output></label><input id="brush-size" type="range" min="1" max="4" value="1"></div>
+</div>
+<div id="swatches" class="swatches" aria-label="Otis color palette"></div>
 </div>
 <div class="canvas-footer">
 <label>ZOOM <select id="zoom"><option value="4">4×</option><option value="6">6×</option><option value="8" selected>8×</option><option value="10">10×</option></select></label>
