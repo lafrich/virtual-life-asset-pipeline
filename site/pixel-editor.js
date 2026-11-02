@@ -463,6 +463,29 @@ function refreshToolState(){
   "DIRECT · drag to paint/select; empty margin scrolls";
  display.style.cursor=state.panMode?"grab":state.cursorMode?"none":"crosshair";
 }
+
+/* Keep the native pixel grid integer-scaled, but fit the first view to a narrow
+   phone screen. Larger zooms remain scrollable inside canvas-scroll only. */
+let userSetZoom=false;
+function fitMobileZoom(){
+ if(!window.matchMedia("(max-width:700px)").matches||userSetZoom)return;
+ const area=$("canvas-scroll");
+ if(!area)return;
+ const available=Math.max(160,area.clientWidth-36);
+ const fit=Math.max(2,Math.min(4,Math.floor(available/WIDTH)));
+ if(fit===state.zoom)return;
+ state.zoom=fit;
+ $("zoom").value=String(fit);
+ render();
+}
+function checkEditorWidth(){
+ const root=document.querySelector(".paint");
+ if(!root)return;
+ const viewport=document.documentElement.clientWidth;
+ const excess=root.getBoundingClientRect().width-viewport;
+ if(excess>2)status("EDITOR WIDTH OVERFLOW: "+Math.round(excess)+"PX",true);
+}
+
 function initControls(){
  $("zoom").value=String(state.zoom);
  refreshToolState();
@@ -507,7 +530,7 @@ function initControls(){
  $("frame").oninput=e=>setFrame(state.action,state.dir,Number(e.target.value));
  $("prev-frame").onclick=()=>setFrame(state.action,state.dir,(state.frame+frameCount()-1)%frameCount());
  $("next-frame").onclick=()=>setFrame(state.action,state.dir,(state.frame+1)%frameCount());
- $("zoom").onchange=e=>{state.zoom=Number(e.target.value);render();};
+ $("zoom").onchange=e=>{userSetZoom=true;state.zoom=Number(e.target.value);render();};
  $("grid").onchange=e=>{state.grid=e.target.checked;render();};
  $("undo").onclick=()=>historyApply(true);$("redo").onclick=()=>historyApply(false);
  $("reset-frame").onclick=()=>{if(!state.current)return;
@@ -541,7 +564,8 @@ function initControls(){
  });
 }
 async function init(){
- initControls();render();
+ initControls();fitMobileZoom();render();
+ window.addEventListener("resize",()=>{fitMobileZoom();});
  try{
   const response=await fetch("./motion-packs/legacy_otis.json",{cache:"no-store"});
   if(!response.ok)throw Error("Motion pack unavailable: "+response.status);
@@ -553,7 +577,7 @@ async function init(){
   for(const clip of state.clips){const o=document.createElement("option");o.value=clip.id;
    o.textContent=clip.name+" ("+clip.frames+" FRAMES)";$("action").append(o);}
   state.action=state.clips.some(c=>c.id==="idle")?"idle":state.clips[0].id;
-  await navigate();modeUI();refreshToolState();$("source-state").textContent=state.clips.length+" ORIGINAL OTIS ACTIONS";
+  await navigate();modeUI();refreshToolState();fitMobileZoom();$("source-state").textContent=state.clips.length+" ORIGINAL OTIS ACTIONS";
   try{const draft=localStorage.getItem(LOCAL)||localStorage.getItem(OLD_LOCAL);if(draft)await importObject(JSON.parse(draft),true);}
   catch(e){status("DRAFT INVALID (SOURCE SAFE) / "+e.message,true);}
  }catch(e){status("EDITOR NOT READY: "+e.message,true);}
