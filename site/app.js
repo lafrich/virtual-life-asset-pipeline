@@ -716,7 +716,7 @@ $("edit-pixels").addEventListener("click", () => {
   const overlay = $("pixel-editor-overlay");
   overlay.hidden = false;
   document.body.classList.add("pixel-editor-open");
-  $("pixel-editor-embed").src = "./pixel-editor.html?actor=legacy_otis&embedded=1&ui=mobile-pan-2";
+  $("pixel-editor-embed").src = "./pixel-editor.html?actor=legacy_otis&embedded=1&ui=touch-cursor-select-1";
   $("close-pixel-editor").focus();
 });
 async function closePixelEditor() {
