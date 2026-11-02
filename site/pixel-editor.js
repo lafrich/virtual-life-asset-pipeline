@@ -210,6 +210,10 @@ function moveCursor(x,y){
 function cursorTap(){
  if(!state.cursorMode||state.panMode||state.loading||state.syncing||!state.current)return;
  const [x,y]=state.cursor;
+ if(state.tool==="move"&&state.touchMoveAnchor){
+  const d=state.touchMoveAnchor;state.touchMoveAnchor=null;
+  commit(d.before,d.box);status("MOVE APPLIED · UNDO AVAILABLE");return;
+ }
  if(!editable(x,y)){status("CURSOR OUTSIDE "+state.part.toUpperCase()+" AREA");return;}
  if(state.tool==="select"){
   if(!state.touchSelectAnchor){
@@ -226,9 +230,6 @@ function cursorTap(){
    if(!inBox([x,y],state.selection)){status("MOVE: TAP INSIDE SELECTION FIRST");return;}
    state.touchMoveAnchor={start:[x,y],before:snapshot(),box:state.selection.slice()};
    status("MOVE: DRAG CURSOR THEN TAP TO DROP");
-  }else{
-   const d=state.touchMoveAnchor;state.touchMoveAnchor=null;commit(d.before,d.box);
-   status("MOVE APPLIED · UNDO AVAILABLE");
   }return;
  }
  if(state.tool==="pick"){pickPixel(x,y);return;}
