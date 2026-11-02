@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#043d9e">
   <meta name="description" content="Virtual Life character stock. Pixel people, Windows Paint energy.">
   <title>character_stock.pnt — Paint</title>
-  <link rel="stylesheet" href="./style.css?v=mobile-edit-fit-20261103-v1">
-  <script defer src="./app.js?v=xp-mobile-fit-20261103-v3"></script>
+  <link rel="stylesheet" href="./style.css?v=accessories-v1-20261103">
+  <script defer src="./app.js?v=accessories-v1-20261103"></script>
   <script defer src="./animations.js?v=life-sim-roadmap-v1"></script>
 </head>
 <body>
@@ -87,6 +87,7 @@
             <button type="button" class="detail-tab active" id="tab-info" role="tab" aria-controls="info-panel" aria-selected="true">CHAR</button>
             <button type="button" class="detail-tab" id="tab-faces" role="tab" aria-controls="faces-panel" aria-selected="false">FACE <span id="face-tab-count">00</span></button>
             <button type="button" class="detail-tab" id="tab-motions" role="tab" aria-controls="motions-panel" aria-selected="false">MOTION <span id="motion-tab-count">00</span></button>
+            <button type="button" class="detail-tab" id="tab-accessories" role="tab" aria-controls="accessories-panel" aria-selected="false">AKSESORIS</button>
           </div>
           <div class="detail-content">
             <section id="info-panel" role="tabpanel" aria-labelledby="tab-info">
@@ -124,6 +125,19 @@
               <button type="button" class="chrome-button face-back" id="export-motion">↓ MOTION SHEET.PNG</button>
               <p id="motion-availability-note" class="motion-availability-note">Only rigged motion is playable.</p>
               <a class="chrome-button face-back" target="_blank" rel="noopener noreferrer" href="https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/docs/character-motion-studio.md">+ NEW MOTION GUIDE</a>
+            </section>
+            <section id="accessories-panel" role="tabpanel" aria-labelledby="tab-accessories" hidden>
+              <div class="property-label">CUSTOM ACCESSORIES / PIXEL ASSETS</div>
+              <h2 class="accessory-panel-title">AKSESORIS <small>02 CATEGORIES</small></h2>
+              <p class="motion-hint">Bikin HELM atau TAS dengan guide Theodore botak + kacamata, tanpa helm atau tas bawaan.</p>
+              <div class="accessory-create-buttons">
+                <button type="button" class="chrome-button action-main" id="make-helmet">✎ CUSTOM HELM</button>
+                <button type="button" class="chrome-button action-main" id="make-bag">✎ CUSTOM TAS</button>
+              </div>
+              <div class="property-label">STORAGE / SAVED ACCESSORIES</div>
+              <div id="accessory-storage-list" class="accessory-storage-list" aria-label="Saved helmets and bags"></div>
+              <p id="accessory-equipped" class="accessory-equipped">NO ACCESSORIES ATTACHED</p>
+              <p class="accessory-note">Hanya dua kategori untuk sekarang. PNG aksesori tersimpan terpisah dari sprite asli. Equipment preview lokal di browser ini; tiap arah 64×112.</p>
             </section>
           </div>
         </aside>
@@ -219,9 +233,9 @@
     </main>
     <div class="desktop-foot"><span>© VIRTUAL LIFE</span><span>MADE OF PIXELS, NOT PROMISES.</span></div>
   </div>
-  <section id="pixel-editor-overlay" class="pixel-editor-overlay" role="dialog" aria-modal="true" aria-label="Virtual Life character pixel editor" hidden>
+  <section id="pixel-editor-overlay" class="pixel-editor-overlay" role="dialog" aria-modal="true" aria-label="Virtual Life character and accessory editor" hidden>
     <div class="pixel-editor-dialog">
-      <div class="pixel-editor-heading"><strong>CHARACTER / PIXEL & MASTER PARTS EDITOR</strong><button type="button" id="close-pixel-editor" aria-label="Close pixel editor">× CLOSE</button></div>
+      <div class="pixel-editor-heading"><strong id="pixel-editor-heading-title">CHARACTER / PIXEL & MASTER PARTS EDITOR</strong><button type="button" id="close-pixel-editor" aria-label="Close pixel editor">× CLOSE</button></div>
       <iframe id="pixel-editor-embed" title="Otis pixel and master part editor" loading="lazy" src="about:blank"></iframe>
     </div>
   </section>
