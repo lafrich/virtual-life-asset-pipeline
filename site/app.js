@@ -168,10 +168,9 @@ function selectMotion(action) {
   if (!state.selected || !action || !action.available) return;
   state.mode = "action";
   state.motion = action;
-  state.expression = null;
+  // Keep the chosen facial expression when switching body motion. Native
+  // v6b expression delta sheets cover EVERY authored animation row.
   state.faceImage = null;
-  state.faceOverlay = null;
-  state.blinkOverlay = null;
   state.frame = 0;
   state.autoDir = 0;
   state.lastFrameTime = 0;
@@ -186,10 +185,8 @@ function selectMotion(action) {
       draw();
     });
   }
-  [...$("face-grid").children].forEach(b => {
-    b.classList.remove("active");
-    b.setAttribute("aria-pressed","false");
-  });
+  $("motion-expression-active").textContent = "FACE: " +
+    (state.expression?.label?.toUpperCase() || "NEUTRAL") + " / SAME CHARACTER.";
   syncMotionSelection();
   syncPlaybackButton();
   syncTools();
@@ -201,7 +198,6 @@ function selectFace(face) {
   if (!state.selected || !face) return;
   state.mode = "face";
   state.expression = face;
-  state.motion = null;
   state.faceOverlay = null;
   state.blinkOverlay = null;
   state.frame = 0;
@@ -229,6 +225,8 @@ function selectFace(face) {
     button.classList.toggle("active",active);
     button.setAttribute("aria-pressed",String(active));
   });
+  $("motion-expression-active").textContent = "FACE: " + face.label.toUpperCase() +
+    " / ACTIVE ON NATIVE MOTIONS.";
   syncMotionSelection();
   syncPlaybackButton();
   syncTools();
@@ -301,7 +299,9 @@ function setInspectorTab(tab) {
     selectFace(state.selected.expressions[0]);
   }
   if (isMotion && state.selected && state.mode === "face") {
-    startWalking();
+    const choice = state.motion?.available ? state.motion :
+      state.selected.motions?.find(m => m.id === "walk" && m.available);
+    if (choice) selectMotion(choice);
   }
   syncTools();
 }
@@ -429,6 +429,15 @@ function draw() {
       if (source?.naturalWidth) {
         const row = (motion?.row ?? 0) + d;
         ctx.drawImage(source,state.frame*64,row*112,64,112,x,y,64*z,112*z);
+        // Expression blend is pixel-aligned on the selected actor's native
+        // 44-row sheet; never apply original-row deltas onto unrelated custom rigs.
+        if (!custom && state.expression && state.faceOverlay?.naturalWidth) {
+          ctx.drawImage(state.faceOverlay,state.frame*64,row*112,64,112,x,y,64*z,112*z);
+          if (state.expression.id !== "blink" && state.lastBlink === 1 &&
+              state.blinkOverlay?.naturalWidth) {
+            ctx.drawImage(state.blinkOverlay,state.frame*64,row*112,64,112,x,y,64*z,112*z);
+          }
+        }
       }
     }
   }
@@ -448,7 +457,7 @@ function tick(time) {
       frames = motion?.frames || 6;
       duration = motion?.frame_ms?.[state.frame] || 145;
       loop = motion?.loop ?? true;
-      state.lastBlink = 0;
+      state.lastBlink = state.expression && Math.floor(time / 200) % 24 === 19 ? 1 : 0;
     }
     if (time-state.lastFrameTime >= duration) {
       state.lastFrameTime = time;
@@ -496,6 +505,13 @@ function exportActionSheet() {
   for (let dir = 0; dir < 4; dir++) for (let frame = 0; frame < action.frames; frame++) {
     context.drawImage(source, frame * 64, (action.row + dir) * 112, 64, 112,
       frame * 64, dir * 112, 64, 112);
+    if (action.source === "native" && state.expression && state.faceOverlay?.naturalWidth) {
+      context.drawImage(state.faceOverlay,frame*64,(action.row+dir)*112,64,112,
+        frame*64,dir*112,64,112);
+      if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
+        context.drawImage(state.blinkOverlay,frame*64,(action.row+dir)*112,64,112,
+          frame*64,dir*112,64,112);
+    }
   }
   saveCanvasPNG(out, state.selected.id + "_" + action.id + "_4dir.png");
   setStatus("EXPORTED: " + action.id.toUpperCase() + " / " + state.selected.id.toUpperCase());
