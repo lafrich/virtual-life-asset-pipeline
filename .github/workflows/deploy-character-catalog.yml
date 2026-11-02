@@ -23,6 +23,7 @@ on:
       - "tools/build_character_catalog.py"
       - "tools/build_rig_studio.py"
       - "tests/test_rig_studio.py"
+      - "tests/test_otis_helmet.py"
       - "tests/test_rig_runtime.cjs"
       - "tests/test_shared_bone_runtime.cjs"
       - "assets/animation_library/category_skeletons.json"
