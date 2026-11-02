@@ -30,3 +30,31 @@ body.embedded .desktop-foot{display:none}
  .drawing-toolbar{padding:9px}
  .drawing-toolbar .tools button{font-size:10px}
 }
+
+/* Mobile-first drawing viewport: sizeable non-paint gutter around the real canvas. */
+.canvas-scroll{display:block;overflow:auto;min-height:0;overscroll-behavior:auto;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch}
+.canvas-stage{box-sizing:border-box;width:max-content;min-width:100%;min-height:100%;padding:64px;display:flex;align-items:center;justify-content:center;touch-action:pan-x pan-y}
+#pixel-canvas{touch-action:none}
+.gesture-hint{display:block;font-size:10px;color:#45627c}
+.drawing-toolbar .tools{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:680px){
+ body.embedded .menubar,body.embedded .intro,body.embedded .titlebar{display:none}
+ .workspace{min-height:0}
+ .canvas-column{order:0}
+ .canvas-scroll{flex:0 0 auto;height:clamp(240px,39dvh,360px);min-height:0;max-height:none;padding:0}
+ .canvas-stage{padding:48px}
+ .drawing-toolbar{position:sticky;bottom:0;z-index:8;padding:8px;gap:6px;box-shadow:0 -2px 5px rgba(20,45,77,.12)}
+ .drawing-tools-row{grid-template-columns:1fr 1fr;gap:7px}
+ .drawing-toolbar .tools{grid-column:1/-1;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+ .drawing-toolbar .tools button{font-size:10px;min-height:36px;white-space:nowrap;padding:7px 0}
+ .drawing-toolbar .tools kbd{display:none}
+ .drawing-toolbar .swatches{grid-template-columns:repeat(12,minmax(0,1fr));gap:3px}
+ .drawing-toolbar .swatch{height:20px}
+ .drawing-toolbar .drawing-ink input[type=color]{height:30px}
+ .drawing-toolbar .drawing-brush input[type=range]{height:24px}
+ .canvas-footer{padding:6px 8px;gap:6px}
+ .gesture-hint{font-size:9px;flex-basis:100%;line-height:1.3}
+ .controls{order:1}
+ .export-panel{order:2}
+ .intro{display:none}
+}
