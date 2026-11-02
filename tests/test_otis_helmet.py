@@ -60,6 +60,29 @@ class OtisVisualTests(unittest.TestCase):
                              O.helmet(base, direction, 1).tobytes(),
                              "No extra rotating muzzle on the back of the helmet")
 
+    def test_side_disc_follows_theodore_body_facing(self):
+        # Theodore's SE/NE V6B faces viewer-right, and SW/NW faces left.
+        # Canonical Otis art was authored facing left; the previous code
+        # swapped only the HEAD mirror mapping and pointed the cap backward.
+        # Check the opaque circular ear/endcap's actual pixel location,
+        # rather than merely checking that SE and SW sheets differ.
+        empty = Image.new("RGBA", (64, 112))
+        for facing, side_x in (("se", 15), ("sw", 49),
+                               ("ne", 15), ("nw", 49)):
+            frame = O.helmet(empty, facing)
+            self.assertEqual(frame.getpixel((side_x, 48))[:3],
+                             tuple(bytes.fromhex(O.C["c_light"].lstrip("#"))),
+                             f"{facing}: helmet endcap must be on body's rearward side")
+            opposite = 49 if side_x == 15 else 15
+            self.assertNotEqual(frame.getpixel((opposite, 48))[:3],
+                                tuple(bytes.fromhex(O.C["c_light"].lstrip("#"))),
+                                f"{facing}: cannot leave endcap on forward side")
+        # No change to leg sprites or torso/face orientation.
+        original = O.T.frame("se", "idle", 0)
+        updated = O.helmet(original, "se")
+        self.assertEqual(updated.crop((0, 73, 64, 112)).tobytes(),
+                         original.crop((0, 73, 64, 112)).tobytes())
+
     def test_compact_helmet_and_flat_square_rear(self):
         base = Image.new("RGBA", (64, 112))
         for direction in ("se", "sw"):
