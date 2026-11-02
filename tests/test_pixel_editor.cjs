@@ -37,4 +37,39 @@ for(const id of ["pixel-canvas","action","direction","frame","undo","redo",
 assert.ok(controller.includes("localStorage.setItem(LOCAL"),"draft must save in browser");
 assert.ok(controller.includes("core.validatePatch(p"),"import must validate patch");
 assert.ok(controller.includes("toPNG(data)"),"must export exact PNG frames");
+
+const region=[8,18,56,72];
+const rect=core.selectionRect(22,32,20,30,region);
+assert.deepEqual(rect,[20,30,23,33]);
+const bitmap=()=>({data:new Uint8ClampedArray(64*112*4)});
+const original=bitmap();
+const put=(target,x,y,r)=>target.data.set([r,0,0,255],(y*64+x)*4);
+const get=(target,x,y)=>Array.from(target.data.slice((y*64+x)*4,(y*64+x)*4+4));
+put(original,20,30,101);put(original,22,31,202);put(original,0,0,99);
+const flippedH=core.flipPixels(original,rect,"horizontal",region);
+assert.deepEqual(get(flippedH,22,30),[101,0,0,255]);
+assert.deepEqual(get(flippedH,20,31),[202,0,0,255]);
+const flippedV=core.flipPixels(original,rect,"vertical",region);
+assert.deepEqual(get(flippedV,20,32),[101,0,0,255]);
+const translated=core.movePixels(original,rect,3,2,region);
+assert.deepEqual(translated.box,[23,32,26,35]);
+assert.deepEqual(get(translated,23,32),[101,0,0,255]);
+assert.deepEqual(get(translated,20,30),[0,0,0,0]);
+assert.deepEqual(get(translated,0,0),[99,0,0,255],"unchanged pixels outside body part");
+assert.deepEqual(core.movePixels(original,rect,999,-999,region).box,[53,18,56,21]);
+assert.throws(()=>core.flipPixels(original,[0,0,10,10],"horizontal",region));
+assert.throws(()=>core.movePixels(original,rect,1.5,0,region));
+for(const id of ["pan-toggle","cursor-toggle","cursor-tap","cursor-left","cursor-right",
+ "cursor-up","cursor-down","flip-horizontal","flip-vertical","deselect",
+ "nudge-left","nudge-right","nudge-up","nudge-down","selection-info"])
+ assert.ok(page.includes('id="'+id+'"'),"Missing touchpad/selection control "+id);
+for(const tool of ["select","move","pencil","erase","pick","fill"])
+ assert.ok(page.includes('data-tool="'+tool+'"'),"Missing tool "+tool);
+assert.ok(controller.includes("function cursorTap()"),"touch cursor needs an apply handler");
+assert.ok(controller.includes("function editMove(e)"),"cursor must track pointer movement");
+assert.ok(controller.includes("core.flipPixels("),"flip must alter image data");
+assert.ok(controller.includes("core.movePixels("),"move must alter image data");
+assert.ok(controller.includes("commit(d.before,d.box)"),"move must support undo");
+assert.ok(controller.includes("cursorMode:MOBILE_TOUCH"),"mobile must use non-paint touchpad by default");
+
 console.log("PASS: real 64x112 pixel editor, region lock, brush/fill, validated import/export and Otis-only launch");
