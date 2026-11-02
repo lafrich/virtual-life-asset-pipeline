@@ -12,7 +12,7 @@ import math
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageChops, ImageDraw, ImageOps
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
@@ -55,10 +55,20 @@ def helmet(source: Image.Image, view: str, phase: int = 0) -> Image.Image:
     # Source is double-mirrored to preserve the original Theodore body view.
     mirror = view in ("se", "ne")
     im = ImageOps.mirror(source) if mirror else source.copy()
-    d = ImageDraw.Draw(im)
-    # Clear Theodore's old dome on both working orientations, without
-    # touching the costume/backpack below the head.
-    d.rectangle((13, 25, 51, 42), fill=(0, 0, 0, 0))
+    # The underlying V6B source already knows the true per-frame HEAD bob.
+    # Derive the dome's top from source pixels (idle f0 = y30) instead of
+    # making up a separate gait or moving the original body.
+    head_bbox = im.getchannel("A").crop((18, 22, 50, 43)).getbbox()
+    top = 22 + head_bbox[1] if head_bbox else 30
+    head_dy = max(-3, min(5, top - 30)) if 27 <= top <= 35 else 0
+    old = ImageDraw.Draw(im)
+    # Clear only the original dome. No changes below the neck or to backpack.
+    old.rectangle((13, 25 + head_dy, 51, 42 + head_dy),
+                  fill=(0, 0, 0, 0))
+    # Draw the new helmet onto an INDEPENDENT moving part. The original
+    # character sprite is never mirrored in the final saved asset.
+    head = Image.new("RGBA", (64, 112))
+    d = ImageDraw.Draw(head)
     if front:
         # Compact almost-square shell, approximately equal to shoulder width.
         d.polygon([(21, 38), (23, 32), (28, 29), (44, 29),
@@ -139,6 +149,11 @@ def helmet(source: Image.Image, view: str, phase: int = 0) -> Image.Image:
         d.ellipse((46, 40, 52, 53), fill=C["c_med"])
         d.ellipse((47, 41, 51, 52), fill=C["c_light"])
         d.line([(47, 42), (48, 41)], fill=C["c_hi"])
+    # Apply the authentic per-frame head displacement to all Otis helmet
+    # parts together, including the chrome and rotating muzzle.
+    if head_dy:
+        head = ImageChops.offset(head, 0, head_dy)
+    im.alpha_composite(head)
     return ImageOps.mirror(im) if mirror else im
 
 
