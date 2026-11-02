@@ -34,7 +34,7 @@ assert.match(editor,/theodore-accessory-fitting-guide\.png/,"Original Theodore f
 assert.match(editor,/drawImage\(guide/,"Guide should be drawn on preview below overlay");
 assert.match(editor,/toDataURL\("image\/png"\)/,"Storage export must be PNG from separate canvas layers");
 assert.match(editor,/const STORE="virtual-life-accessories-v1"/);
-assert.match(editor,/const EQUIP="virtual-life-accessory-equipment-v1"/);
+assert.match(editor,/EQUIP="virtual-life-accessory-equipment-v1"/);
 assert.match(editor,/state\.cursorMode/);
 assert.match(editor,/core\.moveMasked/);
 assert.match(editor,/core\.flipMasked/);
