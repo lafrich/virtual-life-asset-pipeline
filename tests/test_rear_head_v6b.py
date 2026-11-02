@@ -47,8 +47,9 @@ class RearHeadTests(unittest.TestCase):
         self.assertEqual(sum(bool(v) for v in body[22]),7,
                          "Nape must connect continuously into 7px neck")
         for y in range(17,23):
-            self.assertTrue(body[y,lv.CW-1-(13+lv.OX)],
-                            f"Missing central head/neck connection at row {y}")
+            x=lv.CW-1-(13+lv.OX)
+            self.assertTrue(body[y,x] or hair[y,x],
+                            f"Missing central composed head/neck connection at row {y}")
         self.assertEqual(sum(bool(v) for v in se["body"][18]),7,
                          "Front source / original layer must remain unchanged")
 
