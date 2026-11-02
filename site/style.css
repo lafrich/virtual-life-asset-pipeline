@@ -224,3 +224,15 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px dotted #141
   .library-tab{font-size:10px}
   .animation-directions{font-size:8px}
 }
+
+
+/* Grid children with long motion file lists must scroll INSIDE the fixed Paint
+ * workspace; never stretch over the bottom palette and status bar. */
+@media(min-width:781px){
+  .animation-workspace{grid-template-rows:minmax(0,1fr);min-height:0}
+  .animation-workspace > *{min-height:0}
+  .animation-workspace .asset-panel{min-height:0;overflow:hidden}
+  .animation-workspace .file-list{min-height:0;overflow-y:auto}
+  .animation-workspace .canvas-panel{min-height:0;overflow:hidden}
+  .animation-workspace .details-panel{min-height:0;overflow:hidden}
+}
