@@ -340,5 +340,17 @@ async function init(){
   catch(e){status("DRAFT INVALID (SOURCE SAFE) / "+e.message,true);}
  }catch(e){status("EDITOR NOT READY: "+e.message,true);}
 }
+window.VirtualLifePixelEditor={
+ async flush(){
+  await state.syncPromise;
+  if(!state.loading)saveCurrent();
+  clearTimeout(localTimer);
+  try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}
+  catch(error){status("LOCAL SAVE FAILED: EXPORT YOUR PATCH JSON",true);throw error;}
+ }
+};
+window.addEventListener("pagehide",()=>{if(state.loading)return;
+ try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}
+ catch(error){/* user can still explicitly export a patch */}});
 init();
 })();
