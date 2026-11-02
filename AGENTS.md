@@ -9,6 +9,8 @@
 * Follow `STYLE.md` (v6b): no black outline, light from the left, 4–5 tones, black shadow alpha 56, alpha 0/56/255,
   no anti-aliasing, palette from the game, no new hex without listing it.
 * Run everything **from the repo root** (paths are repo-root relative).
+* **Every OWNER-APPROVED asset improves the pipeline.** A successful script run is not approval. Record an approved insight in `docs/asset-lessons/<family>.json`, promote reusable techniques to shared code with tests, or explain in the record why the lesson is local. Details: `docs/pipeline-learning.md`.
+* Never silently alter already-approved sprites when upgrading shared code: run pixel-regression tests and get owner approval for intentional visual changes.
 
 ## Workflow
 1. Read the request; find the closest existing family (`README.md` → "Families by topic") and reuse its generator.
@@ -19,7 +21,9 @@
    (`ichsan_layers`, `limb`, `squat_legs`, `compose_idle`, `shift`).
 4. Write outputs: 1× sprites/sheets, 4× previews (NEAREST), a dark-background contact sheet, a mock in context, `manifest.json`, `README.md`.
 5. Verify (below). Look at the 4× mock yourself.
-6. Report (below).
+6. **Learn from approval:** after the owner accepts the visual, write the learning record, promote transferable logic to existing shared modules/`tools/iso_asset_primitives.py` and add tests. If it is intentionally asset-specific, document why instead. Do not generalize rejected iterations.
+7. Rebuild previously approved affected assets and compare unchanged sprites pixel-for-pixel; keep the live game untouched.
+8. Report (below).
 
 ## How to add …
 * **A character (player avatar):** copy `chars-iso/v6b/live/chars/ichsan.json` → set `hair_style`, `hair_map`, `skin_map`, outfits,
@@ -40,8 +44,12 @@
 - [ ] Characters: `python3 tools/diff_sheet.py <new sheet> game/assets/chars/<name>_v6b_sheet.png` → 0 px on frames you did not change.
 - [ ] Sizes/pivots in `manifest.json` match the files.
 - [ ] 4× mock and contact sheet opened and looked at; nothing clipped, hidden or floating; reads at 1×.
+- [ ] Every changed asset generator/manifest has `docs/asset-lessons/<family>.json` with owner approval context.
+- [ ] Generalizable techniques are in shared code with tests (or `promotion_rationale` explains why not).
+- [ ] `python3 tools/check_asset_lessons.py` and shared primitive tests pass.
+- [ ] Approved older sprites remain pixel-exact unless the owner authorized changes.
 - [ ] Nothing in the game folder was touched.
 
 ## Report format
 Plain text: folder paths, preview files (mock PNGs, GIFs), counts (frames, sprites), new colours (or "none"),
-what you verified, and honest limitations (what looks off, what is approximate, what was not done).
+what you verified, **learning promoted / not promoted and why**, the owner's review status, and honest limitations (what looks off, what is approximate, what was not done).
