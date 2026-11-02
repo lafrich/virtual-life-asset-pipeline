@@ -20,6 +20,7 @@ FRAME = (64, 112)
 LOOP_FRAMES = 12
 BLINK_FRAME = 9
 EYES_BOX = (22, 35, 44, 49)  # Only eyes and brows; keep original mouth expression.
+PORTRAIT_BOX = (17, 30, 48, 62)  # Full authentic face, not the whole body.
 ACTORS = {"gfunk", "theodore", "yerbies"}
 
 
@@ -99,13 +100,16 @@ def build_faces(root: Path, folder: Path, actor: str, media: Path,
         slug = "legacy_" + actor + "-face-" + expression
         atlas = slug + "-4dir.png"
         thumb = slug + "-thumb.png"
+        portrait = slug + "-portrait.png"
         sheet.save(media / atlas, optimize=True)
         regular["se"][0].save(media / thumb, optimize=True)
+        regular["se"][0].crop(PORTRAIT_BOX).save(media / portrait, optimize=True)
         result.append({
             "id": expression,
             "label": expression.title(),
             "image": "media/" + thumb,
             "sprite": "media/" + thumb,
+            "portrait": "media/" + portrait,
             "sheet": "media/" + atlas,
             "frames": LOOP_FRAMES,
             "frame_ms": [210] * LOOP_FRAMES,
