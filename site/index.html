@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111318" />
+  <meta name="description" content="A living library of game-ready v6b pixel-art characters from Virtual Life." />
+  <title>Character Stock — Virtual Life</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Character Stock home"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span><span>VIRTUAL LIFE <span class="brand-separator">/</span> CHARACTER STOCK</span></a>
+      <a class="repo-link" href="https://github.com/lafrich/virtual-life-asset-pipeline" target="_blank" rel="noopener noreferrer">REPOSITORY <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-inner">
+          <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> LIVING ASSET LIBRARY <span class="eyebrow-number">/ V6B SYSTEM</span></p>
+          <h1 id="hero-title">A place for <em>every</em><br />character.</h1>
+          <p class="hero-copy">An ever-growing archive of pixel people.<br />Built from code, ready for the game.</p>
+        </div>
+        <div class="hero-meta" aria-label="Library statistics">
+          <div><span class="meta-value" id="total-count">—</span><span class="meta-key">CHARACTERS</span></div>
+          <div><span class="meta-value">04</span><span class="meta-key">WALK DIRECTIONS</span></div>
+          <div><span class="meta-value">64<span class="meta-times">×</span>112</span><span class="meta-key">SPRITE FRAME</span></div>
+        </div>
+      </section>
+
+      <section class="collection" aria-labelledby="collection-title">
+        <div class="section-header">
+          <div class="heading-block"><p class="section-label">01 / THE COLLECTION</p><h2 id="collection-title">Character catalog<span class="count-pill" id="count-pill">—</span></h2></div>
+          <div class="view-label"><span class="view-dot"></span> AUTO-SYNCED FROM GITHUB</div>
+        </div>
+
+        <div class="toolbar">
+          <label class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg><input id="search" type="search" placeholder="Search characters..." autocomplete="off" aria-label="Search characters" /><kbd>/</kbd></label>
+          <div class="filters" role="group" aria-label="Character type">
+            <button type="button" class="filter is-active" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="filter" data-filter="npc" aria-pressed="false">NPCs</button>
+            <button type="button" class="filter" data-filter="player" aria-pressed="false">Players</button>
+          </div>
+        </div>
+
+        <div class="collection-grid" id="grid" aria-live="polite" aria-busy="true"></div>
+        <div id="empty" class="empty" hidden><span>✳</span><h3>No characters found.</h3><p>Try another keyword or filter.</p></div>
+        <p class="library-status" id="status">Loading character stock…</p>
+      </section>
+
+      <section class="note">
+        <div><p class="section-label">02 / THE PIPELINE</p><h2>One style.<br />Infinite stories.</h2></div>
+        <div class="note-copy"><p>Every character in this catalog uses the same v6b pixel language: consistent proportions, lighting, palettes, and animations.</p><p>When a new verified character is committed to the asset repository, this catalog rebuilds and adds it automatically.</p><a href="https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/character_stock" target="_blank" rel="noopener noreferrer">EXPLORE THE STOCK LIBRARY <span aria-hidden="true">↗</span></a></div>
+      </section>
+    </main>
+
+    <footer class="footer"><span>VIRTUAL LIFE <span class="footer-dim">© CHARACTER STOCK</span></span><span>CODE-DRAWN PIXELS / V6B</span><a href="https://github.com/lafrich/virtual-life-asset-pipeline" target="_blank" rel="noopener noreferrer">GITHUB ↗</a></footer>
+  </div>
+  <template id="character-template">
+    <article class="character-card">
+      <div class="character-stage">
+        <div class="stage-top"><span class="stage-index">001</span><span class="stage-type">NPC</span></div>
+        <img class="character-image" loading="lazy" alt="" />
+        <button class="motion-toggle" type="button" aria-label="Pause animation" aria-pressed="false">Ⅱ <span>PAUSE</span></button>
+        <span class="stage-direction">WALK / 4 DIRECTIONS</span>
+      </div>
+      <div class="card-info">
+        <div class="card-title-line"><h3></h3><span class="card-id"></span></div>
+        <p class="description"></p>
+        <div class="tags"><span>V6B</span><span>64×112</span><span>4 DIRECTIONS</span></div>
+        <div class="card-links"><a class="source-link" target="_blank" rel="noopener noreferrer">VIEW FILES <span aria-hidden="true">↗</span></a><a class="download-link" download>SPRITE PNG <span aria-hidden="true">↓</span></a></div>
+      </div>
+    </article>
+  </template>
+</body>
+</html>
