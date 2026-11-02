@@ -55,6 +55,23 @@ class PixelPatchTests(unittest.TestCase):
                 try:
                     with self.assertRaises(ValueError):O.load_pixel_overrides(p)
                 finally:d.cleanup()
+    def test_v2_full_body_patch_is_explicit_and_preserves_theodore_source(self):
+        source=Image.new("RGBA",(64,112),(145,70,55,255))
+        edited=source.copy()
+        edited.putpixel((12,80),(80,130,190,255))
+        record=self.make_patch(edited)
+        record["format"]="virtual-life-pixel-patch-v2"
+        record["version"]=2
+        record["region"]=[0,0,64,112]
+        record["masters"]=[{"direction":"se","part":"arm_l","diff":[[12,80,80,130,190,255]]}]
+        d,p=self.stored(record)
+        try:
+            patches=O.load_pixel_overrides(p)
+            result=O.apply_pixel_override(source,"se","walk",1,patches)
+            self.assertEqual(result.getpixel((12,80)),(80,130,190,255))
+            self.assertEqual(source.getpixel((12,80)),(145,70,55,255))
+            self.assertEqual(result.getpixel((12,80)),edited.getpixel((12,80)))
+        finally:d.cleanup()
     def test_patch_is_optional(self):
         with tempfile.TemporaryDirectory() as d:
             self.assertEqual(O.load_pixel_overrides(Path(d)/"none.json"),{})
