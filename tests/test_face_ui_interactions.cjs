@@ -22,7 +22,7 @@ const selected = {id:"legacy_gfunk",sheet:"media/gfunk-sheet.png",row_starts:{id
 const canvas = {width:440,height:450};
 const drawn = [];
 const ctx = {
-  fillRect() {}, strokeRect() {}, beginPath() {}, ellipse() {}, fillText() {},
+  fillRect() {}, strokeRect() {}, beginPath() {}, ellipse() {}, fill() {}, fillText() {},
   drawImage(...args) { drawn.push(args); }
 };
 const el = Object.fromEntries(["canvas-name","motion-expression-active"].map(id=>[id,{textContent:""}]));
