@@ -721,7 +721,7 @@ $("edit-pixels").addEventListener("click", () => {
   const editorUrl = new URL("./pixel-editor.html", window.location.href);
   editorUrl.searchParams.set("actor", "legacy_otis");
   editorUrl.searchParams.set("embedded", "1");
-  editorUrl.searchParams.set("ui", "selection-move-flip-cursor-v2");
+  editorUrl.searchParams.set("ui", "xp-mobile-fit-20261103-v3");
   editorUrl.searchParams.set("refresh", String(Date.now()));
   $("pixel-editor-embed").src = editorUrl.href;
   $("close-pixel-editor").focus();
