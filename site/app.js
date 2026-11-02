@@ -73,9 +73,25 @@ function selectCharacter(character) {
   $("prop-type").textContent = String(character.type || "npc").toUpperCase();
   $("inspector-thumb").src = character.thumbnail || character.poster;
   $("inspector-thumb").alt = character.name + " pixel-art preview";
-  $("download-sheet").href = character.sheet;
-  $("download-sheet").download = character.id + "_v6b_sheet.png";
-  $("open-source").href = character.folder_url;
+  const locked = character.public_preview_only === true;
+  const download = $("download-sheet");
+  const source = $("open-source");
+  download.href = character.sheet;
+  download.download = character.id + (locked ? "_walk_preview.png" : "_v6b_sheet.png");
+  download.textContent = locked ? "↓ WALK.PNG" : "↓ SPRITE.PNG";
+  if (locked) {
+    source.removeAttribute("href");
+    source.textContent = "🔒 PRIVATE";
+    source.setAttribute("aria-disabled", "true");
+    source.classList.add("is-locked");
+    source.tabIndex = -1;
+  } else {
+    source.href = character.folder_url;
+    source.textContent = "↗ SOURCE";
+    source.removeAttribute("aria-disabled");
+    source.classList.remove("is-locked");
+    source.tabIndex = 0;
+  }
   $("face-tab-count").textContent = String(character.expressions?.length || 0).padStart(2, "0");
   buildFaces(character);
   setInspectorTab("info");
