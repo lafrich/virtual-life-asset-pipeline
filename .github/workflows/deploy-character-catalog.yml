@@ -15,6 +15,7 @@ on:
       - feature/life-sim-animation-roadmap-v1
       - feature/register-life-sim-actions-in-motion-db
       - feature/mixamo-model-rig-studio-v1
+      - feature/shared-category-skeletons-remove-rig-ui
     paths:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
