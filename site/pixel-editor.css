@@ -82,3 +82,88 @@ body.embedded .desktop-foot{display:none}
  .selection-buttons #flip-horizontal,.selection-buttons #flip-vertical{grid-column:span 2}
  .selection-buttons #deselect{grid-column:span 4}
 }
+
+
+/* XP / Paint visual parity with the existing Virtual Life Character Stock.
+   Scoped editor styling; does not alter any original landing-page workspace. */
+:root{
+ color-scheme:light;
+ --xp-face:#c9c8c4;--xp-face-light:#e8e6df;--xp-highlight:#fafafa;
+ --xp-shadow:#74716f;--xp-deep:#343434;--xp-blue:#073a9d;
+ --xp-field:#ffffff;--xp-ink:#151515;
+ --base:var(--xp-face);--ink:var(--xp-ink);
+}
+html{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
+body,body.embedded{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:hidden;background:var(--xp-face);color:var(--xp-ink);font:12px/1.45 Tahoma,"MS Sans Serif",Verdana,Arial,sans-serif}
+body:not(.embedded){padding:12px}
+.paint,body.embedded .paint{min-width:0;width:100%;max-width:1500px;background:var(--xp-face);border:2px solid var(--xp-highlight);outline:1px solid #64625d;box-shadow:3px 4px 0 #0004}
+body.embedded .paint{max-width:100%;border:0;outline:0;box-shadow:none}
+.titlebar{background:linear-gradient(90deg,#042777,#0755b5 64%,#2c88dd);border-bottom:2px solid #0c2267;font:bold 13px Tahoma,Arial,sans-serif;text-shadow:1px 1px #001b66}
+.menubar{background:#d4d2ce;border-bottom:2px solid #87847e}
+.intro,.controls,.export-panel{background:var(--xp-face)}
+.intro{border-bottom:2px solid var(--xp-shadow)}
+.status,.master-note,.panel-note{background:#dcdad4;border:1px solid #9a9894;color:#302f2b}
+.status{border-left:0;border-right:0;min-height:25px;font:700 11px/1.45 "Courier New",monospace}
+.status.error{background:#f2dbd5;color:#9e1717}
+.controls{border-right:2px solid var(--xp-shadow)}
+.export-panel{border-left:2px solid var(--xp-shadow)}
+.controls h2,.export-panel h2,.control label,.drawing-ink label,.drawing-brush label{color:#2c2925}
+button,select,input[type=color]{font-family:Tahoma,Verdana,Arial,sans-serif;color:var(--xp-ink);background:#dcdad5;border:2px solid;border-color:#fff #777 #777 #fff;border-radius:0;box-shadow:none}
+button:active:not(:disabled),button.active{background:#b7c9ed;border-color:#777 #fff #fff #777;box-shadow:inset 1px 1px #536f9c;color:#122b61}
+button:hover:not(:disabled){background:#cbd6ef}
+select,input[type=color]{background:var(--xp-field);border:2px inset #aaa}
+button:disabled{color:#888;opacity:.6}
+.canvas-column,.canvas-scroll{min-width:0;background-color:#b7b5b1}
+.canvas-header,.canvas-footer{background:#d4d2ce;border-color:#999691;font:700 11px "Courier New",monospace}
+.canvas-scroll{border:2px inset #a19e97}
+.drawing-toolbar{background:#c9c8c4;border-top:2px solid #8f8d87;box-shadow:inset 0 1px #fff}
+.selection-actions{background:#dcdad4;border:2px inset #aca9a4}
+.selection-actions strong{color:#383733}
+.cursor-actions .cursor-tap,.button-stack .primary{background:#0c429f;color:white;border-color:#7295d6 #001d65 #001d65 #7295d6}
+.cursor-actions .cursor-tap:hover,.button-stack .primary:hover{background:#1c54b5;color:white}
+.mini-box{background:#d5d3ce;border:2px inset #9f9d98}
+.frame-row,.button-row,.selection-buttons,.drawing-tools-row,.cursor-actions{min-width:0}
+.canvas-stage{max-width:none}
+
+/* On phones: viewport width is the full workspace width. Canvas pixels can
+   scroll locally at high zoom, but NEVER widen the page/iframe itself. */
+@media(max-width:700px){
+ body,body.embedded{padding:0;max-width:100%;overflow-x:hidden}
+ .paint,body.embedded .paint{width:100%;max-width:100%;min-width:0;margin:0;border:0;outline:0;box-shadow:none}
+ body.embedded .titlebar,body.embedded .menubar,body.embedded .intro{display:none}
+ .workspace{display:flex;flex-direction:column;width:100%;max-width:100%;min-width:0;min-height:0}
+ .canvas-column,.controls,.export-panel{width:100%;max-width:100%;min-width:0;flex:none}
+ .canvas-column{order:0;overflow:hidden}
+ .controls{order:1;border:0;border-top:2px solid #8c8983;padding:10px}
+ .export-panel{order:2;border:0;border-top:2px solid #8c8983;padding:10px}
+ .canvas-header{min-height:30px;padding:6px 9px}
+ .canvas-scroll{display:block;flex:none;width:100%;max-width:100%;height:clamp(240px,39dvh,355px);max-height:355px;min-height:0;overflow:auto;padding:0;-webkit-overflow-scrolling:touch}
+ .canvas-stage{width:max-content;min-width:100%;min-height:100%;max-width:none;padding:16px;display:flex;align-items:center;justify-content:center}
+ #pixel-canvas{display:block;flex:none;max-width:none;image-rendering:pixelated}
+ .drawing-toolbar{position:relative;bottom:auto;z-index:auto;width:100%;min-width:0;max-width:100%;padding:7px 8px;gap:5px}
+ .drawing-tools-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);width:100%;gap:6px}
+ .drawing-toolbar .tools{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;min-width:0}
+ .drawing-toolbar .tools button{min-width:0;width:100%;height:auto;min-height:33px;padding:5px 1px;font-size:10px;line-height:1.1;white-space:normal;overflow-wrap:anywhere}
+ .drawing-toolbar .tools kbd{display:none}
+ .drawing-ink,.drawing-brush{min-width:0}
+ .drawing-ink input[type=color]{width:100%;height:32px}
+ .drawing-brush input[type=range]{width:100%;max-width:100%}
+ .cursor-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-width:0;width:100%;gap:4px}
+ .cursor-actions button{min-width:0;padding:6px 2px;font-size:10px;white-space:normal}
+ .cursor-actions #cursor-toggle,.cursor-actions #cursor-tap{grid-column:span 2}
+ .selection-actions{width:100%;max-width:100%;min-width:0;padding:5px;gap:4px}
+ .selection-actions strong{flex:1 1 100%;min-width:0;overflow-wrap:anywhere;font:700 10px "Courier New",monospace}
+ .selection-buttons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;min-width:0;gap:4px}
+ .selection-buttons button{min-width:0;padding:5px 2px;font-size:10px;overflow-wrap:anywhere;white-space:normal}
+ .selection-buttons #flip-horizontal,.selection-buttons #flip-vertical{grid-column:span 2}
+ .selection-buttons #deselect{grid-column:span 4}
+ .drawing-toolbar .swatches{width:100%;min-width:0;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin:0}
+ .drawing-toolbar .swatch{width:100%;min-width:0;height:21px}
+ .canvas-footer{width:100%;padding:6px 8px;gap:6px}
+ .canvas-footer #cursor-coord{font-size:10px}
+ .canvas-footer .gesture-hint{min-width:0;flex-basis:100%;font-size:10px;overflow-wrap:anywhere}
+ .control select{width:100%;max-width:100%;min-width:0}
+ .mini-box{width:min(180px,100%);max-width:100%}
+ .export-panel .panel-note,.export-panel .meta{margin:8px 0}
+ .foot{display:none}
+}
