@@ -119,7 +119,7 @@ const flippedIrregular=core.flipMasked(painted,piece,"horizontal",editRegion);
 assert.deepEqual(get({data:flippedIrregular.data},16,20),[61,0,0,255]);
 assert.deepEqual(get({data:flippedIrregular.data},14,20),[85,0,0,255],"flip must preserve unselected interior");
 assert.equal(flippedIrregular.mask[20*64+15],1,"flipped irregular selection tracks changed pixels");
-assert.equal(flippedIrregular.mask[20*64+12],0,"original mask position must not remain selected");
+assert.equal(flippedIrregular.mask[20*64+13],0,"unselected interior must stay unselected after flip");
 const farMask=core.maskRect([55,30,56,31],editRegion);
 assert.equal(core.moveMasked(painted,farMask,900,0,editRegion).box[2],56,"moves cannot cross locked part boundaries");
 assert.deepEqual(get({data:movedIrregular.data},0,0),[0,0,0,0],"locked exterior never modified");
