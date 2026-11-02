@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageChops
+from build_animation_catalog import build_animation_catalog
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -236,6 +237,7 @@ def build():
         json.dumps({"version": 1, "characters": results}, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    build_animation_catalog(OUT, REPO_URL)
     print(f"Catalog ready: {len(results)} characters at {OUT}")
     return results
 
