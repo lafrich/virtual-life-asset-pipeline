@@ -100,11 +100,12 @@ function card(character, index) {
       button.append(thumb, label);
       button.addEventListener("click", () => showExpression(face, button));
       choices.appendChild(button);
-      if (i === 0) showExpression(face, button);
     });
-    // Leave the normal animated walking GIF visible until Expressions opens.
-    setPaused(motionReduced);
-    image.alt = character.name + " — pixel art walking animation, four directions";
+    // Initialize the hidden detail view without selecting a face on the
+    // walking character. The neutral state is activated on expand.
+    selected.src = faceList[0].image;
+    selected.alt = character.name + " showing Neutral expression";
+    selectedLabel.textContent = faceList[0].label.toUpperCase();
     node.querySelector(".stage-direction").textContent = "WALK / 4 DIRECTIONS";
     details.addEventListener("toggle", () => {
       if (details.open) showExpression(faceList[0], choices.firstElementChild);
