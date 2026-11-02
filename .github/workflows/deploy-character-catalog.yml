@@ -62,7 +62,9 @@ jobs:
           retention-days: 7
 
   deploy:
-    if: github.ref == 'refs/heads/main'
+    # Once source visibility becomes private, GitHub Free Pages must
+    # stop building here. The separate public catalog publisher takes over.
+    if: github.ref == 'refs/heads/main' && github.event.repository.private != true
     runs-on: ubuntu-latest
     needs: build
     environment:
