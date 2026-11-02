@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#c9c8c4">
 <title>AKSESORIS — Virtual Life Paint</title>
 <link rel="stylesheet" href="./pixel-editor.css?v=accessories-v1">
-<link rel="stylesheet" href="./accessory-editor.css?v=accessories-v1">
+<link rel="stylesheet" href="./accessory-editor.css?v=astrofrich-4side-v1">
 <script defer src="./pixel-edit-core.js?v=accessories-v1"></script>
-<script defer src="./accessory-editor.js?v=accessories-v1"></script>
+<script defer src="./accessory-editor.js?v=astrofrich-4side-v1"></script>
 </head>
 <body class="embedded">
 <main class="paint accessory-paint">
@@ -69,7 +69,8 @@
 <button id="acc-helmet" type="button" class="active">HELM</button>
 <button id="acc-bag" type="button">TAS</button>
 </div>
-<div class="acc-note">BASE: Theodore, kepala botak + kacamata. <b>Tanpa helm dan tas bawaan</b>. Warna guide hanya patokan, tidak ikut tersimpan.</div>
+<div class="acc-note">BASE: Theodore, kepala botak + kacamata. <b>Tanpa helm dan tas bawaan</b>. Guide untuk SE, SW, NE, NW selalu mengikuti arah masing-masing, tidak dicerminkan otomatis. Guide tidak ikut tersimpan.</div>
+<p id="acc-direction-progress" class="acc-note">4 VIEWS REQUIRED: SE · SW · NE · NW</p>
 <div class="acc-directions" role="group" aria-label="4-view sprite directions">
 <button type="button" data-acc-dir="se" class="active">SE</button>
 <button type="button" data-acc-dir="sw">SW</button>
@@ -98,7 +99,7 @@
 <div class="acc-note" id="acc-equipped">EQUIPMENT STATUS: NONE</div>
 <div class="acc-panel-head">4. LIVE PREVIEW</div>
 <canvas id="acc-preview" width="256" height="448" aria-label="Theodore wearing custom accessory, guide never included in export"></canvas>
-<div class="acc-note">Setiap arah diedit terpisah (SE / SW / NE / NW). Storage dan equipment tersimpan di browser ini. Original sprite tidak ditimpa.</div>
+<div class="acc-note">Keempat sisi SE / SW / NE / NW wajib digambar sebelum SAVE TO STORAGE. Draft tetap otomatis tersimpan meskipun belum lengkap. Storage dan equipment tersimpan di browser ini. Original sprite tidak ditimpa.</div>
 </aside>
 </div>
 </main>
