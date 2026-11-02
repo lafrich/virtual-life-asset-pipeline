@@ -12,7 +12,10 @@ import re
 import shutil
 from pathlib import Path
 from PIL import Image
-from animation_backlog import planned_records
+try:
+    from .animation_backlog import planned_records
+except ImportError:  # Running the builder directly from tools/ as a script.
+    from animation_backlog import planned_records
 
 ROOT = Path(__file__).resolve().parents[1]
 MEDIA_PREFIX = "animation-"
