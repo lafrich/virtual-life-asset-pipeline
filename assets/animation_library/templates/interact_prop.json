@@ -1,0 +1,39 @@
+{
+  "id": "template_interact_prop",
+  "name": "PROP INTERACT",
+  "group": "action",
+  "status": "template",
+  "note": "REACH → CONTACT → RELEASE • STARTER",
+  "source": "tools/new_animation_template.py",
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "layout": "four_up",
+  "frame_count": 6,
+  "frame_ms": [
+    180,
+    130,
+    120,
+    160,
+    140,
+    220
+  ],
+  "loop": false,
+  "preset": "interact_prop",
+  "example_phases": [
+    "idle",
+    "reach",
+    "contact",
+    "hold",
+    "release",
+    "reset"
+  ],
+  "events": {
+    "contact": {
+      "frame": 2
+    }
+  }
+}
