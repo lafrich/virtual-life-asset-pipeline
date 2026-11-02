@@ -12,7 +12,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageChops
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -132,8 +132,7 @@ def save_expression_previews(folder: Path, data: dict, sheet_path: Path, media: 
             continue
         composite = base.copy()
         composite.alpha_composite(overlay)
-        import numpy as np
-        if not np.any(np.asarray(composite) != np.asarray(base)):
+        if not ImageChops.difference(composite.convert("RGB"), base.convert("RGB")).getbbox():
             continue
         expressions.append({
             "id": code,
