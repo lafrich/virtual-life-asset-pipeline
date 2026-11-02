@@ -1,7 +1,7 @@
 "use strict";
 
-// Character Stock is a read-only viewer; Otis can open the dedicated pixel
-// editor through its own source-authored, patch-based editing workflow.
+// Characters is a read-only playback viewer; its embedded Pixel Editor edits
+// only approved Otis master parts and source frames, saving drafts locally.
 const $ = (id) => document.getElementById(id);
 const canvas = $("sprite-canvas");
 const ctx = canvas.getContext("2d", { alpha: false });
@@ -711,6 +711,26 @@ $("search").addEventListener("input", event => {
   state.query = event.target.value.toLowerCase();
   renderFileList();
 });
+$("edit-pixels").addEventListener("click", () => {
+  if (state.selected?.id !== "legacy_otis") return;
+  const overlay = $("pixel-editor-overlay");
+  overlay.hidden = false;
+  document.body.classList.add("pixel-editor-open");
+  $("pixel-editor-embed").src = "./pixel-editor.html?actor=legacy_otis&embedded=1";
+  $("close-pixel-editor").focus();
+});
+function closePixelEditor() {
+  $("pixel-editor-overlay").hidden = true;
+  $("pixel-editor-embed").src = "about:blank";
+  document.body.classList.remove("pixel-editor-open");
+  if (!$("edit-pixels").hidden) $("edit-pixels").focus();
+}
+$("close-pixel-editor").addEventListener("click", closePixelEditor);
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !$("pixel-editor-overlay").hidden) {
+    event.stopImmediatePropagation();event.preventDefault();closePixelEditor();
+  }
+}, true);
 $("play-toggle").addEventListener("click", togglePlayback);
 $("tool-walk").addEventListener("click", startWalking);
 $("tool-expressions").addEventListener("click", () => setInspectorTab("faces"));
