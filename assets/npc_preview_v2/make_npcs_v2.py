@@ -40,6 +40,26 @@ def bald(L, pal):
     """alien / robot head: the hair silhouette becomes a skin dome, shaded like the v6b skin (left lit, right shade, darker edge)"""
     h = A(L['hair_front']); m = h[..., 3] == 255
     ys, xs = np.nonzero(m); cx = (xs.min() + xs.max()) / 2
+    # The native v6b BACK hairstyle stops at the hairline (and deliberately
+    # carves pixels out of row 17). Recoloring only those hair pixels creates
+    # the missing lower skull / severed-looking neck in bald NE and NW views.
+    # Restore a narrow, rounded nape in SKIN COLORS, following each posed
+    # head's real offset rather than drawing a fixed row of pixels.
+    rear = L.get('face') is not None and not np.any(A(L['face'])[..., 3])
+    if rear and len(ys):
+        last = int(ys.max())
+        left, right = int(xs.min()), int(xs.max())
+        half = (right - left) / 2
+        # Complete the actual rear scalp curve, tapering toward the neck.
+        # The body underneath already has the 7-pixel skin neck.
+        for dy,scale in ((0,.82),(1,.78),(2,.69),(3,.54),(4,.35)):
+            y = last + dy
+            if y >= FH: break
+            x0 = max(0,int(round(cx-half*scale)))
+            x1 = min(FW-1,int(round(cx+half*scale)))
+            for x in range(x0,x1+1):
+                m[y,x] = True
+                if h[y,x,3] == 0: h[y,x] = (*pal['Ki'],255)
     full = Image.new('RGBA', (FW, FH))
     for v in L.values(): full.alpha_composite(v)
     body = A(full)[..., 3] == 255
