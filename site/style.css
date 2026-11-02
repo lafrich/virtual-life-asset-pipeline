@@ -319,3 +319,25 @@ body.pixel-editor-open{overflow:hidden}
   .inspector-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}
   .inspector-actions>.chrome-button{display:flex;min-width:0;width:100%;max-width:100%;padding:7px 3px;font-size:clamp(9px,2.4vw,11px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
+
+/* New accessory tab matches the classic XP properties strip. */
+.detail-tabs{min-width:0}
+.detail-tabs .detail-tab{flex:1;min-width:0;padding-inline:4px;white-space:nowrap}
+#tab-accessories{font-size:clamp(8px,.8vw + 7px,11px)}
+.accessory-panel-title{margin:5px 0 10px;font:800 18px "Courier New",monospace;display:flex;justify-content:space-between;gap:5px}
+.accessory-panel-title small{font:9px "Courier New",monospace;color:#5f5c57}
+.accessory-create-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:10px 0 16px}
+.accessory-create-buttons button{min-width:0;padding:8px 3px;font:700 10px "Courier New",monospace;white-space:normal}
+.accessory-storage-list{display:flex;flex-direction:column;gap:6px;min-width:0}
+.accessory-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:center;border:2px solid;border-color:#fff #777 #777 #fff;background:#e2e0db;padding:6px}
+.accessory-item .accessory-name{font:700 10px/1.4 "Courier New",monospace;overflow-wrap:anywhere}
+.accessory-item .accessory-name small{display:block;color:#5c5955;font-weight:400}
+.accessory-item .chrome-button{font-size:9px;padding:6px;white-space:nowrap}
+.accessory-item button.equipped{background:#b4c8ee;border-color:#6581b1}
+.accessory-equipped,.accessory-note{font:10px/1.5 "Courier New",monospace;background:#dedcd5;border:1px solid #aaa7a0;color:#343330;padding:7px;margin:9px 0}
+@media(max-width:780px){
+ .detail-tabs{gap:2px;padding:6px 5px 0}
+ .detail-tabs .detail-tab{min-width:0;flex:1;padding:7px 1px;font-size:clamp(9px,2.5vw,11px)}
+ #tab-accessories{font-size:clamp(9px,2.25vw,11px)}
+ .accessory-create-buttons button{min-height:37px}
+}
