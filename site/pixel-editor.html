@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#e9e7db">
+<title>Otis Pixel Editor — Virtual Life</title>
+<link rel="stylesheet" href="./pixel-editor.css?v=otis-editor-1">
+<script defer src="./pixel-edit-core.js?v=otis-editor-1"></script>
+<script defer src="./pixel-editor.js?v=otis-editor-1"></script>
+</head>
+<body>
+<main class="paint">
+<header class="titlebar"><span>▣</span><strong>OTIS_PIXEL_EDITOR.PNT — Paint</strong><span class="window-buttons" aria-hidden="true">▬ □ ×</span></header>
+<nav class="menubar" aria-label="Editor links"><a href="./#characters">← CHARACTERS</a><span class="sep">|</span><span>FILE</span><span>EDIT</span><span>VIEW</span><span class="version">V6B · 64×112 ORIGINAL PIXELS</span></nav>
+<div class="intro"><div><h1>EDIT OTIS</h1><p>Draw directly on the original character's pixel frames. Theodore's body outside the head edit area stays locked.</p></div><div class="intro-tags"><span>HELMETED</span><span>HEAD EDIT AREA</span><span>4 DIRECTIONS</span></div></div>
+<div id="editor-status" class="status" role="status">LOADING ORIGINAL OTIS SPRITES...</div>
+<div class="workspace">
+<aside class="controls">
+<h2>TOOLS</h2>
+<div class="tools">
+<button type="button" data-tool="pencil" class="active">✎ PENCIL <kbd>B</kbd></button>
+<button type="button" data-tool="erase">▤ ERASER <kbd>E</kbd></button>
+<button type="button" data-tool="pick">◉ PICKER <kbd>I</kbd></button>
+<button type="button" data-tool="fill">▣ FILL <kbd>G</kbd></button>
+</div>
+<div class="control"><label for="color">INK COLOR</label><input id="color" type="color" value="#61b3c4"></div>
+<div id="swatches" class="swatches" aria-label="Otis color palette"></div>
+<div class="control"><label for="brush-size">BRUSH SIZE <output id="brush-label">1 PX</output></label><input id="brush-size" type="range" min="1" max="4" value="1"></div>
+<div class="divider"></div>
+<h2>FRAME</h2>
+<div class="control"><label for="action">ANIMATION</label><select id="action" aria-label="Action"></select></div>
+<div class="control"><label for="direction">DIRECTION</label><select id="direction"><option value="se">SE / DOWN-RIGHT</option><option value="sw">SW / DOWN-LEFT</option><option value="ne">NE / UP-RIGHT</option><option value="nw">NW / UP-LEFT</option></select></div>
+<div class="frame-row"><button type="button" id="prev-frame">◀</button><span id="frame-label">FRAME 1 / 1</span><button type="button" id="next-frame">▶</button></div>
+<div class="control"><label for="frame">TIMELINE</label><input id="frame" type="range" min="0" max="0" value="0"></div>
+<div class="divider"></div>
+<h2>HISTORY</h2><div class="button-row"><button type="button" id="undo" disabled>↶ UNDO</button><button type="button" id="redo" disabled>↷ REDO</button></div>
+<button type="button" id="reset-frame" class="wide">RESET THIS FRAME</button>
+</aside>
+<section class="canvas-column" aria-label="Editable pixel sprite">
+<div class="canvas-header"><strong id="canvas-title">OTIS / IDLE / SE / F0</strong><span id="frame-dirty">SOURCE PIXELS</span></div>
+<div id="canvas-scroll" class="canvas-scroll">
+<canvas id="pixel-canvas" width="512" height="896" aria-label="Editable pixel sprite. Drag to paint at 8x zoom."></canvas>
+</div>
+<div class="canvas-footer">
+<label>ZOOM <select id="zoom"><option value="4">4×</option><option value="6">6×</option><option value="8" selected>8×</option><option value="10">10×</option></select></label>
+<label class="check"><input id="grid" type="checkbox"> PIXEL GRID</label>
+<span id="cursor-coord">X -- / Y --</span>
+</div>
+</section>
+<aside class="export-panel">
+<h2>VIEW & SAVE</h2>
+<div class="mini-box"><canvas id="small-preview" width="128" height="224" aria-label="Actual 2x sprite preview"></canvas><p>2× PREVIEW</p></div>
+<div class="panel-note">Edits are saved as a draft in this browser. They do <strong>not</strong> change GitHub until your exported patch is committed.</div>
+<div class="button-stack">
+<button type="button" id="download-frame">↓ CURRENT FRAME.PNG</button>
+<button type="button" id="export-patch" class="primary">↓ SAVE PIXEL EDITS.JSON</button>
+<button type="button" id="import-patch">↑ LOAD PIXEL EDITS.JSON</button>
+<input type="file" id="patch-file" accept=".json,application/json" hidden>
+<button type="button" id="clear-draft">DELETE LOCAL DRAFT</button>
+</div>
+<div class="panel-note">To publish: download <strong>PIXEL EDITS.JSON</strong> and upload that file in our chat. I'll add it to Otis's source and rebuild the database.</div>
+<div class="meta"><strong id="modified-count">0 MODIFIED FRAMES</strong><span>HEAD EDITABLE: X8–55 · Y18–71</span><span>BODY/SHOES LOCKED</span><span id="source-state">SOURCE NOT LOADED</span></div>
+</aside>
+</div>
+<footer class="foot"><span>VIRTUAL LIFE / ORIGINAL SPRITE EDITOR</span><span>NO UNAPPROVED AUTOMATIC CHANGES TO THE LIVE GAME</span></footer>
+</main>
+</body></html>

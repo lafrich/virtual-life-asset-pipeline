@@ -10,6 +10,10 @@ from __future__ import annotations
 
 import math
 import sys
+import base64
+import binascii
+import io
+import json
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw, ImageOps
@@ -24,6 +28,70 @@ VIEWS = ("se", "sw", "ne", "nw")
 EXPRESSIONS = ("neutral", "happy", "surprised", "angry", "sleepy")
 POSES = ("sit", "sit_type", "sleep_seat", "nap_stand", "talk")
 COUNTS = {"idle": 4, "walk": 6, **{kind: 4 for kind in POSES}}
+
+# Optional approved browser pixel edits, committed as a portable text artifact.
+# No upload endpoint / arbitrary remote file modification is involved.
+PIXEL_PATCH = HERE / "pixel_overrides.json"
+HEAD_REGION = (8, 18, 56, 72)
+PATCH_FORMAT = "virtual-life-pixel-patch-v1"
+
+
+def load_pixel_overrides(path: Path = PIXEL_PATCH) -> dict[tuple[str, str, int], Image.Image]:
+    """Validate exact original-frame PNGs; only head-region pixels can change."""
+    if not path.exists():
+        return {}
+    if path.stat().st_size > 15_000_000:
+        raise ValueError("Otis overrides exceed 15 MB")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if (data.get("format") != PATCH_FORMAT or data.get("version") != 1 or
+        data.get("actor") != "legacy_otis" or
+        data.get("frame_size") != [64, 112] or
+        data.get("region") != list(HEAD_REGION)):
+        raise ValueError("Pixel overrides must target the original Otis V6B head only")
+    frames = data.get("frames")
+    if not isinstance(frames, list) or len(frames) > 140:
+        raise ValueError("Too many pixel override frames")
+    result = {}
+    for item in frames:
+        if not isinstance(item, dict):
+            raise ValueError("Invalid pixel frame record")
+        kind, direction, index = item.get("action"), item.get("direction"), item.get("frame")
+        if (kind not in COUNTS or direction not in VIEWS or
+            type(index) is not int or not 0 <= index < COUNTS[kind]):
+            raise ValueError("Invalid Otis action/view/frame")
+        key = (kind, direction, index)
+        if key in result:
+            raise ValueError("Duplicate pixel overrides for " + str(key))
+        value = item.get("png")
+        if (not isinstance(value, str) or
+            not value.startswith("data:image/png;base64,") or len(value) > 1_000_000):
+            raise ValueError("Expected PNG data URL")
+        try:
+            raw = base64.b64decode(value.split(",", 1)[1], validate=True)
+            with Image.open(io.BytesIO(raw)) as image:
+                if image.format != "PNG" or image.size != (64, 112) or image.mode != "RGBA":
+                    raise ValueError("Edited sprite must be a 64×112 RGBA PNG")
+                image.load()
+                result[key] = image.copy()
+        except (OSError, ValueError, binascii.Error) as error:
+            raise ValueError("Invalid edited original PNG frame") from error
+    return result
+
+
+def apply_pixel_override(image: Image.Image, view: str, kind: str,
+                         index: int, patches: dict | None = None) -> Image.Image:
+    if patches is None:
+        patches = load_pixel_overrides()
+    updated = patches.get((kind, view, index))
+    if updated is None:
+        return image
+    if image.size != (64, 112) or image.mode != "RGBA":
+        raise ValueError("Source Otis frame is not original 64×112 RGBA")
+    # Only the editable head rectangle is transplanted. All suit pixels,
+    # shoes, grounding, backpacks and silhouettes outside it remain exact.
+    out = image.copy()
+    out.paste(updated.crop(HEAD_REGION), HEAD_REGION[:2])
+    return out
 
 # Pixel-art palette only: solid RGBA, no antialiasing or interpolated colors.
 C = {
@@ -167,10 +235,12 @@ def helmet(source: Image.Image, view: str, phase: int = 0) -> Image.Image:
 def frame(view: str, kind: str = "idle", index: int = 0,
           expression: str = "neutral") -> Image.Image:
     """Native source renderer, also used by the catalog's face loop builder."""
-    return helmet(T.frame(view, kind, index, expression), view, index)
+    return apply_pixel_override(helmet(T.frame(view, kind, index, expression),
+                                       view, index), view, kind, index)
 
 
 def build() -> None:
+    pixel_patches = load_pixel_overrides()
     for part in ("frames", "poses", "expr"):
         (HERE / part).mkdir(parents=True, exist_ok=True)
 
@@ -185,6 +255,7 @@ def build() -> None:
                     raise FileNotFoundError("Original Theodore pose missing: " + str(source))
                 with Image.open(source) as input_image:
                     otis = helmet(input_image.convert("RGBA"), view, index)
+                otis = apply_pixel_override(otis, view, kind, index, pixel_patches)
                 otis.save(HERE / folder / f"otis_{view}_{kind}_f{index}.png", optimize=True)
         # Purely for 4-view QA of idle shape.
         (HERE / f"otis_{view}.png").write_bytes(

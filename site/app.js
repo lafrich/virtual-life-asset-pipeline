@@ -1,7 +1,7 @@
 "use strict";
 
-// Character Stock Paint is a viewer, not a pixel editor. Source sprites and
-// facial-expression layers are read-only and auto-discovered by the builder.
+// Character Stock is a read-only viewer; Otis can open the dedicated pixel
+// editor through its own source-authored, patch-based editing workflow.
 const $ = (id) => document.getElementById(id);
 const canvas = $("sprite-canvas");
 const ctx = canvas.getContext("2d", { alpha: false });
@@ -98,6 +98,7 @@ function selectCharacter(character) {
   $("tab-faces").disabled = !(character.expressions?.length);
   $("tool-expressions").disabled = !(character.expressions?.length);
   $("open-source").href = character.folder_url;
+  $("edit-pixels").hidden = character.id !== "legacy_otis" || !character.sheet;
   $("face-tab-count").textContent = String(character.expressions?.length || 0).padStart(2, "0");
   buildFaces(character);
   buildMotions(character);
