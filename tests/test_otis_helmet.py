@@ -74,8 +74,9 @@ class OtisVisualTests(unittest.TestCase):
             image = O.helmet(base, direction)
             self.assertEqual(image.getpixel((32, 33))[3], 255)
             # A continuous flat horizontal top at y31, no curved dome.
+            top_range = range(25, 45) if direction == "ne" else range(19, 39)
             self.assertTrue(all(image.getpixel((x, 31))[3] == 255
-                                for x in range(25, 45)))
+                                for x in top_range))
             # A rear shell has no protruding black snorkel below y56.
             self.assertFalse(any(image.getpixel((x, 59))[3] for x in range(21, 46)))
         for direction in O.VIEWS:
