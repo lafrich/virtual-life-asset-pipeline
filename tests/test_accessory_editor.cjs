@@ -7,6 +7,11 @@ const read=p=>fs.readFileSync(path.join(site,p),"utf8");
 const index=read("index.html"),app=read("app.js"),html=read("accessory-editor.html");
 const editor=read("accessory-editor.js"),css=read("accessory-editor.css");
 new Function(app);new Function(editor);
+assert.match(index,/<title>Mahluk Hidup — Character Studio<\/title>/,
+ "Browser title must use Mahluk Hidup branding");
+assert.match(index,/<strong>MAHLUK HIDUP<\/strong>/,
+ "XP window title must show Mahluk Hidup");
+assert.ok(index.includes("MAHLUK HIDUP®"),"Sprite canvas watermark must be renamed");
 assert.match(index,/id="tab-accessories"/,"AKSESORIS must be on original character inspector");
 assert.match(index,/id="accessories-panel"/,"AKSESORIS tab content must exist");
 assert.match(index,/id="make-helmet"/);
