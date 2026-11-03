@@ -5,7 +5,7 @@
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id),A=window.VLActionFrames,
- MODEL=window.VLBuildingInterior,ISO=window.VLInteriorIso;
+ T=window.VLActionTemplates,MODEL=window.VLBuildingInterior,ISO=window.VLInteriorIso;
 const DIR=["se","sw","ne","nw"],BUILD_KEY="virtual-life-bangun-ruang-v1";
 const BASE=new URL("/virtual-life-asset-pipeline/",location.origin);
 const deepLink=new URLSearchParams(location.search);
@@ -21,7 +21,7 @@ const background=document.createElement("canvas");
 const images=new Map();
 const state={catalog:[],buildings:[],actor:"ichsan",action:"toilet",direction:"sw",frame:0,
  previewFrame:0,playing:true,lastTick:0,tool:"pencil",down:false,lastPoint:null,
- undo:[],source:null,sourceReady:false,sourceNote:"",offset:{x:0,y:0},
+ undo:[],source:null,sourceReady:false,sourceNote:"",offset:{x:0,y:0},dirty:false,
  scene:null,prop:null,bgKey:"",bgReady:false,loadingId:0,buildId:"demo",floor:0};
 const status=s=>$("status").textContent=s;
 const notice=s=>$("sim-status").textContent=s;
@@ -132,7 +132,13 @@ function actionSource(){
   cross_road:["walk"],ride_motor:["sit"],ride_bicycle:["sit"]
  }[state.action]||[state.action];
  let motion=preferred.map(id=>motions.find(m=>m.id===id)).find(Boolean);
- const authored=!!motion&&motion.id===state.action;
+ // Reuse genuinely animated native poses, never an idle frame as gameplay.
+ const mapped=!!motion&&new Set([
+  "toilet","toilet_sit","bathe","shower","bath","sleep","nap","lie_down",
+  "wake_up","lie_idle","bed_enter","bed_exit","office_type",
+  "eat_seated","sit_idle","sit_down","stand_up","talk"
+ ]).has(state.action);
+ const authored=!!motion&&(motion.id===state.action||mapped);
  if(!motion)motion=motions.find(m=>m.id==="idle")||motions.find(m=>m.id==="walk")||null;
  if(!ch||!isSheet(ch.sheet))return null;
  const separate=isSheet(motion?.sheet);
@@ -140,7 +146,8 @@ function actionSource(){
  const frames=Math.max(1,Math.min(12,Number(motion?.frames)||4));
  return {sheet:url(sheet),row:separate?0:Number(motion?.row)||0,
   frames,sourceFrames:frames,authored,mode:motion?.id||"idle",
-  note:authored?"MOTION: "+motion.id.toUpperCase()+" / NATIVE CHARACTER FRAMES":
+  note:authored?"MOTION: "+motion.id.toUpperCase()+
+   (motion.id===state.action?" / NATIVE CHARACTER FRAMES":" / SHARED NATIVE POSE (NOT UNIQUE ACTION)"):
    "UNRENDERED ACTION: "+state.action.toUpperCase()+" · "+(motion?.id||"IDLE").toUpperCase()+
    " IS AN EDITING REFERENCE, NOT A COMPLETED GAME ANIMATION"};
 }
@@ -157,7 +164,11 @@ function setAction(next){
  $("frame").max=String((state.source?.frames||4)-1);
  $("frame").value="0";
  state.offset=A.offset(state.actor,state.action);syncOffset();
- updateActionCoverage();
+ const previousTemplate=T?.get(state.actor,state.action);
+ $("template-name").value=previousTemplate?.name||state.action.replace(/_/g," ").toUpperCase();
+ $("template-speed").value=String(previousTemplate?.frameMs||210);
+ $("object-layer").value=previousTemplate?.objectLayer||"front";
+ updateActionCoverage();updateTemplateStatus();
  const keep=state.buildId;readBuildings(keep);
  updateProp();
  loadFrame();
@@ -260,7 +271,7 @@ function editedFrame(index,dir){
 }
 function loadFrame(){
  const ticket=++state.loadingId;
- state.undo=[];state.sourceReady=false;
+ state.undo=[];state.sourceReady=false;state.dirty=false;
  const count=state.source?.frames||4;
  state.frame=Math.min(state.frame,count-1);
  $("frame").value=String(state.frame);
@@ -324,17 +335,21 @@ function render(){
  const x=Math.round(footX-32+shift.x),y=Math.round(footY-100+(anchor?.pixelOffsetY||0)+shift.y);
  let image=editedFrame(frame,dir);
  if(!image){
-  const src=sourceRect(frame,dir);
+  const src=state.source?.authored?sourceRect(frame,dir):null;
   if(src)sc.drawImage(...src,x,y,64,112);
   else {
    sc.fillStyle="#577c9c";sc.fillRect(x+22,y+45,20,40);
    sc.fillStyle="#d8b49b";sc.fillRect(x+23,y+23,18,23);
   }
  }else sc.drawImage(image,x,y,64,112);
- if(anchor)ISO.drawSeatForeground(sc,geo,p);
+ // User-controlled depth: redraw object after sprite for player-behind mode.
+ if(p&&$("object-layer").value==="behind")ISO.drawFurniture(sc,geo,p);
+ if(anchor&&$("object-layer").value==="behind")ISO.drawSeatForeground(sc,geo,p);
  const source=state.source,object=p?(MODEL.types[p.assetId]?.label||p.assetId):"FREE STANDING / NO PROP";
  notice(object+" · "+(p?"ROT "+p.rotation+"° / ":"")+
-  (source?.authored?"NATIVE RIG / ":"PLANNED · EDITING BASE REFERENCE / ")+"FOOT 32,100");
+  (source?.authored?"NATIVE RIG / ":T?.get(state.actor,state.action)?.ready?
+   "SEMESTA TEMPLATE / ":"PLANNED · PAINT FRAMES / ")+
+  ($("object-layer").value==="behind"?"PLAYER BEHIND OBJECT":"PLAYER IN FRONT")+" · FOOT 32,100");
 }
 function remember(){
  state.undo.push(pc.getImageData(0,0,64,112));
@@ -371,13 +386,47 @@ function stroke(next){
   paint(x0,y0);if(x0===x1&&y0===y1)break;
   const v=2*err;if(v>=dy){err+=dy;x0+=sx;}if(v<=dx){err+=dx;y0+=sy;}
  }
- state.lastPoint=next;render();
+ state.lastPoint=next;state.dirty=true;render();
+}
+function updateTemplateStatus(){
+ if(!T)return;
+ const record=T.get(state.actor,state.action),progress=T.coverage(state.actor,state.action);
+ const complete=progress.complete;
+ const byDir=DIR.map(d=>d.toUpperCase()+":"+progress.directions[d].length).join(" ");
+ $("template-status").textContent=(record?
+  complete?"READY IN SEMESTA":"DRAFT SAVED · NOT YET PLAYABLE":
+  complete?"4 DIRECTIONS READY · SAVE TO SEMESTA":"INCOMPLETE · SAVE A FRAME FOR EACH DIRECTION")+
+  " · "+byDir;
+ $("save-template").disabled=!state.sourceReady&&progress.authored===0;
 }
 function save(){
- if(!state.sourceReady)return;
- try{A.set(state.actor,state.action,state.direction,state.frame,px.toDataURL("image/png"));
-  status("LOCAL FRAME SAVED · UNREVIEWED CUSTOM ACTION");updateActionCoverage();renderActionList();render();}
- catch(e){status("SAVE FAILED: "+e.message);}
+ if(!state.sourceReady)return false;
+ try{
+  // A draft starts from a reference; idle is not an authored action.
+  if(state.dirty){
+   A.set(state.actor,state.action,state.direction,state.frame,px.toDataURL("image/png"));
+   state.dirty=false;
+  }else if(!A.get(state.actor,state.action,state.direction,state.frame)){
+   status("DRAW ON THE FRAME BEFORE SAVING · IDLE REFERENCE IS NOT AN ACTION");
+   return false;
+  }
+  status("AUTHOR FRAME SAVED · USE SAVE TO SEMESTA FOR GAMEPLAY");
+  updateActionCoverage();updateTemplateStatus();renderActionList();render();
+  return true;
+ }catch(e){status("SAVE FAILED: "+e.message);return false;}
+}
+function saveTemplate(){
+ if(state.dirty&&!save())return;
+ try{
+  const result=T.save(state.actor,state.action,{
+   name:$("template-name").value,
+   objectLayer:$("object-layer").value,
+   frames:state.source?.frames||4,frameMs:Number($("template-speed").value)
+  });
+  status(result.ready?"TEMPLATE READY · SELECT IT IN SEMESTA CHARACTER POSE":
+   "DRAFT TEMPLATE SAVED · FINISH ALL 4 DIRECTIONS TO ACTIVATE IN SEMESTA");
+  updateTemplateStatus();updateActionCoverage();renderActionList();
+ }catch(e){status("TEMPLATE SAVE FAILED: "+e.message);}
 }
 function download(){
  const link=document.createElement("a");
@@ -469,7 +518,7 @@ window.addEventListener("message",event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  if(event.data?.type==="mahluk-action-context")applyParentContext(event.data.context);
 });
-if(!A||!MODEL||!ISO){status("ACTION EDITOR MODULE MISSING");notice("Bangun Ruang drawing modules not loaded.");return;}
+if(!A||!MODEL||!ISO||!T){status("ACTION EDITOR MODULE MISSING");notice("Bangun Ruang drawing modules not loaded.");return;}
 $("actor").onchange=()=>{state.actor=$("actor").value;renderActionList();setAction(state.action);};
 $("action-search").oninput=()=>{state.actionSearch=$("action-search").value;renderActionList();};
 $("action-category").onchange=()=>{state.actionFilter=$("action-category").value;renderActionList();};
@@ -484,11 +533,14 @@ $("sync").onclick=()=>{readBuildings(state.buildId);status("RELOADED LATEST BANG
 $("frame").oninput=()=>{state.frame=Number($("frame").value);loadFrame();};
 $("pencil").onclick=()=>tool("pencil");$("erase").onclick=()=>tool("erase");$("pick").onclick=()=>tool("pick");
 $("save").onclick=save;
+$("save-template").onclick=saveTemplate;
+$("object-layer").onchange=()=>{render();status("OBJECT DEPTH CHANGED · SAVE TO SEMESTA TO KEEP THIS SETTING");};
+$("template-speed").onchange=()=>status("TEMPLATE TIMING CHANGED · SAVE TO SEMESTA TO APPLY");
 $("undo").onclick=()=>{const prior=state.undo.pop();if(prior){pc.putImageData(prior,0,0);render();}};
 $("reset-frame").onclick=()=>{if(!state.sourceReady)return;remember();originalInto(pc,state.frame,state.direction);render();status("SOURCE FRAME RESTORED IN EDITOR · PRESS SAVE TO APPLY");};
 $("clear").onclick=()=>{if(!state.sourceReady)return;
  A.remove(state.actor,state.action,state.direction,state.frame);
- loadFrame();renderActionList();updateActionCoverage();
+ loadFrame();renderActionList();updateActionCoverage();updateTemplateStatus();
  status("LOCAL FRAME REMOVED / SOURCE RESTORED");};
 $("download").onclick=download;
 px.addEventListener("pointerdown",e=>{
@@ -526,10 +578,11 @@ function tick(t){
 }
 window.addEventListener("storage",e=>{
  if(e.key===BUILD_KEY){readBuildings(state.buildId);status("BANGUN RUANG SCENE SYNCED");}
- if(e.key===A.key){A.invalidate();state.offset=A.offset(state.actor,state.action);syncOffset();loadFrame();}
+ if(e.key===A.key){A.invalidate();T.invalidate();state.offset=A.offset(state.actor,state.action);syncOffset();loadFrame();updateTemplateStatus();}
+ if(e.key===T.key){T.invalidate();updateTemplateStatus();}
 });
 window.addEventListener("focus",()=>{
- readBuildings(state.buildId);A.invalidate();state.offset=A.offset(state.actor,state.action);syncOffset();render();
+ readBuildings(state.buildId);A.invalidate();T.invalidate();state.offset=A.offset(state.actor,state.action);syncOffset();updateTemplateStatus();render();
 });
 requestAnimationFrame(tick);
 readBuildings(deepLink.get("building")||"demo");
