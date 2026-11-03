@@ -22,11 +22,16 @@ def build_astrofrich(root:Path,media:Path)->dict:
         result=theta.frame(direction,kind,index,expr=expression,modular=True).convert("RGBA")
         assert result.size==FRAME
         return result
-    def sprite_sheet(kind:str,count:int,expression:str="neutral"):
+    def sprite_sheet(kind:str,count:int,expression:str="neutral",blink:bool=False):
         canvas=Image.new("RGBA",(count*64,4*112))
         for row,direction in enumerate(DIRECTIONS):
             for col in range(count):
-                canvas.alpha_composite(frame(direction,kind,col,expression),(col*64,row*112))
+                pose=frame(direction,kind,col,expression)
+                if blink and direction in ("se","sw") and expression!="sleepy" and col==(3 if kind=="walk" else 2):
+                    eyes=(22,35,44,49)
+                    closed=frame(direction,kind,col,"sleepy")
+                    pose.paste(closed.crop(eyes),eyes[:2])
+                canvas.alpha_composite(pose,(col*64,row*112))
         return canvas
     # V6B native layout: 6 columns by 44 rows, real walk rows 0..3 and
     # real idle rows 4..7. All other poses use their own genuine four-way sheets.
@@ -60,13 +65,13 @@ def build_astrofrich(root:Path,media:Path)->dict:
     expressions=[]
     for expression in EXPRESSIONS:
         name=f"{base_name}-expression-{expression}.png"
-        sprite_sheet("idle",4,expression).save(media/name,optimize=True)
+        sprite_sheet("idle",4,expression,blink=True).save(media/name,optimize=True)
         portrait=f"{base_name}-expression-{expression}-portrait.png"
         frame("se","idle",0,expression).crop((17,30,49,59)).resize((160,145),Image.Resampling.NEAREST).save(media/portrait)
         # Re-render facial poses using the SAME Theodore-derived rig at every
         # walk frame. Never stamp a stationary idle face onto a moving head.
         walk_face=f"{base_name}-expression-{expression}-walk.png"
-        sprite_sheet("walk",MOTIONS["walk"],expression).save(media/walk_face,optimize=True)
+        sprite_sheet("walk",MOTIONS["walk"],expression,blink=True).save(media/walk_face,optimize=True)
         expressions.append({"id":expression,"label":expression.upper(),"sheet":"media/"+name,
             "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True,
             "motion_sheets":{"idle":"media/"+name,"walk":"media/"+walk_face}})
