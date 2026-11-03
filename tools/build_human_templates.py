@@ -78,13 +78,13 @@ def sculpt_human_layers(layers:dict,gender:str)->dict:
     if gender=="male":
         # Stronger shoulder/trapezius, straighter torso; pelvis remains
         # comparatively narrow. Smooth 1-2 px shoulder slope.
-        widen("shirt",{0:1,1:1,2:2,3:2,4:2,5:2,6:1,7:1,8:1})
+        widen("shirt",{0:1,1:2,2:3,3:3,4:4,5:4,6:3,7:2,8:2,9:1})
     else:
         # Soft chest volume, without broadening the shoulder line; widen
         # the hips below the tapered waist to make the 4-way difference
         # legible even at original 1x pixel resolution.
-        widen("shirt",{7:1,8:1,9:1,10:1,11:1,12:1})
-        widen("pants",{1:1,2:2,3:2,4:2,5:2,6:2,7:1,8:1,9:1})
+        widen("shirt",{7:1,8:2,9:2,10:2,11:2,12:1,13:1})
+        widen("pants",{1:1,2:2,3:3,4:4,5:4,6:4,7:3,8:3,9:2,10:1})
     return layers
 
 
