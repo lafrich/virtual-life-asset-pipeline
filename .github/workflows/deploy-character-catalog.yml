@@ -28,6 +28,7 @@ on:
       - "tools/build_human_templates.py"
       - "tools/build_astrofrich.py"
       - "tests/test_universal_sleep.cjs"
+      - "tests/test_player_action_database.cjs"
       - "tests/test_desktop_layout.cjs"
       - "tools/build_character_catalog.py"
       - "tools/build_rig_studio.py"
