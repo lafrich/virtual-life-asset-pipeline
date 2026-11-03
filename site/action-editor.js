@@ -53,6 +53,8 @@ state.actions=compatActions;state.actionFilter="all";state.actionSearch="";
 const actionRecord=()=>state.actions.find(row=>row.id===state.action)||null;
 function fixtureRequirements(id){
  if(needed[id])return needed[id];
+ const linked=state.actions.find(x=>x.id===id)?.fixture_ids||[];
+ if(linked.length)return linked;
  if(/^(cook|prepare_food|wash_vegetables)/.test(id))return ["stove","sink","table"];
  if(/^(clock_|office_|read_document|print_document|file_document|presentation)/.test(id))
   return ["desk","office_chair","computer"];
@@ -65,7 +67,7 @@ function renderActionList(){
  const rows=state.actions.filter(row=>
   (cat==="all"||cat===row.category||(cat==="p0"&&row.priority==="P0")||
     (cat==="edited"&&A.entries(state.actor,row.id).length>0))&&
-  [row.label,row.id,row.category,...(row.requirements||[])].join(" ").toLowerCase().includes(q));
+  [row.label,row.id,row.category,...(row.requirements||[]),...(row.game_ids||[])].join(" ").toLowerCase().includes(q));
  $("player-action-count").textContent=rows.length+" / "+state.actions.length;
  const list=document.querySelector(".ae-action-list"),fragment=document.createDocumentFragment();
  for(const row of rows){
@@ -385,13 +387,25 @@ function download(){
 }
 async function loadCatalog(){
  try{
-  const [res,actionRes]=await Promise.all([
+  const [res,actionRes,bindingsRes]=await Promise.all([
    fetch(new URL("catalog.json",BASE),{cache:"no-store"}),
-   fetch(new URL("player-actions.json",BASE),{cache:"no-store"})
+   fetch(new URL("player-actions.json",BASE),{cache:"no-store"}),
+   fetch(new URL("gameplay-bindings.json",BASE),{cache:"no-store"})
   ]);
   if(!res.ok)throw Error("Mahluk Hidup catalog HTTP "+res.status);
   if(!actionRes.ok)throw Error("Player action database HTTP "+actionRes.status);
-  const [cat,definitions]=await Promise.all([res.json(),actionRes.json()]);
+  if(!bindingsRes.ok)throw Error("Bangun Ruang action bindings HTTP "+bindingsRes.status);
+  const [cat,definitions,bindings]=await Promise.all([res.json(),actionRes.json(),bindingsRes.json()]);
+  const known=new Map((definitions.actions||[]).map(row=>[row.id,row]));
+  const registered=[...(bindings.bindings||[]),...(bindings.variants||[])];
+  for(const binding of registered){
+   const row=known.get(binding.animation_action);
+   if(!row)throw Error("Unmapped game action "+binding.game_action);
+   if(!row.game_ids)row.game_ids=[];
+   if(!row.game_ids.includes(binding.game_action))row.game_ids.push(binding.game_action);
+   row.fixture_ids=[...new Set([...(row.fixture_ids||[]),
+     ...(binding.fixtures||[]),...(binding.fixture?[binding.fixture]:[])])];
+  }
   if(!Array.isArray(definitions.actions)||definitions.actions.length<200)
    throw Error("Player action registry incomplete");
   A.registerActions(definitions.actions.map(row=>row.id));
