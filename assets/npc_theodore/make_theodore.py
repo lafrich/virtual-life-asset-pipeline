@@ -146,10 +146,14 @@ def build(view='se', anim='idle', f=0, expr='neutral', pulse=0, modular=False):
     bl = np.zeros((FH, FW, 4), np.uint8); bl[PY - 1 + bodyd:PY + 1 + bodyd] = pa[PY - 1 + bodyd:PY + 1 + bodyd]
     L['shirt'] = Image.fromarray(shirt)
     acc = np.zeros((FH, FW, 4), np.uint8); collar(acc, base, suit); acc = np.roll(acc, bodyd, 0); acc = comp(bl, acc)
-    if base == 'ne' and not modular: acc = comp(acc, np.roll(pack('ne'), bodyd, 0))
     order = ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'shirt_graphic', 'outer']
     im = Image.new('RGBA', (FW, FH))
-    if base == 'se' and not modular: im.alpha_composite(Image.fromarray(np.roll(pack('se'), bodyd, 0)))
+    # A backpack attaches behind the BODY in every direction, including
+    # NE/NW. Previously rear 'pack(ne)' was composited into the foreground
+    # collar/acc layer, covering the lower back of the head and shoulders.
+    # Keep the genuine pack artwork, but render it BEFORE all anatomy.
+    if not modular:
+        im.alpha_composite(Image.fromarray(np.roll(pack(base), bodyd, 0)))
     for k in order:
         if k in L: im.alpha_composite(L[k])
     im.alpha_composite(Image.fromarray(acc))
