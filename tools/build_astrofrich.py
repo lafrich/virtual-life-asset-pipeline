@@ -63,8 +63,13 @@ def build_astrofrich(root:Path,media:Path)->dict:
         sprite_sheet("idle",4,expression).save(media/name,optimize=True)
         portrait=f"{base_name}-expression-{expression}-portrait.png"
         frame("se","idle",0,expression).crop((17,30,49,59)).resize((160,145),Image.Resampling.NEAREST).save(media/portrait)
+        # Re-render facial poses using the SAME Theodore-derived rig at every
+        # walk frame. Never stamp a stationary idle face onto a moving head.
+        walk_face=f"{base_name}-expression-{expression}-walk.png"
+        sprite_sheet("walk",MOTIONS["walk"],expression).save(media/walk_face,optimize=True)
         expressions.append({"id":expression,"label":expression.upper(),"sheet":"media/"+name,
-            "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True})
+            "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True,
+            "motion_sheets":{"idle":"media/"+name,"walk":"media/"+walk_face}})
     return {"id":"astrofrich_base","name":"Astrofrich / Bald Base",
         "template_category":"astrofrich","template":True,"type":"npc",
         "description":"Modular Theodore silhouette. Bald head, goggles, belt, chest emblem and marble porthole. No fixed helmet or backpack. All original authored poses and expressions.",
