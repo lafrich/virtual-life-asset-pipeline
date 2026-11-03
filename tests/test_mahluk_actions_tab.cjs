@@ -42,10 +42,10 @@ for(const klass of [
  'class="detail-content ae-inspector-content"',
  'class="panel-heading"'
 ])assert.ok(editorHtml.includes(klass),"Missing Paint UI component: "+klass);
-for(const action of ["toilet","bathe","sleep"]){
- assert.ok(editorHtml.includes('data-ae-action="'+action+'"'),"Missing action file item "+action);
- assert.ok(editor.includes('btn.dataset.aeAction===next'),"Action list must reflect selection");
-}
+assert.ok(editorHtml.includes('id="new-action"'),"New action picker must exist");
+assert.ok(editorHtml.includes('id="create-action"'),"Create action button must exist");
+assert.ok(!editorHtml.includes('data-ae-action="toilet"'),"Unmade actions must not be hardcoded");
+assert.ok(editor.includes('btn.dataset.aeAction===next'),"Action selection stays interactive");
 assert.ok(embedded.includes("grid-template-columns:77px 188px minmax(0,1fr) 248px"),
  "The Action Editor must match Characters and Animations column sizes");
 assert.ok(embedded.includes("background:var(--canvas)"),
