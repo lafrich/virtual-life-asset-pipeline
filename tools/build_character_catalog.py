@@ -356,6 +356,10 @@ def build():
         json.dumps(player_actions, ensure_ascii=False, separators=(",", ":")) + "\n",
         encoding="utf-8",
     )
+    gameplay_bindings = ROOT / "assets/animation_library/gameplay_bindings.json"
+    if not gameplay_bindings.is_file():
+        raise ValueError("Missing Bangun Ruang gameplay-to-animation binding dictionary")
+    shutil.copy2(gameplay_bindings, OUT / "gameplay-bindings.json")
     print(f"Catalog ready: {len(results)} characters / {len(player_actions['actions'])} player action definitions at {OUT}")
     return results
 
