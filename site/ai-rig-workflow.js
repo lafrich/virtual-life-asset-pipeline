@@ -5,7 +5,7 @@
 const $=id=>document.getElementById(id),engine=window.MahlukCharacterDraft,store=window.VLUniversalRig;
 const canvas=$("preview"),ctx=canvas.getContext("2d"),fields=["name","species","body","proportion","prompt"];
 const parts={},DRAFT="mahluk-hidup-ai-character-draft-v2";
-let current=null,palette=null,sheet=null,result=null;
+let current=null,palette=null,sheet=null,result=null,rigOpened=false;
 function status(s){$("status").textContent=s}
 function stage(s){$("stage").textContent="STAGE: "+s}
 function spec(){return Object.fromEntries(fields.map(f=>[f,$(f).value]))}
@@ -51,7 +51,7 @@ function resetRigResult(){
 function updateUI(){
  $("approve").disabled=!current||current.status!=="draft_base";
  $("continue").disabled=!current||current.status==="draft_base";
- $("rig-panel").hidden=!current||current.status==="draft_base"||!current.rig&&current.status!=="base_approved";
+ $("rig-panel").hidden=!current||current.status==="draft_base"||!rigOpened;
  if(current)stage(current.status.toUpperCase().replaceAll("_"," "));
  else stage("NEW CHARACTER");
 }
@@ -71,7 +71,7 @@ function renderLibrary(){
 }
 function openAsset(id){
  const a=store.get(id);if(!a)return;
- current=a;palette=a.colors;for(const k of fields)$(k).value=a.spec[k]||"";
+ current=a;palette=a.colors;rigOpened=a.status==="rigging"||a.status==="rig_ready";for(const k of fields)$(k).value=a.spec[k]||"";
  sheet=engine.makeSheet(a.spec,a.colors);drawFour();saveForm();resetRigResult();
  $("category").value=a.rig?.category||store.suggestCategory(a.spec);
  for(const p of ["interior","social","job"])$("profile-"+p).checked=Boolean(a.rig?.profiles?.includes(p));
@@ -80,7 +80,7 @@ function openAsset(id){
  status("Opened "+a.name+". Photo uploads are not stored; source colours and prompt are preserved.");
 }
 function clearCurrent(){
- current=null;palette=null;sheet=null;result=null;drawPlaceholder();
+ current=null;palette=null;sheet=null;result=null;rigOpened=false;drawPlaceholder();
  $("rig-panel").hidden=true;resetRigResult();updateUI();
 }
 async function generate(){
@@ -98,7 +98,7 @@ async function generate(){
   }
   const asset=store.createBase(input,colors);
   if(current?.id){asset.id=current.id} // Regenerate the same asset; clear rig approval.
-  current=store.save(asset);palette=colors;sheet=engine.makeSheet(asset.spec,colors);
+  current=store.save(asset);palette=colors;rigOpened=false;sheet=engine.makeSheet(asset.spec,colors);
   drawFour();updateUI();renderLibrary();resetRigResult();
   $("rig-panel").hidden=true;
   status("Base saved in the Mahluk Hidup local library. Review and approve to configure its rig.");
@@ -107,7 +107,7 @@ async function generate(){
 }
 function startRig(){
  if(!current||current.status==="draft_base")return status("Approve base first.");
- $("rig-panel").hidden=false;
+ rigOpened=true;$("rig-panel").hidden=false;
  $("category").value=current.rig?.category||store.suggestCategory(current.spec);
  resetRigResult();stage("RIG SETUP");
  status("Choose rig category and animation profiles. Only tested poses will be playable.");
