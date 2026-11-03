@@ -12,7 +12,7 @@ const data=new Map(),storage={
 const actors=JSON.parse(fs.readFileSync("assets/animation_library/actions.json","utf8"));
 const bindings=JSON.parse(fs.readFileSync("assets/animation_library/gameplay_bindings.json","utf8"));
 const catalog={characters:[{id:"ichsan",name:"Ichsan",
- sheet:"media/ichsan.png",motions:[{id:"idle",frames:4,row:4,available:true}],
+ sheet:"media/ichsan.png",row_starts:{idle:4,lie:36},motions:[{id:"idle",frames:4,row:4,available:true}],
  expressions:[{id:"sleepy",label:"Sleepy",overlay:"media/ichsan-face-layer-sleepy.png"}]}]};
 class E{
  constructor(tag="div",id=""){
@@ -100,6 +100,7 @@ const sandbox={
 };
 vm.runInNewContext(fs.readFileSync("site/action-frame-bridge.js","utf8"),sandbox);
 vm.runInNewContext(fs.readFileSync("site/action-template-bridge.js","utf8"),sandbox);
+vm.runInNewContext(fs.readFileSync("site/universal-sleep.js","utf8"),sandbox);
 vm.runInNewContext(fs.readFileSync("site/action-editor.js","utf8"),sandbox);
 async function settle(){
  for(let n=0;n<5;n++)await new Promise(resolve=>setImmediate(resolve));
@@ -116,6 +117,10 @@ async function settle(){
  assert.equal(typeof el("object-layer").onchange,"function");
  assert.equal(typeof el("template-speed").onchange,"function");
  assert.ok(list.children.length<10,"Unmade actions should not flood the saved list");
+ assert.equal(list.children[0].dataset.aeAction,"sleep_bed_right",
+   "Universal bed sleep must be immediately visible at the TOP of Action Editor");
+ assert.equal(list.children[1].dataset.aeAction,"sleep_bed_left",
+   "Second sleep direction must be shown without searching 203 planned actions");
  assert.ok(el("new-action").options.length>=200,"New action picker should retain authoring choices");
  assert.equal(typeof el("create-action").onclick,"function","Create action click handler missing");
  assert.match(el("sim-status").textContent,/PIXEL EDITOR STILL ACTIVE/);
@@ -154,5 +159,11 @@ async function settle(){
  assert.match(el("ae-canvas-title").textContent,/CLOCK_IN/);
  el("play").onclick();el("next").onclick();el("prev").onclick();el("restart").onclick();
  el("sync").onclick();
+ const sleepRow=list.children.find(x=>x.dataset.aeAction==="sleep_bed_right");
+ assert.ok(sleepRow,"Sleep action must remain in file list after saves");
+ sleepRow.fire("click");
+ assert.match(el("motion-source").textContent,/UNIVERSAL V6B/);
+ assert.match(el("action-readiness").textContent,/PLAYABLE/);
+ assert.ok(el("save-template").disabled,"Universal bed sleep never needs per-character save");
  console.log("PASS Action Editor working-action filtering, create-one picker, pixel-save, templates and XP tab selection");
 })().catch(e=>{console.error(e);process.exitCode=1;});
