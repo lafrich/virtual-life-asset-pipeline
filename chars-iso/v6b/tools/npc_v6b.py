@@ -275,6 +275,8 @@ def build(name):
                 if fem: pv.fem_body(P, kind)
                 if n.get('skirt'): skirt(P, kind, *n['skirt'])
                 if n.get('apron'): apron(P, kind, view)
+                # Final shoulder check AFTER female reshape and outfit edits.
+                lv.attach_arm_roots(P)
                 P['shoes_over'] = pv.shoe_style(P, n['shoes'])
                 if n['shoes'] in ('sneakers', 'hightops'): pal.setdefault('S3', hx('#E8E6E0') if sum(hx(CL[n['sc']])) < 500 else hx('#B4B0A8'))
                 if n['shoes'] in ('boots', 'hightops'): pal.setdefault('S3', hx('#E8E6E0'))
