@@ -34,7 +34,7 @@
     if(!actionFrameStarted){
       const target=new URL("./action-editor.html",location.href);
       target.searchParams.set("embedded","1");
-      target.searchParams.set("ui","semesta-action-templates-v5");
+      target.searchParams.set("ui","pose-expression-v6");
       for(const [key,value] of Object.entries(context))if(value)target.searchParams.set(key,value);
       actionFrameStarted=true;
       actionFrame.src=target.href;
