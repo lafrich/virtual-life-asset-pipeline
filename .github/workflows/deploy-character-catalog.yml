@@ -29,6 +29,8 @@ on:
       - "tools/build_astrofrich.py"
       - "tests/test_universal_sleep.cjs"
       - "tests/test_universal_sleep_geometry.py"
+      - "tests/test_universal_sleep_tabs.cjs"
+      - "tests/test_universal_sleep_published.py"
       - "tests/test_player_action_database.cjs"
       - "tests/test_desktop_layout.cjs"
       - "tools/build_character_catalog.py"
@@ -112,6 +114,7 @@ jobs:
           node --check site/action-appearance-bridge.js
           node --check site/universal-sleep.js
           node tests/test_universal_sleep.cjs
+          node tests/test_universal_sleep_tabs.cjs
           node --check site/action-editor.js
           node tests/test_action_frame_bridge.cjs
           node tests/test_mahluk_actions_tab.cjs
@@ -149,8 +152,10 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
-      - name: Verify truly horizontal native sleep poses
-        run: python tests/test_universal_sleep_geometry.py
+      - name: Verify truly horizontal native sleep poses and discoverable Animation clips
+        run: |
+          python tests/test_universal_sleep_geometry.py
+          python tests/test_universal_sleep_published.py
       - name: Render original street vehicles for Semesta
         run: |
           # Same authored sprite pipeline as Mahluk Hidup, not a Semesta proxy.
