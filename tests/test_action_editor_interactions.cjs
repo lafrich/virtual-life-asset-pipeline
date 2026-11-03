@@ -47,7 +47,7 @@ class E{
 const nodes=new Map();
 const el=id=>{if(!nodes.has(id))nodes.set(id,new E(
  ["actor","action","direction","building","floor","furniture","brush",
-  "action-category","object-layer","template-speed"].includes(id)?"select":"button",id));
+  "action-category","new-action","object-layer","template-speed"].includes(id)?"select":"button",id));
  return nodes.get(id);};
 el("direction").value="sw";
 el("template-speed").value="210";
@@ -115,7 +115,9 @@ async function settle(){
  assert.equal(typeof el("direction").onchange,"function");
  assert.equal(typeof el("object-layer").onchange,"function");
  assert.equal(typeof el("template-speed").onchange,"function");
- assert.ok(list.children.length>=200,"All 203 activities should be selectable");
+ assert.ok(list.children.length<10,"Unmade actions should not flood the saved list");
+ assert.ok(el("new-action").options.length>=200,"New action picker should retain authoring choices");
+ assert.equal(typeof el("create-action").onclick,"function","Create action click handler missing");
  assert.match(el("sim-status").textContent,/PIXEL EDITOR STILL ACTIVE/);
  // A missing PNG must finish loading to unlock painting rather than freeze.
  el("save").onclick();
@@ -145,12 +147,12 @@ async function settle(){
  assert.equal(draft.loop,false);
  assert.equal(draft.ready,false);
  const rows=list.children.filter(x=>x.dataset.aeAction);
- assert.ok(rows.some(x=>x.dataset.aeAction==="clock_in"),"All player activities selectable");
- const target=rows.find(x=>x.dataset.aeAction==="clock_in");
- target.fire("click");
+ assert.ok(!rows.some(x=>x.dataset.aeAction==="clock_in"),"Unmade activities should stay hidden");
+ el("new-action").value="clock_in";
+ el("create-action").onclick();
  await settle();
  assert.match(el("ae-canvas-title").textContent,/CLOCK_IN/);
  el("play").onclick();el("next").onclick();el("prev").onclick();el("restart").onclick();
  el("sync").onclick();
- console.log("PASS Action Editor buttons, fallback image load, pixel-save, Semesta templates, four-way picker and XP tab selection");
+ console.log("PASS Action Editor working-action filtering, create-one picker, pixel-save, templates and XP tab selection");
 })().catch(e=>{console.error(e);process.exitCode=1;});
