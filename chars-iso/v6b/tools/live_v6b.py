@@ -403,7 +403,9 @@ def pose_layers(base, kind, t, view, C, O):
     if C.get('arms') == 'down':
         bob = (-1 if t in (2, 3) else 0) if kind in ('idle', 'talk') else ((-1 if t in (1, 4) else 0) if kind == 'walk' else 0)
         L['arm_near'], L['arm_far'] = draw_arms(kind if kind != 'lie' else 'idle0', t, view, bob if kind in ('idle', 'walk', 'talk') else 0, C.get('sleeves') == 'long')
-        L = attach_arm_roots(L)
+    # Apply to both new down-arm poses AND characters that retain legacy
+    # arms: they use the same shared shoulder/torso split.
+    L = attach_arm_roots(L)
     if kind == 'sleep': L = head_drop(L, 3, 1 if view == 'se' else 0)
     if kind == 'tired': L = head_drop(L, 2, 1 if view == 'se' else 0)
     if kind == 'swim':                                              # only the chest-up part is above the water
