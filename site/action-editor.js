@@ -46,7 +46,7 @@ function actionSource(){
  const preferred={
   toilet:["sit","sit_type","toilet"],
   bathe:["swim","bathe","idle"],
-  sleep:["sleep_seat","sleep","lie","nap_stand"]
+  sleep:["sleep","sleep_seat","lie","nap_stand"]
  }[state.action]||["idle"];
  let motion=preferred.map(id=>motions.find(m=>m.id===id)).find(Boolean);
  const authored=!!motion&&!(state.action==="bathe"&&motion.id==="idle");
@@ -303,8 +303,11 @@ async function loadCatalog(){
    if(escapeId(row?.id)&&parent&&!state.catalog.some(x=>x.id===row.id))
     state.catalog.push({...parent,id:row.id,name:row.name||row.id});
   }
-  const requested=new URLSearchParams(location.search).get("actor");
+  const params=new URLSearchParams(location.search);
+  const requested=params.get("actor");
   if(escapeId(requested)&&state.catalog.some(x=>x.id===requested))state.actor=requested;
+  const requestedAction=params.get("action");
+  if(A.actions.includes(requestedAction))state.action=requestedAction;
   updateActors();
   state.source=actionSource();setAction(state.action);
  }catch(e){status("COULD NOT LOAD PLAYER CATALOG: "+e.message);notice("Check Mahluk Hidup Pages build.");}
