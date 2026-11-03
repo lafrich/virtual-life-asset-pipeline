@@ -42,6 +42,8 @@ on:
       - "tests/test_shared_arm_attachment.py"
       - "tests/test_theodore_backpack_layer.py"
       - "chars-iso/v6b/tools/live_v6b.py"
+      - "chars-iso/v6b/tools/parts_v6b.py"
+      - "chars-iso/v6b/tools/npc_v6b.py"
       - "tests/test_master_parts.cjs"
       - "tests/test_rig_runtime.cjs"
       - "tests/test_shared_bone_runtime.cjs"
