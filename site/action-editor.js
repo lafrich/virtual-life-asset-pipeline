@@ -78,11 +78,16 @@ function fixtureRequirements(id){
 }
 function renderActionList(){
  const q=state.actionSearch.trim().toLowerCase(),cat=state.actionFilter;
- const rows=state.actions.filter(row=>
+ // Only native motions, saved drafts and ready templates are listed.
+ const visible=state.actions.filter(row=>
+  A.entries(state.actor,row.id).length>0 ||
+  Boolean(T.get(state.actor,row.id)?.ready) ||
+  Boolean((actor()?.motions||[]).some(m=>m.id===row.id&&m.available===true)));
+ const rows=visible.filter(row=>
   (cat==="all"||cat===row.category||(cat==="p0"&&row.priority==="P0")||
     (cat==="edited"&&A.entries(state.actor,row.id).length>0))&&
   [row.label,row.id,row.category,...(row.requirements||[]),...(row.game_ids||[])].join(" ").toLowerCase().includes(q));
- $("player-action-count").textContent=rows.length+" / "+state.actions.length;
+ $("player-action-count").textContent=rows.length+" / "+visible.length;
  const list=document.querySelector(".ae-action-list"),fragment=document.createDocumentFragment();
  for(const row of rows){
   const button=document.createElement("button");
@@ -106,7 +111,7 @@ function renderActionList(){
   fragment.append(button);
  }
  if(!rows.length){const message=document.createElement("p");message.className="ae-list-empty";
-  message.textContent="NO MATCHING ACTIONS";fragment.append(message);}
+  message.textContent=q?"NO MATCHING ACTIONS":"NO SAVED ACTIONS. CREATE ONE BELOW.";fragment.append(message);}
  list.replaceChildren(fragment);
 }
 function updateActionCoverage(){
@@ -546,6 +551,8 @@ async function loadCatalog(){
    filter.append(opt(group,group.toUpperCase()));
   $("action").replaceChildren();
   for(const row of state.actions)$("action").append(opt(row.id,row.label));
+  $("new-action").replaceChildren(opt("","SELECT AN ACTION..."));
+  for(const row of state.actions)$("new-action").append(opt(row.id,row.label||row.id));
   state.catalog=(cat.characters||[]).filter(x=>escapeId(x?.id)&&isSheet(x.sheet));
   const saved=safeJSON("virtual-life-character-storage-v1",[]);
   if(Array.isArray(saved))for(const row of saved){
@@ -606,6 +613,15 @@ $("actor").onchange=()=>{state.actor=$("actor").value;renderActionList();setActi
 $("action-search").oninput=()=>{state.actionSearch=$("action-search").value;renderActionList();};
 $("action-category").onchange=()=>{state.actionFilter=$("action-category").value;renderActionList();};
 $("action").onchange=()=>setAction($("action").value);
+$("create-action").onclick=()=>{
+ const id=$("new-action").value;
+ if(!id||!A.actions.includes(id)){status("CHOOSE AN ACTION FIRST");return;}
+ setAction(id);
+ $("action-search").value="";state.actionSearch="";
+ $("action-category").value="all";state.actionFilter="all";
+ renderActionList();
+ status("NEW ACTION DRAFT: "+id.toUpperCase()+" · PAINT AND SAVE YOUR FRAMES");
+};
 for(const btn of document.querySelectorAll("[data-ae-action]"))
  btn.addEventListener("click",()=>setAction(btn.dataset.aeAction));
 $("direction").onchange=()=>{state.direction=$("direction").value;loadFrame();render();};
