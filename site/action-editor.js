@@ -44,6 +44,7 @@ const safeJSON=(key,def)=>{try{return JSON.parse(localStorage.getItem(key))??def
 const opt=(value,text)=>{const o=document.createElement("option");o.value=value;o.textContent=text;return o;};
 const url=path=>new URL(path,BASE).href;
 const isSheet=path=>typeof path==="string"&&/^media\/[a-z0-9_.-]+\.png$/i.test(path);
+const isLocalSheet=path=>typeof path==="string"&&/^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(path)&&path.length<1500000;
 const needed={
  toilet:["wc"],bathe:["shower","bathtub"],sleep:["bed"],
  toilet_sit:["wc"],pee_stand:["wc"],toilet_paper:["wc"],flush_toilet:["wc"],pee_finish:["wc"],
@@ -163,7 +164,7 @@ function actionSource(){
  ]).has(state.action);
  const authored=!!motion&&(motion.id===state.action||mapped);
  if(!motion)motion=motions.find(m=>m.id==="idle")||motions.find(m=>m.id==="walk")||null;
- if(!ch||!isSheet(ch.sheet))return null;
+ if(!ch||!(isSheet(ch.sheet)||(ch.local_rig_asset&&isLocalSheet(ch.sheet))))return null;
  const separate=isSheet(motion?.sheet);
  const sheet=separate?motion.sheet:ch.sheet;
  const frames=Math.max(1,Math.min(12,Number(motion?.frames)||4));
@@ -559,6 +560,19 @@ async function loadCatalog(){
    const parent=state.catalog.find(x=>x.id===row?.base);
    if(escapeId(row?.id)&&parent&&!state.catalog.some(x=>x.id===row.id))
     state.catalog.push({...parent,id:row.id,name:row.name||row.id});
+  }
+  // Tested universal rig assets are available as actor sources.
+  const rig=window.VLUniversalRig,gen=window.MahlukCharacterDraft;
+  if(rig&&gen)for(const row of rig.list()){
+   if(row.status!=="rig_ready")continue;
+   try{
+    const sheet=rig.sourceSheet(row,gen);
+    if(!isLocalSheet(sheet)||state.catalog.some(ch=>ch.id===row.id))continue;
+    state.catalog.push({id:row.id,name:row.name,sheet,local_rig_asset:true,
+     motions:[{id:"idle",available:true,frames:4,row:4},
+      {id:"walk",available:true,frames:6,row:0}],expressions:[],
+     skeleton_profile:row.rig.family,rig_category:row.rig.category});
+   }catch(error){status("LOCAL RIG LOAD FAILED: "+error.message)}
   }
   const params=new URLSearchParams(location.search);
   const requested=params.get("actor");
