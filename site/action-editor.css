@@ -36,6 +36,8 @@
 .ae-action-item{min-height:56px;margin:0;padding:5px;width:100%}
 .ae-action-item .file-preview{width:43px;height:44px;flex:none;
  font:24px/1 Tahoma,sans-serif;background:#d5ddf5}
+.ae-action-item .ae-pixel-icon{font:900 15px "Courier New",monospace;letter-spacing:-.06em;color:#154392;text-shadow:1px 1px #fff}
+.ae-action-item.chosen .ae-pixel-icon{color:#092b7b}
 .ae-action-item .file-label{font:bold 10px/1.35 "Courier New",monospace}
 .ae-action-item .file-label small{font:9px/1.3 "Courier New",monospace;margin-top:4px}
 .ae-action-item.chosen{background:#b5c8fc;border-color:#143c9c;box-shadow:inset 0 0 0 2px #f2f5ff}
