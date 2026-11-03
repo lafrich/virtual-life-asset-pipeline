@@ -12,7 +12,7 @@
   const actionPanel = el("action-workspace");
   const actionFrame = el("action-editor-embed");
   let actionFrameStarted = false;
-  const actionTypes = new Set(["toilet","bathe","sleep"]);
+  const validActionId = id=>typeof id==="string"&&/^[a-z][a-z0-9_]{0,89}$/.test(id);
 
   function actionContext(extra={}) {
     const requested = new URLSearchParams(location.search);
@@ -23,7 +23,7 @@
     const actor=extra.actor||requested.get("actor")||
       (typeof state!=="undefined"?state.selected?.id:null)||"ichsan";
     const action=extra.action||requested.get("action")||motionAction;
-    return {actor,action:actionTypes.has(action)?action:"toilet",
+    return {actor,action:validActionId(action)?action:"toilet",
       building:extra.building||requested.get("building")||"",
       floor:extra.floor||requested.get("floor")||"",
       fixture:extra.fixture||requested.get("fixture")||""};
@@ -96,6 +96,11 @@
       sharedBones ? "SHARED BONES / SKIN PENDING" :
       planned ? "PLANNED / BONE MOTION NOT AUTHORED" :
       actionId ? "BONE MOTION NOT AUTHORED" : "REFERENCE ONLY";
+    const author = el("animation-author");
+    const valid=validActionId(actionId);
+    author.disabled=!valid||!character;
+    author.textContent=planned?"✎ AUTHOR MISSING PLAYER FRAMES":"✎ EDIT PLAYER FRAMES";
+    author.title=valid?"Open this action for the selected player in Mahluk Hidup's integrated pixel editor":"This reference has no player action ID";
     button.title = available ? "Switch to this character and play its original pixel motion" :
       sharedBones ? "Shared skeletal keys support this model category, but this actor has no bound body-part sprites yet" :
       "No authored shared skeletal keys and actor-specific rendered action are available";
@@ -330,6 +335,11 @@
   }
 
   el("animation-target-char").addEventListener("change", updateApply);
+  el("animation-author").addEventListener("click",()=>{
+    const id=actionForClip(selected);
+    if(!validActionId(id))return;
+    openActionTab({actor:selectedTarget()?.id||"ichsan",action:id});
+  });
   el("animation-apply").addEventListener("click", () => {
     if (selected?.status === "planned") return; // roadmap is never playable
     const target = selectedTarget();
