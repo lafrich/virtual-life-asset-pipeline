@@ -571,7 +571,7 @@ async function loadCatalog(){
   const universal=SLEEP?.definitions||[];
   A.registerActions([...definitions.actions.map(row=>row.id),
    ...universal.map(row=>row.id)]);
-  state.actions=[...compatActions,...definitions.actions,...universal];
+  state.actions=[...universal,...compatActions,...definitions.actions];
   const filter=$("action-category");
   filter.replaceChildren(opt("all","ALL ACTIVITIES"),opt("p0","P0 / ESSENTIAL"),opt("edited","EDITED / LOCAL"));
   for(const group of categories)if(state.actions.some(row=>row.category===group))
