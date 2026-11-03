@@ -141,6 +141,7 @@ def build(view, kind, f=0):
         for fn, x, y, kw in props: fn(top, x, y, **kw)
         puff(top, fx)
         if base == 'ne': near, far, top = flipx(near), flipx(far), flipx(top)
+    near, far = weld_arm_rgba_layers(L, near, far)
     im = Image.fromarray(shadow())
     order = ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'apron', 'outer', 'acc', 'arm_near', 'body_front', 'held', 'face', 'hair_front', 'glasses', 'brows']
     for k in order:
