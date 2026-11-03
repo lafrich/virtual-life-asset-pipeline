@@ -195,6 +195,9 @@ def build(nm, view, kind, f=0):
             # ne specific: front-of-body hands go behind the torso
             if kind in ('counter',): near, far, far_top = None if near is None else near, far, False
     # ---- compose
+    # Apply the shoulder weld AFTER custom offer/count/counter arms and
+    # sleeve-erasing edits; the shared base rig alone cannot repair these.
+    near, far = weld_arm_rgba_layers(L, near, far)
     sh = shadow(33 if kind == 'sit' else 32)
     im = Image.fromarray(sh)
     if kind == 'sit': im.alpha_composite(Image.fromarray(stool(n['stool'], 31 if base == 'se' else 33, 80)))
