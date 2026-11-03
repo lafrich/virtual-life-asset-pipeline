@@ -33,9 +33,10 @@ def outline_human_body(sprite:Image.Image,edge_tone:tuple[int,int,int]) -> Image
     )
     edge=visible & ~surrounded
     edge[:BODY_START_Y,:]=False
-    # Use the darker native skin ramp rather than flat black: still clearly
-    # outlined, but consistent with the rest of the pixel-character family.
-    tone=np.clip(np.asarray(edge_tone,dtype=np.float32)*0.56,0,255).astype(np.uint8)
+    # EXACT native head outline color: bald head uses pal["K7"] on its
+    # outside pixels. The previous 0.56 multiplier made the body artificially
+    # darker than the head and was the visible color-mismatch regression.
+    tone=np.asarray(edge_tone,dtype=np.uint8)
     pixels[edge,:3]=tone
     return Image.fromarray(pixels,"RGBA")
 
