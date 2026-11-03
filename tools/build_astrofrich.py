@@ -8,7 +8,7 @@ from PIL import Image
 import sys
 
 DIRECTIONS=("se","sw","ne","nw")
-MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4}
+MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4}
 EXPRESSIONS=("neutral","happy","surprised","angry","sleepy")
 FRAME=(64,112)
 
