@@ -36,7 +36,11 @@ assert.ok(bridge.includes("function actionData(actor,action)"),"Saved frames mus
 assert.ok(editor.includes('new URL("player-actions.json",BASE)'),"Action Editor not loading canonical database");
 assert.ok(editor.includes('new URL("gameplay-bindings.json",BASE)'),"Action Editor not loading Bangun bindings");
 assert.ok(editor.includes("renderActionList()"),"All actions need an accessible browser file list");
-assert.ok(editor.includes('state.actions=[...compatActions,...definitions.actions]'),"All 203 registry actions must be visible");
+assert.ok(editor.includes('state.actions=[...compatActions,...definitions.actions,...universal]'),
+ "All canonical actions and two universal native sleep aliases must be registered");
+assert.ok(editor.includes('...universal.map(row=>row.id)'),
+ "Shared bed sleep actions must be available for save/edit only after registry validation");
+assert.match(fs.readFileSync("site/universal-sleep.js","utf8"),/sleep_bed_right/);
 assert.ok(editor.includes('if(!state.prop')===false,"Unbound actions must still simulate without a fixture");
 assert.ok(editor.includes('"PLANNED / UNRENDERED"')&&editor.includes('"LOCAL DRAFT · NOT PUBLISHED"'),
  "Planned or edited-but-unpublished actions must never be labeled playable");
@@ -48,4 +52,4 @@ assert.ok(index.includes('id="animation-author"'),"Animation roadmap needs an ed
 assert.ok(animations.includes('id=actionForClip(selected)')||animations.includes('const id=actionForClip(selected)'),
  "Editor button must preserve chosen action ID");
 assert.ok(animations.includes('openActionTab({actor:selectedTarget()?.id||"ichsan",action:id})'));
-console.log("PASS player-action DB: 203 canonical definitions, 16 game bindings + 4 variants, 205 editable action IDs, honest rig states and cross-app wiring");
+console.log("PASS player-action DB: 203 canonical definitions, 16 game bindings + 4 variants, 207 registered action IDs including 2 universal native bed poses, honest rig states and cross-app wiring");
