@@ -9,6 +9,8 @@ const editor=read("accessory-editor.js"),css=read("accessory-editor.css");
 new Function(app);new Function(editor);
 assert.match(index,/<title>Mahluk Hidup — Character Studio<\/title>/,
  "Browser title must use Mahluk Hidup branding");
+assert.ok(read("animations.js").includes('.textContent = "MAHLUK HIDUP"'),
+ "Switching to Animations must preserve Mahluk Hidup brand title");
 assert.match(index,/<strong>MAHLUK HIDUP<\/strong>/,
  "XP window title must show Mahluk Hidup");
 assert.ok(index.includes("MAHLUK HIDUP®"),"Sprite canvas watermark must be renamed");
