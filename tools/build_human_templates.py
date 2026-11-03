@@ -45,6 +45,11 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
         if str(folder) not in sys.path:sys.path.insert(0,str(folder))
     import base6
     import make_npcs_v2 as M
+    # Human templates get a final repair AFTER skin-clothing recolor, rather
+    # than relying only on the earlier rig weld before female body reshaping.
+    npc_helpers=str(root/"assets"/"npc_pak_ogah")
+    if npc_helpers not in sys.path:sys.path.insert(0,npc_helpers)
+    from job_common import weld_arm_rgba_layers
     palettes={
         "male":{"body":"m","skin":"light","hair":"short","hc":"black","top":"tee_long","tc":"paper","pants":"trousers","pc":"paper","shoes":"shoes","sc":"paper"},
         "female":{"body":"f","skin":"light","hair":"short","hc":"black","top":"tee_long","tc":"paper","pants":"trousers","pc":"paper","shoes":"shoes","sc":"paper"},
@@ -70,6 +75,14 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 for i,tone in enumerate(skin):
                     a[mask & (index_map==i),:3]=tone
                 layers[key]=Image.fromarray(a,"RGBA")
+            # Weld final colored arm layers to the torso, for BOTH male
+            # and female, after bald/head and every source outfit conversion.
+            # The guide/character silhouette remains 64x112 pixel aligned.
+            rendered={k:np.array(v.convert("RGBA"),copy=True)
+                      for k,v in layers.items() if k in ("shirt","outer","arm_near","arm_far")}
+            weld_arm_rgba_layers(rendered)
+            for k in ("arm_near","arm_far"):
+                if k in rendered:layers[k]=Image.fromarray(rendered[k],"RGBA")
             result=Image.new("RGBA",FRAME)
             for key in ("hair_back","body","arm_far","shoes","pants","shoes_over",
                         "rips","shirt","arm_near","body_front","face","hair_front","brows"):
