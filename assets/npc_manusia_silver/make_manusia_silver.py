@@ -240,6 +240,7 @@ def build(view, kind, f=0):
             for (x, y, c) in ((30, 69, BRASS[0]), (31, 69, BRASS[1]), (32, 69, BRASS[2]), (31, 70, BRASS[3])): put(near, x, y, c)
         if base == 'ne': far, near, far_top = flipx(near), None, False      # back view: the reaching arm is in front of the body -> behind the torso
         L['arm_near'] = np.zeros_like(L['arm_near'])
+    near, far = weld_arm_rgba_layers(L, near, far)
     lower = compose(L, ['shoes', 'pants', 'shoes_over', 'rips'])
     upper = Image.new('RGBA', (FW, FH))
     for k in ('hair_back', 'body', 'arm_far'): upper.alpha_composite(Image.fromarray(L[k]))
