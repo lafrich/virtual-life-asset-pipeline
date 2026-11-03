@@ -112,6 +112,7 @@ def build(view, kind, f=0):
         if base == 'ne': near = flipx(near)
         L['arm_near'][:] = 0
         if base == 'se': L['arm_near'][71:78, 22:31] = 0
+    near, _ = weld_arm_rgba_layers(L, near, None)
     body = Image.new('RGBA', (FW, FH))
     for k in ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'outer', 'acc', 'arm_near', 'body_front', 'held']:
         if k in L: body.alpha_composite(Image.fromarray(L[k]))
