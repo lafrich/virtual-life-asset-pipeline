@@ -45,6 +45,68 @@ def render(n, anim='idle', f=0, view='se', expr='neutral', skin_ramp=None):
     imgs['face'] = fi['f']; imgs['brows'] = fi['b']; imgs['glasses'] = fi['g']
     return imgs, pal, bob
 
+def weld_arm_rgba_layers(layers, near=None, far=None):
+    """Join actual 64x112 RGB arm pixels to the closest torso edge at the
+    shoulder, including legacy special-action arms that REPLACE v6b arms.
+
+    Only repairs transparent gaps of at most five pixels in the shoulder
+    band (y=52..69). Never recolors shirt, skin, hands or existing pixels,
+    and never touches the arm at the wrist or the object being held.
+
+    Uses 4-connected horizontal bridges, rather than expanding the whole
+    character silhouette or drawing an additional arm. Works with original
+    near/far layer ordering and mirrored SE/SW/NE/NW frames.
+    """
+    garment_masks = []
+    for layer in ('shirt', 'outer'):
+        a = layers.get(layer)
+        if a is not None:
+            garment_masks.append(a[..., 3] > 0)
+    if not garment_masks:
+        return near, far
+    garment = np.logical_or.reduce(garment_masks)
+    for key, override in (('arm_near', near), ('arm_far', far)):
+        arr = override if override is not None else layers.get(key)
+        if arr is None or not np.any(arr[..., 3]):
+            continue
+        ys = np.flatnonzero(np.any(arr[48:80, :, 3] != 0, axis=1))
+        if not len(ys):
+            continue
+        # A raised arm can begin much higher than its shoulder. Anchor to
+        # where shirt and arm coexist, not to the arm's first painted row.
+        rows = []
+        for y in range(52, min(71, FH)):
+            xx = np.flatnonzero(arr[y, :, 3])
+            tx = np.flatnonzero(garment[y])
+            if not len(xx) or not len(tx):
+                continue
+            if (xx[0] + xx[-1]) < (tx[0] + tx[-1]):
+                start, end = int(xx[-1]), int(tx[0])
+                edge = arr[y, start].copy()
+            else:
+                start, end = int(tx[-1]), int(xx[0])
+                edge = arr[y, end].copy()
+            gap = end - start - 1
+            if 0 <= gap <= 5:
+                rows.append((y, start, end, edge))
+        if not rows:
+            continue
+        # The first nearby row is the shoulder. Limit the weld to its
+        # upper section, even when the arm swings or reaches for a prop.
+        root_y = rows[0][0]
+        for y, start, end, edge in rows:
+            if y > root_y + 6:
+                break
+            if end - start <= 1:
+                continue
+            for x in range(start + 1, end):
+                if arr[y, x, 3] == 0 and not garment[y, x]:
+                    arr[y, x] = edge
+        if override is None:
+            layers[key] = arr
+    return near, far
+
+
 def compose(L, keys):
     im = Image.new('RGBA', (FW, FH))
     for k in keys:
