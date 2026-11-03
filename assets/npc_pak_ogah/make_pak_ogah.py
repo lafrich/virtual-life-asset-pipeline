@@ -173,6 +173,8 @@ def build(view, kind, f):
                 for (x, y) in ((42, 48), (43, 47), (42, 51), (43, 52)): put(top, x, y, CHROME[1])     # toot
         if base == 'ne':
             L['arm_near'] = flipx(L['arm_near']); front = flipx(front); L['held'] = flipx(L['held']); L['arm_far'] = flipx(L['arm_far'])
+    # Connect actual shoulder roots AFTER custom flag-wave/stop-car arms.
+    weld_arm_rgba_layers(L)
     ordr = ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'outer', 'acc']
     im = Image.fromarray(shadow())
     im.alpha_composite(Image.fromarray(behind))
