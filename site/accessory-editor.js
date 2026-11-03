@@ -145,8 +145,16 @@ function draw(){
  }
  pc.imageSmoothingEnabled=false;
  pc.fillStyle="#ecedef";pc.fillRect(0,0,256,448);
- if(guideState.loaded)pc.drawImage(guide,di*W,0,W,H,0,0,256,448);
- pc.drawImage(layer(),0,0,256,448);
+ // Paint canvas keeps the anatomy guide translucent and UNDER the tool.
+ // Actual character preview must use gameplay depth: bags are behind the
+ // skull and torso. Clothing and helmets remain over their fitted body.
+ if(state.category==="bag"){
+  pc.drawImage(layer(),0,0,256,448);
+  if(guideState.loaded)pc.drawImage(guide,di*W,0,W,H,0,0,256,448);
+ }else{
+  if(guideState.loaded)pc.drawImage(guide,di*W,0,W,H,0,0,256,448);
+  pc.drawImage(layer(),0,0,256,448);
+ }
 }
 function remember(before,beforeMask){
  const after=image();
