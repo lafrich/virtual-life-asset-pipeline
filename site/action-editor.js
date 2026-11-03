@@ -67,6 +67,12 @@ function actionSource(){
 function setAction(next){
  if(!A.actions.includes(next))return;
  state.action=next;$("action").value=next;
+ for(const btn of document.querySelectorAll("[data-ae-action]")){
+  const chosen=btn.dataset.aeAction===next;
+  btn.classList.toggle("chosen",chosen);
+  btn.setAttribute("aria-pressed",String(chosen));
+ }
+ $("ae-canvas-title").textContent=state.actor.toUpperCase()+"_"+next.toUpperCase()+".PNG";
  state.source=actionSource();state.frame=state.previewFrame=0;state.lastTick=0;
  $("frame").max=String((state.source?.frames||4)-1);
  $("frame").value="0";
@@ -137,8 +143,7 @@ function updateProp(){
   const anchor=ISO.actionAnchor(state.prop);
   if(anchor&&DIR.includes(anchor.direction)){state.direction=anchor.direction;$("direction").value=state.direction;}
  }
- $("preview-tag").textContent=state.buildId==="demo"?"SOURCE: BANGUN RUANG / DEMO":
-  "SOURCE: SAVED BANGUN RUANG";
+ $("preview-tag").textContent=state.buildId==="demo"?"DEMO ROOM":"SAVED ROOM";
  render();
 }
 function syncOffset(){
@@ -257,7 +262,11 @@ function remember(){
 }
 function tool(name){
  state.tool=name;
- for(const id of ["pencil","erase","pick"])$(id).classList.toggle("active",name===id);
+ for(const id of ["pencil","erase","pick"]){
+  const active=name===id;
+  $(id).classList.toggle("active",active);
+  $(id).setAttribute("aria-pressed",String(active));
+ }
 }
 function coord(e){
  const b=px.getBoundingClientRect();
@@ -356,6 +365,8 @@ window.addEventListener("message",event=>{
 if(!A||!MODEL||!ISO){status("ACTION EDITOR MODULE MISSING");notice("Bangun Ruang drawing modules not loaded.");return;}
 $("actor").onchange=()=>{state.actor=$("actor").value;setAction(state.action);};
 $("action").onchange=()=>setAction($("action").value);
+for(const btn of document.querySelectorAll("[data-ae-action]"))
+ btn.addEventListener("click",()=>setAction(btn.dataset.aeAction));
 $("direction").onchange=()=>{state.direction=$("direction").value;loadFrame();render();};
 $("building").onchange=()=>{state.buildId=$("building").value;updateFloors();};
 $("floor").onchange=()=>{state.floor=Math.max(0,Number($("floor").value)-1);updateScene();};
