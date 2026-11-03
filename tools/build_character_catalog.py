@@ -344,7 +344,7 @@ def build():
         json.dumps({"version": 1, "build_version": os.environ.get("GITHUB_SHA", "local")[:12], "characters": results}, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    build_animation_catalog(OUT, REPO_URL)
+    build_animation_catalog(OUT, REPO_URL, characters=results)
     # Publish the COMPLETE canonical player action dictionary as metadata.
     # Planned specs are intentionally NOT bound as playable sprite motions.
     player_actions = json.loads(
