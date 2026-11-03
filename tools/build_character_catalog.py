@@ -345,7 +345,18 @@ def build():
         encoding="utf-8",
     )
     build_animation_catalog(OUT, REPO_URL)
-    print(f"Catalog ready: {len(results)} characters at {OUT}")
+    # Publish the COMPLETE canonical player action dictionary as metadata.
+    # Planned specs are intentionally NOT bound as playable sprite motions.
+    player_actions = json.loads(
+        (ROOT / "assets/animation_library/actions.json").read_text(encoding="utf-8")
+    )
+    if len(player_actions.get("actions", [])) < 200:
+        raise ValueError("Player action dictionary is incomplete")
+    (OUT / "player-actions.json").write_text(
+        json.dumps(player_actions, ensure_ascii=False, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    print(f"Catalog ready: {len(results)} characters / {len(player_actions['actions'])} player action definitions at {OUT}")
     return results
 
 
