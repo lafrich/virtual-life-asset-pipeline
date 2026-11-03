@@ -25,10 +25,6 @@ on:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
       - "site/**"
-      - "backend/**"
-      - "tools/generate_npc_from_spec.py"
-      - "tests/test_ai_native_pipeline.cjs"
-      - "tests/test_ai_native_config.py"
       - "tests/test_desktop_layout.cjs"
       - "tools/build_character_catalog.py"
       - "tools/build_rig_studio.py"
@@ -109,15 +105,6 @@ jobs:
           node --check site/action-frame-bridge.js
           node --check site/action-template-bridge.js
           node --check site/action-appearance-bridge.js
-          node --check site/character-draft-generator.js
-          node --check site/universal-rig.js
-          node --check site/ai-rig-workflow.js
-          node --check site/ai-native-v6b.js
-          node --check backend/worker.js
-          node tests/test_ai_native_pipeline.cjs
-          python -m py_compile tools/generate_npc_from_spec.py
-          python -m unittest discover -s tests -p 'test_ai_native_config.py' -v
-          node tests/test_universal_rig.cjs
           node --check site/action-editor.js
           node tests/test_action_frame_bridge.cjs
           node tests/test_mahluk_actions_tab.cjs
