@@ -171,7 +171,9 @@ def build(view='se', anim='idle', f=0, expr='neutral', pulse=0, modular=False):
         rear_pack = np.roll(pack(base), bodyd, 0).copy()
         # Keep the rear skull, goggles, neck and helmet completely in front.
         # This cutoff tracks the native torso animation's vertical bob.
-        neck_cutoff = max(0, min(FH, 56 + bodyd))
+        # Never reveal bag pixels in the rear head zone even when the
+        # walk/idle torso bobs upward (negative bodyd).
+        neck_cutoff = max(56, min(FH, 56 + bodyd))
         rear_pack[:neck_cutoff, :, 3] = 0
         im.alpha_composite(Image.fromarray(rear_pack))
     im.alpha_composite(Image.fromarray(acc))
