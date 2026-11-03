@@ -85,6 +85,7 @@ class LegacyArms(unittest.TestCase):
     def test_all_legacy_custom_generators_use_final_weld(self):
         sources=[
             "assets/npc_pak_ogah/make_pak_ogah.py",
+            "assets/npc_babeh_loak/make_babeh_loak.py",
             "assets/npc_kang_parkir/make_kang_parkir.py",
             "assets/npc_manusia_silver/make_manusia_silver.py",
             "assets/npc_pemuda_golda/make_pemuda_golda.py",
