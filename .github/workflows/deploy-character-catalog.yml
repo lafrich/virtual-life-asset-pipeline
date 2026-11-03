@@ -107,6 +107,7 @@ jobs:
           node --check site/action-editor.js
           node tests/test_action_frame_bridge.cjs
           node tests/test_mahluk_actions_tab.cjs
+          node tests/test_mahluk_action_deeplink.cjs
           node tests/test_player_action_database.cjs
           node tests/test_action_templates.cjs
           node tests/test_action_editor_interactions.cjs
