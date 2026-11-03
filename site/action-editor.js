@@ -83,8 +83,10 @@ function renderActionList(){
   label.textContent=row.label||row.id.toUpperCase();
   const sub=document.createElement("small");
   const authored=(actor()?.motions||[]).some(m=>m.id===row.id&&m.available);
-  const edited=A.entries(state.actor,row.id).length;
-  sub.textContent=edited?edited+" SAVED FRAMES":authored?"NATIVE RIG":row.status==="planned"?"TO AUTHOR / "+(row.priority||"P1"):"SOURCE / REVIEW";
+  const published=T?.get(state.actor,row.id),edited=A.entries(state.actor,row.id).length;
+  sub.textContent=published?.ready?"✓ SEMESTA TEMPLATE":published?"DRAFT TEMPLATE / "+edited:
+   edited?edited+" LOCAL FRAMES":authored?"NATIVE RIG":
+   row.status==="planned"?"UNAUTHORED / "+(row.priority||"P1"):"SOURCE / REVIEW";
   label.append(sub);button.append(square,label);
   button.addEventListener("click",()=>setAction(row.id));
   fragment.append(button);
@@ -96,8 +98,10 @@ function renderActionList(){
 function updateActionCoverage(){
  const row=actionRecord(),source=state.source,edited=A.entries(state.actor,state.action).length;
  const max=(source?.frames||4)*DIR.length;
- $("action-readiness").textContent=source?.authored?"NATIVE SOURCE + EDITABLE":
-  edited?"LOCAL DRAFT · NOT REVIEWED":"PLANNED / UNRENDERED";
+ const template=T?.get(state.actor,state.action);
+ $("action-readiness").textContent=template?.ready?"SEMESTA TEMPLATE · PLAYABLE":
+  source?.authored?"NATIVE / REUSABLE POSE":
+  edited?"LOCAL DRAFT · NOT PUBLISHED":"PLANNED / UNRENDERED";
  $("action-coverage").textContent=edited+" / "+max+" FRAMES SAVED LOCALLY";
  const req=(row?.requirements||[]).join(", ")||fixtureRequirements(state.action).join(", ")||"none";
  $("action-requirements").textContent="REQUIRES: "+req.toUpperCase()+
@@ -261,7 +265,9 @@ function originalInto(ctx,index,dir){
  return false;
 }
 function editedFrame(index,dir){
- if(index===state.frame&&dir===state.direction&&state.sourceReady)return px;
+ if(index===state.frame&&dir===state.direction&&state.sourceReady&&
+    (state.dirty||state.source?.authored||
+     !!A.get(state.actor,state.action,dir,index)))return px;
  const saved=A.get(state.actor,state.action,dir,index);
  if(saved){
   const entry=pic(saved);
@@ -537,7 +543,8 @@ $("save-template").onclick=saveTemplate;
 $("object-layer").onchange=()=>{render();status("OBJECT DEPTH CHANGED · SAVE TO SEMESTA TO KEEP THIS SETTING");};
 $("template-speed").onchange=()=>status("TEMPLATE TIMING CHANGED · SAVE TO SEMESTA TO APPLY");
 $("undo").onclick=()=>{const prior=state.undo.pop();if(prior){pc.putImageData(prior,0,0);render();}};
-$("reset-frame").onclick=()=>{if(!state.sourceReady)return;remember();originalInto(pc,state.frame,state.direction);render();status("SOURCE FRAME RESTORED IN EDITOR · PRESS SAVE TO APPLY");};
+$("reset-frame").onclick=()=>{if(!state.sourceReady)return;remember();originalInto(pc,state.frame,state.direction);
+ state.dirty=true;render();status("SOURCE REFERENCE RESTORED IN EDITOR · SAVE FRAME ONLY IF INTENDED");};
 $("clear").onclick=()=>{if(!state.sourceReady)return;
  A.remove(state.actor,state.action,state.direction,state.frame);
  loadFrame();renderActionList();updateActionCoverage();updateTemplateStatus();
