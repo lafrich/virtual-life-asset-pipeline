@@ -129,6 +129,16 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
+      - name: Render original street vehicles for Semesta
+        run: |
+          # Same authored sprite pipeline as Mahluk Hidup, not a Semesta proxy.
+          PYTHONPATH=assets/street_vehicles/_work python assets/street_vehicles/_work/produce.py
+          mkdir -p _site/assets/street_vehicles
+          cp assets/street_vehicles/manifest.json _site/assets/street_vehicles/manifest.json
+          cp -R assets/street_vehicles/cars assets/street_vehicles/riders _site/assets/street_vehicles/
+          test -s _site/assets/street_vehicles/cars/bus_transjakarta_se.png
+          test -s _site/assets/street_vehicles/riders/gojek_se.png
+          python -c 'from PIL import Image; from pathlib import Path; p=Path("_site/assets/street_vehicles"); assert Image.open(p/"cars/bus_transjakarta_se.png").mode=="RGBA"; assert Image.open(p/"riders/gojek_se.png").mode=="RGBA"; print("Street vehicle originals published for Semesta")'
       - name: Check built site files
         run: |
           test -s _site/index.html
