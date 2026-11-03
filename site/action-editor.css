@@ -169,3 +169,11 @@
  .ae-inspector-content{grid-template-columns:1fr}
  .ae-inspector-content > *{grid-column:1/-1}
 }
+
+/* Native action rotation, expression and looping controls retain XP inspector hit targets. */
+.ae-loop-toggle{display:flex;align-items:center;gap:9px;min-height:34px;
+ padding:6px 8px;border:1px solid #9c9991;background:#e5e2dc;cursor:pointer;
+ color:#193e86;margin:3px 0 6px}
+.ae-loop-toggle input[type="checkbox"]{width:16px;height:16px;flex:none;accent-color:#1749a1}
+#template-rotation,#template-expression{min-height:32px;cursor:pointer}
+#expression-help{display:block;margin:0 0 11px;font:9px/1.4 "Courier New",monospace;color:#5c5955}
