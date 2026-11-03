@@ -477,8 +477,10 @@ function init(){
  guide.onload=()=>{if(guide.naturalWidth!==256||guide.naturalHeight!==112){status("GUIDE DIMENSIONS MISMATCH");return;}
   guideState.loaded=true;state.loaded=true;status("BASE GUIDE READY · "+base.toUpperCase()+" / SE SW NE NW");draw();};
  guide.onerror=()=>status("COULD NOT LOAD THEODORE GUIDE / CHECK SITE BUILD");
- guide.src=human?"./media/human-"+(base.includes("female")?"female":"male")+"-base-guide.png":
+ const guideUrl=human?"./media/human-"+(base.includes("female")?"female":"male")+"-base-guide.png":
   "./media/theodore-accessory-fitting-guide.png";
+ const fresh=params.get("build")||"";
+ guide.src=guideUrl+(fresh?"?build="+encodeURIComponent(fresh):"");
  for(const [kind,frames] of Object.entries(keysafeRead(DRAFT_KEY,base==="astrofrich_base"?keysafeRead(DRAFT,{}):{})))
   if(allowedKinds.includes(kind))restoreLayers(frames,kind);
  renderStorage();updateControls();fitZoom();draw();
