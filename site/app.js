@@ -9,6 +9,7 @@ ctx.imageSmoothingEnabled = false;
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const DIRECTION_LABELS = ["SE", "SW", "NE", "NW"];
+const UNIVERSAL_SLEEP = window.VLUniversalSleep;
 const PALETTE = [
   "#f8f6f0","#ffffff","#111111","#003b7a","#1642b5","#457fe5","#a9c5fa",
   "#cabde8","#ffdbad","#e0d6cd","#7d5542","#d6d6d6","#8183a5","#e88291",
@@ -400,6 +401,8 @@ function accessoryFor(actor,category){
 }
 function drawEquippedAccessory(x,y,z,dirIndex,placement="front"){
  if(!state.selected)return;
+ // Do not float a backpack/standing outfit over the horizontal sleep pose.
+ if(UNIVERSAL_SLEEP?.isSleep(state.motion?.id)&&state.mode==="action")return;
  const dirs=["se","sw","ne","nw"];
  for(const category of EQUIPMENT_SLOTS){
   // FRONT view: pack is behind the entire character.
@@ -849,11 +852,17 @@ function draw() {
         state.motionFaceImage?.naturalWidth);
       const source = synced ? state.motionFaceImage : custom ? state.motionImage : state.image;
       if (source?.naturalWidth) {
-        const row = (synced ? 0 : (motion?.row ?? 0)) + d;
-        ctx.drawImage(source,state.frame*64,row*112,64,112,x,y,64*z,112*z);
+        const sleepPose=UNIVERSAL_SLEEP?.isSleep(motion?.id);
+        const oriented=sleepPose?UNIVERSAL_SLEEP.directionFor(motion.id,
+          ["se","sw","ne","nw"][d]):["se","sw","ne","nw"][d];
+        const row = (synced ? 0 : (motion?.row ?? 0)) +
+          ["se","sw","ne","nw"].indexOf(oriented);
+        const breath=sleepPose?UNIVERSAL_SLEEP.breathing(state.frame)*z:0;
+        ctx.drawImage(source,state.frame*64,row*112,64,112,
+          x,y+breath,64*z,112*z);
         // Expression blend is pixel-aligned on the selected actor's native
         // 44-row sheet; never apply original-row deltas onto unrelated custom rigs.
-        if (!synced && !custom && state.expression && state.faceOverlay?.naturalWidth) {
+        if (!sleepPose && !synced && !custom && state.expression && state.faceOverlay?.naturalWidth) {
           ctx.drawImage(state.faceOverlay,state.frame*64,row*112,64,112,x,y,64*z,112*z);
           if (state.expression.id !== "blink" && state.lastBlink === 1 &&
               state.blinkOverlay?.naturalWidth) {
@@ -1143,8 +1152,16 @@ async function init() {
     const payload = await response.json();
     if (!Array.isArray(payload.characters)) throw new Error("BAD CATALOG");
     spriteBuildVersion=String(payload.build_version||"").slice(0,20);
-    catalogCharacters=payload.characters.filter(c=>!["otis","legacy_otis"].includes(c.id));
-    state.characters=payload.characters;
+    // Virtual sleep clips reuse each actor's genuine V6B lie frames.
+    // Cloned Male/Female/Astrofrich characters retain the same source rig.
+    const withSleep=payload.characters.map(character=>{
+      const existing=Array.isArray(character.motions)?character.motions:[];
+      const native=UNIVERSAL_SLEEP?.actionsFor(character)||[];
+      return {...character,motions:[...existing,
+        ...native.filter(a=>!existing.some(m=>m.id===a.id))]};
+    });
+    catalogCharacters=withSleep.filter(c=>!["otis","legacy_otis"].includes(c.id));
+    state.characters=withSleep;
     rebuildCustomCharacters();
     const total = String(state.characters.length).padStart(2, "0");
     $("asset-total").textContent = total;
