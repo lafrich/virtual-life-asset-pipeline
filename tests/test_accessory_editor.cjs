@@ -91,5 +91,15 @@ assert.match(editor,/const missing=DIRS\.filter/,"Storage must require four comp
 assert.match(editor,/drawImage\(guide,di\*W,0,W,H/,"Guide changes per individual direction");
 assert.match(editor,/frames:Object\.fromEntries\(DIRS\.map/,"All four directions saved as one asset");
 assert.match(html,/id="acc-direction-progress"/);
+assert.ok(app.includes('const rearView=dirIndex===2||dirIndex===3'),
+ "Backpack depth must distinguish SE/SW from NE/NW");
+assert.ok(app.includes('placement!==(rearView?"front":"back")'),
+ "Rear bags should be visible on back torso, front bags behind avatar");
+assert.ok(app.includes('ctx.rect(x,y+56*z,64*z,(112-56)*z)'),
+ "Bag cannot cover the rear skull or neck");
+assert.ok(editor.includes('const rearBag=state.category==="bag"'),
+ "Accessory editor preview must match runtime rear bag depth");
+assert.ok(editor.includes('pc.rect(0,56*4,256,(112-56)*4)'),
+ "Rear bag preview must mask head/neck region");
 console.log("PASS: Astrofrich New Custom Char, named Character Storage, inherited seven animations/five expressions, and separate 4-sided accessories");
 
