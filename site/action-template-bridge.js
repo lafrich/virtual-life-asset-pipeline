@@ -14,6 +14,8 @@
  const DIR=["se","sw","ne","nw"],ID=/^[a-z0-9_-]{1,90}$/;
  const safe=(actor,action)=>ID.test(actor||"")&&ID.test(action||"");
  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,Math.round(Number(v)||lo)));
+ const rotation=v=>((Math.round((Number(v)||0)/90)*90)%360+360)%360;
+ const expression=v=>ID.test(v||"")?v:"neutral";
  const source=()=>root?.VLActionFrames;
  let cache=null;
  function read(){
@@ -48,7 +50,9 @@
   const value=read().templates[k(actor,action)];
   if(!value||value.actor!==actor||value.action!==action)return null;
   const progress=coverage(actor,action);
-  return {...value,ready:progress.complete,coverage:progress};
+  return {...value,rotation:rotation(value.rotation),
+   expression:expression(value.expression),loop:value.loop!==false,
+   ready:progress.complete,coverage:progress};
  }
  function list(actor){
   return Object.values(read().templates).filter(row=>row&&
@@ -64,6 +68,7 @@
   if(!name)throw Error("Enter a template name");
   const value={actor,action,name,objectLayer:options.objectLayer==="behind"?"behind":"front",
    frames:clamp(options.frames||4,1,12),frameMs:clamp(options.frameMs||210,60,1000),
+   rotation:rotation(options.rotation),expression:expression(options.expression),
    loop:options.loop!==false,version:1};
   read().templates[k(actor,action)]=value;
   persist();
