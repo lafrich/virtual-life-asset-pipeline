@@ -168,7 +168,14 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
         def frame(direction:str,kind:str,index:int,expression:str="neutral"):
             anim="sleep" if kind=="sleep_seat" else "tired" if kind=="nap_stand" else kind
             # Mirror directions are authored via native v6b, not generic canvas flip.
-            canvas,layers,pal=base6.render(cfg,f=index,d=direction,expr=expression,anim=anim)
+            # The modular base6 wrapper returns UPRIGHT layers even when its
+            # anim=lie parameter is selected. Apply the SAME pixel-exact
+            # native lie_flat transform used by the original V6B game.
+            lying=kind=="lie"
+            source_dir=("se" if direction in ("se","sw") else "ne") if lying else direction
+            face_expression="blink" if lying else expression
+            canvas,layers,pal=base6.render(cfg,f=index,d=source_dir,
+                                           expr=face_expression,anim=anim)
             M.bald(layers,pal)
             skin=[tuple(pal.get(k,pal["Ki"])) for k in ("K5","K7","Ke","Kh","Ki")]
             # Replace garment material with the native palette skin tones,
@@ -200,15 +207,28 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             weld_arm_rgba_layers(rendered)
             for k in ("arm_near","arm_far"):
                 if k in rendered:layers[k]=Image.fromarray(rendered[k],"RGBA")
+            if lying:
+                flattened=base6.lv.lie_flat(
+                    {k:v.convert("RGBA") for k,v in layers.items()},source_dir,"lie")
+                mirror=direction in ("sw","nw")
+                layers={k:(v.transpose(Image.Transpose.FLIP_LEFT_RIGHT) if mirror else v)
+                        for k,v in flattened.items()}
             result=Image.new("RGBA",FRAME)
+            if lying and "shadow" in layers:result.alpha_composite(layers["shadow"])
             for key in ("hair_back","body","arm_far","shoes","pants","shoes_over",
                         "rips","shirt","arm_near","body_front","face","hair_front","brows"):
                 if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
             # A bald, skin-toned body still needs a pixel-art silhouette
             # around its arms, torso, separated legs, and feet.
             result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))
-            result=shade_human_anatomy(result,gender,direction,shirt_top,pants_top,
-                tuple(pal.get("Ke",(170,115,87))),tuple(pal.get("Ki",(223,181,147))))
+            if not lying:
+                result=shade_human_anatomy(result,gender,direction,shirt_top,pants_top,
+                    tuple(pal.get("Ke",(170,115,87))),tuple(pal.get("Ki",(223,181,147))))
+            else:
+                from PIL import Image as _Image
+                zzz=_Image.fromarray(base6.lv.zzz_img(
+                    "lie",index,source_dir,direction in ("sw","nw")),"RGBA")
+                result.alpha_composite(zzz)
             # Body remains a non-explicit adult mannequin for outfit fitting.
             assert result.size==FRAME
             return result
