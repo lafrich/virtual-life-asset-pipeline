@@ -1,46 +1,150 @@
-:root{--blue:#0345a5;--panel:#e6e9ed;--ink:#263344;--line:#8c9db2;--light:#fff;--xp:#0c43a7}
-*{box-sizing:border-box}.ae-body{margin:0!important;background:#6380a5;color:var(--ink);font:12px "Tahoma","Arial",sans-serif}.ae-window{width:min(1530px,calc(100vw - 18px));margin:10px auto;background:#d9dfe9;border:2px solid #16418d;box-shadow:2px 3px #152e5c;min-height:calc(100dvh - 22px);display:flex;flex-direction:column}.ae-titlebar{background:linear-gradient(90deg,#1141a2,#448be7);color:white;padding:9px 12px;font-weight:bold;display:flex;justify-content:space-between;gap:12px}.ae-menu{display:flex;gap:18px;padding:8px 13px;background:#edeff3;border-bottom:1px solid #a5b3c5;align-items:center;flex-wrap:wrap}.ae-menu a{color:#143e83;text-decoration:none;font-weight:bold}.ae-menu span{margin-left:auto;font-size:10px;color:#58718b}.ae-main{padding:10px;display:grid;grid-template-columns:minmax(225px,260px) minmax(330px,1fr) minmax(290px,345px);gap:10px;flex:1;min-height:0}.ae-panel{border:1px solid #8da1bb;background:#e9ecf1;padding:11px;min-width:0;box-shadow:inset 1px 1px white}.ae-panel h2{font-size:11px;color:#1c4f94;margin:0 0 11px;letter-spacing:.4px}.ae-panel label{display:block;margin:9px 0;font-weight:700;font-size:10px;letter-spacing:.2px}.ae-panel select,.ae-panel input:not([type="range"]){display:block;width:100%;border:1px solid #7e93ad;min-height:30px;padding:5px;background:#fff;color:#263344;margin-top:5px;font:12px Tahoma,Arial,sans-serif}.ae-panel input[type="range"]{display:block;width:100%;margin:10px 0 6px;accent-color:#1d5cad}.ae-panel output{float:right;color:#164b99}.ae-btn{border:1px solid #768aa4;color:#1e3758;box-shadow:inset 1px 1px white,1px 1px #c6ccd6;border-radius:2px;background:linear-gradient(#fff,#d6dde7);font:700 11px Tahoma,Arial,sans-serif;padding:8px 10px;cursor:pointer;min-height:31px}.ae-btn:active,.ae-btn.active{background:#c1d4f1;border-color:#1d58a9}.ae-primary{background:linear-gradient(#4b92ea,#2059bd);color:#fff;border-color:#184997}.ae-small{font-size:11px;line-height:1.5;color:#5c6b79;margin:10px 0 0}.ae-separator{border-top:1px solid #adb9c9;margin:16px 0}.ae-section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.ae-section-heading span{font-size:10px;color:#60748e}.ae-stage{background:#f7f4eb;border:2px inset #a1a9b4;display:flex;align-items:center;justify-content:center;min-height:370px;overflow:auto;padding:14px}.ae-stage canvas{max-width:100%;height:auto;max-height:calc(100dvh - 260px);image-rendering:pixelated;image-rendering:crisp-edges}.ae-playback{display:flex;align-items:center;gap:6px;justify-content:center;margin:11px 0;flex-wrap:wrap}.ae-playback output{float:none;min-width:70px;text-align:center;font-weight:bold}.ae-status{font-size:11px;color:#3b5578;min-height:30px;line-height:1.4}.ae-edit-surface{background:repeating-conic-gradient(#e3e5e8 0 25%,#f9f9fa 0 50%) 50%/20px 20px;border:2px inset #94a5bb;min-height:405px;display:flex;align-items:center;justify-content:center;overflow:auto;padding:9px}.ae-edit-surface canvas{width:256px;height:448px;max-width:100%;image-rendering:pixelated;image-rendering:crisp-edges;cursor:crosshair;touch-action:none}.ae-tools{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:10px 0}.ae-tools .ae-btn{flex:1}.ae-tools input[type="color"]{width:36px!important;min-width:36px;height:31px!important;min-height:31px!important;padding:2px!important;margin:0!important}.ae-tools select{width:63px!important;min-height:31px;margin:0!important;padding:2px!important}.ae-frame{margin-top:9px}.ae-footer{padding:8px 12px;border-top:1px solid #9ca9bb;font-size:10px;display:flex;justify-content:space-between;gap:16px;color:#41556d;background:#f0f1f2}@media(max-width:1130px){.ae-main{grid-template-columns:250px minmax(290px,1fr)}.ae-editor{grid-column:1/-1}.ae-edit-surface{min-height:345px}.ae-edit-surface canvas{height:336px;width:192px}}@media(max-width:700px){.ae-window{margin:0;width:100%;border-width:0}.ae-titlebar span,.ae-footer span:last-child{display:none}.ae-main{display:flex;flex-direction:column;padding:7px}.ae-stage{min-height:270px}.ae-stage canvas{max-height:420px}.ae-edit-surface{min-height:385px}.ae-edit-surface canvas{height:420px;width:240px}.ae-menu{gap:12px}.ae-menu span{margin-left:0}.ae-panel{padding:10px}}
-
-/* EMBEDDED IN THE ORIGINAL MAHLUK HIDUP XP TABS.
- * Remove duplicate title bars; the parent owns app chrome and navigation.
- * Scrolling is confined to editor panels, preserving the fixed desktop UI. */
+/* Mahluk Hidup / Action Editor — the same XP Paint design system as
+ * Characters and Animations: 77px toolbar, 188px file rail, canvas, inspector.
+ * Inherits the actual application components from style.css.
+ */
+.ae-body{margin:0;background:#0b357e;color:var(--ink);font-family:Tahoma,"MS Sans Serif",Verdana,Arial,sans-serif}
+.ae-window{width:min(100%,1510px);margin:12px auto;background:var(--chrome);
+ border:2px solid #fafafa;outline:2px solid #292929;
+ box-shadow:3px 5px 0 #0008;min-height:650px;display:flex;flex-direction:column}
+.ae-titlebar{height:48px;flex:0 0 auto;background:linear-gradient(90deg,#042777 0%,#0755b5 64%,#2c88dd 100%);
+ border-bottom:2px solid #0c2267;color:#fff;display:flex;align-items:center;justify-content:space-between;
+ gap:14px;padding:0 14px;font:bold 17px Tahoma,Arial,sans-serif}
+.ae-titlebar span{font:11px "Courier New",monospace}
+.ae-menu{height:40px;display:flex;gap:16px;align-items:center;padding:0 12px;background:#d4d2ce;
+ border-bottom:2px solid #85827e;font:12px "Courier New",monospace}
+.ae-menu a{padding:7px;color:#222}
+.ae-menu a:hover{background:#0b429f;color:#fff}
+.ae-main{display:grid;grid-template-columns:77px 188px minmax(0,1fr) 248px;
+ flex:1 1 0;min-height:560px;height:clamp(560px,71dvh,820px);
+ grid-template-rows:minmax(0,1fr);background:#b8b6b1;min-width:0;overflow:hidden}
+.ae-main > *{min-width:0;min-height:0}
+.ae-rail{padding:10px 7px;overflow:hidden}
+.ae-rail .tool{padding:4px}
+.ae-rail .tools-stamp{margin-bottom:7px}
+.ae-library{overflow:hidden}
+.ae-library-scroll{padding:8px 6px 12px;margin:0 6px;flex:1;min-height:0;overflow-y:auto;
+ background:#dbd9d4;border:2px inset #a7a49d;scrollbar-color:#b7b4ae #e8e5df}
+.ae-field{display:block;min-width:0;margin-bottom:11px;font:bold 10px "Courier New",monospace}
+.ae-field .property-label{display:block;margin:6px 0}
+.ae-field-label{display:block;color:#5c5955;margin:5px 0}
+.ae-field select{display:block;width:100%;min-width:0;max-width:100%;
+ border:2px inset #aba8a2;border-radius:0;background:#f8f7f3;
+ padding:7px 5px;color:#1d1b1a;font:11px "Courier New",monospace}
+.ae-field select:focus-visible{outline:2px dotted #1a45b5;outline-offset:1px}
+.ae-library-scroll > .property-label{margin:12px 0 8px}
+.ae-action-list{display:flex;flex-direction:column;gap:6px}
+.ae-action-item{min-height:56px;margin:0;padding:5px;width:100%}
+.ae-action-item .file-preview{width:43px;height:44px;flex:none;
+ font:24px/1 Tahoma,sans-serif;background:#d5ddf5}
+.ae-action-item .file-label{font:bold 10px/1.35 "Courier New",monospace}
+.ae-action-item .file-label small{font:9px/1.3 "Courier New",monospace;margin-top:4px}
+.ae-action-item.chosen{background:#b5c8fc;border-color:#143c9c;box-shadow:inset 0 0 0 2px #f2f5ff}
+.ae-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
+ margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.ae-rule{height:1px;border-top:1px solid #9c9991;border-bottom:1px solid #f7f5ef;margin:12px 0}
+.chrome-button.ae-wide{width:100%;min-width:0;justify-content:center;white-space:normal}
+.ae-preview{overflow:hidden}
+.ae-preview .canvas-head .canvas-badge{max-width:46%;font-size:9px;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ae-stage{background:var(--canvas);display:block;position:relative;
+ flex:1 1 0;min-height:0;margin:10px 11px;border:2px inset #8b8883;overflow:hidden}
+.ae-stage-holder{position:absolute;inset:18px 14px 30px;display:flex;
+ align-items:center;justify-content:center;overflow:hidden}
+.ae-stage canvas{display:block;width:auto;height:auto;max-width:100%;max-height:100%;
+ object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges}
+.ae-preview .canvas-corner-label{bottom:12px;left:16px;max-width:80%;font-size:9px}
+.ae-playback{justify-content:center;gap:6px;flex-wrap:wrap;padding:8px}
+.ae-playback .chrome-button{min-width:30px;padding:7px 9px;font-size:11px}
+.ae-playback .primary-control{width:auto;min-width:83px}
+.ae-playback .canvas-scale{margin-left:auto;min-width:54px}
+.ae-status{min-height:44px;max-height:70px;padding:7px 11px;
+ display:flex;flex-direction:column;gap:3px;overflow:hidden;
+ border-top:1px solid #a5a29a;background:#d2d0ca;font:9px/1.3 "Courier New",monospace}
+.ae-status #sim-status{white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.ae-status #status{color:#1a4093;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ae-inspector{overflow:hidden;border-right:0}
+.ae-inspector-content{padding:9px 11px 14px;overflow-y:auto;overscroll-behavior:contain}
+.ae-inspector-content > .property-label:first-child{margin-top:2px}
+.ae-inspector .inspector-title span{font-size:15px}
+.ae-edit-surface{height:clamp(155px,28dvh,230px);min-height:155px;max-height:230px;
+ background:repeating-conic-gradient(#e6e4df 0 25%,#f6f5f2 0 50%) 50%/16px 16px;
+ border:2px inset #8c8b95;display:flex;align-items:center;justify-content:center;
+ overflow:hidden;padding:6px}
+.ae-edit-surface canvas{height:100%;max-height:100%;max-width:100%;width:auto;aspect-ratio:4/7;
+ image-rendering:pixelated;image-rendering:crisp-edges;
+ cursor:crosshair;touch-action:none;display:block}
+.ae-frame{display:block;margin:10px 0 13px}
+.ae-property-row{display:flex;justify-content:space-between;gap:10px;align-items:center;
+ color:#56534f;font:800 10px "Courier New",monospace}
+.ae-property-row output{font:800 10px "Courier New",monospace;color:#143e94}
+.ae-frame input[type=range]{display:block;width:100%;height:17px;margin:6px 0 1px;accent-color:#1646a5}
+.ae-brush-row{display:grid;grid-template-columns:39px 64px minmax(0,1fr);gap:7px;align-items:center}
+.ae-brush-row input[type=color]{width:39px;height:34px;padding:2px;
+ background:#f5f3ef;border:2px inset #888}
+.ae-brush-row select{min-width:0;width:100%;padding:7px 2px;
+ font:10px "Courier New",monospace;background:#f5f3ef;border:2px inset #888}
+.ae-brush-hint{font:bold 9px/1.2 "Courier New",monospace;color:#77716b}
+.ae-source-note{margin:5px 0 10px;padding:7px;background:#dedcd5;border:1px solid #aaa7a0;
+ color:#54504a;font:9px/1.4 "Courier New",monospace;overflow-wrap:anywhere}
+.ae-save-actions{display:grid;gap:6px;margin:12px 0}
+.ae-save-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:0}
+.ae-save-row button{min-width:0;padding:7px 2px;font-size:10px}
+.ae-footer{display:flex;justify-content:space-between;gap:9px;padding:6px 10px;
+ min-height:26px;flex:0 0 auto;background:#cfcdc8;border-top:2px solid #f0efeb;
+ color:#5b5752;font:9px "Courier New",monospace}
 .ae-embedded,.ae-embedded body{width:100%;height:100%;overflow:hidden}
-.ae-embedded .ae-body{background:#bdbbb5;margin:0!important;padding:0;min-height:0}
-.ae-embedded .ae-window{
- width:100%;max-width:none;margin:0;min-height:0;height:100dvh;
- border:0;box-shadow:none;background:#bdbbb5;overflow:hidden;
-}
+.ae-embedded .ae-body{background:#b8b6b1;margin:0!important;padding:0;min-height:0}
+.ae-embedded .ae-window{height:100dvh;min-height:0;max-height:100dvh;width:100%;
+ margin:0;border:0;outline:0;box-shadow:none;background:#b8b6b1;overflow:hidden}
 .ae-embedded .ae-titlebar,.ae-embedded .ae-menu{display:none!important}
-.ae-embedded .ae-main{
- height:100%;min-height:0;overflow:hidden;padding:7px;
- grid-template-columns:minmax(190px,22%) minmax(260px,1fr) minmax(250px,27%);
- gap:7px;
+.ae-embedded .ae-main{height:100%;min-height:0;flex:1 1 0;overflow:hidden}
+.ae-embedded .ae-footer{display:none}
+@media(max-width:780px){
+ .ae-body{overflow:auto}
+ .ae-window{width:100%;margin:0;border:0;outline:0;box-shadow:none}
+ .ae-titlebar{height:43px;font-size:15px}
+ .ae-main{display:flex;flex-direction:column;height:auto;min-height:0;overflow:visible}
+ .ae-rail{order:0;min-height:49px;padding:5px 9px;border-right:0;border-bottom:2px solid #86837e}
+ .ae-rail .tools-grid{display:flex;gap:4px;justify-content:flex-start}
+ .ae-rail .tool{width:36px;height:35px;aspect-ratio:auto;flex:none}
+ .ae-rail .tools-stamp{display:none}
+ .ae-library{order:1;max-height:none;min-height:0;border-right:0;border-bottom:2px solid #85827f}
+ .ae-library-scroll{padding:7px;display:grid;grid-template-columns:1fr 1fr;gap:6px 9px;
+ border:0;background:#dbd9d4;margin:0;overflow:visible}
+ .ae-library-scroll > .ae-field{margin:0}
+ .ae-library-scroll > .property-label{grid-column:1/-1;margin:4px 0}
+ .ae-action-list{grid-column:1/-1;flex-direction:row;gap:6px}
+ .ae-action-item{flex:1;min-width:0;flex-direction:column;align-items:center;
+ padding:5px 2px;min-height:78px;gap:4px;text-align:center}
+ .ae-action-item .file-preview{width:34px;height:30px;border:0;font-size:21px}
+ .ae-action-item .file-label{font-size:9px}
+ .ae-action-item .file-label small{font-size:8px}
+ .ae-library-scroll .ae-rule{grid-column:1/-1;margin:2px 0}
+ .ae-library-scroll #sync{grid-column:1/-1}
+ .ae-library-scroll #action{display:none}
+ .ae-preview{order:2;min-height:420px;border-right:0;border-bottom:2px solid #888}
+ .ae-preview .canvas-head{min-height:34px}
+ .ae-stage{min-height:290px}
+ .ae-inspector{order:3;border-right:0}
+ .ae-inspector-content{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;
+ min-height:0;overflow:visible}
+ .ae-inspector-content > .property-label,
+ .ae-inspector-content > .ae-rule,.ae-inspector-content > .ae-save-actions,
+ .ae-inspector-content > .ae-source-note{grid-column:1/-1}
+ .ae-edit-surface{grid-column:1/-1;max-height:290px;height:290px}
+ .ae-edit-surface canvas{max-height:272px}
+ .ae-brush-row{grid-column:1/-1}
+ .ae-save-actions{grid-column:1/-1}
+ .ae-embedded,.ae-embedded body{height:auto;min-height:100%;overflow:auto}
+ .ae-embedded .ae-window{height:auto;min-height:100%;max-height:none;overflow:visible}
+ .ae-embedded .ae-main{height:auto;min-height:0;overflow:visible}
 }
-.ae-embedded .ae-panel{height:100%;min-height:0;overflow:auto;overscroll-behavior:contain}
-.ae-embedded .ae-stage{min-height:0;flex:1 1 0}
-.ae-embedded .ae-preview{display:flex;flex-direction:column}
-.ae-embedded .ae-stage canvas{max-height:calc(100dvh - 185px)}
-.ae-embedded .ae-edit-surface{min-height:0;flex:1 1 0}
-.ae-embedded .ae-editor{display:flex;flex-direction:column}
-.ae-embedded .ae-edit-surface canvas{height:auto;width:auto;max-height:min(45dvh,448px);max-width:100%;aspect-ratio:4/7;object-fit:contain}
-.ae-embedded .ae-frame{flex:0 0 auto}
-.ae-embedded .ae-footer{flex:0 0 auto}
-@media(max-width:1080px){
- .ae-embedded .ae-main{grid-template-columns:minmax(185px,30%) minmax(230px,1fr);overflow:auto}
- .ae-embedded .ae-left,.ae-embedded .ae-preview{min-height:430px;height:auto}
- .ae-embedded .ae-editor{grid-column:1/-1;min-height:540px;height:auto}
- .ae-embedded .ae-edit-surface{min-height:390px}
-}
-@media(max-width:640px){
- .ae-embedded,.ae-embedded body{overflow:auto}
- .ae-embedded .ae-window{height:auto;min-height:100dvh;overflow:visible}
- .ae-embedded .ae-main{display:flex;flex-direction:column;height:auto;overflow:visible;padding:5px;gap:6px}
- .ae-embedded .ae-panel{height:auto;min-height:0;overflow:visible}
- .ae-embedded .ae-left{min-height:0}
- .ae-embedded .ae-preview{min-height:350px}
- .ae-embedded .ae-editor{min-height:490px}
- .ae-embedded .ae-edit-surface{min-height:350px}
- .ae-embedded .ae-edit-surface canvas{width:240px;height:420px;max-height:none}
- .ae-embedded .ae-stage canvas{max-height:380px}
- .ae-embedded .ae-footer{flex-wrap:wrap}
+@media(max-width:450px){
+ .ae-library-scroll{grid-template-columns:1fr 1fr}
+ .ae-library-scroll .ae-field[for="actor"],
+ .ae-library-scroll .ae-field[for="furniture"]{grid-column:1/-1}
+ .ae-preview .canvas-corner-label{display:none}
+ .ae-playback .chrome-button{padding:6px 7px}
+ .ae-inspector-content{grid-template-columns:1fr}
+ .ae-inspector-content > *{grid-column:1/-1}
 }
