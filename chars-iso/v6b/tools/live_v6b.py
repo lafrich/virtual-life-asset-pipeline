@@ -390,7 +390,10 @@ def attach_arm_roots(L):
                 x0, x1 = int(torso_x[-1]), int(arm_x[0])
                 edge_code = arm[y, x1]
                 path = range(x0 + 1, x1)
-            if 0 < abs(x1 - x0) - 1 <= 3:
+            # A narrower female torso can move inward another 1-2 pixels
+            # after the pose is built. Bridge the SHOULDER only, not the
+            # forearm or hand, and keep existing joined shapes untouched.
+            if 0 < abs(x1 - x0) - 1 <= 5:
                 for x in path:
                     if 0 <= x < CW and arm[y, x] == '':
                         arm[y, x] = edge_code
