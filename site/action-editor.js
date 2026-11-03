@@ -8,6 +8,11 @@ const $=id=>document.getElementById(id),A=window.VLActionFrames,
  MODEL=window.VLBuildingInterior,ISO=window.VLInteriorIso;
  // Editing should not lose all its click handlers if Semesta's optional
  // metadata module is unavailable; only publishing is unavailable.
+const P=window.VLActionAppearance||{
+ rotation:n=>((Math.round((Number(n)||0)/90)*90)%360+360)%360,
+ drawExpression:()=>false,
+ drawRotated:(ctx,image,x,y)=>ctx.drawImage(image,x-32,y-100)
+};
 const T=window.VLActionTemplates||{
  key:"virtual-life-action-templates-v1",get:()=>null,
  coverage:()=>({complete:false,authored:0,directions:Object.fromEntries(
@@ -180,11 +185,32 @@ function setAction(next){
  const previousTemplate=T?.get(state.actor,state.action);
  $("template-name").value=previousTemplate?.name||state.action.replace(/_/g," ").toUpperCase();
  $("template-speed").value=String(previousTemplate?.frameMs||210);
+ $("template-rotation").value=String(P.rotation(previousTemplate?.rotation));
+ $("template-loop").checked=previousTemplate?.loop!==false;
  $("object-layer").value=previousTemplate?.objectLayer||"front";
+ updateExpressionOptions(previousTemplate?.expression||"neutral");
  updateActionCoverage();updateTemplateStatus();
  const keep=state.buildId;readBuildings(keep);
  updateProp();
  loadFrame();
+}
+function updateExpressionOptions(selected="neutral"){
+ const sel=$("template-expression");
+ sel.replaceChildren(opt("neutral","NEUTRAL / ORIGINAL"));
+ const rows=actor()?.expressions||[];
+ const usable=rows.filter(f=>f&&f.id!=="neutral"&&escapeId(f.id)&&
+  (isSheet(f.overlay)||isSheet(f.sheet)));
+ for(const face of usable)sel.append(opt(face.id,
+  (face.label||face.id).toUpperCase()));
+ sel.value=usable.some(f=>f.id===selected)?selected:"neutral";
+ $("expression-help").textContent=usable.length?
+  usable.length+" CHARACTER-AUTHORED FACES / FRONT VIEWS ONLY":
+  "THIS CHARACTER HAS NO EXTRA NATIVE FACE ASSETS";
+}
+function selectedExpression(){
+ const id=$("template-expression").value;
+ if(id==="neutral")return null;
+ return (actor()?.expressions||[]).find(x=>x.id===id&&(isSheet(x.overlay)||isSheet(x.sheet)))||null;
 }
 function updateActors(){
  const sel=$("actor"),previous=state.actor;sel.replaceChildren();
@@ -369,26 +395,36 @@ function render(){
    {c:state.scene.width/2,r:state.scene.depth/2};
  const z=anchor?.z??(p?.assetId==="bathtub"?20:5);
  const [footX,footY]=ISO.point(geo,tile.c,tile.r,z);
- const dir=state.direction,frame=state.previewFrame;
- const shift=state.offset;
- const x=Math.round(footX-32+shift.x),y=Math.round(footY-100+(anchor?.pixelOffsetY||0)+shift.y);
- let image=editedFrame(frame,dir);
- if(!image){
+ const dir=state.direction,frame=state.previewFrame,shift=state.offset;
+ // Compose body and real same-actor face into a separate transparent image.
+ // Rotate that image at the foot pivot, without modifying saved 64x112 PNGs.
+ sourceCtx.clearRect(0,0,64,112);
+ const image=editedFrame(frame,dir);
+ if(image)sourceCtx.drawImage(image,0,0,64,112);
+ else {
   const src=state.source?.authored?sourceRect(frame,dir):null;
-  if(src)sc.drawImage(...src,x,y,64,112);
+  if(src)sourceCtx.drawImage(...src,0,0,64,112);
   else {
-   sc.fillStyle="#577c9c";sc.fillRect(x+22,y+45,20,40);
-   sc.fillStyle="#d8b49b";sc.fillRect(x+23,y+23,18,23);
+   sourceCtx.fillStyle="#577c9c";sourceCtx.fillRect(22,45,20,40);
+   sourceCtx.fillStyle="#d8b49b";sourceCtx.fillRect(23,23,18,23);
   }
- }else sc.drawImage(image,x,y,64,112);
- // User-controlled depth: redraw object after sprite for player-behind mode.
+ }
+ const face=selectedExpression();
+ if(face)P.drawExpression(sourceCtx,face,dir,frame,path=>pic(url(path)));
+ const angle=P.rotation($("template-rotation").value);
+ P.drawRotated(sc,scratch,
+  Math.round(footX+shift.x),
+  Math.round(footY+(anchor?.pixelOffsetY||0)+shift.y),angle);
+ // The object depth switch applies after rotation: a lying person can go
+ // behind the bed/duvet or in front of it without baking furniture into PNGs.
  if(p&&$("object-layer").value==="behind")ISO.drawFurniture(sc,geo,p);
  if(anchor&&$("object-layer").value==="behind")ISO.drawSeatForeground(sc,geo,p);
  const source=state.source,object=p?(MODEL.types[p.assetId]?.label||p.assetId):"FREE STANDING / NO PROP";
- notice(object+" · "+(p?"ROT "+p.rotation+"° / ":"")+
+ notice(object+" · "+(p?"OBJECT ROT "+p.rotation+"° / ":"")+
   (source?.authored?"NATIVE RIG / ":T?.get(state.actor,state.action)?.ready?
    "SEMESTA TEMPLATE / ":"PLANNED · PAINT FRAMES / ")+
-  ($("object-layer").value==="behind"?"PLAYER BEHIND OBJECT":"PLAYER IN FRONT")+" · FOOT 32,100");
+  "CHARACTER "+angle+"° · FACE "+($("template-expression").value||"neutral").toUpperCase()+
+  ($("object-layer").value==="behind"?" · PLAYER BEHIND":" · PLAYER IN FRONT"));
 }
 function remember(){
  state.undo.push(pc.getImageData(0,0,64,112));
@@ -463,7 +499,10 @@ function saveTemplate(){
   const result=T.save(state.actor,state.action,{
    name:$("template-name").value,
    objectLayer:$("object-layer").value,
-   frames:state.source?.frames||4,frameMs:Number($("template-speed").value)
+   frames:state.source?.frames||4,frameMs:Number($("template-speed").value),
+   rotation:Number($("template-rotation").value),
+   expression:$("template-expression").value,
+   loop:$("template-loop").checked
   });
   status(result.ready?"TEMPLATE READY · SELECT IT IN SEMESTA CHARACTER POSE":
    "DRAFT TEMPLATE SAVED · FINISH ALL 4 DIRECTIONS TO ACTIVATE IN SEMESTA");
@@ -580,6 +619,9 @@ $("save").onclick=save;
 $("save-template").onclick=saveTemplate;
 $("object-layer").onchange=()=>{render();status("OBJECT DEPTH CHANGED · SAVE TO SEMESTA TO KEEP THIS SETTING");};
 $("template-speed").onchange=()=>status("TEMPLATE TIMING CHANGED · SAVE TO SEMESTA TO APPLY");
+$("template-rotation").onchange=()=>{render();status("POSE ROTATED · SAVE TO SEMESTA TO APPLY");};
+$("template-expression").onchange=()=>{render();status("NATIVE FACE SELECTED · SAVE TO SEMESTA TO APPLY");};
+$("template-loop").onchange=()=>status("LOOP MODE CHANGED · SAVE TO SEMESTA TO APPLY");
 $("undo").onclick=()=>{const prior=state.undo.pop();if(prior){pc.putImageData(prior,0,0);render();}};
 $("reset-frame").onclick=()=>{if(!state.sourceReady)return;remember();originalInto(pc,state.frame,state.direction);
  state.dirty=true;render();status("SOURCE REFERENCE RESTORED IN EDITOR · SAVE FRAME ONLY IF INTENDED");};
@@ -616,8 +658,11 @@ $("prev").onclick=()=>{play(false);state.previewFrame=(state.previewFrame+(state
 $("next").onclick=()=>{play(false);state.previewFrame=(state.previewFrame+1)%(state.source?.frames||4);render();};
 $("restart").onclick=()=>{state.previewFrame=0;play(true);render();};
 function tick(t){
- if(state.playing&&state.source&&t-state.lastTick>=210){
-  state.previewFrame=(state.previewFrame+1)%state.source.frames;state.lastTick=t;render();
+ if(state.playing&&state.source&&t-state.lastTick>=Math.max(60,Number($("template-speed").value)||210)){
+  const count=state.source.frames||4;
+  if(!$("template-loop").checked&&state.previewFrame>=count-1){play(false);}
+  else state.previewFrame=(state.previewFrame+1)%count;
+  state.lastTick=t;render();
  }
  requestAnimationFrame(tick);
 }
