@@ -8,6 +8,50 @@
   const characterTab = el("switch-chars");
   const clipsPanel = el("animation-workspace");
   const characterPanel = el("character-workspace");
+  const actionTab = el("switch-actions");
+  const actionPanel = el("action-workspace");
+  const actionFrame = el("action-editor-embed");
+  let actionFrameStarted = false;
+  const actionTypes = new Set(["toilet","bathe","sleep"]);
+
+  function actionContext(extra={}) {
+    const requested = new URLSearchParams(location.search);
+    const chosenMotion=typeof state!=="undefined"?state.motion?.id:"";
+    const motionAction=["sit","sit_type","toilet"].includes(chosenMotion)?"toilet":
+      ["swim","bathe"].includes(chosenMotion)?"bathe":
+      ["sleep","sleep_seat","lie"].includes(chosenMotion)?"sleep":"toilet";
+    const actor=extra.actor||requested.get("actor")||
+      (typeof state!=="undefined"?state.selected?.id:null)||"ichsan";
+    const action=extra.action||requested.get("action")||motionAction;
+    return {actor,action:actionTypes.has(action)?action:"toilet",
+      building:extra.building||requested.get("building")||"",
+      floor:extra.floor||requested.get("floor")||"",
+      fixture:extra.fixture||requested.get("fixture")||""};
+  }
+  function sendActionContext(context){
+    if(!actionFrameStarted){
+      const target=new URL("./action-editor.html",location.href);
+      target.searchParams.set("embedded","1");
+      for(const [key,value] of Object.entries(context))if(value)target.searchParams.set(key,value);
+      actionFrameStarted=true;
+      actionFrame.src=target.href;
+      return;
+    }
+    actionFrame.contentWindow?.postMessage({type:"mahluk-action-context",context},location.origin);
+  }
+  function openActionTab(extra={}){
+    setMode("actions");
+    // The editor stays mounted while switching tabs; no loss of unsaved pixels.
+    sendActionContext(actionContext(extra));
+  }
+  window.VLMahlukActionsTab=Object.freeze({open:openActionTab});
+  document.addEventListener("mahluk:open-action-editor",event=>openActionTab(event.detail||{}));
+  actionTab.addEventListener("click",()=>openActionTab());
+  actionFrame.addEventListener("load",()=>{
+    if(actionFrame.src==="about:blank")return;
+    actionFrame.contentWindow?.postMessage(
+      {type:"mahluk-action-context",context:actionContext()},location.origin);
+  });
   const list = el("animation-file-list");
   const mainImage = el("animation-main-image");
   const pause = el("animation-play-toggle");
@@ -90,17 +134,21 @@
   function setMode(mode) {
     currentTab = mode;
     const animation = mode === "animations";
+    const actions = mode === "actions";
     clipsPanel.hidden = !animation;
-    characterPanel.hidden = animation;
+    characterPanel.hidden = animation || actions;
+    actionPanel.hidden = !actions;
     motionTab.classList.toggle("active", animation);
-    characterTab.classList.toggle("active", !animation);
+    characterTab.classList.toggle("active", !animation && !actions);
+    actionTab.classList.toggle("active", actions);
     motionTab.setAttribute("aria-selected", String(animation));
-    characterTab.setAttribute("aria-selected", String(!animation));
+    characterTab.setAttribute("aria-selected", String(!animation && !actions));
+    actionTab.setAttribute("aria-selected", String(actions));
     // The original Paint palette remains available in either workspace.
     const total = animation ? library.length : (typeof state !== "undefined" ? state.characters.length : 0);
     el("asset-total").textContent = String(total).padStart(2, "0");
     el("status-asset-count").textContent = String(total).padStart(2, "0");
-    writing("status-object-label", animation ? "CLIPS" : "OBJECTS");
+    writing("status-object-label", actions ? "FRAMES" : animation ? "CLIPS" : "OBJECTS");
     document.querySelector(".window-title strong").textContent = "MAHLUK HIDUP";
     el("menu-file").href = animation
       ? "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/animation_library"
@@ -110,7 +158,8 @@
       : "https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/assets/character_stock/README.md";
     el("menu-edit").title = animation ? "Show motion templates" : "Expressions";
     el("menu-view").title = animation ? "Toggle motion canvas grid" : "Toggle canvas grid";
-    el("status").textContent = animation ? "MAHLUK HIDUP / ANIMATIONS" : "MAHLUK HIDUP / CHARACTERS READY";
+    el("status").textContent = actions ? "MAHLUK HIDUP / ACTION EDITOR + SIMULATION" :
+      animation ? "MAHLUK HIDUP / ANIMATIONS" : "MAHLUK HIDUP / CHARACTERS READY";
   }
 
   function syncPlaying() {
@@ -362,6 +411,7 @@
       writing("animation-total", String(library.length).padStart(2, "0"));
       renderList();
       if (["#animations","#motion","#rigs"].includes(location.hash)) {setMode("animations");if(location.hash==="#rigs")history.replaceState(null,"","#animations");}
+      else if (["#actions","#action-editor"].includes(location.hash)) openActionTab();
     } catch(error) {
       el("animation-loading").textContent = "ANIMATIONS UNAVAILABLE";
       el("status").textContent = "MOTION ERROR: " + error.message;
