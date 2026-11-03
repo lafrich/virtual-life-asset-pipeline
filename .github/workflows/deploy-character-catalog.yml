@@ -39,6 +39,8 @@ on:
       - "tests/test_bald_nape.py"
       - "tests/test_rear_head_v6b.py"
       - "tests/test_human_outline.py"
+      - "tests/test_shared_arm_attachment.py"
+      - "tests/test_theodore_backpack_layer.py"
       - "chars-iso/v6b/tools/live_v6b.py"
       - "tests/test_master_parts.cjs"
       - "tests/test_rig_runtime.cjs"
@@ -105,6 +107,8 @@ jobs:
           python -m unittest discover -s tests -p "test_bald_nape.py" -v
           python -m unittest discover -s tests -p "test_rear_head_v6b.py" -v
           python -m unittest discover -s tests -p "test_human_outline.py" -v
+          python -m unittest discover -s tests -p "test_shared_arm_attachment.py" -v
+          python -m unittest discover -s tests -p "test_theodore_backpack_layer.py" -v
           python -m py_compile tools/build_rig_studio.py tools/build_character_catalog.py tools/animation_backlog.py tools/build_animation_catalog.py tools/new_animation_template.py tools/pack_animation_preview.py tools/build_native_character_catalog.py tools/build_legacy_character_catalog.py tools/build_legacy_face_previews.py tools/generate_archive_previews.py
           python -m unittest discover -s tests -p 'test_animation_catalog.py' -v
           python -m unittest discover -s tests -p 'test_rig_studio.py' -v
