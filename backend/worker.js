@@ -84,10 +84,16 @@ async function generate(request,env){
     !/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(r)||
     r.length>1_000_000))
    return error("Each reference image must be resized to less than 750 KB",422);
+ const refLabels=Array.isArray(data.referenceParts)?data.referenceParts:[];
+ if(refLabels.length!==refs.length||refLabels.some(p=>!["head","upper","lower","feet","overall"].includes(p)))
+  return error("Invalid reference part labels",422);
  const content=[{type:"input_text",text:JSON.stringify({
    requested_base:data.base,prompt:data.prompt,artist_name:data.name,
    instruction:"Match the existing Mahluk Hidup V6B native character aesthetic. Use only listed component options. Do not invent geometry. Note unimplemented details for human review.",
- })},...refs.map(image_url=>({type:"input_image",image_url}))];
+ })},...refs.flatMap((image_url,i)=>[
+  {type:"input_text",text:"Reference image part: "+refLabels[i]},
+  {type:"input_image",image_url}
+ ])];
  const vision=await fetch("https://api.openai.com/v1/responses",{
   method:"POST",
   headers:{"Authorization":"Bearer "+env.OPENAI_API_KEY,"Content-Type":"application/json"},
