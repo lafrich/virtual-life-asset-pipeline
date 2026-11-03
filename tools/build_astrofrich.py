@@ -5,6 +5,7 @@ uses his true authored animation frames with the helmet/backpack disabled.
 from __future__ import annotations
 from pathlib import Path
 from PIL import Image
+import numpy as np
 import sys
 
 DIRECTIONS=("se","sw","ne","nw")
@@ -19,7 +20,29 @@ def build_astrofrich(root:Path,media:Path)->dict:
         if directory not in sys.path:sys.path.insert(0,directory)
     import make_theodore as theta
     def frame(direction:str,kind:str,index:int,expression:str="neutral"):
-        result=theta.frame(direction,kind,index,expr=expression,modular=True).convert("RGBA")
+        if kind=="lie":
+            # Theodore's modular wrapper exposes the upright pose layers.
+            # Transform the character's REAL outfit and face through the
+            # native V6B lying pixel geometry rather than rotating a
+            # billboard or borrowing another character's raster frames.
+            base="se" if direction in ("se","sw") else "ne"
+            source=theta.frame(base,"idle",index,expr="blink",modular=True).convert("RGBA")
+            rgba=np.asarray(source).copy()
+            standing_shadow=(rgba[...,3]==56)&np.all(rgba[...,:3]==0,axis=2)
+            rgba[standing_shadow]=0
+            flat=theta.base6.lv.lie_flat(
+                {"figure":Image.fromarray(rgba,"RGBA")},base,"lie")
+            result=Image.new("RGBA",FRAME)
+            result.alpha_composite(flat["shadow"])
+            result.alpha_composite(flat["figure"])
+            if direction in ("sw","nw"):
+                result=result.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+            z=theta.base6.lv.zzz_img("lie",index,base,
+                                     direction in ("sw","nw"))
+            result.alpha_composite(Image.fromarray(z,"RGBA"))
+        else:
+            result=theta.frame(direction,kind,index,
+                               expr=expression,modular=True).convert("RGBA")
         assert result.size==FRAME
         return result
     def sprite_sheet(kind:str,count:int,expression:str="neutral",blink:bool=False):
