@@ -39,6 +39,7 @@ on:
       - "tests/test_bald_nape.py"
       - "tests/test_rear_head_v6b.py"
       - "tests/test_human_outline.py"
+      - "tests/test_human_morphology.py"
       - "tests/test_shared_arm_attachment.py"
       - "tests/test_actual_shoulder_sprites.py"
       - "tests/test_legacy_arm_roots.py"
@@ -111,6 +112,7 @@ jobs:
           python -m unittest discover -s tests -p "test_bald_nape.py" -v
           python -m unittest discover -s tests -p "test_rear_head_v6b.py" -v
           python -m unittest discover -s tests -p "test_human_outline.py" -v
+          python -m unittest discover -s tests -p "test_human_morphology.py" -v
           python -m unittest discover -s tests -p "test_shared_arm_attachment.py" -v
           python -m unittest discover -s tests -p "test_actual_shoulder_sprites.py" -v
           python -m unittest discover -s tests -p "test_legacy_arm_roots.py" -v
