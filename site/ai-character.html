@@ -42,7 +42,9 @@ let generatedColors=null;
 function collectSpec(){return Object.fromEntries(fields.map(f=>[f,$(f).value]))}
 function drawGenerated(){
  if(!generatedSheet)return;ctx.clearRect(0,0,c.width,c.height);ctx.imageSmoothingEnabled=false;
- const scaled=240/64;ctx.drawImage(generatedSheet,0,0,64,112,44,12,64*scaled,112*scaled);
+ const scale=1.2,positions=[[35,5],[145,5],[35,155],[145,155]]; 
+ positions.forEach(([x,y],i)=>{ctx.drawImage(generatedSheet,i*64,0,64,112,x,y,64*scale,112*scale);
+ ctx.fillStyle="#294b77";ctx.font="bold 11px monospace";ctx.fillText(["SE","SW","NE","NW"][i],x+27,y+143);});
 }
 
 const storage="mahluk-hidup-ai-character-draft-v1";
