@@ -41,11 +41,14 @@
   return cached;
  }
  function actionData(actor,action){
-  if(!ID.test(actor||"")||!ACTIONS.includes(action))return null;
+  if(!ID.test(actor||"")||!ID.test(action||""))return null;
+  // Reads may use a previously saved canonical action before the current
+  // game page has fetched its registry. Writes stay strictly registered.
   return data().actors[actor]?.[action]||null;
  }
  function get(actor,action,dir,frame){
-  if(!valid(actor,action,dir,frame))return null;
+  if(!ID.test(actor||"")||!ID.test(action||"")||!DIR.includes(dir)||
+     !Number.isInteger(frame)||frame<0||frame>39)return null;
   const v=actionData(actor,action)?.frames?.[dir+":"+frame];
   return typeof v==="string"&&v.length<100000&&PNG.test(v)?v:null;
  }
