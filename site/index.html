@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#043d9e">
   <meta name="description" content="Mahluk Hidup — pixel character creator, modular outfits, animated NPCs and character storage.">
   <title>Mahluk Hidup — Character Studio</title>
-  <link rel="stylesheet" href="./style.css?v=desktop-viewport-fix-1">
-  <script defer src="./app.js?v=membangun-sync-1&amp;face-head-sync=20261103"></script>
-  <script defer src="./animations.js?v=mahluk-hidup-v1"></script>
+  <link rel="stylesheet" href="./style.css?v=action-integrated-tab-20261103">
+  <script defer src="./app.js?v=action-integrated-tab-20261103"></script>
+  <script defer src="./animations.js?v=action-integrated-tab-20261103"></script>
 </head>
 <body>
   <div class="desktop">
@@ -31,6 +31,7 @@
       <div class="library-tabs" role="tablist" aria-label="Asset libraries">
         <button type="button" class="library-tab active" id="switch-chars" role="tab" aria-selected="true" aria-controls="character-workspace">01 / CHARACTERS</button>
         <button type="button" class="library-tab" id="switch-animations" role="tab" aria-selected="false" aria-controls="animation-workspace">02 / ANIMATIONS <span id="animation-total">--</span></button>
+        <button type="button" class="library-tab" id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace">03 / ACTION EDITOR</button>
         <span class="library-version">.V6B / DATABASE</span>
       </div>
       <div class="workspace" id="character-workspace" role="tabpanel" aria-labelledby="switch-chars">
@@ -274,6 +275,10 @@
             </div>
           </div>
         </aside>
+      </section>
+
+      <section class="action-workspace" id="action-workspace" role="tabpanel" aria-labelledby="switch-actions" hidden>
+        <iframe id="action-editor-embed" title="Mahluk Hidup action pixel editor and Bangun Ruang simulator" src="about:blank" loading="lazy"></iframe>
       </section>
 
       <section class="palette-panel" aria-label="Canvas color palette">
