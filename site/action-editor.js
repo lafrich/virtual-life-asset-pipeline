@@ -11,6 +11,7 @@ const BASE=new URL("/virtual-life-asset-pipeline/",location.origin);
 const deepLink=new URLSearchParams(location.search);
 let deepFloor=Math.max(1,Math.min(12,Number(deepLink.get("floor"))||1));
 let deepFixture=deepLink.get("fixture")||"";
+let pendingContext=null;
 const px=$("pixel"),pc=px.getContext("2d",{willReadFrequently:true});
 const sim=$("simulation"),sc=sim.getContext("2d");
 pc.imageSmoothingEnabled=false;sc.imageSmoothingEnabled=false;
@@ -314,8 +315,44 @@ async function loadCatalog(){
   if(A.actions.includes(requestedAction))state.action=requestedAction;
   updateActors();
   state.source=actionSource();setAction(state.action);
+  if(pendingContext){const request=pendingContext;pendingContext=null;applyParentContext(request);}
  }catch(e){status("COULD NOT LOAD PLAYER CATALOG: "+e.message);notice("Check Mahluk Hidup Pages build.");}
 }
+/* Parent XP workspace can re-target the iframe without reloading it.
+ * Preserve any unsaved current-frame edits if actor/action/fixture is unchanged. */
+function applyParentContext(context){
+ if(!context||typeof context!=="object")return;
+ if(!state.catalog.length){pendingContext=context;return;}
+ const requestedActor=typeof context.actor==="string"&&
+  state.catalog.some(ch=>ch.id===context.actor)?context.actor:null;
+ const requestedAction=A.actions.includes(context.action)?context.action:null;
+ const nextActor=requestedActor||state.actor;
+ const nextAction=requestedAction||state.action;
+ const changesActor=nextActor!==state.actor,changesAction=nextAction!==state.action;
+ if(changesActor){state.actor=nextActor;$("actor").value=nextActor;}
+ if(changesActor||changesAction){setAction(nextAction);}
+ const building=typeof context.building==="string"&&context.building||"";
+ const floor=Math.max(1,Math.min(12,Number(context.floor)||1));
+ const fixture=typeof context.fixture==="string"?context.fixture:"";
+ if(building&&building!==state.buildId){
+   deepFloor=floor;deepFixture=fixture;
+   readBuildings(building);
+ }else if(context.floor&&Number($("floor").value)!==floor){
+   $("floor").value=String(floor);
+   state.floor=Math.max(0,Number($("floor").value)-1);
+   deepFixture=fixture;updateScene();
+ }else if(fixture&&fixture!==state.prop?.id){
+   const select=$("furniture");
+   if([...select.options].some(option=>option.value===fixture)){
+     select.value=fixture;state.prop=state.scene?.items?.find(item=>item.id===fixture)||null;
+     state.bgReady=false;render();
+   }
+ }
+}
+window.addEventListener("message",event=>{
+ if(event.origin!==location.origin||event.source!==window.parent)return;
+ if(event.data?.type==="mahluk-action-context")applyParentContext(event.data.context);
+});
 if(!A||!MODEL||!ISO){status("ACTION EDITOR MODULE MISSING");notice("Bangun Ruang drawing modules not loaded.");return;}
 $("actor").onchange=()=>{state.actor=$("actor").value;setAction(state.action);};
 $("action").onchange=()=>setAction($("action").value);
