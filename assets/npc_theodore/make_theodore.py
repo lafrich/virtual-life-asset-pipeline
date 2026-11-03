@@ -10,6 +10,8 @@ sys.path.insert(0, 'assets/npc_gfunk')
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import make_gfunk as G, base6, make_npcs_v2 as M
+sys.path.insert(0, 'assets/npc_pak_ogah')
+from job_common import weld_arm_rgba_layers
 from make_gfunk import disk, rect, shade, comp, put, hx, FW, FH, CHROME, RED, ORANGE, GLASSD
 OUT = os.path.dirname(os.path.abspath(__file__))
 CFG = dict(body='m', skin='light', hair='short', hc='black', top='tee_long', tc='oxbred', pants='trousers', pc='oxbred', shoes='boots', sc='paper')
@@ -145,6 +147,14 @@ def build(view='se', anim='idle', f=0, expr='neutral', pulse=0, modular=False):
     pa = comp(np.array(L['pants']), shirt); belt(pa, PY + bodyd)
     bl = np.zeros((FH, FW, 4), np.uint8); bl[PY - 1 + bodyd:PY + 1 + bodyd] = pa[PY - 1 + bodyd:PY + 1 + bodyd]
     L['shirt'] = Image.fromarray(shirt)
+    # Repair final red-suit shoulder seams, INCLUDING the modular bald base.
+    # Important: this happens AFTER changing hand skin to gloves and
+    # BEFORE the helmet/backpack/chest overlays are composited.
+    body_layers={k:np.array(L[k].convert('RGBA'),copy=True)
+                 for k in ('shirt','outer','arm_far','arm_near') if k in L}
+    weld_arm_rgba_layers(body_layers)
+    for k in ('arm_far','arm_near'):
+        if k in body_layers: L[k]=Image.fromarray(body_layers[k],'RGBA')
     acc = np.zeros((FH, FW, 4), np.uint8); collar(acc, base, suit); acc = np.roll(acc, bodyd, 0); acc = comp(bl, acc)
     order = ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'shirt_graphic', 'outer']
     im = Image.new('RGBA', (FW, FH))
