@@ -73,7 +73,10 @@ function selectCharacter(character) {
   state.selected = character;
   renderAccessoryStorage();
   state.mode = "walk";
-  state.expression = null;
+  // The base mannequins and Theodore have real same-actor face motion
+  // atlases. Activate neutral by default so head/eyes animate on first play.
+  state.expression = character.expressions?.find(f=>f.id==="neutral" &&
+    f.motion_sheets?.walk) || null;
   state.motion = null;
   state.frame = 0;
   state.autoDir = 0;
