@@ -6,14 +6,15 @@
 <meta name="theme-color" content="#073a9d">
 <title>Mahluk Hidup — Action Editor</title>
 <link rel="stylesheet" href="./style.css?v=desktop-viewport-fix-1">
-<link rel="stylesheet" href="./action-editor.css?v=semesta-template-v5">
+<link rel="stylesheet" href="./action-editor.css?v=pose-expression-v6">
 <script>if(new URLSearchParams(location.search).get("embedded")==="1")document.documentElement.classList.add("ae-embedded");</script>
 <script defer src="./action-frame-bridge.js?v=action-v1"></script>
-<script defer src="./action-template-bridge.js?v=semesta-templates-v1"></script>
+<script defer src="./action-template-bridge.js?v=semesta-templates-v2"></script>
+<script defer src="./action-appearance-bridge.js?v=pose-expression-v1"></script>
 <script defer src="/virtual-office/world-builder/bangun-ruang/interior-model.js?v=rotate-v12"></script>
 <script defer src="/virtual-office/world-builder/bangun-ruang/game-proportions.js?v=source-v9"></script>
 <script defer src="/virtual-office/world-builder/bangun-ruang/interior-isometric.js?v=furniture-action-layer-v11"></script>
-<script defer src="./action-editor.js?v=semesta-template-v5"></script>
+<script defer src="./action-editor.js?v=pose-expression-v6"></script>
 </head>
 <body class="ae-body">
 <main class="ae-window">
@@ -121,6 +122,22 @@
           <input id="offset-y" type="range" min="-32" max="32" value="0" step="1">
         </label>
         <button type="button" id="reset-offset" class="chrome-button ae-wide">RESET POSITION</button>
+        <div class="property-label">POSE / ORIENTATION</div>
+        <label class="ae-field" for="template-rotation"><span class="ae-field-label">ROTATE CHARACTER</span>
+          <select id="template-rotation" aria-label="Rotate action sprite by 90 degree steps">
+            <option value="0">0° / UPRIGHT</option>
+            <option value="90">90° / LIE RIGHT</option>
+            <option value="180">180° / UPSIDE DOWN</option>
+            <option value="270">270° / LIE LEFT</option>
+          </select>
+        </label>
+        <div class="property-label">FACE / EXPRESSION</div>
+        <label class="ae-field" for="template-expression"><span class="ae-field-label">CHARACTER EXPRESSION</span>
+          <select id="template-expression" aria-label="Select native expression for the selected character">
+            <option value="neutral">NEUTRAL</option>
+          </select>
+        </label>
+        <small id="expression-help" class="ae-source-note" role="status">NATIVE CHARACTER EXPRESSIONS ONLY</small>
         <div class="property-label">OBJECT DEPTH / LAYER ORDER</div>
         <label class="ae-field" for="object-layer"><span class="ae-field-label">PLAYER VS ACTION OBJECT</span>
           <select id="object-layer" aria-label="Choose whether player is drawn in front or behind action object">
@@ -148,6 +165,10 @@
               <option value="320">SLOW / 320 MS</option>
               <option value="500">VERY SLOW / 500 MS</option>
             </select>
+          </label>
+          <label class="ae-field ae-loop-toggle" for="template-loop">
+            <input type="checkbox" id="template-loop" checked>
+            <span>LOOP ACTION</span>
           </label>
           <button type="button" id="save" class="chrome-button ae-wide">↓ SAVE FRAME</button>
           <button type="button" id="save-template" class="chrome-button action-main ae-wide">✓ SAVE TO SEMESTA</button>
