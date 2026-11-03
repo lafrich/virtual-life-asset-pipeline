@@ -17,6 +17,9 @@ def render(n, f=0, d='se', expr='neutral', anim='idle'):
     P=lv.pose_layers(se if view=='se' else ne,kind,f,view,C,O)
     for mk,mp in pal['_maps'].items(): P[mk]=lv.recolor(P[mk],mp)
     if fem: pv.fem_body(P,kind)
+    # Female body taper happens AFTER posing: weld once more so the right
+    # shoulder stays attached in the actual sprite, not only the base pose.
+    lv.attach_arm_roots(P)
     P['shoes_over']=pv.shoe_style(P,n['shoes'])
     if n['shoes'] in('boots','hightops'): pal.setdefault('S3',lv.hx('#E8E6E0'))
     if n['shoes'] in('sneakers',): pal.setdefault('S3',lv.hx('#B4B0A8'))
