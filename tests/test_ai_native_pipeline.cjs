@@ -1,0 +1,37 @@
+"use strict";
+const assert=require("node:assert/strict"),fs=require("node:fs");
+const html=fs.readFileSync("site/ai-character.html","utf8");
+const js=fs.readFileSync("site/ai-native-v6b.js","utf8");
+const page=fs.readFileSync("site/index.html","utf8");
+const app=fs.readFileSync("site/app.js","utf8");
+const editor=fs.readFileSync("site/action-editor.html","utf8");
+const backend=fs.readFileSync("backend/worker.js","utf8");
+const python=fs.readFileSync("tools/generate_npc_from_spec.py","utf8");
+const workflow=fs.readFileSync(".github/workflows/ai-character-native-v6b.yml","utf8");
+for(const id of ["human_male_base","human_female_base","astrofrich_base"])
+ assert.ok(html.includes(id),"Missing actual canonical source base "+id);
+assert.match(html,/ai-native-v6b\.js/);
+assert.doesNotMatch(html,/character-draft-generator\.js|ai-rig-workflow\.js|universal-rig\.js/);
+assert.doesNotMatch(page,/character-draft-generator\.js|universal-rig\.js/);
+assert.doesNotMatch(editor,/character-draft-generator\.js|universal-rig\.js/);
+assert.doesNotMatch(app,/function localRigCharacters\(/);
+assert.match(js,/row=4\+d/,"Native base idle row must be composited, never redrawn");
+assert.match(js,/img\.naturalWidth!==384\|\|img\.naturalHeight!==4928/);
+assert.match(js,/sourceMode="base"/);
+assert.match(js,/refs\.set\(part,value\)/);
+assert.match(js,/Authorization.*Bearer/);
+assert.ok(!js.includes("OPENAI_API_KEY")&&!js.includes("GH_DISPATCH_TOKEN"),
+ "Credentials must never be present in browser JS");
+assert.match(backend,/api\.openai\.com\/v1\/responses/);
+assert.match(backend,/text:\{format:\{type:"json_schema"/);
+assert.match(backend,/STUDIO_PASSCODE/);
+assert.match(backend,/actions\/workflows/);
+assert.match(python,/import npc_v6b as npc/);
+assert.match(python,/def validate\(/);
+assert.match(python,/def build\(/);
+assert.doesNotMatch(python,/exec\(|eval\(/,"Never run untrusted prompt as code");
+assert.match(workflow,/workflow_dispatch/);
+assert.match(workflow,/python tools\/generate_npc_from_spec\.py --env/);
+assert.match(workflow,/gh pr create/);
+assert.doesNotMatch(workflow,/gh pr merge/,"Owner must review PR before publication");
+console.log("PASS native Mahluk Hidup base, safe backend, reviewed V6B build and original rig preservation");
