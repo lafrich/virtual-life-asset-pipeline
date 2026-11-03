@@ -251,8 +251,14 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             make_sheet("idle",4,expr).save(media/fn,optimize=True)
             portrait=f"{name}-expression-{expr}-portrait.png"
             frame("se","idle",0,expr).crop((17,30,49,59)).resize((160,145),Image.Resampling.NEAREST).save(media/portrait)
+            # Full 4-direction facial sprites are regenerated for each
+            # walking frame, so eyes, brows and mouth follow the moving head.
+            # Matching idle/walk source poses also keep male/female body shapes.
+            walk_face=f"{name}-expression-{expr}-walk.png"
+            make_sheet("walk",MOTIONS["walk"],expr).save(media/walk_face,optimize=True)
             expressions.append({"id":expr,"label":expr.upper(),"sheet":"media/"+fn,
-                "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True})
+                "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True,
+                "motion_sheets":{"idle":"media/"+fn,"walk":"media/"+walk_face}})
         results.append({"id":f"human_{gender}_base","name":"Human / "+gender.title()+" Base",
             "type":"npc","template":True,"template_category":"human","gender":gender,
             "description":"Distinct adult bald "+gender.title()+" skin-toned mannequin with non-explicit morphology guides; modular shirt, pants and shoes.",
