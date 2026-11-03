@@ -588,8 +588,12 @@ def back_layers(se, C, O):
     for (x, y) in neck:
         if (x, y) in hair:
             continue
-        body[y, x] = '7' if x in (R(10), R(16)) else (
-            'e' if y >= 21 else ('h' if x >= R(14) else 'i'))
+        # Preserve the restored rear skull. The previous pair of dark '7'
+        # edge columns at x=10/16 cut TWO vertical stripes into the nape
+        # below the haircut, even where the neck is inside the head mass.
+        if body[y, x]:
+            continue
+        body[y, x] = 'e' if y >= 21 else ('h' if x >= R(14) else 'i')
     for y in range(22, 45):
         for x in range(CW):
             c = se['body'][y, x]
