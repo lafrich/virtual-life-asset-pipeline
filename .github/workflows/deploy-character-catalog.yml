@@ -138,6 +138,14 @@ jobs:
           mkdir -p _site/assets/street_vehicles
           cp assets/street_vehicles/manifest.json _site/assets/street_vehicles/manifest.json
           cp -R assets/street_vehicles/cars assets/street_vehicles/riders _site/assets/street_vehicles/
+          # Prefer the authored v3 riders (accurate Gojek passenger / SMA triple,
+          # hand grip positions and native 4-way frames) over legacy motor proxies.
+          python assets/street_vehicles/riders_v3/_work/produce.py
+          mkdir -p _site/assets/street_vehicles/riders_v3
+          cp -R assets/street_vehicles/riders_v3/frames _site/assets/street_vehicles/riders_v3/
+          cp assets/street_vehicles/riders_v3/manifest.json _site/assets/street_vehicles/riders_v3/manifest.json
+          test -s _site/assets/street_vehicles/riders_v3/frames/gojek_pax_se_f0.png
+          test -s _site/assets/street_vehicles/riders_v3/frames/sma_triple_se_f0.png
           test -s _site/assets/street_vehicles/cars/bus_transjakarta_se.png
           test -s _site/assets/street_vehicles/riders/gojek_se.png
           python -c 'from PIL import Image; from pathlib import Path; p=Path("_site/assets/street_vehicles"); assert Image.open(p/"cars/bus_transjakarta_se.png").mode=="RGBA"; assert Image.open(p/"riders/gojek_se.png").mode=="RGBA"; print("Street vehicle originals published for Semesta")'
