@@ -11,9 +11,21 @@
  "use strict";
  const KEY="virtual-life-action-frame-edits-v1";
  const DIR=["se","sw","ne","nw"],ACTIONS=["toilet","bathe","sleep"];
+ const DEFAULT_ACTIONS=new Set(ACTIONS);
  const ID=/^[a-z0-9_-]{1,90}$/;
  const PNG=/^data:image\/png;base64,[a-zA-Z0-9+/=]+$/;
  let cached=null;
+ // Canonical actions are registered after loading player-actions.json.
+ // The editor never accepts arbitrary user-supplied IDs as new action types.
+ function registerActions(ids){
+  if(!Array.isArray(ids)||ids.length<7||ids.length>500||
+     !ids.every(id=>typeof id==="string"&&/^[a-z][a-z0-9_]{0,89}$/.test(id)))
+   throw Error("Invalid canonical player action registry");
+  const unique=new Set(ids);
+  if(unique.size!==ids.length)throw Error("Duplicate player action IDs");
+  for(const id of unique)if(!DEFAULT_ACTIONS.has(id)&&!ACTIONS.includes(id))ACTIONS.push(id);
+  return ACTIONS.length;
+ }
  function valid(actor,action,dir,frame){
   return ID.test(actor||"")&&ACTIONS.includes(action)&&DIR.includes(dir)&&
    Number.isInteger(frame)&&frame>=0&&frame<=39;
@@ -80,6 +92,7 @@
  function invalidate(){cached=null;}
  if(root&&typeof root.addEventListener==="function")
   root.addEventListener("storage",e=>{if(e.key===KEY)invalidate();});
- return Object.freeze({key:KEY,actions:Object.freeze(ACTIONS),directions:Object.freeze(DIR),
+ return Object.freeze({key:KEY,get actions(){return Object.freeze([...ACTIONS]);},
+  directions:Object.freeze(DIR),registerActions,
   get,offset,set,setOffset,remove,entries,invalidate});
 });
