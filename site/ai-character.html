@@ -3,7 +3,8 @@
 <title>AI Character — Mahluk Hidup</title>
 <style>
 :root{font:12px Tahoma,Verdana,sans-serif;color:#1e2430;background:#5c93c7}*{box-sizing:border-box}body{margin:0;padding:17px}.window{max-width:1210px;margin:auto;background:#ece9d8;border:2px solid #2454aa;border-radius:8px 8px 3px 3px;box-shadow:2px 5px 0 #294c75}.titlebar{background:linear-gradient(#398af0 0%,#1451c6 47%,#1744a0 95%);color:white;padding:9px 12px;border-radius:5px 5px 0 0;display:flex;justify-content:space-between;align-items:center;font-size:13px}.titlebar b{letter-spacing:.5px}.winbuttons{font-size:17px}.menu{background:#f4f1e6;padding:8px 12px;border-bottom:1px solid #bbb;display:flex;gap:18px;align-items:center}.menu a{color:#153b91;text-decoration:none}.menu a:hover{text-decoration:underline}.tabs{display:flex;gap:4px;padding:10px 12px 0;border-bottom:1px solid #bbb;flex-wrap:wrap}.tabs a{padding:9px 13px;border:1px solid #9ca8bb;background:#dadeda;color:#303943;text-decoration:none;font-weight:bold}.tabs a.active{background:#fff;border-bottom-color:#fff;color:#0e469c}.main{padding:15px;display:grid;grid-template-columns:minmax(0,1.13fr) minmax(290px,.87fr);gap:14px}.panel{background:#fff;border:1px solid #a1a7b4;min-width:0}.heading{background:linear-gradient(#f5f7fa,#dce5f1);border-bottom:1px solid #b5c2d1;padding:9px 11px;font-weight:bold;color:#254b7d;letter-spacing:.4px}.body{padding:13px}.field{margin-bottom:14px}label.title{display:block;font-weight:bold;margin-bottom:6px;color:#384e69}input[type=text],select,textarea{width:100%;background:#fff;border:1px solid #8195b0;border-radius:0;padding:8px;font:12px Tahoma,sans-serif}textarea{min-height:90px;resize:vertical;line-height:1.5}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}.refs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.ref{border:1px solid #aab8cb;background:#f8faff;padding:8px;min-width:0}.ref strong{display:block;margin-bottom:4px}.ref small{display:block;line-height:1.4;color:#677483;min-height:30px}.ref img{display:none;width:100%;height:104px;object-fit:contain;image-rendering:auto;background:repeating-conic-gradient(#e0e5eb 0% 25%,#fff 0% 50%) 50%/16px 16px;margin:7px 0}.ref img.ready{display:block}.ref input{max-width:100%;font-size:11px}.ref button{font-size:11px;margin-top:5px}.help{color:#657080;font-size:11px;line-height:1.6}.previewwrap{background:repeating-conic-gradient(#e6eaf0 0 25%,#f8fafc 0 50%) 50%/20px 20px;border:1px solid #aebac7;display:grid;place-items:center;padding:14px;min-height:310px}canvas{image-rendering:pixelated;width:min(100%,260px);height:auto}.status{padding:8px 10px;background:#f5f6eb;border:1px solid #c0c4a8;margin:10px 0;font-size:11px;line-height:1.5}.buttons{display:flex;flex-wrap:wrap;gap:7px}.btn,button{cursor:pointer;border:1px solid #8a9fb8;background:linear-gradient(#fff,#dee6f0);color:#1d3554;padding:8px 12px;font:12px Tahoma,sans-serif}.btn.primary{background:linear-gradient(#fff,#c0d7ff);border-color:#5181bf;font-weight:bold}.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #d17e19;outline-offset:1px}.list{font-size:11px;line-height:1.8;padding-left:20px;color:#455366}.foot{border-top:1px solid #b9b9b9;display:flex;justify-content:space-between;padding:9px 13px;background:#eee;gap:8px;color:#4f5c68}@media(max-width:740px){body{padding:3px}.main{grid-template-columns:1fr}.refs{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.tabs a{font-size:10px;padding:8px}}
-</style></head><body>
+</style><script defer src="./character-draft-generator.js?v=1"></script>
+</head><body>
 <main class="window"><header class="titlebar"><b>▣ MAHLUK HIDUP — AI CHARACTER.PNT</b><span class="winbuttons" aria-hidden="true">▬ □ ×</span></header>
 <nav class="menu"><a href="./index.html#characters">← Characters</a><a href="./pixel-editor.html">Pixel Editor</a><a href="https://lafrich.github.io/virtual-office/membangun/?app=mahluk">Membangun</a><span>FILE　EDIT　VIEW</span></nav>
 <div class="tabs"><a href="./index.html#characters">01 / CHARACTERS</a><a href="./index.html#animations">02 / ANIMATIONS</a><a href="./index.html#actions">03 / ACTION EDITOR</a><a class="active" href="./ai-character.html" aria-current="page">04 / AI CHARACTER</a></div>
@@ -24,9 +25,9 @@
 <div><div class="panel"><div class="heading">03 / PREVIEW & EXPORT</div><div class="body">
 <div class="previewwrap"><canvas id="preview" width="256" height="304" aria-label="Panduan siluet dasar karakter, bukan hasil generasi AI"></canvas></div>
 <div class="status" id="status" role="status">BASE SILHOUETTE / Bukan hasil generasi AI. Gambar referensi digunakan sebagai arahan desain.</div>
-<div class="buttons"><button type="button" class="btn primary" id="save">↓ SAVE CHARACTER BRIEF.JSON</button><button type="button" class="btn" id="board">↓ REFERENCE BOARD.PNG</button><button type="button" class="btn" id="copy">COPY PROMPT</button><button type="button" class="btn" id="reset">RESET</button></div>
+<div class="buttons"><button type="button" class="btn primary" id="generate">✦ GENERATE PIXEL DRAFT</button><button type="button" class="btn" id="download-sprite" disabled>↓ 4 VIEWS.PNG</button><button type="button" class="btn" id="save">↓ SAVE CHARACTER BRIEF.JSON</button><button type="button" class="btn" id="board">↓ REFERENCE BOARD.PNG</button><button type="button" class="btn" id="copy">COPY PROMPT</button><button type="button" class="btn" id="reset">RESET</button></div>
 <h3>OUTPUT TARGET / MAHLUK HIDUP</h3><ul class="list"><li>Pixel art flat V6B; kepala, badan, lengan, kaki terpisah secara logis.</li><li>Master artwork 64×112 per arah: SE, SW, NE, NW.</li><li>Layering badan, rambut, tangan, tas, dan aksesoris harus benar di semua arah.</li><li>Compatible dengan rig, ekspresi, idle, walk, sit, dan sleep setelah sprite final dibuat dan di-QA.</li><li>Asset final harus diregistrasi ke database karakter dan bridge Semesta. Brief JSON bukan asset playable.</li></ul>
-<p class="help">Versi ini menyiapkan input, gambar referensi, preview siluet, dan paket brief. Generasi AI image-to-pixel, auto-rig dan publikasi ke Semesta membutuhkan pipeline/model terhubung dan proses validasi terpisah.</p>
+<p class="help">GENERATE PIXEL DRAFT works locally using prompt keywords and approximate sampled reference colours. It does not interpret complex photographic shapes or create a verified V6B animation sheet. For image-aware AI generation, auto-rig, and Semesta publication, an authenticated backend/model and art QA are still required.</p>
 </div></div></div></div>
 <footer class="foot"><span>MAHLUK HIDUP / CHARACTER CREATION INTAKE</span><span>LOCAL DRAFT · NO AUTOMATIC DEPLOY</span></footer></main>
 <script>
@@ -36,11 +37,20 @@ const $=id=>document.getElementById(id);
 const parts={};
 const c=$("preview"),ctx=c.getContext("2d");ctx.imageSmoothingEnabled=false;
 const fields=["name","species","body","proportion","prompt"];
+let generatedSheet=null;
+let generatedColors=null;
+function collectSpec(){return Object.fromEntries(fields.map(f=>[f,$(f).value]))}
+function drawGenerated(){
+ if(!generatedSheet)return;ctx.clearRect(0,0,c.width,c.height);ctx.imageSmoothingEnabled=false;
+ const scaled=240/64;ctx.drawImage(generatedSheet,0,0,64,112,44,12,64*scaled,112*scaled);
+}
+
 const storage="mahluk-hidup-ai-character-draft-v1";
 try{const d=JSON.parse(localStorage.getItem(storage)||"{}");for(const f of fields)if(typeof d[f]==="string")$(f).value=d[f]}catch{}
 function persist(){try{localStorage.setItem(storage,JSON.stringify(Object.fromEntries(fields.map(f=>[f,$(f).value]))))}catch{}}
 function status(s){$("status").textContent=s}
 function shape(){
+ generatedSheet=null;$("download-sprite").disabled=true;
  ctx.clearRect(0,0,256,304);
  ctx.fillStyle="#eff4fa";ctx.fillRect(24,12,208,274);
  ctx.strokeStyle="#b9cde1";ctx.strokeRect(24.5,12.5,207,273);
@@ -71,10 +81,36 @@ document.querySelectorAll(".ref").forEach(el=>{
  const reader=new FileReader();reader.onload=()=>{parts[key]={data:String(reader.result),name:file.name,type:file.type};img.src=parts[key].data;img.classList.add("ready");status("Loaded "+Object.keys(parts).length+" reference image(s). Reference images are included in JSON export.")};reader.onerror=()=>status("Failed to read image");reader.readAsDataURL(file)});
  el.querySelector(".clear").addEventListener("click",()=>{delete parts[key];input.value="";img.removeAttribute("src");img.classList.remove("ready");status("Removed "+key+" reference.")});
 });
-$("save").addEventListener("click",()=>{const d=brief(),s=JSON.stringify(d,null,2);download(new Blob([s],{type:"application/json"}),(d.name.trim().replace(/[^a-z0-9_-]+/gi,"_")||"character")+"_brief.json");status("Brief saved. This is NOT an AI-generated/rigged character.")});
+
+$("generate").addEventListener("click",async()=>{
+ if(!window.MahlukCharacterDraft){status("Draft renderer unavailable. Reload to get the latest version.");return;}
+ const generator=window.MahlukCharacterDraft,refs={...parts};
+ const palettes={skin:"#d6a88c",hair:"#39312f",upper:"#9c6472",lower:"#52647f",feet:"#393b42"};
+ $("generate").disabled=true;
+ status("Reading uploaded reference colours and drawing a four-way pixel draft...");
+ try{
+  const mapping={head:"hair",upper:"upper",lower:"lower",feet:"feet"};
+  for(const [part,key]of Object.entries(mapping)){
+   if(refs[part]?.data){const color=await generator.sampleImage(refs[part].data);if(color)palettes[key]=color}
+  }
+  if(refs.overall?.data&&!refs.upper&&!refs.lower){
+   const color=await generator.sampleImage(refs.overall.data);
+   if(color)palettes.upper=color;
+  }
+  generatedColors=palettes;generatedSheet=generator.makeSheet(collectSpec(),palettes);
+  drawGenerated();$("download-sprite").disabled=false;
+  status("4-view pixel DRAFT ready. Prompt keywords shape hair, clothes and accessories; reference photos supply approximate colours, not exact geometry. Not an AI-vision render or game-ready V6B sprite.");
+ }catch(e){status("Generation failed: "+e.message)}
+ finally{$("generate").disabled=false}
+});
+$("download-sprite").addEventListener("click",()=>{
+ if(!generatedSheet)return;
+ generatedSheet.toBlob(blob=>{if(blob)download(blob,(($("name").value||"character").trim().replace(/[^a-z0-9_-]+/gi,"_"))+"_4view_draft.png")},"image/png");
+});
+$("save").addEventListener("click",()=>{const d=brief();if(generatedColors)d.preview_palette=generatedColors;const s=JSON.stringify(d,null,2);download(new Blob([s],{type:"application/json"}),(d.name.trim().replace(/[^a-z0-9_-]+/gi,"_")||"character")+"_brief.json");status("Brief saved. This is NOT an AI-generated/rigged character.")});
 $("copy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(fullPrompt());status("Prompt copied.")}catch{status("Clipboard blocked. Download brief JSON instead.")}});
 $("board").addEventListener("click",()=>{const cvs=document.createElement("canvas"),cx=cvs.getContext("2d");cvs.width=1000;cvs.height=1250;cx.fillStyle="#f4f5f7";cx.fillRect(0,0,1000,1250);cx.fillStyle="#233958";cx.font="bold 28px sans-serif";cx.fillText("MAHLUK HIDUP / CHARACTER REFERENCE BOARD",28,47);cx.font="18px sans-serif";cx.fillText(($("name").value||"UNTITLED")+" · "+$("body").value+" · "+$("species").value,28,79);const locations={head:[28,112],upper:[522,112],lower:[28,470],feet:[522,470],overall:[28,828]};for(const [k,[x,y]]of Object.entries(locations)){const w=k==="overall"?944:450,h=k==="overall"?365:334;cx.fillStyle="#fff";cx.fillRect(x,y,w,h);cx.strokeStyle="#a5b4c6";cx.strokeRect(x,y,w,h);cx.fillStyle="#294b77";cx.font="bold 18px sans-serif";cx.fillText(k.toUpperCase(),x+12,y+27);const p=parts[k];if(p){const im=new Image();im.onload=()=>{const scale=Math.min((w-24)/im.width,(h-55)/im.height);cx.drawImage(im,x+(w-im.width*scale)/2,y+40+(h-48-im.height*scale)/2,im.width*scale,im.height*scale);queue()};im.src=p.data}else{cx.fillStyle="#8492a2";cx.font="16px sans-serif";cx.fillText("NO REFERENCE",x+12,y+75)}}let pending=Object.keys(parts).length;function queue(){pending--;if(pending<=0)finish()}function finish(){cvs.toBlob(blob=>{if(blob)download(blob,"character_reference_board.png")},"image/png")}if(!pending)finish();else setTimeout(()=>{if(pending>0){pending=0;finish()}},2500);status("Reference board PNG prepared; uploaded images are reference only.")});
-$("reset").addEventListener("click",()=>{if(!confirm("Clear character setup and reference images?"))return;for(const f of fields){if($(f).tagName==="SELECT")$(f).selectedIndex=0;else $(f).value=""}document.querySelectorAll(".ref .clear").forEach(b=>b.click());persist();shape();status("New character draft.")});
+$("reset").addEventListener("click",()=>{generatedColors=null;generatedSheet=null;$("download-sprite").disabled=true;if(!confirm("Clear character setup and reference images?"))return;for(const f of fields){if($(f).tagName==="SELECT")$(f).selectedIndex=0;else $(f).value=""}document.querySelectorAll(".ref .clear").forEach(b=>b.click());persist();shape();status("New character draft.")});
 shape();
 })();
 </script></body></html>
