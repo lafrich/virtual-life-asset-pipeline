@@ -1077,14 +1077,14 @@ window.addEventListener("storage",event=>{
  if(event.key===CHAR_STORAGE)rebuildCustomCharacters();
 });
 function openActionEditor(){
-  const target=new URL("./action-editor.html",window.location.href);
-  if(state.selected?.id)target.searchParams.set("actor",state.selected.id);
   const motion=state.motion?.id||"";
   const action=motion==="sit"||motion==="sit_type"?"toilet":
    motion==="swim"||motion==="bathe"?"bathe":
    ["sleep","sleep_seat","lie"].includes(motion)?"sleep":null;
-  if(action)target.searchParams.set("action",action);
-  window.open(target.href,"_blank","noopener");
+  // Open inside Mahluk Hidup's native third tab, never a new browser window.
+  document.dispatchEvent(new CustomEvent("mahluk:open-action-editor",{
+    detail:{actor:state.selected?.id||"ichsan",...(action?{action}:{})}
+  }));
 }
 $("action-studio").addEventListener("click",openActionEditor);
 $("action-studio-char").addEventListener("click",openActionEditor);
