@@ -106,6 +106,7 @@ jobs:
           node --check site/action-editor.js
           node tests/test_action_frame_bridge.cjs
           node tests/test_mahluk_actions_tab.cjs
+          node tests/test_player_action_database.cjs
           node --check site/master-parts.js
           node tests/test_master_parts.cjs
           node tests/test_pixel_editor.cjs
