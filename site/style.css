@@ -355,3 +355,83 @@ body.pixel-editor-open{overflow:hidden}
  .detail-tabs .detail-tab{width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;font-size:clamp(8px,2.1vw,10px);padding:5px 1px;min-height:38px}
  #tab-custom-char{font-size:clamp(8px,2.08vw,10px)}
 }
+
+
+/* Desktop viewport contract: the XP application fits on one screen.
+ * Scroll individual file lists and the properties inspector, never the page.
+ * The existing phone/tablet layout at 780px and below stays unchanged.
+ */
+@media (min-width:781px){
+ html,body{height:100%;width:100%;overflow:hidden}
+ .desktop{
+  height:100vh;height:100dvh;min-height:0;overflow:hidden;
+  padding:clamp(10px,2vh,26px) clamp(12px,2.2vw,36px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;
+ }
+ .window{
+  display:flex;flex-direction:column;flex:1 1 0;
+  height:100%;min-height:0;max-height:100%;
+  width:min(100%,1510px);overflow:hidden;
+ }
+ .titlebar,.menubar,.library-tabs,.palette-panel,.statusbar{flex:0 0 auto}
+ .workspace,.animation-workspace{
+  display:grid;flex:1 1 0;height:auto;min-height:0;
+  grid-template-rows:minmax(0,1fr);overflow:hidden;
+ }
+ .workspace > *,.animation-workspace > *{min-width:0;min-height:0}
+ .tools-panel,.asset-panel,.canvas-panel,.details-panel{
+  min-height:0;overflow:hidden;
+ }
+ .file-list{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+ .detail-content{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+ .canvas-space{min-height:0;overflow:hidden}
+ .selection-border{min-height:0}
+ .desktop-foot{flex:0 0 auto;width:min(100%,1510px);margin:0 auto}
+ .swatches{min-width:0}
+ /* Five inspector tabs must not squeeze/clip off-centre in a 207–248px rail.
+  * 3 equal buttons on the first row, 2 equal buttons on the second row. */
+ .detail-tabs{
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:3px;align-items:stretch;padding:8px 8px 6px;
+ }
+ .detail-tabs > .detail-tab{
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  width:100%;min-width:0;min-height:30px;
+  padding:5px 2px;line-height:1.15;
+  text-align:center;white-space:normal;overflow-wrap:anywhere;
+ }
+ .detail-tabs > .detail-tab:nth-child(-n+3){grid-column:span 2}
+ .detail-tabs > .detail-tab:nth-child(n+4){grid-column:span 3}
+ #tab-custom-char{font-size:9px}
+ /* Center real buttons without disturbing intentionally left-aligned file rows. */
+ .tool{display:grid;place-items:center;padding:0}
+ .tool svg{display:block;margin:auto}
+ .chrome-button,.dir,.file-filter,.anim-filter,.library-tab{
+  display:inline-flex;align-items:center;justify-content:center;
+  text-align:center;line-height:1.2;
+ }
+ .file-filter,.anim-filter{min-height:28px}
+ .dir{min-height:31px;min-width:34px}
+ .inspector-actions > .chrome-button,.face-back{
+  width:100%;min-height:34px;white-space:normal;
+ }
+ .accessory-create-buttons button,.retarget-panel button,
+ .custom-item button,.accessory-item button{
+  display:inline-flex;align-items:center;justify-content:center;
+  text-align:center;min-height:32px;
+ }
+ .motion-option{align-items:center;text-align:center}
+ .palette-panel{overflow:hidden}
+}
+@media (min-width:781px) and (max-height:680px){
+ .desktop{gap:6px;padding-top:8px;padding-bottom:8px}
+ .tools-stamp{min-height:76px}
+ .tools-stamp > span{font-size:27px}
+ .tools-stamp small{font-size:9px}
+ .palette-panel{min-height:72px;padding-top:6px;padding-bottom:6px}
+ .foreground-chip{height:50px}
+ .detail-tabs{padding-top:4px;padding-bottom:3px}
+ .detail-tabs > .detail-tab{min-height:27px}
+ .inspector-art{height:128px}
+}

@@ -25,6 +25,7 @@ on:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
       - "site/**"
+      - "tests/test_desktop_layout.cjs"
       - "tools/build_character_catalog.py"
       - "tools/build_rig_studio.py"
       - "tests/test_rig_studio.py"
@@ -95,6 +96,7 @@ jobs:
       - name: Validate JavaScript and Python
         run: |
           node --check site/app.js
+          node tests/test_desktop_layout.cjs
           node --check site/animations.js
           node --check site/pixel-edit-core.js
           node --check site/pixel-editor.js
