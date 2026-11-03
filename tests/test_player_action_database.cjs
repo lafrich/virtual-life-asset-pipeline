@@ -38,7 +38,8 @@ assert.ok(editor.includes('new URL("gameplay-bindings.json",BASE)'),"Action Edit
 assert.ok(editor.includes("renderActionList()"),"All actions need an accessible browser file list");
 assert.ok(editor.includes('state.actions=[...compatActions,...definitions.actions]'),"All 203 registry actions must be visible");
 assert.ok(editor.includes('if(!state.prop')===false,"Unbound actions must still simulate without a fixture");
-assert.ok(editor.includes('source?.authored?"NATIVE SOURCE + EDITABLE"'),"No false completed-animation labels");
+assert.ok(editor.includes('"PLANNED / UNRENDERED"')&&editor.includes('"LOCAL DRAFT · NOT PUBLISHED"'),
+ "Planned or edited-but-unpublished actions must never be labeled playable");
 assert.ok(editor.includes('A.entries(state.actor,row.id)'),"Local player sprite work must show coverage per action");
 for(const id of ["action-search","action-category","player-action-count",
  "action-readiness","action-coverage","action-requirements"])
