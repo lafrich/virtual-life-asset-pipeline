@@ -446,6 +446,7 @@ function openAccessoryEditor(category){
  const base=(category==="helmet"||category==="bag")?"astrofrich_base":
   (HUMAN_BASES.includes(customBaseId())?customBaseId():"human_male_base");
  url.searchParams.set("category",category);url.searchParams.set("base",base);
+ url.searchParams.set("build",spriteBuildVersion);
  url.searchParams.set("version","human-outfits-v1");
  url.searchParams.set("refresh",String(Date.now()));
  $("pixel-editor-embed").src=url.href;$("close-pixel-editor").focus();
