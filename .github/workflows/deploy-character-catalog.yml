@@ -102,6 +102,9 @@ jobs:
           node --check site/pixel-editor.js
           node --check site/accessory-editor.js
           node tests/test_accessory_editor.cjs
+          node --check site/action-frame-bridge.js
+          node --check site/action-editor.js
+          node tests/test_action_frame_bridge.cjs
           node --check site/master-parts.js
           node tests/test_master_parts.cjs
           node tests/test_pixel_editor.cjs
@@ -159,6 +162,10 @@ jobs:
           test -s _site/accessory-editor.html
           test -s _site/accessory-editor.css
           test -s _site/accessory-editor.js
+          test -s _site/action-editor.html
+          test -s _site/action-editor.css
+          test -s _site/action-editor.js
+          test -s _site/action-frame-bridge.js
           test -s _site/media/theodore-accessory-fitting-guide.png
           test -s _site/media/astrofrich-base-sheet.png
           test -s _site/media/human-male-base-sheet.png
