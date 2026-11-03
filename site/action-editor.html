@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#073a9d">
 <title>Mahluk Hidup — Action Editor</title>
 <link rel="stylesheet" href="./style.css?v=desktop-viewport-fix-1">
-<link rel="stylesheet" href="./action-editor.css?v=xp-paint-ui-v3">
+<link rel="stylesheet" href="./action-editor.css?v=player-action-db-v4">
 <script>if(new URLSearchParams(location.search).get("embedded")==="1")document.documentElement.classList.add("ae-embedded");</script>
 <script defer src="./action-frame-bridge.js?v=action-v1"></script>
 <script defer src="/virtual-office/world-builder/bangun-ruang/interior-model.js?v=rotate-v12"></script>
 <script defer src="/virtual-office/world-builder/bangun-ruang/game-proportions.js?v=source-v9"></script>
 <script defer src="/virtual-office/world-builder/bangun-ruang/interior-isometric.js?v=furniture-v10"></script>
-<script defer src="./action-editor.js?v=xp-paint-ui-v3"></script>
+<script defer src="./action-editor.js?v=player-action-db-v4"></script>
 </head>
 <body class="ae-body">
 <main class="ae-window">
@@ -46,8 +46,10 @@
         <label class="ae-field" for="actor"><span class="property-label">PLAYER / CHARACTER</span>
           <select id="actor" aria-label="Player character"></select>
         </label>
-        <div class="property-label">ACTION LIBRARY</div>
-        <div class="ae-action-list" role="group" aria-label="Action type">
+        <div class="ae-action-header"><span class="property-label">PLAYER ACTION DATABASE</span><output id="player-action-count">03 / 03</output></div>
+        <label class="ae-field" for="action-search"><input id="action-search" type="search" placeholder="FIND ACTION..." autocomplete="off" aria-label="Search player actions"></label>
+        <label class="ae-field" for="action-category"><select id="action-category" aria-label="Filter player action category"><option value="all">ALL ACTIVITIES</option><option value="p0">P0 / ESSENTIALS</option></select></label>
+        <div class="ae-action-list" role="group" aria-label="Player action types">
           <button type="button" class="file-item ae-action-item chosen" data-ae-action="toilet" aria-pressed="true">
             <span class="file-preview" aria-hidden="true"><span class="ae-pixel-icon">WC</span></span><span class="file-label">TOILET <small>SIT / WC</small></span>
           </button>
@@ -119,6 +121,12 @@
         </label>
         <button type="button" id="reset-offset" class="chrome-button ae-wide">RESET POSITION</button>
         <div class="ae-rule"></div>
+        <div class="property-label">ACTION COVERAGE</div>
+        <div class="ae-coverage">
+          <strong id="action-readiness">CHECKING PLAYER RIG…</strong>
+          <span id="action-coverage">0 / 0 EDITED FRAMES</span>
+          <small id="action-requirements">SOURCE / NONE</small>
+        </div>
         <div class="property-label">SOURCE / MOTION</div>
         <p class="ae-source-note" id="motion-source">NATIVE RIG / EDITABLE FRAMES</p>
         <div class="ae-save-actions">
