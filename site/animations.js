@@ -47,6 +47,9 @@
   window.VLMahlukActionsTab=Object.freeze({open:openActionTab});
   document.addEventListener("mahluk:open-action-editor",event=>openActionTab(event.detail||{}));
   actionTab.addEventListener("click",()=>openActionTab());
+  // Deep links from Bangun Ruang open the embedded tab immediately, even
+  // while the unrelated animation GIF catalog is still loading.
+  if(["#actions","#action-editor"].includes(location.hash))openActionTab();
   actionFrame.addEventListener("load",()=>{
     if(actionFrame.src==="about:blank")return;
     actionFrame.contentWindow?.postMessage(
