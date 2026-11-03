@@ -11,7 +11,7 @@ import json
 import re
 import shutil
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageDraw
 try:
     from .animation_backlog import planned_records, assert_backlog_synced
 except ImportError:  # Running the builder directly from tools/ as a script.
@@ -65,7 +65,80 @@ def poster_gif(preview: Path, dest: Path, name: str) -> tuple[str, str, int]:
     return "media/" + gif, "media/" + poster, frames
 
 
-def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
+def build_native_sleep_previews(out: Path, repo_url: str, characters: list[dict]) -> list[dict]:
+    """Create real previews from the ORIGINAL Male V6B LIE atlas, not from idle.
+
+    Each preview is a shared action, but the selected actor renders its *own*
+    compatible lie frames at runtime. The source character is illustrative.
+    """
+    source = next((c for c in characters if c.get("id") == "human_male_base"), None)
+    if not source:
+        raise ValueError("Missing original Human Male base for sleep previews")
+    original = next((m for m in source.get("motions", [])
+                     if m.get("id") == "lie" and m.get("available") is True), None)
+    if not original or int(original.get("frames", 0)) < 4:
+        raise ValueError("Cannot publish bed sleep: Human Male native lie is unavailable")
+    media = out / "media"
+    media.mkdir(parents=True, exist_ok=True)
+    sheet_path = media / Path(original.get("sheet") or source["sheet"]).name
+    row0 = 0 if original.get("sheet") else int(original.get("row", -1))
+    if not sheet_path.is_file() or row0 < 0:
+        raise ValueError("Cannot find real Human Male native lie sprites")
+    delays = [380, 430, 470, 430]
+    keys = ("se", "sw", "ne", "nw")
+    colors = (39, 47, 60)
+    records = []
+    with Image.open(sheet_path) as atlas:
+        sheet = atlas.convert("RGBA")
+        if sheet.width < 4 * 64 or sheet.height < (row0 + 4) * 112:
+            raise ValueError("Native lie atlas has the wrong dimensions")
+        for action in ("sleep_bed_right", "sleep_bed_left"):
+            frames = []
+            for f in range(4):
+                picture = Image.new("RGB", (544, 266), colors)
+                painter = ImageDraw.Draw(picture)
+                for i, direction in enumerate(keys):
+                    # Match the shared action's canonical directionFor() mapping.
+                    back = direction in ("ne", "nw")
+                    real_dir = (("ne" if back else "se") if action.endswith("right")
+                                else ("nw" if back else "sw"))
+                    direction_row = keys.index(real_dir)
+                    crop = sheet.crop((f * 64, (row0 + direction_row) * 112,
+                                      (f + 1) * 64, (row0 + direction_row + 1) * 112))
+                    if not crop.getchannel("A").getbbox():
+                        raise ValueError(f"Empty actual lying pose: {source['id']} {real_dir} f{f}")
+                    tile = crop.resize((128, 224), Image.Resampling.NEAREST)
+                    x = 8 + 136 * i
+                    picture.paste(tile, (x, 4 + (0, -2, 0, 2)[f]), tile)
+                    painter.text((x + 39, 240), direction.upper(), fill=(229, 233, 240))
+                frames.append(picture)
+            filename = "animation-" + action
+            gif_path = media / (filename + ".gif")
+            poster_path = media / (filename + ".png")
+            frames[0].save(poster_path, optimize=True)
+            frames[0].save(gif_path, save_all=True, append_images=frames[1:],
+                           duration=delays, loop=0, optimize=False)
+            with Image.open(gif_path) as actual:
+                if actual.n_frames < 4:
+                    raise ValueError("Sleep frames were unexpectedly collapsed")
+            records.append({
+                "id": action,
+                "name": "SLEEP / BED " + ("RIGHT" if action.endswith("right") else "LEFT"),
+                "kind": "animation", "group": "action", "status": "ready",
+                "note": "UNIVERSAL NATIVE V6B / USES EACH ACTOR'S OWN HORIZONTAL LIE RIG",
+                "gif": "media/" + gif_path.name, "poster": "media/" + poster_path.name,
+                "source_url": repo_url + "/blob/main/site/universal-sleep.js",
+                "template_json": "", "directions": list(keys), "layout": "four_up",
+                "frame_count": 4, "gif_frames": 4, "loop": True,
+                "frame_ms": list(delays), "duration_ms": sum(delays),
+                "preview_only": False, "universal": True,
+                "actor": source["id"], "action_id": action,
+            })
+    return records
+
+
+def build_animation_catalog(out: Path, repo_url: str,
+                            characters: list[dict] | None = None) -> list[dict]:
     media = out / "media"
     media.mkdir(parents=True, exist_ok=True)
     registry = json.loads(safe_path("assets/animation_library/library.json").read_text(encoding="utf-8"))
@@ -220,6 +293,13 @@ def build_animation_catalog(out: Path, repo_url: str) -> list[dict]:
             "actor": str(entry.get("actor", "")),
             "action_id": str(entry.get("action_id", "")),
         })
+    if characters is not None:
+        shared = build_native_sleep_previews(out, repo_url, characters)
+        for row in shared:
+            if row["id"] in ids:
+                raise ValueError("Duplicate native sleep action " + row["id"])
+            ids.add(row["id"])
+        records.extend(shared)
     # Roadmap actions are searchable in a distinct PLANNED view but must not
     # masquerade as a GIF, approved motion, or working character binding.
     action_registry = json.loads(safe_path("assets/animation_library/actions.json").read_text(encoding="utf-8"))
