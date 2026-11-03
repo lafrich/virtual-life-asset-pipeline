@@ -51,9 +51,6 @@
   window.VLMahlukActionsTab=Object.freeze({open:openActionTab});
   document.addEventListener("mahluk:open-action-editor",event=>openActionTab(event.detail||{}));
   actionTab.addEventListener("click",()=>openActionTab());
-  // Deep links from Bangun Ruang open the embedded tab immediately, even
-  // while the unrelated animation GIF catalog is still loading.
-  if(["#actions","#action-editor"].includes(location.hash))openActionTab();
   actionFrame.addEventListener("load",()=>{
     if(actionFrame.src==="about:blank")return;
     actionFrame.contentWindow?.postMessage(
@@ -417,6 +414,12 @@
       .style.setProperty("--canvas", swatch.style.backgroundColor);
   });
 
+  // Initialize ALL panel state, DOM references and event listeners before
+  // handling a direct #actions link. The old early call above used 'writing'
+  // and 'library' while still in the temporal-dead-zone, aborting the rest of
+  // this script and leaving tabs/buttons without their click handlers.
+  // Don't wait for animations.json: the Action Editor opens independently.
+  if(["#actions","#action-editor"].includes(location.hash))openActionTab();
   loadTargets();
   (async () => {
     try {
