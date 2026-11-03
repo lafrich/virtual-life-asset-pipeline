@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="id"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mahluk Hidup — Action Editor</title><meta name="theme-color" content="#043d9e">
+<link rel="stylesheet" href="./style.css?v=desktop-viewport-fix-1">
+<link rel="stylesheet" href="./action-editor.css?v=action-v1">
+<script defer src="./action-frame-bridge.js?v=action-v1"></script>
+<script defer src="/virtual-office/world-builder/bangun-ruang/interior-model.js?v=rotate-v12"></script>
+<script defer src="/virtual-office/world-builder/bangun-ruang/game-proportions.js?v=source-v9"></script>
+<script defer src="/virtual-office/world-builder/bangun-ruang/interior-isometric.js?v=furniture-v10"></script>
+<script defer src="./action-editor.js?v=action-v1"></script>
+</head><body class="ae-body">
+<main class="ae-window">
+<header class="ae-titlebar"><strong>✳ MAHLUK HIDUP / ACTION EDITOR</strong><span>64×112 PX · 4 DIRECTIONS</span></header>
+<nav class="ae-menu"><a href="./">← CHARACTERS</a><a href="https://lafrich.github.io/virtual-office/world-builder/bangun-ruang/" target="_blank" rel="noopener">BANGUN RUANG ↗</a><span>LOCAL / SAME BROWSER SYNC</span></nav>
+<section class="ae-main">
+ <aside class="ae-panel ae-left">
+  <h2>01 / ACTION SETUP</h2>
+  <label>PLAYER / CHARACTER<select id="actor"></select></label>
+  <label>ACTION<select id="action">
+   <option value="toilet">TOILET / DUDUK WC</option>
+   <option value="bathe">SHOWER / MANDI</option>
+   <option value="sleep">SLEEP / TIDUR</option>
+  </select></label>
+  <label>FACING<select id="direction">
+   <option value="se">SE / DEPAN KANAN</option><option value="sw">SW / DEPAN KIRI</option>
+   <option value="ne">NE / BELAKANG KANAN</option><option value="nw">NW / BELAKANG KIRI</option>
+  </select></label>
+  <div class="ae-separator"></div>
+  <h2>02 / BANGUN RUANG DATA</h2>
+  <label>BUILDING<select id="building"></select></label>
+  <label>FLOOR<select id="floor"></select></label>
+  <label>FURNITURE / ANCHOR<select id="furniture"></select></label>
+  <button id="sync" class="ae-btn">↻ SYNC FROM BANGUN RUANG</button>
+  <p class="ae-small">Baca bangunan tersimpan di browser ini. Posisi, rotasi WC/kasur, dan skala isometric mengikuti sumber Bangun Ruang.</p>
+  <div class="ae-separator"></div>
+  <h2>03 / PLACEMENT OFFSET</h2>
+  <label>HORIZONTAL <output id="offset-x-label">0 px</output><input id="offset-x" type="range" min="-32" max="32" value="0" step="1"></label>
+  <label>VERTICAL <output id="offset-y-label">0 px</output><input id="offset-y" type="range" min="-32" max="32" value="0" step="1"></label>
+  <button class="ae-btn" id="reset-offset">RESET POSITION</button>
+  <p class="ae-small">Offset hanya mengubah gambar karakter saat action, bukan koordinat, rotasi, atau collision furnitur.</p>
+ </aside>
+ <section class="ae-panel ae-preview">
+  <div class="ae-section-heading"><h2>04 / LIVE SIMULATION</h2><span id="preview-tag">SOURCE: BANGUN RUANG</span></div>
+  <div class="ae-stage"><canvas id="simulation" width="640" height="420" aria-label="Live isometric action simulation"></canvas></div>
+  <div class="ae-playback"><button id="play" class="ae-btn ae-primary">Ⅱ PAUSE</button>
+    <button id="prev" class="ae-btn" title="Previous frame">‹</button>
+    <output id="play-frame">01 / 04</output>
+    <button id="next" class="ae-btn" title="Next frame">›</button>
+    <button id="restart" class="ae-btn">↻ REPLAY</button></div>
+  <p class="ae-status" id="sim-status" role="status">Loading character and Bangun Ruang data…</p>
+ </section>
+ <section class="ae-panel ae-editor">
+  <div class="ae-section-heading"><h2>05 / PIXEL EDITOR</h2><span id="edit-label">64 × 112</span></div>
+  <div class="ae-edit-surface"><canvas id="pixel" width="64" height="112" aria-label="Editable current action sprite frame"></canvas></div>
+  <div class="ae-frame"><label>FRAME <output id="frame-label">1 / 4</output><input id="frame" type="range" min="0" max="3" value="0" step="1"></label></div>
+  <div class="ae-tools">
+    <button id="pencil" class="ae-btn active">✎ DRAW</button><button id="erase" class="ae-btn">ERASE</button>
+    <button id="pick" class="ae-btn">PICK</button><input type="color" id="color" value="#202e43" aria-label="Brush color">
+    <select id="brush" aria-label="Brush size"><option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option></select>
+  </div>
+  <div class="ae-tools"><button id="undo" class="ae-btn">↶ UNDO</button><button id="reset-frame" class="ae-btn">RESET FRAME</button>
+  <button id="save" class="ae-btn ae-primary">SAVE FRAME</button></div>
+  <div class="ae-tools"><button id="download" class="ae-btn">↓ PNG</button><button id="clear" class="ae-btn">DELETE OVERRIDE</button></div>
+  <p class="ae-small" id="motion-source">Action uses actual character rig when available; otherwise idle template is an editable draft.</p>
+ </section>
+</section><footer class="ae-footer"><span id="status">READY</span><span>ACTION SPRITES ARE SAVED LOCALLY · ORIGINAL SPRITES UNCHANGED</span></footer>
+</main></body></html>
