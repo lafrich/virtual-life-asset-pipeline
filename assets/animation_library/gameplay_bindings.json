@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "format": "virtual-life-gameplay-animation-bindings-v1",
+  "source": "Bangun Ruang interior-model.js / ACTIONS and TYPES",
+  "semantics": "Maps gameplay verbs to canonical player animation IDs. A binding does not mean that actor-specific sprite frames or gameplay events have been authored.",
+  "bindings": [
+    {
+      "game_action": "use_toilet",
+      "animation_action": "toilet_sit",
+      "fixtures": [
+        "wc"
+      ],
+      "description": "Use WC, seated pivot"
+    },
+    {
+      "game_action": "pee",
+      "animation_action": "toilet_sit",
+      "fixtures": [
+        "wc"
+      ],
+      "description": "WC uses seated toilet; separate pee_stand is available for outdoor gameplay"
+    },
+    {
+      "game_action": "poop",
+      "animation_action": "toilet_sit",
+      "fixtures": [
+        "wc"
+      ],
+      "description": "WC seated loop"
+    },
+    {
+      "game_action": "sleep",
+      "animation_action": "sleep",
+      "fixtures": [
+        "bed"
+      ],
+      "description": "Bed loop, enter and exit use separate action IDs"
+    },
+    {
+      "game_action": "rest",
+      "animation_action": "lie_idle",
+      "fixtures": [
+        "bed"
+      ],
+      "description": "Rest on the bed"
+    },
+    {
+      "game_action": "sit",
+      "animation_action": "sit",
+      "fixtures": [
+        "chair",
+        "sofa",
+        "office_chair"
+      ],
+      "description": "Native seated pose when approved for the player"
+    },
+    {
+      "game_action": "relax",
+      "animation_action": "sit_idle",
+      "fixtures": [
+        "sofa",
+        "chair"
+      ],
+      "description": "Sofa idle"
+    },
+    {
+      "game_action": "work",
+      "animation_action": "office_type",
+      "fixtures": [
+        "desk",
+        "office_chair",
+        "computer"
+      ],
+      "description": "Office computer task"
+    },
+    {
+      "game_action": "study",
+      "animation_action": "read_document",
+      "fixtures": [
+        "desk",
+        "office_chair"
+      ],
+      "description": "Study at desk; study_online is reserved for phone"
+    },
+    {
+      "game_action": "bathe",
+      "animation_action": "shower",
+      "fixtures": [
+        "shower",
+        "bathtub"
+      ],
+      "description": "Shower or bathtub, with fixture placement"
+    },
+    {
+      "game_action": "wash",
+      "animation_action": "wash_hands",
+      "fixtures": [
+        "sink",
+        "kitchen_sink"
+      ],
+      "description": "Sink wash"
+    },
+    {
+      "game_action": "cook",
+      "animation_action": "cook_stir",
+      "fixtures": [
+        "stove"
+      ],
+      "description": "Kitchen task"
+    },
+    {
+      "game_action": "buy",
+      "animation_action": "browse_item",
+      "fixtures": [
+        "cashier",
+        "counter",
+        "shelf"
+      ],
+      "description": "Buyer browsing, payment requires a separate event"
+    },
+    {
+      "game_action": "sell",
+      "animation_action": "accept_payment",
+      "fixtures": [
+        "cashier",
+        "counter"
+      ],
+      "description": "Seller receives payment"
+    },
+    {
+      "game_action": "browse",
+      "animation_action": "browse_item",
+      "fixtures": [
+        "shelf",
+        "table",
+        "counter"
+      ],
+      "description": "Browse in place"
+    },
+    {
+      "game_action": "open",
+      "animation_action": "open_drawer",
+      "fixtures": [
+        "wardrobe"
+      ],
+      "description": "Wardrobe or cabinet open; fridge uses open_fridge"
+    }
+  ],
+  "variants": [
+    {
+      "game_action": "open",
+      "fixture": "fridge",
+      "animation_action": "open_fridge"
+    },
+    {
+      "game_action": "pee",
+      "fixture": "outdoor_wall",
+      "animation_action": "pee_wall"
+    },
+    {
+      "game_action": "study",
+      "fixture": "phone",
+      "animation_action": "study_online"
+    },
+    {
+      "game_action": "cook",
+      "fixture": "street_stall",
+      "animation_action": "cook_stall"
+    }
+  ]
+}
