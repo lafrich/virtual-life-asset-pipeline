@@ -1076,6 +1076,18 @@ window.addEventListener("storage",event=>{
  if(event.key===ACCESSORY_STORE||event.key===ACCESSORY_EQUIP)refreshAccessoryEquipment();
  if(event.key===CHAR_STORAGE)rebuildCustomCharacters();
 });
+function openActionEditor(){
+  const target=new URL("./action-editor.html",window.location.href);
+  if(state.selected?.id)target.searchParams.set("actor",state.selected.id);
+  const motion=state.motion?.id||"";
+  const action=motion==="sit"||motion==="sit_type"?"toilet":
+   motion==="swim"||motion==="bathe"?"bathe":
+   ["sleep","sleep_seat","lie"].includes(motion)?"sleep":null;
+  if(action)target.searchParams.set("action",action);
+  window.open(target.href,"_blank","noopener");
+}
+$("action-studio").addEventListener("click",openActionEditor);
+$("action-studio-char").addEventListener("click",openActionEditor);
 $("export-motion").addEventListener("click", exportActionSheet);
 $("export-face").addEventListener("click", exportFaceSheet);
 $("menu-edit").addEventListener("click", () => setInspectorTab("faces"));
