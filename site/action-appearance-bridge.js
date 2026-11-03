@@ -45,7 +45,10 @@
  function drawRotated(ctx,sprite,footX,footY,angle){
   const deg=rotation(angle);
   ctx.save();
-  ctx.translate(footX,footY);
+  // Keep the lowest visible sprite pixel at the same baseline as the
+  // upright source (12 pixels below the action's foot anchor).
+  const lift=deg===180?88:(deg===90||deg===270?20:0);
+  ctx.translate(footX,footY-lift);
   if(deg)ctx.rotate(deg*Math.PI/180);
   ctx.drawImage(sprite,-32,-100,64,112);
   ctx.restore();
