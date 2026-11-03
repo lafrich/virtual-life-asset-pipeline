@@ -501,12 +501,31 @@ function hydrateCharacter(row,base){
   template_category:base.template_category,custom_character:true,base_id:base.id,
   description:base.template_category.toUpperCase()+" · "+row.name+" · 4-direction modular outfit / original motion & face atlases"};
 }
+function localRigCharacters(){
+ const store=window.VLUniversalRig,gen=window.MahlukCharacterDraft;
+ if(!store||!gen)return [];
+ return store.list().map(row=>{
+  let thumb=null,sheet=null;
+  try{thumb=store.thumb(row,gen);if(row.status==="rig_ready")sheet=store.sourceSheet(row,gen)}
+  catch{return null}
+  const ready=Boolean(sheet);
+  return {id:row.id,name:row.name,type:"npc",custom_character:true,local_rig_asset:true,
+   description:"LOCAL ASSET / "+row.status.toUpperCase(),sheet,poster:thumb,thumbnail:thumb,
+   motions:ready?[
+    {id:"walk",name:"WALK",available:true,row:0,frames:6,loop:true,source:"local_rig"},
+    {id:"idle",name:"IDLE",available:true,row:4,frames:4,loop:true,source:"local_rig"}]:[],
+   expressions:[],template:false,asset_status:ready?"local_rig_ready":"local_base_draft",
+   skeleton_profile:row.rig?.family||"UNASSIGNED",bone_skin_ready:ready,
+   folder_url:"./ai-character.html?asset="+encodeURIComponent(row.id),
+   row_starts:{walk:0,idle:4},idle_frames:4};
+ }).filter(Boolean);
+}
 function rebuildCustomCharacters(){
  const oldId=state.selected?.id;
  state.characters=[...catalogCharacters,
   ...savedCustomCharacters().map(row=>{
    const base=templateFor(row.base);return base?hydrateCharacter(row,base):null;
-  }).filter(Boolean)];
+  }).filter(Boolean),...localRigCharacters()];
  if(state.selected?.custom_character){
   const updated=state.characters.find(x=>x.id===oldId);
   if(updated)state.selected=updated;
@@ -1162,4 +1181,9 @@ async function init() {
     setStatus("CATALOG ERROR: " + error.message);
   }
 }
+window.addEventListener("storage",event=>{
+ if(event.key===window.VLUniversalRig?.key&&catalogCharacters.length){
+  rebuildCustomCharacters();renderFileList();
+ }
+});
 init();
