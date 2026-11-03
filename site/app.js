@@ -371,10 +371,12 @@ function accessoryFor(actor,category){
  const id=accessoryRuntime.equipment[actor]?.[category];
  return accessoryRuntime.items.find(item=>item.id===id&&item.category===category);
 }
-function drawEquippedAccessory(x,y,z,dirIndex){
+function drawEquippedAccessory(x,y,z,dirIndex,placement="front"){
  if(!state.selected)return;
  const dirs=["se","sw","ne","nw"];
  for(const category of EQUIPMENT_SLOTS){
+  // Backpacks must be behind the original head and torso, even in rear view.
+  if((category==="bag")!==(placement==="back"))continue;
   const item=accessoryFor(state.selected.id,category),src=item?.frames?.[dirs[dirIndex]];
   const selectedBase=state.selected.base_id||state.selected.id;
   if(item&&(item.template_base||"astrofrich_base")!==selectedBase)continue;
@@ -768,6 +770,7 @@ function draw() {
   ctx.fill();
 
   const d = state.direction === "auto" ? state.autoDir : Number(state.direction);
+  drawEquippedAccessory(x,y,z,d,"back");
   if (state.image?.complete && state.image.naturalWidth) {
     if (state.mode === "face") {
       // Actual character's own 4-frame idle / blink and expression overlays,
