@@ -21,6 +21,7 @@ const T=window.VLActionTemplates||{
  invalidate:()=>{}
 };
 const DIR=["se","sw","ne","nw"],BUILD_KEY="virtual-life-bangun-ruang-v1";
+const SLEEP=window.VLUniversalSleep;
 const BASE=new URL("/virtual-life-asset-pipeline/",location.origin);
 const deepLink=new URLSearchParams(location.search);
 let deepFloor=Math.max(1,Math.min(12,Number(deepLink.get("floor"))||1));
@@ -80,6 +81,7 @@ function renderActionList(){
  const q=state.actionSearch.trim().toLowerCase(),cat=state.actionFilter;
  // Only native motions, saved drafts and ready templates are listed.
  const visible=state.actions.filter(row=>
+  Boolean(SLEEP?.resolve(actor(),row.id)) ||
   A.entries(state.actor,row.id).length>0 ||
   Boolean(T.get(state.actor,row.id)?.ready) ||
   Boolean((actor()?.motions||[]).some(m=>m.id===row.id&&m.available===true)));
@@ -103,7 +105,8 @@ function renderActionList(){
   const sub=document.createElement("small");
   const authored=(actor()?.motions||[]).some(m=>m.id===row.id&&m.available);
   const published=T?.get(state.actor,row.id),edited=A.entries(state.actor,row.id).length;
-  sub.textContent=published?.ready?"✓ SEMESTA TEMPLATE":published?"DRAFT TEMPLATE / "+edited:
+  const universal=Boolean(SLEEP?.resolve(actor(),row.id));
+  sub.textContent=universal?"✓ UNIVERSAL BED / V6B":published?.ready?"✓ SEMESTA TEMPLATE":published?"DRAFT TEMPLATE / "+edited:
    edited?edited+" LOCAL FRAMES":authored?"NATIVE RIG":
    row.status==="planned"?"UNAUTHORED / "+(row.priority||"P1"):"SOURCE / REVIEW";
   label.append(sub);button.append(square,label);
@@ -118,7 +121,9 @@ function updateActionCoverage(){
  const row=actionRecord(),source=state.source,edited=A.entries(state.actor,state.action).length;
  const max=(source?.frames||4)*DIR.length;
  const template=T?.get(state.actor,state.action);
- $("action-readiness").textContent=template?.ready?"SEMESTA TEMPLATE · PLAYABLE":
+ $("action-readiness").textContent=SLEEP?.resolve(actor(),state.action)?
+  "UNIVERSAL BED SLEEP / NATIVE V6B · PLAYABLE":
+  template?.ready?"SEMESTA TEMPLATE · PLAYABLE":
   source?.authored?"NATIVE / REUSABLE POSE":
   edited?"LOCAL DRAFT · NOT PUBLISHED":"PLANNED / UNRENDERED";
  $("action-coverage").textContent=edited+" / "+max+" FRAMES SAVED LOCALLY";
@@ -142,6 +147,13 @@ function actor(){
 }
 function actionSource(){
  const ch=actor(),motions=(ch?.motions||[]).filter(m=>m?.available===true);
+ // Use this actor's original horizontal LIE rig, not rotated idle artwork.
+ if(SLEEP?.isSleep(state.action)){
+  const pose=SLEEP.resolve(ch,state.action);
+  return pose?{sheet:url(pose.sheet),row:pose.row,frames:pose.frames,
+   sourceFrames:pose.frames,authored:true,universal:true,mode:"lie",
+   note:"UNIVERSAL V6B / TRUE BED LIE / "+state.action.toUpperCase()}:null;
+ }
  const preferred={
   toilet:["sit","sit_type","toilet"],toilet_sit:["sit","sit_type"],
   bathe:["swim","bathe"],shower:["swim","bathe"],bath:["swim","bathe"],
@@ -302,7 +314,8 @@ function sourceRect(index,dir){
  const entry=pic(spec.sheet);
  if(!entry?.ready)return null;
  const im=entry.im,d=DIR.indexOf(dir);
- const f=index%spec.sourceFrames,row=spec.row+d;
+ const oriented=spec.universal?SLEEP.directionFor(state.action,dir):dir;
+ const f=index%spec.sourceFrames,row=spec.row+DIR.indexOf(oriented);
  if(f*64+64>im.naturalWidth||(row+1)*112>im.naturalHeight)return null;
  return [im,f*64,row*112,64,112];
 }
@@ -416,10 +429,12 @@ function render(){
  }
  const face=selectedExpression();
  if(face)P.drawExpression(sourceCtx,face,dir,frame,path=>pic(url(path)));
- const angle=P.rotation($("template-rotation").value);
+ const universal=Boolean(SLEEP?.resolve(actor(),state.action));
+ const angle=universal?0:P.rotation($("template-rotation").value);
+ const breath=universal?SLEEP.breathing(frame):0;
  P.drawRotated(sc,scratch,
   Math.round(footX+shift.x),
-  Math.round(footY+(anchor?.pixelOffsetY||0)+shift.y),angle);
+  Math.round(footY+(anchor?.pixelOffsetY||0)+shift.y+breath),angle);
  // The object depth switch applies after rotation: a lying person can go
  // behind the bed/duvet or in front of it without baking furniture into PNGs.
  if(p&&$("object-layer").value==="behind")ISO.drawFurniture(sc,geo,p);
@@ -470,6 +485,12 @@ function stroke(next){
 }
 function updateTemplateStatus(){
  if(!T)return;
+ if(SLEEP?.resolve(actor(),state.action)){
+  $("template-status").textContent=
+   "✓ UNIVERSAL V6B / READY IN SEMESTA · NO PER-CHARACTER SAVE";
+  $("save-template").disabled=true;
+  return;
+ }
  const record=T.get(state.actor,state.action),progress=T.coverage(state.actor,state.action);
  const complete=progress.complete;
  const byDir=DIR.map(d=>d.toUpperCase()+":"+progress.directions[d].length).join(" ");
@@ -499,6 +520,10 @@ function save(){
  }catch(e){status("SAVE FAILED: "+e.message);return false;}
 }
 function saveTemplate(){
+ if(SLEEP?.resolve(actor(),state.action)){
+  status("UNIVERSAL SLEEP IS READY IN SEMESTA · NO SAVE REQUIRED");
+  return;
+ }
  if(state.dirty&&!save())return;
  try{
   const result=T.save(state.actor,state.action,{
@@ -543,8 +568,10 @@ async function loadCatalog(){
   }
   if(!Array.isArray(definitions.actions)||definitions.actions.length<200)
    throw Error("Player action registry incomplete");
-  A.registerActions(definitions.actions.map(row=>row.id));
-  state.actions=[...compatActions,...definitions.actions];
+  const universal=SLEEP?.definitions||[];
+  A.registerActions([...definitions.actions.map(row=>row.id),
+   ...universal.map(row=>row.id)]);
+  state.actions=[...compatActions,...definitions.actions,...universal];
   const filter=$("action-category");
   filter.replaceChildren(opt("all","ALL ACTIVITIES"),opt("p0","P0 / ESSENTIAL"),opt("edited","EDITED / LOCAL"));
   for(const group of categories)if(state.actions.some(row=>row.category===group))
