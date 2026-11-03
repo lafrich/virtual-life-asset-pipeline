@@ -566,7 +566,7 @@ function saveCustomCharacter(){
  if(actor){selectCharacter(actor);setInspectorTab("custom")}
  setStatus("SAVED "+name.toUpperCase()+" / "+base.template_category.toUpperCase()+
   " / "+base.motions.filter(x=>x.available).length+" MOTIONS / "+
-  base.expressions.length+" FACES / 4 DIRECTIONS");
+  base.expressions.length+" FACES / 4 DIRECTIONS · SYNCED LOCALLY TO SEMESTA + BANGUN RUANG");
 }
 function deleteCustomCharacter(id){
  const record=savedCustomCharacters().find(x=>x.id===id);
