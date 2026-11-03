@@ -21,7 +21,7 @@ const state = {
   mode: "walk", expression: null, motion: null, direction: "auto", autoDir: 0,
   playing: !prefersReducedMotion, frame: 0, lastFrameTime: 0,
   zoom: 4, bg: "#f8f6f0", grid: false, image: null, motionImage: null,
-  faceImage: null, faceOverlay: null, blinkOverlay: null, archiveImage: null, lastBlink: 0,
+  faceImage: null, faceOverlay: null, blinkOverlay: null, motionFaceImage: null, archiveImage: null, lastBlink: 0,
   imageCache: new Map(), working: false
 };
 
@@ -83,6 +83,7 @@ function selectCharacter(character) {
   state.faceImage = null;
   state.faceOverlay = null;
   state.blinkOverlay = null;
+  state.motionFaceImage = null;
   state.playing = !prefersReducedMotion;
   $("canvas-loading").hidden = false;
 
@@ -225,6 +226,7 @@ function selectMotion(action) {
   // Keep the chosen facial expression when switching body motion. Native
   // v6b expression delta sheets cover EVERY authored animation row.
   state.faceImage = null;
+  state.motionFaceImage = null;
   state.frame = 0;
   state.autoDir = 0;
   state.lastFrameTime = 0;
@@ -239,9 +241,19 @@ function selectMotion(action) {
       draw();
     });
   }
+  const motionFacePath = state.expression?.motion_sheets?.[action.id];
+  if (motionFacePath) {
+    const face = state.expression;
+    cachedImage(motionFacePath,image=>{
+      if (state.selected !== character || state.motion !== action || state.expression !== face) return;
+      state.motionFaceImage = image;
+      draw();
+    });
+  }
   $("motion-expression-active").textContent = "FACE: " +
     (state.expression?.label?.toUpperCase() || "NEUTRAL") +
-    (state.expression?.sheet ? " / IDLE PREVIEW ONLY." : " / SAME CHARACTER.");
+    (motionFacePath ? " / SYNCED TO HEAD + MOTION." :
+     state.expression?.sheet ? " / IDLE PREVIEW ONLY." : " / SAME CHARACTER.");
   syncMotionSelection();
   syncPlaybackButton();
   syncTools();
@@ -262,6 +274,7 @@ function selectFace(face) {
   state.faceImage = null;
   state.faceOverlay = null;
   state.blinkOverlay = null;
+  state.motionFaceImage = null;
   state.frame = 0;
   state.autoDir = 0;
   state.lastFrameTime = 0;
@@ -815,13 +828,17 @@ function draw() {
     } else {
       const motion = state.motion;
       const custom = state.mode === "action" && motion?.source === "custom";
-      const source = custom ? state.motionImage : state.image;
+      // Character-specific expression atlases contain the entire pose,
+      // including the correctly positioned eyes/head for each walk frame.
+      const synced = Boolean(state.expression?.motion_sheets?.[motion?.id] &&
+        state.motionFaceImage?.naturalWidth);
+      const source = synced ? state.motionFaceImage : custom ? state.motionImage : state.image;
       if (source?.naturalWidth) {
-        const row = (motion?.row ?? 0) + d;
+        const row = (synced ? 0 : (motion?.row ?? 0)) + d;
         ctx.drawImage(source,state.frame*64,row*112,64,112,x,y,64*z,112*z);
         // Expression blend is pixel-aligned on the selected actor's native
         // 44-row sheet; never apply original-row deltas onto unrelated custom rigs.
-        if (!custom && state.expression && state.faceOverlay?.naturalWidth) {
+        if (!synced && !custom && state.expression && state.faceOverlay?.naturalWidth) {
           ctx.drawImage(state.faceOverlay,state.frame*64,row*112,64,112,x,y,64*z,112*z);
           if (state.expression.id !== "blink" && state.lastBlink === 1 &&
               state.blinkOverlay?.naturalWidth) {
@@ -886,20 +903,22 @@ function exportActionSheet() {
     setStatus("MOTION NOT RIGGED FOR THIS CHARACTER.");
     return;
   }
-  const source = action.source === "custom" ? state.motionImage : state.image;
-  if (!source?.naturalWidth) return setStatus("ACTION SPRITE NOT YET LOADED.");
+  const synced=Boolean(state.expression?.motion_sheets?.[action.id]);
+  const source=synced?state.motionFaceImage:
+    action.source==="custom"?state.motionImage:state.image;
+  if (!source?.naturalWidth) return setStatus("ACTION / FACE SPRITE NOT YET LOADED.");
   const out = document.createElement("canvas");
   out.width = 64 * action.frames;
   out.height = 112 * 4;
   const context = out.getContext("2d");
   context.imageSmoothingEnabled = false;
   for (let dir = 0; dir < 4; dir++) for (let frame = 0; frame < action.frames; frame++) {
-    context.drawImage(source, frame * 64, (action.row + dir) * 112, 64, 112,
+    context.drawImage(source, frame * 64, ((synced?0:action.row)+dir) * 112, 64, 112,
       frame * 64, dir * 112, 64, 112);
-    if (action.source === "native" && state.expression && state.faceOverlay?.naturalWidth) {
+    if (!synced && action.source === "native" && state.expression && state.faceOverlay?.naturalWidth) {
       context.drawImage(state.faceOverlay,frame*64,(action.row+dir)*112,64,112,
         frame*64,dir*112,64,112);
-      if (!customFace && state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
+      if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
         context.drawImage(state.blinkOverlay,frame*64,(action.row+dir)*112,64,112,
           frame*64,dir*112,64,112);
     }
