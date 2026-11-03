@@ -354,11 +354,56 @@ def head_drop(L, dy, dx=0):
     return L
 
 
+def attach_arm_roots(L):
+    """Weld both arm roots to the torso for every 4-way animation frame.
+
+    Near/far arms are independently animated on three-pixel strips. In the
+    original drawing x=R(1)+TDX and R(19)+TDX, while the torso begins/ends
+    around R(6)+TDX/R(17)+TDX. That leaves 1-2 TRANSPARENT pixels at the
+    upper shoulder on some poses, especially right arm on rear views.
+
+    Only bridge the first few rows where an actual arm meets a shirt/outer
+    body edge. Do not move the arm or modify hands, animated swing or clothing.
+    """
+    torso = (L['shirt'] != '') | (L['outer'] != '')
+    if not torso.any():
+        return L
+    for key in ('arm_near', 'arm_far'):
+        arm = L[key]
+        hits = np.where(np.any(arm[26:48] != '', axis=1))[0]
+        if len(hits) == 0:
+            continue
+        start = int(hits[0]) + 26
+        # Shoulder root only: the elbow, hand and pose remain unchanged.
+        for y in range(start, min(start + 5, 48, CH)):
+            arm_x = np.flatnonzero(arm[y] != '')
+            torso_x = np.flatnonzero(torso[y])
+            if not len(arm_x) or not len(torso_x):
+                continue
+            arm_mid = (int(arm_x[0]) + int(arm_x[-1])) / 2
+            torso_mid = (int(torso_x[0]) + int(torso_x[-1])) / 2
+            if arm_mid < torso_mid:  # arm on the left; extend inward
+                x0, x1 = int(arm_x[-1]), int(torso_x[0])
+                edge_code = arm[y, x0]
+                path = range(x0 + 1, x1)
+            else:                    # arm on the right; extend inward
+                x0, x1 = int(torso_x[-1]), int(arm_x[0])
+                edge_code = arm[y, x1]
+                path = range(x0 + 1, x1)
+            if 0 < abs(x1 - x0) - 1 <= 3:
+                for x in path:
+                    if 0 <= x < CW and arm[y, x] == '':
+                        arm[y, x] = edge_code
+        L[key] = arm
+    return L
+
+
 def pose_layers(base, kind, t, view, C, O):
     L = _pose_layers(base, kind, t, view, C, O)
     if C.get('arms') == 'down':
         bob = (-1 if t in (2, 3) else 0) if kind in ('idle', 'talk') else ((-1 if t in (1, 4) else 0) if kind == 'walk' else 0)
         L['arm_near'], L['arm_far'] = draw_arms(kind if kind != 'lie' else 'idle0', t, view, bob if kind in ('idle', 'walk', 'talk') else 0, C.get('sleeves') == 'long')
+        L = attach_arm_roots(L)
     if kind == 'sleep': L = head_drop(L, 3, 1 if view == 'se' else 0)
     if kind == 'tired': L = head_drop(L, 2, 1 if view == 'se' else 0)
     if kind == 'swim':                                              # only the chest-up part is above the water
