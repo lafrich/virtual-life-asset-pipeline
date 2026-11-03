@@ -8,6 +8,7 @@ No network requests, image generation, or changes to original sprite assets.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -340,7 +341,7 @@ def build():
     from build_rig_studio import build_rig_packs
     build_rig_packs(OUT, results, ROOT)
     (OUT / "catalog.json").write_text(
-        json.dumps({"version": 1, "characters": results}, ensure_ascii=False, indent=2) + "\n",
+        json.dumps({"version": 1, "build_version": os.environ.get("GITHUB_SHA", "local")[:12], "characters": results}, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     build_animation_catalog(OUT, REPO_URL)
