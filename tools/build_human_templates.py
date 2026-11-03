@@ -11,7 +11,7 @@ from PIL import Image
 import numpy as np
 
 DIRECTIONS=("se","sw","ne","nw")
-MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4}
+MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4}
 EXPRS=("neutral","happy","surprised","angry","sleepy")
 FRAME=(64,112)
 # Native v6b head begins at FY=31. y=53 is the start of the shoulders:
