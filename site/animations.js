@@ -279,6 +279,16 @@
     writing("anim-file-count", String(records.length).padStart(2, "0"));
     const fragment = document.createDocumentFragment();
     if (!records.length) {
+      selected = null;
+      mainImage.hidden = true;
+      mainImage.removeAttribute("src");
+      empty.hidden = false;
+      empty.querySelector("strong").textContent = "START WITH ONE ACTION.";
+      empty.querySelector("span").textContent = "CREATE ACTION → TEST FRAMES → APPROVE → ADD TO LIBRARY";
+      el("animation-loading").hidden = true;
+      el("animation-apply").disabled = true;
+      el("animation-author").disabled = true;
+      syncPlaying();
       const noResults = document.createElement("p");
       noResults.className = "file-empty";
       noResults.textContent = query ? "NO MATCHING ANIMATION." : "NO ANIMATIONS YET. CREATE YOUR FIRST ACTION BELOW.";
