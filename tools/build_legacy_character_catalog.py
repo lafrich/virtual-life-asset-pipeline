@@ -9,7 +9,7 @@ import json
 import re
 from pathlib import Path
 from PIL import Image
-from build_legacy_face_previews import build_faces
+from build_legacy_face_previews import build_faces, load_renderer, EYES_BOX
 
 DIRS = ("se","sw","ne","nw")
 FRAME = (64,112)
@@ -184,6 +184,24 @@ def prepare_legacy_catalog(root: Path, media: Path, repo_url: str,
             # These three already author five genuine expression variants.
             # Export same-actor 4-view idle loops, not overlays from another rig.
             expressions = build_faces(root, folder, name, media, groups["idle"])
+            if name=="theodore" and groups.get("walk") and expressions:
+                # Theodore's original v6b walk animation must carry its
+                # matching head/eyes. An idle-only face atlas cannot be layered
+                # over a walking pose without detaching the eyes and brows.
+                original=load_renderer(root,name)
+                walk_frames=len(groups["walk"]["se"])
+                for face in expressions:
+                    atlas=Image.new("RGBA",(walk_frames*64,4*112))
+                    for di,direction in enumerate(DIRS):
+                        for fi in range(walk_frames):
+                            frame=original.frame(direction,"walk",fi,face["id"])
+                            if fi==2 and face["id"]!="sleepy" and direction in ("se","sw"):
+                                closed=original.frame(direction,"walk",fi,"sleepy")
+                                frame.paste(closed.crop(EYES_BOX),EYES_BOX[:2])
+                            atlas.paste(frame,(fi*64,di*112))
+                    filename=f"legacy_theodore-face-{face['id']}-walk.png"
+                    atlas.save(media/filename,optimize=True)
+                    face["motion_sheets"]={"idle":face["sheet"],"walk":"media/"+filename}
 
         results.append({
             "id":id_,"name":entry["name"],"type":"npc",
