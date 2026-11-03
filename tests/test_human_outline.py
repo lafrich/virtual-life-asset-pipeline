@@ -29,7 +29,7 @@ class HumanOutlineTest(unittest.TestCase):
         src=Image.fromarray(pixels,"RGBA")
         out=outline_human_body(src,(105,72,55))
         result=np.asarray(out)
-        dark=np.clip(np.array((105,72,55))*.56,0,255).astype(np.uint8)
+        dark=np.array((105,72,55),dtype=np.uint8)  # exactly the bald-head K7 edge
         self.assertEqual(out.size,(64,112))
         self.assertTrue(np.array_equal(result[...,3],pixels[...,3]),
                         "Silhouette cannot alter visible area/anchor")
