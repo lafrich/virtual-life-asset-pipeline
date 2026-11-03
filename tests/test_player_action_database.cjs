@@ -36,7 +36,7 @@ assert.ok(bridge.includes("function actionData(actor,action)"),"Saved frames mus
 assert.ok(editor.includes('new URL("player-actions.json",BASE)'),"Action Editor not loading canonical database");
 assert.ok(editor.includes('new URL("gameplay-bindings.json",BASE)'),"Action Editor not loading Bangun bindings");
 assert.ok(editor.includes("renderActionList()"),"All actions need an accessible browser file list");
-assert.ok(editor.includes('state.actions=[...compatActions,...definitions.actions,...universal]'),
+assert.ok(editor.includes('state.actions=[...universal,...compatActions,...definitions.actions]'),
  "All canonical actions and two universal native sleep aliases must be registered");
 assert.ok(editor.includes('...universal.map(row=>row.id)'),
  "Shared bed sleep actions must be available for save/edit only after registry validation");
