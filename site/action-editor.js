@@ -8,6 +8,9 @@ const $=id=>document.getElementById(id),A=window.VLActionFrames,
  MODEL=window.VLBuildingInterior,ISO=window.VLInteriorIso;
 const DIR=["se","sw","ne","nw"],BUILD_KEY="virtual-life-bangun-ruang-v1";
 const BASE=new URL("/virtual-life-asset-pipeline/",location.origin);
+const deepLink=new URLSearchParams(location.search);
+let deepFloor=Math.max(1,Math.min(12,Number(deepLink.get("floor"))||1));
+let deepFixture=deepLink.get("fixture")||"";
 const px=$("pixel"),pc=px.getContext("2d",{willReadFrequently:true});
 const sim=$("simulation"),sc=sim.getContext("2d");
 pc.imageSmoothingEnabled=false;sc.imageSmoothingEnabled=false;
@@ -101,7 +104,7 @@ function readBuildings(prefer){
 }
 function updateFloors(){
  const chosen=state.buildings.find(x=>x.id===state.buildId),floor=$("floor");
- const previous=Number(floor.value)||1;floor.replaceChildren();
+ const previous=deepFloor||Number(floor.value)||1;deepFloor=0;floor.replaceChildren();
  if(chosen){
   chosen.interior.floors.forEach((x,i)=>floor.append(opt(String(i+1),i===0?"GROUND FLOOR":"FLOOR "+(i+1))));
   floor.value=String(Math.min(chosen.interior.floors.length,previous));
@@ -119,7 +122,8 @@ function updateScene(){
  updateProp();
 }
 function updateProp(){
- const s=state.scene,sel=$("furniture"),before=sel.value;
+ const s=state.scene,sel=$("furniture"),before=deepFixture||sel.value;
+ deepFixture="";
  sel.replaceChildren();
  const valid=(s?.items||[]).filter(p=>needed[state.action]?.includes(p.assetId));
  for(const p of valid)sel.append(opt(p.id,(MODEL.types[p.assetId]?.label||p.assetId)+" / "+p.c+","+p.r+" / "+p.rotation+"°"));
@@ -369,6 +373,6 @@ window.addEventListener("focus",()=>{
  readBuildings(state.buildId);A.invalidate();state.offset=A.offset(state.actor,state.action);syncOffset();render();
 });
 requestAnimationFrame(tick);
-readBuildings("demo");
+readBuildings(deepLink.get("building")||"demo");
 loadCatalog();
 })();
