@@ -12,6 +12,7 @@
   const actionPanel = el("action-workspace");
   const actionFrame = el("action-editor-embed");
   let actionFrameStarted = false;
+  let lastActionContext = null;
   const validActionId = id=>typeof id==="string"&&/^[a-z][a-z0-9_]{0,89}$/.test(id);
 
   function actionContext(extra={}) {
@@ -29,6 +30,7 @@
       fixture:extra.fixture||requested.get("fixture")||""};
   }
   function sendActionContext(context){
+    lastActionContext=context;
     if(!actionFrameStarted){
       const target=new URL("./action-editor.html",location.href);
       target.searchParams.set("embedded","1");
@@ -42,8 +44,9 @@
   }
   function openActionTab(extra={}){
     setMode("actions");
-    // The editor stays mounted while switching tabs; no loss of unsaved pixels.
-    sendActionContext(actionContext(extra));
+    // Clicking the tab again must not reset a current in-progress drawing.
+    // Explicit edits from Characters/Animations still retarget on demand.
+    if(!actionFrameStarted||Object.keys(extra).length)sendActionContext(actionContext(extra));
   }
   window.VLMahlukActionsTab=Object.freeze({open:openActionTab});
   document.addEventListener("mahluk:open-action-editor",event=>openActionTab(event.detail||{}));
@@ -54,7 +57,7 @@
   actionFrame.addEventListener("load",()=>{
     if(actionFrame.src==="about:blank")return;
     actionFrame.contentWindow?.postMessage(
-      {type:"mahluk-action-context",context:actionContext()},location.origin);
+      {type:"mahluk-action-context",context:lastActionContext||actionContext()},location.origin);
   });
   const list = el("animation-file-list");
   const mainImage = el("animation-main-image");
