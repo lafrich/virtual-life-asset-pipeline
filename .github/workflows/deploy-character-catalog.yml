@@ -105,6 +105,10 @@ jobs:
           node --check site/action-frame-bridge.js
           node --check site/action-template-bridge.js
           node --check site/action-appearance-bridge.js
+          node --check site/character-draft-generator.js
+          node --check site/universal-rig.js
+          node --check site/ai-rig-workflow.js
+          node tests/test_universal_rig.cjs
           node --check site/action-editor.js
           node tests/test_action_frame_bridge.cjs
           node tests/test_mahluk_actions_tab.cjs
