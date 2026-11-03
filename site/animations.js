@@ -109,7 +109,11 @@
     try {
       const response = await fetch("./catalog.json", {cache: "no-store"});
       const catalog = await response.json();
-      targets = Array.isArray(catalog.characters) ? catalog.characters : [];
+      targets = Array.isArray(catalog.characters) ? catalog.characters.map(ch=>{
+        const old=Array.isArray(ch.motions)?ch.motions:[];
+        const shared=window.VLUniversalSleep?.actionsFor(ch)||[];
+        return {...ch,motions:[...old,...shared.filter(m=>!old.some(x=>x.id===m.id))]};
+      }) : [];
       const select = el("animation-target-char");
       select.replaceChildren();
       for (const character of targets) {
@@ -133,7 +137,7 @@
   // The legacy catalog stays intact on disk, but is not published to this UI.
   // Build the visible list deliberately, one completed/approved action at a time.
   // Put the explicit IDs of QA-approved animations here when ready.
-  const APPROVED_ANIMATION_IDS = new Set([]);
+  const APPROVED_ANIMATION_IDS = new Set(["sleep_bed_right","sleep_bed_left"]);
   const clipSet = () => library.filter(clip =>
     APPROVED_ANIMATION_IDS.has(clip.id) &&
     Boolean(clip.gif) &&
@@ -211,7 +215,9 @@
     writing("animation-canvas-tag", clip.status === "planned" ? "PLANNED / NO SPRITE" :
       clip.status === "template" ? "TEMPLATE / DRAFT" :
       clip.status === "source_only" ? "SOURCE / NO RENDER" :
-      clip.status === "still" ? "STILL / ONE FRAME" : "PREVIEW / NOT IN GAME");
+      clip.status === "still" ? "STILL / ONE FRAME" :
+      clip.universal && clip.status === "ready" ? "NATIVE V6B / PLAYABLE" :
+      "PREVIEW / NOT IN GAME");
     writing("animation-name", clip.name);
     writing("animation-type", clip.group.toUpperCase());
     writing("animation-frames", clip.frame_count ? String(clip.frame_count).padStart(2, "0") : "--");
@@ -223,7 +229,9 @@
     writing("animation-review-status", clip.status === "planned" ? "PLANNED / NO FRAMES / NOT IN GAME" :
       clip.status === "template" ? "TEMPLATE / NO APPROVED POSES" :
       clip.status === "source_only" ? "SOURCE ONLY / NO FRAMES" :
-      clip.status === "still" ? "STILL POSE / NO ANIMATION" : "PREVIEW ONLY / NOT IN GAME");
+      clip.status === "still" ? "STILL POSE / NO ANIMATION" :
+      clip.universal && clip.status === "ready" ? "UNIVERSAL / READY IN SEMESTA" :
+      "PREVIEW ONLY / NOT IN GAME");
     writing("animation-note", [clip.note || "No additional metadata",
       clip.actor ? "SOURCE ACTOR: " + (targets.find(c => c.id === clip.actor)?.name || clip.actor).toUpperCase() : ""
     ].filter(Boolean).join(" / "));
@@ -271,7 +279,9 @@
     updateApply();
     renderList(false);
     el("status").textContent = "MOTION: " + clip.id.toUpperCase() +
-      (clip.status === "planned" ? " / PLANNED / NOT PLAYABLE" : clip.status === "template" ? " / DRAFT" : " / PREVIEW");
+      (clip.status === "planned" ? " / PLANNED / NOT PLAYABLE" :
+       clip.universal && clip.status === "ready" ? " / UNIVERSAL / PLAYABLE" :
+       clip.status === "template" ? " / DRAFT" : " / PREVIEW");
   }
 
   function renderList(pickFirst = true) {
@@ -319,7 +329,8 @@
       label.className = "file-label";
       label.textContent = clip.name;
       const secondary = document.createElement("small");
-      secondary.textContent = clip.status === "planned" ? clip.priority + " / " + clip.category.toUpperCase() + " / PLAN" :
+      secondary.textContent = clip.universal && clip.status === "ready" ? "UNIVERSAL V6B / 4 FRAMES / READY" :
+        clip.status === "planned" ? clip.priority + " / " + clip.category.toUpperCase() + " / PLAN" :
         clip.status === "template" ? "TEMPLATE / DRAFT" :
         clip.status === "source_only" ? "SOURCE / NO GIF" :
         clip.status === "still" ? "POSE / 1 FRAME" : clip.group.toUpperCase() + " / GIF";
