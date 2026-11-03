@@ -12,7 +12,8 @@ const data=new Map(),storage={
 const actors=JSON.parse(fs.readFileSync("assets/animation_library/actions.json","utf8"));
 const bindings=JSON.parse(fs.readFileSync("assets/animation_library/gameplay_bindings.json","utf8"));
 const catalog={characters:[{id:"ichsan",name:"Ichsan",
- sheet:"media/ichsan.png",motions:[{id:"idle",frames:4,row:4,available:true}]}]};
+ sheet:"media/ichsan.png",motions:[{id:"idle",frames:4,row:4,available:true}],
+ expressions:[{id:"sleepy",label:"Sleepy",overlay:"media/ichsan-face-layer-sleepy.png"}]}]};
 class E{
  constructor(tag="div",id=""){
   this.tag=tag;this.id=id;this._value="";this.children=[];this.dataset={};
@@ -51,6 +52,9 @@ const el=id=>{if(!nodes.has(id))nodes.set(id,new E(
 el("direction").value="sw";
 el("template-speed").value="210";
 el("object-layer").value="front";
+el("template-rotation").value="0";
+el("template-expression").value="neutral";
+el("template-loop").checked=true;
 el("frame").value="0";
 el("brush").value="1";
 el("color").value="#445566";
@@ -124,10 +128,21 @@ async function settle(){
   "A painted action frame must save even if the external room renderer fails");
  el("object-layer").value="behind";
  el("object-layer").onchange();
+ assert.ok(el("template-expression").options.some(x=>x.value==="sleepy"),
+  "Native expression selector must read authentic selected actor metadata");
+ el("template-rotation").value="90";
+ el("template-rotation").onchange();
+ el("template-expression").value="sleepy";
+ el("template-expression").onchange();
+ el("template-loop").checked=false;
+ el("template-loop").onchange();
  el("save-template").onclick();
  const draft=window.VLActionTemplates.get("ichsan","toilet");
  assert.ok(draft,"Save to Semesta must create a draft");
  assert.equal(draft.objectLayer,"behind");
+ assert.equal(draft.rotation,90);
+ assert.equal(draft.expression,"sleepy");
+ assert.equal(draft.loop,false);
  assert.equal(draft.ready,false);
  const rows=list.children.filter(x=>x.dataset.aeAction);
  assert.ok(rows.some(x=>x.dataset.aeAction==="clock_in"),"All player activities selectable");
