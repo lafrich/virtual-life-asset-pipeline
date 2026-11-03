@@ -49,7 +49,7 @@ class HumanMorphology(unittest.TestCase):
         for gender in ("male","female"):
             self.assertTrue(np.all(mask(layers[gender]["shirt"])|~mask(original_shirt)))
             self.assertTrue(np.all(mask(layers[gender]["pants"])|~mask(original_pants)))
-        self.assertTrue(np.all(mask(original_shirt)[55]==14))
+        self.assertEqual(int(mask(original_shirt)[55].sum()),14,"Input torso mask was mutated")
 
     def test_no_motion_or_gender_independent_layers_are_modified(self):
         head=colored(24,39,31,54)
