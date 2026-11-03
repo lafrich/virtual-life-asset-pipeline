@@ -14,7 +14,7 @@
 <script defer src="/virtual-office/world-builder/bangun-ruang/interior-model.js?v=rotate-v12"></script>
 <script defer src="/virtual-office/world-builder/bangun-ruang/game-proportions.js?v=source-v9"></script>
 <script defer src="/virtual-office/world-builder/bangun-ruang/interior-isometric.js?v=furniture-action-layer-v11"></script>
-<script defer src="./action-editor.js?v=pose-expression-v6"></script>
+<script defer src="./action-editor.js?v=manual-action-library-20261103"></script>
 </head>
 <body class="ae-body">
 <main class="ae-window">
@@ -43,28 +43,21 @@
     </aside>
 
     <aside class="asset-panel ae-library" aria-label="Character actions and room assets">
-      <div class="panel-heading"><strong>ACTIONS</strong><span>03</span></div>
+      <div class="panel-heading"><strong>ACTIONS</strong><span>MY</span></div>
       <div class="ae-library-scroll">
         <label class="ae-field" for="actor"><span class="property-label">PLAYER / CHARACTER</span>
           <select id="actor" aria-label="Player character"></select>
         </label>
-        <div class="ae-action-header"><span class="property-label">PLAYER ACTION DATABASE</span><output id="player-action-count">03 / 03</output></div>
+        <div class="ae-action-header"><span class="property-label">MY ACTIONS</span><output id="player-action-count">00 / 00</output></div>
         <label class="ae-field" for="action-search"><input id="action-search" type="search" placeholder="FIND ACTION..." autocomplete="off" aria-label="Search player actions"></label>
         <label class="ae-field" for="action-category"><select id="action-category" aria-label="Filter player action category"><option value="all">ALL ACTIVITIES</option><option value="p0">P0 / ESSENTIALS</option></select></label>
-        <div class="ae-action-list" role="group" aria-label="Player action types">
-          <button type="button" class="file-item ae-action-item chosen" data-ae-action="toilet" aria-pressed="true">
-            <span class="file-preview" aria-hidden="true"><span class="ae-pixel-icon">WC</span></span><span class="file-label">TOILET <small>SIT / WC</small></span>
-          </button>
-          <button type="button" class="file-item ae-action-item" data-ae-action="bathe" aria-pressed="false">
-            <span class="file-preview" aria-hidden="true"><span class="ae-pixel-icon">H₂O</span></span><span class="file-label">SHOWER <small>BATHE / WATER</small></span>
-          </button>
-          <button type="button" class="file-item ae-action-item" data-ae-action="sleep" aria-pressed="false">
-            <span class="file-preview" aria-hidden="true"><span class="ae-pixel-icon">ZZ</span></span><span class="file-label">SLEEP <small>BED / LIE</small></span>
-          </button>
+        <div class="ae-action-list" role="group" aria-label="Working and saved player actions"></div>
+        <div class="ae-action-new" style="padding:9px 3px;display:grid;gap:6px">
+          <label class="property-label" for="new-action">CREATE ACTION / ONE AT A TIME</label>
+          <select id="new-action" aria-label="Choose an action to author"><option value="">SELECT AN ACTION...</option></select>
+          <button type="button" id="create-action" class="chrome-button action-main ae-wide">+ CREATE ACTION</button>
         </div>
-        <select id="action" class="ae-visually-hidden" aria-label="Current action">
-          <option value="toilet">TOILET</option><option value="bathe">SHOWER</option><option value="sleep">SLEEP</option>
-        </select>
+        <select id="action" class="ae-visually-hidden" aria-label="Current action"><option value="toilet">TOILET</option></select>
         <label class="ae-field" for="direction"><span class="property-label">DIRECTION</span>
           <select id="direction">
             <option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option>
