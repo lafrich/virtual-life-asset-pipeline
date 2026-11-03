@@ -402,8 +402,13 @@ function drawEquippedAccessory(x,y,z,dirIndex,placement="front"){
  if(!state.selected)return;
  const dirs=["se","sw","ne","nw"];
  for(const category of EQUIPMENT_SLOTS){
-  // Backpacks must be behind the original head and torso, even in rear view.
-  if((category==="bag")!==(placement==="back"))continue;
+  // FRONT view: pack is behind the entire character.
+  // REAR view: camera sees the back surface, so draw it over the torso
+  // but clip it BELOW the skull/neck. Never let straps cross the rear head.
+  const rearView=dirIndex===2||dirIndex===3;
+  if(category==="bag"){
+   if(placement!==(rearView?"front":"back"))continue;
+  }else if(placement!=="front")continue;
   const item=accessoryFor(state.selected.id,category),src=item?.frames?.[dirs[dirIndex]];
   const selectedBase=state.selected.base_id||state.selected.id;
   if(item&&(item.template_base||"astrofrich_base")!==selectedBase)continue;
@@ -411,7 +416,14 @@ function drawEquippedAccessory(x,y,z,dirIndex,placement="front"){
   let image=state.imageCache.get(src);
   if(!image)image=cachedImage(src,()=>draw());
   if(image?.complete&&image.naturalWidth===64&&image.naturalHeight===112){
-   ctx.imageSmoothingEnabled=false;ctx.drawImage(image,x,y,64*z,112*z);
+   ctx.imageSmoothingEnabled=false;
+   if(category==="bag"&&rearView){
+    ctx.save();
+    ctx.beginPath();ctx.rect(x,y+56*z,64*z,(112-56)*z);
+    ctx.clip();
+    ctx.drawImage(image,x,y,64*z,112*z);
+    ctx.restore();
+   }else ctx.drawImage(image,x,y,64*z,112*z);
   }
  }
 }
