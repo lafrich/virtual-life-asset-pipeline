@@ -5,7 +5,16 @@
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id),A=window.VLActionFrames,
- T=window.VLActionTemplates,MODEL=window.VLBuildingInterior,ISO=window.VLInteriorIso;
+ MODEL=window.VLBuildingInterior,ISO=window.VLInteriorIso;
+ // Editing should not lose all its click handlers if Semesta's optional
+ // metadata module is unavailable; only publishing is unavailable.
+const T=window.VLActionTemplates||{
+ key:"virtual-life-action-templates-v1",get:()=>null,
+ coverage:()=>({complete:false,authored:0,directions:Object.fromEntries(
+   ["se","sw","ne","nw"].map(d=>[d,[]]))}),
+ save:()=>{throw Error("Semesta template module unavailable — reload the page");},
+ invalidate:()=>{}
+};
 const DIR=["se","sw","ne","nw"],BUILD_KEY="virtual-life-bangun-ruang-v1";
 const BASE=new URL("/virtual-life-asset-pipeline/",location.origin);
 const deepLink=new URLSearchParams(location.search);
@@ -195,6 +204,14 @@ function demoScene(){
  return scene;
 }
 function readBuildings(prefer){
+ if(!MODEL||!ISO){
+  state.buildings=[];state.scene=null;state.prop=null;state.buildId="demo";
+  $("building").replaceChildren(opt("demo","ROOM PREVIEW UNAVAILABLE"));
+  $("floor").replaceChildren(opt("1","FLOOR 1"));
+  $("furniture").replaceChildren(opt("","NO ROOM LOADED"));
+  notice("ROOM PREVIEW UNAVAILABLE · PIXEL EDITOR STILL ACTIVE");
+  return;
+ }
  const rows=safeJSON(BUILD_KEY,[]);
  state.buildings=Array.isArray(rows)?rows.filter(x=>escapeId(x?.id)&&x?.interior?.format==="virtual-life-interiors-v1"&&
   Array.isArray(x.interior.floors)&&x.interior.floors.length>0).slice(0,75):[];
@@ -237,7 +254,7 @@ function updateProp(){
  state.prop=(s?.items||[]).find(x=>x.id===sel.value)||null;
  state.bgReady=false;
  if(state.prop){
-  const anchor=ISO.actionAnchor(state.prop);
+  const anchor=ISO?.actionAnchor(state.prop);
   if(anchor&&DIR.includes(anchor.direction)){state.direction=anchor.direction;$("direction").value=state.direction;}
  }
  $("preview-tag").textContent=state.buildId==="demo"?"DEMO ROOM":"SAVED ROOM";
@@ -295,20 +312,36 @@ function loadFrame(){
  if(override){
   const img=pic(override);
   if(img?.ready){pc.drawImage(img.im,0,0,64,112);finish();}
-  else if(img?.failed)status("Saved frame could not be decoded");
+  else if(img?.failed){
+   status("SAVED FRAME UNREADABLE · YOU CAN STILL EDIT AND RE-SAVE");
+   finish();
+  }
   else if(img?.im)img.im.addEventListener("load",()=>{
    if(ticket!==state.loadingId)return;
    pc.clearRect(0,0,64,112);pc.drawImage(img.im,0,0,64,112);finish();
   },{once:true});
+  if(img?.im&&!img.ready&&!img.failed)
+   img.im.addEventListener("error",()=>{
+    if(ticket!==state.loadingId)return;
+    status("SAVED FRAME UNREADABLE · BLANK EDITOR UNLOCKED");finish();
+   },{once:true});
   return;
  }
  if(originalInto(pc,state.frame,state.direction)){finish();return;}
  const src=state.source&&pic(state.source.sheet);
- if(src?.im)src.im.addEventListener("load",()=>{
+ if(src?.ready||src?.failed||!src){
+  // A blank/new action is editable. Never lock the controls on a missing
+  // legacy sheet or a reference image which has already finished loading.
+  finish();return;
+ }
+ src.im.addEventListener("load",()=>{
   if(ticket!==state.loadingId)return;
   originalInto(pc,state.frame,state.direction);finish();
  },{once:true});
- else if(!src){finish();}
+ src.im.addEventListener("error",()=>{
+  if(ticket!==state.loadingId)return;
+  status("MOTION REFERENCE UNAVAILABLE · BLANK EDITOR UNLOCKED");finish();
+ },{once:true});
 }
 function refreshBackground(){
  if(!state.scene||!ISO)return null;
@@ -406,7 +439,10 @@ function updateTemplateStatus(){
  $("save-template").disabled=!state.sourceReady&&progress.authored===0;
 }
 function save(){
- if(!state.sourceReady)return false;
+ if(!state.sourceReady){
+  status("FRAME LOADING · TRY AGAIN WHEN PIXEL EDITOR IS READY");
+  return false;
+ }
  try{
   // A draft starts from a reference; idle is not an authored action.
   if(state.dirty){
@@ -524,7 +560,9 @@ window.addEventListener("message",event=>{
  if(event.origin!==location.origin||event.source!==window.parent)return;
  if(event.data?.type==="mahluk-action-context")applyParentContext(event.data.context);
 });
-if(!A||!MODEL||!ISO||!T){status("ACTION EDITOR MODULE MISSING");notice("Bangun Ruang drawing modules not loaded.");return;}
+if(!A){status("ACTION FRAME STORAGE MODULE FAILED TO LOAD");notice("Please reload Mahluk Hidup · no sprite data has been overwritten.");return;}
+if(!MODEL||!ISO)status("BANGUN RUANG PREVIEW UNAVAILABLE · PIXEL EDITING STILL ENABLED");
+if(!window.VLActionTemplates)status("SEMESTA TEMPLATE MODULE UNAVAILABLE · PIXEL EDITING STILL ENABLED");
 $("actor").onchange=()=>{state.actor=$("actor").value;renderActionList();setAction(state.action);};
 $("action-search").oninput=()=>{state.actionSearch=$("action-search").value;renderActionList();};
 $("action-category").onchange=()=>{state.actionFilter=$("action-category").value;renderActionList();};
