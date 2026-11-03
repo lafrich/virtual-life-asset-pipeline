@@ -130,13 +130,15 @@
 
   // Preserve the original real-preview view. Unrendered roadmapped actions
   // belong only in PLANNED/P0 views, never mixed into working GIFs.
+  // The legacy catalog stays intact on disk, but is not published to this UI.
+  // Build the visible list deliberately, one completed/approved action at a time.
+  // Put the explicit IDs of QA-approved animations here when ready.
+  const APPROVED_ANIMATION_IDS = new Set([]);
   const clipSet = () => library.filter(clip =>
-    (group === "planned" ? clip.status === "planned" :
-      group === "p0" ? clip.status === "planned" && clip.priority === "P0" :
-      clip.status !== "planned" &&
-        (group === "all" || (group === "template" ? clip.status === "template" : clip.group === group))) &&
-    [clip.name, clip.id, clip.note, clip.group, clip.status,
-      clip.category, clip.priority, ...(clip.requirements || [])].join(" ").toLowerCase().includes(query)
+    APPROVED_ANIMATION_IDS.has(clip.id) &&
+    Boolean(clip.gif) &&
+    (group === "all" || clip.group === group) &&
+    [clip.name, clip.id, clip.note, clip.group].join(" ").toLowerCase().includes(query)
   );
   const writing = (id, value) => { el(id).textContent = String(value ?? "—"); };
 
@@ -154,7 +156,7 @@
     characterTab.setAttribute("aria-selected", String(!animation && !actions));
     actionTab.setAttribute("aria-selected", String(actions));
     // The original Paint palette remains available in either workspace.
-    const total = animation ? library.length : (typeof state !== "undefined" ? state.characters.length : 0);
+    const total = animation ? clipSet().length : (typeof state !== "undefined" ? state.characters.length : 0);
     el("asset-total").textContent = String(total).padStart(2, "0");
     el("status-asset-count").textContent = String(total).padStart(2, "0");
     writing("status-object-label", actions ? "FRAMES" : animation ? "CLIPS" : "OBJECTS");
@@ -279,7 +281,7 @@
     if (!records.length) {
       const noResults = document.createElement("p");
       noResults.className = "file-empty";
-      noResults.textContent = "NO MOTION FOUND.";
+      noResults.textContent = query ? "NO MATCHING ANIMATION." : "NO ANIMATIONS YET. CREATE YOUR FIRST ACTION BELOW.";
       fragment.appendChild(noResults);
     }
     for (const clip of records) {
@@ -352,6 +354,7 @@
     setMode("characters");
     location.hash = "#character";
   });
+  el("animation-create-action").addEventListener("click", () => openActionTab());
   motionTab.addEventListener("click", () => setMode("animations"));
   characterTab.addEventListener("click", () => setMode("characters"));
   pause.addEventListener("click", togglePlayback);
@@ -378,14 +381,14 @@
     event.stopImmediatePropagation();
     el("animation-search").value = "";
     query = "";
-    group = "template";
+    group = "all";
     document.querySelectorAll(".anim-filter").forEach(other => {
-      const active = other.dataset.animFilter === "template";
+      const active = other.dataset.animFilter === "all";
       other.classList.toggle("selected", active);
       other.setAttribute("aria-pressed", String(active));
     });
     renderList();
-    el("status").textContent = "MOTION TEMPLATES";
+    el("status").textContent = "ANIMATIONS / READY FOR FIRST ACTION";
   }, true);
   el("menu-view").addEventListener("click", event => {
     if (currentTab !== "animations") return;
@@ -428,7 +431,7 @@
       const data = await response.json();
       if (!Array.isArray(data.animations)) throw new Error("BAD MOTION INDEX");
       library = data.animations;
-      writing("animation-total", String(library.length).padStart(2, "0"));
+      writing("animation-total", String(clipSet().length).padStart(2, "0"));
       renderList();
       if (["#animations","#motion","#rigs"].includes(location.hash)) {setMode("animations");if(location.hash==="#rigs")history.replaceState(null,"","#animations");}
       else if (["#actions","#action-editor"].includes(location.hash)) openActionTab();
