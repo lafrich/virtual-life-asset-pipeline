@@ -17,7 +17,7 @@ function shade(hex,n){
  let v=parseInt(hex.slice(1),16),a=[v>>16,(v>>8)&255,v&255].map(x=>Math.max(0,Math.min(255,x+n)));
  return "#"+a.map(x=>Math.round(x).toString(16).padStart(2,"0")).join("");
 }
-function render(spec,dir,colors){
+function render(spec,dir,colors,motion="idle",frame=0){
  const cfg=parse(spec.prompt,spec.body),cv=document.createElement("canvas");cv.width=W;cv.height=H;
  const c=cv.getContext("2d");c.imageSmoothingEnabled=false;
  const skin=validColor(colors.skin,"#d6a88c"),hair=validColor(colors.hair,"#39312f");
@@ -25,30 +25,47 @@ function render(spec,dir,colors){
  const back=dir==="ne"||dir==="nw",side=dir==="sw"||dir==="nw";
  const short=spec.proportion==="short",tall=spec.proportion==="tall",wide=spec.proportion==="wide";
  const sy=short?0.86:tall?1.09:1,sx=wide?1.13:1;
- const rect=(col,x,y,w,h)=>{c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))};
+ // Each body region retains a named rig slot. Pixel translations are integer-only.
+ const step=[0,2,3,1,0,-2][Math.abs(frame)%6],walking=motion==="walk";
+ const bounce=walking&&frame%2?1:0;
+ const breathing=motion==="idle"&&frame%4===2?1:0;
+ const offset={
+  shadow:[0,0],hair_back:[0,bounce+breathing],head:[0,bounce+breathing],
+  torso:[0,bounce+breathing],arm_far:[walking?step:0,bounce+breathing],
+  arm_near:[walking?-step:0,bounce+breathing],
+  leg_far:[walking?-Math.round(step/2):0,walking&&step>0?-2:0],
+  leg_near:[walking?Math.round(step/2):0,walking&&step<0?-2:0],
+  foot_far:[walking?-Math.round(step/2):0,walking&&step>0?-2:0],
+  foot_near:[walking?Math.round(step/2):0,walking&&step<0?-2:0]
+ };
+ let part="shadow";
+ const rect=(col,x,y,w,h)=>{const p=offset[part]||[0,0];c.fillStyle=col;c.fillRect(Math.round(x+p[0]),Math.round(y+p[1]),Math.round(w),Math.round(h))};
  c.save();c.translate(32,100);c.scale(sx,sy);c.translate(-32,-100);
- // Soft black ground footprint alpha 56, no blur.
+ // Flat ground footprint, alpha 56, no blur.
  rect("#00000038",20,99,25,2);rect("#00000038",17,100,30,1);
  // Feet, trousers; near/far ordered by direction.
- rect(shade(shoe,-10),23,95,9,5);rect(shoe,33,95,10,5);
+ part="foot_far";rect(shade(shoe,-10),23,95,9,5);
+ part="foot_near";rect(shoe,33,95,10,5);
+ part="leg_far";
  if(cfg.skirt){rect(shade(bottom,-14),21,72,23,13);rect(bottom,23,78,19,9)}
- rect(shade(bottom,-13),23,83,9,13);rect(bottom,33,83,9,13);
+ rect(shade(bottom,-13),23,83,9,13);
+ part="leg_near";rect(bottom,33,83,9,13);
  if(cfg.shorts){rect(skin,24,89,7,6);rect(shade(skin,-15),34,89,7,6)}
  // Far arm below shirt.
- rect(shade(top,-18),15,58,6,21);rect(shade(skin,-12),16,79,5,5);
+ part="arm_far";rect(shade(top,-18),15,58,6,21);rect(shade(skin,-12),16,79,5,5);
  // Long hair behind torso/neck.
- if(cfg.hair==="long"&&!cfg.bald){rect(shade(hair,-15),16,37,31,35);rect(hair,18,38,27,35)}
+ part="hair_back";if(cfg.hair==="long"&&!cfg.bald){rect(shade(hair,-15),16,37,31,35);rect(hair,18,38,27,35)}
  // Head neck and torso.
- rect(shade(skin,-12),28,50,8,9);
+ part="torso";rect(shade(skin,-12),28,50,8,9);
  const torsoW=cfg.body==="male"?25:cfg.body==="female"?21:23;
  rect(shade(top,-17),32-torsoW/2,57,torsoW,22);
  rect(top,32-torsoW/2,57,torsoW-4,20);
  if(cfg.jacket){rect(shade(top,-23),21,57,5,22);rect(shade(top,15),38,57,5,22)}
  if(cfg.skirt)rect(bottom,23,76,19,6);
  // Near arm and hands.
- rect(shade(top,-9),42,59,7,22);rect(skin,43,81,6,5);
+ part="arm_near";rect(shade(top,-9),42,59,7,22);rect(skin,43,81,6,5);
  // Ears/head.
- rect(shade(skin,-19),17,34,31,25);rect(skin,20,33,25,26);
+ part="head";rect(shade(skin,-19),17,34,31,25);rect(skin,20,33,25,26);
  rect(shade(skin,8),21,34,16,19);
  if(cfg.hair!=="short"&&!cfg.bald)rect(shade(hair,-8),18,29,30,14);
  if(!cfg.bald){rect(hair,18,27,29,10);rect(shade(hair,12),21,27,18,3)}
@@ -90,5 +107,5 @@ function sampleImage(dataUrl){
   };image.onerror=reject;image.src=dataUrl;
  });
 }
-root.MahlukCharacterDraft=Object.freeze({render,makeSheet,sampleImage,parse,directions:DIRS});
+root.MahlukCharacterDraft=Object.freeze({render,makeSheet,sampleImage,parse,directions:DIRS,rigParts:["head","hair_back","torso","arm_near","arm_far","leg_near","leg_far","foot_near","foot_far"]});
 })(window);
