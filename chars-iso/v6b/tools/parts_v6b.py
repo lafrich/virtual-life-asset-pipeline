@@ -183,6 +183,8 @@ def render(C, O, gl=False, faces=False, shoes='shoes', facial_C=None, fem=False)
                 if (O.get('outer') or {}).get('dots'):
                     P['outer'] = lv.add_dots(P['outer']); P['shirt'] = lv.add_dots(P['shirt'], ('C1', 'C2', 'C3')); P['arm_near'] = lv.add_dots(P['arm_near']); P['arm_far'] = lv.add_dots(P['arm_far'])
                 if fem: fem_body(P, kind)
+                # Restore both shoulder joins after female waist/arm pinching.
+                lv.attach_arm_roots(P)
                 P['shoes_over'] = shoe_style(P, shoes)
                 pos = (f * FW, (r0 + di) * FH)
                 rg = {k: lv.to_img(v, pal) for k, v in P.items() if k not in ('face', 'brows', 'acc_head')}
