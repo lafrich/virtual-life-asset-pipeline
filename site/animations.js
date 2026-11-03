@@ -101,7 +101,7 @@
     el("asset-total").textContent = String(total).padStart(2, "0");
     el("status-asset-count").textContent = String(total).padStart(2, "0");
     writing("status-object-label", animation ? "CLIPS" : "OBJECTS");
-    document.querySelector(".window-title strong").textContent = animation ? "MOTION_STOCK" : "CHAR_STOCK";
+    document.querySelector(".window-title strong").textContent = "MAHLUK HIDUP";
     el("menu-file").href = animation
       ? "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/animation_library"
       : "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/character_stock";
@@ -110,7 +110,7 @@
       : "https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/assets/character_stock/README.md";
     el("menu-edit").title = animation ? "Show motion templates" : "Expressions";
     el("menu-view").title = animation ? "Toggle motion canvas grid" : "Toggle canvas grid";
-    el("status").textContent = animation ? "ANIMATION DATABASE / PREVIEW MODE" : "CHARACTER STOCK / READY";
+    el("status").textContent = animation ? "MAHLUK HIDUP / ANIMATIONS" : "MAHLUK HIDUP / CHARACTERS READY";
   }
 
   function syncPlaying() {
