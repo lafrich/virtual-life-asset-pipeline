@@ -35,9 +35,22 @@ for(const tool of ["actor","action","direction","building","floor","furniture",
  assert.ok(html.includes('id="'+tool+'"'),"Missing action editor control "+tool);
 assert.ok(html.includes("/virtual-office/world-builder/bangun-ruang/interior-isometric.js"),
  "Simulator must import the canonical Bangun Ruang renderer");
-assert.ok(ui.includes("ISO.actionAnchor(state.prop)"),"Must use canonical WC and bed docking");
+assert.ok(ui.includes("ISO.actionAnchor(p)"),"Must use canonical WC and bed docking with safe optional fixture");
 assert.ok(ui.includes('localStorage.getItem(key)'),"Must use same-origin local Bangun Ruang browser storage");
 assert.ok(gallery.includes('id="action-studio"'));
 const studio=fs.readFileSync("site/app.js","utf8");
 assert.ok(studio.includes("openActionEditor()"));
+const canonical=JSON.parse(fs.readFileSync("assets/animation_library/actions.json","utf8")).actions;
+assert.equal(canonical.length,203);
+assert.equal(patch.registerActions(canonical.map(row=>row.id)),205);
+assert.equal(patch.actions.length,205);
+assert.throws(()=>patch.set("ichsan","not_registered","sw",0,PNG),/Invalid/);
+patch.set("ichsan","clock_in","sw",0,PNG);
+patch.set("ichsan","shower","se",1,PNG);
+assert.equal(patch.get("ichsan","clock_in","sw",0),PNG);
+assert.equal(patch.get("ichsan","shower","se",1),PNG);
+patch.invalidate();
+assert.equal(patch.get("ichsan","clock_in","sw",0),PNG);
+assert.equal(patch.entries("ichsan","clock_in").length,1);
+assert.equal(patch.registerActions(canonical.map(row=>row.id)),205,"Registry registration is idempotent");
 console.log("PASS Mahluk Hidup per-frame action edit storage, character isolation, floor/fixture UI and Bangun Ruang simulator imports");
