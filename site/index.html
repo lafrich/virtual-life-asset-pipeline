@@ -217,12 +217,11 @@
             <button type="button" class="anim-filter" data-anim-filter="action" aria-pressed="false">ACT</button>
             <button type="button" class="anim-filter" data-anim-filter="npc" aria-pressed="false">NPC</button>
             <button type="button" class="anim-filter" data-anim-filter="scene" aria-pressed="false">SCN</button>
-            <button type="button" class="anim-filter" data-anim-filter="template" aria-pressed="false">TPL</button>
-            <button type="button" class="anim-filter" data-anim-filter="planned" aria-pressed="false">PLAN</button>
-            <button type="button" class="anim-filter" data-anim-filter="p0" aria-pressed="false">P0</button>
+
           </div>
           <div id="animation-file-list" class="file-list" role="listbox" aria-label="Choose animation" tabindex="0"></div>
-          <a class="animation-create" href="https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/docs/animation-library.md" target="_blank" rel="noopener noreferrer">+ NEW TEMPLATE</a>
+          <button type="button" class="animation-create" id="animation-create-action">+ CREATE ACTION</button>
+          <p class="motion-hint">Only completed and approved animations appear here. Create and test each new action in Action Editor first.</p>
         </aside>
         <section class="canvas-panel" aria-label="Animation preview canvas">
           <div class="canvas-head"><span class="canvas-name" id="animation-canvas-title">MOTION_001.GIF</span><span class="canvas-badge" id="animation-canvas-tag">PREVIEW ONLY</span></div>
