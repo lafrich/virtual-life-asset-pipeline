@@ -27,6 +27,17 @@ const state = {
 
 function setStatus(message) { $("status").textContent = message; }
 
+let spriteBuildVersion = "";
+function freshAssetUrl(src) {
+  if (!src || typeof src !== "string") return src;
+  // Local user-created equipment uses data: URLs and must remain untouched.
+  // Version only authored sprite/media, using the build SHA provided by
+  // the always-fresh catalog. This defeats persistent mobile PNG caches.
+  if (!spriteBuildVersion || !/^(?:\.\/)?media\//.test(src)) return src;
+  return src + (src.includes("?") ? "&" : "?") +
+    "build=" + encodeURIComponent(spriteBuildVersion);
+}
+
 function cachedImage(src, onReady) {
   if (!src) return null;
   if (state.imageCache.has(src)) {
@@ -40,7 +51,7 @@ function cachedImage(src, onReady) {
   image.onload = () => onReady?.(image);
   image.onerror = () => setStatus("ERROR: COULD NOT LOAD SPRITE.");
   state.imageCache.set(src, image);
-  image.src = src;
+  image.src = freshAssetUrl(src);
   return image;
 }
 
@@ -83,12 +94,12 @@ function selectCharacter(character) {
   const previewImage = character.thumbnail || character.poster;
   const inspector = $("inspector-thumb");
   inspector.closest(".inspector-art").classList.toggle("empty", !previewImage);
-  if (previewImage) inspector.src = previewImage; else inspector.removeAttribute("src");
+  if (previewImage) inspector.src = freshAssetUrl(previewImage); else inspector.removeAttribute("src");
   inspector.alt = character.name + " pixel-art preview";
   const sheetLink = $("download-sheet");
   sheetLink.hidden = !character.sheet;
   if (character.sheet) {
-    sheetLink.href = character.sheet;
+    sheetLink.href = freshAssetUrl(character.sheet);
     sheetLink.download = character.id + "_v6b_sheet.png";
   } else sheetLink.removeAttribute("href");
   const renderStatus = character.asset_status || "verified";
@@ -159,7 +170,7 @@ function buildFaces(character) {
     const img = new Image();
     img.loading = "lazy";
     img.alt = "";
-    img.src = face.portrait || face.sprite || face.image;
+    img.src = freshAssetUrl(face.portrait || face.sprite || face.image);
     const label = document.createElement("span");
     label.textContent = String(face.label).toUpperCase();
     button.append(img, label);
@@ -688,7 +699,7 @@ function renderFileList(pickFirst = true) {
     image.loading = index < 4 ? "eager" : "lazy";
     image.alt = "";
     if (character.thumbnail || character.poster) {
-      image.src = character.thumbnail || character.poster;
+      image.src = freshAssetUrl(character.thumbnail || character.poster);
       preview.append(image);
     } else {
       preview.classList.add("file-source-only");
@@ -1084,6 +1095,7 @@ async function init() {
     if (!response.ok) throw new Error("HTTP " + response.status);
     const payload = await response.json();
     if (!Array.isArray(payload.characters)) throw new Error("BAD CATALOG");
+    spriteBuildVersion=String(payload.build_version||"").slice(0,20);
     catalogCharacters=payload.characters.filter(c=>!["otis","legacy_otis"].includes(c.id));
     state.characters=payload.characters;
     rebuildCustomCharacters();
