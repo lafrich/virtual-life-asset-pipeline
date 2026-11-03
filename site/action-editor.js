@@ -30,7 +30,77 @@ const safeJSON=(key,def)=>{try{return JSON.parse(localStorage.getItem(key))??def
 const opt=(value,text)=>{const o=document.createElement("option");o.value=value;o.textContent=text;return o;};
 const url=path=>new URL(path,BASE).href;
 const isSheet=path=>typeof path==="string"&&/^media\/[a-z0-9_.-]+\.png$/i.test(path);
-const needed={toilet:["wc"],bathe:["shower","bathtub"],sleep:["bed"]};
+const needed={
+ toilet:["wc"],bathe:["shower","bathtub"],sleep:["bed"],
+ toilet_sit:["wc"],pee_stand:["wc"],toilet_paper:["wc"],flush_toilet:["wc"],pee_finish:["wc"],
+ shower:["shower","bathtub"],bath:["bathtub","shower"],
+ lie_down:["bed"],bed_enter:["bed"],bed_exit:["bed"],get_up:["bed"],
+ sleep:["bed"],wake_up:["bed"],nap:["bed"],lie_idle:["bed"],
+ wash_hands:["sink"],wash_face:["sink"],brush_teeth:["sink"],dry_hands:["sink"],
+ cook_stir:["stove"],cook_fry:["stove"],chop_food:["stove","table"],
+ prepare_food:["stove","table"],open_fridge:["fridge"],wash_dishes:["sink"],
+ office_type:["desk","office_chair","computer"],office_idle:["desk","office_chair"],
+ meeting_listen:["office_chair","chair","desk"],meeting_talk:["office_chair","chair","desk"],
+ eat_seated:["chair","sofa","table"],sit_down:["chair","sofa","office_chair"],
+ sit_idle:["chair","sofa","office_chair"],stand_up:["chair","sofa","office_chair"]
+};
+const compatActions=[
+ {id:"toilet",label:"TOILET / WC",category:"hygiene",status:"compatibility",priority:"P0",requirements:["wc"],loop:true},
+ {id:"bathe",label:"BATHE / SHOWER",category:"hygiene",status:"compatibility",priority:"P0",requirements:["shower"],loop:true}
+];
+const categories=["basic","movement","posture","objects","food","hygiene","social","office","trading","phone","city","funny","npc","facial","action"];
+state.actions=compatActions;state.actionFilter="all";state.actionSearch="";
+const actionRecord=()=>state.actions.find(row=>row.id===state.action)||null;
+function fixtureRequirements(id){
+ if(needed[id])return needed[id];
+ if(/^(cook|prepare_food|wash_vegetables)/.test(id))return ["stove","sink","table"];
+ if(/^(clock_|office_|read_document|print_document|file_document|presentation)/.test(id))
+  return ["desk","office_chair","computer"];
+ if(/^(take_order|accept_payment|give_change|serve_plate|display_goods|cash_register|count_money|open_stall|close_stall|restock)/.test(id))
+  return ["table"];
+ return [];
+}
+function renderActionList(){
+ const q=state.actionSearch.trim().toLowerCase(),cat=state.actionFilter;
+ const rows=state.actions.filter(row=>
+  (cat==="all"||cat===row.category||(cat==="p0"&&row.priority==="P0")||
+    (cat==="edited"&&A.entries(state.actor,row.id).length>0))&&
+  [row.label,row.id,row.category,...(row.requirements||[])].join(" ").toLowerCase().includes(q));
+ $("player-action-count").textContent=rows.length+" / "+state.actions.length;
+ const list=document.querySelector(".ae-action-list"),fragment=document.createDocumentFragment();
+ for(const row of rows){
+  const button=document.createElement("button");
+  button.type="button";button.className="file-item ae-action-item";
+  button.dataset.aeAction=row.id;button.setAttribute("aria-pressed",String(row.id===state.action));
+  button.classList.toggle("chosen",row.id===state.action);
+  const square=document.createElement("span");square.className="file-preview";
+  const token=document.createElement("span");token.className="ae-pixel-icon";
+  token.textContent=row.category==="facial"?"FACE":row.category.slice(0,3).toUpperCase();
+  square.append(token);
+  const label=document.createElement("span");label.className="file-label";
+  label.textContent=row.label||row.id.toUpperCase();
+  const sub=document.createElement("small");
+  const authored=(actor()?.motions||[]).some(m=>m.id===row.id&&m.available);
+  const edited=A.entries(state.actor,row.id).length;
+  sub.textContent=edited?edited+" SAVED FRAMES":authored?"NATIVE RIG":row.status==="planned"?"TO AUTHOR / "+(row.priority||"P1"):"SOURCE / REVIEW";
+  label.append(sub);button.append(square,label);
+  button.addEventListener("click",()=>setAction(row.id));
+  fragment.append(button);
+ }
+ if(!rows.length){const message=document.createElement("p");message.className="ae-list-empty";
+  message.textContent="NO MATCHING ACTIONS";fragment.append(message);}
+ list.replaceChildren(fragment);
+}
+function updateActionCoverage(){
+ const row=actionRecord(),source=state.source,edited=A.entries(state.actor,state.action).length;
+ const max=(source?.frames||4)*DIR.length;
+ $("action-readiness").textContent=source?.authored?"NATIVE SOURCE + EDITABLE":
+  edited?"LOCAL DRAFT · NOT REVIEWED":"PLANNED / UNRENDERED";
+ $("action-coverage").textContent=edited+" / "+max+" FRAMES SAVED LOCALLY";
+ const req=(row?.requirements||[]).join(", ")||fixtureRequirements(state.action).join(", ")||"none";
+ $("action-requirements").textContent="REQUIRES: "+req.toUpperCase()+
+  (row?.priority?" · "+row.priority:"");
+}
 function pic(path){
  if(!path)return null;
  if(!images.has(path)){
@@ -48,21 +118,29 @@ function actor(){
 function actionSource(){
  const ch=actor(),motions=(ch?.motions||[]).filter(m=>m?.available===true);
  const preferred={
-  toilet:["sit","sit_type","toilet"],
-  bathe:["swim","bathe","idle"],
-  sleep:["sleep","sleep_seat","lie","nap_stand"]
- }[state.action]||["idle"];
+  toilet:["sit","sit_type","toilet"],toilet_sit:["sit","sit_type"],
+  bathe:["swim","bathe"],shower:["swim","bathe"],bath:["swim","bathe"],
+  sleep:["sleep","sleep_seat","lie","nap_stand"],
+  nap:["sleep","sleep_seat"],lie_down:["sleep","lie"],wake_up:["sleep","lie"],
+  lie_idle:["sleep","lie"],bed_enter:["sleep","lie"],bed_exit:["sleep","lie"],
+  office_type:["sit_type"],study_online:["sit_type","sit"],
+  eat_seated:["sit"],sit_idle:["sit"],sit_down:["sit"],stand_up:["sit"],
+  phone_scroll:["sit_type","idle"],phone_type:["sit_type","idle"],
+  talk:["talk"],run:["walk"],slow_walk:["walk"],backstep:["walk"],
+  cross_road:["walk"],ride_motor:["sit"],ride_bicycle:["sit"]
+ }[state.action]||[state.action];
  let motion=preferred.map(id=>motions.find(m=>m.id===id)).find(Boolean);
- const authored=!!motion&&!(state.action==="bathe"&&motion.id==="idle");
+ const authored=!!motion&&motion.id===state.action;
  if(!motion)motion=motions.find(m=>m.id==="idle")||motions.find(m=>m.id==="walk")||null;
  if(!ch||!isSheet(ch.sheet))return null;
  const separate=isSheet(motion?.sheet);
  const sheet=separate?motion.sheet:ch.sheet;
- const frames=Math.max(1,Math.min(6,Number(motion?.frames)||4));
+ const frames=Math.max(1,Math.min(12,Number(motion?.frames)||4));
  return {sheet:url(sheet),row:separate?0:Number(motion?.row)||0,
   frames,sourceFrames:frames,authored,mode:motion?.id||"idle",
   note:authored?"MOTION: "+motion.id.toUpperCase()+" / NATIVE CHARACTER FRAMES":
-   "NO DEDICATED "+state.action.toUpperCase()+" RIG · EDITABLE "+(motion?.id||"IDLE").toUpperCase()+" BASE"};
+   "UNRENDERED ACTION: "+state.action.toUpperCase()+" · "+(motion?.id||"IDLE").toUpperCase()+
+   " IS AN EDITING REFERENCE, NOT A COMPLETED GAME ANIMATION"};
 }
 function setAction(next){
  if(!A.actions.includes(next))return;
@@ -77,6 +155,7 @@ function setAction(next){
  $("frame").max=String((state.source?.frames||4)-1);
  $("frame").value="0";
  state.offset=A.offset(state.actor,state.action);syncOffset();
+ updateActionCoverage();
  const keep=state.buildId;readBuildings(keep);
  updateProp();
  loadFrame();
@@ -103,7 +182,7 @@ function readBuildings(prefer){
  state.buildings=Array.isArray(rows)?rows.filter(x=>escapeId(x?.id)&&x?.interior?.format==="virtual-life-interiors-v1"&&
   Array.isArray(x.interior.floors)&&x.interior.floors.length>0).slice(0,75):[];
  const chooser=$("building");chooser.replaceChildren();
- chooser.append(opt("demo","SIMULATION ROOM · 3 ACTIONS"));
+ chooser.append(opt("demo","DEMO / PLAYER ACTIVITIES"));
  for(const b of state.buildings)chooser.append(opt(b.id,b.name||b.id));
  chooser.value=[...chooser.options].some(x=>x.value===prefer)?prefer:"demo";
  state.buildId=chooser.value;
@@ -132,11 +211,12 @@ function updateProp(){
  const s=state.scene,sel=$("furniture"),before=deepFixture||sel.value;
  deepFixture="";
  sel.replaceChildren();
- const valid=(s?.items||[]).filter(p=>needed[state.action]?.includes(p.assetId));
+ const valid=(s?.items||[]).filter(p=>fixtureRequirements(state.action).includes(p.assetId));
  for(const p of valid)sel.append(opt(p.id,(MODEL.types[p.assetId]?.label||p.assetId)+" / "+p.c+","+p.r+" / "+p.rotation+"°"));
  if([...sel.options].some(x=>x.value===before))sel.value=before;
  else if(sel.options.length)sel.selectedIndex=0;
- else sel.append(opt("","NO MATCHING FURNITURE ON THIS FLOOR"));
+ else sel.append(opt("",fixtureRequirements(state.action).length?
+  "OBJECT UNAVAILABLE / FREE PREVIEW":"FREE ACTION / NO OBJECT"));
  state.prop=(s?.items||[]).find(x=>x.id===sel.value)||null;
  state.bgReady=false;
  if(state.prop){
@@ -188,8 +268,9 @@ function loadFrame(){
  const override=A.get(state.actor,state.action,state.direction,state.frame);
  function finish(){
   if(ticket!==state.loadingId)return;
-  state.sourceReady=true;status(override?"EDITING SAVED ACTION FRAME":"EDITING ORIGINAL MOTION COPY");
-  render();
+  state.sourceReady=true;status(override?"EDITING SAVED ACTION FRAME":
+   state.source?.authored?"EDITING NATIVE MOTION COPY":"EDITING UNRENDERED ACTION DRAFT");
+  updateActionCoverage();render();
  }
  pc.clearRect(0,0,64,112);
  if(override){
@@ -230,14 +311,11 @@ function render(){
  const geo=refreshBackground();if(!geo)return;
  $("play-frame").textContent=String(state.previewFrame+1).padStart(2,"0")+" / "+
   String(state.source?.frames||4).padStart(2,"0");
- if(!state.prop){
-  notice("No "+state.action.toUpperCase()+" furniture on this floor. Add it in Bangun Ruang and press SYNC.");
-  return;
- }
- const p=state.prop,anchor=ISO.actionAnchor(p);
- const local=p.assetId==="bathtub"?[1,.5]:[.5,.55];
- const tile=anchor||ISO.fixturePoint(p,...local);
- const z=anchor?.z??(p.assetId==="bathtub"?20:5);
+ const p=state.prop,anchor=p?ISO.actionAnchor(p):null;
+ const local=p?.assetId==="bathtub"?[1,.5]:[.5,.55];
+ const tile=p?(anchor||ISO.fixturePoint(p,...local)):
+   {c:state.scene.width/2,r:state.scene.depth/2};
+ const z=anchor?.z??(p?.assetId==="bathtub"?20:5);
  const [footX,footY]=ISO.point(geo,tile.c,tile.r,z);
  const dir=state.direction,frame=state.previewFrame;
  const shift=state.offset;
@@ -252,9 +330,9 @@ function render(){
   }
  }else sc.drawImage(image,x,y,64,112);
  if(anchor)ISO.drawSeatForeground(sc,geo,p);
- const source=state.source;
- notice((MODEL.types[p.assetId]?.label||p.assetId)+" · "+p.c+","+p.r+" · ROT "+p.rotation+"° · "+
-  (source?.authored?"NATIVE ACTION / ":"EDITABLE DRAFT / ")+"FOOT PIVOT 32,100");
+ const source=state.source,object=p?(MODEL.types[p.assetId]?.label||p.assetId):"FREE STANDING / NO PROP";
+ notice(object+" · "+(p?"ROT "+p.rotation+"° / ":"")+
+  (source?.authored?"NATIVE RIG / ":"PLANNED · EDITING BASE REFERENCE / ")+"FOOT 32,100");
 }
 function remember(){
  state.undo.push(pc.getImageData(0,0,64,112));
@@ -296,7 +374,7 @@ function stroke(next){
 function save(){
  if(!state.sourceReady)return;
  try{A.set(state.actor,state.action,state.direction,state.frame,px.toDataURL("image/png"));
-  status("FRAME SAVED · SYNCED WITH BANGUN RUANG");render();}
+  status("LOCAL FRAME SAVED · UNREVIEWED CUSTOM ACTION");updateActionCoverage();renderActionList();render();}
  catch(e){status("SAVE FAILED: "+e.message);}
 }
 function download(){
@@ -307,9 +385,23 @@ function download(){
 }
 async function loadCatalog(){
  try{
-  const res=await fetch(new URL("catalog.json",BASE),{cache:"no-store"});
+  const [res,actionRes]=await Promise.all([
+   fetch(new URL("catalog.json",BASE),{cache:"no-store"}),
+   fetch(new URL("player-actions.json",BASE),{cache:"no-store"})
+  ]);
   if(!res.ok)throw Error("Mahluk Hidup catalog HTTP "+res.status);
-  const cat=await res.json();
+  if(!actionRes.ok)throw Error("Player action database HTTP "+actionRes.status);
+  const [cat,definitions]=await Promise.all([res.json(),actionRes.json()]);
+  if(!Array.isArray(definitions.actions)||definitions.actions.length<200)
+   throw Error("Player action registry incomplete");
+  A.registerActions(definitions.actions.map(row=>row.id));
+  state.actions=[...compatActions,...definitions.actions];
+  const filter=$("action-category");
+  filter.replaceChildren(opt("all","ALL ACTIVITIES"),opt("p0","P0 / ESSENTIAL"),opt("edited","EDITED / LOCAL"));
+  for(const group of categories)if(state.actions.some(row=>row.category===group))
+   filter.append(opt(group,group.toUpperCase()));
+  $("action").replaceChildren();
+  for(const row of state.actions)$("action").append(opt(row.id,row.label));
   state.catalog=(cat.characters||[]).filter(x=>escapeId(x?.id)&&isSheet(x.sheet));
   const saved=safeJSON("virtual-life-character-storage-v1",[]);
   if(Array.isArray(saved))for(const row of saved){
@@ -323,6 +415,7 @@ async function loadCatalog(){
   const requestedAction=params.get("action");
   if(A.actions.includes(requestedAction))state.action=requestedAction;
   updateActors();
+  renderActionList();
   state.source=actionSource();setAction(state.action);
   if(pendingContext){const request=pendingContext;pendingContext=null;applyParentContext(request);}
  }catch(e){status("COULD NOT LOAD PLAYER CATALOG: "+e.message);notice("Check Mahluk Hidup Pages build.");}
@@ -363,7 +456,9 @@ window.addEventListener("message",event=>{
  if(event.data?.type==="mahluk-action-context")applyParentContext(event.data.context);
 });
 if(!A||!MODEL||!ISO){status("ACTION EDITOR MODULE MISSING");notice("Bangun Ruang drawing modules not loaded.");return;}
-$("actor").onchange=()=>{state.actor=$("actor").value;setAction(state.action);};
+$("actor").onchange=()=>{state.actor=$("actor").value;renderActionList();setAction(state.action);};
+$("action-search").oninput=()=>{state.actionSearch=$("action-search").value;renderActionList();};
+$("action-category").onchange=()=>{state.actionFilter=$("action-category").value;renderActionList();};
 $("action").onchange=()=>setAction($("action").value);
 for(const btn of document.querySelectorAll("[data-ae-action]"))
  btn.addEventListener("click",()=>setAction(btn.dataset.aeAction));
@@ -378,7 +473,9 @@ $("save").onclick=save;
 $("undo").onclick=()=>{const prior=state.undo.pop();if(prior){pc.putImageData(prior,0,0);render();}};
 $("reset-frame").onclick=()=>{if(!state.sourceReady)return;remember();originalInto(pc,state.frame,state.direction);render();status("SOURCE FRAME RESTORED IN EDITOR · PRESS SAVE TO APPLY");};
 $("clear").onclick=()=>{if(!state.sourceReady)return;
- A.remove(state.actor,state.action,state.direction,state.frame);loadFrame();status("OVERRIDE REMOVED / SOURCE RESTORED");};
+ A.remove(state.actor,state.action,state.direction,state.frame);
+ loadFrame();renderActionList();updateActionCoverage();
+ status("LOCAL FRAME REMOVED / SOURCE RESTORED");};
 $("download").onclick=download;
 px.addEventListener("pointerdown",e=>{
  if(!state.sourceReady||e.button!==0)return;
