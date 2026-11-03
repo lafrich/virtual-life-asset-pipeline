@@ -212,10 +212,18 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # Body remains a non-explicit adult mannequin for outfit fitting.
             assert result.size==FRAME
             return result
-        def make_sheet(kind,count,expression="neutral"):
+        def make_sheet(kind,count,expression="neutral",blink=False):
             img=Image.new("RGBA",(count*64,4*112))
             for y,d in enumerate(DIRECTIONS):
-                for x in range(count):img.alpha_composite(frame(d,kind,x,expression),(x*64,y*112))
+                for x in range(count):
+                    pose=frame(d,kind,x,expression)
+                    if blink and d in ("se","sw") and expression!="sleepy" and x==(3 if kind=="walk" else 2):
+                        # Same-pose sleepy eyelids, so the blink follows the
+                        # breathing/walking head without replacing the mouth.
+                        eyes=(22,35,44,49)
+                        closed=frame(d,kind,x,"sleepy")
+                        pose.paste(closed.crop(eyes),eyes[:2])
+                    img.alpha_composite(pose,(x*64,y*112))
             return img
         sheet=Image.new("RGBA",(384,44*112))
         for kind,row in (("walk",0),("idle",4)):
@@ -248,14 +256,14 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
         expressions=[]
         for expr in EXPRS:
             fn=f"{name}-expression-{expr}.png"
-            make_sheet("idle",4,expr).save(media/fn,optimize=True)
+            make_sheet("idle",4,expr,blink=True).save(media/fn,optimize=True)
             portrait=f"{name}-expression-{expr}-portrait.png"
             frame("se","idle",0,expr).crop((17,30,49,59)).resize((160,145),Image.Resampling.NEAREST).save(media/portrait)
             # Full 4-direction facial sprites are regenerated for each
             # walking frame, so eyes, brows and mouth follow the moving head.
             # Matching idle/walk source poses also keep male/female body shapes.
             walk_face=f"{name}-expression-{expr}-walk.png"
-            make_sheet("walk",MOTIONS["walk"],expr).save(media/walk_face,optimize=True)
+            make_sheet("walk",MOTIONS["walk"],expr,blink=True).save(media/walk_face,optimize=True)
             expressions.append({"id":expr,"label":expr.upper(),"sheet":"media/"+fn,
                 "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True,
                 "motion_sheets":{"idle":"media/"+fn,"walk":"media/"+walk_face}})
