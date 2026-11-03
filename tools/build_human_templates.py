@@ -1,6 +1,8 @@
-"""Generate adult HUMAN male/female bald, neutral body bases using original
-v6b pose/face geometry. Clothing slots are authored separately in the editor.
-This deliberately omits explicit anatomy: a plain skin-toned mannequin base.
+"""Render distinct adult HUMAN Male/Female modular pixel anatomy.
+
+Preserves 64×112 pivot, original four-way poses, face atlas and independent
+outfit layers. Pixel anatomy is non-explicit: chest, waist, hip, and subtle
+pelvis shading are purely a visual guide for creating clothing.
 """
 from __future__ import annotations
 import sys
@@ -40,6 +42,112 @@ def outline_human_body(sprite:Image.Image,edge_tone:tuple[int,int,int]) -> Image
     pixels[edge,:3]=tone
     return Image.fromarray(pixels,"RGBA")
 
+def sculpt_human_layers(layers:dict,gender:str)->dict:
+    """Distinct BODY silhouette on torso and pelvis, not a face recolor.
+
+    Changes only the two skin-toned garment-derived base layers. That means
+    independent arm swing, knee/walk movement, facial expressions and 4-way
+    anchors remain exactly as authored in v6b. Outfit overlays use the
+    resulting male/female guide sheets and therefore stay aligned.
+    """
+    if gender not in ("male","female"):
+        raise ValueError("Unknown human template "+gender)
+
+    def widen(key:str,row_offsets:dict[int,int]):
+        if key not in layers:return
+        arr=np.array(layers[key].convert("RGBA"),copy=True)
+        solid=arr[...,3]>0
+        occupied=np.flatnonzero(np.any(solid,axis=1))
+        if len(occupied)<5:return
+        first=int(occupied[0])
+        for relative,amount in row_offsets.items():
+            y=first+relative
+            if y<0 or y>=FRAME[1]:continue
+            xs=np.flatnonzero(solid[y])
+            if len(xs)<5 or amount<1:continue
+            left,right=int(xs[0]),int(xs[-1])
+            # Don't create islands: extend only from an existing contiguous
+            # torso/pelvis pixel. No modifications to already visible pixels.
+            for n in range(1,amount+1):
+                if left-n>=0 and arr[y,left-n,3]==0:
+                    arr[y,left-n]=arr[y,left]
+                if right+n<FRAME[0] and arr[y,right+n,3]==0:
+                    arr[y,right+n]=arr[y,right]
+        layers[key]=Image.fromarray(arr,"RGBA")
+
+    if gender=="male":
+        # Stronger shoulder/trapezius, straighter torso; pelvis remains
+        # comparatively narrow. Smooth 1-2 px shoulder slope.
+        widen("shirt",{0:1,1:1,2:2,3:2,4:2,5:2,6:1,7:1,8:1})
+    else:
+        # Soft chest volume, without broadening the shoulder line; widen
+        # the hips below the tapered waist to make the 4-way difference
+        # legible even at original 1x pixel resolution.
+        widen("shirt",{7:1,8:1,9:1,10:1,11:1,12:1})
+        widen("pants",{1:1,2:2,3:2,4:2,5:2,6:2,7:1,8:1,9:1})
+    return layers
+
+
+def shade_human_anatomy(sprite:Image.Image,gender:str,direction:str,
+                        shirt_top:int,pants_top:int,
+                        skin_shade:tuple[int,int,int],
+                        skin_light:tuple[int,int,int])->Image.Image:
+    """Very small non-explicit adult morphology cues, not graphic anatomy.
+
+    Front: female paired chest-shadows and tiny V-shaped pelvic crease;
+    male flatter upper chest and understated center-pelvis shading.
+    Back: soft buttock shadow difference. Never draw over air, outline,
+    hands, head, or transparent space.
+    """
+    if gender not in ("male","female") or direction not in DIRECTIONS:
+        raise ValueError("Invalid anatomy guide")
+    a=np.array(sprite.convert("RGBA"),copy=True)
+    rear=direction in ("ne","nw")
+    shade=np.asarray(skin_shade,dtype=np.uint8)
+    light=np.asarray(skin_light,dtype=np.uint8)
+
+    def at(x:int,y:int,color:np.ndarray):
+        if not (0<=x<FRAME[0] and 54<=y<FRAME[1]):return
+        # Only shade a genuine interior skin pixel, never change the alpha.
+        if a[y,x,3]==0:return
+        if any(a[y+dy,x+dx,3]==0 for dx,dy in ((-1,0),(1,0),(0,-1),(0,1))):
+            return
+        a[y,x,:3]=color
+
+    # Find the live torso center, respecting idle bob and seated poses.
+    top=min(max(int(shirt_top),54),73)
+    mid_y=min(top+10,76)
+    xs=np.flatnonzero(a[mid_y,:,3])
+    cx=int(round((int(xs[0])+int(xs[-1]))/2)) if len(xs) else 32
+    if not rear:
+        if gender=="female":
+            for offset in (-4,4):
+                at(cx+offset,top+9,shade)
+                at(cx+offset+1,top+10,light)
+        else:
+            for offset in (-5,5):
+                at(cx+offset,top+7,light)
+
+    # Pelvis treatment is intentionally abstract at 64x112 (2-3 px max).
+    hip_y=min(max(int(pants_top)+5,77),88)
+    hip_x=np.flatnonzero(a[hip_y,:,3])
+    hc=int(round((int(hip_x[0])+int(hip_x[-1]))/2)) if len(hip_x) else cx
+    if rear:
+        if gender=="female":
+            at(hc-2,hip_y+1,shade)
+            at(hc+2,hip_y+1,shade)
+        else:
+            at(hc,hip_y+1,light)
+    elif gender=="female":
+        at(hc-1,hip_y,shade)
+        at(hc+1,hip_y,shade)
+        at(hc,hip_y+1,shade)
+    else:
+        at(hc,hip_y,shade)
+        at(hc,hip_y+1,shade)
+    return Image.fromarray(a,"RGBA")
+
+
 def build_human_templates(root:Path,media:Path)->list[dict]:
     for folder in (root/"assets/npc_preview_v2",root/"assets/npc_gfunk",root/"chars-iso/v6b/tools"):
         if str(folder) not in sys.path:sys.path.insert(0,str(folder))
@@ -75,6 +183,15 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 for i,tone in enumerate(skin):
                     a[mask & (index_map==i),:3]=tone
                 layers[key]=Image.fromarray(a,"RGBA")
+            # Sculpt each gender's anatomical silhouette on skin torso and
+            # pelvis BEFORE the final shoulder weld, not by resizing the sheet.
+            sculpt_human_layers(layers,gender)
+            shirt_mask=np.asarray(layers["shirt"].convert("RGBA"))[...,3]>0
+            pant_mask=np.asarray(layers["pants"].convert("RGBA"))[...,3]>0
+            shirt_rows=np.flatnonzero(np.any(shirt_mask,axis=1))
+            pant_rows=np.flatnonzero(np.any(pant_mask,axis=1))
+            shirt_top=int(shirt_rows[0]) if len(shirt_rows) else 55
+            pants_top=int(pant_rows[0]) if len(pant_rows) else 76
             # Weld final colored arm layers to the torso, for BOTH male
             # and female, after bald/head and every source outfit conversion.
             # The guide/character silhouette remains 64x112 pixel aligned.
@@ -90,7 +207,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # A bald, skin-toned body still needs a pixel-art silhouette
             # around its arms, torso, separated legs, and feet.
             result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))
-            # The body is intentionally featureless rather than anatomical.
+            result=shade_human_anatomy(result,gender,direction,shirt_top,pants_top,
+                tuple(pal.get("Ke",(170,115,87))),tuple(pal.get("Ki",(223,181,147))))
+            # Body remains a non-explicit adult mannequin for outfit fitting.
             assert result.size==FRAME
             return result
         def make_sheet(kind,count,expression="neutral"):
@@ -136,7 +255,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True})
         results.append({"id":f"human_{gender}_base","name":"Human / "+gender.title()+" Base",
             "type":"npc","template":True,"template_category":"human","gender":gender,
-            "description":"Adult neutral bald human mannequin, unclothed base without explicit anatomy; modular shirt, pants and shoes.",
+            "description":"Distinct adult bald "+gender.title()+" skin-toned mannequin with non-explicit morphology guides; modular shirt, pants and shoes.",
             "outfit":"unclothed / modular","hairstyle":"bald",
             "sheet":f"media/{name}-sheet.png","walk":f"media/{name}-walk.gif",
             "poster":f"media/{name}-poster.png","thumbnail":f"media/{name}-thumb.png",
