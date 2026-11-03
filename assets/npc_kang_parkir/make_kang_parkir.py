@@ -100,6 +100,7 @@ def build(view, kind, f=0):
             for y in range(54 + dy, 64 + dy): sh[y, 40:] = 0
         if flip:
             near = flipx(near) if near is not None else None; far = flipx(far) if far is not None else None
+    near, far = weld_arm_rgba_layers(L, near, far)
     im = Image.fromarray(shadow())
     for k in ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'outer', 'acc', 'towel', 'arm_near', 'body_front', 'held', 'face', 'hair_front', 'glasses', 'brows']:
         if k == 'shirt' and far is not None: im.alpha_composite(Image.fromarray(far))
