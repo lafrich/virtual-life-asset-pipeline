@@ -5,6 +5,7 @@ on:
     paths:
       - "assets/street_buildings/_work/indonesia.py"
       - "assets/street_buildings/_work/indonesia_extra.py"
+      - "assets/street_buildings/_work/indonesia_more.py"
       - ".github/workflows/publish-indonesia-assets.yml"
   workflow_dispatch:
 permissions:
@@ -33,7 +34,7 @@ jobs:
           root=pathlib.Path('assets/street_buildings')
           data=json.loads((root/'indonesia_catalog.json').read_text())
           assert data['projection']=='isometric-2:1'
-          assert len(data['assets'])==44, len(data['assets'])
+          assert len(data['assets'])==68, len(data['assets'])
           seen=set()
           for asset in data['assets']:
               assert asset['id'] not in seen
@@ -61,6 +62,6 @@ jobs:
           git add -f assets/street_buildings/indonesia_contact_sheet.png
           git add assets/street_buildings/indonesia_catalog.json
           if ! git diff --cached --quiet; then
-            git commit -m "Publish 44 Indonesia pixel sprites with native depth for Semesta [skip ci]"
+            git commit -m "Publish 68 Indonesia pixel sprites with native depth for Semesta [skip ci]"
             git push
           fi
