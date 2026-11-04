@@ -305,7 +305,20 @@ def quality_override(L,s):
     x=.21+i*(W-.44)/6
     box(L,x,.30,x+.12,.35,64+i%2*3,69,'CREAM')
   return True
- if name in ('Kursi hajatan','Meja registrasi hajatan','Meja lesehan','Bangku plastik warung','Meja makan warung','Kursi plastik warung'):
+ if name=='Kursi hajatan':
+  shadow(L)
+  # Single covered folding banquet chair with a red sash (not a wall-size
+  # backdrop or a full-width blue bench).
+  x=W*.50;y=D*.52
+  for xx in (x-.32,x+.24):
+   for yy in (y-.22,y+.19):
+    pole(L,xx,yy,43,.045,'CONC')
+  box(L,x-.39,y-.32,x+.36,y+.31,40,49,'WHITE')
+  box(L,x-.37,y+.17,x+.34,y+.33,49,87,'CREAM')
+  box(L,x-.37,y+.145,x+.34,y+.22,57,66,'RED')
+  box(L,x-.11,y+.13,x+.10,y+.24,53,70,'GOLD')
+  return True
+ if name in ('Meja registrasi hajatan','Meja lesehan','Bangku plastik warung','Meja makan warung','Kursi plastik warung'):
   shadow(L)
   if name in ('Kursi hajatan','Kursi plastik warung'):
    for a in (.23,W-.34):
@@ -377,6 +390,9 @@ def quality_override(L,s):
   shadow(L)
   from indonesia_200_quality import gas
   gas(L,2)
-  box(L,.21,.16,W*.64,.24,16,24,'YEL')
+  for i in range(2):
+   x=.39+i*.51
+   box(L,x-.12,D*.39,x+.12,D*.46,13,20,'CREAM')
+   box(L,x-.07,D*.38,x+.065,D*.43,17,19,'GREEN')
   return True
  return False
