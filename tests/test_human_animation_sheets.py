@@ -16,6 +16,7 @@ for gender in ("male","female"):
     actions={m["id"]:m for m in c["motions"] if m.get("available")}
     assert set(actions)==set(expected),(gender,sorted(actions))
     assert len(c["expressions"])==9
+    assert (root/f"media/human-{gender}-base-action-toilet.png").is_file()
     assert {x["id"] for x in c["expressions"]}=={
         "neutral","smile","happy","sad","angry","surprised","sleepy","blink","embarrassed"}
     for kind,frames in expected.items():
