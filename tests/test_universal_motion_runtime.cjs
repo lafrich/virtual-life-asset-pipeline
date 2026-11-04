@@ -34,9 +34,9 @@ test("procedural fallback stays on this actor's own pixels",()=>{
  const calls=[],ctx={drawImage(...args){calls.push(args)}};
  assert.equal(U.render(ctx,{action:a,image:{naturalWidth:384,naturalHeight:4928},
   dir:2,frame:2,x:35,y:40,scale:2}),true);
- assert.equal(calls[0][2],64);assert.equal(calls[0][3],112);
- assert.equal(calls[0][6],128);assert.equal(calls[0][7],224);
- assert.ok(calls[0][5]<40,"Jump should move up");
+ assert.equal(calls[0][3],64);assert.equal(calls[0][4],112);
+ assert.equal(calls[0][7],128);assert.equal(calls[0][8],224);
+ assert.ok(calls[0][6]<40,"Jump should move up");
 });
 test("shared search UI and canonical registry are loaded",()=>{
  const app=fs.readFileSync("site/app.js","utf8");
