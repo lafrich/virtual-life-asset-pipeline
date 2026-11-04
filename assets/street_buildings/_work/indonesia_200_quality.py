@@ -119,6 +119,18 @@ def vehicle(L,s):
   if 'box' in name or 'kurir' in name or 'delivery' in name:
    box(L,.05,.12,.64,D-.13,48,82,'RED')
    board(L,'ANTAR',60,'RED')
+  if k=='motor' and 'keluarga' in name:
+   # Extended shared seat, open rear grab rail, dual passenger footpegs.
+   # No human pixels: both parent and passenger are Mahluk Hidup NPCs.
+   box(L,.21,D*.37,W*.76,D*.70,48,57,'DARK')
+   box(L,.19,D*.32,W*.82,D*.39,52,59,'CREAM')
+   for x in (.32,W*.72):
+    box(L,x,D*.30,x+.17,D*.39,27,34,'CONC')
+   box(L,.13,D*.40,.24,D*.69,42,63,'DARK')
+  if k=='motor' and 'penumpang' in name:
+   box(L,.17,D*.38,W*.81,D*.67,48,54,'DARK')
+   box(L,.16,D*.33,W*.40,D*.38,52,60,'GREEN')
+   box(L,.22,D*.68,W*.33,D*.83,31,37,'CONC')
   if k=='sepeda':
    wheel(L,.3,D*.53,.30);wheel(L,W-.3,D*.53,.30)
    box(L,.5,.52,W-.5,D*.53,38,42,'WOOD')
