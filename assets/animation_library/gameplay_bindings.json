@@ -250,6 +250,88 @@
         "human_female_base"
       ],
       "notes": "Awake reclining idle, original native horizontal V6B transform."
+    },
+    {
+      "id": "knee_chest_idle",
+      "label": "Knee Chest Idle",
+      "category": "posture",
+      "frames": 4,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "loop": true,
+      "ground": "floor",
+      "fixtures": [
+        "floor",
+        "bed",
+        "sofa"
+      ],
+      "actors": [
+        "human_male_base",
+        "human_female_base"
+      ],
+      "notes": "Knees raised toward torso, arms wrapping shins; gentle breathing."
+    },
+    {
+      "id": "squat_down",
+      "label": "Squat Down",
+      "category": "posture",
+      "frames": 6,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "loop": false,
+      "ground": "floor",
+      "fixtures": [
+        "floor",
+        "outdoor"
+      ],
+      "actors": [
+        "human_male_base",
+        "human_female_base"
+      ],
+      "notes": "Stand-to-squat transition, nonloop."
+    },
+    {
+      "id": "squat_up",
+      "label": "Squat Up",
+      "category": "posture",
+      "frames": 6,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "loop": false,
+      "ground": "floor",
+      "fixtures": [
+        "floor",
+        "outdoor"
+      ],
+      "actors": [
+        "human_male_base",
+        "human_female_base"
+      ],
+      "notes": "Squat-to-stand transition, nonloop."
     }
   ]
 }
