@@ -1183,19 +1183,75 @@ ZG = ['111', '..1', '.1.', '1..', '111']
 
 
 
-def lie_head_shift(imgs):
-    """Find one unscaled head translation shared by body and facial layers."""
-    occupied = np.zeros((FH, FW), bool)
-    for name, im in imgs.items():
-        if name not in ('body', 'hair_back', 'hair_front', 'face',
-                        'brows', 'acc_head', 'figure', 'f', 'b', 'g', 'glasses'):
-            continue
-        alpha = np.asarray(im.convert('RGBA'))[..., 3] > 0
-        top = 65 if name == 'hair_back' else 56
-        occupied[:top] |= alpha[:top]
-    yy, xx = np.nonzero(occupied)
-    return (5 - int(xx.min()), 74 - int(yy.min())) if len(xx) else (-16, 40)
+def lie_head_shift(imgs, view='se'):
+    """Attach the unscaled original head to the TRANSFORMED neck/shoulder.
 
+    Do not position the head against a fixed screen coordinate: the collar
+    changes position with the V6B perspective and each character's build.
+    Pick the head's bottom-centre and a real source neckline pixel that
+    survives lie_flat, then project the latter through that SAME body map.
+    One integer translation must also be used for eyes, hair and headwear.
+    """
+    head = None
+    for key in ('body', 'figure', 'hair_front', 'hair_back', 'face'):
+        if key not in imgs:
+            continue
+        rgba = np.asarray(imgs[key].convert('RGBA'))
+        if np.any(rgba[:56, :, 3]):
+            head = rgba
+            break
+    if head is None:
+        return (0, 0)
+
+    ys, xs = np.nonzero(head[:56, :, 3] > 0)
+    if not len(xs):
+        return (0, 0)
+    # The last few opaque skull/neck rows contain the connection to the body.
+    # Never use the entire head bbox: its top-left corner is not a joint.
+    neck_y = int(ys.max())
+    neck_band = xs[ys >= max(43, neck_y - 2)]
+    neck_x = int(round(float(np.median(neck_band)))) if len(neck_band) else 32
+
+    keep = [y for y in range(30, 102) if y not in DROP_SE]
+    imid = len(keep) // 2
+    x0 = (FW - len(keep)) // 2
+    # Prefer real neck skin. Fall back to an actual shirt or shoulder pixel
+    # if a costume masks the neck completely.
+    choices = []
+    for priority, key in enumerate(('body', 'figure', 'shirt', 'outer',
+                                    'arm_far', 'arm_near')):
+        if key not in imgs:
+            continue
+        arr = np.asarray(imgs[key].convert('RGBA'))
+        for source_y in keep:
+            if source_y < 56:
+                continue
+            if source_y > 67:
+                break
+            cols = np.flatnonzero(arr[source_y, :, 3] > 0)
+            if not len(cols):
+                continue
+            source_x = int(cols[np.argmin(np.abs(cols - neck_x))])
+            distance = abs(source_x - neck_x)
+            # The nearest intact neckline should win, not an arm, skirt or
+            # a shirt hem that happens to be closer to the character origin.
+            score = ((source_y - 56) + max(0, distance - 7) * 4
+                     + (0 if priority < 2 else 2), distance, priority)
+            choices.append((score, source_x, source_y))
+    if choices:
+        _, source_x, source_y = min(choices)
+    else:
+        source_x, source_y = neck_x, 56
+
+    index = keep.index(source_y)
+    perspective = 1 if view in ('se', 'sw') else -1
+    shoulder_x = x0 + index
+    shoulder_y = (LIE_C['lie']
+                  + int(np.floor((index - imid) * perspective / 2))
+                  - (source_x - 32))
+    # The original head-neck pixel now lands ON the transformed shoulder.
+    # A one-pixel overlap eliminates the detached ball-head silhouette.
+    return (int(shoulder_x - neck_x), int(shoulder_y - neck_y))
 
 def lie_preserve_head(imgs, view, shift=None):
     """Isometric bed sleep: lie body, but preserve the HEAD at native 1:1 pixels.
@@ -1229,7 +1285,7 @@ def lie_preserve_head(imgs, view, shift=None):
     if opaque_heads and np.any(np.logical_or.reduce(opaque_heads)):
         # Face and hair must share the EXACT body offset, not independent
         # bounding-box offsets that move the eyes to the corner of the head.
-        dx, dy = shift if shift is not None else lie_head_shift(imgs)
+        dx, dy = shift if shift is not None else lie_head_shift(imgs, view)
         for key, image in preserved.items():
             if not np.any(image[..., 3]):
                 continue
@@ -1321,7 +1377,7 @@ def build(cfg_path, outfit=None, glasses=None):
                 sh = np.zeros((FH, FW, 4), np.uint8); cx = 32 + (1 if kind in SEATED else 0)
                 if kind not in ('swim', 'float'): sh[((xx + .5 - cx) / 11) ** 2 + ((yy + .5 - 100.5) / 2.4) ** 2 <= 1] = (0, 0, 0, 56)
                 imgs['shadow'] = Image.fromarray(sh, 'RGBA')
-                head_shift = lie_head_shift(imgs) if anim == 'lie' else None
+                head_shift = lie_head_shift(imgs, view) if anim == 'lie' else None
                 if anim == 'lie': imgs = lie_preserve_head(imgs, view, head_shift)
                 elif anim == 'float': imgs = lie_flat(imgs, view, anim)
                 fxa = np.zeros((FH, FW, 4), np.uint8)
