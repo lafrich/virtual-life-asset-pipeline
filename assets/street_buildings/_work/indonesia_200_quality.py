@@ -521,3 +521,241 @@ def plant(L,s):
     ball(L,X+.65*math.cos(angle),Y+.61*math.sin(angle),104,.24,16,'GREEN')
   return True
  return False
+
+
+def stall(L,name,color='BLUE',roof=108):
+ # Four construction posts, striped tarpaulin, low fruit/meat display stands.
+ for x in (.18,L.W-.24):
+  for y in (.15,L.D-.26):pole(L,x,y,roof,.047,'WOOD')
+ box(L,.07,.10,L.W-.07,L.D-.10,roof,roof+8,color)
+ for i in range(6):
+  xx=.13+i*(L.W-.25)/6
+  box(L,xx,.08,xx+.22,.25,roof-11,roof+3,'CREAM' if i%2 else color)
+ box(L,.15,.20,L.W-.16,L.D-.22,9,32,'WOOD')
+ box(L,.13,.20,L.W-.15,L.D-.20,32,38,'SENG')
+ board(L,name,roof-34,color)
+def merch(L,name,allDifferent=False):
+ n=name.lower()
+ if 'ikan' in n:
+  for i in range(5):
+   a=.3+i*.38
+   ball(L,a,L.D*.4,45,.17,8,'FBLUE')
+   ball(L,a+.11,L.D*.43,47,.055,5,'CONC')
+ elif 'ayam' in n:
+  for i in range(5):
+   a=.3+i*.34
+   ball(L,a,L.D*.45,44,.17,9,'CREAM')
+ elif 'bumbu' in n:
+  for i in range(9):
+   a=.3+(i%5)*.36;b=.33+(i//5)*.47
+   ball(L,a,b,42,.11,7,FOOD[i%7])
+ elif 'buah' in n:
+  for i in range(13):
+   a=.25+(i%5)*.38;b=.28+(i//5)*.31
+   ball(L,a,b,40,.105,10,'ORANGE' if i%3 else 'GREEN')
+ else:
+  for i in range(12):
+   a=.25+(i%5)*.39;b=.24+(i//5)*.26
+   ball(L,a,b,40,.09,10,'GREEN' if i%3 else 'YEL')
+def cart(L,s):
+ shadow(L);N=s['num'];kind=s['kind'];name=s['label']
+ W,D=L.W,L.D;color=PALETTE[(N+3)%len(PALETTE)]
+ if kind in ('lapak','tenda'):
+  stall(L,name,color)
+  merch(L,name)
+  if 'sayur' in name.lower():
+   for i in range(4):
+    a=.3+i*.49
+    box(L,a,.15,a+.43,.43,0,23,'WOOD')
+  return True
+ # Every mobile food cart: wheels, wooden chassis, stainless counter,
+ # realistic hanging canopy and typed cooking equipment, not a hollow frame.
+ wheel(L,.44,D*.51,.22);wheel(L,W-.49,D*.51,.22)
+ box(L,.14,.18,W-.17,D-.20,19,53,'WOOD')
+ box(L,.11,.15,W-.14,D-.19,53,59,'SENG')
+ for xx in (.23,W-.26):pole(L,xx,.20,113,.065,'WOOD',base=51)
+ box(L,.09,.10,W-.12,D-.14,114,123,color)
+ for i in range(7):
+  a=.1+i*(W-.2)/7
+  box(L,a,.09,a+.14,.22,109,115,'CREAM' if i%2 else color)
+ board(L,name.replace('Gerobak ','')[:13],80,color)
+ # glazed showcase and individual food silhouettes
+ box(L,.28,.14,1.23,D-.22,59,87,'OGLASS',2)
+ box(L,.32,.12,1.18,D-.23,61,66,'CONC')
+ for i in range(5):
+  x=.4+(i%3)*.22;y=.25+(i//3)*.38
+  ball(L,x,y,70,.11,10,FOOD[(i+N)%7])
+ nn=name.lower()
+ if any(q in nn for q in ('sate','jagung','kerak telor','tahu bulat')):
+  box(L,W*.51,.22,W-.25,D-.3,59,67,'DARK')
+  for i in range(7):
+   x=W*.53+i*.18
+   box(L,x,.28,x+.055,D-.35,66,71,'TERRA')
+  for i in range(4):
+   ball(L,W*.58+i*.18,D*.6,72,.085,6,'ORANGE')
+ elif any(q in nn for q in ('es cendol','es doger')):
+  for i in range(3):
+   x=W*.56+i*.31
+   pole(L,x,D*.43,74,.17,'OGLASS',base=59)
+   box(L,x-.13,D*.27,x+.13,D*.55,71,78,'GREEN' if 'cendol' in nn else 'PINK')
+ elif any(q in nn for q in ('bakmi','bubur','cilok','pempek','nasgor','nasi goreng','ketoprak')):
+  for i in range(2):
+   x=W*.61+i*.39
+   ball(L,x,D*.46,61,.28,14,'SENG')
+   ball(L,x,D*.46,73,.15,7,'CREAM')
+   if i==0:
+    pole(L,x+.19,D*.38,89,.027,'WOOD',base=73)
+  box(L,W-.59,D*.26,W-.24,D*.58,38,59,'GREEN')
+ else:
+  crates(L,3,'WOOD',W*.47,.23)
+ # pushing handle and rubber grip
+ box(L,W-.19,D*.24,W-.08,D*.67,40,45,'DARK')
+ return True
+
+def produce_market(L,s):
+ shadow(L);k=s['kind'];name=s['label'].lower()
+ if k in ('lapak','tenda'):return cart(L,s)
+ if 'karung' in name:return sacks(L,5) or True
+ if 'buah plastik' in name or 'styrofoam' in name:
+  crates(L,5,'WOOD' if 'buah' in name else 'WHITE');return True
+ if k=='gas':gas(L,5);return True
+ if k=='galon':galons(L,5);return True
+ if k=='etalase':
+  box(L,.18,.19,L.W-.16,L.D-.18,0,47,'WOOD')
+  box(L,.2,.19,L.W-.19,L.D-.20,47,90,'OGLASS')
+  for i in range(5):
+   a=.22+i*.36
+   ball(L,a,.3,55,.12,9,FOOD[i%7])
+  box(L,.16,.15,L.W-.15,L.D-.15,88,94,'SENG')
+  return True
+ if k=='payung':
+  pole(L,L.W*.5,L.D*.5,111,.055,'WOOD')
+  for i in range(10):
+   th=TAU*i/10
+   x=L.W*.5+math.cos(th)*.72;y=L.D*.5+math.sin(th)*.69
+   ball(L,x,y,91,.23,15,'RED' if i%2 else 'YEL')
+  ball(L,L.W*.5,L.D*.5,106,.40,17,'RED')
+  return True
+ if k=='freezer':
+  box(L,.20,.24,L.W-.22,L.D-.25,0,62,'WHITE')
+  box(L,.15,.20,L.W-.17,L.D-.18,62,70,'BLUE')
+  for i in range(3):
+   a=.25+i*.55
+   box(L,a,.19,a+.4,.31,66,70,'GLASS')
+  board(L,'ES KRIM',46,'BLUE')
+  return True
+ if k=='rak':
+  for z in (5,41,75):
+   box(L,.16,.19,L.W-.16,L.D-.20,z,z+5,'WOOD')
+  for x in (.17,L.W-.27):pole(L,x,.24,101,.065,'CONC')
+  for i in range(15):
+   a=.22+(i%5)*.37;b=.26+(i//5)*.41
+   box(L,a,b,a+.22,b+.25,8+(i//5)*34,26+(i//5)*34,FOOD[i%7],3)
+  return True
+ if k=='timbangan':
+  box(L,.16,.2,L.W-.18,L.D-.19,0,28,'BLUE')
+  box(L,.30,.28,L.W-.32,L.D-.31,28,35,'SENG')
+  box(L,L.W*.46,.10,L.W*.66,.22,20,32,'DARK')
+  return True
+ if k in ('meja','kursi','bangku'):
+  for x in (.21,L.W-.33):
+   for y in (.27,L.D-.34):pole(L,x,y,36,.05,'WOOD')
+  box(L,.12,.17,L.W-.13,L.D-.20,35,42,'BLUE' if k=='kursi' else 'WOOD')
+  if k=='kursi':
+   box(L,.12,L.D-.38,L.W-.13,L.D-.25,42,85,'BLUE')
+  return True
+ if k=='gerobak':return cart(L,s)
+ return None
+
+def home(L,s):
+ shadow(L);k=s['kind'];name=s['label'].lower();W=L.W;D=L.D
+ if k in ('toren','antena','parabola','sangkar','kandang','wudhu'):
+  # Reuse hand-modelled silhouettes from the bespoke Indonesian objects module.
+  from indonesia_200_details import special
+  if special(L,s):return True
+ if k=='jemuran':
+  for x in (.14,W-.22):pole(L,x,.5,116,.07,'WOOD')
+  box(L,.17,.45,W-.20,.51,112,116,'SENG')
+  for i in range(7):
+   a=.20+i*(W-.48)/7
+   hh=55+i%3*8
+   box(L,a,.39,a+.32,.54,hh,111,CLOTH[i%7],2+(i%3))
+   box(L,a+.09,.37,a+.12,.56,111,113,'CONC')
+  return True
+ if k=='pagar':
+  mat='WOOD' if 'roster' in name else 'DARK'
+  if 'roster' in name:
+   for i in range(12):
+    x=.11+i*(W-.21)/12
+    box(L,x,.40,x+.18,.62,0,67,'CREAM')
+    box(L,x+.05,.37,x+.11,.64,18,54,'DARK',2)
+   box(L,.10,.36,W-.1,.65,64,69,'CONC')
+  else:
+   for i in range(12):
+    x=.11+i*(W-.20)/12
+    box(L,x,.40,x+.07,.61,0,74,mat)
+   box(L,.10,.35,W-.09,.64,31,36,'DARK')
+   box(L,.10,.35,W-.09,.64,69,75,'DARK')
+  return True
+ if k in ('kanopi','pos'):
+  for x in (.17,W-.24):
+   for y in (.20,D-.28):
+    pole(L,x,y,101,'WOOD' if k=='pos' else 'CONC')
+  box(L,.09,.12,W-.11,D-.12,100,107,'SENG')
+  for i in range(8):
+   a=.10+i*(W-.2)/8
+   box(L,a,.10,a+.05,D-.14,101,107,'CONC')
+  if k=='pos':
+   box(L,.17,.22,W-.17,D-.20,0,66,'CREAM')
+   box(L,.28,.12,W-.25,.29,28,66,'GLASS')
+   board(L,'POS RONDA',75,'BLUE')
+  return True
+ if k=='bangku':
+  for x in (.3,W-.43):
+   for y in (.26,D-.32):pole(L,x,y,38,.065,'WOOD')
+  box(L,.16,.19,W-.14,D-.16,37,43,'WOOD')
+  box(L,.19,D-.3,W-.19,D-.2,43,71,'WOOD')
+  return True
+ if k=='rak':
+  for z in (8,38,70):
+   box(L,.13,.18,W-.13,D-.19,z,z+6,'WOOD')
+  for x in (.18,W-.24):pole(L,x,.24,97,.07,'WOOD')
+  for i in range(7):
+   a=.28+i*.20
+   if a+.16<W:
+    box(L,a,.18,a+.15,.39,14+i%2*32,25+i%2*32,'DARK' if i%2 else 'TERRA')
+  return True
+ if k=='pot':
+  box(L,W*.5-.43,D*.5-.35,W*.5+.43,D*.5+.38,0,32,'TERRA')
+  box(L,W*.5-.46,D*.5-.38,W*.5+.46,D*.5+.40,29,35,'CONC')
+  for i in range(9):
+   th=TAU*i/9
+   x=W*.5+.29*math.cos(th);y=D*.5+.27*math.sin(th)
+   pole(L,x,y,54+i%3*7,.032,'WOOD',base=31)
+   ball(L,x,y,53+i%3*7,.17,12,'GREEN')
+  return True
+ if k=='sampah':
+  box(L,.2,.2,W-.18,D-.21,0,52,'BLUE' if s['num']%2 else 'TERRA')
+  box(L,.15,.17,W-.12,D-.18,53,59,'DARK')
+  box(L,W*.41,.15,W*.63,.25,59,63,'CONC')
+  return True
+ if k=='kotak':
+  box(L,.25,.26,W-.23,D-.20,17,73,'CONC')
+  box(L,.27,.21,W-.26,.30,42,48,'DARK')
+  board(L,'PLN',65,'BLUE')
+  return True
+ if k=='pompa':
+  ball(L,W*.5,D*.5,2,.32,11,'CONC')
+  pole(L,W*.5,D*.5,74,.09,'CONC')
+  box(L,W*.3,.24,W*.72,.40,69,75,'DARK')
+  ball(L,W*.65,D*.5,71,.12,9,'RED')
+  return True
+ if k=='papan':
+  for x in (.24,W-.31):pole(L,x,D*.5,106,.075,'WOOD')
+  box(L,.17,.37,W-.15,D*.61,74,114,'CREAM')
+  board(L,'INFO RT/RW',84,'GREEN')
+  return True
+ # exact distinctive other props
+ from indonesia_200_details import special
+ if special(L,s):return True
+ return None
