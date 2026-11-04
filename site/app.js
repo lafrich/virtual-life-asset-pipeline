@@ -876,16 +876,20 @@ function draw() {
         state.motion.source==="procedural"?
         state.motion.prototype?.row??state.selected.row_starts?.idle??4:
         state.motion.row||0)+d;
-      const frame=state.frame%4;
-      if((frame+1)*64<=original.naturalWidth&&(row+1)*112<=original.naturalHeight){
+      const frame=state.frame%hygiene.frames;
+      const originalFrame=frame%Math.max(1,state.motion.frames||4);
+      if((originalFrame+1)*64<=original.naturalWidth&&(row+1)*112<=original.naturalHeight){
         // Mahluk Hidup source head and hair remain; equipped garments,
         // shoes, bags and helmets are never layered into a bath frame.
-        paint.drawImage(original,frame*64,row*112,64,112,0,0,64,112);
+        paint.drawImage(original,originalFrame*64,row*112,64,112,0,0,64,112);
         UNIVERSAL_BODY.tintBase(paint,state.selected);
         if(UNIVERSAL_BODY.apply(paint,{actor:state.selected,action:state.motion.id,
              direction:["se","sw","ne","nw"][d],frame,bodyImage:mannequin})){
           // Hair remains part of the head; only clothing is removed for bath.
-          drawEquippedAccessory(0,0,1,d,"front",paint,["hair"]);
+          // Upright hair overlay must not be pasted over a reclining head.
+          // Native bathtub source retains the base head and open expression.
+          if(hygiene.kind!=="bathtub")
+            drawEquippedAccessory(0,0,1,d,"front",paint,["hair"]);
           ctx.drawImage(off,x,y,64*z,112*z);
         }
       }
