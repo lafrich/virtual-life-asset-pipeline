@@ -29,6 +29,7 @@ on:
       - "tools/build_astrofrich.py"
       - "tests/test_universal_sleep.cjs"
       - "tests/test_universal_sleep_geometry.py"
+      - "tests/test_sleep_head_preservation.py"
       - "tests/test_universal_sleep_tabs.cjs"
       - "tests/test_action_editor_interactions.cjs"
       - "tests/test_universal_sleep_published.py"
@@ -155,6 +156,7 @@ jobs:
         run: python tools/build_character_catalog.py
       - name: Verify truly horizontal native sleep poses and discoverable Animation clips
         run: |
+          python -m unittest discover -s tests -p "test_sleep_head_preservation.py" -v
           python tests/test_universal_sleep_geometry.py
           python tests/test_universal_sleep_published.py
       - name: Render original street vehicles for Semesta
