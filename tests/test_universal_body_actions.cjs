@@ -52,6 +52,17 @@ BODY.recolorBody(img,tone);
 assert.ok(img.data[0]<195&&img.data[0]>80);
 assert.deepEqual([...img.data.slice(4)],[25,24,25,255],
  "Black facial outlines must not be recoloured");
+const foamPixels={data:new Uint8ClampedArray([
+  236,250,252,235, 147,213,227,255,
+  214,171,135,255, 25,24,25,255
+])};
+BODY.recolorBody(foamPixels,[125,84,66]);
+assert.deepEqual([...foamPixels.data.slice(0,4)],[236,250,252,235],
+ "White bath foam must NEVER turn into skin color");
+assert.deepEqual([...foamPixels.data.slice(4,8)],[147,213,227,255],
+ "Blue water must NEVER turn into skin color");
+assert.ok(foamPixels.data[8]<214,
+ "Only warm body pixels should inherit darker skin tone");
 const script=fs.readFileSync("site/app.js","utf8");
 const anim=fs.readFileSync("site/animations.js","utf8");
 const index=fs.readFileSync("site/index.html","utf8");
