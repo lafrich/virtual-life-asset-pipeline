@@ -1,0 +1,66 @@
+/* Mahluk Hidup — Windows XP multi-actor stage, fixed desktop viewport. */
+html,body.scene-body{height:100%;min-height:0;margin:0;overflow:hidden;background:#c5c3be;font:12px Tahoma,Arial,sans-serif}
+.scene-root{display:flex;flex-direction:column;height:100%;min-height:500px;background:#c5c3be;overflow:hidden}
+.scene-title{display:flex;justify-content:space-between;align-items:center;gap:8px;background:linear-gradient(90deg,#032776,#0757b2);color:white;height:36px;min-height:36px;padding:0 12px;font:bold 13px "Courier New",monospace}
+.scene-title span{font-size:11px;font-weight:500}
+.scene-menu{display:flex;align-items:center;gap:5px;padding:6px;border-bottom:2px solid #817f79;background:#d7d4ce;flex-wrap:wrap}
+.scene-menu button,.scene-menu a,.scene-timeline button,.scene-add button,.scene-right button{border:2px solid;border-color:#fff #797773 #797773 #fff;background:#d6d3ce;min-height:29px;padding:5px 8px;font:700 11px "Courier New",monospace;color:#202020;text-align:center}
+.scene-menu button:hover,.scene-menu a:hover,.scene-timeline button:hover,.scene-add button:hover,.scene-right button:hover{background:#b6cafa}
+.scene-menu .scene-primary,.scene-timeline .scene-primary,.scene-right .scene-primary{background:#a8c6ef;color:#102a65}
+.scene-menu a{display:inline-grid;place-items:center;margin-left:auto}
+.scene-main{display:grid;grid-template-columns:235px minmax(0,1fr) 273px;flex:1;min-height:0;background:#b9b7b2}
+.scene-left,.scene-right{display:flex;flex-direction:column;min-height:0;min-width:0;background:#c9c7c2}
+.scene-left{border-right:2px solid #88847f}
+.scene-right{border-left:2px solid #88847f}
+.scene-heading{display:flex;justify-content:space-between;align-items:center;height:32px;min-height:32px;padding:0 9px;background:#d4d1cd;border-bottom:1px solid #888;font:bold 11px "Courier New",monospace}
+.scene-heading span{padding:3px 5px;background:#e7e4df;border:1px solid #a39e96}
+.scene-scroll{overflow:auto;min-height:0;overscroll-behavior:contain}
+.scene-preset-list{height:31%;flex:none;padding:7px;background:#e2dfd8;border:2px inset #999;margin:6px}
+.scene-character-list{flex:1;padding:7px;background:#e2dfd8;border:2px inset #999;margin:6px;min-height:60px}
+.scene-item{display:flex;flex-direction:column;align-items:stretch;gap:4px;width:100%;padding:8px;margin-bottom:5px;text-align:left;background:#e9e8ec;border:1px solid #8e8c94;font:700 11px "Courier New",monospace}
+.scene-item small{font-size:10px;font-weight:400;color:#666;overflow-wrap:anywhere}
+.scene-item.active{background:#b4c9fa;border:2px solid #1451af}
+.scene-item:hover{background:#ccdaf5}
+.scene-add{border-top:2px solid #eee;display:flex;flex-direction:column;gap:6px;padding:10px}
+.scene-add label,.scene-inspector label{font:700 10px "Courier New",monospace;color:#514d4a}
+.scene-add select,.scene-inspector input:not([type=checkbox]):not([type=color]),.scene-inspector select{width:100%;min-width:0;min-height:31px;border:2px inset #a19e99;background:#fff;margin-top:4px;padding:4px 5px;font:12px Tahoma,Arial,sans-serif}
+.scene-inspector input[type=color]{width:100%;height:30px;padding:2px;margin-top:5px;background:#eee;border:1px solid #9b9993}
+.scene-center{display:flex;flex-direction:column;min-width:0;min-height:0;background:#b8b6b1}
+.scene-canvas-head{height:32px;min-height:32px;padding:8px 10px;background:#d2d0cb;border-bottom:2px solid #98958f;display:flex;justify-content:space-between;gap:8px;font:700 11px "Courier New",monospace;overflow:hidden}
+.scene-canvas-head strong{color:#516380;font-size:10px;white-space:nowrap}
+.scene-canvas-wrap{flex:1;min-height:0;display:grid;place-items:center;margin:8px;background:#f5f2ed;border:2px inset #9a9791;overflow:hidden;touch-action:none}
+#act-stage{display:block;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;cursor:grab;touch-action:none}
+#act-stage:active{cursor:grabbing}
+.scene-timeline{display:flex;align-items:center;gap:8px;min-height:56px;padding:8px;background:#cfcdc8;border-top:2px solid #f0eeea}
+.scene-timeline label{flex:1;display:flex;align-items:center;gap:8px;font:700 10px "Courier New",monospace;min-width:0}
+.scene-timeline input[type=range]{flex:1;min-width:35px;accent-color:#0c449e}
+.scene-timeline output{min-width:76px;text-align:right;font:700 11px "Courier New",monospace}
+.scene-stage-note{padding:0 12px 8px;color:#555;font:10px "Courier New",monospace;margin:0;min-height:18px;overflow-wrap:anywhere}
+.scene-inspector{padding:10px 12px 20px;display:flex;flex-direction:column;gap:10px}
+.scene-inspector label{display:block}
+.scene-inspector label.scene-check{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#e4e3dd;padding:7px 5px;border:1px solid #aaa}
+.scene-check input{accent-color:#114ca7;width:16px;height:16px}
+.scene-subheading{margin:4px -12px 0;background:#dae1ea;color:#163967}
+.scene-field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:end}
+.scene-field-grid>button{min-height:33px}
+.scene-right button{width:100%}
+.scene-right .scene-danger{background:#f2dad2;color:#682513}
+.scene-mini{font:10px/1.5 "Courier New",monospace;color:#625f5b;background:#e2dfd9;padding:7px;margin:0}
+.scene-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:29px;background:#d5d3cf;border-top:2px solid #f7f7f1;padding:4px 10px;font:10px "Courier New",monospace;color:#41413d}
+.scene-footer span:first-child{font-weight:700;color:#0a3b87}
+.scene-footer span:last-child{white-space:nowrap}
+@media(max-width:1060px){.scene-main{grid-template-columns:188px minmax(0,1fr) 232px}.scene-title span{display:none}.scene-menu a{margin-left:0}}
+@media(max-width:760px){
+ html,body.scene-body{height:auto;overflow:auto}
+ .scene-root{height:auto;min-height:100vh;overflow:visible}
+ .scene-main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(320px,52vw) auto}
+ .scene-left{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto minmax(120px,1fr) auto;gap:0;border:0}
+ .scene-left>.scene-heading:nth-of-type(1){grid-column:1}.scene-left>.scene-heading:nth-of-type(2){grid-column:2;grid-row:1}
+ .scene-preset-list{height:145px;grid-column:1;grid-row:2}.scene-character-list{height:145px;grid-column:2;grid-row:2}
+ .scene-add{grid-column:1/-1;grid-row:3}
+ .scene-center{height:440px}
+ .scene-right{border:0}.scene-inspector{overflow:visible}
+ .scene-canvas-wrap{min-height:290px}
+ .scene-footer span:last-child{display:none}
+ .scene-menu{gap:3px}.scene-menu button,.scene-menu a{font-size:10px;padding:4px}
+}
