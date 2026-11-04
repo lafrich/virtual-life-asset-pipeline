@@ -205,7 +205,7 @@ function renderGear(p,actor){
 }
 function faceAssetFor(p,actor,id){
  const native=(actor?.expressions||[]).find(f=>f.id===id);
- if(native)return {id,data:null,portrait:native.portrait||native.sheet,label:native.label||id};
+ if(native)return {id,data:null,portrait:native.portrait||native.overlay||native.sheet,label:native.label||id};
  const local=faceAssets.find(f=>f.id===id&&f.actorBase===actorBase(actor));
  if(local)return {id,data:local.data,portrait:local.data,label:local.name};
  if(p?.faceAssetId===id&&p.faceAssetData)
