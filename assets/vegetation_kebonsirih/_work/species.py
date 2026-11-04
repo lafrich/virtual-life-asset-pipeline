@@ -154,6 +154,85 @@ def glodokan():
     b=canopy(s,cl,'dark',br=2.4,droop=3,gbox=(-14,14,-180,-14))
     return s
 
+
+# Additional endemic Indonesian timber species for Semesta.
+# Same Spr / trunk_with_tuft / limb / canopy pipeline as the original trees.
+def cendana():
+    s=Spr(280,310,140,279,73); s.set_shadow(29)
+    def tr():
+        limb(s,[(0,0),(-2,-38),(2,-73),(0,-107)],8,3,'barkg')
+        for ex,ey in [(-34,-81),(31,-93),(-28,-125),(29,-136),(1,-151)]:
+            limb(s,[(0,-89),(ex*.54,ey*.88),(ex,ey)],3.7,1.2,'barkg')
+    trunk_with_tuft(s,tr,16,6)
+    cl=[(-31,-89,14,12),(29,-94,15,12),(-38,-118,14,13),
+        (36,-124,15,13),(-16,-142,19,16),(17,-145,19,16),
+        (1,-164,18,15),(-18,-111,17,12),(16,-116,18,12)]
+    canopy(s,cl,'cendana',br=2.8,jit=.25)
+    return s
+
+def ulin():
+    s=Spr(330,440,165,404,74); s.set_shadow(43)
+    def tr():
+        limb(s,[(0,0),(-3,-58),(3,-126),(2,-194)],19,8,'bark_ulin',
+             wfn=lambda t:19-11*t+(8 if t<.05 else 3 if t<.15 else 0))
+        for side in (-1,1):
+            limb(s,[(0,-18),(side*12,-4),(side*25,2)],8,2.5,'bark_ulin')
+        for ex,ey in [(-48,-161),(49,-172),(-33,-211),(30,-222),(1,-244)]:
+            limb(s,[(1,-180),(ex*.53,ey*.9),(ex,ey)],6,2,'bark_ulin')
+    trunk_with_tuft(s,tr,24,9)
+    cl=[(-50,-166,22,17),(48,-177,22,17),(-41,-205,22,19),
+        (38,-211,25,20),(-11,-228,25,20),(19,-234,24,20),
+        (-23,-259,22,18),(22,-270,22,19),(0,-292,20,17),
+        (0,-203,16,15)]
+    canopy(s,cl,'ulin',br=3.5,droop=2)
+    return s
+
+def kayu_hitam():
+    s=Spr(340,390,170,355,75); s.set_shadow(46)
+    def tr():
+        limb(s,[(0,0),(4,-54),(-1,-120),(2,-164)],17,7,'bark_eboni',
+             wfn=lambda t:17-10*t+(6 if t<.06 else 0))
+        for ex,ey in [(-51,-127),(54,-139),(-30,-184),(39,-197),(0,-218)]:
+            limb(s,[(0,-151),(ex*.53,ey*.87),(ex,ey)],5,2,'bark_eboni')
+    trunk_with_tuft(s,tr,24,8)
+    cl=[(-53,-129,24,17),(51,-140,23,18),(-47,-168,25,19),
+        (46,-179,26,20),(-17,-190,22,18),(19,-206,24,21),
+        (-23,-228,22,18),(19,-245,21,17),(0,-267,19,16)]
+    canopy(s,cl,'eboni',br=3.8)
+    return s
+
+def tengkawang():
+    s=Spr(360,430,180,390,76); s.set_shadow(49)
+    def tr():
+        limb(s,[(0,0),(-1,-60),(2,-132),(1,-181)],17,8,'bark',
+             wfn=lambda t:17-9*t+(7 if t<.09 else 0))
+        for side in (-1,1):
+            limb(s,[(0,-17),(side*14,-4),(side*26,2)],7,2,'bark')
+        for ex,ey in [(-62,-169),(59,-179),(-45,-215),(44,-221),(0,-250)]:
+            limb(s,[(0,-165),(ex*.58,ey*.89),(ex,ey)],5.5,2,'bark')
+    trunk_with_tuft(s,tr,23,8)
+    cl=[(-57,-172,25,19),(56,-182,26,19),(-40,-206,30,23),
+        (37,-215,30,24),(-6,-201,25,20),(-38,-244,26,21),
+        (34,-254,29,22),(-4,-269,30,24),(0,-301,22,18)]
+    canopy(s,cl,'tengkawang',br=4.1)
+    return s
+
+def meranti():
+    s=Spr(360,480,180,445,77); s.set_shadow(45)
+    def tr():
+        limb(s,[(0,0),(2,-68),(-2,-147),(1,-241)],18,7,'bark',
+             wfn=lambda t:18-11*t+(10 if t<.07 else 0))
+        for side in (-1,1):
+            limb(s,[(0,-16),(side*17,-2),(side*31,2)],8,2,'bark')
+        for ex,ey in [(-50,-196),(49,-208),(-37,-253),(40,-273),(0,-309)]:
+            limb(s,[(0,-225),(ex*.5,ey*.88),(ex,ey)],6,2,'bark')
+    trunk_with_tuft(s,tr,22,7)
+    cl=[(-53,-197,20,16),(50,-211,22,17),(-43,-245,22,18),
+        (40,-259,24,17),(-10,-263,21,15),(19,-281,23,18),
+        (-24,-306,24,19),(23,-318,23,17),(0,-341,20,16)]
+    canopy(s,cl,'meranti',br=3.6,droop=2)
+    return s
+
 # ======================= SHRUBS / PLANTS =======================
 def bush(clumps,m,br,seed,shadow,base=(16,6)):
     s=Spr(120,100,60,80,seed); s.set_shadow(shadow)
@@ -411,6 +490,11 @@ TREES=[
  ('pohon_palem_raja',palem,'Palem raja','Roystonea regia'),
  ('pohon_bungur',bungur,'Bungur','Lagerstroemia speciosa'),
  ('pohon_glodokan_tiang',glodokan,'Glodokan tiang','Monoon longifolium'),
+ ('pohon_cendana',cendana,'Cendana','Santalum album'),
+ ('pohon_ulin',ulin,'Ulin','Eusideroxylon zwageri'),
+ ('pohon_kayu_hitam',kayu_hitam,'Kayu hitam / eboni','Diospyros celebica'),
+ ('pohon_tengkawang',tengkawang,'Tengkawang','Shorea stenoptera'),
+ ('pohon_meranti',meranti,'Meranti','Shorea spp.'),
 ]
 SHRUBS=[
  ('semak_bugenvil',bugenvil,'Bugenvil','Bougainvillea spectabilis'),
