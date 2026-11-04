@@ -284,7 +284,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                                  else contextual_expression(kind,index))
             face_expression=("blink" if kind in ("lie","sleep_seat")
                              else "neutral" if selected_expression=="bleh" else selected_expression)
-            canvas,layers,pal=base6.render(cfg,f=index%4,d=source_dir,
+            canvas,layers,pal=base6.render(cfg,f=index if kind=="walk" else index%4,d=source_dir,
                                            expr=face_expression,anim=anim)
             M.bald(layers,pal)
             skin=[tuple(pal.get(k,pal["Ki"])) for k in ("K5","K7","Ke","Kh","Ki")]
