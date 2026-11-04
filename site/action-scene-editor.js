@@ -16,6 +16,7 @@ ctx.imageSmoothingEnabled=false;
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const entries=new Map(),pictures=new Map(),tintCache=new Map(),buffers=new Map();
 let build="",facesDB=null,equipment={},items=[],scene=null,slot=1,play=true,timeMs=0,lastTime=0,drag=null,dirty=false,ready=false;
+let pendingOutfit=null;
 const status=message=>{$("act-status").textContent=message;};
 const filename=name=>(name||"act").replace(/[^a-z0-9_-]+/gi,"_").slice(0,48);
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,Number(x)||0));
@@ -103,6 +104,7 @@ function emptyScene(){
 function setScene(next,mark=false){
  const data=A.clean(next);if(!data)return;
  scene=data;slot=scene.participants[0].slot;timeMs=0;lastTime=0;drag=null;play=true;
+ pendingOutfit=null;
  dirty=mark;renderSceneForm();renderPresets();renderParticipants();renderInspector();paint();syncPlay();
 }
 function markDirty(){
@@ -149,7 +151,28 @@ function renderSceneForm(){
  $("act-stage-name").textContent=scene.name.toUpperCase()+".ACT"+(dirty?"*":"");
  $("act-save-state").textContent=dirty?"UNSAVED CHANGES":scene.id?"SAVED PRESET":"NEW ACT";
 }
+function outfitDraft(p){
+ if(!pendingOutfit||pendingOutfit.slot!==p.slot||pendingOutfit.actorId!==p.actorId)
+  pendingOutfit={slot:p.slot,actorId:p.actorId,
+   equipment:{...p.equipment},colors:{...p.colors},changed:false};
+ return pendingOutfit;
+}
+function outfitNote(message,cls=""){
+ const label=$("act-outfit-pending");
+ label.textContent=message;label.classList.toggle("is-pending",cls==="pending");
+ label.classList.toggle("is-applied",cls==="applied");
+}
+function applyOutfit(){
+ const p=selected();if(!p)return;
+ const draft=outfitDraft(p);
+ p.equipment={...draft.equipment};p.colors={...draft.colors};
+ pendingOutfit=null;tintCache.clear();
+ markDirty();paint();renderGear(p,actorFor(p));
+ outfitNote("✓ APPLIED TO PREVIEW · BAJU/CELANA UPDATED FOR CHARACTER "+p.slot,"applied");
+ status("✓ OUTFIT APPLIED · "+(actorFor(p)?.name||p.actorId).toUpperCase());
+}
 function renderGear(p,actor){
+ const draft=outfitDraft(p);
  for(const category of SLOTS){
   const sel=$("act-gear-"+category);sel.replaceChildren();
   const base=actorBase(actor),human=base==="human_male_base"||base==="human_female_base";
@@ -158,12 +181,14 @@ function renderGear(p,actor){
   if(human&&category==="pants")sel.append(option("builtin_pants","BASIC PANTS / COLOR"));
   for(const item of equipmentItemsFor(actor,category))
    sel.append(option(item.id,item.name||item.id));
-  if(!Array.from(sel.options).some(o=>o.value===p.equipment[category]))
-   p.equipment[category]="inherit";
-  sel.value=p.equipment[category];
+  if(!Array.from(sel.options).some(o=>o.value===draft.equipment[category]))
+   draft.equipment[category]="inherit";
+  sel.value=draft.equipment[category];
  }
- $("act-color-shirt").value=p.colors?.shirt||"#5072b4";
- $("act-color-pants").value=p.colors?.pants||"#424956";
+ $("act-color-shirt").value=draft.colors?.shirt||"#5072b4";
+ $("act-color-pants").value=draft.colors?.pants||"#424956";
+ if(draft.changed)outfitNote("PENDING CHANGES — CLICK APPLY TO UPDATE PREVIEW","pending");
+ else outfitNote("CURRENT OUTFIT APPLIED · SELECT REMOVE / WEAR AND CLICK APPLY");
 }
 function renderInspector(){
  const p=selected();if(!p)return;
@@ -195,7 +220,7 @@ function renderInspector(){
 }
 function choose(slotId){
  if(!scene.participants.some(p=>p.slot===slotId))return;
- slot=slotId;renderParticipants();renderInspector();paint();
+ slot=slotId;pendingOutfit=null;renderParticipants();renderInspector();paint();
 }
 function addActor(){
  if(scene.participants.length>=8){status("MAX 8 PARTICIPANTS PER ACT");return;}
@@ -503,6 +528,7 @@ function setupEvents(){
  for(const id of ["act-name","act-trigger","act-fixture","act-duration","act-loop"])
   $(id).addEventListener("change",updateSceneForm);
  $("act-actor").onchange=event=>mutateParticipant(p=>{
+  pendingOutfit=null;
   p.actorId=event.target.value;p.motionId=firstMotion(actorFor(p))?.id||"idle";
   p.expressionId="neutral";
   const human=["human_male_base","human_female_base"].includes(actorBase(actorFor(p)));
@@ -534,12 +560,19 @@ function setupEvents(){
   scene.participants=scene.participants.filter(p=>p.slot!==slot);
   slot=scene.participants[0].slot;markDirty();renderParticipants();renderInspector();paint();
  };
- for(const slotName of SLOTS)$("act-gear-"+slotName).onchange=event=>
-  mutateParticipant(p=>{p.equipment[slotName]=event.target.value;});
+ for(const slotName of SLOTS)$("act-gear-"+slotName).onchange=event=>{
+  const p=selected();if(!p)return;
+  const draft=outfitDraft(p);draft.equipment[slotName]=event.target.value;
+  draft.changed=true;
+  outfitNote("PENDING "+slotName.toUpperCase()+" · CLICK APPLY TO UPDATE PREVIEW","pending");
+ };
  for(const cat of ["shirt","pants"])$("act-color-"+cat).oninput=event=>{
   const p=selected();if(!p)return;
-  p.colors[cat]=event.target.value;tintCache.clear();markDirty();paint();
+  const draft=outfitDraft(p);draft.colors[cat]=event.target.value;
+  draft.changed=true;
+  outfitNote("PENDING "+cat.toUpperCase()+" COLOR · CLICK APPLY TO UPDATE PREVIEW","pending");
  };
+ $("act-apply-outfit").onclick=applyOutfit;
  $("act-edit-outfit").onclick=()=>{
   const p=selected(),actor=actorFor(p),base=actorBase(actor);
   if(!actor||!["human_male_base","human_female_base","astrofrich_base"].includes(base)){
