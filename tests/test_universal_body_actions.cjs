@@ -22,6 +22,10 @@ for(const ch of [male,female,citizen]){
  }
 }
 assert.equal(BODY.resolve(male,"use_toilet").sheet,
+ "media/human-male-base-action-toilet.png");
+assert.equal(BODY.resolve(male,"use_toilet").facePolicy,"action-context");
+assert.equal(BODY.resolve(citizen,"use_toilet").facePolicy,"preserve-actor");
+assert.equal(BODY.resolve(citizen,"use_toilet").sheet,
  "media/human-male-base-action-sit.png");
 assert.equal(BODY.resolve(female,"bathe").sheet,
  "media/human-female-base-action-bathe.png");
