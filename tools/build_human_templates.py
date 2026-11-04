@@ -730,7 +730,22 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
         expressions=[]
         for expr in EXPRS:
             fn=f"{name}-expression-{expr}.png"
-            make_sheet("idle",4,expr,blink=True,save_face_parts=expr=="bleh").save(media/fn,optimize=True)
+            face_sheet=make_sheet("idle",4,expr,blink=True,save_face_parts=expr=="bleh")
+            face_sheet.save(media/fn,optimize=True)
+            if expr=="grimace_blush":
+                # Genuine SAME-ACTOR 4x GIF preview of both front angles.
+                # Never use a generic face/GIF from another character.
+                poses=[]
+                for index in range(4):
+                    se=face_sheet.crop((index*64,0,(index+1)*64,112))
+                    sw=face_sheet.crop((index*64,112,(index+1)*64,224))
+                    pair=Image.new("RGBA",(128,112))
+                    pair.alpha_composite(se,(0,0))
+                    pair.alpha_composite(sw,(64,0))
+                    poses.append(pair.resize((512,448),Image.Resampling.NEAREST))
+                poses[0].save(media/f"{name}-expression-grimace_blush-preview.gif",
+                              save_all=True,append_images=poses[1:],
+                              duration=[240,180,180,320],loop=0,disposal=2)
             portrait=f"{name}-expression-{expr}-portrait.png"
             frame("se","idle",0,expr).crop((17,30,49,59)).resize((160,145),Image.Resampling.NEAREST).save(media/portrait)
             # Full 4-direction facial sprites are regenerated for each
@@ -743,6 +758,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 "sheet":"media/"+fn,
                 "portrait":"media/"+portrait,"frames":4,"frame_ms":([240,180,180,320] if expr=="grimace_blush" else [190,200,260,220] if expr=="cheeky" else [270]*4),"loop":True,
                 "motion_sheets":{"idle":"media/"+fn,"walk":"media/"+walk_face}}
+            if expr=="grimace_blush":
+                entry["preview_gif"]=f"media/{name}-expression-grimace_blush-preview.gif"
             if expr=="bleh":
                 entry["parts"]={part:{kind:f"media/{name}-face-bleh-{part}-{kind}.png"
                     for kind in ("idle","walk")} for part in FACE_PARTS}

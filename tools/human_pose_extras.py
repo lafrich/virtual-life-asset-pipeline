@@ -224,13 +224,12 @@ def cheeky_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,di
     return layers,parts
 
 def grimace_blush_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,dict]:
-    """Animated weary/awkward grimace with rosy cheeks, no horns or props.
+    """Blushing overwhelmed emoji, fitted to the ORIGINAL 64x112 V6B face.
 
-    Four 64x112 frames for male and female V6B heads. The source mouth is
-    located from the actor's native posed face so SW mirroring and idle
-    bobbing remain attached. Two distressed brows, squeezed eyes, crooked
-    visible teeth, asymmetrical mouth and conspicuous pink cheek blush.
-    All color values reuse existing V6B blush/eye/skin colors.
+    Near eye x29..33, far eye x38..40. Native eyebrows and eyelids stay
+    within the skull; same-actor mouth anchoring tracks SE/SW + head bob.
+    Two curved shut eyes, inner-raised sad brows, asymmetrical white clenched
+    teeth and pink cheeks. No horns, fake beard or added body elements.
     """
     layers=dict(layers)
     parts={part:Image.new("RGBA",FRAME) for part in PARTS}
@@ -239,75 +238,67 @@ def grimace_blush_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[
     source=np.asarray(layers["face"].convert("RGBA"))
     yy,xx=np.nonzero(source[:62,:,3]>0)
     if len(yy):
-        y0=int(yy.max())
-        x0=int(round(float(np.median(xx[yy>=y0-1]))))
+        mouth_y=int(yy.max())
+        mouth_x=int(round(float(np.median(xx[yy>=mouth_y-1]))))
     else:
-        x0,y0=(28 if direction=="sw" else 35),50
+        mouth_x,mouth_y=(28 if direction=="sw" else 35),50
     sign=-1 if direction=="sw" else 1
-    def pos(u,v):
-        return max(0,min(63,x0+sign*(u-35))),max(0,min(111,y0+v-50))
-    def rect(paint,x1,y1,x2,y2,fill):
-        a,b=pos(x1,y1),pos(x2,y2)
-        paint.rectangle((min(a[0],b[0]),min(a[1],b[1]),
-                         max(a[0],b[0]),max(a[1],b[1])),fill=fill)
+    def point(u,v):
+        return max(0,min(63,mouth_x+sign*(u-35))),max(0,min(111,mouth_y+v-50))
+    def polygon(paint,coordinates,color):
+        paint.polygon([point(x,y) for x,y in coordinates],fill=color)
     phase=frame%4
+    edge=(*tuple(palette.get("K7",(113,76,66))),255)
     dark=(*tuple(palette.get("0",(48,35,27))),255)
-    line=(*tuple(palette.get("K7",(113,76,66))),255)
     ivory=(248,246,240,255)
-    rose=(224,119,142,255)
-    rose_shadow=(213,118,122,255)
+    pink=(224,119,142,255)
+    pink_shadow=(213,118,122,255)
 
-    # Raised, worried inner brows and downward closed eyelids.
-    # Quiver by one native pixel between phases rather than translating
-    # any part of the head or altering hair/rig.
     eyes=ImageDraw.Draw(parts["eyes"],"RGBA")
-    tremor=(0,-1,1,0)[phase]
-    for coords in (
-        ((26,40+tremor),(29,37+tremor),(32,40+tremor)),
-        ((38,40+tremor),(41,37+tremor),(44,40+tremor)),
-    ):
-        eyes.line([pos(*p) for p in coords],fill=line,width=1)
-    drop=(0,0,1,0)[phase]
-    eyes.line([pos(27,44),pos(30,46+drop),pos(33,46+drop)],fill=dark,width=2)
-    eyes.line([pos(37,46+drop),pos(40,46+drop),pos(43,44)],fill=dark,width=2)
-    # Small under-eye crease, not a second open eye.
-    eyes.point(pos(31,48+drop),fill=line)
-    eyes.point(pos(39,48+drop),fill=line)
+    quiver=(0,-1,0,1)[phase]
+    eyes.line([point(x,y+quiver) for x,y in ((28,41),(29,39),(31,37),(33,37))],
+              fill=edge,width=1)
+    eyes.line([point(x,y+quiver) for x,y in ((37,37),(39,37),(41,39),(42,41))],
+              fill=edge,width=1)
+    blink=(0,0,0,1)[phase]
+    polygon(eyes,[(27,44+blink),(29,44+blink),(31,43+blink),
+                  (33,42+blink),(33,44+blink),(31,46+blink),
+                  (28,46+blink),(27,45+blink)],dark)
+    polygon(eyes,[(37,42+blink),(39,43+blink),(41,44+blink),
+                  (43,44+blink),(43,45+blink),(41,46+blink),
+                  (39,46+blink),(37,44+blink)],dark)
 
-    # Strong blush on BOTH cheeks, brighter in the middle of the loop.
-    cheeks=ImageDraw.Draw(parts["blush"],"RGBA")
-    for x in (25,44):
-        rect(cheeks,x,49,x+2,50,rose_shadow)
-        rect(cheeks,x+1,49,x+2,50,rose)
+    blush=ImageDraw.Draw(parts["blush"],"RGBA")
+    for x in (26,41):
+        blush.point(point(x+1,47),fill=pink_shadow)
+        blush.point(point(x,48),fill=pink_shadow)
+        blush.point(point(x+1,48),fill=pink)
+        blush.point(point(x+2,48),fill=pink_shadow)
         if phase in (1,2):
-            cheeks.point(pos(x,51),fill=rose_shadow)
-            cheeks.point(pos(x+1,51),fill=rose)
+            blush.point(point(x+1,49),fill=pink)
 
-    # Lopsided, teeth-clenched mouth matching the reference.
-    # A tiny right-hand gap plus two short tension creases and no tongue.
+    # One prominent white teeth band to the left; tiny dark open corner on
+    # the right, just like the reference. Lower jaw stays INSIDE the head.
     mouth=ImageDraw.Draw(parts["mouth"],"RGBA")
-    wobble=(0,1,0,-1)[phase]
-    rect(mouth,29,50+wobble,43,52+wobble,dark)
-    rect(mouth,31,50+wobble,39,51+wobble,ivory)
-    rect(mouth,40,52+wobble,42,54+wobble,dark)
-    mouth.line([pos(29,50+wobble),pos(33,49+wobble),
-                pos(39,49+wobble),pos(43,51+wobble)],fill=line,width=1)
-    # Fine clenched teeth divisions and asymmetric lip stress.
-    for tooth in (34,37):
-        mouth.point(pos(tooth,51+wobble),fill=line)
-    mouth.line([pos(32,53+wobble),pos(31,55+wobble)],fill=line,width=1)
-    mouth.point(pos(36,54+wobble),fill=line)
-    if phase==2:
-        mouth.point(pos(43,53+wobble),fill=rose_shadow)
-    if phase==3:
-        mouth.point(pos(30,52+wobble),fill=line)
+    wobble=(0,0,1,0)[phase]
+    polygon(mouth,[(29,51+wobble),(31,49+wobble),
+                   (35,48+wobble),(39,48+wobble),
+                   (43,50+wobble),(43,52+wobble),
+                   (41,54+wobble),(39,53+wobble),
+                   (37,52+wobble),(32,52+wobble)],edge)
+    polygon(mouth,[(38,50+wobble),(42,50+wobble),
+                   (42,52+wobble),(41,53+wobble),
+                   (39,52+wobble)],dark)
+    polygon(mouth,[(31,50+wobble),(34,49+wobble),
+                   (38,49+wobble),(41,50+wobble),
+                   (41,51+wobble),(38,51+wobble),
+                   (32,51+wobble)],ivory)
+    mouth.line([point(33,52+wobble),point(32,54+wobble)],fill=edge,width=1)
+    mouth.point(point(36,53+wobble),fill=edge)
 
-    # Replace only the independently composed face marks: body, skin,
-    # outfit, scalp, and 32,100 pivot remain the actor's own source.
     layers["brows"]=Image.new("RGBA",FRAME)
     combined=Image.new("RGBA",FRAME)
     for part in ("blush","eyes","mouth"):
         combined.alpha_composite(parts[part])
     layers["face"]=combined
     return layers,parts
-
