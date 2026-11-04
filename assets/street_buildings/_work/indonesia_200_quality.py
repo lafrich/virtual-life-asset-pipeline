@@ -122,7 +122,7 @@ def vehicle(L,s):
   if k=='sepeda':
    wheel(L,.3,D*.53,.30);wheel(L,W-.3,D*.53,.30)
    box(L,.5,.52,W-.5,D*.53,38,42,'WOOD')
-  return
+  return True
  if k in ('becak','bentor'):
   bike(L,.65,W-.33,D*.65,'RED',rider=k=='bentor',cart=False)
   wheel(L,.39,D*.18,.21)
@@ -133,7 +133,7 @@ def vehicle(L,s):
   # front-facing curved seat, owner behind.
   box(L,.3,.14,.95,D*.36,60,84,'DARK')
   if k=='becak':human(L,W*.69,D*.6,22,'BLUE','CREAM')
-  return
+  return True
  if k=='andong':
   # identifiable carriage + horse in front (not generic pickup body).
   wheel(L,.43,D*.61,.38);wheel(L,W*.51,D*.61,.38)
@@ -148,7 +148,7 @@ def vehicle(L,s):
   box(L,W*.84,D*.49,W-.15,D*.59,81,117,'WOOD')
   ball(L,W-.16,D*.5,112,.18,14,'WOOD')
   box(L,W*.48,D*.42,W*.9,D*.48,52,55,'DARK')
-  return
+  return True
  # 4-wheeled vehicles: lowered chassis, proper cab/windshield/wheels, rear body.
  for xx in (.56,W-.63):
   for yy in (D*.26,D*.81):
