@@ -198,6 +198,79 @@ def warp_posture_layers(layers:dict,kind:str,direction:str,frame:int)->dict:
 
 
 
+
+def repair_female_chest_voids(sprite:Image.Image,torso_layer:Image.Image,
+                              pants_top:int)->Image.Image:
+    """Close tiny original three-pixel bust voids without widening body.
+
+    The inherited native female torso contains two transparent nipple-shaped
+    cavities, EVEN FROM THE BACK. Those look like dark rings, and tint masks
+    cannot cover the empty pixels. Only fill small fully enclosed holes inside
+    the moving chest; do not touch the exterior silhouette or other actors.
+    """
+    pixels=np.asarray(sprite.convert("RGBA")).copy()
+    torso=np.asarray(torso_layer.convert("RGBA"))[...,3]>=128
+    rows=np.flatnonzero(np.sum(torso,axis=1)>=6)
+    rows=rows[(rows>=BODY_START_Y)&(rows<99)]
+    if len(rows)<8:return sprite.copy()
+    top=int(rows[0])
+    middle=int(rows[len(rows)//2])
+    cols=np.nonzero(torso[max(0,middle-1):min(112,middle+2)])[1]
+    if len(cols)<5:return sprite.copy()
+    cx=int(round(float(np.median(cols))))
+    x0=max(2,cx-13)
+    x1=min(62,cx+14)
+    y0=max(BODY_START_Y+3,top+4)
+    y1=min(99,int(pants_top)+6,top+30)
+    if x1-x0<14 or y1-y0<8:return sprite.copy()
+    transparent=pixels[...,3]==0
+    seen=np.zeros(FRAME[::-1],dtype=np.bool_)
+    for sy in range(y0+1,y1-1):
+        for sx in range(x0+1,x1-1):
+            if not transparent[sy,sx] or seen[sy,sx]:continue
+            stack=[(sx,sy)]
+            component=[]
+            border=False
+            while stack:
+                x,y=stack.pop()
+                if x<x0 or x>=x1 or y<y0 or y>=y1:
+                    border=True
+                    continue
+                if seen[y,x] or not transparent[y,x]:continue
+                seen[y,x]=True
+                component.append((x,y))
+                if x in (x0,x1-1) or y in (y0,y1-1):
+                    border=True
+                if len(component)>10:
+                    border=True
+                    break
+                stack.extend(((x+1,y),(x-1,y),(x,y+1),(x,y-1)))
+            if border or not 1<=len(component)<=6:continue
+            mean_x=sum(x for x,y in component)/len(component)
+            if not 3<=abs(mean_x-cx)<=10:continue
+            # Reuse a real native skin pixel from the surrounding body.
+            swatches=[]
+            for x,y in component:
+                for yy in range(max(0,y-3),min(112,y+4)):
+                    for xx in range(max(0,x-3),min(64,x+4)):
+                        if pixels[yy,xx,3]==255 and pixels[yy,xx,0]>=190:
+                            swatches.append(tuple(int(c) for c in pixels[yy,xx,:3]))
+            if not swatches:continue
+            skin=max(set(swatches),key=swatches.count)
+            for x,y in component:
+                pixels[y,x]=(*skin,255)
+            # Clear the dark donut left around the former transparent hole;
+            # keep the ordinary outer body outline by requiring all
+            # 4-neighbour pixels to be opaque AFTER the cavity is repaired.
+            for x,y in component:
+                for yy in range(max(1,y-1),min(111,y+2)):
+                    for xx in range(max(1,x-1),min(63,x+2)):
+                        if (pixels[yy,xx,3]==255 and pixels[yy,xx,0]<190 and
+                            pixels[yy-1,xx,3]==255 and pixels[yy+1,xx,3]==255 and
+                            pixels[yy,xx-1,3]==255 and pixels[yy,xx+1,3]==255):
+                            pixels[yy,xx,:3]=skin
+    return Image.fromarray(pixels,"RGBA")
+
 def shade_human_surface(sprite:Image.Image,gender:str,direction:str,
                         torso_layer:Image.Image,pelvis_layer:Image.Image,
                         skin_shade:tuple[int,int,int],
@@ -489,6 +562,11 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                             "shoes_over","rips","shirt","arm_near",
                             "body_front","face","hair_front","brows"):
                     if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
+            # Repair the original female bust cut-outs. They were visible
+            # as transparent nipple holes even in the REAR view. Keep the
+            # outside silhouette/rig and all outfit masks unchanged.
+            if gender=="female" and not lying:
+                result=repair_female_chest_voids(result,layers["shirt"],pants_top)
             # Native body geometry stays intact; outline only the exterior
             # pixels of the assembled native skin-toned mannequin.
             result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))
