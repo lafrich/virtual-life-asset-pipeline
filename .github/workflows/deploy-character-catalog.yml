@@ -39,6 +39,8 @@ on:
       - "tests/test_action_editor_interactions.cjs"
       - "tests/test_universal_sleep_published.py"
       - "tests/test_player_action_database.cjs"
+      - "site/universal-motion-runtime.js"
+      - "tests/test_universal_motion_runtime.cjs"
       - "tests/test_desktop_layout.cjs"
       - "tools/build_character_catalog.py"
       - "tools/build_rig_studio.py"
@@ -112,6 +114,8 @@ jobs:
           node --check site/app.js
           node tests/test_desktop_layout.cjs
           node --check site/animations.js
+          node --check site/universal-motion-runtime.js
+          node --test tests/test_universal_motion_runtime.cjs
           node --check site/pixel-edit-core.js
           node --check site/pixel-editor.js
           node --check site/accessory-editor.js
@@ -190,6 +194,7 @@ jobs:
           test -s _site/index.html
           test -s _site/style.css
           test -s _site/app.js
+          test -s _site/universal-motion-runtime.js
           test -s _site/catalog.json
           test -s _site/pixel-editor.html
           test -s _site/accessory-editor.html
