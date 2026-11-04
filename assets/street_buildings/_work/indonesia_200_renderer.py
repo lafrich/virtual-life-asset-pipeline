@@ -9,6 +9,7 @@ import json, math
 from pathlib import Path
 from lib import asset, bshadow, roof_flat, Tex, REG
 from indonesia_200_details import special
+from indonesia_200_quality import render as quality_render
 
 SPEC_PATH=Path('assets/street_buildings/_work/indonesia_200_specs.json')
 SPECS=json.loads(SPEC_PATH.read_text(encoding='utf-8'))['items']
@@ -305,6 +306,10 @@ def draw_structure(L,s):
   if a+.3<W:safe_box(L,a,.17,a+.28,.31,22,48,'WOOD',2)
 
 def draw(L,s):
+ # Quality gate: NO legacy faceless-cube fallback for the 200-asset pack.
+ # Every asset must have a recognizable authored v2 recipe.
+ if quality_render(L,s):return
+ raise ValueError('Missing Indonesia 200 quality-v2 authored recipe: '+s['id'])
  if special(L,s):return
  cat=s['category'];kind=s['kind']
  if cat=='transport':draw_vehicle(L,s)
