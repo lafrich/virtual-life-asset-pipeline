@@ -114,8 +114,8 @@ def vehicle(L,s):
         'pickup':'CREAM','truck':'TERRA','bus':'RED','van':'WHITE',
         'andong':'WOOD'}.get(k,'BLUE')
  if k in ('motor','sepeda'):
-  bike(L,m=color,rider=k=='motor' or 'tukang' in name,
-       passenger='penumpang' in name,cart='roti' in name)
+  bike(L,m=color,rider=False,
+       passenger=False,cart='roti' in name)
   if 'box' in name or 'kurir' in name or 'delivery' in name:
    box(L,.05,.12,.64,D-.13,48,82,'RED')
    board(L,'ANTAR',60,'RED')
@@ -124,7 +124,7 @@ def vehicle(L,s):
    box(L,.5,.52,W-.5,D*.53,38,42,'WOOD')
   return True
  if k in ('becak','bentor'):
-  bike(L,.65,W-.33,D*.65,'RED',rider=k=='bentor',cart=False)
+  bike(L,.65,W-.33,D*.65,'RED',rider=False,cart=False)
   wheel(L,.39,D*.18,.21)
   box(L,.14,.12,1.14,D*.74,24,57,'CREAM')
   box(L,.16,.12,1.14,D*.74,56,63,'WOOD')
@@ -132,7 +132,7 @@ def vehicle(L,s):
   for xx in (.15,1.1):pole(L,xx,D*.2,89,.05,'WOOD')
   # front-facing curved seat, owner behind.
   box(L,.3,.14,.95,D*.36,60,84,'DARK')
-  if k=='becak':human(L,W*.69,D*.6,22,'BLUE','CREAM')
+  # Driver and passengers are now separate live Mahluk Hidup NPC rigs.
   return True
  if k=='andong':
   # identifiable carriage + horse in front (not generic pickup body).
