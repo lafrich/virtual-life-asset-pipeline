@@ -11,8 +11,9 @@ const human={id:"human_female_base",sheet:"media/female.png",
 const legacy={id:"legacy_only",sheet:"",poster:"media/legacy.png",
  motions:[{id:"actor_special",source:"custom",sheet:"media/legacy-special.png",
   available:true,frames:4}]};
-const entries=[...registry,{id:"actor_special",label:"SPECIAL",category:"social"}];
-test("same 204 actions on native, female and archive actors",()=>{
+const entries=[...registry,{id:"actor_special",label:"SPECIAL",category:"social"},
+ {id:"bathe",label:"BATHE",category:"hygiene"}];
+test("same canonical union on native, female and archive actors",()=>{
  assert.equal(registry.length,203);
  const panels=[native,human,legacy].map(a=>U.catalogFor(a,entries));
  for(const p of panels){
