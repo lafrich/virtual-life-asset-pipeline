@@ -1,0 +1,120 @@
+{
+  "style": "Kebon Sirih, Menteng, Jakarta Pusat \u2014 2026 urban pixel streetscape",
+  "revision": 1,
+  "projection": "flat seamless per-world-cell albedo for Three.js orthographic 2:1 projection",
+  "pixels_per_cell": 64,
+  "authoring": "native Python Pillow 1x deterministic material sprites, nearest-neighbor no mipmap",
+  "source": "Virtual Life Asset Pipeline",
+  "tiles": {
+    "road_asphalt": {
+      "file": "terrain/road_asphalt.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "road_concrete": {
+      "file": "terrain/road_concrete.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "sidewalk": {
+      "file": "terrain/sidewalk.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "sidewalk_edge_n": {
+      "file": "terrain/sidewalk_edge_n.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "sidewalk_edge_e": {
+      "file": "terrain/sidewalk_edge_e.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "sidewalk_edge_s": {
+      "file": "terrain/sidewalk_edge_s.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "sidewalk_edge_w": {
+      "file": "terrain/sidewalk_edge_w.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "plaza": {
+      "file": "terrain/plaza.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "grass": {
+      "file": "terrain/grass.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "soil": {
+      "file": "terrain/soil.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "water": {
+      "file": "terrain/water.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    }
+  }
+}
