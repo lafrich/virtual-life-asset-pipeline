@@ -30,7 +30,7 @@ def build_astrofrich(root:Path,media:Path)->dict:
             rgba=np.asarray(source).copy()
             standing_shadow=(rgba[...,3]==56)&np.all(rgba[...,:3]==0,axis=2)
             rgba[standing_shadow]=0
-            flat=theta.base6.lv.lie_flat(
+            flat=theta.base6.lv.lie_preserve_head(
                 {"figure":Image.fromarray(rgba,"RGBA")},base,"lie")
             result=Image.new("RGBA",FRAME)
             result.alpha_composite(flat["shadow"])
