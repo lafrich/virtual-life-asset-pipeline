@@ -3,10 +3,10 @@ const assert=require("node:assert/strict"),fs=require("node:fs");
 const db=JSON.parse(fs.readFileSync("assets/animation_library/expression_contexts.json","utf8"));
 const E=require("../site/expression-context.js");
 assert.equal(E.validate(db),true);
-assert.equal(db.gallery.length,9);
+assert.equal(db.gallery.length,10);
 const counts={walk:6,idle:4,sit:4,sit_type:4,sleep_seat:4,nap_stand:4,
  talk:4,lie:4,bathe:4,bathtub_bathe:6,
- squat_idle:4,bent_over_idle:4,lie_idle:4};
+ squat_idle:4,squat_down:6,squat_up:6,knee_chest_idle:4,bent_over_idle:4,lie_idle:4};
 for(const [id,n]of Object.entries(counts)){
  assert.equal(E.track(db,id).length,n,id);
  assert.equal(E.at(db,id,n),E.at(db,id,0),id+" face sequence wraps");
@@ -17,6 +17,9 @@ assert.equal(E.at(db,"cry",1),"sad");
 assert.equal(E.at(db,"squat_idle",2),"blink");
 assert.equal(E.at(db,"bent_over_idle",3),"embarrassed");
 assert.equal(E.at(db,"lie_idle",0),"sleepy");
+assert.equal(E.at(db,"knee_chest_idle",3),"bleh");
+assert.equal(E.at(db,"tease",2),"bleh");
+assert.equal(E.at(db,"squat_down",5),"smile");
 assert.equal(E.at(db,"fart",1),"embarrassed");
 assert.equal(E.at(db,"bathe",2),"happy");
 assert.equal(E.playbackFace(db,{id:"walk"},2,
