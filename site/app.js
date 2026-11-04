@@ -390,8 +390,14 @@ function readAccessoryJson(key,fallback){
 }
 function refreshAccessoryEquipment(){
  const stored=readAccessoryJson(ACCESSORY_STORE,[]);
- accessoryRuntime.items=Array.isArray(stored)?stored.filter(x=>x&&typeof x.id==="string"&&
-  (x.category==="helmet"||x.category==="bag")&&x.frames):[];
+ // Human modular equipment was silently discarded here: only helmet/bag
+ // survived validation even though the editor already exports shirt/pants/shoes.
+ // Read the exact supported slot set for both generic and Human characters.
+ accessoryRuntime.items=Array.isArray(stored)?stored.filter(x=>x&&
+  typeof x.id==="string"&&
+  ["helmet","bag","shirt","pants","shoes"].includes(x.category)&&
+  x.frames&&typeof x.frames==="object"&&
+  ["se","sw","ne","nw"].every(d=>typeof x.frames[d]==="string")):[];
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
  accessoryRuntime.equipment=equipment&&typeof equipment==="object"?equipment:{};
  renderAccessoryStorage();
