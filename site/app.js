@@ -908,7 +908,10 @@ function draw() {
     }
     return;
   }
-  drawEquippedAccessory(x,y,z,d,"back");
+  const nativeBath=state.mode==="action"&&state.motion?.id==="bathtub_bathe";
+  // A reclining bath uses the character's own LIE, never standing outfit
+  // equipment. The prop hides the lower body in Bangun Ruang/Semesta.
+  if(!nativeBath)drawEquippedAccessory(x,y,z,d,"back");
   if(state.mode==="action"&&state.motion?.source==="procedural"){
     const src=state.motion.prototype?.sheet!==state.selected.sheet?
       state.motionImage:state.image;
@@ -918,7 +921,12 @@ function draw() {
       ctx.fillStyle="#173b85";ctx.font="bold 11px monospace";
       ctx.fillText("LOADING ACTOR PREVIEW",x,y+56*z);
     }
-    drawEquippedAccessory(x,y,z,d);return;
+    if(done&&nativeBath)UNIVERSAL_BODY?.drawBathFoam(ctx,{
+      x,y,scale:z,frame:state.frame,
+      direction:["se","sw","ne","nw"][d]
+    });
+    if(!nativeBath)drawEquippedAccessory(x,y,z,d);
+    return;
   }
   if (state.image?.complete && state.image.naturalWidth) {
     if (state.mode === "face") {
@@ -978,7 +986,11 @@ function draw() {
       }
     }
   }
-  drawEquippedAccessory(x,y,z,d);
+  if(nativeBath){
+    if(state.motion?.source!=="custom")
+      UNIVERSAL_BODY?.drawBathFoam(ctx,{x,y,scale:z,frame:state.frame,
+        direction:["se","sw","ne","nw"][d]});
+  }else drawEquippedAccessory(x,y,z,d);
 }
 
 function tick(time) {
