@@ -2745,27 +2745,17 @@
     {
       "id": "bathtub_bathe",
       "label": "BATHTUB BATHE",
-      "type": "planned",
-      "status": "planned",
-      "modality": "body",
-      "frames": 6,
-      "frame_ms": [
-        320,
-        340,
-        360,
-        350,
-        340,
-        330
-      ],
-      "loop": true,
       "category": "hygiene",
-      "priority": "P0",
       "batch": 1,
+      "priority": "P1",
+      "status": "planned",
+      "type": "planned",
       "phases": [
         "enter",
         "loop",
         "exit"
       ],
+      "loop": true,
       "requirements": [
         "bathtub"
       ],
@@ -2785,8 +2775,11 @@
         32,
         100
       ],
-      "needs_rig": true,
-      "notes": "Shared action ID: male/female have authored 6-frame awake reclined foam sheets; other actors use labelled own-rig preview until authored."
+      "notes": "Globally planned until all actors have approved 4-view sprites; Human Male/Female have authored 6-frame reclined, awake foam sheets.",
+      "modality": "body",
+      "frames": 0,
+      "frame_ms": [],
+      "needs_rig": true
     },
     {
       "id": "change_clothes",
