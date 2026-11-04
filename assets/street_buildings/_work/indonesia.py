@@ -304,7 +304,9 @@ def rambu(L):
 # Register the Indonesia expansion with the SAME native renderer and registry.
 # Keeping it in a separate module preserves every original approved asset.
 from indonesia_extra import PACK as EXTRA_PACK
+from indonesia_more import PACK as MORE_PACK
 PACK.extend(EXTRA_PACK)
+PACK.extend(MORE_PACK)
 
 def publish():
     root=Path('assets/street_buildings')
