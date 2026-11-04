@@ -256,7 +256,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
     results=[]
     for gender,cfg in palettes.items():
         name=f"human-{gender}-base"
-        def frame(direction:str,kind:str,index:int,expression:str|None=None):
+        def frame(direction:str,kind:str,index:int,expression:str|None=None,material_sink:dict|None=None):
             anim=("sleep" if kind=="sleep_seat" else
                   "tired" if kind=="nap_stand" else
                   "sit" if kind=="squat_idle" else
@@ -309,6 +309,11 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 mirror=direction in ("sw","nw")
                 layers={k:(v.transpose(Image.Transpose.FLIP_LEFT_RIGHT) if mirror else v)
                         for k,v in flattened.items()}
+            if material_sink is not None:
+                # Rig-accurate shirt/trouser stencils travel with the FULL
+                # posed silhouette. No standing garment pasted on a squat/lie.
+                for slot in ("shirt","pants"):
+                    material_sink[slot]=layers.get(slot,Image.new("RGBA",FRAME)).copy()
             result=Image.new("RGBA",FRAME)
             if lying and "shadow" in layers:result.alpha_composite(layers["shadow"])
             for key in ("hair_back","body","arm_far","shoes","pants","shoes_over",
@@ -430,11 +435,19 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 tuple(pal.get("Ki",(223,181,147))))
             assert result.size==FRAME
             return result
-        def make_sheet(kind,count,expression=None,blink=False,sequence=None):
+        def make_sheet(kind,count,expression=None,blink=False,sequence=None,save_outfit_masks=False):
             img=Image.new("RGBA",(count*64,4*112))
+            stencils={slot:Image.new("RGBA",img.size) for slot in ("shirt","pants")} if save_outfit_masks else None
             for y,d in enumerate(DIRECTIONS):
                 for x in range(count):
-                    pose=frame(d,kind,x,sequence[x%len(sequence)] if sequence else expression)
+                    current_materials={} if save_outfit_masks else None
+                    pose=frame(d,kind,x,
+                        sequence[x%len(sequence)] if sequence else expression,
+                        material_sink=current_materials)
+                    if stencils is not None:
+                        for slot in stencils:
+                            stencils[slot].alpha_composite(
+                                current_materials[slot],(x*64,y*112))
                     if blink and d in ("se","sw") and expression not in ("sleepy","blink") and x==(3 if kind=="walk" else 2):
                         # Same-pose sleepy eyelids, so the blink follows the
                         # breathing/walking head without replacing the mouth.
@@ -442,10 +455,14 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                         closed=frame(d,kind,x,"blink")
                         pose.paste(closed.crop(eyes),eyes[:2])
                     img.alpha_composite(pose,(x*64,y*112))
+            if stencils is not None:
+                for slot,material in stencils.items():
+                    material.save(media/f"{name}-outfit-{kind}-{slot}.png",
+                                  optimize=True)
             return img
         sheet=Image.new("RGBA",(384,44*112))
         for kind,row in (("walk",0),("idle",4)):
-            source=make_sheet(kind,MOTIONS[kind])
+            source=make_sheet(kind,MOTIONS[kind],save_outfit_masks=True)
             for d in range(4):
                 crop=source.crop((0,d*112,source.width,(d+1)*112))
                 sheet.alpha_composite(crop,(0,(row+d)*112))
@@ -467,10 +484,13 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             if kind in ("walk","idle"):
                 motions.append({"id":kind,"name":kind.upper(),"category":"basic","source":"native",
                     "row":0 if kind=="walk" else 4,"available":True,"frames":count,
-                    "frame_ms":[150 if kind=="walk" else 270]*count,"loop":True,"reason":""})
+                    "frame_ms":[150 if kind=="walk" else 270]*count,"loop":True,
+                    "outfit_masks":{slot:f"media/{name}-outfit-{kind}-{slot}.png"
+                                    for slot in ("shirt","pants")},
+                    "reason":""})
             else:
                 fn=f"{name}-action-{kind}.png"
-                make_sheet(kind,count).save(media/fn,optimize=True)
+                make_sheet(kind,count,save_outfit_masks=True).save(media/fn,optimize=True)
                 motions.append({"id":kind,"name":kind.replace("_"," ").upper(),
                     "category":"posture" if kind in POSTURE_FRAME_MS else "action",
                     "source":"custom","sheet":"media/"+fn,"row":0,"available":True,
@@ -480,6 +500,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                     "loop":kind in ("sit","sleep_seat","nap_stand","talk","sit_type","lie",
                                     "bathe","bathtub_bathe",*POSTURE_FRAME_MS),
                     "posture":kind if kind in POSTURE_FRAME_MS else None,
+                    "outfit_masks":{slot:f"media/{name}-outfit-{kind}-{slot}.png"
+                                    for slot in ("shirt","pants")},
                     "reason":""})
         expressions=[]
         for expr in EXPRS:
