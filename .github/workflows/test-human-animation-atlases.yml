@@ -13,7 +13,6 @@ on:
       - "tests/test_action_appearance.cjs"
       - "assets/npc_preview_v2/base6.py"
       - "chars-iso/v6b/tools/**"
-  workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
