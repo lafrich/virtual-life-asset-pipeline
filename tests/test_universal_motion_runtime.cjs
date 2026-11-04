@@ -74,13 +74,13 @@ test("shared search UI and canonical registry are loaded",()=>{
 });
 
 test("unrigged actors cannot fake squat, bent over or reclining idle",()=>{
- const defs=["squat_idle","bent_over_idle","lie_idle"].map(id=>
+ const defs=["squat_idle","squat_down","squat_up","knee_chest_idle","bent_over_idle","lie_idle"].map(id=>
   ({id,label:id.toUpperCase(),category:"posture"}));
  const none=U.catalogFor(native,defs).filter(p=>defs.some(d=>d.id===p.id));
  assert.ok(none.every(p=>p.playback==="reference"));
  const female=U.catalogFor({...human,motions:[
   ...human.motions,...defs.map(d=>({id:d.id,source:"custom",available:true,
-   sheet:"media/female-"+d.id+".png",frames:4}))]},defs)
+   sheet:"media/female-"+d.id+".png",frames:d.id==="squat_up"||d.id==="squat_down"?6:4}))]},defs)
   .filter(p=>defs.some(d=>d.id===p.id));
- assert.ok(female.every(p=>p.playback==="authored"&&p.frames===4));
+ assert.ok(female.every(p=>p.playback==="authored"&&p.frames===(["squat_down","squat_up"].includes(p.id)?6:4)));
 });
