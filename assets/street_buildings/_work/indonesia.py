@@ -301,6 +301,11 @@ def rambu(L):
           front=lambda w,h:Tex(w,h,'YEL',3).text(w//2,10,'SD','DARK',1))
     L.s.ellipse_shadow(c,r,8,3,dx=2)
 
+# Register the Indonesia expansion with the SAME native renderer and registry.
+# Keeping it in a separate module preserves every original approved asset.
+from indonesia_extra import PACK as EXTRA_PACK
+PACK.extend(EXTRA_PACK)
+
 def publish():
     root=Path('assets/street_buildings')
     entries=[]
@@ -309,7 +314,7 @@ def publish():
         entry=dict(id=name,file='pipeline:'+name,label=label,group=spec['group'],
                    source='pipeline-street',country='ID',pack='indonesia-v1',note=spec.get('note',''),
                    category=category,footprint=[spec['W'],spec['D']],
-                   collision=category=='building',published=True,variants={})
+                   collision=category in ('building','plant'),objectCategory=('plant' if category=='plant' else None),published=True,variants={})
         for ori in spec['oris']:
             img,glow,piv,_=build(name,ori)
             out=root/GROUPDIR[spec['group']]/(name+'_'+ori+'.png')
