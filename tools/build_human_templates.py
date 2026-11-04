@@ -369,11 +369,11 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 tuple(pal.get("Ki",(223,181,147))))
             assert result.size==FRAME
             return result
-        def make_sheet(kind,count,expression=None,blink=False):
+        def make_sheet(kind,count,expression=None,blink=False,sequence=None):
             img=Image.new("RGBA",(count*64,4*112))
             for y,d in enumerate(DIRECTIONS):
                 for x in range(count):
-                    pose=frame(d,kind,x,expression)
+                    pose=frame(d,kind,x,sequence[x%len(sequence)] if sequence else expression)
                     if blink and d in ("se","sw") and expression not in ("sleepy","blink") and x==(3 if kind=="walk" else 2):
                         # Same-pose sleepy eyelids, so the blink follows the
                         # breathing/walking head without replacing the mouth.
@@ -398,6 +398,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
         walk_frames=[frame("se","walk",i).resize((192,336),Image.Resampling.NEAREST) for i in range(6)]
         walk_frames[0].save(media/f"{name}-walk.gif",save_all=True,append_images=walk_frames[1:],
                             duration=150,loop=0,disposal=2)
+        # Context-specific facial track for WC, separate from the 10 core motions.
+        make_sheet("sit",4,sequence=EXPRESSION_CONTEXTS["gameplay"]["use_toilet"]).save(
+            media/f"{name}-action-toilet.png",optimize=True)
         motions=[]
         for kind,count in MOTIONS.items():
             if kind in ("walk","idle"):
