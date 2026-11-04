@@ -26,6 +26,9 @@ on:
       - "assets/**"
       - "site/**"
       - "tools/build_human_templates.py"
+      - "site/universal-body-actions.js"
+      - "tests/test_universal_body_actions.cjs"
+      - "tests/test_hygiene_published.py"
       - "tools/build_astrofrich.py"
       - "tests/test_universal_sleep.cjs"
       - "tests/test_universal_sleep_geometry.py"
@@ -116,6 +119,8 @@ jobs:
           node --check site/action-frame-bridge.js
           node --check site/action-template-bridge.js
           node --check site/action-appearance-bridge.js
+          node --check site/universal-body-actions.js
+          node tests/test_universal_body_actions.cjs
           node --check site/universal-sleep.js
           node tests/test_universal_sleep.cjs
           node tests/test_universal_sleep_tabs.cjs
@@ -161,6 +166,7 @@ jobs:
           python -m unittest discover -s tests -p "test_sleep_head_preservation.py" -v
           python tests/test_universal_sleep_geometry.py
           python tests/test_universal_sleep_published.py
+          python tests/test_hygiene_published.py
       - name: Render original street vehicles for Semesta
         run: |
           # Same authored sprite pipeline as Mahluk Hidup, not a Semesta proxy.
@@ -201,7 +207,7 @@ jobs:
           test -s _site/media/human-female-base-sheet.png
           test -s _site/media/human-male-base-guide.png
           test -s _site/media/human-female-base-guide.png
-          python -c 'from PIL import Image; import json; from pathlib import Path; data=json.loads(Path("_site/catalog.json").read_text()); ids={c["id"] for c in data["characters"]}; assert "legacy_otis" not in ids and "otis" not in ids; bases=[c for c in data["characters"] if c.get("template_category")=="human"]; assert {c["id"] for c in bases}=={"human_male_base","human_female_base"}; assert all(len(c["expressions"])==5 and len([m for m in c["motions"] if m["available"]])==8 for c in bases); assert all(Image.open("_site/media/human-"+g+"-base-guide.png").size==(256,112) for g in ("male","female")); print("Otis retired, Human Male and Female full modular sprite atlases valid")'
+          python -c 'from PIL import Image; import json; from pathlib import Path; data=json.loads(Path("_site/catalog.json").read_text()); ids={c["id"] for c in data["characters"]}; assert "legacy_otis" not in ids and "otis" not in ids; bases=[c for c in data["characters"] if c.get("template_category")=="human"]; assert {c["id"] for c in bases}=={"human_male_base","human_female_base"}; assert all(len(c["expressions"])==5 and len([m for m in c["motions"] if m["available"]])==9 for c in bases); assert all(Image.open("_site/media/human-"+g+"-base-guide.png").size==(256,112) for g in ("male","female")); print("Otis retired, Human Male and Female full modular sprite atlases valid")'
           test -s _site/media/astrofrich-base-thumb.png
           test -s _site/media/astrofrich-base-expression-happy.png
           test -s _site/media/astrofrich-base-action-sit_type.png
