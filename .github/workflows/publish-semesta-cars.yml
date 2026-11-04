@@ -1,0 +1,84 @@
+name: Publish Semesta Cars + TransJakarta — Native PNGs
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "assets/street_vehicles/_work/car_defs.py"
+      - "assets/street_vehicles/_work/cars.py"
+      - "assets/street_vehicles/_work/produce.py"
+      - ".github/workflows/publish-semesta-cars.yml"
+permissions:
+  contents: write
+concurrency:
+  group: semesta-cars-native
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install original v6b pixel renderer
+        run: python -m pip install --disable-pip-version-check numpy pillow
+      - name: Render all original car variants including TransJakarta
+        working-directory: assets/street_vehicles/_work
+        run: python produce.py
+      - name: Verify real 4-view sprites against Semesta catalog geometry
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          from PIL import Image,ImageDraw
+          root=pathlib.Path('assets/street_vehicles')
+          manifest=json.loads((root/'manifest.json').read_text())
+          names=['sedan_red','sedan_teal','hatchback_orange','mpv_silver',
+                 'taxi_bluebird','van_cream','bus_transjakarta']
+          # Semesta's existing catalog dimensions MUST be preserved.
+          dimensions={
+            'sedan_red':(146,138),'sedan_teal':(146,138),
+            'hatchback_orange':(136,132),'mpv_silver':(152,144),
+            'taxi_bluebird':(152,148),'van_cream':(162,162),
+            'bus_transjakarta':(272,256)
+          }
+          for n in names:
+              for d in ('se','sw','ne','nw'):
+                  row=manifest['sprites'][n+'_'+d]
+                  path=root/row['file']
+                  assert path.is_file() and row['file']==f'cars/{n}_{d}.png',path
+                  with Image.open(path) as im:
+                      assert im.mode=='RGBA' and im.getchannel('A').getbbox(),path
+                      assert im.size==tuple(row['size'])==dimensions[n],(n,d,im.size,row['size'])
+                      bbox=im.getchannel('A').getbbox()
+                      assert (bbox[2]-bbox[0])>48 and (bbox[3]-bbox[1])>30,(n,d,bbox)
+                  x,y=row['pivot_footprint_centre'];w,h=dimensions[n]
+                  assert 0<=x<=w and 0<y<=h,(n,d)
+          # A reviewable contact sheet using the actual generated PNGs.
+          sheet=Image.new('RGB',(1000,560),(29,38,55))
+          draw=ImageDraw.Draw(sheet)
+          for i,n in enumerate(names):
+              im=Image.open(root/f'cars/{n}_se.png').convert('RGBA')
+              maxw,maxh=(232,215) if n!='bus_transjakarta' else (460,236)
+              scale=min(maxw/im.width,maxh/im.height)
+              im=im.resize((int(im.width*scale),int(im.height*scale)),Image.Resampling.NEAREST)
+              if n=='bus_transjakarta':x,y=485,278
+              else:x,y=(i%4)*245+5,(i//4)*280+6
+              sheet.paste(im,(x,y),im)
+              draw.text((x,y+maxh+10),n,fill=(243,246,251))
+          sheet.save(root/'previews/semesta_cars_original_audit.png')
+          print('Verified 28 genuine original car PNGs including 4-view TransJakarta')
+          PY
+      - name: Publish native 28 car sprites to source repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f assets/street_vehicles/cars/*.png
+          git add -f assets/street_vehicles/previews/semesta_cars_original_audit.png
+          git add assets/street_vehicles/manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish original isometric TransJakarta and six cars for Semesta [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
