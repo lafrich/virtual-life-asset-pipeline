@@ -50,6 +50,8 @@ mat('WATER',R5('#1C2330','#2A3242','#3A4458','#535969','#788197'))
 class Tex:
     """face texture; u left->right, v bottom->top (v=0 is z0)"""
     def __init__(s,W,H,m,t=3):
+        # Heights from curved leaves can be fractional; raster textures need integer dimensions.
+        W,H=max(1,int(round(W))),max(1,int(round(H)))
         s.W,s.H=W,H; s.m=np.full((H,W),MI[m] if isinstance(m,str) else m,np.int16); s.t=np.full((H,W),t,np.int8); s.g=np.zeros((H,W),bool)
     def rect(s,u0,v0,u1,v1,m,t,glow=False):
         u0,u1=max(0,int(u0)),min(s.W,int(u1)); v0,v1=max(0,int(v0)),min(s.H,int(v1))
@@ -141,6 +143,8 @@ class Spr:
         s._put(X_,Y_-z,np.asarray(mm,np.int16),np.asarray(tt,np.int8)+shift,ds,gl,ground)
     def box(s,c0,r0,c1,r1,z0,z1,m,t=3,sw=None,se=None,topf=None,tshift=1,dep=0.0,glow=False):
         c0,r0,c1,r1=q(c0),q(r0),q(c1),q(r1)
+        z0,z1=int(round(z0)),int(round(z1))
+        if z1<=z0:return
         Wsw=s.X(c1,r1)-s.X(c0,r1); Wse=s.X(c1,r0)-s.X(c1,r1); H=z1-z0
         if sw is None: sw=Tex(max(1,Wsw),max(1,H),m,t)
         if se is None: se=Tex(max(1,Wse),max(1,H),m,t)
