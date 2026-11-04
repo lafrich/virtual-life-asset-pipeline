@@ -830,9 +830,9 @@ function draw() {
       const row=(state.motion.source==="custom"?0:state.motion.row||0)+d;
       const frame=state.frame%Math.max(1,state.motion.frames||4);
       if((frame+1)*64<=original.naturalWidth&&(row+1)*112<=original.naturalHeight){
-        drawEquippedAccessory(0,0,1,d,"back",paint);
+        // Mahluk Hidup source head and hair remain; equipped garments,
+        // shoes, bags and helmets are never layered into a bath frame.
         paint.drawImage(original,frame*64,row*112,64,112,0,0,64,112);
-        drawEquippedAccessory(0,0,1,d,"front",paint);
         if(UNIVERSAL_BODY.apply(paint,{actor:state.selected,action:state.motion.id,
              direction:["se","sw","ne","nw"][d],frame,bodyImage:mannequin}))
           ctx.drawImage(off,x,y,64*z,112*z);
