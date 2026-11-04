@@ -2592,35 +2592,35 @@
           "file": "kampung/id200_warung_warteg_etalase_hijau_sw.png",
           "size": [
             242,
-            226
+            242
           ],
           "pivot": [
             112,
-            169
+            186
           ]
         },
         "se": {
           "file": "kampung/id200_warung_warteg_etalase_hijau_se.png",
           "size": [
             242,
-            226
+            242
           ],
           "pivot": [
             111,
-            169
+            186
           ]
         }
       },
       "size": [
         242,
-        226
+        242
       ],
       "pivot": [
         112,
-        169
+        186
       ],
       "width": 4.84,
-      "height": 4.52
+      "height": 4.84
     },
     {
       "id": "id200_warung_warmindo_mie_instan",
@@ -2914,7 +2914,7 @@
           ],
           "pivot": [
             112,
-            169
+            170
           ]
         },
         "se": {
@@ -2925,7 +2925,7 @@
           ],
           "pivot": [
             111,
-            169
+            170
           ]
         }
       },
@@ -2935,7 +2935,7 @@
       ],
       "pivot": [
         112,
-        169
+        170
       ],
       "width": 4.84,
       "height": 4.52
@@ -3016,35 +3016,35 @@
           "file": "kampung/id200_warung_booth_martabak_sw.png",
           "size": [
             242,
-            226
+            236
           ],
           "pivot": [
             112,
-            169
+            180
           ]
         },
         "se": {
           "file": "kampung/id200_warung_booth_martabak_se.png",
           "size": [
             242,
-            226
+            236
           ],
           "pivot": [
             111,
-            169
+            180
           ]
         }
       },
       "size": [
         242,
-        226
+        236
       ],
       "pivot": [
         112,
-        169
+        180
       ],
       "width": 4.84,
-      "height": 4.52
+      "height": 4.72
     },
     {
       "id": "id200_warung_warung_gorengan",
@@ -3122,35 +3122,35 @@
           "file": "kampung/id200_warung_booth_es_teh_dan_jus_sw.png",
           "size": [
             242,
-            226
+            236
           ],
           "pivot": [
             112,
-            169
+            180
           ]
         },
         "se": {
           "file": "kampung/id200_warung_booth_es_teh_dan_jus_se.png",
           "size": [
             242,
-            226
+            236
           ],
           "pivot": [
             111,
-            169
+            180
           ]
         }
       },
       "size": [
         242,
-        226
+        236
       ],
       "pivot": [
         112,
-        169
+        180
       ],
       "width": 4.84,
-      "height": 4.52
+      "height": 4.72
     },
     {
       "id": "id200_warung_kedai_kopi_tubruk",
@@ -3175,35 +3175,35 @@
           "file": "kampung/id200_warung_kedai_kopi_tubruk_sw.png",
           "size": [
             242,
-            226
+            230
           ],
           "pivot": [
             112,
-            169
+            174
           ]
         },
         "se": {
           "file": "kampung/id200_warung_kedai_kopi_tubruk_se.png",
           "size": [
             242,
-            226
+            230
           ],
           "pivot": [
             111,
-            169
+            174
           ]
         }
       },
       "size": [
         242,
-        226
+        230
       ],
       "pivot": [
         112,
-        169
+        174
       ],
       "width": 4.84,
-      "height": 4.52
+      "height": 4.6
     },
     {
       "id": "id200_warung_toko_sembako",
@@ -3387,35 +3387,35 @@
           "file": "kampung/id200_warung_konter_pulsa_dan_hp_sw.png",
           "size": [
             242,
-            226
+            236
           ],
           "pivot": [
             112,
-            169
+            179
           ]
         },
         "se": {
           "file": "kampung/id200_warung_konter_pulsa_dan_hp_se.png",
           "size": [
             242,
-            226
+            222
           ],
           "pivot": [
             111,
-            169
+            165
           ]
         }
       },
       "size": [
         242,
-        226
+        236
       ],
       "pivot": [
         112,
-        169
+        179
       ],
       "width": 4.84,
-      "height": 4.52
+      "height": 4.72
     },
     {
       "id": "id200_warung_tambal_ban_motor",
@@ -3440,35 +3440,35 @@
           "file": "kampung/id200_warung_tambal_ban_motor_sw.png",
           "size": [
             242,
-            226
+            228
           ],
           "pivot": [
             112,
-            169
+            172
           ]
         },
         "se": {
           "file": "kampung/id200_warung_tambal_ban_motor_se.png",
           "size": [
             242,
-            226
+            228
           ],
           "pivot": [
             111,
-            169
+            172
           ]
         }
       },
       "size": [
         242,
-        226
+        228
       ],
       "pivot": [
         112,
-        169
+        172
       ],
       "width": 4.84,
-      "height": 4.52
+      "height": 4.56
     },
     {
       "id": "id200_warung_pangkas_rambut",
@@ -3493,35 +3493,35 @@
           "file": "kampung/id200_warung_pangkas_rambut_sw.png",
           "size": [
             242,
-            226
+            248
           ],
           "pivot": [
             112,
-            169
+            191
           ]
         },
         "se": {
           "file": "kampung/id200_warung_pangkas_rambut_se.png",
           "size": [
             242,
-            226
+            248
           ],
           "pivot": [
             111,
-            169
+            191
           ]
         }
       },
       "size": [
         242,
-        226
+        248
       ],
       "pivot": [
         112,
-        169
+        191
       ],
       "width": 4.84,
-      "height": 4.52
+      "height": 4.96
     },
     {
       "id": "id200_warung_fotokopi_dan_atk",
@@ -3546,35 +3546,35 @@
           "file": "kampung/id200_warung_fotokopi_dan_atk_sw.png",
           "size": [
             242,
-            226
+            246
           ],
           "pivot": [
             112,
-            169
+            190
           ]
         },
         "se": {
           "file": "kampung/id200_warung_fotokopi_dan_atk_se.png",
           "size": [
             242,
-            226
+            246
           ],
           "pivot": [
             111,
-            169
+            190
           ]
         }
       },
       "size": [
         242,
-        226
+        246
       ],
       "pivot": [
         112,
-        169
+        190
       ],
       "width": 4.84,
-      "height": 4.52
+      "height": 4.92
     },
     {
       "id": "id200_warung_apotek_kampung",
