@@ -307,7 +307,7 @@ def publish():
     for name,label,category in PACK:
         spec=REG[name]
         entry=dict(id=name,file='pipeline:'+name,label=label,group=spec['group'],
-                   source='pipeline-street',country='ID',pack='indonesia-v1',
+                   source='pipeline-street',country='ID',pack='indonesia-v1',note=spec.get('note',''),
                    category=category,footprint=[spec['W'],spec['D']],
                    collision=category=='building',published=True,variants={})
         for ori in spec['oris']:
