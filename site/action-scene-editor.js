@@ -432,6 +432,11 @@ function drawFacePatch(target,actor,p,m,frame){
  }
  let dx=17+(p.faceOffsetX||0),dy=30+(p.faceOffsetY||0);
  if(p.motionId==="squat_idle"){dy+=17;}
+ else if(p.motionId==="knee_chest_idle"){dy+=11;}
+ else if(p.motionId==="squat_down"||p.motionId==="squat_up"){
+  const progress=p.motionId==="squat_down"?frame/5:(5-frame)/5;
+  dy+=Math.round(17*progress);
+ }
  else if(p.motionId==="bent_over_idle"){
   dy+=25;dx+=(p.direction==="se"?10:-10);
  }else if(p.motionId==="sit"||p.motionId==="sit_type"){dy+=4;}
