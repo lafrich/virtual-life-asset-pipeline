@@ -271,10 +271,15 @@ def flag(L,a,b,h):
     L.box(a+.07,b,a+.95,b+.07,h-44,h-30,'LITE',4)
 
 @asset('id_bendera_merah_putih','prop',1.5,1,170,oris=('sw','se','ne','nw'),note='red-white Indonesian national flag')
-def bendera(L):flag(L,.2,.55,135)
+def bendera(L):
+    flag(L,.2,.55,135)
+    c,r=L.cr(.75,.5)
+    L.s.ellipse_shadow(c,r,12,5,dx=3)
 
 @asset('id_umbul_umbul','prop',1,1,170,oris=('sw','se','ne','nw'),note='Independence Day red-white vertical pennant')
 def umbul(L):
+    c,r=L.cr(.5,.5)
+    L.s.ellipse_shadow(c,r,12,5,dx=3)
     L.box(.35,.4,.42,.48,0,145,'WOOD',2)
     for i in range(7):
         m='RED' if i%2==0 else 'LITE'
