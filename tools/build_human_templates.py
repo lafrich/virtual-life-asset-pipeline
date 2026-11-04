@@ -197,6 +197,103 @@ def warp_posture_layers(layers:dict,kind:str,direction:str,frame:int)->dict:
     return transformed
 
 
+
+def shade_human_surface(sprite:Image.Image,gender:str,direction:str,
+                        torso_layer:Image.Image,pelvis_layer:Image.Image,
+                        skin_shade:tuple[int,int,int],
+                        skin_mid:tuple[int,int,int],
+                        skin_light:tuple[int,int,int])->Image.Image:
+    """Give the nude adult male/female pixel rig readable body planes.
+
+    Anatomy follows the real *posed* torso/hip masks, not fixed screen
+    coordinates or extra stamped limbs. The 64x112 outline, pivot, original
+    shoulders/hips, garments and separate bones remain pixel identical.
+    Shading is limited to interior pixels and uses native V6B skin tones.
+    """
+    if gender not in ("male","female") or direction not in DIRECTIONS:
+        raise ValueError("Invalid body shading guide")
+    result=sprite.copy()
+    torso=np.asarray(torso_layer.convert("RGBA"))[...,3]>=128
+    pelvis=np.asarray(pelvis_layer.convert("RGBA"))[...,3]>=128
+    rows=np.flatnonzero(np.sum(torso,axis=1)>=8)
+    rows=rows[(rows>=BODY_START_Y+2)&(rows<98)]
+    if len(rows)<9:
+        return result
+    upper=int(rows[0])
+    lower=int(rows[-1])
+    if lower-upper<11:
+        return result
+    # Both views can have a shifted shoulder from the true isometric rig.
+    # Anchor on the narrow central torso, never on a separate arm silhouette.
+    mid_y=int(rows[len(rows)//2])
+    band=torso[max(0,mid_y-2):min(FRAME[1],mid_y+3)]
+    xs=np.nonzero(band)[1]
+    if len(xs)<10:return result
+    cx=int(round(float(np.median(xs))))
+    chest=upper+int(round((lower-upper)*.35))
+    waist=upper+int(round((lower-upper)*.74))
+    hip_rows=np.flatnonzero(np.sum(pelvis,axis=1)>=9)
+    hip_rows=hip_rows[(hip_rows>waist)&(hip_rows<100)]
+    hip_y=int(hip_rows[0])+4 if len(hip_rows) else 0
+    pixels=np.asarray(result.convert("RGBA")).copy()
+
+    def dab(dx:int,y:int,tone:tuple[int,int,int],mask:np.ndarray)->None:
+        x=cx+dx
+        if not (1<=x<63 and BODY_START_Y+3<=y<99):return
+        # 4-neighbour interior test: no dots on silhouette/shoulder socket,
+        # no painting through the gap between two animated legs.
+        if not (mask[y,x] and mask[y-1,x] and mask[y+1,x] and
+                mask[y,x-1] and mask[y,x+1]):return
+        if pixels[y,x,3]!=255:return
+        pixels[y,x,:3]=tone
+
+    back=direction in ("ne","nw")
+    if back:
+        # Shoulder-blade planes taper into a narrow back/waist. These are
+        # not paired circles and never introduce artificial butt outlines.
+        shoulder_marks=((-5,0),(-4,1),(-3,2),(3,2),(4,1),(5,0))
+        for dx,dy in shoulder_marks:
+            dab(dx,chest+dy,skin_mid,torso)
+        dab(0,waist-2,skin_mid,torso)
+        if gender=="male":
+            dab(-3,waist,skin_mid,torso)
+            dab(3,waist,skin_mid,torso)
+        else:
+            dab(-2,waist,skin_mid,torso)
+            dab(2,waist,skin_mid,torso)
+        if hip_y:
+            # Females receive the softer lower-back-to-hip highlight; males
+            # have a more restrained, straighter pelvis read.
+            for dx in ((-3,3) if gender=="female" else (-2,2)):
+                dab(dx,hip_y,skin_mid if gender=="male" else skin_light,pelvis)
+                if gender=="female":
+                    dab(dx,hip_y+1,skin_mid,pelvis)
+    else:
+        if gender=="male":
+            # Compact pectoral lower planes, short sternum and abdomen.
+            # No new shoulder width or freestanding nipple markers.
+            for dx,dy in ((-5,0),(-4,1),(-3,1),(3,1),(4,1),(5,0)):
+                dab(dx,chest+dy,skin_mid,torso)
+            for dx,dy in ((-2,-1),(-1,0),(2,0),(3,-1)):
+                dab(dx,chest+dy,skin_light,torso)
+            dab(1,waist-3,skin_mid,torso)
+            dab(1,waist,skin_shade,torso)
+        else:
+            # Shallow curved volume reads as the chest itself, rather than
+            # the original two isolated high-contrast bust dots.
+            for dx,dy in ((-5,1),(-4,2),(-3,2),(3,2),(4,2),(5,1)):
+                dab(dx,chest+dy,skin_mid,torso)
+            for dx,dy in ((-4,-1),(-3,0),(3,0),(4,-1)):
+                dab(dx,chest+dy,skin_light,torso)
+            dab(0,chest+2,skin_mid,torso)
+            dab(-3,waist-1,skin_mid,torso)
+            dab(3,waist-1,skin_mid,torso)
+            dab(0,waist+1,skin_mid,torso)
+        if hip_y:
+            for dx in (-3,3):
+                dab(dx,hip_y,skin_mid,pelvis)
+    return Image.fromarray(pixels,"RGBA")
+
 def shade_human_anatomy(sprite:Image.Image,gender:str,direction:str,
                         shirt_top:int,pants_top:int,
                         skin_shade:tuple[int,int,int],
@@ -396,6 +493,11 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # pixels of the assembled native skin-toned mannequin.
             result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))
             if not lying:
+                result=shade_human_surface(result,gender,direction,
+                    layers["shirt"],layers["pants"],
+                    tuple(pal.get("Ke",(170,115,87))),
+                    tuple(pal.get("Kh",(206,154,118))),
+                    tuple(pal.get("Ki",(223,181,147))))
                 result=shade_human_anatomy(result,gender,direction,shirt_top,pants_top,
                     tuple(pal.get("Ke",(170,115,87))),tuple(pal.get("Ki",(223,181,147))),
                     pelvis_layer=layers.get("pants"),
