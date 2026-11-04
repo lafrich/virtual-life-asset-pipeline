@@ -29,44 +29,55 @@ def knee_chest_layers(layers:dict,direction:str,frame:int,palette:dict)->dict:
         return layers
     center=int(round(float(np.median(xs))))
     waist=int(np.quantile(ys,.84))
-    center=max(21,min(43,center))
-    waist=max(75,min(94,waist))
+    center=max(23,min(41,center))
+    waist=max(79,min(95,waist))
     bob=(0,1,0,-1)[frame%4]
-    knee_y=max(70,waist-17)+bob
-    # Face-relative left/right knees are individually visible from 4 angles.
+    # The knee caps are now at the LOWER CHEST, not beside the face.
+    knee_y=max(79,min(85,waist-3))+bob
     knee_spread=7 if direction in ("se","sw") else 6
     edge=tuple(palette.get("K7",(119,80,65)))
     mid=tuple(palette.get("Ke",(174,122,96)))
     lit=tuple(palette.get("Ki",(238,191,151)))
     fill=tuple(palette.get("Kh",(206,154,118)))
-    knee_layer=layers.get("pants",Image.new("RGBA",FRAME)).convert("RGBA").copy()
+    # Remove the source SIT-TYPE leg extending out into the air. Author
+    # two genuinely bent shins/feet wrapped below two raised knees instead.
+    knee_layer=Image.new("RGBA",FRAME)
     knees=ImageDraw.Draw(knee_layer)
-    # Slight asymmetric heights match isometric knee depth.
+    for key in ("shoes","shoes_over","rips"):
+        if key in layers:layers[key]=Image.new("RGBA",FRAME)
     front_side=1 if direction in ("se","ne") else -1
     for sign in (-1,1):
         x=center+sign*knee_spread
         y=knee_y+(1 if sign*front_side<0 else -1)
-        # The bent thigh joins each raised knee to the seated pelvis.
-        pelvis=(center+sign*3,waist+1)
-        knees.line((pelvis[0],pelvis[1],x,y+3),fill=edge,width=7)
-        knees.line((pelvis[0],pelvis[1],x,y+3),fill=mid,width=5)
+        pelvis=(center+sign*3,min(94,waist+7))
+        ankle=(center+sign*9,99+(1 if sign*front_side<0 else 0))
+        knees.line((pelvis[0],pelvis[1],x,y+4),fill=edge,width=7)
+        knees.line((pelvis[0],pelvis[1],x,y+4),fill=mid,width=5)
+        knees.line((x,y+3,ankle[0],ankle[1]-2),fill=edge,width=6)
+        knees.line((x,y+3,ankle[0],ankle[1]-2),fill=mid,width=4)
         knees.ellipse((x-4,y-4,x+4,y+5),fill=edge)
         knees.ellipse((x-3,y-3,x+3,y+4),fill=fill)
         knees.line((x-2,y-2,x+1,y-2),fill=lit,width=2)
+        knees.ellipse((ankle[0]-3,ankle[1]-2,
+                       ankle[0]+3,ankle[1]+2),fill=edge)
+        knees.line((ankle[0]-2,ankle[1]-1,
+                    ankle[0]+2,ankle[1]-1),fill=mid,width=2)
     layers["pants"]=knee_layer
-    # Hugging arms cross over the knee tips, without reusing upright hands.
-    left_shoulder=center-11
-    right_shoulder=center+11
-    shoulder_y=max(63,knee_y-11)
-    for key,start_x,side in (("arm_far",left_shoulder,-1),
-                             ("arm_near",right_shoulder,1)):
+    # Folded forearms rest AROUND the knees, with wrists crossing near shins.
+    # Their roots start at actual torso height, never up at the cheeks.
+    shoulder_y=max(70,min(78,knee_y-8))
+    for key,side in (("arm_far",-1),("arm_near",1)):
+        start_x=center+side*11
         arm=Image.new("RGBA",FRAME)
         draw=ImageDraw.Draw(arm)
-        elbow=(start_x+side*2,knee_y+3)
-        wrist=(center+side*4,knee_y+7+(1 if frame%4==2 else 0))
-        draw.line([(start_x,shoulder_y),elbow,wrist],fill=edge,width=5,joint="curve")
-        draw.line([(start_x,shoulder_y),elbow,wrist],fill=mid,width=3,joint="curve")
-        draw.ellipse((wrist[0]-2,wrist[1]-1,wrist[0]+1,wrist[1]+2),fill=lit)
+        elbow=(start_x+side,knee_y+8)
+        wrist=(center+side*3,knee_y+8+(1 if frame%4==2 else 0))
+        draw.line([(start_x,shoulder_y),elbow,wrist],fill=edge,width=5,
+                  joint="curve")
+        draw.line([(start_x,shoulder_y),elbow,wrist],fill=mid,width=3,
+                  joint="curve")
+        draw.ellipse((wrist[0]-2,wrist[1]-2,wrist[0]+1,wrist[1]+1),
+                     fill=lit)
         layers[key]=arm
     return layers
 
