@@ -18,6 +18,9 @@
   return cat==="facial"?"face":"talk";
  }
  function prototype(actor,action){
+  // Archive-only records may carry a placeholder sheet. Do not mistake that
+  // blank asset for an authored four-way character rig.
+  if(["source_only","archive_still"].includes(actor?.asset_status))return null;
   const own=Array.isArray(actor.motions)?actor.motions:[],type=primitive(action);
   const prefs={energetic:["walk","talk","idle"],move:["walk","idle"],
    lie:["lie","sit","idle"],sit:["sit_type","sit","idle"],
