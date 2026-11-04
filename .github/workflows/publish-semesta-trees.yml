@@ -1,0 +1,62 @@
+name: Publish Semesta vegetation sprites
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-semesta-trees.yml"
+      - "assets/vegetation_kebonsirih/_work/species.py"
+      - "assets/vegetation_kebonsirih/_work/veg.py"
+      - "assets/vegetation_kebonsirih/_work/build.py"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: semesta-tree-publisher
+  cancel-in-progress: false
+jobs:
+  publish-trees:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install renderer dependencies
+        run: python -m pip install numpy pillow
+      - name: Render entire species catalog using canonical pixel pipeline
+        run: python assets/vegetation_kebonsirih/_work/build.py
+      - name: Validate sprite metadata, transparency, size and registration
+        run: |
+          python - <<'PY'
+          import json,os
+          from PIL import Image
+          base="assets/vegetation_kebonsirih"
+          m=json.load(open(base+"/manifest.json"))
+          trees={k:v for k,v in m["sprites"].items() if v["group"]=="tree"}
+          assert len(trees)==22, f"Expected 22 tree variants, got {len(trees)}"
+          for name,e in trees.items():
+              fn=base+"/"+e["file"]
+              assert os.path.isfile(fn),fn
+              with Image.open(fn) as im:
+                  im=im.convert("RGBA")
+                  assert tuple(e["size"])==im.size,(name,im.size,e["size"])
+                  assert im.getbbox(),name
+                  assert im.getpixel((0,0))[3]==0,name
+                  px,py=e["pivot"]
+                  assert 0<=px<im.width and 0<=py<im.height,name
+                  assert im.getpixel((px,py-3))[3]>0,(name,"trunk pivot")
+          print("Validated",len(trees),"published tree sprites")
+          PY
+      - name: Publish generated PNGs with their canonical manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/vegetation_kebonsirih/trees/*.png assets/vegetation_kebonsirih/manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Render and publish all 22 Semesta tree variants [skip ci]"
+            git push
+          else
+            echo "Tree asset files already up to date"
+          fi
