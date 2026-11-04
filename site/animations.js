@@ -19,6 +19,7 @@
     const requested = new URLSearchParams(location.search);
     const chosenMotion=typeof state!=="undefined"?state.motion?.id:"";
     const motionAction=["sit","sit_type","toilet"].includes(chosenMotion)?"toilet":
+      chosenMotion==="bathtub_bathe"?"bathtub_bathe":
       ["swim","bathe"].includes(chosenMotion)?"bathe":
       ["sleep","sleep_seat","lie"].includes(chosenMotion)?"sleep":"toilet";
     const actor=extra.actor||requested.get("actor")||
