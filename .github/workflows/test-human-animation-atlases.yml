@@ -1,0 +1,48 @@
+name: Human Male-Female — Fast 80-View Animation QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/test-human-animation-atlases.yml"
+      - "tools/build_human_templates.py"
+      - "tests/test_human_animation_sheets.py"
+      - "assets/npc_preview_v2/base6.py"
+      - "chars-iso/v6b/tools/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-human-atlases:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements.txt
+      - name: Render both adult templates without the heavy NPC archive
+        run: |
+          mkdir -p _site/media
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from tools.build_human_templates import build_human_templates
+          chars=build_human_templates(Path.cwd(),Path("_site/media"))
+          Path("_site/catalog.json").write_text(json.dumps({"characters":chars}))
+          print("Generated",len(chars),"Human base templates")
+          PY
+      - name: Pixel-by-pixel 80-directional-clip verification
+        run: python tests/test_human_animation_sheets.py
+      - name: Publish QA sprite frames for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: human-male-female-80view-qa
+          path: |
+            _site/catalog.json
+            _site/media/human-male-base-*
+            _site/media/human-female-base-*
+          retention-days: 7
