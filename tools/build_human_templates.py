@@ -1,8 +1,8 @@
 """Render distinct adult HUMAN Male/Female modular pixel anatomy.
 
 Preserves 64×112 pivot, original four-way poses, face atlas and independent
-outfit layers. Pixel anatomy is non-explicit: chest, waist, hip, and subtle
-pelvis shading are purely a visual guide for creating clothing.
+outfit layers. Undressed front views use tiny, palette-matched genital pixel
+details; no new silhouette or changes to clothed character layers.
 """
 from __future__ import annotations
 import sys
@@ -63,18 +63,63 @@ def sculpt_human_layers(layers:dict,gender:str)->dict:
 def shade_human_anatomy(sprite:Image.Image,gender:str,direction:str,
                         shirt_top:int,pants_top:int,
                         skin_shade:tuple[int,int,int],
-                        skin_light:tuple[int,int,int])->Image.Image:
-    """Don't stamp explicit pelvis/buttock marks onto the common V6B rig.
+                        skin_light:tuple[int,int,int],
+                        pelvis_layer:Image.Image|None=None,
+                        edge_tone:tuple[int,int,int]|None=None)->Image.Image:
+    """Add restrained adult genital detail to the UNDRESSED Male/Female base.
 
-    The original silhouette and source skin palette already describe the
-    neutral body. The prior paired rear-hip dots and front pelvis V made
-    isolated fake 'butt cheeks' that did not follow native walk/sit poses.
-    Only the regular one-pixel *outer* outline is applied separately.
+    Only front-facing native SE/SW views receive anatomically distinct 1px
+    marks (male shaft/scrotum; female labia/slit). Rear views stay clean.
+    Derive their position from the *posed* trousers/pelvis layer so idle,
+    walk, sit and wash do not use a fixed floating screen coordinate.
+
+    No extra silhouette pixels, new palette colors, head edits, outfit edits
+    or changes to the 64x112 pivot. A missing pelvis layer intentionally
+    keeps this a no-op for callers without a known naked-body template.
     """
     if gender not in ("male","female") or direction not in DIRECTIONS:
         raise ValueError("Invalid anatomy guide")
-    return sprite.copy()
-
+    result=sprite.copy()
+    if pelvis_layer is None or direction in ("ne","nw"):
+        return result
+    pixels=np.asarray(result.convert("RGBA")).copy()
+    pelvis=np.asarray(pelvis_layer.convert("RGBA"))[...,3]>0
+    # In native V6B, trousers begin at the waist; y+7 is the upper crotch,
+    # still part of the shared pelvis before walking legs diverge.
+    y=int(np.clip(int(pants_top)+7,0,FRAME[1]-1))
+    y1=max(0,y-3)
+    y2=min(FRAME[1],y+1)
+    ys,xs=np.nonzero(pelvis[y1:y2])
+    if len(xs)==0:
+        return result
+    cx=int(round(float(np.median(xs))))
+    dark=tuple(edge_tone) if edge_tone is not None else tuple(skin_shade)
+    mid=tuple(skin_shade)
+    light=tuple(skin_light)
+    # Tiny anatomical guide, intentionally subtle at 1x; not a costume,
+    # freestanding object, tattoo, or paired artificial buttock shading.
+    if gender=="male":
+        marks=(
+            (-1,-2,mid),(0,-2,light),        # shaft
+            (-1,-1,dark),(0,-1,mid),
+            (-1,0,dark),(0,0,light),
+            (-2,1,dark),(-1,1,mid),(0,1,mid),(1,1,dark), # scrotum
+            (-1,2,dark),(0,2,dark),
+        )
+    else:
+        marks=(
+            (-1,-2,light),(0,-2,mid),(1,-2,light),
+            (-1,-1,mid),(0,-1,dark),(1,-1,mid),
+            (-1,0,mid),(0,0,dark),(1,0,mid), # labial folds
+            (0,1,mid),
+        )
+    for dx,dy,tone in marks:
+        px,py=cx+dx,y+dy
+        # Recolor only the actual posed upper pelvis. Never bridge a leg
+        # gap, introduce floating marks or paint over transparent space.
+        if 0<=px<FRAME[0] and 0<=py<FRAME[1] and pelvis[py,px] and pixels[py,px,3]==255:
+            pixels[py,px,:3]=tone
+    return Image.fromarray(pixels,"RGBA")
 
 def build_human_templates(root:Path,media:Path)->list[dict]:
     for folder in (root/"assets/npc_preview_v2",root/"assets/npc_gfunk",root/"chars-iso/v6b/tools"):
@@ -183,7 +228,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))
             if not lying:
                 result=shade_human_anatomy(result,gender,direction,shirt_top,pants_top,
-                    tuple(pal.get("Ke",(170,115,87))),tuple(pal.get("Ki",(223,181,147))))
+                    tuple(pal.get("Ke",(170,115,87))),tuple(pal.get("Ki",(223,181,147))),
+                    pelvis_layer=layers.get("pants"),
+                    edge_tone=tuple(pal.get("K7",(105,75,63))))
             elif kind=="lie":
                 from PIL import Image as _Image
                 zzz=_Image.fromarray(base6.lv.zzz_img(
