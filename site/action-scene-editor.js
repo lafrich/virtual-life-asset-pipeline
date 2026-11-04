@@ -399,30 +399,51 @@ function drawAccessory(target,p,actor,category,dir){
  const img=picture(path);
  if(img&&img.width===64&&img.height===112)target.drawImage(img,0,0);
 }
-function drawFacePatch(target,actor,p,frame){
+function drawFacePatch(target,actor,p,m,frame){
+ // AUTO uses the authentic facial track already authored in every action
+ // atlas. MANUAL overlays a swappable same-actor modular face asset.
  if(p.autoFace||["ne","nw"].includes(p.direction))return;
- const face=(actor.expressions||[]).find(f=>f.id===p.expressionId);
- if(!face)return;
- // A complete, same-action expression atlas is preferred whenever authored.
- // For upright postures a same-actor face-only patch is aligned to the
- // source skull, never a different character's whole idle sprite.
- const source=picture(face.sheet);
- const d=DIR.indexOf(p.direction);
- if(!source||source.height<=(d*112+56))return;
- const clipFrame=frame%Math.max(1,Number(face.frames)||4);
- const clipX=clipFrame*64+21,clipY=d*112+35;
- if(clipX+24>source.width)return;
- let dx=21+(p.faceOffsetX||0),dy=35+(p.faceOffsetY||0);
- if(p.motionId==="squat_idle")dy+=21;
- if(p.motionId==="bent_over_idle"){dy+=25;dx+=(p.direction==="se"?12:-12);}
- if(p.motionId==="sleep_seat")dy+=3;
- if(p.motionId==="nap_stand")dy+=2;
- if(/^(lie|bathtub|sleep_bed)/.test(p.motionId)){
-  // A reclining head has a rotated native face atlas: don't paste an
-  // upright face onto it. Its authored action-expression frames remain.
-  return;
+ const faceId=p.faceAssetId||p.expressionId||"neutral";
+ const face=(actor.expressions||[]).find(f=>f.id===faceId);
+ const imported=faceAssetFor(p,actor,faceId);
+ const data=imported?.data;
+ if(!face&&!data)return;
+ const dirIndex=DIR.indexOf(p.direction);
+ const sheet=face?.motion_sheets?.[m.id]||face?.sheet;
+ const source=picture(data||sheet);
+ if(!source)return;
+ let cropX=0,cropY=0,cropW=32,cropH=29;
+ if(!data){
+  // Native expressions are full-body atlases, NOT facial overlays.
+  // Crop just that actor's original face. Walk and Idle prefer matching
+  // frame-by-frame expression atlases, never swap someone else's body.
+  cropX=(frame%Math.max(1,face.frames||4))*64+17;
+  cropY=dirIndex*112+30;
+  if(cropX+cropW>source.width||cropY+cropH>source.height)return;
+ }else if(source.width!==32||source.height!==29){
+  return; // Imported custom emotion PNGs are canonical 32x29 face parts.
  }
- target.drawImage(source,clipX,clipY,24,17,dx,dy,24,17);
+ let dx=17+(p.faceOffsetX||0),dy=30+(p.faceOffsetY||0);
+ if(p.motionId==="squat_idle"){dy+=17;}
+ else if(p.motionId==="bent_over_idle"){
+  dy+=25;dx+=(p.direction==="se"?10:-10);
+ }else if(p.motionId==="sit"||p.motionId==="sit_type"){dy+=4;}
+ else if(p.motionId==="sleep_seat"){dy+=3;}
+ else if(p.motionId==="nap_stand"){dy+=2;}
+ const reclined=["lie","lie_idle","bathtub_bathe"].includes(p.motionId);
+ target.save();
+ target.imageSmoothingEnabled=false;
+ if(reclined){
+  // Portrait follows the sideways head on native horizontal actions.
+  const cx=20+(p.faceOffsetX||0),cy=66+(p.faceOffsetY||0);
+  target.translate(cx,cy);
+  target.rotate((p.direction==="se"?-1:1)*Math.PI/2);
+  target.drawImage(source,cropX,cropY,cropW,cropH,
+   -cropW/2,-cropH/2,cropW,cropH);
+ }else{
+  target.drawImage(source,cropX,cropY,cropW,cropH,dx,dy,cropW,cropH);
+ }
+ target.restore();
 }
 function actorImage(actor,p,m,frame){
  if(!m)return null;
@@ -443,11 +464,14 @@ function actorImage(actor,p,m,frame){
    }
   }
  }
- for(const category of ["pants","shirt","shoes","hair","helmet"])
+ for(const category of ["pants","shirt","shoes"])
   if(p.equipment[category]!=="none"&&
      !["builtin_shirt","builtin_pants"].includes(p.equipment[category]))
    drawAccessory(brush,p,actor,category,p.direction);
- drawFacePatch(brush,actor,p,frame);
+ drawFacePatch(brush,actor,p,m,frame);
+ for(const category of ["hair","helmet"])
+  if(p.equipment[category]!=="none")
+   drawAccessory(brush,p,actor,category,p.direction);
  return canvas;
 }
 function drawGround(){
@@ -500,7 +524,7 @@ function paint(){
  const selectedActor=selected(),actor=actorFor(selectedActor),m=motionFor(actor,selectedActor);
  const auto=selectedActor?.autoFace,sequence=FACE?.track(facesDB,m);
  const actual=auto&&sequence?FACE.at(facesDB,m,frameAt(m,timeMs)):
-  selectedActor?.expressionId;
+  selectedActor?.faceAssetId||selectedActor?.expressionId;
  $("act-render-note").textContent="CHAR "+scene.participants.length+" · "+
   (m?m.id.toUpperCase():"UNRIGGED")+
   " · FACE "+String(actual||"NEUTRAL").toUpperCase()+
