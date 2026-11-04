@@ -191,6 +191,66 @@ def build_bath_previews(out: Path, repo_url: str, characters: list[dict]) -> lis
     return records
 
 
+
+def build_bathtub_previews(out: Path, repo_url: str, characters: list[dict]) -> list[dict]:
+    """Publish six *actual* awake, foamy native LIE frames for each Human base.
+
+    The prop/ceramic rim belongs to Bangun Ruang. These GIFs display original
+    reclining actor artwork only; no upright fake or screenshot stand-in.
+    """
+    media=out/"media"
+    directions=("se","sw","ne","nw")
+    durations=[320,340,360,350,340,330]
+    records=[]
+    for gender in ("male","female"):
+        actor=next((c for c in characters if c.get("id")==f"human_{gender}_base"),None)
+        if not actor:raise ValueError("Missing Human bathtub base: "+gender)
+        motion=next((m for m in actor.get("motions",[])
+                     if m.get("id")=="bathtub_bathe" and m.get("available")),None)
+        if not motion or motion.get("frames")!=6 or not motion.get("sheet"):
+            raise ValueError("Expected authored six-frame bathtub motion for "+gender)
+        sheet=media/Path(motion["sheet"]).name
+        with Image.open(sheet) as image:
+            atlas=image.convert("RGBA")
+            if atlas.size!=(384,448):
+                raise ValueError(f"Wrong bathtub atlas geometry {gender}: {atlas.size}")
+            pictures=[]
+            for phase in range(6):
+                picture=Image.new("RGB",(544,266),(39,47,60))
+                pen=ImageDraw.Draw(picture)
+                for i,direction in enumerate(directions):
+                    tile=atlas.crop((phase*64,i*112,(phase+1)*64,(i+1)*112))
+                    if not tile.getchannel("A").getbbox():
+                        raise ValueError(f"Blank bathtub pixel frame {gender}/{direction}/{phase}")
+                    tile=tile.resize((128,224),Image.Resampling.NEAREST)
+                    picture.paste(tile,(8+i*136,4),tile)
+                    pen.text((8+i*136+39,240),direction.upper(),fill=(229,233,240))
+                pictures.append(picture)
+        filename=f"animation-bathtub-bathe-{gender}"
+        gif=media/(filename+".gif")
+        poster=media/(filename+".png")
+        pictures[0].save(poster,optimize=True)
+        pictures[0].save(gif,save_all=True,append_images=pictures[1:],
+                         duration=durations,loop=0,optimize=False)
+        with Image.open(gif) as result:
+            if result.n_frames!=6:
+                raise ValueError("Six-frame bathtub GIF unexpectedly collapsed")
+        records.append({
+            "id":f"bathtub_bathe_{gender}_v1",
+            "name":f"BATHTUB / SOAK — {gender.upper()}",
+            "kind":"animation","group":"action","status":"ready",
+            "note":"AWAKE OPEN-EYED NATIVE LIE / WHITE FOAM / SIX FRAMES / FOUR VIEWS",
+            "gif":"media/"+gif.name,"poster":"media/"+poster.name,
+            "source_url":repo_url+"/blob/main/tools/build_human_templates.py",
+            "template_json":"","directions":list(directions),"layout":"four_up",
+            "frame_count":6,"gif_frames":6,"loop":True,
+            "frame_ms":durations,"duration_ms":sum(durations),
+            "preview_only":False,"universal":False,
+            "actor":actor["id"],"action_id":"bathtub_bathe"
+        })
+    return records
+
+
 def build_animation_catalog(out: Path, repo_url: str,
                             characters: list[dict] | None = None) -> list[dict]:
     media = out / "media"
@@ -350,6 +410,7 @@ def build_animation_catalog(out: Path, repo_url: str,
     if characters is not None:
         shared = build_native_sleep_previews(out, repo_url, characters)
         shared.extend(build_bath_previews(out, repo_url, characters))
+        shared.extend(build_bathtub_previews(out, repo_url, characters))
         for row in shared:
             if row["id"] in ids:
                 raise ValueError("Duplicate native sleep action " + row["id"])
