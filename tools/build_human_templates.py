@@ -208,7 +208,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             for k in ("arm_near","arm_far"):
                 if k in rendered:layers[k]=Image.fromarray(rendered[k],"RGBA")
             if lying:
-                flattened=base6.lv.lie_flat(
+                flattened=base6.lv.lie_preserve_head(
                     {k:v.convert("RGBA") for k,v in layers.items()},source_dir,"lie")
                 mirror=direction in ("sw","nw")
                 layers={k:(v.transpose(Image.Transpose.FLIP_LEFT_RIGHT) if mirror else v)
