@@ -25,31 +25,26 @@ def mask(image):
 
 
 class HumanMorphology(unittest.TestCase):
-    def test_male_shoulder_and_female_hip_have_real_silhouette_difference(self):
+    def test_neither_gender_gets_extra_wide_shoulders_or_hip_bulges(self):
+        """M/F native rig already sculpts the silhouette. Never grow arbitrary
+        rectangular wings on shoulders or hips after all motion is posed.
+        """
         original_shirt=colored(25,39,54,78)
         original_pants=colored(26,38,77,105)
-        layers={}
         for gender in ("male","female"):
-            source={"shirt":original_shirt.copy(),"pants":original_pants.copy()}
-            layers[gender]=sculpt_human_layers(source,gender)
-        m=layers["male"]
-        f=layers["female"]
-        self.assertGreater(int(mask(m["shirt"])[58].sum()),
-                           int(mask(f["shirt"])[58].sum())+2,
-                           "Male shoulders must actually be wider than female")
-        self.assertGreater(int(mask(f["pants"])[81].sum()),
-                           int(mask(m["pants"])[81].sum())+2,
-                           "Female hips must actually be wider than male")
-        self.assertEqual(FRAME,(64,112))
-        for gender in ("male","female"):
-            self.assertEqual(layers[gender]["shirt"].size,FRAME)
-            self.assertEqual(layers[gender]["pants"].size,FRAME)
-        # Pelvis and torso must remain connected to their original alpha,
-        # not clipped, warped or shifted after pose generation.
-        for gender in ("male","female"):
-            self.assertTrue(np.all(mask(layers[gender]["shirt"])|~mask(original_shirt)))
-            self.assertTrue(np.all(mask(layers[gender]["pants"])|~mask(original_pants)))
-        self.assertEqual(int(mask(original_shirt)[55].sum()),14,"Input torso mask was mutated")
+            with self.subTest(gender=gender):
+                source={"shirt":original_shirt.copy(),"pants":original_pants.copy()}
+                result=sculpt_human_layers(source,gender)
+                self.assertEqual(result["shirt"].size,FRAME)
+                self.assertEqual(result["pants"].size,FRAME)
+                self.assertTrue(np.array_equal(mask(result["shirt"]),mask(original_shirt)),
+                    "Shoulder must retain original V6B outline")
+                self.assertTrue(np.array_equal(mask(result["pants"]),mask(original_pants)),
+                    "Buttocks/hips must retain original V6B outline")
+                self.assertEqual(result["shirt"].tobytes(),original_shirt.tobytes())
+                self.assertEqual(result["pants"].tobytes(),original_pants.tobytes())
+        self.assertEqual(int(mask(original_shirt)[55].sum()),14,
+                         "Input source template was mutated")
 
     def test_no_motion_or_gender_independent_layers_are_modified(self):
         head=colored(24,39,31,54)
@@ -64,28 +59,22 @@ class HumanMorphology(unittest.TestCase):
         with self.assertRaises(ValueError):
             sculpt_human_layers(dict(source),"other")
 
-    def test_abstract_anatomy_cues_do_not_change_any_alpha_or_head(self):
+    def test_no_artificial_pelvis_buttock_or_chest_dots_in_native_pose(self):
         sprite=np.zeros((112,64,4),dtype=np.uint8)
-        sprite[32:55,23:42]=[218,172,137,255]   # bald head
+        sprite[32:55,23:42]=[218,172,137,255]   # head
         sprite[55:81,23:42]=[218,172,137,255]   # torso
-        sprite[80:105,25:39]=[218,172,137,255]  # pelvis / legs
-        src=Image.fromarray(sprite,"RGBA")
-        original=src.tobytes()
+        sprite[80:105,25:39]=[218,172,137,255]  # hips / legs
+        source=Image.fromarray(sprite,"RGBA")
+        original=source.tobytes()
         for gender in ("male","female"):
             for direction in ("se","sw","ne","nw"):
                 with self.subTest(gender=gender,direction=direction):
-                    out=shade_human_anatomy(src,gender,direction,55,78,
-                                           (159,112,87),(239,199,167))
-                    a=np.asarray(out)
-                    self.assertTrue(np.array_equal(a[...,3],sprite[...,3]),
-                                    "Anatomy shade changed outfit-fitting silhouette")
-                    self.assertTrue(np.array_equal(a[:54],sprite[:54]),
-                                    "Anatomy changed head, hairline or face")
-                    self.assertFalse(np.array_equal(a[59:86],sprite[59:86]),
-                                     "No visible pixel morphology in body")
-                    self.assertTrue(np.array_equal(a[105:],sprite[105:]))
-        self.assertEqual(src.tobytes(),original,
-                         "Anatomy helper must not mutate the input canvas")
+                    output=shade_human_anatomy(source,gender,direction,55,78,
+                                              (159,112,87),(239,199,167))
+                    self.assertEqual(output.tobytes(),original,
+                        "No standalone chest marks, fake butt cheeks or pelvis V")
+                    self.assertIsNot(output,source)
+        self.assertEqual(source.tobytes(),original)
 
 
 if __name__=="__main__":
