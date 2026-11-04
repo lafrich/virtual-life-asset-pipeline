@@ -9,8 +9,9 @@
   <link rel="stylesheet" href="./style.css?v=desktop-viewport-fix-1&amp;action-ui=xp-paint-v3">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=human-modular-v3"></script>
-  <script defer src="./app.js?v=human-modular-v3"></script>
-  <script defer src="./animations.js?v=universal-wc-bath-v1"></script>
+  <script defer src="./universal-motion-runtime.js?v=shared-actions-v1"></script>
+  <script defer src="./app.js?v=shared-actions-v1"></script>
+  <script defer src="./animations.js?v=shared-actions-v1"></script>
 </head>
 <body>
   <div class="desktop">
@@ -127,10 +128,14 @@
               <div class="property-label">MOTION DATABASE / SELECT ACTION</div>
               <h2 class="face-heading">TRY ON CHAR<span id="motion-count">00</span></h2>
               <p class="motion-hint" id="motion-expression-active">FACE: NEUTRAL / SAME CHARACTER.</p>
+              <div class="motion-filterbar" role="search" aria-label="Filter shared character motions">
+                <input id="motion-search" type="search" placeholder="FIND ACTION..." aria-label="Find action" autocomplete="off">
+                <select id="motion-category" aria-label="Motion category"><option value="all">ALL CATEGORIES</option></select>
+              </div>
               <div id="motion-grid" class="motion-grid" role="group" aria-label="Apply motion to selected character"></div>
               <button type="button" class="chrome-button action-main face-back" id="action-studio">✥ ADJUST ACTION IN BANGUN RUANG</button>
               <button type="button" class="chrome-button face-back" id="export-motion">↓ MOTION SHEET.PNG</button>
-              <p id="motion-availability-note" class="motion-availability-note">Only rigged motion is playable.</p>
+              <p id="motion-availability-note" class="motion-availability-note">Shared actions: authored motion or actor-owned procedural preview.</p>
               <a class="chrome-button face-back" target="_blank" rel="noopener noreferrer" href="https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/docs/character-motion-studio.md">+ NEW MOTION GUIDE</a>
             </section>
             <section id="accessories-panel" role="tabpanel" aria-labelledby="tab-accessories" hidden>
