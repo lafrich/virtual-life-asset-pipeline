@@ -453,15 +453,22 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 tuple(pal.get("Ki",(223,181,147))))
             assert result.size==FRAME
             return result
-        def make_sheet(kind,count,expression=None,blink=False,sequence=None,save_outfit_masks=False):
+        def make_sheet(kind,count,expression=None,blink=False,sequence=None,
+                       save_outfit_masks=False,save_face_parts=False):
             img=Image.new("RGBA",(count*64,4*112))
             stencils={slot:Image.new("RGBA",img.size) for slot in ("shirt","pants")} if save_outfit_masks else None
+            emotion_parts={part:Image.new("RGBA",img.size) for part in FACE_PARTS} if save_face_parts else None
             for y,d in enumerate(DIRECTIONS):
                 for x in range(count):
                     current_materials={} if save_outfit_masks else None
+                    current_parts={} if save_face_parts else None
                     pose=frame(d,kind,x,
                         sequence[x%len(sequence)] if sequence else expression,
-                        material_sink=current_materials)
+                        material_sink=current_materials,emotion_sink=current_parts)
+                    if emotion_parts is not None:
+                        for part,atlas in emotion_parts.items():
+                            atlas.alpha_composite(current_parts.get(part,
+                                Image.new("RGBA",FRAME)),(x*64,y*112))
                     if stencils is not None:
                         for slot in stencils:
                             stencils[slot].alpha_composite(
@@ -477,6 +484,10 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 for slot,material in stencils.items():
                     material.save(media/f"{name}-outfit-{kind}-{slot}.png",
                                   optimize=True)
+            if emotion_parts is not None:
+                for part,atlas in emotion_parts.items():
+                    atlas.save(media/f"{name}-face-bleh-{part}-{kind}.png",
+                               optimize=True)
             return img
         sheet=Image.new("RGBA",(384,44*112))
         for kind,row in (("walk",0),("idle",4)):
@@ -516,7 +527,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                                 [330,360,380,360] if kind=="bathe" else
                                 [320,340,360,350,340,330] if kind=="bathtub_bathe" else [210]*count),
                     "loop":kind in ("sit","sleep_seat","nap_stand","talk","sit_type","lie",
-                                    "bathe","bathtub_bathe",*POSTURE_FRAME_MS),
+                                    "bathe","bathtub_bathe","squat_idle","knee_chest_idle",
+                                    "bent_over_idle","lie_idle"),
                     "posture":kind if kind in POSTURE_FRAME_MS else None,
                     "outfit_masks":{slot:f"media/{name}-outfit-{kind}-{slot}.png"
                                     for slot in ("shirt","pants")},
@@ -524,19 +536,23 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
         expressions=[]
         for expr in EXPRS:
             fn=f"{name}-expression-{expr}.png"
-            make_sheet("idle",4,expr,blink=True).save(media/fn,optimize=True)
+            make_sheet("idle",4,expr,blink=True,save_face_parts=expr=="bleh").save(media/fn,optimize=True)
             portrait=f"{name}-expression-{expr}-portrait.png"
             frame("se","idle",0,expr).crop((17,30,49,59)).resize((160,145),Image.Resampling.NEAREST).save(media/portrait)
             # Full 4-direction facial sprites are regenerated for each
             # walking frame, so eyes, brows and mouth follow the moving head.
             # Matching idle/walk source poses also keep male/female body shapes.
             walk_face=f"{name}-expression-{expr}-walk.png"
-            make_sheet("walk",MOTIONS["walk"],expr,blink=True).save(media/walk_face,optimize=True)
-            expressions.append({"id":expr,
+            make_sheet("walk",MOTIONS["walk"],expr,blink=True,save_face_parts=expr=="bleh").save(media/walk_face,optimize=True)
+            entry={"id":expr,
                 "label":next(r["label"] for r in EXPRESSION_CONTEXTS["gallery"] if r["id"]==expr),
                 "sheet":"media/"+fn,
                 "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True,
-                "motion_sheets":{"idle":"media/"+fn,"walk":"media/"+walk_face}})
+                "motion_sheets":{"idle":"media/"+fn,"walk":"media/"+walk_face}}
+            if expr=="bleh":
+                entry["parts"]={part:{kind:f"media/{name}-face-bleh-{part}-{kind}.png"
+                    for kind in ("idle","walk")} for part in FACE_PARTS}
+            expressions.append(entry)
         results.append({"id":f"human_{gender}_base","name":"Human / "+gender.title()+" Base",
             "type":"npc","template":True,"template_category":"human","gender":gender,
             "bodyType":gender,"skinTone":"base",
