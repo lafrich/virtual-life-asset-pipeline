@@ -113,7 +113,11 @@ def dome(a, base, d=(0, 0)):
 def pack(base):
     """boxy silver/white pack with teal trim, red ring, green cone nozzle and a cannon barrel; same box as Yerbies (20x27)"""
     a = np.zeros((FH, FW, 4), np.uint8); dx, dy = (-4, -4) if base == 'se' else (0, 0)
-    x0, y0, x1, y1 = 23 + dx, 50 + dy, 42 + dx, 76 + dy
+    # The REAR camera sees the actual back panel: it must be on the UPPER
+    # BACK (roughly shoulders to waistband), never down by the buttocks.
+    # Front/side cameras retain the narrower silhouette behind the actor.
+    x0, y0, x1, y1 = ((24, 49, 41, 68) if base == 'ne'
+                       else (23 + dx, 50 + dy, 42 + dx, 74 + dy))
     a = comp(a, shade(rect(x0, y0, x1, y1), SHELL, spec=(x0 + 1, y0 + 1), bias=-.05))
     for x in range(x0 + 1, x1): put(a, x, y0, SHELL[0])
     for y in range(y0 + 3, y1 - 2): put(a, x0 + 1, y, TEAL[1])     # teal trim
@@ -126,12 +130,16 @@ def pack(base):
         put(a, x1 - 3, y0 + 4, RED[1]); put(a, x1 - 2, y0 + 4, RED[2])
     if base == 'ne':
         for r, c in ((5.2, RED[1]), (3.4, RED[2])):                    # red concentric rings on the back plate
-            ring = disk(32.5, 62.5, r) & ~disk(32.5, 62.5, r - 1)
+            ring = disk(32.5, y0 + 10.0, r) & ~disk(32.5, y0 + 10.0, r - 1)
             for y, x in zip(*np.nonzero(ring)): put(a, x, y, c)
-        for y, x in zip(*np.nonzero(disk(32.5, 62.5, 2.0))): put(a, x, y, TEAL[1])
-        put(a, 32, 62, PAPER)
-        for i, y in enumerate(range(y1 + 1, y1 + 5)):                     # green cone nozzle pointing down
-            for x in range(31 - (2 - i // 2), 34 + (2 - i // 2) + 1): put(a, x, y, BAIZE if x < 33 else hx('#2A5266'))
+        for y, x in zip(*np.nonzero(disk(32.5, y0 + 10.0, 2.0))):
+            put(a, x, y, TEAL[1])
+        put(a, 32, y0 + 10, PAPER)
+        # The old 5px nozzle extended below the trousers waistband and
+        # made the back-mounted pack look like a bag hanging on the butt.
+        # Keep a small top attachment instead, entirely above the waist.
+        for y in range(y0 - 2, y0):
+            for x in range(30, 35):put(a,x,y,BAIZE if x < 33 else TEAL[3])
     else:
         put(a, x0 + 2, y0 + 8, BAIZE); put(a, x0 + 2, y0 + 11, RED[1])     # side indicator lights (side ref)
     return a
@@ -158,12 +166,18 @@ def build(view='se', anim='idle', f=0, expr='neutral', pulse=0, modular=False):
     acc = np.zeros((FH, FW, 4), np.uint8); collar(acc, base, suit); acc = np.roll(acc, bodyd, 0); acc = comp(bl, acc)
     order = ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'shirt_graphic', 'outer']
     im = Image.new('RGBA', (FW, FH))
-    # Backpack is ALWAYS the rearmost layer, also in NE/NW rear views.
-    # Never draw it over the shirt, arms, head or helmet.
-    if not modular:
+    # A visible backpack is mounted ON the back of the shirt but UNDER
+    # both arms, neck, head, helmet and goggles. Putting it behind the
+    # entire torso hides its panel and leaves a false bag at hip level.
+    if not modular and base == 'se':
         im.alpha_composite(Image.fromarray(np.roll(pack(base), bodyd, 0)))
     for k in order:
         if k in L: im.alpha_composite(L[k])
+    if not modular and base == 'ne':
+        upper_back=np.roll(pack(base), bodyd, 0).copy()
+        waist_y=max(0,min(FH,PY + bodyd))
+        upper_back[waist_y:,:,3]=0
+        im.alpha_composite(Image.fromarray(upper_back))
     im.alpha_composite(Image.fromarray(acc))
     for k in ('acc', 'arm_near', 'body_front', 'held', 'face', 'hair_front', 'glasses', 'brows'):
         if k in L: im.alpha_composite(L[k])
