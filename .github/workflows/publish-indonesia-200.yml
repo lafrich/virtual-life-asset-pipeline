@@ -10,6 +10,7 @@ on:
       - "assets/street_buildings/_work/indonesia_200_quality.py"
       - "assets/street_buildings/_work/indonesia_200_finishing.py"
       - "assets/street_buildings/_work/indonesia_200_art_direction_v5.py"
+      - "assets/street_buildings/_work/indonesia_200_umkm_signature.py"
       - "assets/street_buildings/_work/publish_indonesia_200.py"
       - ".github/workflows/publish-indonesia-200.yml"
 permissions:
