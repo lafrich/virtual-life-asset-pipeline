@@ -137,7 +137,7 @@ def twig_crown(L,s,x,y,h,material='VF_LEAF',count=6,rad=.60,seed=20,fruit=None,
   cx=x+r*math.cos(th);cy=y+r*.84*math.sin(th)
   high=h+int(rng.integers(-13,13))
   limb(L,[(x,y,h-66),(cx*.6+x*.4,cy*.6+y*.4,h-29),(cx,cy,high-11)],
-       .065,seed+i+51)
+       .065,'VF_BARK',seed+i+51)
   clumps.append((cx,cy,high,.32 if not flat else .38,.30 if not flat else .26,
                  27 if not flat else 14))
  clumps.append((x,y,h+15,rad*.60,rad*.52,25 if not flat else 15))
