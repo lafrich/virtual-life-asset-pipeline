@@ -13,6 +13,7 @@ from pathlib import Path
 from PIL import Image,ImageDraw
 from lib import build
 import indonesia_200_renderer as recipe
+from indonesia_200_npc_slots import make as npc_transport
 from render_native_depth import render as render_depth,GROUPDIR
 
 ROOT=Path('assets/street_buildings')
@@ -42,6 +43,8 @@ def one(s):
     'street'),
   collision=s['category'] in ('transport','warung','bangunan','publik'),
   footprint=[s['W'],s['D']],variants={})
+ slots=npc_transport(s)
+ if slots:entry['npcTransport']=slots
  for direction in s['oris']:
   art,glow,pivot,_=build(name,direction)
   out=ROOT/GROUPDIR[group]/(name+'_'+direction+'.png')
