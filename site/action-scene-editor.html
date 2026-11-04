@@ -82,6 +82,21 @@
       <label>FACE<select id="act-expression"></select></label>
      </div>
      <label class="scene-check">AUTO EXPRESSION FOLLOW ACTION <input id="act-auto-face" type="checkbox" checked></label>
+     <div class="scene-heading scene-subheading"><strong>MODULAR FACE / EMOTION ASSET</strong><span>ACTOR OWNED</span></div>
+     <div class="scene-emotion-asset">
+      <div class="scene-emotion-thumbnail"><img id="act-face-preview" alt="Selected emotion asset preview" /></div>
+      <label>ATTACHED FACE ASSET<select id="act-face-asset" aria-label="Select emotion sprite asset for selected character"></select></label>
+     </div>
+     <div class="scene-field-grid">
+      <button type="button" id="act-apply-face" class="scene-primary">✓ APPLY FACE</button>
+      <button type="button" id="act-face-upload-button">+ IMPORT FACE PNG</button>
+     </div>
+     <input id="act-face-upload" type="file" accept="image/png,.png" hidden aria-label="Import a face-only PNG emotion asset">
+     <div class="scene-field-grid">
+      <label>FACE OFFSET X<input id="act-face-offset-x" type="number" min="-32" max="32" step="1" value="0"></label>
+      <label>FACE OFFSET Y<input id="act-face-offset-y" type="number" min="-32" max="32" step="1" value="0"></label>
+     </div>
+     <p id="act-face-status" class="scene-mini" role="status">SELECT AN EMOTION ASSET, THEN APPLY TO CHARACTER.</p>
      <div class="scene-field-grid">
       <label>POSITION X<input id="act-x" type="number" min="-390" max="390" step="1"></label>
       <label>POSITION Y<input id="act-y" type="number" min="-230" max="190" step="1"></label>
@@ -105,7 +120,9 @@
      <label>SEPATU<select id="act-gear-shoes" data-slot="shoes"></select></label>
      <label>TAS<select id="act-gear-bag" data-slot="bag"></select></label>
      <label>HELM<select id="act-gear-helmet" data-slot="helmet"></select></label>
-     <button type="button" id="act-edit-outfit" class="scene-primary">✎ DRAW / EDIT OUTFIT</button>
+     <button type="button" id="act-apply-outfit" class="scene-primary">✓ APPLY OUTFIT / TERAPKAN</button>
+     <p id="act-outfit-pending" class="scene-mini" role="status">CHOOSE BAJU/CELANA → APPLY TO PREVIEW.</p>
+     <button type="button" id="act-edit-outfit">✎ DRAW / EDIT OUTFIT</button>
      <p class="scene-mini" id="act-outfit-note">4-direction local equipment overlay. This ACT does not modify character originals.</p>
     </div>
    </aside>

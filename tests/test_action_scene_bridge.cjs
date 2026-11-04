@@ -36,3 +36,14 @@ assert.equal(max.participants.length,8);
 assert.equal(A.remove(out.id,store),true);
 assert.equal(A.list(store).length,0);
 console.log("PASS multi-actor act save, validation, layers, clothes, placement binding, JSON round-trip");
+
+const face=A.clean({...scene,participants:[{...scene.participants[0],
+ faceAssetId:"expression_smile",
+ faceAssetData:"data:image/png;base64,AAAA",
+ faceOffsetX:8,faceOffsetY:-4}]});
+assert.equal(face.participants[0].faceAssetId,"expression_smile");
+assert.equal(face.participants[0].faceAssetData,"data:image/png;base64,AAAA");
+assert.equal(face.participants[0].faceOffsetX,8);
+assert.equal(face.participants[0].faceOffsetY,-4);
+assert.equal(A.clean({...scene,participants:[{...scene.participants[0],
+ faceAssetData:"data:text/html;base64,AAAA"}]}).participants[0].faceAssetData,null);

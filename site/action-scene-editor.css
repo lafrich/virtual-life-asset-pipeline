@@ -64,3 +64,12 @@ html,body.scene-body{height:100%;min-height:0;margin:0;overflow:hidden;backgroun
  .scene-footer span:last-child{display:none}
  .scene-menu{gap:3px}.scene-menu button,.scene-menu a{font-size:10px;padding:4px}
 }
+
+/* ACT face assets are actor-owned swappable pixel parts; controls scroll within inspector. */
+.scene-emotion-asset{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;align-items:center;background:#e5e7eb;border:1px solid #a0a5ac;padding:7px}
+.scene-emotion-thumbnail{width:72px;height:64px;display:grid;place-items:center;background:#faf8f3;border:2px inset #b0a9a1}
+.scene-emotion-thumbnail img{max-width:68px;max-height:60px;object-fit:contain;image-rendering:pixelated}
+.scene-emotion-asset label{min-width:0}
+#act-apply-outfit,#act-apply-face{background:#a8c6ef;color:#0a377c;border-color:#f5fbff #57779e #57779e #f5fbff}
+#act-outfit-pending.is-pending{background:#fff0cc;color:#663a02;border:1px solid #ca9946}
+#act-face-status.is-applied,#act-outfit-pending.is-applied{background:#deeee0;color:#225d32;border:1px solid #9bbc9a}

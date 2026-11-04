@@ -31,6 +31,12 @@
    motionId:raw.motionId||"idle",
    direction:DIR.includes(raw.direction)?raw.direction:"se",
    expressionId:safe(raw.expressionId) ? raw.expressionId:"neutral",
+   faceAssetId:safe(raw.faceAssetId)?raw.faceAssetId:
+    (safe(raw.expressionId)?raw.expressionId:"neutral"),
+   faceAssetData:typeof raw.faceAssetData==="string"&&
+    raw.faceAssetData.length<100000&&
+    /^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(raw.faceAssetData)?
+     raw.faceAssetData:null,
    autoFace:raw.autoFace!==false,
    x:clamp(raw.x,-390,390),y:clamp(raw.y,-230,190),
    layer:clamp(raw.layer,-20,20,ordinal),
