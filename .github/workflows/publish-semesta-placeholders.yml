@@ -1,0 +1,57 @@
+name: Publish Semesta building and street placeholder replacements
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/publish-semesta-placeholders.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: semesta-street-placeholder-assets
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install native pixel renderer dependencies
+        run: python -m pip install numpy pillow
+      - name: Render verified replacement PNGs from official pipeline generators
+        run: |
+          python - <<'PY'
+          import os,sys,json
+          from PIL import Image
+          sys.path.insert(0,'assets/street_buildings/_work')
+          from lib import REG,build
+          import roadside,gang,signals,parkir,jalan_lokal,pendek,taman
+          man=json.load(open('assets/street_buildings/manifest.json'))
+          groupdir={'jalan':'jalan_besar','loak':'pasar_loak','kampung':'kampung','gang':'gang','prop':'props','sinyal':'sinyal','parkir':'parkir','lokal':'jalan_lokal','pendek':'jalan_besar/pendek','taman':'taman'}
+          names=['kantor_a','kantor_b','indomaret','ruko_a','bank_bca','hotel','kafe_blue_doors','warung_madura','rumah_kampung_a','rumah_kampung_b','pos_ronda','gapura_gang','tiang_listrik','lampu_taman','lampu_lalin_merah','bangku_taman','tong_sampah','meja_taman','gazebo','toko_loak']
+          for name in names:
+            assert name in REG, 'Missing generator: '+name
+            entry=REG[name]
+            for facing in entry['oris']:
+              key=name+'_'+facing
+              assert key in man['sprites'],key
+              img,gl,pivot,anchor=build(name,facing)
+              output='assets/street_buildings/'+groupdir[entry['group']]+'/'+key+'.png'
+              os.makedirs(os.path.dirname(output),exist_ok=True)
+              Image.fromarray(img).save(output,optimize=True)
+              with Image.open(output) as im:
+                assert im.mode=='RGBA' and im.getbbox(),output
+                assert list(im.size)==man['sprites'][key]['size'],(key,im.size,man['sprites'][key]['size'])
+              assert list(map(int,pivot))==man['sprites'][key]['pivot'],(key,'pivot')
+              print('OK',output,img.shape)
+          PY
+      - name: Commit native pixel replacement sprites
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f assets/street_buildings/jalan_besar/*.png assets/street_buildings/kampung/*.png assets/street_buildings/pasar_loak/*.png assets/street_buildings/gang/*.png assets/street_buildings/props/*.png assets/street_buildings/taman/*.png assets/street_buildings/sinyal/*.png
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish native Semesta building, utility and furniture replacement sprites [skip ci]"
+            git push
+          fi
