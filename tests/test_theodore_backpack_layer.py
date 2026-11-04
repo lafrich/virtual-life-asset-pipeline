@@ -1,7 +1,7 @@
 """Theodore's rear backpack must sit on the upper back, never the butt.
 
-In NE/NW the panel is visible on the back of the shirt; near arm, neck,
-head and helmet always layer above it. SE/SW sees only an edge behind body.
+In NE/NW the panel overlaps the lower scalp/nape while the helmet and
+upper head stay above it. Arms remain on the foreground layer. SE/SW sees only an edge behind body.
 All motion directions retain the original 64x112 native V6B silhouette.
 """
 from __future__ import annotations
@@ -18,10 +18,10 @@ import make_theodore as t
 
 
 class TheodoreBackpack(unittest.TestCase):
-    def test_rear_head_and_helmet_anchor_shift_together(self):
-        # Compare with the untouched V6B head before Theodore's rear-only
-        # depth adjustment. Front/side head placement remains unchanged.
-        self.assertEqual(t.REAR_HEAD_OFFSET, (1, -2))
+    def test_rear_head_uses_native_shoulder_pivot_not_shifted_away(self):
+        # Previous 1px right / 2px up translation DETACHED the head from
+        # its collar. The backpack depth, not its shoulder pivot, must change.
+        self.assertEqual(t.REAR_HEAD_OFFSET, (0, 0))
         for view in ("ne", "nw"):
             for motion, frame in (("idle",0),("idle",2),("walk",1),
                                   ("talk",2),("sit",0)):
@@ -45,13 +45,35 @@ class TheodoreBackpack(unittest.TestCase):
                     x0,y0=t.bbox(source_ref["hair_front"])
                     x1,y1=t.bbox(motion_ref["hair_front"])
                     self.assertEqual(head_anchor,
-                        (x1-x0+1,y1-y0-2),
+                        (x1-x0,y1-y0),
                         "Helmet/goggle anchor must match translated skull")
                     # Body pivot and arm geometry are not translated.
                     self.assertEqual(layers["body"].tobytes(),
                                      native["body"].tobytes())
                     self.assertEqual(layers["shirt"].tobytes(),
                                      native["shirt"].tobytes())
+
+    def test_rear_panel_occludes_lower_scalp_but_not_helmet(self):
+        for view in ("ne", "nw"):
+            for motion, frame in (("idle",0),("idle",2),
+                                  ("walk",0),("sit",0)):
+                with self.subTest(view=view,motion=motion,frame=frame):
+                    layers,_,_,base,_=t.render(view,motion,frame)
+                    bodyd=t.BODYD
+                    raw_pack=np.roll(t.pack(base),bodyd,axis=0)
+                    hair=np.asarray(layers["hair_front"])
+                    yy=np.arange(t.FH)[:,None]
+                    overlap=(raw_pack[...,3]>0)&(hair[...,3]>0)&(yy<52)
+                    self.assertGreater(int(overlap.sum()),3,
+                       "Upper back pack must physically overlap the nape")
+                    full,_=t.build(view,motion,frame,modular=False)
+                    bare,_=t.build(view,motion,frame,modular=True)
+                    visible=np.any(full[...,:3]!=bare[...,:3],axis=2)
+                    self.assertGreater(int((overlap&visible).sum()),3,
+                       "Lower scalp should be hidden by backpack rear panel")
+                    self.assertEqual(int(np.count_nonzero(
+                        raw_pack[:46,...,3])),0,
+                        "The backpack must not cross the upper scalp")
 
     def test_rear_panel_is_on_upper_back_not_hips(self):
         for view in ("ne","nw"):
