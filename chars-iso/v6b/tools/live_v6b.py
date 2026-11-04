@@ -1182,11 +1182,76 @@ def lie_flat(imgs, view, anim):
 ZG = ['111', '..1', '.1.', '1..', '111']
 
 
+
+def lie_preserve_head(imgs, view):
+    """Isometric bed sleep: lie body, but preserve the HEAD at native 1:1 pixels.
+
+    The old lie_flat rotates the entire upright character into the ground plane,
+    flattening the skull, eye and hair silhouette. Split only head materials,
+    transform the rest of the body into the existing horizontal bed pose, then
+    move (NEVER rotate/shear/scale) the native head onto the pillow end.
+    Keeping the same transform for face/brows/glasses preserves expression
+    alignment across all four camera views and costume variants.
+    """
+    head_materials = {
+        'body', 'hair_back', 'hair_front', 'face', 'brows', 'acc_head',
+        'figure', 'f', 'b', 'g', 'glasses',
+    }
+    separated, preserved = {}, {}
+    for key, image in imgs.items():
+        source = np.array(image.convert('RGBA'), copy=True)
+        # Trailing long hair may drape slightly onto the pillow, but keep
+        # the torso and legs in the horizontal projection.
+        cut = 65 if key == 'hair_back' else 56
+        if key in head_materials:
+            head = source.copy()
+            head[cut:] = 0
+            source[:cut] = 0
+            preserved[key] = head
+        separated[key] = Image.fromarray(source, 'RGBA')
+
+    reclined = lie_flat(separated, view, 'lie')
+    opaque_heads = [image[..., 3] > 0 for image in preserved.values()]
+    if opaque_heads and np.any(np.logical_or.reduce(opaque_heads)):
+        union = np.logical_or.reduce(opaque_heads)
+        ys, xs = np.nonzero(union)
+        # Fixed bedside anchor; no image resampling: one head pixel is always
+        # one output pixel. The neck ends beside the lying shoulder at x~28.
+        dx = 5 - int(xs.min())
+        dy = 57 - int(ys.min())
+        for key, image in preserved.items():
+            if not np.any(image[..., 3]):
+                continue
+            moved = Image.new('RGBA', (FW, FH))
+            moved.paste(Image.fromarray(image, 'RGBA'), (dx, dy))
+            if key in reclined:
+                merged = reclined[key].copy()
+                merged.alpha_composite(moved)
+                reclined[key] = merged
+            else:
+                reclined[key] = moved
+
+    # Recompute a thin ground contact beneath both the original head and the
+    # transformed body. Never put a blurred shadow over face/head pixels.
+    material = np.zeros((FH, FW), bool)
+    for key, image in reclined.items():
+        if key in ('shadow', 'fx'):
+            continue
+        material |= np.asarray(image.convert('RGBA'))[..., 3] > 0
+    under = np.zeros_like(material)
+    under[2:] = material[:-2]
+    under[:, 1:] |= material[:, :-1]
+    shade = np.zeros((FH, FW, 4), dtype=np.uint8)
+    shade[under & ~material] = (0, 0, 0, 46)
+    reclined['shadow'] = Image.fromarray(shade, 'RGBA')
+    return reclined
+
+
 def zzz_img(anim, f, view, mir=False):
     """little 'z z' rising above the head (sleep / tired / lie), white with a dark outline; mir: mirrored row (position mirrored,
     letters not)"""
     o = np.zeros((FH, FW, 4), np.uint8)
-    if anim == 'lie': base = [(10, 58), (5, 52)] if view == 'se' else [(8, 80), (3, 74)]
+    if anim == 'lie': base = [(10, 43), (5, 36)] if view == 'se' else [(10, 43), (5, 36)]
     else: base = [(42, 30), (47, 24)]
     if mir: base = [(FW - 3 - x, y) for (x, y) in base]
     ph = f % 4
@@ -1245,7 +1310,8 @@ def build(cfg_path, outfit=None, glasses=None):
                 sh = np.zeros((FH, FW, 4), np.uint8); cx = 32 + (1 if kind in SEATED else 0)
                 if kind not in ('swim', 'float'): sh[((xx + .5 - cx) / 11) ** 2 + ((yy + .5 - 100.5) / 2.4) ** 2 <= 1] = (0, 0, 0, 56)
                 imgs['shadow'] = Image.fromarray(sh, 'RGBA')
-                if anim in ('lie', 'float'): imgs = lie_flat(imgs, view, anim)
+                if anim == 'lie': imgs = lie_preserve_head(imgs, view)
+                elif anim == 'float': imgs = lie_flat(imgs, view, anim)
                 fxa = np.zeros((FH, FW, 4), np.uint8)
                 if anim in ('swim', 'float'):
                     imgs['shadow'] = Image.fromarray(water_img(anim, f, False), 'RGBA'); fxa = water_img(anim, f, True)
@@ -1262,7 +1328,8 @@ def build(cfg_path, outfit=None, glasses=None):
                 def faceimgs(e):
                     F, B, G = face_layer(e, C, view, sitD, bob, gl, hdx if view == 'se' else 0)
                     fi = frame_img({'f': to_img(F, pal), 'b': to_img(B, pal), 'g': to_img(G, pal)})
-                    if anim in ('lie', 'float'): fi = lie_flat(fi, view, anim)
+                    if anim == 'lie': fi = lie_preserve_head(fi, view)
+                    elif anim == 'float': fi = lie_flat(fi, view, anim)
                     return fl(fi['f']), fl(fi['b']), fl(fi['g'])
                 for e in EXPRS:
                     a, b, _ = faceimgs(e); EX[e][0].paste(a, pos); EX[e][1].paste(b, pos)
