@@ -1,0 +1,89 @@
+name: Publish Indonesia 200 — Native Pixel World Pack
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "assets/street_buildings/_work/indonesia_200_specs.json"
+      - "assets/street_buildings/_work/indonesia_200_renderer.py"
+      - "assets/street_buildings/_work/publish_indonesia_200.py"
+      - ".github/workflows/publish-indonesia-200.yml"
+permissions:
+  contents: write
+concurrency:
+  group: indonesia-200-publish
+  cancel-in-progress: true
+jobs:
+  sprites:
+    name: Build 50 native assets — shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 36
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0,1,2,3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical v6b renderer dependencies
+        run: python -m pip install --disable-pip-version-check numpy pillow
+      - name: Render PNG sprites and native pixel depth for 50 assets
+        run: python assets/street_buildings/_work/publish_indonesia_200.py --shard ${{ matrix.shard }}
+      - name: Stage generated artwork and batch metadata
+        run: |
+          python - <<'PY'
+          import pathlib,shutil
+          root=pathlib.Path('assets/street_buildings')
+          out=pathlib.Path('publish_out')
+          n=${{ matrix.shard }}
+          meta=root/'_work'/f'indonesia_200_batch_{n}.json'
+          assert meta.is_file()
+          for p in root.rglob('id200_*.png'):
+              dest=out/p
+              dest.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copy2(p,dest)
+          target=out/meta
+          target.parent.mkdir(parents=True,exist_ok=True)
+          shutil.copy2(meta,target)
+          assert len(list(out.rglob('id200_*_sw.png')))==50
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: indonesia200-${{ matrix.shard }}
+          path: publish_out/
+          retention-days: 7
+          if-no-files-found: error
+  publish:
+    name: Validate & publish 200 playable native assets
+    needs: sprites
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --disable-pip-version-check numpy pillow
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: indonesia200-*
+          path: .
+          merge-multiple: true
+      - name: Audit all 200 IDs, all PNG sprites and matching native depth
+        run: python assets/street_buildings/_work/publish_indonesia_200.py --merge
+      - name: Commit manifest, original artwork, 10 contact sheets and depth textures
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f assets/street_buildings/kampung/id200_*.png
+          git add -f assets/street_buildings/jalan_besar/id200_*.png
+          git add -f assets/street_buildings/props/id200_*.png
+          git add -f assets/street_buildings/indonesia_200_contact_*.png
+          git add assets/street_buildings/indonesia_200_catalog.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 200 authentic Indonesian world sprites and native depth for Semesta [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
