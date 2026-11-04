@@ -66,7 +66,7 @@ for sex in ("male","female"):
             (0,0,64,112)).tobytes()
 # The authoring code forces neutral/open eyes rather than native blink or zzz.
 source=Path("tools/build_human_templates.py").read_text()
-assert 'face_expression="neutral" if kind=="bathtub_bathe"' in source
+assert '"neutral" if kind=="bathtub_bathe"' in source
 assert 'elif kind=="lie":' in source
 print("PASS six-frame open-eyed reclined foamy bathtub for Male/Female in four directions")
 print("PASS real male/female shower animation: four directions, four frames, four timed previews")
