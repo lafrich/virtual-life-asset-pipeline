@@ -15,6 +15,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "warteg sederhana with food display and two low stools",
       "category": "building",
       "footprint": [
         3,
@@ -65,6 +66,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "small motor repair garage, tyres and tools",
       "category": "building",
       "footprint": [
         4,
@@ -115,6 +117,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "laundry kiloan shop with visible washers",
       "category": "building",
       "footprint": [
         3,
@@ -165,6 +168,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "urban pharmacy with green cross and glass entrance",
       "category": "building",
       "footprint": [
         4,
@@ -215,6 +219,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "small grocery storefront and outdoor crate stacks",
       "category": "building",
       "footprint": [
         3,
@@ -265,6 +270,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "two-storey SD school building, repetitive windows and red-white flag",
       "category": "building",
       "footprint": [
         8,
@@ -315,6 +321,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "community health clinic, teal sign and accessible entrance",
       "category": "building",
       "footprint": [
         7,
@@ -365,6 +372,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "market hall, awning stalls and rooftop ventilation",
       "category": "building",
       "footprint": [
         8,
@@ -415,6 +423,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "urban Betawi house: front veranda and clay-tile gable roof",
       "category": "building",
       "footprint": [
         5,
@@ -465,6 +474,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "kelurahan office with service windows and formal banner",
       "category": "building",
       "footprint": [
         6,
@@ -515,6 +525,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "mobile meatball noodle cart",
       "category": "street",
       "footprint": [
         2.2,
@@ -587,6 +598,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "street fried rice cart",
       "category": "street",
       "footprint": [
         2.2,
@@ -659,6 +671,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "simple open-sided angkot waiting shelter",
       "category": "street",
       "footprint": [
         3,
@@ -731,6 +744,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "guard station for kampung or office gate",
       "category": "street",
       "footprint": [
         2,
@@ -781,6 +795,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "painted security gate with red/white arm",
       "category": "street",
       "footprint": [
         3,
@@ -853,6 +868,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "blue Jakarta street name sign",
       "category": "street",
       "footprint": [
         1,
@@ -925,6 +941,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "red-white Indonesian national flag",
       "category": "street",
       "footprint": [
         1.5,
@@ -997,6 +1014,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "Independence Day red-white vertical pennant",
       "category": "street",
       "footprint": [
         1,
@@ -1069,6 +1087,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "electricity distribution cabinet with warning triangle",
       "category": "street",
       "footprint": [
         1.5,
@@ -1119,6 +1138,7 @@
       "source": "pipeline-street",
       "country": "ID",
       "pack": "indonesia-v1",
+      "note": "children crossing / school area warning sign",
       "category": "street",
       "footprint": [
         1,
