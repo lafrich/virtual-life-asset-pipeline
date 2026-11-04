@@ -174,6 +174,11 @@ class HumanMorphology(unittest.TestCase):
         holes=((26,68),(27,68),(27,69),(37,68),(38,68),(37,69))
         for x,y in holes:
             baseline[y,x]=(0,0,0,0)
+        # A diagonal notch from the shoulder to the outside is NOT a
+        # closed nipple hole, even when 4-neighbour flood-fill thinks so.
+        shoulder_notch=((41,60),(42,59),(43,58),(44,57),(45,56))
+        for x,y in shoulder_notch:
+            baseline[y,x]=(0,0,0,0)
         source=Image.fromarray(baseline,"RGBA")
         repaired=repair_female_chest_voids(source,torso,79)
         output=np.asarray(repaired)
