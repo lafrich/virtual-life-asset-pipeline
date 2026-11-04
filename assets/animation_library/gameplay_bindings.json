@@ -167,5 +167,89 @@
       "fixture": "street_stall",
       "animation_action": "cook_stall"
     }
+  ],
+  "posture_presets": [
+    {
+      "id": "squat_idle",
+      "label": "Squat Idle",
+      "category": "posture",
+      "frames": 4,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "loop": true,
+      "ground": "floor",
+      "fixtures": [
+        "floor",
+        "outdoor"
+      ],
+      "actors": [
+        "human_male_base",
+        "human_female_base"
+      ],
+      "notes": "Bent knees, crouched head, grounded feet. Human V6B authored motion."
+    },
+    {
+      "id": "bent_over_idle",
+      "label": "Bent Over Idle",
+      "category": "posture",
+      "frames": 4,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "loop": true,
+      "ground": "floor",
+      "fixtures": [
+        "floor",
+        "custom"
+      ],
+      "actors": [
+        "human_male_base",
+        "human_female_base"
+      ],
+      "notes": "Forward hip hinge; shoulders/head lean while feet remain fixed."
+    },
+    {
+      "id": "lie_idle",
+      "label": "Lie Idle",
+      "category": "posture",
+      "frames": 4,
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "loop": true,
+      "ground": "bed",
+      "fixtures": [
+        "bed",
+        "sofa",
+        "floor"
+      ],
+      "actors": [
+        "human_male_base",
+        "human_female_base"
+      ],
+      "notes": "Awake reclining idle, original native horizontal V6B transform."
+    }
   ]
 }

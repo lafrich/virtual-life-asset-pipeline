@@ -116,6 +116,24 @@
       "blink",
       "smile",
       "neutral"
+    ],
+    "squat_idle": [
+      "neutral",
+      "neutral",
+      "blink",
+      "smile"
+    ],
+    "bent_over_idle": [
+      "neutral",
+      "neutral",
+      "blink",
+      "embarrassed"
+    ],
+    "lie_idle": [
+      "sleepy",
+      "blink",
+      "sleepy",
+      "neutral"
     ]
   },
   "gameplay": {
@@ -184,6 +202,12 @@
       "neutral",
       "smile",
       "neutral"
+    ],
+    "crouch": [
+      "neutral",
+      "neutral",
+      "blink",
+      "smile"
     ]
   },
   "fallbacks": {
@@ -196,7 +220,10 @@
     "laugh": "happy",
     "work": "neutral",
     "walk": "neutral",
-    "idle": "neutral"
+    "idle": "neutral",
+    "squat": "neutral",
+    "bent_over": "embarrassed",
+    "lie_idle": "sleepy"
   },
   "policy": "Only adult human original V6B sprite generation owns face pixels; runtime labels context and uses same-character authored atlases. Unknown or unrigged actors must not borrow a base mannequin face."
 }

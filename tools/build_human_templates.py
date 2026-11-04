@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw
 import numpy as np
 
 DIRECTIONS=("se","sw","ne","nw")
-MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6}
+MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6,"squat_idle":4,"bent_over_idle":4,"lie_idle":4}
 EXPRESSION_CONTEXTS=json.loads((Path(__file__).resolve().parents[1]/
     "assets/animation_library/expression_contexts.json").read_text(encoding="utf-8"))
 EXPRS=tuple(row["id"] for row in EXPRESSION_CONTEXTS["gallery"])
@@ -127,6 +127,59 @@ def animate_human_micro_motion(sprite:Image.Image,torso:Image.Image,
     return Image.fromarray(img,"RGBA")
 
 
+POSTURE_KINDS=("squat_idle","bent_over_idle")
+POSTURE_FRAME_MS={
+    "squat_idle":[280,320,300,320],
+    "bent_over_idle":[300,330,300,330],
+    "lie_idle":[360,390,360,390],
+}
+
+
+def warp_posture_layers(layers:dict,kind:str,direction:str,frame:int)->dict:
+    """Art-direct native poses through the same isometric 64x112 projection.
+
+    Squatting keeps the authentic seated knees/feet and drops the whole upper
+    body towards them. Bending shifts the skull and shoulders towards the
+    facing direction, with feet and pelvis pinned to the original floor.
+    Transform *all* original layers with a single inverse integer mapping;
+    face, brows, arms, and torso cannot drift apart during an animation.
+    """
+    if kind not in POSTURE_KINDS:
+        return layers
+    phase=frame%4
+    sway=(0,1,2,1)[phase] if kind=="squat_idle" else (0,1,0,-1)[phase]
+    source_knots=np.array([0,28,52,67,82,91,102,111],dtype=np.float32)
+    if kind=="squat_idle":
+        # Lower the head ~16px, compact knees near ground, retain planted feet.
+        target_knots=np.array(
+            [0,44+sway,65+sway,79+sway//2,89,96,102,111],
+            dtype=np.float32)
+    else:
+        # Forward hinge at waist: head/shoulders descend; hips and feet stay.
+        target_knots=np.array(
+            [0,52+sway,71+sway,82+sway,88,94,102,111],
+            dtype=np.float32)
+    yy,xx=np.indices((FRAME[1],FRAME[0]))
+    src_y=np.rint(np.interp(np.arange(FRAME[1]),
+        target_knots,source_knots)).astype(np.int32)
+    if kind=="bent_over_idle":
+        forward=1 if direction in ("se","ne") else -1
+        # Full bend on the skull, easing to zero displacement at the hip.
+        lean=np.rint(12*np.clip((84-src_y)/34,0,1)).astype(np.int32)
+        src_x=np.clip(xx-forward*lean[:,None],0,FRAME[0]-1)
+    else:
+        # Knees spread by 1px in a neutral squat; the pelvis stays centered.
+        knee=np.rint(np.clip((yy-86)/12,0,1)).astype(np.int32)
+        sideways=np.where(xx<32,-1,np.where(xx>32,1,0))
+        src_x=np.clip(xx-sideways*knee,0,FRAME[0]-1)
+    transformed={}
+    for key,source in layers.items():
+        source_array=np.asarray(source.convert("RGBA"))
+        transformed[key]=Image.fromarray(
+            source_array[src_y[:,None],src_x].copy(),"RGBA")
+    return transformed
+
+
 def shade_human_anatomy(sprite:Image.Image,gender:str,direction:str,
                         shirt_top:int,pants_top:int,
                         skin_shade:tuple[int,int,int],
@@ -204,12 +257,16 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
     for gender,cfg in palettes.items():
         name=f"human-{gender}-base"
         def frame(direction:str,kind:str,index:int,expression:str|None=None):
-            anim="sleep" if kind=="sleep_seat" else "tired" if kind=="nap_stand" else "idle" if kind=="bathe" else "lie" if kind=="bathtub_bathe" else kind
+            anim=("sleep" if kind=="sleep_seat" else
+                  "tired" if kind=="nap_stand" else
+                  "sit" if kind=="squat_idle" else
+                  "idle" if kind in ("bent_over_idle","bathe") else
+                  "lie" if kind in ("lie_idle","bathtub_bathe") else kind)
             # Mirror directions are authored via native v6b, not generic canvas flip.
             # The modular base6 wrapper returns UPRIGHT layers even when its
             # anim=lie parameter is selected. Apply the SAME pixel-exact
             # native lie_flat transform used by the original V6B game.
-            lying=kind in ("lie","bathtub_bathe")
+            lying=kind in ("lie","lie_idle","bathtub_bathe")
             source_dir=("se" if direction in ("se","sw") else "ne") if lying else direction
             selected_expression=(expression if expression is not None
                                  else contextual_expression(kind,index))
@@ -234,6 +291,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # The native m/f rig already supplies the shared silhouette;
             # do NOT widen shoulders or hips after posing.
             sculpt_human_layers(layers,gender)
+            # Adjust every authored skin/body/eye/arm layer around one
+            # 4-way posture, before shading the dynamically located pelvis.
+            layers=warp_posture_layers(layers,kind,direction,index)
             shirt_mask=np.asarray(layers["shirt"].convert("RGBA"))[...,3]>0
             pant_mask=np.asarray(layers["pants"].convert("RGBA"))[...,3]>0
             shirt_rows=np.flatnonzero(np.any(shirt_mask,axis=1))
@@ -365,7 +425,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                                     fill=(172,222,236,210))
                 result.alpha_composite(foam)
             result=animate_human_micro_motion(result,layers["shirt"],
-                kind,index,tuple(pal.get("Ke",(170,115,87))),
+                "lie" if kind=="lie_idle" else kind,index,
+                tuple(pal.get("Ke",(170,115,87))),
                 tuple(pal.get("Ki",(223,181,147))))
             assert result.size==FRAME
             return result
@@ -410,11 +471,15 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             else:
                 fn=f"{name}-action-{kind}.png"
                 make_sheet(kind,count).save(media/fn,optimize=True)
-                motions.append({"id":kind,"name":kind.replace("_"," ").upper(),"category":"action",
+                motions.append({"id":kind,"name":kind.replace("_"," ").upper(),
+                    "category":"posture" if kind in POSTURE_FRAME_MS else "action",
                     "source":"custom","sheet":"media/"+fn,"row":0,"available":True,
-                    "frames":count,"frame_ms":([330,360,380,360] if kind=="bathe" else
+                    "frames":count,"frame_ms":(POSTURE_FRAME_MS[kind] if kind in POSTURE_FRAME_MS else
+                                [330,360,380,360] if kind=="bathe" else
                                 [320,340,360,350,340,330] if kind=="bathtub_bathe" else [210]*count),
-                    "loop":kind in ("sit","sleep_seat","nap_stand","talk","sit_type","lie","bathe","bathtub_bathe"),
+                    "loop":kind in ("sit","sleep_seat","nap_stand","talk","sit_type","lie",
+                                    "bathe","bathtub_bathe",*POSTURE_FRAME_MS),
+                    "posture":kind if kind in POSTURE_FRAME_MS else None,
                     "reason":""})
         expressions=[]
         for expr in EXPRS:
