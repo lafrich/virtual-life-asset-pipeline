@@ -94,7 +94,7 @@ permissions:
 
 concurrency:
   group: character-stock-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
