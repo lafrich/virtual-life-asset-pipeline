@@ -1,4 +1,10 @@
-"""Sleep must preserve actual native head shape and eye coordinates at 1:1."""
+"""Native V6B bed sleep must rotate its full-size head around the neck.
+
+A standing/vertical head attached to an isometric lying body is not a valid
+sleep pose. All head, eye and hair pixels must rotate together *without*
+scaling or flattening, and must touch the real projected shoulder on both
+perspectives (SE/SW and NE/NW).
+"""
 import sys
 from pathlib import Path
 import unittest
@@ -9,91 +15,116 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"chars-iso"/"v6b"/"tools"))
 import live_v6b as v6b
 
-class HeadPreservingLie(unittest.TestCase):
-    def test_face_and_head_use_same_native_pixel_translation(self):
-        body=np.zeros((112,64,4),dtype=np.uint8)
-        # Distinct head pixels, with an asymmetric wedge silhouette. A
-        # flattened/rotated head would not retain this exact pixel pattern.
-        for yy in range(31,53):
-            for xx in range(16,36):
-                if (xx+yy)%7 != 0:
-                    body[yy,xx]=[247,121,63,255]
-        body[53:57,25:31]=[247,121,63,255]
-        body[57:96,24:38]=[62,69,85,255]
-        # The face layer is authored in standing-head coordinates.
-        face=np.zeros_like(body);face[43:45,24:26]=[0,0,0,255]
-        skin=Image.fromarray(body,"RGBA")
-        eye=Image.fromarray(face,"RGBA")
-        shift=v6b.lie_head_shift({"body":skin})
-        out=v6b.lie_preserve_head({"body":skin},"se",shift)["body"]
-        overlay=v6b.lie_preserve_head({"face":eye},"se",shift)["face"]
-        dx,dy=shift
-        for y in range(31,53):
-            for x in range(16,36):
-                if (x+y)%7 != 0:
-                    self.assertEqual(out.getpixel((x+dx,y+dy)),(247,121,63,255))
-        # Eyes must land at the SAME relative point within the original skull.
-        self.assertEqual(overlay.getpixel((24+dx,43+dy)),(0,0,0,255))
-        self.assertEqual(overlay.getpixel((25+dx,44+dy)),(0,0,0,255))
-        self.assertNotEqual(shift, v6b.lie_head_shift({"face":eye}),
-         "A face-only recentering would misalign the face; shared shift is required")
 
-    def test_neck_is_connected_to_the_reclined_body_in_all_directions(self):
-        # A fixed x/y for the head used to leave a visible gap. The preserved
-        # chin/neck must intersect a REAL projected shoulder pixel, in either
-        # perspective and after applying the normal mirrored direction.
-        body=np.zeros((112,64,4),dtype=np.uint8)
-        for y in range(30,56):
-            inset=4 if y<33 else 2 if y<35 else 0 if y<50 else 3 if y<53 else 6
-            body[y,17+inset:42-inset]=[248,180,115,255]
-        body[56:59,27:33]=[248,180,115,255]
-        torso=np.zeros_like(body)
-        torso[56:83,22:42]=[55,74,92,255]
-        source={"body":Image.fromarray(body,"RGBA"),
-                "shirt":Image.fromarray(torso,"RGBA")}
+def specimen():
+    body=np.zeros((112,64,4),dtype=np.uint8)
+    for yy in range(30,56):
+        inset=4 if yy<33 else 2 if yy<35 else 0 if yy<50 else 3 if yy<53 else 6
+        body[yy,17+inset:42-inset]=[248,180,115,255]
+    body[56:59,27:33]=[248,180,115,255]
+    torso=np.zeros_like(body)
+    torso[56:83,22:42]=[55,74,92,255]
+    eye=np.zeros_like(body)
+    eye[42:44,24:27]=[17,32,42,255]
+    eye[42:44,33:36]=[17,32,42,255]
+    hair=np.zeros_like(body)
+    hair[30:34,20:39]=[25,25,28,255]
+    return {
+        "body":Image.fromarray(body,"RGBA"),
+        "shirt":Image.fromarray(torso,"RGBA"),
+        "face":Image.fromarray(eye,"RGBA"),
+        "hair_front":Image.fromarray(hair,"RGBA"),
+    }
+
+
+def rotated_pixel(x,y,pivot,shift):
+    neck_x,neck_y=pivot
+    dx,dy=shift
+    return (neck_x+dx+y-neck_y,neck_y+dy-(x-neck_x))
+
+
+def adjacent(a,b):
+    """Allow a 1-pixel welded neck seam, never a disconnected floating head."""
+    dilation=b.copy()
+    for dy in (-1,0,1):
+        for dx in (-1,0,1):
+            src_y0=max(0,-dy);src_y1=min(112,112-dy)
+            src_x0=max(0,-dx);src_x1=min(64,64-dx)
+            dilation[src_y0+dy:src_y1+dy,src_x0+dx:src_x1+dx] |= (
+                b[src_y0:src_y1,src_x0:src_x1])
+    return bool(np.any(a & dilation))
+
+
+class BedSleepHeadRotation(unittest.TestCase):
+    def test_head_and_eyes_rotate_together_exactly_one_to_one(self):
+        source=specimen()
+        for view in ("se","ne"):
+            pivot=v6b.lie_neck_pivot(source)
+            shift=v6b.lie_head_shift(source,view)
+            self.assertIsNotNone(pivot)
+            output=v6b.lie_preserve_head(source,view,shift,pivot)
+            original=np.asarray(source["body"])
+            result=np.asarray(output["body"])
+            # Every original head pixel has the exact original RGBA value
+            # in its 90-degree CLOCKWISE position, not standing upright.
+            count=0
+            for y in range(30,56):
+                for x in range(64):
+                    if original[y,x,3]==0:continue
+                    rx,ry=rotated_pixel(x,y,pivot,shift)
+                    self.assertTrue(0<=rx<64 and 0<=ry<112)
+                    np.testing.assert_array_equal(result[ry,rx],original[y,x],
+                        err_msg=f"{view} head pixel ({x},{y}) failed rotation")
+                    count+=1
+            self.assertGreater(count,250)
+            # Facial features rotate around EXACTLY the same joint.
+            face=np.asarray(source["face"])
+            face_out=np.asarray(output["face"])
+            for y,x in zip(*np.nonzero(face[...,3])):
+                rx,ry=rotated_pixel(int(x),int(y),pivot,shift)
+                np.testing.assert_array_equal(face_out[ry,rx],face[y,x])
+
+    def test_rotated_skull_connects_to_original_reclined_shoulder_in_all_views(self):
+        source=specimen()
+        body=np.asarray(source["body"]).copy()
+        body[:56]=0
         for direction in ("se","sw","ne","nw"):
             view="se" if direction in ("se","sw") else "ne"
-            dx,dy=v6b.lie_head_shift(source,view)
-            head=body.copy()
-            head[56:]=0
-            only_torso=body.copy()
-            only_torso[:56]=0
-            moved_head=np.zeros_like(body)
-            # Reuse the same integer translation/paste as the renderer.
-            im=Image.new("RGBA",(64,112))
-            im.paste(Image.fromarray(head,"RGBA"),(dx,dy))
-            head_mask=np.asarray(im)[...,3]>0
+            pivot=v6b.lie_neck_pivot(source)
+            shift=v6b.lie_head_shift(source,view)
+            # Isolate the rotated original skull from body/legs.
+            head_image=np.asarray(source["body"]).copy()
+            head_image[56:]=0
+            head=v6b.lie_preserve_head(
+                {"body":Image.fromarray(head_image,"RGBA")},view,shift,pivot)
+            head_mask=np.asarray(head["body"])[...,3]>0
             flat=v6b.lie_flat({
-                "body":Image.fromarray(only_torso,"RGBA"),
+                "body":Image.fromarray(body,"RGBA"),
                 "shirt":source["shirt"]},view,"lie")
-            torso_mask=np.asarray(flat["body"])[...,3]>0
-            torso_mask |= np.asarray(flat["shirt"])[...,3]>0
+            torso=(np.asarray(flat["body"])[...,3]>0 |
+                   np.asarray(flat["shirt"])[...,3]>0)
             if direction in ("sw","nw"):
                 head_mask=np.fliplr(head_mask)
-                torso_mask=np.fliplr(torso_mask)
-            self.assertTrue(np.any(head_mask & torso_mask),
-                f"{direction}: preserved skull detached from horizontal neck/shoulder")
-            # The output must remain unscaled: entire original head silhouette
-            # (not just the centre pixel) is translated exactly.
-            self.assertEqual(int(head_mask.sum()),int((head[...,3]>0).sum()))
-            frame=v6b.lie_preserve_head(source,view,(dx,dy))
-            result=np.asarray(frame["body"])[...,3]>0
-            result |= np.asarray(frame["shirt"])[...,3]>0
-            if direction in ("sw","nw"):
-                result=np.fliplr(result)
-            self.assertTrue(np.any(result))
+                torso=np.fliplr(torso)
+            self.assertTrue(adjacent(head_mask,torso),
+                f"{direction} rotated head no longer touches shoulder")
 
-    def test_one_pixel_in_source_stays_one_pixel_in_sleep(self):
-        figure=np.zeros((112,64,4),dtype=np.uint8)
-        figure[33,19]=[14,28,210,255]
-        figure[41:50,25:35]=[248,173,116,255]
-        figure[57:97,21:40]=[31,65,88,255]
-        src=Image.fromarray(figure,"RGBA")
-        shift=v6b.lie_head_shift({"figure":src})
-        out=v6b.lie_preserve_head({"figure":src},"ne",shift)["figure"]
-        self.assertEqual(out.getpixel((19+shift[0],33+shift[1])),(14,28,210,255))
-        # Native head colours remain unchanged and pixelated.
-        self.assertEqual(out.getpixel((25+shift[0],41+shift[1])),(248,173,116,255))
+    def test_rotation_keeps_size_not_old_sheared_or_upright_pose(self):
+        source=specimen()
+        view="ne"
+        pivot=v6b.lie_neck_pivot(source)
+        shift=v6b.lie_head_shift(source,view)
+        head=np.asarray(source["hair_front"])[...,3]>0
+        result=np.asarray(
+            v6b.lie_preserve_head(source,view,shift,pivot)["hair_front"])[...,3]>0
+        self.assertEqual(int(np.sum(result)),int(np.sum(head)))
+        sy,sx=np.nonzero(head);ry,rx=np.nonzero(result)
+        self.assertEqual(int(sx.max()-sx.min()),int(ry.max()-ry.min()))
+        self.assertEqual(int(sy.max()-sy.min()),int(rx.max()-rx.min()))
+        # The topmost hair band was horizontal. During bed sleep it becomes
+        # VERTICAL: previous broken implementation merely translated it.
+        self.assertLess(int(rx.max()-rx.min()),int(ry.max()-ry.min()))
+
 
 if __name__=="__main__":
     unittest.main()
