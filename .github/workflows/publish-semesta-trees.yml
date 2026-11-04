@@ -53,7 +53,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/vegetation_kebonsirih/trees/*.png assets/vegetation_kebonsirih/manifest.json
+          git add -f assets/vegetation_kebonsirih/trees/*.png
+          git add assets/vegetation_kebonsirih/manifest.json
           if ! git diff --cached --quiet; then
             git commit -m "Render and publish all 22 Semesta tree variants [skip ci]"
             git push
