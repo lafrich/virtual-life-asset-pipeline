@@ -21,7 +21,7 @@ const T=window.VLActionTemplates||{
  invalidate:()=>{}
 };
 const DIR=["se","sw","ne","nw"],BUILD_KEY="virtual-life-bangun-ruang-v1";
-const SLEEP=window.VLUniversalSleep;
+const SLEEP=window.VLUniversalSleep,BODY=window.VLUniversalBodyActions;
 const BASE=new URL("/virtual-life-asset-pipeline/",location.origin);
 const deepLink=new URLSearchParams(location.search);
 let deepFloor=Math.max(1,Math.min(12,Number(deepLink.get("floor"))||1));
@@ -156,7 +156,7 @@ function actionSource(){
  }
  const preferred={
   toilet:["sit","sit_type","toilet"],toilet_sit:["sit","sit_type"],
-  bathe:["swim","bathe"],shower:["swim","bathe"],bath:["swim","bathe"],
+  bathe:["bathe","swim"],shower:["bathe","swim"],bath:["bathe","swim"],
   sleep:["sleep","sleep_seat","lie","nap_stand"],
   nap:["sleep","sleep_seat"],lie_down:["sleep","lie"],wake_up:["sleep","lie"],
   lie_idle:["sleep","lie"],bed_enter:["sleep","lie"],bed_exit:["sleep","lie"],
@@ -429,6 +429,15 @@ function render(){
  }
  const face=selectedExpression();
  if(face)P.drawExpression(sourceCtx,face,dir,frame,path=>pic(url(path)));
+ // Simulation-only universal bath appearance. The editable source frame
+ // remains untouched; dressing and undressing belong to the action state.
+ const hygiene=BODY?.resolve(actor(),state.action);
+ if(hygiene?.kind==="bath"){
+  const bath=pic(url(hygiene.sheet));
+  if(bath?.ready)BODY.apply(sourceCtx,{actor:actor(),action:state.action,
+   direction:dir,frame,bodyImage:bath.im});
+  else sourceCtx.clearRect(0,BODY.BODY_START_Y||53,64,59);
+ }
  const universal=Boolean(SLEEP?.resolve(actor(),state.action));
  const angle=universal?0:P.rotation($("template-rotation").value);
  const breath=universal?SLEEP.breathing(frame):0;
