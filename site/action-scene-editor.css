@@ -73,3 +73,10 @@ html,body.scene-body{height:100%;min-height:0;margin:0;overflow:hidden;backgroun
 #act-apply-outfit,#act-apply-face{background:#a8c6ef;color:#0a377c;border-color:#f5fbff #57779e #57779e #f5fbff}
 #act-outfit-pending.is-pending{background:#fff0cc;color:#663a02;border:1px solid #ca9946}
 #act-face-status.is-applied,#act-outfit-pending.is-applied{background:#deeee0;color:#225d32;border:1px solid #9bbc9a}
+
+/* Apply stays visible beneath the scrollable inspector, even with long
+   face asset galleries and wardrobe dropdowns. */
+.scene-apply-bar{display:grid;gap:4px;flex:none;min-height:76px;background:#dbe2ed;
+ border-top:2px solid #7d8eaa;padding:8px 10px}
+.scene-apply-bar button{width:100%;min-height:34px}
+.scene-apply-bar .scene-mini{padding:4px 6px;font-size:9px;line-height:1.25}
