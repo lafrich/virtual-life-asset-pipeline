@@ -40,6 +40,41 @@ for(const [angle,lift] of [[0,0],[90,20],[180,88],[270,20]]){
  assert.deepEqual(calls.find(x=>x[0]==="image"),["image","frame",-32,-100,64,112]);
  assert.equal(calls.some(x=>x[0]==="rotate"),angle!==0);
 }
+
+// A translated pose must carry its mouth overlay with its actual head,
+// not with the upright face coordinates saved in the expression atlas.
+function mockHead(left,top){
+ const rgba={width:64,height:112,data:new Uint8ClampedArray(64*112*4)};
+ for(let y=top;y<top+16;y++)for(let x=left;x<left+13;x++)
+  rgba.data[(y*64+x)*4+3]=255;
+ return rgba;
+}
+const baseHead=A.headAnchor(mockHead(20,31));
+const posedHead=A.headAnchor(mockHead(27,45));
+assert.ok(baseHead&&posedHead);
+assert.equal(posedHead.x-baseHead.x,7);
+assert.equal(posedHead.y-baseHead.y,14);
+assert.equal(A.headAnchor(mockHead(20,31)).y,31);
+assert.equal(A.headAnchor({width:64,height:112,data:new Uint8ClampedArray(64*112*4)}),null);
+// A body pose moved +7 right/+14 down must move the actual Bleh face
+// on the scene canvas, while keeping the source crop at its native atlas row.
+const priorDoc=global.document;
+global.document={createElement(){return {
+ width:64,height:112,
+ getContext(){return {drawImage(){},getImageData(){return mockHead(20,31);}}}
+};}};
+const poseCalls=[];
+const poseCtx={
+ ...ctx,getImageData(){return mockHead(27,45);},
+ drawImage(...a){poseCalls.push(a);}
+};
+const humanBleh={naturalWidth:256,naturalHeight:448};
+assert.equal(A.drawExpression(poseCtx,{id:"bleh",sheet:"media/human-male-base-expression-bleh.png"},
+ "se",0,()=>({ready:true,im:humanBleh})),true);
+assert.deepEqual(poseCalls[0].slice(1,5),[17,30,31,32]);
+assert.deepEqual(poseCalls[0].slice(5,7),[24,44]);
+if(priorDoc===undefined)delete global.document;else global.document=priorDoc;
+
 const html=fs.readFileSync("site/action-editor.html","utf8");
 const editor=fs.readFileSync("site/action-editor.js","utf8");
 for(const id of ["template-rotation","template-expression","template-loop"]){

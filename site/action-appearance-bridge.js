@@ -22,6 +22,54 @@
   const n=((Math.floor(frame)||0)%columns+columns)%columns;
   return {x:n*64,y:row*112};
  }
+ // Scan the actual upright head in a native 64x112 pose. Use the first
+ // opaque head rows (not its feet/pivot), so squat/bend/idle head motion
+ // translates the face overlay by the SAME amount.
+ function headAnchor(rgba){
+  if(!rgba||rgba.width!==64||rgba.height!==112||!rgba.data)return null;
+  const a=rgba.data;let top=-1;
+  for(let y=18;y<86&&top<0;y++){
+   for(let x=8;x<56;x++){
+    if(a[(y*64+x)*4+3]>=160){top=y;break;}
+   }
+  }
+  if(top<0)return null;
+  const xs=[];
+  for(let y=top;y<=Math.min(top+11,85);y++){
+   for(let x=8;x<56;x++){
+    if(a[(y*64+x)*4+3]>=160)xs.push(x);
+   }
+  }
+  if(xs.length<8)return null;
+  xs.sort((a,b)=>a-b);
+  return {x:xs[Math.floor(xs.length/2)],y:top};
+ }
+ const blehSources=new WeakMap();
+ function blehHeadShift(ctx,image,src){
+  // Human Bleh uses a full native sprite sheet. Sample its same-actor
+  // head, compare to the action frame already painted into the editor.
+  // Never calculate this from character-independent face coordinates.
+  if(typeof document==="undefined"||typeof ctx.getImageData!=="function")return {x:0,y:0};
+  try{
+   let frames=blehSources.get(image);
+   if(!frames){frames=new Map();blehSources.set(image,frames);}
+   const key=src.x+","+src.y;
+   if(!frames.has(key)){
+    const sample=document.createElement("canvas");sample.width=64;sample.height=112;
+    const sctx=sample.getContext("2d",{willReadFrequently:true});
+    if(!sctx)return {x:0,y:0};
+    sctx.drawImage(image,src.x,src.y,64,112,0,0,64,112);
+    frames.set(key,headAnchor(sctx.getImageData(0,0,64,112)));
+   }
+   const from=frames.get(key),to=headAnchor(ctx.getImageData(0,0,64,112));
+   if(!from||!to)return {x:0,y:0};
+   const dx=to.x-from.x,dy=to.y-from.y;
+   // Lying rigs tilt the complete head: do not force an upright face
+   // into a completely different projection.
+   if(Math.abs(dx)>16||Math.abs(dy)>27)return {x:0,y:0};
+   return {x:dx,y:dy};
+  }catch(_){return {x:0,y:0};}
+ }
  function drawExpression(ctx,face,direction,frame,load){
   if(!ctx||!face||face.id==="neutral")return false;
   const view=DIRECTIONS.indexOf(direction);
@@ -36,9 +84,12 @@
   // Full-body expression sheets are NOT overlays. Crop only original
   // face/hair rectangle, never replace arms, torso, bag or action pose.
   const crop=mode==="overlay"?{x:16,y:28,w:33,h:36}:{x:17,y:30,w:31,h:32};
-  ctx.save();ctx.beginPath();ctx.rect(crop.x,crop.y,crop.w,crop.h);ctx.clip();
+  const shift=face.id==="bleh"&&mode==="sheet"?
+   blehHeadShift(ctx,image,src):{x:0,y:0};
+  ctx.save();ctx.beginPath();
+  ctx.rect(crop.x+shift.x,crop.y+shift.y,crop.w,crop.h);ctx.clip();
   ctx.drawImage(image,src.x+crop.x,src.y+crop.y,crop.w,crop.h,
-   crop.x,crop.y,crop.w,crop.h);
+   crop.x+shift.x,crop.y+shift.y,crop.w,crop.h);
   ctx.restore();
   return true;
  }
@@ -53,5 +104,5 @@
   ctx.drawImage(sprite,-32,-100,64,112);
   ctx.restore();
  }
- return Object.freeze({DIRECTIONS,rotation,sourceRect,drawExpression,drawRotated});
+ return Object.freeze({DIRECTIONS,rotation,sourceRect,headAnchor,drawExpression,drawRotated});
 });
