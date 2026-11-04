@@ -9,9 +9,9 @@ const bridge=fs.readFileSync("site/action-frame-bridge.js","utf8");
 const animations=fs.readFileSync("site/animations.js","utf8");
 const index=fs.readFileSync("site/index.html","utf8");
 const all=new Set(registry.map(x=>x.id));
-assert.equal(registry.length,203,"Existing 203 canonical action definitions must not disappear");
-assert.equal(all.size,203,"Canonical action IDs must remain unique");
-assert.equal(registry.filter(x=>x.status==="planned").length,196,
+assert.equal(registry.length,204,"Existing 203 canonical action definitions must not disappear");
+assert.equal(all.size,204,"Canonical action IDs must remain unique");
+assert.equal(registry.filter(x=>x.status==="planned").length,197,
  "Unrendered sprites cannot be relabelled as playable");
 assert.equal(registry.filter(x=>x.status!=="planned").length,7);
 assert.ok([...new Set(registry.map(x=>x.category))].length>=13);
@@ -52,4 +52,4 @@ assert.ok(index.includes('id="animation-author"'),"Animation roadmap needs an ed
 assert.ok(animations.includes('id=actionForClip(selected)')||animations.includes('const id=actionForClip(selected)'),
  "Editor button must preserve chosen action ID");
 assert.ok(animations.includes('openActionTab({actor:selectedTarget()?.id||"ichsan",action:id})'));
-console.log("PASS player-action DB: 203 canonical definitions, 16 game bindings + 4 variants, 207 registered action IDs including 2 universal native bed poses, honest rig states and cross-app wiring");
+console.log("PASS player-action DB: 204 canonical definitions, 16 game bindings + 4 variants, 208 registered action IDs including 2 universal native bed poses, honest rig states and cross-app wiring");
