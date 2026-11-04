@@ -96,7 +96,7 @@ assert.ok(app.includes('const rearView=dirIndex===2||dirIndex===3'),
  "Backpack depth must distinguish SE/SW from NE/NW");
 assert.ok(app.includes('placement!==(rearView?"front":"back")'),
  "Rear bags should be visible on back torso, front bags behind avatar");
-assert.ok(app.includes('ctx.rect(x,y+56*z,64*z,(112-56)*z)'),
+assert.ok(app.includes('targetCtx.rect(x,y+56*z,64*z,(112-56)*z)'),
  "Bag cannot cover the rear skull or neck");
 assert.ok(editor.includes('const rearBag=state.category==="bag"'),
  "Accessory editor preview must match runtime rear bag depth");
