@@ -29,16 +29,22 @@ class BlehAlignmentTest(unittest.TestCase):
                     rgba=np.asarray(parts["mouth"])
                     # Tongue starts at the actual mouth, never floats
                     # below the jaw or appears on the cheek.
-                    yy,xx=np.nonzero((rgba[:,:,0]==232)&(rgba[:,:,1]==105)
-                                       &(rgba[:,:,2]==139)&(rgba[:,:,3]>0))
+                    yy,xx=np.nonzero((rgba[:,:,0]==224)&(rgba[:,:,1]==119)
+                                       &(rgba[:,:,2]==142)&(rgba[:,:,3]>0))
                     self.assertTrue(len(xx),(view,bob,frame))
                     self.assertLessEqual(abs(float(np.median(xx))-original),2)
                     self.assertGreaterEqual(yy.min(),expected_y+1)
-                    self.assertLessEqual(yy.max(),expected_y+4)
+                    self.assertLessEqual(yy.max(),expected_y+3)
                     eye=np.asarray(parts["eyes"])
                     ey=np.nonzero(eye[:,:,3]>0)[0]
                     self.assertTrue(len(ey))
                     self.assertEqual(int(ey.min()),expected_y-6)
+                    blush=np.asarray(parts["blush"])
+                    by,bx=np.nonzero(blush[:,:,3]>0)
+                    self.assertTrue(len(bx))
+                    # Never reach the ears or float outside the cheeks.
+                    self.assertGreaterEqual(bx.min(),23)
+                    self.assertLessEqual(bx.max(),41)
 
     def test_rear_views_remain_blank(self):
         for view in ("ne","nw"):
