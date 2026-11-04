@@ -13,13 +13,13 @@ BACKLOG = ROOT / "assets" / "animation_library" / "backlog.json"
 
 
 class LifeSimBacklogTests(unittest.TestCase):
-    def test_valid_196_actions_with_gameplay_coverage(self):
+    def test_valid_197_actions_with_gameplay_coverage(self):
         actions = read_backlog(BACKLOG)
-        self.assertEqual(len(actions), 196)
+        self.assertEqual(len(actions), 197)
         self.assertEqual(len({a["id"] for a in actions}), len(actions))
         counts = {priority: sum(a["priority"] == priority for a in actions)
                   for priority in ("P0", "P1", "P2")}
-        self.assertEqual(counts, {"P0": 55, "P1": 112, "P2": 29})
+        self.assertEqual(counts, {"P0": 55, "P1": 113, "P2": 29})
         self.assertEqual(len({a["category"] for a in actions}), 13)
         self.assertTrue(all(a["status"] == "planned" for a in actions))
         by_id = {a["id"]: a for a in actions}
@@ -37,10 +37,10 @@ class LifeSimBacklogTests(unittest.TestCase):
         source = json.loads(registry_path.read_text(encoding="utf-8"))
         self.assertEqual(source["version"], 2)
         actions = source["actions"]
-        self.assertEqual(len(actions), 203)
+        self.assertEqual(len(actions), 204)
         self.assertEqual(len({a["id"] for a in actions}), len(actions))
         assert_backlog_synced(BACKLOG, actions)
-        self.assertEqual(sum(a.get("status") == "planned" for a in actions), 196)
+        self.assertEqual(sum(a.get("status") == "planned" for a in actions), 197)
         self.assertEqual(sum(a.get("status") != "planned" for a in actions), 7)
         corrupt = json.loads(json.dumps(actions))
         next(a for a in corrupt if a.get("status") == "planned")["priority"] = "P2"
@@ -49,7 +49,7 @@ class LifeSimBacklogTests(unittest.TestCase):
 
     def test_planned_catalog_has_no_sprite_or_approvals(self):
         records = planned_records(BACKLOG, set())
-        self.assertEqual(len(records), 196)
+        self.assertEqual(len(records), 197)
         for item in records:
             self.assertEqual(item["status"], "planned")
             self.assertFalse(item["rig_ready"])
@@ -105,7 +105,7 @@ class LifeSimBacklogTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             items = build_animation_catalog(Path(directory), "https://github.com/lafrich/virtual-life-asset-pipeline")
             plans = [a for a in items if a["status"] == "planned"]
-            self.assertEqual(len(plans), 196)
+            self.assertEqual(len(plans), 197)
             self.assertTrue(all(not a["gif"] and not a["poster"] for a in plans))
             self.assertTrue(any(a["gif"] for a in items if a["status"] == "preview"))
             self.assertEqual(len({a["id"] for a in items}), len(items))
