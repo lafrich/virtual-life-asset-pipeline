@@ -11,6 +11,10 @@ for sex in ("male","female"):
     item=by_id[f"human_{sex}_base"]
     assert item.get("gender")==sex
     motions={m["id"]:m for m in item["motions"] if m.get("available")}
+    toilet=out/f"media/human-{sex}-base-action-toilet.png"
+    assert toilet.is_file()
+    with Image.open(toilet) as image:
+        assert image.mode=="RGBA" and image.size==(256,448)
     assert "sit" in motions and "bathe" in motions
     assert motions["bathe"]["frames"]==4
     assert motions["bathe"]["loop"] is True
