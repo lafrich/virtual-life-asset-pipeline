@@ -39,6 +39,30 @@ test("procedural fallback stays on this actor's own pixels",()=>{
  assert.equal(calls[0][7],128);assert.equal(calls[0][8],224);
  assert.ok(calls[0][6]<40,"Jump should move up");
 });
+test("Bathtub always exists in Male/Female and every actor's motion union",()=>{
+ const femaleNative={...human,motions:[...human.motions,
+  {id:"bathtub_bathe",source:"custom",sheet:"media/female-soak.png",
+   frames:6,available:true}]};
+ const authored=U.catalogFor(femaleNative,registry).find(x=>x.id==="bathtub_bathe");
+ assert.equal(authored.playback,"authored");
+ assert.equal(authored.frames,6);
+ const robot={id:"legacy_robot",sheet:"media/robot-sheet.png",
+  motions:[{id:"lie",source:"custom",sheet:"media/robot-lie.png",
+   frames:4,available:true}]};
+ const auto=U.catalogFor(robot,registry).find(x=>x.id==="bathtub_bathe");
+ assert.equal(auto.playback,"procedural");
+ assert.equal(auto.primitive,"lie");
+ assert.equal(auto.prototype.sheet,"media/robot-lie.png",
+  "Never replace robots, aliens and customized humans with the base human atlas");
+ assert.equal(auto.frames,6);
+ assert.equal(U.catalogFor(native,registry).find(x=>x.id==="bathtub_bathe").prototype.id,
+  "idle","No LIE rig still gets an explicitly labelled own-pixel fallback");
+ const app=fs.readFileSync("site/app.js","utf8");
+ assert.match(app,/const choices=\[/);
+ assert.match(app,/m=>m.id==="bathtub_bathe"/);
+ assert.match(app,/drawBathFoam/);
+});
+
 test("shared search UI and canonical registry are loaded",()=>{
  const app=fs.readFileSync("site/app.js","utf8");
  const html=fs.readFileSync("site/index.html","utf8");
