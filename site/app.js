@@ -192,7 +192,16 @@ function buildFaces(character) {
 
 function buildMotions(character) {
   const grid=$("motion-grid");grid.replaceChildren();
-  const choices=Array.isArray(character.motions)?character.motions:[];
+  const registered=Array.isArray(character.motions)?character.motions:[];
+  // Bathtub is a shared action, not restricted to the two sample GIFs.
+  // Pin it above the large canonical list so both Human bases and every
+  // other character can find and apply it without scrolling 200+ actions.
+  const bath=registered.find(m=>m.id==="bathtub_bathe");
+  const fallback=UNIVERSAL_MOTIONS?.catalogFor(character,[
+    {id:"bathtub_bathe",label:"BATHTUB BATHE",category:"hygiene"}
+  ])?.find(m=>m.id==="bathtub_bathe");
+  const choices=[...(bath?[bath]:(fallback?[fallback]:[])),
+    ...registered.filter(m=>m.id!=="bathtub_bathe")];
   const categories=["all",...new Set(choices.map(a=>a.category||"action"))];
   const filter=$("motion-category"),old=filter.value;
   filter.replaceChildren();
