@@ -46,6 +46,11 @@
       "id": "embarrassed",
       "label": "Embarrassed",
       "tone": "shy"
+    },
+    {
+      "id": "bleh",
+      "label": "Bleh / Melet",
+      "tone": "teasing"
     }
   ],
   "internal": [
@@ -134,6 +139,28 @@
       "blink",
       "sleepy",
       "neutral"
+    ],
+    "squat_down": [
+      "neutral",
+      "neutral",
+      "neutral",
+      "blink",
+      "neutral",
+      "smile"
+    ],
+    "squat_up": [
+      "neutral",
+      "neutral",
+      "blink",
+      "neutral",
+      "smile",
+      "neutral"
+    ],
+    "knee_chest_idle": [
+      "sad",
+      "neutral",
+      "blink",
+      "bleh"
     ]
   },
   "gameplay": {
@@ -208,6 +235,12 @@
       "neutral",
       "blink",
       "smile"
+    ],
+    "tease": [
+      "neutral",
+      "bleh",
+      "bleh",
+      "smile"
     ]
   },
   "fallbacks": {
@@ -223,7 +256,8 @@
     "idle": "neutral",
     "squat": "neutral",
     "bent_over": "embarrassed",
-    "lie_idle": "sleepy"
+    "lie_idle": "sleepy",
+    "bleh": "bleh"
   },
   "policy": "Only adult human original V6B sprite generation owns face pixels; runtime labels context and uses same-character authored atlases. Unknown or unrigged actors must not borrow a base mannequin face."
 }
