@@ -13,11 +13,11 @@ import numpy as np
 # Both entry points are supported: python tools/build_character_catalog.py
 # (tools/ on sys.path) and import tools.build_human_templates from repo root.
 try:
-    from tools.human_pose_extras import knee_chest_layers,bleh_face,PARTS as FACE_PARTS
+    from tools.human_pose_extras import knee_chest_layers,bleh_face,cheeky_face,PARTS as FACE_PARTS
 except ModuleNotFoundError as exc:
     if exc.name!="tools":
         raise
-    from human_pose_extras import knee_chest_layers,bleh_face,PARTS as FACE_PARTS
+    from human_pose_extras import knee_chest_layers,bleh_face,cheeky_face,PARTS as FACE_PARTS
 
 DIRECTIONS=("se","sw","ne","nw")
 MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6,"squat_idle":4,"squat_down":6,"squat_up":6,"knee_chest_idle":4,"bent_over_idle":4,"lie_idle":4}
@@ -291,7 +291,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             selected_expression=(expression if expression is not None
                                  else contextual_expression(kind,index))
             face_expression=("blink" if kind in ("lie","sleep_seat")
-                             else "neutral" if selected_expression=="bleh" else selected_expression)
+                             else "neutral" if selected_expression in ("bleh","cheeky") else selected_expression)
             canvas,layers,pal=base6.render(cfg,f=index if kind=="walk" else index%4,d=source_dir,
                                            expr=face_expression,anim=anim)
             M.bald(layers,pal)
@@ -311,8 +311,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # The native m/f rig already supplies the shared silhouette;
             # do NOT widen shoulders or hips after posing.
             sculpt_human_layers(layers,gender)
-            if selected_expression=="bleh":
-                layers,parts=bleh_face(layers,source_dir,index,pal)
+            if selected_expression in ("bleh","cheeky"):
+                draw_face=cheeky_face if selected_expression=="cheeky" else bleh_face
+                layers,parts=draw_face(layers,source_dir,index,pal)
                 if emotion_sink is not None:
                     emotion_sink.update(parts)
             # Adjust every authored skin/body/eye/arm layer around one
@@ -555,7 +556,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             entry={"id":expr,
                 "label":next(r["label"] for r in EXPRESSION_CONTEXTS["gallery"] if r["id"]==expr),
                 "sheet":"media/"+fn,
-                "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True,
+                "portrait":"media/"+portrait,"frames":4,"frame_ms":([190,200,260,220] if expr=="cheeky" else [270]*4),"loop":True,
                 "motion_sheets":{"idle":"media/"+fn,"walk":"media/"+walk_face}}
             if expr=="bleh":
                 entry["parts"]={part:{kind:f"media/{name}-face-bleh-{part}-{kind}.png"

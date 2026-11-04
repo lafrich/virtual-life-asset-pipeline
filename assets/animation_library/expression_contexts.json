@@ -51,6 +51,11 @@
       "id": "bleh",
       "label": "Bleh / Melet",
       "tone": "teasing"
+    },
+    {
+      "id": "cheeky",
+      "label": "Jahil / Tongue Out",
+      "tone": "playful"
     }
   ],
   "internal": [

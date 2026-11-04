@@ -153,3 +153,72 @@ def bleh_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,dict
         updated.alpha_composite(parts[part])
     layers["face"]=updated
     return layers,parts
+
+def cheeky_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,dict]:
+    """4-frame mischievous grin, animated eyes and tongue; NO HORNS.
+
+    Renders the selected male/female rig's own face anchored to its real
+    native mouth, including mirrored SW and bobbing frames. The skull,
+    skin, outfit, hairstyle and 64x112 body pivot remain untouched.
+    Face accent tones already used by V6B: ivory (248,246,240), pink
+    (224,119,142), dark rose (179,79,109) and blush (213,118,122).
+    """
+    layers=dict(layers)
+    parts={part:Image.new("RGBA",FRAME) for part in PARTS}
+    if direction not in ("se","sw") or layers.get("face") is None:
+        return layers,parts
+    rgba=np.asarray(layers["face"].convert("RGBA"))
+    yy,xx=np.nonzero(rgba[:62,:,3]>0)
+    if len(yy):
+        mouth_y=int(yy.max())
+        mouth_x=int(round(float(np.median(xx[yy>=mouth_y-1]))))
+    else:
+        mouth_x,mouth_y=(28 if direction=="sw" else 35),50
+    sign=-1 if direction=="sw" else 1
+    def pos(u,v):
+        return (max(0,min(63,mouth_x+sign*(u-35))),
+                max(0,min(111,mouth_y+v-50)))
+    def box(draw,x1,y1,x2,y2,fill):
+        a,b=pos(x1,y1),pos(x2,y2)
+        draw.rectangle((min(a[0],b[0]),min(a[1],b[1]),
+                        max(a[0],b[0]),max(a[1],b[1])),fill=fill)
+    phase=frame%4
+    dark=(*tuple(palette.get("0",(48,35,27))),255)
+    edge=(*tuple(palette.get("K7",(113,76,66))),255)
+    ivory=(248,246,240,255)
+    tongue=(224,119,142,255)
+    shade=(179,79,109,255)
+    # Eyes glance right, left, then squint as the tongue retracts.
+    eyes=ImageDraw.Draw(parts["eyes"],"RGBA")
+    gaze=(0,1,-1,0)[phase]
+    for eye,tilt in ((30,0),(40,1)):
+        eyes.line((pos(eye-2,42-tilt-(phase==2)),
+                   pos(eye+1,43-tilt)),fill=edge,width=1)
+        if phase==3:
+            eyes.line((pos(eye-1,45),pos(eye+2,45)),fill=edge,width=1)
+            eyes.point(pos(eye+1,46),fill=dark)
+        else:
+            box(eyes,eye-1,45,eye+1,47,ivory)
+            eyes.point(pos(eye+gaze,46),fill=dark)
+    blush=ImageDraw.Draw(parts["blush"],"RGBA")
+    for cheek in (28,42):
+        blush.point(pos(cheek,49),fill=(213,118,122,255))
+    mouth=ImageDraw.Draw(parts["mouth"],"RGBA")
+    # 12px-wide laughing mouth belongs INSIDE the native head.
+    box(mouth,30,49,41,52,dark)
+    mouth.line((pos(30,49),pos(32,48)),fill=edge,width=1)
+    mouth.line((pos(39,48),pos(41,49)),fill=edge,width=1)
+    box(mouth,32,49,39,49,ivory)
+    length=(0,2,5,3)[phase]
+    if length:
+        box(mouth,34,51,37,51+length,tongue)
+        mouth.point(pos(35,51+length),fill=shade)
+        if length>=3:mouth.point(pos(35,52+length//2),fill=shade)
+    else:
+        box(mouth,33,51,38,51,edge)
+    layers["brows"]=Image.new("RGBA",FRAME)
+    face=Image.new("RGBA",FRAME)
+    for name in ("blush","eyes","mouth"):
+        face.alpha_composite(parts[name])
+    layers["face"]=face
+    return layers,parts
