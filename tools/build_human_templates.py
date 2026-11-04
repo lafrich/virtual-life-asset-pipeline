@@ -220,7 +220,7 @@ def repair_female_chest_voids(sprite:Image.Image,torso_layer:Image.Image,
     cx=int(round(float(np.median(cols))))
     x0=max(2,cx-13)
     x1=min(62,cx+14)
-    y0=max(BODY_START_Y+3,top+4)
+    y0=max(BODY_START_Y+3,top+11)
     y1=min(99,int(pants_top)+6,top+30)
     if x1-x0<14 or y1-y0<8:return sprite.copy()
     transparent=pixels[...,3]==0
@@ -251,7 +251,7 @@ def repair_female_chest_voids(sprite:Image.Image,torso_layer:Image.Image,
                               (x+1,y+1),(x-1,y-1),(x-1,y+1),(x+1,y-1)))
             if border or not 1<=len(component)<=6:continue
             mean_x=sum(x for x,y in component)/len(component)
-            if not 3<=abs(mean_x-cx)<=10:continue
+            if not 4<=abs(mean_x-cx)<=8:continue
             # Reuse a real native skin pixel from the surrounding body.
             swatches=[]
             for x,y in component:
