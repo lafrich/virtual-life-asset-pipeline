@@ -74,4 +74,28 @@ assert.ok(sceneJs.includes('scene.participants'));
 assert.ok(sceneJs.includes('pointermove'));
 assert.ok(sceneJs.includes('m.outfit_masks'));
 assert.ok(animations.includes('target.searchParams.set("embedded","1")'));
+
+for(const id of ["act-face-asset","act-face-preview","act-apply-face",
+ "act-face-upload","act-face-upload-button","act-face-offset-x",
+ "act-face-offset-y","act-apply-outfit","act-outfit-pending"]){
+ assert.ok(sceneHtml.includes('id="'+id+'"'),"Missing modular face/outfit control: "+id);
+}
+assert.equal((sceneHtml.match(/id="act-apply-outfit"/g)||[]).length,1,
+ "Only one Apply Outfit button should control the selected actor");
+assert.ok(sceneHtml.includes('class="scene-apply-bar"'),
+ "Apply must stay outside the scrollable inspector");
+assert.ok(sceneJs.includes('draft.equipment[slotName]=event.target.value'),
+ "Outfit selection must stage edits rather than immediately changing other actors");
+assert.ok(sceneJs.includes('p.equipment={...draft.equipment}'),
+ "Apply Outfit must commit the selected character wardrobe");
+assert.ok(sceneJs.includes('markDirty();paint();renderGear(p,actorFor(p));'),
+ "Apply Outfit must redraw preview immediately");
+assert.ok(sceneJs.includes('p.faceAssetId=id;p.faceAssetData=asset.data||null'),
+ "Apply Face must attach a portable emotion asset to that actor");
+assert.ok(sceneJs.includes('drawFacePatch(brush,actor,p,m,frame)'),
+ "Face must be drawn from a modular asset on the selected character");
+assert.ok(sceneJs.includes('face?.overlay||face?.sheet'),
+ "Legacy expression-only NPC overlays must be supported");
+assert.ok(sceneJs.includes('faceAssets.filter(x=>x.actorBase===actorBase(actor))'),
+ "Face assets from a different character rig must not be offered");
 console.log("PASS Mahluk Hidup Action Editor tab supports multi-character scene composition and preset storage");
