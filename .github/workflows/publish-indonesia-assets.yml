@@ -1,0 +1,65 @@
+name: Publish Indonesia native assets for Semesta
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assets/street_buildings/_work/indonesia.py"
+      - ".github/workflows/publish-indonesia-assets.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: semesta-indonesia-native-assets
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install native v6b renderer dependencies
+        run: python -m pip install numpy pillow
+      - name: Generate official pixel art, pivots and pixel-depth layers
+        run: python assets/street_buildings/_work/indonesia.py
+      - name: Validate published catalog and sprite geometry
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          from PIL import Image
+          root=pathlib.Path('assets/street_buildings')
+          data=json.loads((root/'indonesia_catalog.json').read_text())
+          assert data['projection']=='isometric-2:1'
+          assert len(data['assets'])==20, len(data['assets'])
+          seen=set()
+          for asset in data['assets']:
+              assert asset['id'] not in seen
+              seen.add(asset['id'])
+              assert asset['published'] and asset['pack']=='indonesia-v1'
+              for orientation, view in asset['variants'].items():
+                  path=root/view['file']
+                  depth=path.with_name(path.stem+'__depth.png')
+                  assert path.is_file() and depth.is_file(),(path,depth)
+                  with Image.open(path) as im, Image.open(depth) as d:
+                      assert im.size==d.size==tuple(view['size']),path
+                      assert im.mode=='RGBA' and d.mode=='RGBA',path
+                      assert im.getbbox(),path
+                      assert set(im.getchannel('A').getdata()).issubset({0,56,255}),path
+                  x,y=view['pivot'];w,h=view['size']
+                  assert 0<=x<=w and 0<y<=h,(asset['id'],orientation)
+          assert (root/'indonesia_contact_sheet.png').is_file()
+          print('Verified',len(seen),'native Indonesian assets and all depth sheets')
+          PY
+      - name: Commit generated PNGs and catalog to official pipeline
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f assets/street_buildings/kampung/id_*.png assets/street_buildings/jalan_besar/id_*.png assets/street_buildings/props/id_*.png
+          git add -f assets/street_buildings/indonesia_contact_sheet.png
+          git add assets/street_buildings/indonesia_catalog.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 20 Indonesia pixel sprites with native depth for Semesta [skip ci]"
+            git push
+          fi
