@@ -1,0 +1,1411 @@
+{
+  "version": 1,
+  "pack": "indonesia-200-v1",
+  "projection": "isometric-2:1",
+  "tile": [
+    64,
+    32
+  ],
+  "items": [
+    {
+      "id": "id200_transport_angkot_kota",
+      "label": "Angkot kota",
+      "kind": "angkot",
+      "category": "transport",
+      "num": 1
+    },
+    {
+      "id": "id200_transport_bajaj_oranye",
+      "label": "Bajaj oranye",
+      "kind": "bajaj",
+      "category": "transport",
+      "num": 2
+    },
+    {
+      "id": "id200_transport_becak_kampung",
+      "label": "Becak kampung",
+      "kind": "becak",
+      "category": "transport",
+      "num": 3
+    },
+    {
+      "id": "id200_transport_bentor_roda_tiga",
+      "label": "Bentor roda tiga",
+      "kind": "bentor",
+      "category": "transport",
+      "num": 4
+    },
+    {
+      "id": "id200_transport_delman_andong",
+      "label": "Delman andong",
+      "kind": "andong",
+      "category": "transport",
+      "num": 5
+    },
+    {
+      "id": "id200_transport_elf_travel_antarkota",
+      "label": "Elf travel antarkota",
+      "kind": "bus",
+      "category": "transport",
+      "num": 6
+    },
+    {
+      "id": "id200_transport_pikap_sayur_keliling",
+      "label": "Pikap sayur keliling",
+      "kind": "pickup",
+      "category": "transport",
+      "num": 7
+    },
+    {
+      "id": "id200_transport_pikap_galon_isi_ulang",
+      "label": "Pikap galon isi ulang",
+      "kind": "pickup",
+      "category": "transport",
+      "num": 8
+    },
+    {
+      "id": "id200_transport_truk_pasir_proyek",
+      "label": "Truk pasir proyek",
+      "kind": "truck",
+      "category": "transport",
+      "num": 9
+    },
+    {
+      "id": "id200_transport_truk_material_bangunan",
+      "label": "Truk material bangunan",
+      "kind": "truck",
+      "category": "transport",
+      "num": 10
+    },
+    {
+      "id": "id200_transport_motor_bebek_warga",
+      "label": "Motor bebek warga",
+      "kind": "motor",
+      "category": "transport",
+      "num": 11
+    },
+    {
+      "id": "id200_transport_motor_matik_keluarga",
+      "label": "Motor matik keluarga",
+      "kind": "motor",
+      "category": "transport",
+      "num": 12
+    },
+    {
+      "id": "id200_transport_sepeda_ontel_tua",
+      "label": "Sepeda ontel tua",
+      "kind": "sepeda",
+      "category": "transport",
+      "num": 13
+    },
+    {
+      "id": "id200_transport_sepeda_tukang_roti",
+      "label": "Sepeda tukang roti",
+      "kind": "sepeda",
+      "category": "transport",
+      "num": 14
+    },
+    {
+      "id": "id200_transport_motor_ojol_box_makanan",
+      "label": "Motor ojol box makanan",
+      "kind": "motor",
+      "category": "transport",
+      "num": 15
+    },
+    {
+      "id": "id200_transport_motor_ojol_dengan_penumpang",
+      "label": "Motor ojol dengan penumpang",
+      "kind": "motor",
+      "category": "transport",
+      "num": 16
+    },
+    {
+      "id": "id200_transport_motor_kurir_barang",
+      "label": "Motor kurir barang",
+      "kind": "motor",
+      "category": "transport",
+      "num": 17
+    },
+    {
+      "id": "id200_transport_bus_kota_kecil",
+      "label": "Bus kota kecil",
+      "kind": "bus",
+      "category": "transport",
+      "num": 18
+    },
+    {
+      "id": "id200_transport_ambulans_puskesmas",
+      "label": "Ambulans puskesmas",
+      "kind": "van",
+      "category": "transport",
+      "num": 19
+    },
+    {
+      "id": "id200_transport_mobil_angkut_sampah",
+      "label": "Mobil angkut sampah",
+      "kind": "truck",
+      "category": "transport",
+      "num": 20
+    },
+    {
+      "id": "id200_jalan_halte_bus_transjakarta",
+      "label": "Halte bus TransJakarta",
+      "kind": "halte",
+      "category": "jalan",
+      "num": 1
+    },
+    {
+      "id": "id200_jalan_halte_angkot_pinggir_jalan",
+      "label": "Halte angkot pinggir jalan",
+      "kind": "halte",
+      "category": "jalan",
+      "num": 2
+    },
+    {
+      "id": "id200_jalan_pos_polisi_kecil",
+      "label": "Pos polisi kecil",
+      "kind": "pos",
+      "category": "jalan",
+      "num": 3
+    },
+    {
+      "id": "id200_jalan_portal_kampung",
+      "label": "Portal kampung",
+      "kind": "portal",
+      "category": "jalan",
+      "num": 4
+    },
+    {
+      "id": "id200_jalan_gapura_rt_rw",
+      "label": "Gapura RT RW",
+      "kind": "gapura",
+      "category": "jalan",
+      "num": 5
+    },
+    {
+      "id": "id200_jalan_zebra_cross",
+      "label": "Zebra cross",
+      "kind": "jalan",
+      "category": "jalan",
+      "num": 6
+    },
+    {
+      "id": "id200_jalan_polisi_tidur",
+      "label": "Polisi tidur",
+      "kind": "jalan",
+      "category": "jalan",
+      "num": 7
+    },
+    {
+      "id": "id200_jalan_pembatas_beton_jalan",
+      "label": "Pembatas beton jalan",
+      "kind": "blok",
+      "category": "jalan",
+      "num": 8
+    },
+    {
+      "id": "id200_jalan_kerucut_lalu_lintas",
+      "label": "Kerucut lalu lintas",
+      "kind": "cone",
+      "category": "jalan",
+      "num": 9
+    },
+    {
+      "id": "id200_jalan_lampu_merah_simpang",
+      "label": "Lampu merah simpang",
+      "kind": "lampu",
+      "category": "jalan",
+      "num": 10
+    },
+    {
+      "id": "id200_jalan_lampu_jalan_antik",
+      "label": "Lampu jalan antik",
+      "kind": "tiang",
+      "category": "jalan",
+      "num": 11
+    },
+    {
+      "id": "id200_jalan_lampu_pju_modern",
+      "label": "Lampu PJU modern",
+      "kind": "tiang",
+      "category": "jalan",
+      "num": 12
+    },
+    {
+      "id": "id200_jalan_tiang_kabel_listrik",
+      "label": "Tiang kabel listrik",
+      "kind": "tiang",
+      "category": "jalan",
+      "num": 13
+    },
+    {
+      "id": "id200_jalan_gardu_listrik_pinggir_jalan",
+      "label": "Gardu listrik pinggir jalan",
+      "kind": "gardu",
+      "category": "jalan",
+      "num": 14
+    },
+    {
+      "id": "id200_jalan_trafo_pinggir_jalan",
+      "label": "Trafo pinggir jalan",
+      "kind": "gardu",
+      "category": "jalan",
+      "num": 15
+    },
+    {
+      "id": "id200_jalan_spanduk_melintang_jalan",
+      "label": "Spanduk melintang jalan",
+      "kind": "banner",
+      "category": "jalan",
+      "num": 16
+    },
+    {
+      "id": "id200_jalan_papan_nama_gang",
+      "label": "Papan nama gang",
+      "kind": "papan",
+      "category": "jalan",
+      "num": 17
+    },
+    {
+      "id": "id200_jalan_pos_parkir",
+      "label": "Pos parkir",
+      "kind": "pos",
+      "category": "jalan",
+      "num": 18
+    },
+    {
+      "id": "id200_jalan_hidran_pemadam",
+      "label": "Hidran pemadam",
+      "kind": "hidran",
+      "category": "jalan",
+      "num": 19
+    },
+    {
+      "id": "id200_jalan_palang_parkir",
+      "label": "Palang parkir",
+      "kind": "portal",
+      "category": "jalan",
+      "num": 20
+    },
+    {
+      "id": "id200_warung_warteg_etalase_hijau",
+      "label": "Warteg etalase hijau",
+      "kind": "warung",
+      "category": "warung",
+      "num": 1
+    },
+    {
+      "id": "id200_warung_warmindo_mie_instan",
+      "label": "Warmindo mie instan",
+      "kind": "warung",
+      "category": "warung",
+      "num": 2
+    },
+    {
+      "id": "id200_warung_rumah_makan_padang",
+      "label": "Rumah makan Padang",
+      "kind": "warung",
+      "category": "warung",
+      "num": 3
+    },
+    {
+      "id": "id200_warung_warung_nasi_sunda",
+      "label": "Warung nasi Sunda",
+      "kind": "warung",
+      "category": "warung",
+      "num": 4
+    },
+    {
+      "id": "id200_warung_kedai_mie_ayam",
+      "label": "Kedai mie ayam",
+      "kind": "warung",
+      "category": "warung",
+      "num": 5
+    },
+    {
+      "id": "id200_warung_warung_bakso",
+      "label": "Warung bakso",
+      "kind": "warung",
+      "category": "warung",
+      "num": 6
+    },
+    {
+      "id": "id200_warung_warung_sate_ayam",
+      "label": "Warung sate ayam",
+      "kind": "warung",
+      "category": "warung",
+      "num": 7
+    },
+    {
+      "id": "id200_warung_tenda_pecel_lele",
+      "label": "Tenda pecel lele",
+      "kind": "tenda",
+      "category": "warung",
+      "num": 8
+    },
+    {
+      "id": "id200_warung_booth_martabak",
+      "label": "Booth martabak",
+      "kind": "warung",
+      "category": "warung",
+      "num": 9
+    },
+    {
+      "id": "id200_warung_warung_gorengan",
+      "label": "Warung gorengan",
+      "kind": "warung",
+      "category": "warung",
+      "num": 10
+    },
+    {
+      "id": "id200_warung_booth_es_teh_dan_jus",
+      "label": "Booth es teh dan jus",
+      "kind": "warung",
+      "category": "warung",
+      "num": 11
+    },
+    {
+      "id": "id200_warung_kedai_kopi_tubruk",
+      "label": "Kedai kopi tubruk",
+      "kind": "warung",
+      "category": "warung",
+      "num": 12
+    },
+    {
+      "id": "id200_warung_toko_sembako",
+      "label": "Toko sembako",
+      "kind": "warung",
+      "category": "warung",
+      "num": 13
+    },
+    {
+      "id": "id200_warung_depot_air_isi_ulang",
+      "label": "Depot air isi ulang",
+      "kind": "warung",
+      "category": "warung",
+      "num": 14
+    },
+    {
+      "id": "id200_warung_laundry_kiloan",
+      "label": "Laundry kiloan",
+      "kind": "warung",
+      "category": "warung",
+      "num": 15
+    },
+    {
+      "id": "id200_warung_konter_pulsa_dan_hp",
+      "label": "Konter pulsa dan HP",
+      "kind": "warung",
+      "category": "warung",
+      "num": 16
+    },
+    {
+      "id": "id200_warung_tambal_ban_motor",
+      "label": "Tambal ban motor",
+      "kind": "warung",
+      "category": "warung",
+      "num": 17
+    },
+    {
+      "id": "id200_warung_pangkas_rambut",
+      "label": "Pangkas rambut",
+      "kind": "warung",
+      "category": "warung",
+      "num": 18
+    },
+    {
+      "id": "id200_warung_fotokopi_dan_atk",
+      "label": "Fotokopi dan ATK",
+      "kind": "warung",
+      "category": "warung",
+      "num": 19
+    },
+    {
+      "id": "id200_warung_apotek_kampung",
+      "label": "Apotek kampung",
+      "kind": "warung",
+      "category": "warung",
+      "num": 20
+    },
+    {
+      "id": "id200_bangunan_rumah_subsidi_sederhana",
+      "label": "Rumah subsidi sederhana",
+      "kind": "rumah",
+      "category": "bangunan",
+      "num": 1
+    },
+    {
+      "id": "id200_bangunan_rumah_kampung_tembok",
+      "label": "Rumah kampung tembok",
+      "kind": "rumah",
+      "category": "bangunan",
+      "num": 2
+    },
+    {
+      "id": "id200_bangunan_rumah_kontrakan_petak",
+      "label": "Rumah kontrakan petak",
+      "kind": "rumah",
+      "category": "bangunan",
+      "num": 3
+    },
+    {
+      "id": "id200_bangunan_rumah_kos_dua_lantai",
+      "label": "Rumah kos dua lantai",
+      "kind": "rumah",
+      "category": "bangunan",
+      "num": 4
+    },
+    {
+      "id": "id200_bangunan_ruko_dua_lantai",
+      "label": "Ruko dua lantai",
+      "kind": "ruko",
+      "category": "bangunan",
+      "num": 5
+    },
+    {
+      "id": "id200_bangunan_ruko_tiga_lantai",
+      "label": "Ruko tiga lantai",
+      "kind": "ruko",
+      "category": "bangunan",
+      "num": 6
+    },
+    {
+      "id": "id200_bangunan_minimarket_warna_merah_kuning",
+      "label": "Minimarket warna merah kuning",
+      "kind": "minimarket",
+      "category": "bangunan",
+      "num": 7
+    },
+    {
+      "id": "id200_bangunan_minimarket_warna_biru_kuning",
+      "label": "Minimarket warna biru kuning",
+      "kind": "minimarket",
+      "category": "bangunan",
+      "num": 8
+    },
+    {
+      "id": "id200_bangunan_bengkel_motor_warga",
+      "label": "Bengkel motor warga",
+      "kind": "bengkel",
+      "category": "bangunan",
+      "num": 9
+    },
+    {
+      "id": "id200_bangunan_puskesmas_kecamatan",
+      "label": "Puskesmas kecamatan",
+      "kind": "public",
+      "category": "bangunan",
+      "num": 10
+    },
+    {
+      "id": "id200_bangunan_kantor_kelurahan",
+      "label": "Kantor kelurahan",
+      "kind": "public",
+      "category": "bangunan",
+      "num": 11
+    },
+    {
+      "id": "id200_bangunan_kantor_kecamatan",
+      "label": "Kantor kecamatan",
+      "kind": "public",
+      "category": "bangunan",
+      "num": 12
+    },
+    {
+      "id": "id200_bangunan_balai_warga",
+      "label": "Balai warga",
+      "kind": "public",
+      "category": "bangunan",
+      "num": 13
+    },
+    {
+      "id": "id200_bangunan_sekolah_dasar_negeri",
+      "label": "Sekolah dasar negeri",
+      "kind": "sekolah",
+      "category": "bangunan",
+      "num": 14
+    },
+    {
+      "id": "id200_bangunan_gedung_smp_sma",
+      "label": "Gedung SMP SMA",
+      "kind": "sekolah",
+      "category": "bangunan",
+      "num": 15
+    },
+    {
+      "id": "id200_bangunan_mushola_kampung",
+      "label": "Mushola kampung",
+      "kind": "mushola",
+      "category": "bangunan",
+      "num": 16
+    },
+    {
+      "id": "id200_bangunan_masjid_lingkungan",
+      "label": "Masjid lingkungan",
+      "kind": "masjid",
+      "category": "bangunan",
+      "num": 17
+    },
+    {
+      "id": "id200_bangunan_gereja_kecil",
+      "label": "Gereja kecil",
+      "kind": "gereja",
+      "category": "bangunan",
+      "num": 18
+    },
+    {
+      "id": "id200_bangunan_pasar_tradisional",
+      "label": "Pasar tradisional",
+      "kind": "pasar",
+      "category": "bangunan",
+      "num": 19
+    },
+    {
+      "id": "id200_bangunan_gudang_toko_bangunan",
+      "label": "Gudang toko bangunan",
+      "kind": "gudang",
+      "category": "bangunan",
+      "num": 20
+    },
+    {
+      "id": "id200_pasar_lapak_sayur_segar",
+      "label": "Lapak sayur segar",
+      "kind": "lapak",
+      "category": "pasar",
+      "num": 1
+    },
+    {
+      "id": "id200_pasar_lapak_buah_lokal",
+      "label": "Lapak buah lokal",
+      "kind": "lapak",
+      "category": "pasar",
+      "num": 2
+    },
+    {
+      "id": "id200_pasar_lapak_ikan_basah",
+      "label": "Lapak ikan basah",
+      "kind": "lapak",
+      "category": "pasar",
+      "num": 3
+    },
+    {
+      "id": "id200_pasar_lapak_ayam_potong",
+      "label": "Lapak ayam potong",
+      "kind": "lapak",
+      "category": "pasar",
+      "num": 4
+    },
+    {
+      "id": "id200_pasar_lapak_bumbu_dapur",
+      "label": "Lapak bumbu dapur",
+      "kind": "lapak",
+      "category": "pasar",
+      "num": 5
+    },
+    {
+      "id": "id200_pasar_karung_beras_bertumpuk",
+      "label": "Karung beras bertumpuk",
+      "kind": "karung",
+      "category": "pasar",
+      "num": 6
+    },
+    {
+      "id": "id200_pasar_peti_buah_plastik",
+      "label": "Peti buah plastik",
+      "kind": "peti",
+      "category": "pasar",
+      "num": 7
+    },
+    {
+      "id": "id200_pasar_tabung_lpg_bertumpuk",
+      "label": "Tabung LPG bertumpuk",
+      "kind": "gas",
+      "category": "pasar",
+      "num": 8
+    },
+    {
+      "id": "id200_pasar_galon_air_bertumpuk",
+      "label": "Galon air bertumpuk",
+      "kind": "galon",
+      "category": "pasar",
+      "num": 9
+    },
+    {
+      "id": "id200_pasar_etalase_jajanan_pasar",
+      "label": "Etalase jajanan pasar",
+      "kind": "etalase",
+      "category": "pasar",
+      "num": 10
+    },
+    {
+      "id": "id200_pasar_payung_pedagang_pasar",
+      "label": "Payung pedagang pasar",
+      "kind": "payung",
+      "category": "pasar",
+      "num": 11
+    },
+    {
+      "id": "id200_pasar_tenda_biru_pasar",
+      "label": "Tenda biru pasar",
+      "kind": "tenda",
+      "category": "pasar",
+      "num": 12
+    },
+    {
+      "id": "id200_pasar_meja_makan_warung",
+      "label": "Meja makan warung",
+      "kind": "meja",
+      "category": "pasar",
+      "num": 13
+    },
+    {
+      "id": "id200_pasar_kursi_plastik_warung",
+      "label": "Kursi plastik warung",
+      "kind": "kursi",
+      "category": "pasar",
+      "num": 14
+    },
+    {
+      "id": "id200_pasar_freezer_es_krim",
+      "label": "Freezer es krim",
+      "kind": "freezer",
+      "category": "pasar",
+      "num": 15
+    },
+    {
+      "id": "id200_pasar_rak_snack_warung",
+      "label": "Rak snack warung",
+      "kind": "rak",
+      "category": "pasar",
+      "num": 16
+    },
+    {
+      "id": "id200_pasar_rak_mie_instan",
+      "label": "Rak mie instan",
+      "kind": "rak",
+      "category": "pasar",
+      "num": 17
+    },
+    {
+      "id": "id200_pasar_timbangan_pasar",
+      "label": "Timbangan pasar",
+      "kind": "timbangan",
+      "category": "pasar",
+      "num": 18
+    },
+    {
+      "id": "id200_pasar_gerobak_sampah_pasar",
+      "label": "Gerobak sampah pasar",
+      "kind": "gerobak",
+      "category": "pasar",
+      "num": 19
+    },
+    {
+      "id": "id200_pasar_kotak_styrofoam_ikan",
+      "label": "Kotak styrofoam ikan",
+      "kind": "peti",
+      "category": "pasar",
+      "num": 20
+    },
+    {
+      "id": "id200_rumah_jemuran_pakaian_warga",
+      "label": "Jemuran pakaian warga",
+      "kind": "jemuran",
+      "category": "rumah",
+      "num": 1
+    },
+    {
+      "id": "id200_rumah_toren_air_rumah",
+      "label": "Toren air rumah",
+      "kind": "toren",
+      "category": "rumah",
+      "num": 2
+    },
+    {
+      "id": "id200_rumah_antena_televisi_rumah",
+      "label": "Antena televisi rumah",
+      "kind": "antena",
+      "category": "rumah",
+      "num": 3
+    },
+    {
+      "id": "id200_rumah_parabola_rumah",
+      "label": "Parabola rumah",
+      "kind": "parabola",
+      "category": "rumah",
+      "num": 4
+    },
+    {
+      "id": "id200_rumah_pagar_besi_rumah",
+      "label": "Pagar besi rumah",
+      "kind": "pagar",
+      "category": "rumah",
+      "num": 5
+    },
+    {
+      "id": "id200_rumah_pagar_roster",
+      "label": "Pagar roster",
+      "kind": "pagar",
+      "category": "rumah",
+      "num": 6
+    },
+    {
+      "id": "id200_rumah_tembok_roster",
+      "label": "Tembok roster",
+      "kind": "pagar",
+      "category": "rumah",
+      "num": 7
+    },
+    {
+      "id": "id200_rumah_kanopi_rumah",
+      "label": "Kanopi rumah",
+      "kind": "kanopi",
+      "category": "rumah",
+      "num": 8
+    },
+    {
+      "id": "id200_rumah_carport_sederhana",
+      "label": "Carport sederhana",
+      "kind": "kanopi",
+      "category": "rumah",
+      "num": 9
+    },
+    {
+      "id": "id200_rumah_pot_tanaman_depan_rumah",
+      "label": "Pot tanaman depan rumah",
+      "kind": "pot",
+      "category": "rumah",
+      "num": 10
+    },
+    {
+      "id": "id200_rumah_rak_sandal_rumah",
+      "label": "Rak sandal rumah",
+      "kind": "rak",
+      "category": "rumah",
+      "num": 11
+    },
+    {
+      "id": "id200_rumah_kandang_ayam_pekarangan",
+      "label": "Kandang ayam pekarangan",
+      "kind": "kandang",
+      "category": "rumah",
+      "num": 12
+    },
+    {
+      "id": "id200_rumah_sangkar_burung_gantung",
+      "label": "Sangkar burung gantung",
+      "kind": "sangkar",
+      "category": "rumah",
+      "num": 13
+    },
+    {
+      "id": "id200_rumah_pos_ronda_kampung",
+      "label": "Pos ronda kampung",
+      "kind": "pos",
+      "category": "rumah",
+      "num": 14
+    },
+    {
+      "id": "id200_rumah_bangku_pos_ronda",
+      "label": "Bangku pos ronda",
+      "kind": "bangku",
+      "category": "rumah",
+      "num": 15
+    },
+    {
+      "id": "id200_rumah_papan_pengumuman_rt_rw",
+      "label": "Papan pengumuman RT RW",
+      "kind": "papan",
+      "category": "rumah",
+      "num": 16
+    },
+    {
+      "id": "id200_rumah_tempat_sampah_rumah",
+      "label": "Tempat sampah rumah",
+      "kind": "sampah",
+      "category": "rumah",
+      "num": 17
+    },
+    {
+      "id": "id200_rumah_kotak_meteran_listrik",
+      "label": "Kotak meteran listrik",
+      "kind": "kotak",
+      "category": "rumah",
+      "num": 18
+    },
+    {
+      "id": "id200_rumah_tempat_wudhu_rumah",
+      "label": "Tempat wudhu rumah",
+      "kind": "wudhu",
+      "category": "rumah",
+      "num": 19
+    },
+    {
+      "id": "id200_rumah_sumur_pompa_air",
+      "label": "Sumur pompa air",
+      "kind": "pompa",
+      "category": "rumah",
+      "num": 20
+    },
+    {
+      "id": "id200_tanaman_pohon_pisang_pekarangan",
+      "label": "Pohon pisang pekarangan",
+      "kind": "pisang",
+      "category": "tanaman",
+      "num": 1
+    },
+    {
+      "id": "id200_tanaman_pohon_kelapa_pesisir",
+      "label": "Pohon kelapa pesisir",
+      "kind": "kelapa",
+      "category": "tanaman",
+      "num": 2
+    },
+    {
+      "id": "id200_tanaman_pohon_mangga_rindang",
+      "label": "Pohon mangga rindang",
+      "kind": "pohon",
+      "category": "tanaman",
+      "num": 3
+    },
+    {
+      "id": "id200_tanaman_pohon_pepaya_berbuah",
+      "label": "Pohon pepaya berbuah",
+      "kind": "pepaya",
+      "category": "tanaman",
+      "num": 4
+    },
+    {
+      "id": "id200_tanaman_pohon_rambutan",
+      "label": "Pohon rambutan",
+      "kind": "pohon",
+      "category": "tanaman",
+      "num": 5
+    },
+    {
+      "id": "id200_tanaman_pohon_sawo",
+      "label": "Pohon sawo",
+      "kind": "pohon",
+      "category": "tanaman",
+      "num": 6
+    },
+    {
+      "id": "id200_tanaman_pohon_ketapang",
+      "label": "Pohon ketapang",
+      "kind": "ketapang",
+      "category": "tanaman",
+      "num": 7
+    },
+    {
+      "id": "id200_tanaman_pohon_kamboja_bunga",
+      "label": "Pohon kamboja bunga",
+      "kind": "kamboja",
+      "category": "tanaman",
+      "num": 8
+    },
+    {
+      "id": "id200_tanaman_bougenville_berbunga",
+      "label": "Bougenville berbunga",
+      "kind": "semak",
+      "category": "tanaman",
+      "num": 9
+    },
+    {
+      "id": "id200_tanaman_pucuk_merah_pekarangan",
+      "label": "Pucuk merah pekarangan",
+      "kind": "semak",
+      "category": "tanaman",
+      "num": 10
+    },
+    {
+      "id": "id200_tanaman_semak_teh_tehan_pagar",
+      "label": "Semak teh tehan pagar",
+      "kind": "semak",
+      "category": "tanaman",
+      "num": 11
+    },
+    {
+      "id": "id200_tanaman_rumpun_bambu",
+      "label": "Rumpun bambu",
+      "kind": "bambu",
+      "category": "tanaman",
+      "num": 12
+    },
+    {
+      "id": "id200_tanaman_daun_pandan_wangi",
+      "label": "Daun pandan wangi",
+      "kind": "pandan",
+      "category": "tanaman",
+      "num": 13
+    },
+    {
+      "id": "id200_tanaman_monstera_dalam_pot",
+      "label": "Monstera dalam pot",
+      "kind": "pot",
+      "category": "tanaman",
+      "num": 14
+    },
+    {
+      "id": "id200_tanaman_sirih_gading_pot",
+      "label": "Sirih gading pot",
+      "kind": "pot",
+      "category": "tanaman",
+      "num": 15
+    },
+    {
+      "id": "id200_tanaman_lidah_mertua_pot",
+      "label": "Lidah mertua pot",
+      "kind": "pot",
+      "category": "tanaman",
+      "num": 16
+    },
+    {
+      "id": "id200_tanaman_petak_sawah_padi",
+      "label": "Petak sawah padi",
+      "kind": "padi",
+      "category": "tanaman",
+      "num": 17
+    },
+    {
+      "id": "id200_tanaman_ilalang_liar",
+      "label": "Ilalang liar",
+      "kind": "ilalang",
+      "category": "tanaman",
+      "num": 18
+    },
+    {
+      "id": "id200_tanaman_eceng_gondok_kolam",
+      "label": "Eceng gondok kolam",
+      "kind": "air",
+      "category": "tanaman",
+      "num": 19
+    },
+    {
+      "id": "id200_tanaman_teratai_kolam",
+      "label": "Teratai kolam",
+      "kind": "air",
+      "category": "tanaman",
+      "num": 20
+    },
+    {
+      "id": "id200_budaya_bedug_masjid",
+      "label": "Bedug masjid",
+      "kind": "bedug",
+      "category": "budaya",
+      "num": 1
+    },
+    {
+      "id": "id200_budaya_rak_sandal_masjid",
+      "label": "Rak sandal masjid",
+      "kind": "rak",
+      "category": "budaya",
+      "num": 2
+    },
+    {
+      "id": "id200_budaya_rak_sajadah_dan_kitab",
+      "label": "Rak sajadah dan kitab",
+      "kind": "rak",
+      "category": "budaya",
+      "num": 3
+    },
+    {
+      "id": "id200_budaya_tiang_toa_masjid",
+      "label": "Tiang toa masjid",
+      "kind": "toa",
+      "category": "budaya",
+      "num": 4
+    },
+    {
+      "id": "id200_budaya_umbul_umbul_merah_putih",
+      "label": "Umbul umbul merah putih",
+      "kind": "umbul",
+      "category": "budaya",
+      "num": 5
+    },
+    {
+      "id": "id200_budaya_tiang_bendera_merah_putih",
+      "label": "Tiang bendera Merah Putih",
+      "kind": "bendera",
+      "category": "budaya",
+      "num": 6
+    },
+    {
+      "id": "id200_budaya_gapura_perayaan_17_agustus",
+      "label": "Gapura perayaan 17 Agustus",
+      "kind": "gapura",
+      "category": "budaya",
+      "num": 7
+    },
+    {
+      "id": "id200_budaya_panggung_acara_17_agustus",
+      "label": "Panggung acara 17 Agustus",
+      "kind": "panggung",
+      "category": "budaya",
+      "num": 8
+    },
+    {
+      "id": "id200_budaya_panjat_pinang",
+      "label": "Panjat pinang",
+      "kind": "pinang",
+      "category": "budaya",
+      "num": 9
+    },
+    {
+      "id": "id200_budaya_kursi_hajatan",
+      "label": "Kursi hajatan",
+      "kind": "kursi",
+      "category": "budaya",
+      "num": 10
+    },
+    {
+      "id": "id200_budaya_tenda_hajatan_warga",
+      "label": "Tenda hajatan warga",
+      "kind": "tenda",
+      "category": "budaya",
+      "num": 11
+    },
+    {
+      "id": "id200_budaya_sound_system_hajatan",
+      "label": "Sound system hajatan",
+      "kind": "speaker",
+      "category": "budaya",
+      "num": 12
+    },
+    {
+      "id": "id200_budaya_booth_posyandu",
+      "label": "Booth posyandu",
+      "kind": "booth",
+      "category": "budaya",
+      "num": 13
+    },
+    {
+      "id": "id200_budaya_pendopo_warga",
+      "label": "Pendopo warga",
+      "kind": "pendopo",
+      "category": "budaya",
+      "num": 14
+    },
+    {
+      "id": "id200_budaya_tugu_kampung",
+      "label": "Tugu kampung",
+      "kind": "tugu",
+      "category": "budaya",
+      "num": 15
+    },
+    {
+      "id": "id200_budaya_ondel_ondel_betawi",
+      "label": "Ondel ondel Betawi",
+      "kind": "ondel",
+      "category": "budaya",
+      "num": 16
+    },
+    {
+      "id": "id200_budaya_baliho_informasi_kampung",
+      "label": "Baliho informasi kampung",
+      "kind": "baliho",
+      "category": "budaya",
+      "num": 17
+    },
+    {
+      "id": "id200_budaya_banner_pengajian_warga",
+      "label": "Banner pengajian warga",
+      "kind": "banner",
+      "category": "budaya",
+      "num": 18
+    },
+    {
+      "id": "id200_budaya_tempat_cuci_tangan_acara",
+      "label": "Tempat cuci tangan acara",
+      "kind": "wastafel",
+      "category": "budaya",
+      "num": 19
+    },
+    {
+      "id": "id200_budaya_meja_registrasi_hajatan",
+      "label": "Meja registrasi hajatan",
+      "kind": "meja",
+      "category": "budaya",
+      "num": 20
+    },
+    {
+      "id": "id200_gerobak_gerobak_bakmi_ayam",
+      "label": "Gerobak bakmi ayam",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 1
+    },
+    {
+      "id": "id200_gerobak_gerobak_sate_ayam",
+      "label": "Gerobak sate ayam",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 2
+    },
+    {
+      "id": "id200_gerobak_gerobak_bubur_ayam",
+      "label": "Gerobak bubur ayam",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 3
+    },
+    {
+      "id": "id200_gerobak_gerobak_es_cendol",
+      "label": "Gerobak es cendol",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 4
+    },
+    {
+      "id": "id200_gerobak_gerobak_es_doger",
+      "label": "Gerobak es doger",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 5
+    },
+    {
+      "id": "id200_gerobak_gerobak_cilok",
+      "label": "Gerobak cilok",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 6
+    },
+    {
+      "id": "id200_gerobak_gerobak_ketoprak",
+      "label": "Gerobak ketoprak",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 7
+    },
+    {
+      "id": "id200_gerobak_gerobak_pempek",
+      "label": "Gerobak pempek",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 8
+    },
+    {
+      "id": "id200_gerobak_gerobak_tahu_bulat",
+      "label": "Gerobak tahu bulat",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 9
+    },
+    {
+      "id": "id200_gerobak_gerobak_jagung_bakar",
+      "label": "Gerobak jagung bakar",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 10
+    },
+    {
+      "id": "id200_gerobak_gerobak_kerak_telor",
+      "label": "Gerobak kerak telor",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 11
+    },
+    {
+      "id": "id200_gerobak_gerobak_nasi_goreng",
+      "label": "Gerobak nasi goreng",
+      "kind": "gerobak",
+      "category": "gerobak",
+      "num": 12
+    },
+    {
+      "id": "id200_gerobak_kompor_kaki_lima",
+      "label": "Kompor kaki lima",
+      "kind": "kompor",
+      "category": "gerobak",
+      "num": 13
+    },
+    {
+      "id": "id200_gerobak_tabung_gas_melon",
+      "label": "Tabung gas melon",
+      "kind": "gas",
+      "category": "gerobak",
+      "num": 14
+    },
+    {
+      "id": "id200_gerobak_panci_bakso_besar",
+      "label": "Panci bakso besar",
+      "kind": "panci",
+      "category": "gerobak",
+      "num": 15
+    },
+    {
+      "id": "id200_gerobak_rice_cooker_warung",
+      "label": "Rice cooker warung",
+      "kind": "penanak",
+      "category": "gerobak",
+      "num": 16
+    },
+    {
+      "id": "id200_gerobak_nampan_gorengan",
+      "label": "Nampan gorengan",
+      "kind": "nampan",
+      "category": "gerobak",
+      "num": 17
+    },
+    {
+      "id": "id200_gerobak_meja_lesehan",
+      "label": "Meja lesehan",
+      "kind": "meja",
+      "category": "gerobak",
+      "num": 18
+    },
+    {
+      "id": "id200_gerobak_bangku_plastik_warung",
+      "label": "Bangku plastik warung",
+      "kind": "bangku",
+      "category": "gerobak",
+      "num": 19
+    },
+    {
+      "id": "id200_gerobak_lampu_gantung_warung",
+      "label": "Lampu gantung warung",
+      "kind": "lampu",
+      "category": "gerobak",
+      "num": 20
+    },
+    {
+      "id": "id200_publik_atm_booth_perbankan",
+      "label": "ATM booth perbankan",
+      "kind": "booth",
+      "category": "publik",
+      "num": 1
+    },
+    {
+      "id": "id200_publik_pom_bensin_mini",
+      "label": "Pom bensin mini",
+      "kind": "pommini",
+      "category": "publik",
+      "num": 2
+    },
+    {
+      "id": "id200_publik_pangkalan_ojek",
+      "label": "Pangkalan ojek",
+      "kind": "pos",
+      "category": "publik",
+      "num": 3
+    },
+    {
+      "id": "id200_publik_papan_pangkalan_becak",
+      "label": "Papan pangkalan becak",
+      "kind": "papan",
+      "category": "publik",
+      "num": 4
+    },
+    {
+      "id": "id200_publik_toilet_umum_kampung",
+      "label": "Toilet umum kampung",
+      "kind": "public",
+      "category": "publik",
+      "num": 5
+    },
+    {
+      "id": "id200_publik_bak_sampah_komunal",
+      "label": "Bak sampah komunal",
+      "kind": "sampah",
+      "category": "publik",
+      "num": 6
+    },
+    {
+      "id": "id200_publik_kontainer_sampah_kota",
+      "label": "Kontainer sampah kota",
+      "kind": "sampah",
+      "category": "publik",
+      "num": 7
+    },
+    {
+      "id": "id200_publik_gerobak_petugas_kebersihan",
+      "label": "Gerobak petugas kebersihan",
+      "kind": "gerobak",
+      "category": "publik",
+      "num": 8
+    },
+    {
+      "id": "id200_publik_menara_bts",
+      "label": "Menara BTS",
+      "kind": "bts",
+      "category": "publik",
+      "num": 9
+    },
+    {
+      "id": "id200_publik_warnet_kampung",
+      "label": "Warnet kampung",
+      "kind": "warung",
+      "category": "publik",
+      "num": 10
+    },
+    {
+      "id": "id200_publik_rental_playstation",
+      "label": "Rental PlayStation",
+      "kind": "warung",
+      "category": "publik",
+      "num": 11
+    },
+    {
+      "id": "id200_publik_penjahit_dan_obras",
+      "label": "Penjahit dan obras",
+      "kind": "warung",
+      "category": "publik",
+      "num": 12
+    },
+    {
+      "id": "id200_publik_kantor_urusan_agama",
+      "label": "Kantor urusan agama",
+      "kind": "public",
+      "category": "publik",
+      "num": 13
+    },
+    {
+      "id": "id200_publik_koperasi_simpan_pinjam",
+      "label": "Koperasi simpan pinjam",
+      "kind": "public",
+      "category": "publik",
+      "num": 14
+    },
+    {
+      "id": "id200_publik_saung_makan_sunda",
+      "label": "Saung makan Sunda",
+      "kind": "saung",
+      "category": "publik",
+      "num": 15
+    },
+    {
+      "id": "id200_publik_gazebo_bambu",
+      "label": "Gazebo bambu",
+      "kind": "saung",
+      "category": "publik",
+      "num": 16
+    },
+    {
+      "id": "id200_publik_stand_sangkar_burung",
+      "label": "Stand sangkar burung",
+      "kind": "sangkar",
+      "category": "publik",
+      "num": 17
+    },
+    {
+      "id": "id200_publik_lapangan_voli_kampung",
+      "label": "Lapangan voli kampung",
+      "kind": "lapangan",
+      "category": "publik",
+      "num": 18
+    },
+    {
+      "id": "id200_publik_ring_basket_sekolah",
+      "label": "Ring basket sekolah",
+      "kind": "basket",
+      "category": "publik",
+      "num": 19
+    },
+    {
+      "id": "id200_publik_mushola_kompleks",
+      "label": "Mushola kompleks",
+      "kind": "mushola",
+      "category": "publik",
+      "num": 20
+    }
+  ]
+}
