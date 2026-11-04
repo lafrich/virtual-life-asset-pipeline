@@ -35,7 +35,7 @@ def bbox(img):
 # Rear 3/4 camera: tuck the scalp and helmet slightly back/up relative to
 # the shoulder plane. NE is authored; NW is its actual horizontal mirror.
 # Keep the torso, backpack, arms, and feet at their original V6B pivots.
-REAR_HEAD_OFFSET = (1, -2)
+REAR_HEAD_OFFSET = (0, 0)
 
 def translate_rgba(sprite, dx, dy):
     """Shift a single 64x112 RGBA layer without wrapping pixels around."""
@@ -55,10 +55,9 @@ def render(view, anim='idle', f=0, expr='neutral'):
         for k in ('face', 'brows'): L[k] = Image.fromarray(np.roll(np.roll(np.array(L[k]), dd, 0), 1 if base == 'se' else 0, 1))
     br = L['brows']; M.bald(L, pal); L['brows'] = br               # no hair: skin dome (same as the aliens), keep brows
     if base == 'ne':
-        # Move the actual head layers, not just the helmet. An earlier
-        # helmet-only offset left the nape floating in front of the pack.
-        # Translating all scalp/face/accessory layers together preserves the
-        # four-view pixel shape and animated head bob.
+        # Keep native rig head geometry anchored to its shoulders. The
+        # visible rear depth is now handled by overlapping / occluding the
+        # lower scalp with the pack, instead of dragging the head upward.
         dx, dy = REAR_HEAD_OFFSET
         for key in ('hair_back', 'hair_front', 'face', 'glasses', 'brows'):
             if key in L:
@@ -135,10 +134,11 @@ def dome(a, base, d=(0, 0)):
 def pack(base):
     """boxy silver/white pack with teal trim, red ring, green cone nozzle and a cannon barrel; same box as Yerbies (20x27)"""
     a = np.zeros((FH, FW, 4), np.uint8); dx, dy = (-4, -4) if base == 'se' else (0, 0)
-    # The REAR camera sees the actual back panel: it must be on the UPPER
-    # BACK (roughly shoulders to waistband), never down by the buttocks.
+    # REAR: panel rides HIGH across the nape / upper back. Its top pixels
+    # occlude the LOW scalp and neck (head behind the backpack). The former
+    # y49 start plus shifting the head UP left them barely touching.
     # Front/side cameras retain the narrower silhouette behind the actor.
-    x0, y0, x1, y1 = ((24, 49, 41, 68) if base == 'ne'
+    x0, y0, x1, y1 = ((24, 47, 41, 68) if base == 'ne'
                        else (23 + dx, 50 + dy, 42 + dx, 74 + dy))
     a = comp(a, shade(rect(x0, y0, x1, y1), SHELL, spec=(x0 + 1, y0 + 1), bias=-.05))
     for x in range(x0 + 1, x1): put(a, x, y0, SHELL[0])
@@ -157,11 +157,8 @@ def pack(base):
         for y, x in zip(*np.nonzero(disk(32.5, y0 + 10.0, 2.0))):
             put(a, x, y, TEAL[1])
         put(a, 32, y0 + 10, PAPER)
-        # The old 5px nozzle extended below the trousers waistband and
-        # made the back-mounted pack look like a bag hanging on the butt.
-        # Keep a small top attachment instead, entirely above the waist.
-        for y in range(y0 - 2, y0):
-            for x in range(30, 35):put(a,x,y,BAIZE if x < 33 else TEAL[3])
+        # No nozzle above the panel: it would poke through the scalp when
+        # the back panel occludes the nape. The pack mounts under the head.
     else:
         put(a, x0 + 2, y0 + 8, BAIZE); put(a, x0 + 2, y0 + 11, RED[1])     # side indicator lights (side ref)
     return a
@@ -195,13 +192,20 @@ def build(view='se', anim='idle', f=0, expr='neutral', pulse=0, modular=False):
         im.alpha_composite(Image.fromarray(np.roll(pack(base), bodyd, 0)))
     for k in order:
         if k in L: im.alpha_composite(L[k])
+    # Rear depth: lower scalp/nape and face must be BEHIND the panel.
+    # Render the actual head BEFORE the backpack, not just shift helmet
+    # coordinates. Otherwise the skin-coloured nape sits in front.
+    rear_head=('face','hair_front','glasses','brows')
     if not modular and base == 'ne':
+        for k in rear_head:
+            if k in L: im.alpha_composite(L[k])
         upper_back=np.roll(pack(base), bodyd, 0).copy()
         waist_y=max(0,min(FH,PY + bodyd))
         upper_back[waist_y:,:,3]=0
         im.alpha_composite(Image.fromarray(upper_back))
     im.alpha_composite(Image.fromarray(acc))
     for k in ('acc', 'arm_near', 'body_front', 'held', 'face', 'hair_front', 'glasses', 'brows'):
+        if not modular and base == 'ne' and k in rear_head:continue
         if k in L: im.alpha_composite(L[k])
     a = np.array(im)
     goggles(a, base, hd if anim != 'sleep' else (hd[0], hd[1]))
