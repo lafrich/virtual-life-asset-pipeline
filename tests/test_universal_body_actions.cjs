@@ -28,6 +28,19 @@ assert.equal(BODY.resolve(female,"bathe").sheet,
 assert.equal(BODY.resolve(citizen,"bathe").bodyType,"neutral");
 assert.equal(BODY.resolve(robot,"bathe"),null,"Do not convert robots to human anatomy");
 assert.equal(BODY.resolve(female,"walk"),null);
+for(const actor of [male,female]){
+ const soak=BODY.resolve(actor,"bathtub_bathe");
+ assert.ok(soak,"Adult Human base needs a real bathtub template");
+ assert.equal(soak.kind,"bathtub");
+ assert.equal(soak.coverage,"horizontal");
+ assert.equal(soak.frames,6);
+ assert.equal(soak.frameMs.length,6);
+ assert.equal(soak.sheet,"media/human-"+actor.gender+"-base-action-bathtub_bathe.png");
+}
+assert.equal(BODY.resolve(citizen,"bathtub_bathe"),null,
+ "Unknown body type must not borrow an unrelated adult human's face");
+assert.equal(BODY.resolve(robot,"bathtub_bathe"),null);
+
 const actorFace=new Uint8ClampedArray(64*112*4);
 for(let y=35;y<49;y++)for(let x=20;x<40;x++){
  const k=(y*64+x)*4;actorFace.set([147,101,76,255],k);
