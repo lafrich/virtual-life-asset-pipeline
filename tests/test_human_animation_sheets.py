@@ -17,10 +17,10 @@ for gender in ("male","female"):
     c=next(x for x in cat if x["id"]==f"human_{gender}_base")
     actions={m["id"]:m for m in c["motions"] if m.get("available")}
     assert set(actions)==set(expected),(gender,sorted(actions))
-    assert len(c["expressions"])==11
+    assert len(c["expressions"])==12
     assert (root/f"media/human-{gender}-base-action-toilet.png").is_file()
     assert {x["id"] for x in c["expressions"]}=={
-        "neutral","smile","happy","sad","angry","surprised","sleepy","blink","embarrassed","bleh","cheeky"}
+        "neutral","smile","happy","sad","angry","surprised","sleepy","blink","embarrassed","bleh","cheeky","grimace_blush"}
     for kind,frames in expected.items():
         action=actions[kind]
         assert action["frames"]==frames and len(action["frame_ms"])==frames

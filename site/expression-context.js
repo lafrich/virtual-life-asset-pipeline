@@ -5,7 +5,7 @@
  if(root)root.VLExpressionContext=api;
 })(typeof window!=="undefined"?window:null,function(){"use strict";
  const KNOWN=new Set(["neutral","smile","happy","sad","angry","surprised",
-   "sleepy","blink","embarrassed","bleh","cheeky","talk_open","talk_closed"]);
+   "sleepy","blink","embarrassed","bleh","cheeky","grimace_blush","talk_open","talk_closed"]);
  function track(db,motion){
    if(!motion)return ["neutral"];
    const id=typeof motion==="string"?motion:motion.id;

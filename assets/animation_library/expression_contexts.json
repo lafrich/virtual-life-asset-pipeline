@@ -56,6 +56,11 @@
       "id": "cheeky",
       "label": "Jahil / Tongue Out",
       "tone": "playful"
+    },
+    {
+      "id": "grimace_blush",
+      "label": "Meringis / Blush",
+      "tone": "flustered"
     }
   ],
   "internal": [

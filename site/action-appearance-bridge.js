@@ -84,7 +84,7 @@
   // Full-body expression sheets are NOT overlays. Crop only original
   // face/hair rectangle, never replace arms, torso, bag or action pose.
   const crop=mode==="overlay"?{x:16,y:28,w:33,h:36}:{x:17,y:30,w:31,h:32};
-  const shift=(face.id==="bleh"||face.id==="cheeky")&&mode==="sheet"?
+  const shift=(face.id==="bleh"||face.id==="cheeky"||face.id==="grimace_blush")&&mode==="sheet"?
    blehHeadShift(ctx,image,src):{x:0,y:0};
   ctx.save();ctx.beginPath();
   ctx.rect(crop.x+shift.x,crop.y+shift.y,crop.w,crop.h);ctx.clip();

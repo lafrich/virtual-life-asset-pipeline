@@ -3,8 +3,9 @@ const assert=require("node:assert/strict"),fs=require("node:fs");
 const db=JSON.parse(fs.readFileSync("assets/animation_library/expression_contexts.json","utf8"));
 const E=require("../site/expression-context.js");
 assert.equal(E.validate(db),true);
-assert.equal(db.gallery.length,11);
+assert.equal(db.gallery.length,12);
 assert.ok(db.gallery.some(face=>face.id==="cheeky"));
+assert.ok(db.gallery.some(face=>face.id==="grimace_blush"&&/Blush/.test(face.label)));
 const counts={walk:6,idle:4,sit:4,sit_type:4,sleep_seat:4,nap_stand:4,
  talk:4,lie:4,bathe:4,bathtub_bathe:6,
  squat_idle:4,squat_down:6,squat_up:6,knee_chest_idle:4,bent_over_idle:4,lie_idle:4};
