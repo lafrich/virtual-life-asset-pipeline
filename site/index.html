@@ -32,7 +32,7 @@
       <div class="library-tabs" role="tablist" aria-label="Asset libraries">
         <button type="button" class="library-tab active" id="switch-chars" role="tab" aria-selected="true" aria-controls="character-workspace">01 / CHARACTERS</button>
         <button type="button" class="library-tab" id="switch-animations" role="tab" aria-selected="false" aria-controls="animation-workspace">02 / ANIMATIONS <span id="animation-total">--</span></button>
-        <button type="button" class="library-tab" id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace">03 / ACTION EDITOR</button>
+        <button type="button" class="library-tab" id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace" hidden style="display:none !important" tabindex="-1">03 / ACTION EDITOR (LEGACY)</button>
         <span class="library-version">.V6B / DATABASE</span>
       </div>
       <div class="workspace" id="character-workspace" role="tabpanel" aria-labelledby="switch-chars">
@@ -278,7 +278,7 @@
         </aside>
       </section>
 
-      <section class="action-workspace" id="action-workspace" role="tabpanel" aria-labelledby="switch-actions" hidden>
+      <section class="action-workspace" id="action-workspace" role="tabpanel" aria-labelledby="switch-actions" hidden style="display:none !important">
         <iframe id="action-editor-embed" title="Mahluk Hidup action pixel editor and Bangun Ruang simulator" src="about:blank" loading="lazy"></iframe>
       </section>
 
