@@ -360,6 +360,10 @@ def build():
     if not gameplay_bindings.is_file():
         raise ValueError("Missing Bangun Ruang gameplay-to-animation binding dictionary")
     shutil.copy2(gameplay_bindings, OUT / "gameplay-bindings.json")
+    expression_contexts=ROOT / "assets/animation_library/expression_contexts.json"
+    if not expression_contexts.is_file():
+        raise ValueError("Shared expression-context dictionary missing")
+    shutil.copy2(expression_contexts, OUT / "expression-contexts.json")
     print(f"Catalog ready: {len(results)} characters / {len(player_actions['actions'])} player action definitions at {OUT}")
     return results
 

@@ -6,13 +6,22 @@ details; no new silhouette or changes to clothed character layers.
 """
 from __future__ import annotations
 import sys
+import json
 from pathlib import Path
 from PIL import Image, ImageDraw
 import numpy as np
 
 DIRECTIONS=("se","sw","ne","nw")
 MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6}
-EXPRS=("neutral","happy","surprised","angry","sleepy")
+EXPRESSION_CONTEXTS=json.loads((Path(__file__).resolve().parents[1]/
+    "assets/animation_library/expression_contexts.json").read_text(encoding="utf-8"))
+EXPRS=tuple(row["id"] for row in EXPRESSION_CONTEXTS["gallery"])
+
+def contextual_expression(kind:str,index:int)->str:
+    """Choose the frame-specific face from the canonical expression DB."""
+    track=EXPRESSION_CONTEXTS["motions"].get(kind,["neutral"])
+    return track[index%len(track)]
+
 FRAME=(64,112)
 # Native v6b head begins at FY=31. y=53 is the start of the shoulders:
 # keep the scalp/face untouched and give the BODY an actual 1px contour.
@@ -78,6 +87,44 @@ def animate_rear_typing_hands(layers:dict,direction:str,index:int)->None:
     a[hand_y,cols,:]=0
     a[hand_y,cols+dx,:]=original
     layers["arm_near"]=Image.fromarray(a,"RGBA")
+
+
+def animate_human_micro_motion(sprite:Image.Image,torso:Image.Image,
+                               kind:str,index:int,
+                               skin_shade:tuple[int,int,int],
+                               skin_light:tuple[int,int,int])->Image.Image:
+    """Pixel-native inhalation/exhalation on an original torso interior.
+
+    Native sitting and sleepy animations were fully identical across frames.
+    Shade a 2-4 px region on the moving shirt/torso mask, never translate
+    feet or shoulder pivots, never touch the head or outside alpha.
+    For lying, the torso mask is already transformed into the reclined pose.
+    """
+    if kind not in ("sit","sleep_seat","nap_stand","lie"):
+        return sprite
+    mask=np.asarray(torso.convert("RGBA"))[...,3]>0
+    ys,xs=np.nonzero(mask)
+    if len(xs)<15:return sprite
+    # Select the middle, fully interior part of the posed torso.
+    y=int(np.median(ys))
+    candidates=np.flatnonzero(mask[y,:])
+    if not len(candidates):return sprite
+    cx=int(round(float(np.median(candidates))))
+    img=np.asarray(sprite.convert("RGBA")).copy()
+    phase=index%4
+    # A complete breathing cycle: neutral, inhale, hold, exhale.
+    detail=((0,0,1),(0,-1,0),(1,0,1),(-1,1,0))[phase]
+    # Original shoulder, skin outline, and outside transparency are preserved.
+    for k in range(3):
+        px=cx+detail[0]+k-1
+        py=y+detail[1]+(1 if k==2 and phase==2 else 0)
+        if not (1<=px<63 and 54<=py<106):continue
+        if not (mask[py,px] and mask[py-1,px] and mask[py+1,px]
+                and mask[py,px-1] and mask[py,px+1]):continue
+        if img[py,px,3]!=255:continue
+        tint=skin_light if (phase in (1,2) and k!=2) else skin_shade
+        img[py,px,:3]=tint
+    return Image.fromarray(img,"RGBA")
 
 
 def shade_human_anatomy(sprite:Image.Image,gender:str,direction:str,
@@ -156,7 +203,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
     results=[]
     for gender,cfg in palettes.items():
         name=f"human-{gender}-base"
-        def frame(direction:str,kind:str,index:int,expression:str="neutral"):
+        def frame(direction:str,kind:str,index:int,expression:str|None=None):
             anim="sleep" if kind=="sleep_seat" else "tired" if kind=="nap_stand" else "idle" if kind=="bathe" else "lie" if kind=="bathtub_bathe" else kind
             # Mirror directions are authored via native v6b, not generic canvas flip.
             # The modular base6 wrapper returns UPRIGHT layers even when its
@@ -164,10 +211,10 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # native lie_flat transform used by the original V6B game.
             lying=kind in ("lie","bathtub_bathe")
             source_dir=("se" if direction in ("se","sw") else "ne") if lying else direction
-            face_expression=("neutral" if kind=="bathtub_bathe" else
-                             "blink" if lying else
-                             "sleepy" if kind in ("sleep_seat","nap_stand") else
-                             expression)
+            selected_expression=(expression if expression is not None
+                                 else contextual_expression(kind,index))
+            face_expression=("blink" if kind in ("lie","sleep_seat")
+                             else selected_expression)
             canvas,layers,pal=base6.render(cfg,f=index%4 if lying else index,d=source_dir,
                                            expr=face_expression,anim=anim)
             M.bald(layers,pal)
@@ -246,7 +293,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                            "shoes_over","rips","shirt","arm_near","body_front",
                            "face","hair_front","brows"):
                             if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
-            if kind=="sit_type" and direction in ("ne","nw"):
+            if kind in ("sit","sit_type") and direction in ("ne","nw"):
                 # Original native rear view had four identical typing frames.
                 animate_rear_typing_hands(layers,direction,index)
                 result=Image.new("RGBA",FRAME)
@@ -317,10 +364,12 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                         paint.point((max(0,min_x-2),min_y+7),
                                     fill=(172,222,236,210))
                 result.alpha_composite(foam)
-            # Body remains a non-explicit adult mannequin for outfit fitting.
+            result=animate_human_micro_motion(result,layers["shirt"],
+                kind,index,tuple(pal.get("Ke",(170,115,87))),
+                tuple(pal.get("Ki",(223,181,147))))
             assert result.size==FRAME
             return result
-        def make_sheet(kind,count,expression="neutral",blink=False):
+        def make_sheet(kind,count,expression=None,blink=False):
             img=Image.new("RGBA",(count*64,4*112))
             for y,d in enumerate(DIRECTIONS):
                 for x in range(count):
@@ -362,7 +411,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                     "source":"custom","sheet":"media/"+fn,"row":0,"available":True,
                     "frames":count,"frame_ms":([330,360,380,360] if kind=="bathe" else
                                 [320,340,360,350,340,330] if kind=="bathtub_bathe" else [210]*count),
-                    "loop":kind in ("talk","sit_type","bathe","bathtub_bathe"),"reason":""})
+                    "loop":kind in ("sit","sleep_seat","nap_stand","talk","sit_type","lie","bathe","bathtub_bathe"),
+                    "reason":""})
         expressions=[]
         for expr in EXPRS:
             fn=f"{name}-expression-{expr}.png"
@@ -374,7 +424,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # Matching idle/walk source poses also keep male/female body shapes.
             walk_face=f"{name}-expression-{expr}-walk.png"
             make_sheet("walk",MOTIONS["walk"],expr,blink=True).save(media/walk_face,optimize=True)
-            expressions.append({"id":expr,"label":expr.upper(),"sheet":"media/"+fn,
+            expressions.append({"id":expr,
+                "label":next(r["label"] for r in EXPRESSION_CONTEXTS["gallery"] if r["id"]==expr),
+                "sheet":"media/"+fn,
                 "portrait":"media/"+portrait,"frames":4,"frame_ms":[270]*4,"loop":True,
                 "motion_sheets":{"idle":"media/"+fn,"walk":"media/"+walk_face}})
         results.append({"id":f"human_{gender}_base","name":"Human / "+gender.title()+" Base",
@@ -396,5 +448,11 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             "folder_url":"https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/chars-iso/v6b",
             "source_url":"https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/assets/npc_preview_v2/base6.py",
             "timestamp":0,"walk_frames":6,"idle_frames":4,"row_starts":{"walk":0,"idle":4},
-            "frame_size":"64 × 112","motions":motions,"expressions":expressions})
+            "frame_size":"64 × 112",
+             "expression_database":"expression-contexts.json",
+             "motions":[{**m,
+                 "expression_sequence":EXPRESSION_CONTEXTS["motions"][m["id"]],
+                 "default_expression":EXPRESSION_CONTEXTS["motions"][m["id"]][0]}
+                  for m in motions],
+             "expressions":expressions})
     return results

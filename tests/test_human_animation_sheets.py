@@ -8,17 +8,21 @@ root=Path("_site")
 cat=json.loads((root/"catalog.json").read_text())["characters"]
 expected={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,
           "nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6}
-animated={"walk":4,"idle":2,"sit_type":2,"talk":2,
+animated={"walk":4,"idle":2,"sit":2,"sleep_seat":2,"nap_stand":2,"sit_type":2,"talk":2,
           "lie":2,"bathe":3,"bathtub_bathe":4}
 bodies=[]
 for gender in ("male","female"):
     c=next(x for x in cat if x["id"]==f"human_{gender}_base")
     actions={m["id"]:m for m in c["motions"] if m.get("available")}
     assert set(actions)==set(expected),(gender,sorted(actions))
-    assert len(c["expressions"])==5
+    assert len(c["expressions"])==9
+    assert {x["id"] for x in c["expressions"]}=={
+        "neutral","smile","happy","sad","angry","surprised","sleepy","blink","embarrassed"}
     for kind,frames in expected.items():
         action=actions[kind]
         assert action["frames"]==frames and len(action["frame_ms"])==frames
+        assert len(action["expression_sequence"])==frames
+        assert action["default_expression"]==action["expression_sequence"][0]
         assert all(isinstance(t,int) and t>0 for t in action["frame_ms"])
         path=root/(action.get("sheet") or c["sheet"])
         assert path.is_file(),(gender,kind,path)
@@ -44,4 +48,12 @@ for gender in ("male","female"):
         print(gender,kind,counts,"held" if kind not in animated else "moving")
     bodies.append(c)
 assert (root/bodies[0]["sheet"]).read_bytes()!=(root/bodies[1]["sheet"]).read_bytes()
+# Speech requires an actual mouth-open/mouth-closed sequence, not static faces.
+for c in bodies:
+    action=next(m for m in c["motions"] if m["id"]=="talk")
+    assert action["expression_sequence"]==["talk_closed","talk_open","talk_open","talk_closed"]
+    with Image.open(root/action["sheet"]) as sheet:
+        closed=np.asarray(sheet.crop((0,31,64,58)))
+        opened=np.asarray(sheet.crop((64,31,128,58)))
+        assert (closed!=opened).any(),(c["id"],"Talk mouth never changes")
 print("PASS: 2 gender rigs x 10 actions x 4 directions, all 80 directional clips valid")

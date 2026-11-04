@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "description": "Shared adult human facial-expression dictionary. Gameplay actions choose an authored expression sequence; unavailable motions remain references, never synthetic rigged animation.",
+  "gallery": [
+    {
+      "id": "neutral",
+      "label": "Neutral",
+      "tone": "calm"
+    },
+    {
+      "id": "smile",
+      "label": "Smile",
+      "tone": "pleasant"
+    },
+    {
+      "id": "happy",
+      "label": "Happy",
+      "tone": "joy"
+    },
+    {
+      "id": "sad",
+      "label": "Sad",
+      "tone": "down"
+    },
+    {
+      "id": "angry",
+      "label": "Angry",
+      "tone": "upset"
+    },
+    {
+      "id": "surprised",
+      "label": "Surprised",
+      "tone": "alert"
+    },
+    {
+      "id": "sleepy",
+      "label": "Sleepy",
+      "tone": "drowsy"
+    },
+    {
+      "id": "blink",
+      "label": "Eyes Closed",
+      "tone": "rest"
+    },
+    {
+      "id": "embarrassed",
+      "label": "Embarrassed",
+      "tone": "shy"
+    }
+  ],
+  "internal": [
+    "talk_open",
+    "talk_closed"
+  ],
+  "motions": {
+    "walk": [
+      "neutral",
+      "smile",
+      "neutral",
+      "blink",
+      "neutral",
+      "smile"
+    ],
+    "idle": [
+      "neutral",
+      "neutral",
+      "blink",
+      "smile"
+    ],
+    "sit": [
+      "neutral",
+      "smile",
+      "neutral",
+      "blink"
+    ],
+    "sit_type": [
+      "neutral",
+      "neutral",
+      "blink",
+      "smile"
+    ],
+    "sleep_seat": [
+      "blink",
+      "blink",
+      "blink",
+      "blink"
+    ],
+    "nap_stand": [
+      "sleepy",
+      "blink",
+      "sleepy",
+      "blink"
+    ],
+    "talk": [
+      "talk_closed",
+      "talk_open",
+      "talk_open",
+      "talk_closed"
+    ],
+    "lie": [
+      "blink",
+      "blink",
+      "blink",
+      "blink"
+    ],
+    "bathe": [
+      "neutral",
+      "smile",
+      "happy",
+      "smile"
+    ],
+    "bathtub_bathe": [
+      "neutral",
+      "smile",
+      "neutral",
+      "blink",
+      "smile",
+      "neutral"
+    ]
+  },
+  "gameplay": {
+    "use_toilet": [
+      "embarrassed",
+      "neutral",
+      "neutral",
+      "embarrassed"
+    ],
+    "pee": [
+      "embarrassed",
+      "neutral",
+      "neutral",
+      "neutral"
+    ],
+    "poop": [
+      "embarrassed",
+      "neutral",
+      "neutral",
+      "embarrassed"
+    ],
+    "fart": [
+      "surprised",
+      "embarrassed",
+      "smile",
+      "neutral"
+    ],
+    "laugh": [
+      "smile",
+      "happy",
+      "happy",
+      "smile"
+    ],
+    "cry": [
+      "sad",
+      "sad",
+      "blink",
+      "sad"
+    ],
+    "work": [
+      "neutral",
+      "neutral",
+      "blink",
+      "smile"
+    ],
+    "study": [
+      "neutral",
+      "neutral",
+      "blink",
+      "smile"
+    ],
+    "rest": [
+      "sleepy",
+      "blink",
+      "sleepy",
+      "neutral"
+    ],
+    "eat": [
+      "neutral",
+      "happy",
+      "smile",
+      "neutral"
+    ],
+    "drink": [
+      "neutral",
+      "neutral",
+      "smile",
+      "neutral"
+    ]
+  },
+  "fallbacks": {
+    "sleep": "blink",
+    "bath": "smile",
+    "wash": "smile",
+    "talk": "talk_open",
+    "cry": "sad",
+    "angry": "angry",
+    "laugh": "happy",
+    "work": "neutral",
+    "walk": "neutral",
+    "idle": "neutral"
+  },
+  "policy": "Only adult human original V6B sprite generation owns face pixels; runtime labels context and uses same-character authored atlases. Unknown or unrigged actors must not borrow a base mannequin face."
+}
