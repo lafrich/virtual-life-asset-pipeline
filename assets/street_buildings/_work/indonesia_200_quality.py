@@ -759,3 +759,194 @@ def home(L,s):
  from indonesia_200_details import special
  if special(L,s):return True
  return None
+
+def streets(L,s):
+ shadow(L);k=s['kind'];name=s['label'].lower();W=L.W;D=L.D
+ from indonesia_200_details import special
+ if k in ('cone','hidran','tiang','portal','blok','lampu') or k=='jalan':
+  if special(L,s):return True
+ if k=='halte':
+  canopy(L,114,'BLUE')
+  box(L,.16,D-.29,W-.16,D-.20,12,97,'OGLASS',2)
+  for x in (.28,W-.37):pole(L,x,D-.23,114,.055,'CONC')
+  box(L,.3,.18,W-.30,.53,33,41,'WOOD')
+  for x in (.38,W-.49):pole(L,x,.39,33,.05,'WOOD')
+  board(L,'TRANSJAKARTA' if 'TransJakarta' in s['label'] else 'ANGKOT',82,'BLUE')
+  return True
+ if k=='gapura':
+  for x in (.12,W-.30):
+   box(L,x,.17,x+.25,D-.16,0,123,'CREAM')
+   box(L,x+.04,.18,x+.21,.39,42,112,'TERRA')
+  box(L,.10,.14,W-.1,D-.14,121,140,'TERRA')
+  board(L,'RT RW',114,'RED')
+  for x in (.15,W-.22):
+   pole(L,x,.33,150,.045,'WOOD',base=135)
+   box(L,x+.03,.25,x+.31,.35,135,147,'RED')
+   box(L,x+.03,.25,x+.31,.35,123,135,'WHITE')
+  return True
+ if k=='pos':
+  canopy(L,112,'BLUE')
+  box(L,.25,.20,W-.25,D-.24,0,72,'CONC')
+  box(L,.33,.12,W-.31,.32,31,67,'OGLASS')
+  board(L,'POS POLISI' if 'polisi' in name else 'PARKIR',79,'BLUE')
+  return True
+ if k in ('gardu','trafo'):
+  box(L,.15,.20,W-.15,D-.18,0,97,'CONC')
+  box(L,.12,.20,W-.14,D-.18,97,105,'SENG')
+  for i in range(4):
+   x=.25+i*.29
+   box(L,x,.13,x+.10,.25,37,82,'DARK')
+  board(L,'PLN',65,'YEL')
+  if k=='trafo':
+   for x in (.35,.81,1.25):
+    pole(L,x,D*.54,118,.07,'DARK',base=97)
+    ball(L,x,D*.54,119,.12,6,'WHITE')
+  return True
+ if k in ('papan','banner'):
+  for x in (.25,W-.34):pole(L,x,D*.5,116,.07,'WOOD')
+  box(L,.15,.29,W-.15,D*.71,86,123,'BLUE' if k=='papan' else 'GREEN')
+  board(L,'JL GANG' if 'gang' in name else 'INFO WARGA',94,'BLUE')
+  return True
+ if k=='jalan':
+  box(L,.10,.15,W-.1,D-.15,0,3,'ASPH')
+  for i in range(6):
+   x=.2+i*(W-.40)/6
+   box(L,x,.19,x+.16,D-.20,3,5,'WHITE')
+  return True
+ if special(L,s):return True
+ return False
+
+def celebration(L,s):
+ shadow(L);k=s['kind'];name=s['label'].lower();W=L.W;D=L.D
+ from indonesia_200_details import special
+ if k in ('bedug','ondel','speaker','tugu','pinang','sangkar') and special(L,s):return True
+ if k in ('tenda','panggung','pendopo','gapura','booth'):
+  canopy(L,120,'RED' if '17' in name else 'BLUE' if 'hajatan' in name else 'TERRA')
+  for i in range(10):
+   x=.12+i*(W-.2)/10
+   box(L,x,.08,x+.13,.24,107-i%3*3,120,'CREAM' if i%2 else 'RED')
+  box(L,.18,.19,W-.18,D-.17,0,14,'WOOD')
+  if k=='panggung':
+   box(L,.16,.20,W-.16,D-.19,14,42,'WOOD')
+   box(L,.12,D-.34,W-.12,D-.20,42,103,'RED')
+   for x in (.4,W-.8):
+    box(L,x,.14,x+.31,.38,42,81,'DARK')
+  elif k=='tenda':
+   for i in range(8):
+    x=.30+(i%4)*.48;y=.4+(i//4)*1.05
+    if x+.32<W:
+     box(L,x,y,x+.32,y+.28,0,33,'BLUE')
+     box(L,x,y+.20,x+.32,y+.28,33,62,'BLUE')
+  elif k=='booth':
+   box(L,.25,.21,W-.24,D-.21,0,67,'CREAM')
+   box(L,.31,.13,W-.31,.34,32,57,'OGLASS')
+   board(L,'POSYANDU',79,'GREEN')
+  elif k=='gapura':
+   for xx in (.13,W-.31):
+    box(L,xx,.19,xx+.25,D-.21,0,118,'WHITE')
+   board(L,'MERDEKA',105,'RED')
+  elif k=='pendopo':
+   for i in range(5):
+    x=.3+i*.55
+    box(L,x,.37,x+.31,D-.33,12,34,'WOOD')
+  return True
+ if k in ('bendera','umbul'):
+  for j in range(1 if k=='bendera' else 3):
+   x=.18+j*.6;pole(L,x,D*.5,128,.065,'WOOD')
+   if k=='bendera':
+    box(L,x+.08,D*.41,x+.69,D*.52,98,113,'RED')
+    box(L,x+.08,D*.41,x+.69,D*.52,84,98,'WHITE')
+   else:
+    for i in range(6):
+     box(L,x+.075,D*.4,x+.35-i*.04,D*.55,110-i*11,120-i*11,'RED' if i%2 else 'WHITE')
+  return True
+ if k=='toa':
+  pole(L,W*.5,D*.5,123,.08,'CONC')
+  for i in range(3):ball(L,.3+i*.49,D*.5,120,.14,12,'WHITE')
+  return True
+ if k in ('rak','kursi','meja','wastafel'):
+  # Reuse market furniture recipes except ritual washbasin.
+  if k=='wastafel':
+   box(L,.20,.22,W-.19,D-.19,0,72,'WHITE')
+   ball(L,W*.5,D*.44,72,.28,7,'GLASS')
+   pole(L,W*.50,D*.32,91,.05,'CONC',base=73)
+   return True
+  return produce_market(L,{**s,'kind':'rak' if k=='rak' else k})
+ if k in ('banner','papan','baliho'):
+  for xx in (.15,W-.25):pole(L,xx,D*.50,121,.07,'WOOD')
+  box(L,.13,.27,W-.15,D*.63,89,122,'RED' if '17' in name else 'GREEN')
+  board(L,'INFO WARGA',98,'WHITE')
+  return True
+ return False
+
+def public_facility(L,s):
+ shadow(L);k=s['kind'];name=s['label'].lower();W=L.W;D=L.D
+ if k in ('warung','public','saung','mushola'):return building(L,s)
+ if k in ('booth','pos'):
+  if 'atm' in name:
+   box(L,.18,.20,W-.2,D-.23,0,116,'WHITE')
+   box(L,.14,.17,W-.14,D-.19,116,124,'BLUE')
+   box(L,.38,.13,W-.35,.29,20,77,'GLASS')
+   box(L,W*.48,.10,W*.65,.22,44,67,'DARK')
+   board(L,'ATM',88,'BLUE')
+  else:
+   canopy(L,110,'GREEN')
+   box(L,.22,.22,W-.22,D-.20,0,64,'CREAM')
+   box(L,.28,.13,W-.28,.32,25,52,'WOOD')
+   board(L,'PANGKALAN',78,'GREEN')
+  return True
+ if k=='pommini':
+  box(L,.19,.21,W-.20,D-.22,0,95,'WHITE')
+  box(L,.16,.18,W-.17,D-.19,95,103,'RED')
+  box(L,.27,.13,W-.26,.28,58,81,'GLASS')
+  box(L,W*.44,.09,W*.61,.17,35,47,'DARK')
+  board(L,'BENSIN',78,'RED')
+  return True
+ if k=='bts':
+  for i in range(4):
+   x=.22+i*.35
+   pole(L,x,D*.5,138,.06,'CONC')
+   for z in (31,62,93):box(L,.16,D*.40,W-.16,D*.55,z,z+3,'CONC')
+   ball(L,x,D*.5,140,.08,8,'WHITE')
+  return True
+ if k in ('sampah','gerobak'):
+  box(L,.16,.18,W-.18,D-.22,10,77,'GREEN' if 'kebersihan' in name else 'CONC')
+  box(L,.13,.15,W-.15,D-.18,76,84,'SENG')
+  if k=='gerobak':
+   wheel(L,.32,D*.42,.22);wheel(L,W-.40,D*.42,.22)
+   box(L,W-.15,D*.37,W-.07,D*.64,28,34,'WOOD')
+  return True
+ if k=='lapangan':
+  box(L,.1,.12,W-.1,D-.12,0,3,'GREEN')
+  for i in range(6):
+   x=.12+i*(W-.2)/6;box(L,x,.15,x+.04,D-.15,3,5,'WHITE')
+  for x in (.17,W-.24):pole(L,x,D*.5,112,.06,'WOOD')
+  for z in (52,68,84):box(L,.18,D*.47,W-.22,D*.54,z,z+2,'WHITE')
+  return True
+ if k=='basket':
+  pole(L,W*.54,D*.61,111,.07,'CONC')
+  box(L,W*.3,D*.43,W*.8,D*.58,108,135,'WHITE')
+  box(L,W*.45,D*.33,W*.65,D*.41,96,102,'RED')
+  ball(L,W*.55,D*.34,96,.18,6,'RED')
+  return True
+ if k in ('sangkar','papan'):
+  from indonesia_200_details import special
+  if special(L,s):return True
+  for x in (.18,W-.23):pole(L,x,D*.5,116,.06,'WOOD')
+  box(L,.12,.3,W-.12,D*.63,89,123,'GREEN')
+  board(L,'OJEK',95,'WHITE')
+  return True
+ return False
+
+def render(L,s):
+ c=s['category'];k=s['kind']
+ if c=='transport':return vehicle(L,s)
+ if c in ('warung','bangunan'):return building(L,s)
+ if c=='tanaman':return plant(L,s)
+ if c=='gerobak':return cart(L,s) if k=='gerobak' else produce_market(L,s)
+ if c=='pasar':return produce_market(L,s)
+ if c=='rumah':return home(L,s)
+ if c=='jalan':return streets(L,s)
+ if c=='budaya':return celebration(L,s)
+ if c=='publik':return public_facility(L,s)
+ return False
