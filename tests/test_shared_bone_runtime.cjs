@@ -14,7 +14,7 @@ assert.ok(!anim.includes('el("rig-workspace")'),"animations don't depend on remo
 assert.equal(src.format,"virtual-life-category-skeletons-v1");
 assert.equal(motions.format,"virtual-life-shared-bone-motion-v1");
 assert.equal(Object.keys(src.types).length,4);
-assert.equal(registry.actions.length,203);
+assert.equal(registry.actions.length,204);
 assert.equal(motions.clips.length,7);
 for(const [family,rig] of Object.entries(src.types)){
   rt.verifySkeleton(rig);
