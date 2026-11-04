@@ -197,7 +197,10 @@ function buildFaces(character) {
 
 function buildMotions(character) {
   const grid=$("motion-grid");grid.replaceChildren();
-  const registered=Array.isArray(character.motions)?character.motions:[];
+  const registered=(Array.isArray(character.motions)?character.motions:[]).map(m=>({
+    ...m,playback:m.playback||(m.available&&["native","custom"].includes(m.source)?
+      "authored":m.source==="procedural"?"procedural":"reference")
+  }));
   // Bathtub is a shared action, not restricted to the two sample GIFs.
   // Pin it above the large canonical list so both Human bases and every
   // other character can find and apply it without scrolling 200+ actions.

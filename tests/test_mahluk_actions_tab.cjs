@@ -59,4 +59,6 @@ assert.ok(embedded.includes(".ae-action-item.chosen"),
  "Selected action must use the shared Paint file-list selection treatment");
 assert.ok(editor.includes('btn.addEventListener("click",()=>setAction(btn.dataset.aeAction))'),
  "Action thumbnails must be interactive, not decorative");
+assert.match(app,/playback:m\\.playback\\|\\|\\(m\\.available&&\\["native","custom"\\]\\.includes\\(m\\.source\\)/,
+ "Native and custom published motion sprites must show as AUTHORED, not REFERENCE");
 console.log("PASS Mahluk Hidup hides Action Editor tab and routes alignment to Bangun Ruang while preserving legacy pixel sources");
