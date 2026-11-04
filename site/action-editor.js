@@ -46,7 +46,7 @@ const opt=(value,text)=>{const o=document.createElement("option");o.value=value;
 const url=path=>new URL(path,BASE).href;
 const isSheet=path=>typeof path==="string"&&/^media\/[a-z0-9_.-]+\.png$/i.test(path);
 const needed={
- toilet:["wc"],bathe:["shower","bathtub"],sleep:["bed"],
+ toilet:["wc"],bathe:["shower"],bathtub_bathe:["bathtub"],sleep:["bed"],
  toilet_sit:["wc"],pee_stand:["wc"],toilet_paper:["wc"],flush_toilet:["wc"],pee_finish:["wc"],
  shower:["shower","bathtub"],bath:["bathtub","shower"],
  lie_down:["bed"],bed_enter:["bed"],bed_exit:["bed"],get_up:["bed"],
@@ -432,10 +432,11 @@ function render(){
  // Simulation-only universal bath appearance. The editable source frame
  // remains untouched; dressing and undressing belong to the action state.
  const hygiene=BODY?.resolve(actor(),state.action);
- if(hygiene?.kind==="bath"){
+ if(hygiene?.kind==="bath"||hygiene?.kind==="bathtub"){
   const bath=pic(url(hygiene.sheet));
   if(bath?.ready)BODY.apply(sourceCtx,{actor:actor(),action:state.action,
    direction:dir,frame,bodyImage:bath.im});
+  else if(hygiene.kind==="bathtub")sourceCtx.clearRect(0,0,64,112);
   else sourceCtx.clearRect(0,BODY.BODY_START_Y||53,64,59);
  }
  const universal=Boolean(SLEEP?.resolve(actor(),state.action));
