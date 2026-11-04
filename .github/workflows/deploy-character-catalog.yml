@@ -26,6 +26,7 @@ on:
       - "assets/**"
       - "site/**"
       - "tools/build_human_templates.py"
+      - "tools/human_pose_extras.py"
       - "site/universal-body-actions.js"
       - "tests/test_universal_body_actions.cjs"
       - "tests/test_hygiene_published.py"
