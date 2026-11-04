@@ -165,6 +165,35 @@ def strap(L,a,b,z0,ra,angle,length=.65,drop=24,material='VF_PALM',
   pts(L,ax[good],by[good],zz[good]-2.6,material,
       np.clip(tones[good]+off,0,4))
 
+def broad_leaf(L,a,b,z,angle,length=.64,width=.16,drop=15,
+               material='VF_BANANA',seed=1,fenestrated=False):
+ """Actual pixel-filled banana/Monstera leaf lamina with midrib, serration
+ and optional Monstera fenestration. Much wider than a thin palm frond."""
+ rng=np.random.default_rng(1337+int(seed))
+ t=np.repeat(np.linspace(.025,.99,112),25)
+ side=np.tile(np.linspace(-1,1,25),112)
+ wave=(np.sin(t*np.pi)**.68)
+ breadth=width*wave*(1+.08*np.sin(t*17+seed*.2))
+ aa=a+length*t*np.cos(angle)+side*breadth*np.sin(angle)
+ bb=b+length*t*np.sin(angle)-side*breadth*np.cos(angle)
+ zz=z+9*np.sin(t*np.pi)-drop*t*t+side*2.0
+ # Species-correct torn banana edges and Monstera split leaf holes.
+ rag=(np.abs(side)>.80)&((np.floor(t*18+seed)%7)<2)
+ good=~rag if not fenestrated else np.ones(len(t),dtype=bool)
+ if fenestrated:
+  holes=(t>.38)&(t<.79)&(np.abs(side)>.32)&(np.abs(side)<.56)&(
+     np.floor(t*18+seed)%4<2)
+  good &= ~holes
+ good &= (aa>.035)&(aa<L.W-.035)&(bb>.035)&(bb<L.D-.035)
+ tone=np.clip(np.rint(3.6-.85*np.abs(side)+.4*np.cos(angle)+
+                 rng.normal(0,.40,len(side))),1,4).astype(np.int8)
+ pts(L,aa[good],bb[good],zz[good],material,tone[good])
+ # continuous midrib and tiny lateral venation streaks
+ rib=np.abs(side)<.075
+ mask=good&rib
+ pts(L,aa[mask],bb[mask],zz[mask]+1.3,'VF_FRESH',
+     np.full(np.count_nonzero(mask),4,dtype=np.int8))
+
 def pot(L,x,y,z=31,size=.29,color='TERRA'):
  box(L,x-size,y-size,x+size,y+size,0,z,color,3)
  box(L,x-size-.04,y-size-.04,x+size+.04,y+size+.04,z-3,z+4,'CONC')
@@ -201,18 +230,18 @@ def tree(L,s,kind):
   trunk(L,x,y,96,.17,'VF_BARK',24,lean=.09)
   twig_crown(L,s,x,y,130,'VF_OLIVE',8,.75,25,'WOOD',density=1.26)
  elif kind=='ketapang':
-  trunk(L,x,y,142,.125,'VF_BARK',30)
-  # Distinct flat tiered ketapang canopy, not round mango.
-  tiers=[(62,.73),(89,.61),(114,.51),(140,.33)]
-  for tier,(high,spread) in enumerate(tiers):
+  trunk(L,x,y,144,.11,'VF_BARK',30)
+  # Four horizontally tiered botanically recognizable Terminalia levels:
+  # small flat broadleaf pads, lots of visible gaps, NOT a conical palm.
+  for tier,(high,spread) in enumerate(((52,.74),(83,.63),(110,.50),(139,.30))):
    cl=[]
-   for j in range(6):
-    th=j*math.tau/6+.17
-    a=x+spread*math.cos(th);b=y+spread*.82*math.sin(th)
-    limb(L,[(x,y,high-7),(a,b,high)],.052,'VF_BARK',tier*10+j)
-    cl.append((a,b,high+2,.23,.18,11))
-   cl.append((x,y,high+6,.34,.28,12))
-   canopy(L,s,cl,'VF_FRESH',1.07,tier+71)
+   for j in range(9):
+    th=j*math.tau/9+.17
+    a=x+spread*math.cos(th);b=y+spread*.78*math.sin(th)
+    limb(L,[(x,y,high-5),(a,b,high)],.035,'VF_BARK',tier*20+j)
+    cl.append((a,b,high+2,.16,.14,5))
+   cl.append((x,y,high+3,.26,.22,6))
+   canopy(L,s,cl,'VF_FRESH',1.06,tier+71)
  elif kind=='kamboja':
   trunk(L,x,y,64,.15,'VF_GREY',42,lean=-.08)
   leaves=[]
@@ -244,28 +273,33 @@ def tree(L,s,kind):
   for a,b in ((x-.12,y-.06),(x+.13,y-.13),(x+.02,y+.16)):
    ball(L,a,b,137,.12,11,'WOOD')
  elif kind=='pisang':
-  for j,(dx,dy,height) in enumerate(((-.31,-.25,122),(.31,.12,103),(-.17,.36,91))):
+  # Pseudostems and LONG BROAD individual banana blades; never coconut wisps.
+  for j,(dx,dy,height) in enumerate(((-.30,-.22,112),(.29,.12,93),(-.15,.34,82))):
    a=x+dx;b=y+dy
-   trunk(L,a,b,height,.085,'VF_PALM',j+71)
-   for k in range(9):
-    th=k*math.tau/9+j*.31
-    strap(L,a,b,height,1,th,.74,25,'VF_BANANA',.19,k+222)
+   pole(L,a,b,height-3,.11,'VF_PALM')
+   for z in range(11,height-12,17):
+    limb(L,[(a-.065,b-.02,z),(a+.08,b+.03,z+2)],.025,'VF_GOLD',j*90+z)
+   for k in range(7):
+    th=k*math.tau/7+j*.39
+    broad_leaf(L,a,b,height,th,.78 if j==0 else .61,.21,24,
+               'VF_BANANA',k+j*19)
    if j==0:
-    for h in range(74,104,7):
-     ball(L,a+.09,b+.13,h,.08,9,'VF_GOLD')
+    for h in range(69,101,7):
+     ball(L,a+.10,b+.14,h,.085,8,'VF_GOLD')
  elif kind=='pepaya':
-  trunk(L,x,y,126,.088,'VF_BARK',97)
-  for i in range(11):
-   th=i*math.tau/11
-   strap(L,x,y,132,1,th,.65,18,'VF_LEAF',.095,i+199)
-   for j in range(5):
-    th2=th+(j-2)*.21
-    strap(L,x+.36*math.cos(th),y+.36*math.sin(th),
-          136-5,j*.01+1,th2,.15,8,'VF_FRESH',.04,i*100+j)
+  trunk(L,x,y,124,.085,'VF_BARK',97)
+  for i in range(10):
+   th=i*math.tau/10
+   limb(L,[(x,y,123),(x+.35*math.cos(th),y+.35*math.sin(th),133)],
+        .035,'VF_PALM',i+199)
+   for j in range(3):
+    th2=th+(j-1)*.34
+    a=x+.31*math.cos(th);b=y+.31*math.sin(th)
+    broad_leaf(L,a,b,134,th2,.29,.080,10,'VF_LEAF',i*10+j)
   for i in range(8):
    th=i*math.tau/8
    a=x+.15*math.cos(th);b=y+.17*math.sin(th)
-   ball(L,a,b,105+(i%3)*7,.09,13,'YEL')
+   ball(L,a,b,105+(i%3)*7,.095,13,'YEL')
  return True
 
 def smaller(L,s):
@@ -285,46 +319,55 @@ def smaller(L,s):
    xx=.22+j*(L.W-.44)/6
    radial_shrub(L,s,xx,y,35,'VF_LEAF',None,141+j,5,.19)
  elif name=='Rumpun bambu':
-  for j in range(9):
-   th=j*math.tau/9
-   xx=x+.48*math.cos(th);yy=y+.41*math.sin(th)
-   height=115+j%4*12
-   trunk(L,xx,yy,height,.035,'VF_PALM',150+j)
-   for z in range(21,height,24):
-    limb(L,[(xx-.045,yy,z),(xx+.04,yy,z+.2)],.019,'VF_GOLD',z+j)
-   for i in range(4):
-    ang=(i*math.tau/4)+(j*.3)
-    strap(L,xx,yy,height-i*8,1,ang,.35,20,'VF_LEAF',.045,i+j*100)
+  for j in range(10):
+   th=j*math.tau/10
+   xx=x+.49*math.cos(th);yy=y+.42*math.sin(th)
+   height=111+j%4*12
+   pole(L,xx,yy,height,.032,'VF_PALM')
+   for z in range(19,height,22):
+    limb(L,[(xx-.041,yy,z),(xx+.04,yy,z+.5)],.016,'VF_GOLD',z+j)
+   for i in range(3):
+    h=height-i*19
+    ang=i*math.tau/3+j*.27
+    aa=xx+.18*math.cos(ang);bb=yy+.18*math.sin(ang)
+    limb(L,[(xx,yy,h-5),(aa,bb,h+3)],.020,'VF_PALM',j*15+i)
+    canopy(L,s,[(aa,bb,h+4,.13,.13,7)],'VF_DARK',.62,j*30+i+150)
  elif name=='Daun pandan wangi':
   for j in range(27):
    ang=j*math.tau/27
    strap(L,x,y,57,1,ang,.42+(j%4)*.043,39,'VF_FRESH',.048,j+185)
  elif name=='Monstera dalam pot':
-  pot(L,x,y,32,.32,'TERRA')
-  for j in range(7):
-   th=j*math.tau/7
-   xx=x+.35*math.cos(th);yy=y+.34*math.sin(th);z=67+j%3*9
-   limb(L,[(x,y,32),(xx,yy,z)],.026,'VF_PALM',j+190)
-   # Broad heart-shaped leaf fans, holes/slots read from top-down.
-   for i in range(6):
-    a=xx+(.07+i*.035)*math.cos(th+.2)
-    b=yy+(.07+i*.035)*math.sin(th+.2)
-    if .08<a<L.W-.08 and .08<b<L.D-.08:
-     strap(L,a,b,z,1,th+math.pi/2,.15,6,'VF_LEAF',.08,j*100+i)
+  pot(L,x,y,31,.32,'TERRA')
+  for j in range(11):
+   th=j*math.tau/11
+   xx=x+.25*math.cos(th);yy=y+.24*math.sin(th);z=56+j%4*7
+   limb(L,[(x,y,32),(xx,yy,z)],.035,'VF_PALM',j+190)
+   # One broad perforated split leaf per stalk, visibly heart-like.
+   broad_leaf(L,xx,yy,z,th,.37,.19,6,'VF_LEAF',j+350,True)
  elif name=='Sirih gading pot':
-  pot(L,x,y,75,.31,'TERRA')
+  # A true SUSPENDED pot: open air below. The old prop looked like an
+  # orange ground-based cylinder and obscured the hanging foliage.
+  box(L,x-.27,y-.24,x+.27,y+.24,69,85,'TERRA')
+  box(L,x-.30,y-.27,x+.30,y+.27,82,89,'CONC')
+  box(L,x-.23,y-.20,x+.23,y+.20,88,91,'SOIL')
   for i in range(4):
-   a=x+.28*math.cos(i*math.tau/4)
-   b=y+.24*math.sin(i*math.tau/4)
-   limb(L,[(a,b,75),(a+.08,b+.05,58),(a-.11,b+.08,25+i%2*9)],
-        .03,'VF_PALM',250+i)
+   th=i*math.tau/4
+   a=x+.25*math.cos(th);b=y+.23*math.sin(th)
+   limb(L,[(a,b,86),(x,y,116)],.020,'VF_BARK',288+i)
+  for i in range(8):
+   th=i*math.tau/8
+   a=x+.23*math.cos(th)
+   b=y+.24*math.sin(th)
+   low=21+(i%4)*8
+   limb(L,[(a,b,85),(a+.11*math.cos(th),b+.09*math.sin(th),55),
+           (a-.05,b+.03,low)],.021,'VF_PALM',250+i)
    for j in range(7):
-    z=24+j*7
-    xx=a+.08*math.sin(j);yy=b+.09*math.cos(j)
-    if .1<xx<L.W-.1 and .1<yy<L.D-.1:
-     ball(L,xx,yy,z,.10,7,'VF_FRESH' if j%2 else 'VF_GOLD')
-  for a,b in ((x-.25,y-.24),(x+.22,y+.17)):
-   limb(L,[(a,b,75),(x,y,111)],.019,'VF_BARK',288)
+    z=25+j*9+(i%3)*2
+    if z>90:continue
+    xx=a+.10*math.sin(j+i);yy=b+.09*math.cos(j+i)
+    if .09<xx<L.W-.09 and .09<yy<L.D-.09:
+     broad_leaf(L,xx,yy,z,th,.18,.07,9,
+                'VF_FRESH' if j%3 else 'VF_GOLD',j+i*19)
  elif name=='Lidah mertua pot':
   pot(L,x,y,34,.32,'CONC')
   for j in range(17):
@@ -343,13 +386,23 @@ def smaller(L,s):
     h=height-16+k*4
     ball(L,xx+.07+k*.025,yy,h,.033,3,'VF_GOLD')
  elif name=='Ilalang liar':
-  for j in range(57):
+  # Grass grows UP from rhizomes; only seed heads emerge at the top.
+  for j in range(69):
    rng=rngfor(s,343+j)
-   xx=.16+rng.random()*(L.W-.32)
-   yy=.15+rng.random()*(L.D-.30)
-   h=48+rng.integers(0,35)
-   strap(L,xx,yy,h,1,j*.76,.27,40,'VF_FRESH',.032,j+400)
-   limb(L,[(xx,yy,h-22),(xx+.10,yy,h+5)],.017,'VF_GOLD',j+500)
+   xx=.13+rng.random()*(L.W-.26)
+   yy=.12+rng.random()*(L.D-.24)
+   h=47+int(rng.integers(0,29))
+   lean=(j%5-2)*.028
+   limb(L,[(xx,yy,1),(xx+lean*.5,yy+.015,30),
+           (xx+lean,yy+.03,h)],.027,'VF_FRESH',j+420)
+   for k in (-1,1):
+    ang=j*.77+k*.38
+    broad_leaf(L,xx,yy,17,ang,.18,.027,7,
+               'VF_DARK',j*3+k+560)
+   for k in range(5):
+    a=xx+lean+(k%2)*.018
+    b=yy+.03+(k//2)*.018
+    ball(L,a,b,h-5+k*2,.029,3,'VF_GOLD')
  elif name in ('Eceng gondok kolam','Teratai kolam'):
   water_hyacinth=name.startswith('Eceng')
   for i in range(14):
