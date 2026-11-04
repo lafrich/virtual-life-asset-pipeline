@@ -431,12 +431,10 @@ function drawEquippedAccessory(x,y,z,dirIndex,placement="front",targetCtx=ctx,on
  const dirs=["se","sw","ne","nw"];
  for(const category of EQUIPMENT_SLOTS){
   if(only&&!only.includes(category))continue;
-  // FRONT view: pack is behind the entire character.
-  // REAR view: camera sees the back surface, so draw it over the torso
-  // but clip it BELOW the skull/neck. Never let straps cross the rear head.
-  const rearView=dirIndex===2||dirIndex===3;
+  // Backpack is ALWAYS the furthest-back layer, even in NE/NW.
+  // This keeps Theodore's torso, shoulders and head in front of the bag.
   if(category==="bag"){
-   if(placement!==(rearView?"front":"back"))continue;
+   if(placement!=="back")continue;
   }else if(placement!=="front")continue;
   const item=accessoryFor(state.selected.id,category),src=item?.frames?.[dirs[dirIndex]];
   const selectedBase=state.selected.base_id||state.selected.id;
@@ -446,13 +444,7 @@ function drawEquippedAccessory(x,y,z,dirIndex,placement="front",targetCtx=ctx,on
   if(!image)image=cachedImage(src,()=>draw());
   if(image?.complete&&image.naturalWidth===64&&image.naturalHeight===112){
    targetCtx.imageSmoothingEnabled=false;
-   if(category==="bag"&&rearView){
-    targetCtx.save();
-    targetCtx.beginPath();targetCtx.rect(x,y+56*z,64*z,(112-56)*z);
-    targetCtx.clip();
-    targetCtx.drawImage(image,x,y,64*z,112*z);
-    targetCtx.restore();
-   }else targetCtx.drawImage(image,x,y,64*z,112*z);
+   targetCtx.drawImage(image,x,y,64*z,112*z);
   }
  }
 }
