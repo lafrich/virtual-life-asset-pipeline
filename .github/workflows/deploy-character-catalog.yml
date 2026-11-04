@@ -116,6 +116,9 @@ jobs:
           node tests/test_warteg_template.cjs
           node --check site/expression-context.js
           node tests/test_expression_context.cjs
+          node --check site/action-scene-bridge.js
+          node --check site/action-scene-editor.js
+          node tests/test_action_scene_bridge.cjs
           node --check site/app.js
           node tests/test_desktop_layout.cjs
           node --check site/animations.js
@@ -201,6 +204,10 @@ jobs:
           test -s _site/style.css
           test -s _site/app.js
           test -s _site/universal-motion-runtime.js
+          test -s _site/action-scene-editor.html
+          test -s _site/action-scene-editor.js
+          test -s _site/action-scene-editor.css
+          test -s _site/action-scene-bridge.js
           test -s _site/expression-context.js
           test -s _site/expression-contexts.json
           test -s _site/catalog.json

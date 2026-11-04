@@ -18,10 +18,7 @@
   function actionContext(extra={}) {
     const requested = new URLSearchParams(location.search);
     const chosenMotion=typeof state!=="undefined"?state.motion?.id:"";
-    const motionAction=["sit","sit_type","toilet"].includes(chosenMotion)?"toilet":
-      chosenMotion==="bathtub_bathe"?"bathtub_bathe":
-      ["swim","bathe"].includes(chosenMotion)?"bathe":
-      ["sleep","sleep_seat","lie"].includes(chosenMotion)?"sleep":"toilet";
+    const motionAction=validActionId(chosenMotion)?chosenMotion:"idle";
     const actor=extra.actor||requested.get("actor")||
       (typeof state!=="undefined"?state.selected?.id:null)||"ichsan";
     const action=extra.action||requested.get("action")||motionAction;
@@ -33,9 +30,9 @@
   function sendActionContext(context){
     lastActionContext=context;
     if(!actionFrameStarted){
-      const target=new URL("./action-editor.html",location.href);
+      const target=new URL("./action-scene-editor.html",location.href);
       target.searchParams.set("embedded","1");
-      target.searchParams.set("ui","pose-expression-v6");
+      target.searchParams.set("ui","multi-character-act-v1");
       for(const [key,value] of Object.entries(context))if(value)target.searchParams.set(key,value);
       actionFrameStarted=true;
       actionFrame.src=target.href;
@@ -44,9 +41,9 @@
     actionFrame.contentWindow?.postMessage({type:"mahluk-action-context",context},location.origin);
   }
   function openActionTab(extra={}){
-    const url=new URL("https://lafrich.github.io/virtual-office/world-builder/bangun-ruang/");
-    if(extra.actor)url.searchParams.set("actor",extra.actor);
-    window.open(url.href,"_blank","noopener");
+    setMode("actions");
+    sendActionContext(actionContext(extra));
+    if(location.hash!=="#actions")history.replaceState(null,"","#actions");
   }
   window.VLMahlukActionsTab=Object.freeze({open:openActionTab});
   document.addEventListener("mahluk:open-action-editor",event=>openActionTab(event.detail||{}));
@@ -466,7 +463,7 @@
   // this script and leaving tabs/buttons without their click handlers.
   // Don't wait for animations.json: the Action Editor opens independently.
   if(["#actions","#action-editor"].includes(location.hash)){
-    location.replace?.("https://lafrich.github.io/virtual-office/world-builder/bangun-ruang/");
+    openActionTab();
   }
   loadTargets();
   (async () => {

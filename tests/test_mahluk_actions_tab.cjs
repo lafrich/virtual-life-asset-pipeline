@@ -22,11 +22,12 @@ assert.ok(animations.includes('window.addEventListener("message"')===false);
 assert.ok(animations.includes('actionFrame.contentWindow?.postMessage'));
 assert.ok(animations.includes('target.searchParams.set("embedded","1")'));
 assert.ok(animations.includes('["#actions","#action-editor"].includes(location.hash)'));
-assert.ok(app.includes('window.open(url.href,"_blank","noopener")'));
-assert.ok(app.includes('virtual-office/world-builder/bangun-ruang/'));
-assert.ok(html.includes('id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace" hidden'));
-assert.ok(html.includes('style="display:none !important" tabindex="-1"'));
-assert.ok(animations.includes('virtual-office/world-builder/bangun-ruang/'));
+assert.ok(app.includes('window.VLMahlukActionsTab?.open'));
+assert.ok(!html.includes('id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace" hidden'));
+assert.ok(animations.includes('action-scene-editor.html'));
+assert.ok(animations.includes('setMode("actions");'));
+assert.ok(!animations.includes("location.replace?."));
+assert.ok(html.includes('03 / ACTION EDITOR'));
 assert.ok(editorHtml.includes("ae-embedded"));
 assert.ok(editor.includes('event.data?.type==="mahluk-action-context"'));
 assert.ok(editor.includes('if(changesActor||changesAction){setAction(nextAction);}'));
@@ -61,4 +62,16 @@ assert.ok(editor.includes('btn.addEventListener("click",()=>setAction(btn.datase
  "Action thumbnails must be interactive, not decorative");
 assert.ok(app.includes('playback:m.playback||(m.available&&["native","custom"].includes(m.source)'),
  "Native and custom published motion sprites must show as AUTHORED, not REFERENCE");
-console.log("PASS Mahluk Hidup hides Action Editor tab and routes alignment to Bangun Ruang while preserving legacy pixel sources");
+const sceneHtml=fs.readFileSync("site/action-scene-editor.html","utf8");
+const sceneJs=fs.readFileSync("site/action-scene-editor.js","utf8");
+for(const id of ["act-add-character","act-stage","act-motion","act-expression","act-layer",
+ "act-gear-shirt","act-gear-pants","act-save","act-import","act-export",
+ "act-character-list","act-saved-list","act-object-layer"]){
+ assert.ok(sceneHtml.includes('id="'+id+'"'),"Missing multi-actor control "+id);
+}
+assert.ok(sceneJs.includes('A.save(scene)'));
+assert.ok(sceneJs.includes('scene.participants'));
+assert.ok(sceneJs.includes('pointermove'));
+assert.ok(sceneJs.includes('m.outfit_masks'));
+assert.ok(animations.includes('target.searchParams.set("embedded","1")'));
+console.log("PASS Mahluk Hidup Action Editor tab supports multi-character scene composition and preset storage");
