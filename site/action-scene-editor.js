@@ -224,7 +224,7 @@ function updateFaceAssetPreview(){
 function renderFaceAssets(p,actor){
  const picker=$("act-face-asset");picker.replaceChildren();
  for(const f of actor?.expressions||[])
-  if(idOK(f.id)&&f.sheet)picker.append(option(f.id,
+  if(idOK(f.id)&&(f.sheet||f.overlay))picker.append(option(f.id,
    "CHARACTER FACE / "+(f.label||f.id).toUpperCase()));
  for(const item of faceAssets.filter(x=>x.actorBase===actorBase(actor)))
   picker.append(option(item.id,"CUSTOM EMOTION / "+item.name.toUpperCase()));
@@ -409,7 +409,7 @@ function drawFacePatch(target,actor,p,m,frame){
  const data=imported?.data;
  if(!face&&!data)return;
  const dirIndex=DIR.indexOf(p.direction);
- const sheet=face?.motion_sheets?.[m.id]||face?.sheet;
+ const sheet=face?.motion_sheets?.[m.id]||face?.overlay||face?.sheet;
  const source=picture(data||sheet);
  if(!source)return;
  let cropX=0,cropY=0,cropW=32,cropH=29;
@@ -417,8 +417,15 @@ function drawFacePatch(target,actor,p,m,frame){
   // Native expressions are full-body atlases, NOT facial overlays.
   // Crop just that actor's original face. Walk and Idle prefer matching
   // frame-by-frame expression atlases, never swap someone else's body.
-  cropX=(frame%Math.max(1,face.frames||4))*64+17;
-  cropY=dirIndex*112+30;
+  const overlay=face.overlay&&!face.motion_sheets?.[m.id];
+  const rowCount=Math.floor(source.height/112);
+  const row=overlay&&rowCount>=8?4+dirIndex:dirIndex;
+  const columns=Math.floor(source.width/64);
+  if(columns<1||row>=rowCount)return;
+  const frameCount=face.motion_sheets?.[m.id]&&m.id==="walk"?m.frames:
+   Math.max(1,face.frames||4);
+  cropX=(frame%Math.max(1,Math.min(columns,frameCount)))*64+17;
+  cropY=row*112+30;
   if(cropX+cropW>source.width||cropY+cropH>source.height)return;
  }else if(source.width!==32||source.height!==29){
   return; // Imported custom emotion PNGs are canonical 32x29 face parts.
