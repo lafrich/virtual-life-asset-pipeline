@@ -100,9 +100,8 @@ def build_native_sleep_previews(out: Path, repo_url: str, characters: list[dict]
                 painter = ImageDraw.Draw(picture)
                 for i, direction in enumerate(keys):
                     # Match the shared action's canonical directionFor() mapping.
-                    back = direction in ("ne", "nw")
-                    real_dir = (("ne" if back else "se") if action.endswith("right")
-                                else ("nw" if back else "sw"))
+                    real_dir = (direction if action.endswith("right") else
+                                {"se":"sw","sw":"se","ne":"nw","nw":"ne"}[direction])
                     direction_row = keys.index(real_dir)
                     crop = sheet.crop((f * 64, (row0 + direction_row) * 112,
                                       (f + 1) * 64, (row0 + direction_row + 1) * 112))
