@@ -148,19 +148,14 @@ function draw(){
  }
  pc.imageSmoothingEnabled=false;
  pc.fillStyle="#ecedef";pc.fillRect(0,0,256,448);
- // Match the in-game four-way compositing contract.
- // In front views the bag is BEHIND the player. In rear views it is on
- // the outer back torso, but any pixels above the neck cutoff are hidden.
- const rearBag=state.category==="bag"&&(state.dir==="ne"||state.dir==="nw");
- if(state.category==="bag"&&!rearBag){
+ // Backpack remains behind the full actor silhouette in EVERY direction.
+ // In the pixel editor show the layer first, then draw the body guide over it.
+ if(state.category==="bag"){
   pc.drawImage(layer(),0,0,256,448);
   if(guideState.loaded)pc.drawImage(guide,di*W,0,W,H,0,0,256,448);
  }else{
   if(guideState.loaded)pc.drawImage(guide,di*W,0,W,H,0,0,256,448);
-  if(rearBag){
-   pc.save();pc.beginPath();pc.rect(0,56*4,256,(112-56)*4);pc.clip();
-   pc.drawImage(layer(),0,0,256,448);pc.restore();
-  }else pc.drawImage(layer(),0,0,256,448);
+  pc.drawImage(layer(),0,0,256,448);
  }
 }
 function remember(before,beforeMask){
