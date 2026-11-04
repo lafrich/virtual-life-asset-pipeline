@@ -10,13 +10,14 @@ const DIR=["se","sw","ne","nw"],SLOTS=["shirt","pants","hair","shoes","bag","hel
 const AREA={w:900,h:530,cx:450,cy:405},SPRITE={w:64,h:112,pivotX:32,pivotY:100,scale:2};
 const CUSTOM_KEY="virtual-life-character-storage-v1";
 const ITEM_KEY="virtual-life-accessories-v1",EQUIP_KEY="virtual-life-accessory-equipment-v1";
+const FACE_LIBRARY_KEY="virtual-life-face-assets-v1";
 const SAFE_MEDIA=/^media\/[a-z0-9_.-]+\.png$/i;
 const $stage=$("act-stage"),ctx=$stage.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const entries=new Map(),pictures=new Map(),tintCache=new Map(),buffers=new Map();
 let build="",facesDB=null,equipment={},items=[],scene=null,slot=1,play=true,timeMs=0,lastTime=0,drag=null,dirty=false,ready=false;
-let pendingOutfit=null;
+let pendingOutfit=null,faceAssets=[];
 const status=message=>{$("act-status").textContent=message;};
 const filename=name=>(name||"act").replace(/[^a-z0-9_-]+/gi,"_").slice(0,48);
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,Number(x)||0));
@@ -52,6 +53,17 @@ function equipmentItemsFor(actor,category){
  return items.filter(item=>item.category===category&&
   (item.template_base||"astrofrich_base")===actorBase(actor));
 }
+function refreshFaceLibrary(){
+ const stored=read(FACE_LIBRARY_KEY,[]);
+ faceAssets=Array.isArray(stored)?stored.filter(x=>x&&idOK(x.id)&&idOK(x.actorBase)&&
+  typeof x.name==="string"&&typeof x.data==="string"&&x.data.length<100000&&
+  /^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(x.data)).slice(0,80):[];
+}
+function saveFaceAsset(entry){
+ refreshFaceLibrary();
+ const next=[entry,...faceAssets.filter(x=>x.id!==entry.id)].slice(0,80);
+ localStorage.setItem(FACE_LIBRARY_KEY,JSON.stringify(next));faceAssets=next;
+}
 function refreshLocal(){
  items=read(ITEM_KEY,[]);
  if(!Array.isArray(items))items=[];
@@ -61,6 +73,7 @@ function refreshLocal(){
   Object.values(item.frames).every(v=>v.length<100000));
  equipment=read(EQUIP_KEY,{});
  if(!equipment||typeof equipment!=="object")equipment={};
+ refreshFaceLibrary();
 }
 function hydrateCustom(){
  const rows=read(CUSTOM_KEY,[]);
@@ -190,6 +203,87 @@ function renderGear(p,actor){
  if(draft.changed)outfitNote("PENDING CHANGES — CLICK APPLY TO UPDATE PREVIEW","pending");
  else outfitNote("CURRENT OUTFIT APPLIED · SELECT REMOVE / WEAR AND CLICK APPLY");
 }
+function faceAssetFor(p,actor,id){
+ const native=(actor?.expressions||[]).find(f=>f.id===id);
+ if(native)return {id,data:null,portrait:native.portrait||native.sheet,label:native.label||id};
+ const local=faceAssets.find(f=>f.id===id&&f.actorBase===actorBase(actor));
+ if(local)return {id,data:local.data,portrait:local.data,label:local.name};
+ if(p?.faceAssetId===id&&p.faceAssetData)
+  return {id,data:p.faceAssetData,portrait:p.faceAssetData,label:"IMPORTED EMOTION"};
+ return null;
+}
+function updateFaceAssetPreview(){
+ const p=selected(),actor=actorFor(p),id=$("act-face-asset").value;
+ const asset=faceAssetFor(p,actor,id),img=$("act-face-preview");
+ const uri=asset?.portrait?link(asset.portrait):null;
+ if(uri)img.src=uri;else img.removeAttribute("src");
+ $("act-face-status").textContent=(asset?"EMOTION ASSET: "+asset.label.toUpperCase():
+  "SELECT A FACE ASSET")+(p?.autoFace?" · AUTO FACE ACTIVE":" · CLICK APPLY TO ATTACH");
+ $("act-face-status").classList.remove("is-applied");
+}
+function renderFaceAssets(p,actor){
+ const picker=$("act-face-asset");picker.replaceChildren();
+ for(const f of actor?.expressions||[])
+  if(idOK(f.id)&&f.sheet)picker.append(option(f.id,
+   "CHARACTER FACE / "+(f.label||f.id).toUpperCase()));
+ for(const item of faceAssets.filter(x=>x.actorBase===actorBase(actor)))
+  picker.append(option(item.id,"CUSTOM EMOTION / "+item.name.toUpperCase()));
+ if(p.faceAssetId&&p.faceAssetData&&!Array.from(picker.options).some(o=>o.value===p.faceAssetId))
+  picker.append(option(p.faceAssetId,"IMPORTED EMOTION / SAVED WITH ACT"));
+ const active=p.faceAssetId||p.expressionId||"neutral";
+ picker.value=Array.from(picker.options).some(o=>o.value===active)?active:
+  (picker.options[0]?.value||"");
+ $("act-face-offset-x").value=p.faceOffsetX||0;
+ $("act-face-offset-y").value=p.faceOffsetY||0;
+ updateFaceAssetPreview();
+}
+function applyFaceAsset(){
+ const p=selected(),actor=actorFor(p);if(!actor)return;
+ const id=$("act-face-asset").value,asset=faceAssetFor(p,actor,id);
+ if(!asset){status("CHOOSE A VALID EMOTION ASSET");return;}
+ p.faceAssetId=id;p.faceAssetData=asset.data||null;
+ if((actor.expressions||[]).some(f=>f.id===id))p.expressionId=id;
+ p.autoFace=false;
+ p.faceOffsetX=Math.round(clamp($("act-face-offset-x").value,-32,32));
+ p.faceOffsetY=Math.round(clamp($("act-face-offset-y").value,-32,32));
+ markDirty();renderInspector();paint();
+ $("act-face-status").textContent="✓ APPLIED "+asset.label.toUpperCase()+
+  " TO "+(actor.name||actor.id).toUpperCase()+" · PREVIEW UPDATED";
+ $("act-face-status").classList.add("is-applied");
+ status("✓ FACE ASSET APPLIED · "+asset.label.toUpperCase());
+}
+async function importFaceAsset(file){
+ if(!file)return;
+ const p=selected(),actor=actorFor(p);
+ if(!actor||file.type!=="image/png"||file.size>1500000){
+  status("FACE FILE MUST BE PNG UNDER 1.5 MB");return;
+ }
+ const uri=URL.createObjectURL(file);
+ try{
+  const img=await new Promise((resolve,reject)=>{
+   const raw=new Image();raw.onload=()=>resolve(raw);
+   raw.onerror=()=>reject(Error("Could not read PNG emotion asset"));raw.src=uri;
+  });
+  const valid=(img.width===32&&img.height===29)||
+   (img.width===160&&img.height===145)||
+   (img.width===64&&[112,448].includes(img.height));
+  if(!valid)throw Error("Use 32×29 face PNG, 160×145 portrait or 64×112/448 face sheet");
+  const cv=document.createElement("canvas");cv.width=32;cv.height=29;
+  const brush=cv.getContext("2d");brush.imageSmoothingEnabled=false;
+  if(img.width===64)brush.drawImage(img,17,30,32,29,0,0,32,29);
+  else brush.drawImage(img,0,0,img.width,img.height,0,0,32,29);
+  const data=cv.toDataURL("image/png");
+  if(data.length>=100000)throw Error("Face asset exceeds local storage limit");
+  const id="emotion_"+Date.now().toString(36)+"_"+
+   Math.random().toString(36).slice(2,6);
+  saveFaceAsset({id,actorBase:actorBase(actor),
+   name:file.name.replace(/\.png$/i,"").slice(0,40)||"CUSTOM FACE",data});
+  renderFaceAssets(p,actor);
+  $("act-face-asset").value=id;updateFaceAssetPreview();
+  applyFaceAsset();
+ }catch(error){status("FACE IMPORT: "+error.message);}
+ finally{URL.revokeObjectURL(uri);}
+}
 function renderInspector(){
  const p=selected();if(!p)return;
  const actor=actorFor(p),actual=motionFor(actor,p);
@@ -209,6 +303,7 @@ function renderInspector(){
  if(!Array.from(fsel.options).some(o=>o.value===p.expressionId))p.expressionId="neutral";
  fsel.value=p.expressionId;
  $("act-auto-face").checked=p.autoFace;
+ renderFaceAssets(p,actor);
  $("act-direction").value=p.direction;
  $("act-x").value=p.x;$("act-y").value=p.y;
  $("act-layer").value=p.layer;$("act-object-layer").value=p.objectLayer;
@@ -530,15 +625,25 @@ function setupEvents(){
  $("act-actor").onchange=event=>mutateParticipant(p=>{
   pendingOutfit=null;
   p.actorId=event.target.value;p.motionId=firstMotion(actorFor(p))?.id||"idle";
-  p.expressionId="neutral";
+  p.expressionId="neutral";p.faceAssetId="neutral";p.faceAssetData=null;
   const human=["human_male_base","human_female_base"].includes(actorBase(actorFor(p)));
   p.equipment=Object.fromEntries(SLOTS.map(k=>[k,human&&k==="shirt"?"builtin_shirt":
    human&&k==="pants"?"builtin_pants":"inherit"]));
  });
  $("act-motion").onchange=event=>mutateParticipant(p=>{p.motionId=event.target.value;});
  $("act-expression").onchange=event=>mutateParticipant(p=>{
-  p.expressionId=event.target.value;p.autoFace=false;
+  p.expressionId=event.target.value;
+  p.faceAssetId=event.target.value;p.faceAssetData=null;p.autoFace=false;
  });
+ $("act-face-asset").onchange=updateFaceAssetPreview;
+ $("act-apply-face").onclick=applyFaceAsset;
+ $("act-face-upload-button").onclick=()=>$("act-face-upload").click();
+ $("act-face-upload").onchange=event=>{
+  importFaceAsset(event.target.files?.[0]);event.target.value="";
+ };
+ for(const key of ["x","y"])$("act-face-offset-"+key).onchange=event=>
+  mutateParticipant(p=>{p["faceOffset"+key.toUpperCase()]=
+   Math.round(clamp(event.target.value,-32,32));});
  $("act-auto-face").onchange=event=>mutateParticipant(p=>{p.autoFace=event.target.checked;});
  $("act-direction").onchange=event=>mutateParticipant(p=>{p.direction=event.target.value;});
  for(const [id,key,min,max] of [
@@ -592,7 +697,7 @@ function setupEvents(){
   play=false;syncPlay();paint();
  };
  window.addEventListener("storage",event=>{
-  if([ITEM_KEY,EQUIP_KEY,CUSTOM_KEY].includes(event.key)){
+  if([ITEM_KEY,EQUIP_KEY,CUSTOM_KEY,FACE_LIBRARY_KEY].includes(event.key)){
    refreshLocal();if(event.key===CUSTOM_KEY)hydrateCustom();
    populateActors();renderInspector();paint();
   }
