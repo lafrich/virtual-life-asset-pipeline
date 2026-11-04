@@ -36,6 +36,25 @@ def profile(s):
   return ('kampung' if category=='warung' or kind in ('rumah','mushola') else 'jalan',
           W,4.6 if category=='bangunan' else 3.4,H,('sw','se'))
  if category=='tanaman':
+  # Reuse the original approved native species' exact footprint and extent.
+  # This keeps the 3D isometric pivot inside every cropped PNG, especially
+  # for very narrow plants such as sansevieria and hanging sirih gading.
+  original_species={
+   'Pohon pisang pekarangan':(2.7,2.7,176),
+   'Pohon kelapa pesisir':(2.7,2.7,230),
+   'Pohon mangga rindang':(2.7,2.7,211),
+   'Pohon pepaya berbuah':(1.9,1.9,193),
+   'Pohon rambutan':(2.8,2.8,222),
+   'Pohon sawo':(2.6,2.6,198),
+   'Rumpun bambu':(2.2,2.2,212),
+   'Pohon kamboja bunga':(2.3,2.3,174),
+   'Daun pandan wangi':(1.7,1.7,106),
+   'Bougenville berbunga':(1.6,1.6,126),
+   'Sirih gading pot':(1.5,1.4,120),
+   'Lidah mertua pot':(1.35,1.35,118)
+  }
+  if s['label'] in original_species:
+   return ('prop',*original_species[s['label']],('sw','se'))
   if kind in ('pohon','kelapa','ketapang','kamboja','bambu','pisang','pepaya'):
    return ('prop',2.8,2.8,214,('sw','se'))
   return ('prop',2.1,2.1,118,('sw','se'))
