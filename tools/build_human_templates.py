@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 import numpy as np
 
 DIRECTIONS=("se","sw","ne","nw")
-MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4}
+MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6}
 EXPRS=("neutral","happy","surprised","angry","sleepy")
 FRAME=(64,112)
 # Native v6b head begins at FY=31. y=53 is the start of the shoulders:
@@ -92,15 +92,15 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
     for gender,cfg in palettes.items():
         name=f"human-{gender}-base"
         def frame(direction:str,kind:str,index:int,expression:str="neutral"):
-            anim="sleep" if kind=="sleep_seat" else "tired" if kind=="nap_stand" else "idle" if kind=="bathe" else kind
+            anim="sleep" if kind=="sleep_seat" else "tired" if kind=="nap_stand" else "idle" if kind=="bathe" else "lie" if kind=="bathtub_bathe" else kind
             # Mirror directions are authored via native v6b, not generic canvas flip.
             # The modular base6 wrapper returns UPRIGHT layers even when its
             # anim=lie parameter is selected. Apply the SAME pixel-exact
             # native lie_flat transform used by the original V6B game.
-            lying=kind=="lie"
+            lying=kind in ("lie","bathtub_bathe")
             source_dir=("se" if direction in ("se","sw") else "ne") if lying else direction
-            face_expression="blink" if lying else expression
-            canvas,layers,pal=base6.render(cfg,f=index,d=source_dir,
+            face_expression="neutral" if kind=="bathtub_bathe" else "blink" if lying else expression
+            canvas,layers,pal=base6.render(cfg,f=index%4 if lying else index,d=source_dir,
                                            expr=face_expression,anim=anim)
             M.bald(layers,pal)
             skin=[tuple(pal.get(k,pal["Ki"])) for k in ("K5","K7","Ke","Kh","Ki")]
@@ -184,7 +184,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             if not lying:
                 result=shade_human_anatomy(result,gender,direction,shirt_top,pants_top,
                     tuple(pal.get("Ke",(170,115,87))),tuple(pal.get("Ki",(223,181,147))))
-            else:
+            elif kind=="lie":
                 from PIL import Image as _Image
                 zzz=_Image.fromarray(base6.lv.zzz_img(
                     "lie",index,source_dir,direction in ("sw","nw")),"RGBA")
@@ -200,6 +200,45 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 for sx,sy in ((31+phase,64-phase*3),
                               (34-phase,70+phase)):
                     water.rectangle((sx,sy,sx+2,sy+1),fill=(229,249,252,200))
+            if kind=="bathtub_bathe":
+                # An AWAKE version of the genuine 4-way, horizontal native
+                # LIE posture. No sleepy eyelids, no ZZZ, no upright limbs.
+                # Render six actual distinct foam/ripple phases on the
+                # unclothed gender-specific body, never over face/hair.
+                foam=Image.new("RGBA",FRAME)
+                paint=ImageDraw.Draw(foam)
+                torso=np.asarray(layers["shirt"].convert("RGBA"))[...,3]>0
+                legs=np.asarray(layers["pants"].convert("RGBA"))[...,3]>0
+                body_mask=torso|legs
+                ys,xs=np.nonzero(body_mask)
+                if len(xs):
+                    min_x,max_x=int(xs.min()),int(xs.max())
+                    min_y,max_y=int(ys.min()),int(ys.max())
+                    phase=index%6
+                    # Opaque off-white foam covers lower torso, pelvis and
+                    # legs for a non-explicit bathing sprite, with subtle
+                    # independent 1px variations in each frame.
+                    for j in range(11):
+                        u=(j+.5)/11
+                        px=min_x+int((max_x-min_x)*u)
+                        py=min_y+int((max_y-min_y)*(.48+.10*((j+phase)%3)))
+                        rad=2+(j+phase)%3
+                        paint.ellipse((px-rad,py-rad//2,
+                                       px+rad,py+rad//2+1),
+                                      fill=(236,250,252,235),
+                                      outline=(147,213,227,255))
+                        paint.point((px-1,py-1),fill=(255,255,255,255))
+                    for j in range(5):
+                        px=min_x+int((max_x-min_x)*(j+.5)/5)
+                        py=max_y-3-(j+phase)%3
+                        paint.ellipse((px-2,py-1,px+2,py+2),
+                                      fill=(218,244,250,215))
+                    # The water line stays at/inside the tub's front rim;
+                    # pixel-art foam is an overlay only, never a new rig.
+                    if phase%2:
+                        paint.point((max(0,min_x-2),min_y+7),
+                                    fill=(172,222,236,210))
+                result.alpha_composite(foam)
             # Body remains a non-explicit adult mannequin for outfit fitting.
             assert result.size==FRAME
             return result
@@ -243,8 +282,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 make_sheet(kind,count).save(media/fn,optimize=True)
                 motions.append({"id":kind,"name":kind.replace("_"," ").upper(),"category":"action",
                     "source":"custom","sheet":"media/"+fn,"row":0,"available":True,
-                    "frames":count,"frame_ms":([330,360,380,360] if kind=="bathe" else [210]*count),
-                    "loop":kind in ("talk","sit_type","bathe"),"reason":""})
+                    "frames":count,"frame_ms":([330,360,380,360] if kind=="bathe" else
+                                [320,340,360,350,340,330] if kind=="bathtub_bathe" else [210]*count),
+                    "loop":kind in ("talk","sit_type","bathe","bathtub_bathe"),"reason":""})
         expressions=[]
         for expr in EXPRS:
             fn=f"{name}-expression-{expr}.png"
