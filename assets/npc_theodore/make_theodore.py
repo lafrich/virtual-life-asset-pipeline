@@ -158,24 +158,12 @@ def build(view='se', anim='idle', f=0, expr='neutral', pulse=0, modular=False):
     acc = np.zeros((FH, FW, 4), np.uint8); collar(acc, base, suit); acc = np.roll(acc, bodyd, 0); acc = comp(bl, acc)
     order = ['hair_back', 'body', 'arm_far', 'shoes', 'pants', 'shoes_over', 'rips', 'shirt', 'shirt_graphic', 'outer']
     im = Image.new('RGBA', (FW, FH))
-    # Direction-aware depth: seen from the front the backpack is behind the
-    # whole body; from the rear its outer panel belongs on the BACK surface
-    # (visible over the shirt), but NEVER above the head/neck silhouette.
-    # Earlier "all behind" ordering hid the rear backpack inside the torso,
-    # so the isolated nozzle looked misplaced in front of the character.
-    if not modular and base == 'se':
+    # Backpack is ALWAYS the rearmost layer, also in NE/NW rear views.
+    # Never draw it over the shirt, arms, head or helmet.
+    if not modular:
         im.alpha_composite(Image.fromarray(np.roll(pack(base), bodyd, 0)))
     for k in order:
         if k in L: im.alpha_composite(L[k])
-    if not modular and base == 'ne':
-        rear_pack = np.roll(pack(base), bodyd, 0).copy()
-        # Keep the rear skull, goggles, neck and helmet completely in front.
-        # This cutoff tracks the native torso animation's vertical bob.
-        # Never reveal bag pixels in the rear head zone even when the
-        # walk/idle torso bobs upward (negative bodyd).
-        neck_cutoff = max(56, min(FH, 56 + bodyd))
-        rear_pack[:neck_cutoff, :, 3] = 0
-        im.alpha_composite(Image.fromarray(rear_pack))
     im.alpha_composite(Image.fromarray(acc))
     for k in ('acc', 'arm_near', 'body_front', 'held', 'face', 'hair_front', 'glasses', 'brows'):
         if k in L: im.alpha_composite(L[k])
