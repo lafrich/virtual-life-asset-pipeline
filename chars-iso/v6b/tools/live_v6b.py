@@ -1183,14 +1183,11 @@ ZG = ['111', '..1', '.1.', '1..', '111']
 
 
 
-def lie_head_shift(imgs, view='se'):
-    """Attach the unscaled original head to the TRANSFORMED neck/shoulder.
+def lie_neck_pivot(imgs):
+    """Return the ORIGINAL head-neck joint, shared across face/hair layers.
 
-    Do not position the head against a fixed screen coordinate: the collar
-    changes position with the V6B perspective and each character's build.
-    Pick the head's bottom-centre and a real source neckline pixel that
-    survives lie_flat, then project the latter through that SAME body map.
-    One integer translation must also be used for eyes, hair and headwear.
+    Source image coordinates are unscaled; no head bounding-box corner may be
+    used as a rotation joint.
     """
     head = None
     for key in ('body', 'figure', 'hair_front', 'hair_back', 'face'):
@@ -1201,16 +1198,33 @@ def lie_head_shift(imgs, view='se'):
             head = rgba
             break
     if head is None:
-        return (0, 0)
+        return None
 
     ys, xs = np.nonzero(head[:56, :, 3] > 0)
     if not len(xs):
-        return (0, 0)
+        return None
     # The last few opaque skull/neck rows contain the connection to the body.
     # Never use the entire head bbox: its top-left corner is not a joint.
     neck_y = int(ys.max())
     neck_band = xs[ys >= max(43, neck_y - 2)]
     neck_x = int(round(float(np.median(neck_band)))) if len(neck_band) else 32
+
+    return (neck_x, neck_y)
+
+
+def lie_head_shift(imgs, view='se'):
+    """Attach the unscaled original head to the TRANSFORMED neck/shoulder.
+
+    Do not position the head against a fixed screen coordinate: the collar
+    changes position with the V6B perspective and each character's build.
+    Pick the head's bottom-centre and a real source neckline pixel that
+    survives lie_flat, then project the latter through that SAME body map.
+    One integer translation must also be used for eyes, hair and headwear.
+    """
+    neck = lie_neck_pivot(imgs)
+    if neck is None:
+        return (0, 0)
+    neck_x, neck_y = neck
 
     keep = [y for y in range(30, 102) if y not in DROP_SE]
     imid = len(keep) // 2
@@ -1253,15 +1267,16 @@ def lie_head_shift(imgs, view='se'):
     # A one-pixel overlap eliminates the detached ball-head silhouette.
     return (int(shoulder_x - neck_x), int(shoulder_y - neck_y))
 
-def lie_preserve_head(imgs, view, shift=None):
+def lie_preserve_head(imgs, view, shift=None, neck_pivot=None):
     """Isometric bed sleep: lie body, but preserve the HEAD at native 1:1 pixels.
 
     The old lie_flat rotates the entire upright character into the ground plane,
     flattening the skull, eye and hair silhouette. Split only head materials,
     transform the rest of the body into the existing horizontal bed pose, then
-    move (NEVER rotate/shear/scale) the native head onto the pillow end.
-    Keeping the same transform for face/brows/glasses preserves expression
-    alignment across all four camera views and costume variants.
+    ROTATE the native head 90 degrees around its ORIGINAL neck joint. This is
+    a 1:1 integer-pixel rotation, not a shear or scale; every hair and facial
+    pixel keeps its size. The single projected neck anchor and pivot must also
+    be shared by eyes, brows, glasses and hats.
     """
     head_materials = {
         'body', 'hair_back', 'hair_front', 'face', 'brows', 'acc_head',
@@ -1283,14 +1298,27 @@ def lie_preserve_head(imgs, view, shift=None):
     reclined = lie_flat(separated, view, 'lie')
     opaque_heads = [image[..., 3] > 0 for image in preserved.values()]
     if opaque_heads and np.any(np.logical_or.reduce(opaque_heads)):
-        # Face and hair must share the EXACT body offset, not independent
-        # bounding-box offsets that move the eyes to the corner of the head.
+        # This is the same pivot for the standing skull, face, hair and
+        # accessories; rotating each layer around its own bounding box is a
+        # common cause of floating eyes or detached hair.
         dx, dy = shift if shift is not None else lie_head_shift(imgs, view)
+        neck_x, neck_y = (neck_pivot if neck_pivot is not None
+                          else lie_neck_pivot(imgs) or (32, 55))
+        shoulder_x, shoulder_y = neck_x + dx, neck_y + dy
         for key, image in preserved.items():
-            if not np.any(image[..., 3]):
+            ys, xs = np.nonzero(image[..., 3] > 0)
+            if not len(xs):
                 continue
-            moved = Image.new('RGBA', (FW, FH))
-            moved.paste(Image.fromarray(image, 'RGBA'), (dx, dy))
+            # Clockwise quarter-turn in screen coordinates, about the shared
+            # neck joint. Head points LEFT, torso/feet extend RIGHT.
+            # Unlike lie_flat this has no projection shear and no missing
+            # rows, so the face and head stay perfectly proportional.
+            rx = shoulder_x + (ys - neck_y)
+            ry = shoulder_y - (xs - neck_x)
+            visible = ((rx >= 0) & (rx < FW) & (ry >= 0) & (ry < FH))
+            pixels = np.zeros_like(image)
+            pixels[ry[visible], rx[visible]] = image[ys[visible], xs[visible]]
+            moved = Image.fromarray(pixels, 'RGBA')
             if key in reclined:
                 merged = reclined[key].copy()
                 merged.alpha_composite(moved)
@@ -1377,8 +1405,9 @@ def build(cfg_path, outfit=None, glasses=None):
                 sh = np.zeros((FH, FW, 4), np.uint8); cx = 32 + (1 if kind in SEATED else 0)
                 if kind not in ('swim', 'float'): sh[((xx + .5 - cx) / 11) ** 2 + ((yy + .5 - 100.5) / 2.4) ** 2 <= 1] = (0, 0, 0, 56)
                 imgs['shadow'] = Image.fromarray(sh, 'RGBA')
+                head_pivot = lie_neck_pivot(imgs) if anim == 'lie' else None
                 head_shift = lie_head_shift(imgs, view) if anim == 'lie' else None
-                if anim == 'lie': imgs = lie_preserve_head(imgs, view, head_shift)
+                if anim == 'lie': imgs = lie_preserve_head(imgs, view, head_shift, head_pivot)
                 elif anim == 'float': imgs = lie_flat(imgs, view, anim)
                 fxa = np.zeros((FH, FW, 4), np.uint8)
                 if anim in ('swim', 'float'):
@@ -1396,7 +1425,7 @@ def build(cfg_path, outfit=None, glasses=None):
                 def faceimgs(e):
                     F, B, G = face_layer(e, C, view, sitD, bob, gl, hdx if view == 'se' else 0)
                     fi = frame_img({'f': to_img(F, pal), 'b': to_img(B, pal), 'g': to_img(G, pal)})
-                    if anim == 'lie': fi = lie_preserve_head(fi, view, head_shift)
+                    if anim == 'lie': fi = lie_preserve_head(fi, view, head_shift, head_pivot)
                     elif anim == 'float': fi = lie_flat(fi, view, anim)
                     return fl(fi['f']), fl(fi['b']), fl(fi['g'])
                 for e in EXPRS:
