@@ -1,0 +1,50 @@
+name: Hygiene Body — Fast Sprite Validation
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/universal-body-actions.js"
+      - "site/app.js"
+      - "tools/build_human_templates.py"
+      - "tests/test_universal_body_actions.cjs"
+      - ".github/workflows/test-hygiene-body.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bath-sprite-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements.txt
+      - run: node tests/test_universal_body_actions.cjs
+      - name: Render 4-view adult Male/Female washing motions without full NPC catalog
+        run: |
+          mkdir -p /tmp/hygiene-media
+          python - <<'PY'
+          from pathlib import Path
+          from tools.build_human_templates import build_human_templates
+          from PIL import Image
+          root=Path.cwd()
+          records=build_human_templates(root,Path("/tmp/hygiene-media"))
+          assert {r["gender"] for r in records}=={"male","female"}
+          for gender in ("male","female"):
+              motions={m["id"]:m for m in next(r for r in records if r["gender"]==gender)["motions"]}
+              assert motions["bathe"]["available"] and motions["bathe"]["frames"]==4
+              with Image.open("/tmp/hygiene-media/human-"+gender+"-base-action-bathe.png") as img:
+                  assert img.size==(256,448)
+                  for direction in range(4):
+                      assert img.crop((0,direction*112,64,(direction+1)*112)).getchannel("A").getbbox()
+                      assert img.crop((0,direction*112,64,(direction+1)*112)).tobytes()!=img.crop((64,direction*112,128,(direction+1)*112)).tobytes()
+          print("PASS human male/female four-direction four-frame bathing sprites")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bathroom-body-qa
+          path: |
+            /tmp/hygiene-media/human-male-base-action-bathe.png
+            /tmp/hygiene-media/human-female-base-action-bathe.png
+          retention-days: 7
