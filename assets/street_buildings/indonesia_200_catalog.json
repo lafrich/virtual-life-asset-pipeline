@@ -407,57 +407,57 @@
           "file": "props/id200_transport_elf_travel_antarkota_sw.png",
           "size": [
             254,
-            226
+            232
           ],
           "pivot": [
             118,
-            165
+            172
           ]
         },
         "se": {
           "file": "props/id200_transport_elf_travel_antarkota_se.png",
           "size": [
             254,
-            226
+            232
           ],
           "pivot": [
             117,
-            166
+            171
           ]
         },
         "ne": {
           "file": "props/id200_transport_elf_travel_antarkota_ne.png",
           "size": [
             254,
-            226
+            232
           ],
           "pivot": [
             118,
-            165
+            172
           ]
         },
         "nw": {
           "file": "props/id200_transport_elf_travel_antarkota_nw.png",
           "size": [
             254,
-            226
+            232
           ],
           "pivot": [
             117,
-            166
+            171
           ]
         }
       },
       "size": [
         254,
-        226
+        232
       ],
       "pivot": [
         118,
-        165
+        172
       ],
       "width": 5.08,
-      "height": 4.52
+      "height": 4.64
     },
     {
       "id": "id200_transport_pikap_sayur_keliling",
@@ -2274,35 +2274,35 @@
           "file": "props/id200_jalan_trafo_pinggir_jalan_sw.png",
           "size": [
             142,
-            164
+            182
           ],
           "pivot": [
             62,
-            132
+            149
           ]
         },
         "se": {
           "file": "props/id200_jalan_trafo_pinggir_jalan_se.png",
           "size": [
             142,
-            164
+            180
           ],
           "pivot": [
             61,
-            132
+            148
           ]
         }
       },
       "size": [
         142,
-        164
+        182
       ],
       "pivot": [
         62,
-        132
+        149
       ],
       "width": 2.84,
-      "height": 3.28
+      "height": 3.64
     },
     {
       "id": "id200_jalan_spanduk_melintang_jalan",
@@ -2539,35 +2539,35 @@
           "file": "props/id200_jalan_palang_parkir_sw.png",
           "size": [
             142,
-            144
+            126
           ],
           "pivot": [
             62,
-            112
+            93
           ]
         },
         "se": {
           "file": "props/id200_jalan_palang_parkir_se.png",
           "size": [
             142,
-            144
+            126
           ],
           "pivot": [
             61,
-            111
+            93
           ]
         }
       },
       "size": [
         142,
-        144
+        126
       ],
       "pivot": [
         62,
-        112
+        93
       ],
       "width": 2.84,
-      "height": 2.88
+      "height": 2.52
     },
     {
       "id": "id200_warung_warteg_etalase_hijau",
@@ -5480,35 +5480,35 @@
           "file": "props/id200_pasar_meja_makan_warung_sw.png",
           "size": [
             142,
-            102
+            118
           ],
           "pivot": [
             62,
-            69
+            85
           ]
         },
         "se": {
           "file": "props/id200_pasar_meja_makan_warung_se.png",
           "size": [
             142,
-            102
+            118
           ],
           "pivot": [
             61,
-            69
+            85
           ]
         }
       },
       "size": [
         142,
-        102
+        118
       ],
       "pivot": [
         62,
-        69
+        85
       ],
       "width": 2.84,
-      "height": 2.04
+      "height": 2.36
     },
     {
       "id": "id200_pasar_kursi_plastik_warung",
@@ -5533,35 +5533,35 @@
           "file": "props/id200_pasar_kursi_plastik_warung_sw.png",
           "size": [
             142,
-            144
+            148
           ],
           "pivot": [
             62,
-            111
+            116
           ]
         },
         "se": {
           "file": "props/id200_pasar_kursi_plastik_warung_se.png",
           "size": [
             142,
-            144
+            150
           ],
           "pivot": [
             61,
-            111
+            117
           ]
         }
       },
       "size": [
         142,
-        144
+        148
       ],
       "pivot": [
         62,
-        111
+        116
       ],
       "width": 2.84,
-      "height": 2.88
+      "height": 2.96
     },
     {
       "id": "id200_pasar_freezer_es_krim",
@@ -5639,35 +5639,35 @@
           "file": "props/id200_pasar_rak_snack_warung_sw.png",
           "size": [
             142,
-            148
+            162
           ],
           "pivot": [
             62,
-            116
+            129
           ]
         },
         "se": {
           "file": "props/id200_pasar_rak_snack_warung_se.png",
           "size": [
             142,
-            146
+            160
           ],
           "pivot": [
             61,
-            114
+            128
           ]
         }
       },
       "size": [
         142,
-        148
+        162
       ],
       "pivot": [
         62,
-        116
+        129
       ],
       "width": 2.84,
-      "height": 2.96
+      "height": 3.24
     },
     {
       "id": "id200_pasar_rak_mie_instan",
@@ -5692,35 +5692,35 @@
           "file": "props/id200_pasar_rak_mie_instan_sw.png",
           "size": [
             142,
-            148
+            162
           ],
           "pivot": [
             62,
-            116
+            129
           ]
         },
         "se": {
           "file": "props/id200_pasar_rak_mie_instan_se.png",
           "size": [
             142,
-            146
+            160
           ],
           "pivot": [
             61,
-            114
+            128
           ]
         }
       },
       "size": [
         142,
-        148
+        162
       ],
       "pivot": [
         62,
-        116
+        129
       ],
       "width": 2.84,
-      "height": 2.96
+      "height": 3.24
     },
     {
       "id": "id200_pasar_timbangan_pasar",
@@ -6191,35 +6191,35 @@
           "file": "props/id200_rumah_pagar_roster_sw.png",
           "size": [
             142,
-            114
+            98
           ],
           "pivot": [
             62,
-            82
+            65
           ]
         },
         "se": {
           "file": "props/id200_rumah_pagar_roster_se.png",
           "size": [
             142,
-            114
+            96
           ],
           "pivot": [
             61,
-            82
+            64
           ]
         }
       },
       "size": [
         142,
-        114
+        98
       ],
       "pivot": [
         62,
-        82
+        65
       ],
       "width": 2.84,
-      "height": 2.28
+      "height": 1.96
     },
     {
       "id": "id200_rumah_tembok_roster",
@@ -6244,35 +6244,35 @@
           "file": "props/id200_rumah_tembok_roster_sw.png",
           "size": [
             142,
-            114
+            142
           ],
           "pivot": [
             62,
-            82
+            109
           ]
         },
         "se": {
           "file": "props/id200_rumah_tembok_roster_se.png",
           "size": [
             142,
-            114
+            140
           ],
           "pivot": [
             61,
-            82
+            108
           ]
         }
       },
       "size": [
         142,
-        114
+        142
       ],
       "pivot": [
         62,
-        82
+        109
       ],
       "width": 2.84,
-      "height": 2.28
+      "height": 2.84
     },
     {
       "id": "id200_rumah_kanopi_rumah",
@@ -6297,35 +6297,35 @@
           "file": "props/id200_rumah_kanopi_rumah_sw.png",
           "size": [
             142,
-            168
+            174
           ],
           "pivot": [
             62,
-            136
+            141
           ]
         },
         "se": {
           "file": "props/id200_rumah_kanopi_rumah_se.png",
           "size": [
             142,
-            168
+            174
           ],
           "pivot": [
             61,
-            135
+            141
           ]
         }
       },
       "size": [
         142,
-        168
+        174
       ],
       "pivot": [
         62,
-        136
+        141
       ],
       "width": 2.84,
-      "height": 3.36
+      "height": 3.48
     },
     {
       "id": "id200_rumah_carport_sederhana",
@@ -6350,35 +6350,35 @@
           "file": "props/id200_rumah_carport_sederhana_sw.png",
           "size": [
             142,
-            168
+            180
           ],
           "pivot": [
             62,
-            136
+            147
           ]
         },
         "se": {
           "file": "props/id200_rumah_carport_sederhana_se.png",
           "size": [
             142,
-            168
+            178
           ],
           "pivot": [
             61,
-            135
+            145
           ]
         }
       },
       "size": [
         142,
-        168
+        180
       ],
       "pivot": [
         62,
-        136
+        147
       ],
       "width": 2.84,
-      "height": 3.36
+      "height": 3.6
     },
     {
       "id": "id200_rumah_pot_tanaman_depan_rumah",
@@ -6562,35 +6562,35 @@
           "file": "props/id200_rumah_sangkar_burung_gantung_sw.png",
           "size": [
             142,
-            148
+            174
           ],
           "pivot": [
             62,
-            115
+            141
           ]
         },
         "se": {
           "file": "props/id200_rumah_sangkar_burung_gantung_se.png",
           "size": [
             142,
-            148
+            174
           ],
           "pivot": [
             61,
-            115
+            141
           ]
         }
       },
       "size": [
         142,
-        148
+        174
       ],
       "pivot": [
         62,
-        115
+        141
       ],
       "width": 2.84,
-      "height": 2.96
+      "height": 3.48
     },
     {
       "id": "id200_rumah_pos_ronda_kampung",
@@ -8099,35 +8099,35 @@
           "file": "props/id200_budaya_rak_sandal_masjid_sw.png",
           "size": [
             142,
-            148
+            162
           ],
           "pivot": [
             62,
-            116
+            129
           ]
         },
         "se": {
           "file": "props/id200_budaya_rak_sandal_masjid_se.png",
           "size": [
             142,
-            146
+            160
           ],
           "pivot": [
             61,
-            114
+            128
           ]
         }
       },
       "size": [
         142,
-        148
+        162
       ],
       "pivot": [
         62,
-        116
+        129
       ],
       "width": 2.84,
-      "height": 2.96
+      "height": 3.24
     },
     {
       "id": "id200_budaya_rak_sajadah_dan_kitab",
@@ -8152,35 +8152,35 @@
           "file": "props/id200_budaya_rak_sajadah_dan_kitab_sw.png",
           "size": [
             142,
-            148
+            162
           ],
           "pivot": [
             62,
-            116
+            129
           ]
         },
         "se": {
           "file": "props/id200_budaya_rak_sajadah_dan_kitab_se.png",
           "size": [
             142,
-            146
+            160
           ],
           "pivot": [
             61,
-            114
+            128
           ]
         }
       },
       "size": [
         142,
-        148
+        162
       ],
       "pivot": [
         62,
-        116
+        129
       ],
       "width": 2.84,
-      "height": 2.96
+      "height": 3.24
     },
     {
       "id": "id200_budaya_tiang_toa_masjid",
@@ -8523,35 +8523,35 @@
           "file": "props/id200_budaya_kursi_hajatan_sw.png",
           "size": [
             142,
-            144
+            148
           ],
           "pivot": [
             62,
-            111
+            116
           ]
         },
         "se": {
           "file": "props/id200_budaya_kursi_hajatan_se.png",
           "size": [
             142,
-            144
+            150
           ],
           "pivot": [
             61,
-            111
+            117
           ]
         }
       },
       "size": [
         142,
-        144
+        148
       ],
       "pivot": [
         62,
-        111
+        116
       ],
       "width": 2.84,
-      "height": 2.88
+      "height": 2.96
     },
     {
       "id": "id200_budaya_tenda_hajatan_warga",
@@ -8894,35 +8894,35 @@
           "file": "props/id200_budaya_baliho_informasi_kampung_sw.png",
           "size": [
             142,
-            174
+            192
           ],
           "pivot": [
             62,
-            142
+            160
           ]
         },
         "se": {
           "file": "props/id200_budaya_baliho_informasi_kampung_se.png",
           "size": [
             142,
-            174
+            194
           ],
           "pivot": [
             61,
-            142
+            161
           ]
         }
       },
       "size": [
         142,
-        174
+        192
       ],
       "pivot": [
         62,
-        142
+        160
       ],
       "width": 2.84,
-      "height": 3.48
+      "height": 3.84
     },
     {
       "id": "id200_budaya_banner_pengajian_warga",
@@ -8947,35 +8947,35 @@
           "file": "props/id200_budaya_banner_pengajian_warga_sw.png",
           "size": [
             142,
-            174
+            168
           ],
           "pivot": [
             62,
-            142
+            135
           ]
         },
         "se": {
           "file": "props/id200_budaya_banner_pengajian_warga_se.png",
           "size": [
             142,
-            174
+            166
           ],
           "pivot": [
             61,
-            142
+            134
           ]
         }
       },
       "size": [
         142,
-        174
+        168
       ],
       "pivot": [
         62,
-        142
+        135
       ],
       "width": 2.84,
-      "height": 3.48
+      "height": 3.36
     },
     {
       "id": "id200_budaya_tempat_cuci_tangan_acara",
@@ -9053,35 +9053,35 @@
           "file": "props/id200_budaya_meja_registrasi_hajatan_sw.png",
           "size": [
             142,
-            102
+            114
           ],
           "pivot": [
             62,
-            69
+            82
           ]
         },
         "se": {
           "file": "props/id200_budaya_meja_registrasi_hajatan_se.png",
           "size": [
             142,
-            102
+            114
           ],
           "pivot": [
             61,
-            69
+            82
           ]
         }
       },
       "size": [
         142,
-        102
+        114
       ],
       "pivot": [
         62,
-        69
+        82
       ],
       "width": 2.84,
-      "height": 2.04
+      "height": 2.28
     },
     {
       "id": "id200_gerobak_gerobak_bakmi_ayam",
@@ -10070,11 +10070,11 @@
           "file": "props/id200_gerobak_tabung_gas_melon_se.png",
           "size": [
             142,
-            90
+            74
           ],
           "pivot": [
             61,
-            57
+            41
           ]
         }
       },
@@ -10271,35 +10271,35 @@
           "file": "props/id200_gerobak_meja_lesehan_sw.png",
           "size": [
             142,
-            102
+            86
           ],
           "pivot": [
             62,
-            69
+            53
           ]
         },
         "se": {
           "file": "props/id200_gerobak_meja_lesehan_se.png",
           "size": [
             142,
-            102
+            84
           ],
           "pivot": [
             61,
-            69
+            52
           ]
         }
       },
       "size": [
         142,
-        102
+        86
       ],
       "pivot": [
         62,
-        69
+        53
       ],
       "width": 2.84,
-      "height": 2.04
+      "height": 1.72
     },
     {
       "id": "id200_gerobak_bangku_plastik_warung",
@@ -10324,35 +10324,35 @@
           "file": "props/id200_gerobak_bangku_plastik_warung_sw.png",
           "size": [
             142,
-            102
+            94
           ],
           "pivot": [
             62,
-            69
+            61
           ]
         },
         "se": {
           "file": "props/id200_gerobak_bangku_plastik_warung_se.png",
           "size": [
             142,
-            102
+            94
           ],
           "pivot": [
             61,
-            69
+            61
           ]
         }
       },
       "size": [
         142,
-        102
+        94
       ],
       "pivot": [
         62,
-        69
+        61
       ],
       "width": 2.84,
-      "height": 2.04
+      "height": 1.88
     },
     {
       "id": "id200_gerobak_lampu_gantung_warung",
@@ -10695,35 +10695,35 @@
           "file": "props/id200_publik_bak_sampah_komunal_sw.png",
           "size": [
             142,
-            144
+            118
           ],
           "pivot": [
             62,
-            111
+            86
           ]
         },
         "se": {
           "file": "props/id200_publik_bak_sampah_komunal_se.png",
           "size": [
             142,
-            144
+            116
           ],
           "pivot": [
             61,
-            111
+            84
           ]
         }
       },
       "size": [
         142,
-        144
+        118
       ],
       "pivot": [
         62,
-        111
+        86
       ],
       "width": 2.84,
-      "height": 2.88
+      "height": 2.36
     },
     {
       "id": "id200_publik_kontainer_sampah_kota",
@@ -10748,35 +10748,35 @@
           "file": "props/id200_publik_kontainer_sampah_kota_sw.png",
           "size": [
             142,
-            144
+            132
           ],
           "pivot": [
             62,
-            111
+            100
           ]
         },
         "se": {
           "file": "props/id200_publik_kontainer_sampah_kota_se.png",
           "size": [
             142,
-            144
+            132
           ],
           "pivot": [
             61,
-            111
+            99
           ]
         }
       },
       "size": [
         142,
-        144
+        132
       ],
       "pivot": [
         62,
-        111
+        100
       ],
       "width": 2.84,
-      "height": 2.88
+      "height": 2.64
     },
     {
       "id": "id200_publik_gerobak_petugas_kebersihan",
@@ -11278,35 +11278,35 @@
           "file": "props/id200_publik_stand_sangkar_burung_sw.png",
           "size": [
             142,
-            148
+            174
           ],
           "pivot": [
             62,
-            115
+            141
           ]
         },
         "se": {
           "file": "props/id200_publik_stand_sangkar_burung_se.png",
           "size": [
             142,
-            148
+            174
           ],
           "pivot": [
             61,
-            115
+            141
           ]
         }
       },
       "size": [
         142,
-        148
+        174
       ],
       "pivot": [
         62,
-        115
+        141
       ],
       "width": 2.84,
-      "height": 2.96
+      "height": 3.48
     },
     {
       "id": "id200_publik_lapangan_voli_kampung",
