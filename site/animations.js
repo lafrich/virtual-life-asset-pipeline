@@ -25,7 +25,8 @@
     return {actor,action:validActionId(action)?action:"toilet",
       building:extra.building||requested.get("building")||"",
       floor:extra.floor||requested.get("floor")||"",
-      fixture:extra.fixture||requested.get("fixture")||""};
+      fixture:extra.fixture||requested.get("fixture")||"",
+      scene:extra.scene||requested.get("scene")||""};
   }
   function sendActionContext(context){
     lastActionContext=context;
@@ -478,7 +479,7 @@
       renderList();
       if (["#animations","#motion","#rigs"].includes(location.hash)) {setMode("animations");if(location.hash==="#rigs")history.replaceState(null,"","#animations");}
       else if (["#actions","#action-editor"].includes(location.hash))
-        location.replace?.("https://lafrich.github.io/virtual-office/world-builder/bangun-ruang/");
+        openActionTab();
     } catch(error) {
       el("animation-loading").textContent = "ANIMATIONS UNAVAILABLE";
       el("status").textContent = "MOTION ERROR: " + error.message;
