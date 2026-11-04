@@ -43,48 +43,20 @@ def outline_human_body(sprite:Image.Image,edge_tone:tuple[int,int,int]) -> Image
     return Image.fromarray(pixels,"RGBA")
 
 def sculpt_human_layers(layers:dict,gender:str)->dict:
-    """Distinct BODY silhouette on torso and pelvis, not a face recolor.
+    """Keep the actual native V6B silhouette, rather than ballooning anatomy.
 
-    Changes only the two skin-toned garment-derived base layers. That means
-    independent arm swing, knee/walk movement, facial expressions and 4-way
-    anchors remain exactly as authored in v6b. Outfit overlays use the
-    resulting male/female guide sheets and therefore stay aligned.
+    Male/Female are *already* distinct in base6.render: body=m/f and the
+    native female torso/hip taper happens before the posed arms are welded.
+    The previous generic width extension added up to 4px on BOTH sides of
+    the male shoulder and female hips, creating shoulders and buttocks that
+    no other V6B character can have. No garment or native rig part should
+    change its alpha footprint here.
+
+    Preserve independent original body/arms/legs for all four directions,
+    pose anchors, and clothing template fit.
     """
     if gender not in ("male","female"):
         raise ValueError("Unknown human template "+gender)
-
-    def widen(key:str,row_offsets:dict[int,int]):
-        if key not in layers:return
-        arr=np.array(layers[key].convert("RGBA"),copy=True)
-        solid=arr[...,3]>0
-        occupied=np.flatnonzero(np.any(solid,axis=1))
-        if len(occupied)<5:return
-        first=int(occupied[0])
-        for relative,amount in row_offsets.items():
-            y=first+relative
-            if y<0 or y>=FRAME[1]:continue
-            xs=np.flatnonzero(solid[y])
-            if len(xs)<5 or amount<1:continue
-            left,right=int(xs[0]),int(xs[-1])
-            # Don't create islands: extend only from an existing contiguous
-            # torso/pelvis pixel. No modifications to already visible pixels.
-            for n in range(1,amount+1):
-                if left-n>=0 and arr[y,left-n,3]==0:
-                    arr[y,left-n]=arr[y,left]
-                if right+n<FRAME[0] and arr[y,right+n,3]==0:
-                    arr[y,right+n]=arr[y,right]
-        layers[key]=Image.fromarray(arr,"RGBA")
-
-    if gender=="male":
-        # Stronger shoulder/trapezius, straighter torso; pelvis remains
-        # comparatively narrow. Smooth 1-2 px shoulder slope.
-        widen("shirt",{0:1,1:2,2:3,3:3,4:4,5:4,6:3,7:2,8:2,9:1})
-    else:
-        # Soft chest volume, without broadening the shoulder line; widen
-        # the hips below the tapered waist to make the 4-way difference
-        # legible even at original 1x pixel resolution.
-        widen("shirt",{7:1,8:2,9:2,10:2,11:2,12:1,13:1})
-        widen("pants",{1:1,2:2,3:3,4:4,5:4,6:4,7:3,8:3,9:2,10:1})
     return layers
 
 
@@ -92,60 +64,16 @@ def shade_human_anatomy(sprite:Image.Image,gender:str,direction:str,
                         shirt_top:int,pants_top:int,
                         skin_shade:tuple[int,int,int],
                         skin_light:tuple[int,int,int])->Image.Image:
-    """Very small non-explicit adult morphology cues, not graphic anatomy.
+    """Don't stamp explicit pelvis/buttock marks onto the common V6B rig.
 
-    Front: female paired chest-shadows and tiny V-shaped pelvic crease;
-    male flatter upper chest and understated center-pelvis shading.
-    Back: soft buttock shadow difference. Never draw over air, outline,
-    hands, head, or transparent space.
+    The original silhouette and source skin palette already describe the
+    neutral body. The prior paired rear-hip dots and front pelvis V made
+    isolated fake 'butt cheeks' that did not follow native walk/sit poses.
+    Only the regular one-pixel *outer* outline is applied separately.
     """
     if gender not in ("male","female") or direction not in DIRECTIONS:
         raise ValueError("Invalid anatomy guide")
-    a=np.array(sprite.convert("RGBA"),copy=True)
-    rear=direction in ("ne","nw")
-    shade=np.asarray(skin_shade,dtype=np.uint8)
-    light=np.asarray(skin_light,dtype=np.uint8)
-
-    def at(x:int,y:int,color:np.ndarray):
-        if not (0<=x<FRAME[0] and 54<=y<FRAME[1]):return
-        # Only shade a genuine interior skin pixel, never change the alpha.
-        if a[y,x,3]==0:return
-        if any(a[y+dy,x+dx,3]==0 for dx,dy in ((-1,0),(1,0),(0,-1),(0,1))):
-            return
-        a[y,x,:3]=color
-
-    # Find the live torso center, respecting idle bob and seated poses.
-    top=min(max(int(shirt_top),54),73)
-    mid_y=min(top+10,76)
-    xs=np.flatnonzero(a[mid_y,:,3])
-    cx=int(round((int(xs[0])+int(xs[-1]))/2)) if len(xs) else 32
-    if not rear:
-        if gender=="female":
-            for offset in (-4,4):
-                at(cx+offset,top+9,shade)
-                at(cx+offset+1,top+10,light)
-        else:
-            for offset in (-5,5):
-                at(cx+offset,top+7,light)
-
-    # Pelvis treatment is intentionally abstract at 64x112 (2-3 px max).
-    hip_y=min(max(int(pants_top)+5,77),88)
-    hip_x=np.flatnonzero(a[hip_y,:,3])
-    hc=int(round((int(hip_x[0])+int(hip_x[-1]))/2)) if len(hip_x) else cx
-    if rear:
-        if gender=="female":
-            at(hc-2,hip_y+1,shade)
-            at(hc+2,hip_y+1,shade)
-        else:
-            at(hc,hip_y+1,light)
-    elif gender=="female":
-        at(hc-1,hip_y,shade)
-        at(hc+1,hip_y,shade)
-        at(hc,hip_y+1,shade)
-    else:
-        at(hc,hip_y,shade)
-        at(hc,hip_y+1,shade)
-    return Image.fromarray(a,"RGBA")
+    return sprite.copy()
 
 
 def build_human_templates(root:Path,media:Path)->list[dict]:
@@ -190,8 +118,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 for i,tone in enumerate(skin):
                     a[mask & (index_map==i),:3]=tone
                 layers[key]=Image.fromarray(a,"RGBA")
-            # Sculpt each gender's anatomical silhouette on skin torso and
-            # pelvis BEFORE the final shoulder weld, not by resizing the sheet.
+            # The native m/f rig already supplies the shared silhouette;
+            # do NOT widen shoulders or hips after posing.
             sculpt_human_layers(layers,gender)
             shirt_mask=np.asarray(layers["shirt"].convert("RGBA"))[...,3]>0
             pant_mask=np.asarray(layers["pants"].convert("RGBA"))[...,3]>0
@@ -257,8 +185,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                            "shoes_over","rips","shirt","arm_near","body_front",
                            "face","hair_front","brows"):
                             if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
-            # A bald, skin-toned body still needs a pixel-art silhouette
-            # around its arms, torso, separated legs, and feet.
+            # Native body geometry stays intact; outline only the exterior
+            # pixels of the assembled native skin-toned mannequin.
             result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))
             if not lying:
                 result=shade_human_anatomy(result,gender,direction,shirt_top,pants_top,
