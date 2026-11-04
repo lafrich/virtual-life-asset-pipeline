@@ -47,4 +47,42 @@ assert.match(script,/body_override:"toilet_lower"/);
 assert.match(script,/body_override:"bath_full"/);
 assert.ok(index.indexOf("universal-body-actions.js")<index.indexOf("app.js"));
 assert.match(anim,/bathe_male_v1/);assert.match(anim,/bathe_female_v1/);
-console.log("PASS WC bare lower body, male/female nude bathing and character-matched skin in four views");
+// Body gender and skin palette are inherited from the immutable template.
+assert.equal(BODY.bodyType({id:"custom_human_f",baseId:"human_female_base"}),"female");
+assert.equal(BODY.bodyType({id:"custom_human_m",baseId:"human_male_base"}),"male");
+assert.equal(BODY.resolve({baseId:"human_female_base"},"bathe").bodyType,"female");
+
+// The human avatar must NOT discard independently painted shirt/pants/shoes.
+const editor=fs.readFileSync("site/accessory-editor.js","utf8");
+const paint=fs.readFileSync("site/accessory-editor.html","utf8");
+const home=fs.readFileSync("site/index.html","utf8");
+for(const key of ["hair","shirt","pants","shoes"]){
+ assert.ok(script.includes('"'+key+'"'),"Missing equipment slot "+key);
+ assert.ok(editor.includes('"'+key+'"'),"Missing painter category "+key);
+}
+assert.ok(script.includes('["helmet","bag","hair","shirt","pants","shoes"].includes(x.category)'),
+ "Human assets were filtered out of the equipment storage loader");
+assert.ok(home.includes('id="custom-skin-tone"'));
+assert.ok(home.includes('id="custom-hair"'));
+assert.ok(home.includes('id="custom-draw-hair"'));
+assert.ok(paint.includes('id="acc-hair"'));
+assert.match(script,/skinTone:HUMAN_BASES.includes\(row.base\)/);
+
+// Palette matching only recolors the human base; untouched sprite art and
+// equipment (including black outlines) keep their original pixel colours.
+const frameData=new Uint8ClampedArray(64*112*4);
+for(let i=0;i<frameData.length;i+=4)frameData.set([222,180,146,255],i);
+frameData.set([19,20,21,255],(42*64+32)*4);
+frameData.set([15,160,215,255],(80*64+32)*4);
+const sampleCtx={
+ getImageData(){return {data:new Uint8ClampedArray(frameData)}},
+ putImageData(v){frameData.set(v.data)}
+};
+assert.equal(BODY.tintBase(sampleCtx,{baseId:"human_female_base",skinTone:"deep"}),true);
+assert.ok(frameData[(65*64+32)*4]<200,"Body skin should change");
+assert.deepEqual([...frameData.slice((42*64+32)*4,(42*64+32)*4+4)],[19,20,21,255],
+ "Outline must not become skin coloured");
+assert.deepEqual([...frameData.slice((80*64+32)*4,(80*64+32)*4+4)],[15,160,215,255],
+ "Non-skin pixels must be unchanged");
+assert.equal(BODY.tintBase(sampleCtx,{baseId:"astrofrich_base",skinTone:"deep"}),false);
+console.log("PASS modular gender bases, independently saved equipment/hair, skin palettes and bath");
