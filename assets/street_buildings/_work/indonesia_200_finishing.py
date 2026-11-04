@@ -176,4 +176,207 @@ def quality_override(L,s):
     y=D*.50+.18*math.sin(i*TAU/7)
     ball(L,x,y,126+i%2*5,.09,13,'RED' if j==0 else 'PINK')
   return True
+ if name in ('Bus kota kecil','Elf travel antarkota','Motor kurir barang','Motor ojol box makanan'):
+  from indonesia_200_quality import vehicle
+  vehicle(L,s)
+  if name=='Bus kota kecil':
+   box(L,.18,.10,W-.19,.23,62,76,'BLUE')
+   board(L,'BUS KOTA',81,'BLUE')
+   box(L,W*.4,D*.22,W*.65,D*.69,121,132,'WHITE')
+  elif name=='Elf travel antarkota':
+   box(L,.22,.10,W-.24,.21,55,63,'TEAL')
+   box(L,W*.3,D*.25,W*.8,D*.7,120,125,'DARK')
+   for x in (.40,W-.52):
+    box(L,x,D*.28,x+.07,D*.73,119,128,'CONC')
+   board(L,'TRAVEL ELF',77,'TEAL')
+  elif name=='Motor kurir barang':
+   box(L,.12,.12,.67,D-.12,48,84,'BLUE')
+   box(L,.14,.09,.65,D-.10,82,87,'CREAM')
+   box(L,.40,.09,.47,D-.09,48,87,'DARK')
+  else:
+   box(L,.09,.12,.72,D-.12,50,85,'RED')
+   box(L,.13,.09,.68,D-.10,61,70,'WHITE')
+   board(L,'FOOD',63,'RED')
+  return True
+ if name=='Palang parkir':
+  shadow(L)
+  x=.25
+  box(L,x,.20,x+.38,D-.23,0,69,'YEL')
+  box(L,x+.06,.17,x+.31,D-.25,40,54,'DARK')
+  box(L,x+.25,D*.43,W-.10,D*.56,66,75,'WHITE')
+  for i in range(5):
+   a=x+.29+i*(W-.55)/5
+   box(L,a,D*.41,a+.18,D*.58,67,75,'RED')
+  ball(L,x+.23,D*.5,68,.16,8,'DARK')
+  return True
+ if name=='Trafo pinggir jalan':
+  shadow(L)
+  for a in (.35,W-.42):
+   pole(L,a,D*.53,133,.095,'CONC')
+  box(L,.19,D*.42,W-.17,D*.65,87,97,'DARK')
+  box(L,.30,D*.30,W-.31,D*.72,31,94,'SENG')
+  for i in range(4):
+   x=.32+i*.38
+   pole(L,x,D*.50,128,.09,'DARK',base=94)
+   ball(L,x,D*.5,128,.13,7,'CONC')
+  box(L,.38,D*.27,W-.38,D*.30,63,70,'YEL')
+  return True
+ if name=='Kontainer sampah kota':
+  shadow(L)
+  box(L,.12,.13,W-.13,D-.16,0,64,'BLUE')
+  for x in (.18,W-.29):
+   for y in (.18,D-.27):pole(L,x,y,18,.055,'DARK')
+  box(L,.09,.10,W-.10,D-.11,64,71,'CONC')
+  for i in range(6):
+   a=.23+i*(W-.46)/6
+   box(L,a,.07,a+.055,.16,7,59,'CONC')
+  box(L,W*.35,.08,W*.60,.18,32,40,'WHITE')
+  return True
+ if name=='Bak sampah komunal':
+  shadow(L)
+  for i,col in enumerate(('GREEN','BLUE','TERRA')):
+   x=.15+i*(W-.28)/3
+   box(L,x,.20,x+.58,D-.21,0,59,'CONC')
+   box(L,x,.18,x+.58,.32,59,65,col)
+   box(L,x+.08,.14,x+.44,.22,22,32,'DARK')
+  return True
+ if name in ('Sangkar burung gantung','Stand sangkar burung'):
+  shadow(L)
+  number=1 if name=='Sangkar burung gantung' else 3
+  pole(L,W*.5,D*.55,128,.09,'WOOD')
+  box(L,.19,D*.42,W-.19,D*.62,116,122,'WOOD')
+  for i in range(number):
+   x=W*.5 if number==1 else .36+i*.65
+   y=D*.52
+   pole(L,x,y,112,.04,'WOOD',base=79)
+   box(L,x-.19,y-.21,x+.19,y+.21,55,60,'WOOD')
+   for j in range(5):
+    a=x-.17+j*.086
+    box(L,a,y-.21,a+.018,y+.21,60,87,'SENG')
+   ball(L,x,y,87,.20,12,'TERRA')
+   ball(L,x,y,69,.09,8,'BLUE' if i%2 else 'GREEN')
+  return True
+ if name in ('Pagar roster','Tembok roster'):
+  shadow(L)
+  # Roster perforations are physical gaps, not black paint.
+  rows=2 if name=='Pagar roster' else 4
+  for i in range(11):
+   x=.10+i*(W-.25)/11
+   for j in range(rows):
+    h=j*22
+    box(L,x,.38,x+.12,.60,h,h+19,'CREAM')
+    if i%2==0:box(L,x+.10,.40,x+.19,.59,h+13,h+19,'WOOD')
+  box(L,.09,.35,W-.10,.64,rows*22,rows*22+7,'CONC')
+  if rows>2:box(L,.08,.35,W-.11,.62,0,7,'CONC')
+  return True
+ if name in ('Kanopi rumah','Carport sederhana'):
+  shadow(L)
+  if name=='Carport sederhana':
+   box(L,.10,.09,W-.10,D-.09,0,5,'PAVE')
+   for a in (.18,W-.24):
+    for b in (.19,D-.23):pole(L,a,b,109,.07,'CONC')
+   box(L,.06,.10,W-.06,D-.11,109,116,'SENG')
+   for i in range(9):
+    x=.10+i*(W-.2)/9
+    box(L,x,.10,x+.045,D-.11,116,119,'CONC')
+  else:
+   for a in (.16,W-.23):pole(L,a,.30,105,.07,'CONC')
+   box(L,.08,.16,W-.08,D-.18,106,113,'GREEN')
+   box(L,.07,.12,W-.07,.24,104,118,'WOOD')
+   for i in range(7):
+    x=.10+i*(W-.20)/7
+    box(L,x,.18,x+.04,D-.18,111,114,'CONC')
+  return True
+ if name in ('Baliho informasi kampung','Banner pengajian warga'):
+  shadow(L)
+  if name.startswith('Baliho'):
+   for a in (.17,W-.24):pole(L,a,D*.48,128,.07,'CONC')
+   box(L,.11,.28,W-.09,D*.74,86,137,'GREEN')
+   box(L,.14,.26,W-.13,D*.71,90,132,'CREAM')
+   board(L,'INFO RT RW',97,'GREEN')
+   for i in range(3):
+    x=.26+i*.41
+    box(L,x,.25,x+.27,.32,103,110,'BLUE')
+  else:
+   for a in (.12,W-.20):pole(L,a,D*.55,116,.05,'WOOD')
+   box(L,.17,.30,W-.16,D*.67,69,108,'RED')
+   board(L,'PENGAJIAN',78,'GREEN')
+   for i in range(6):
+    x=.21+i*(W-.44)/6
+    box(L,x,.30,x+.12,.35,64+i%2*3,69,'CREAM')
+  return True
+ if name in ('Kursi hajatan','Meja registrasi hajatan','Meja lesehan','Bangku plastik warung','Meja makan warung','Kursi plastik warung'):
+  shadow(L)
+  if name in ('Kursi hajatan','Kursi plastik warung'):
+   for a in (.23,W-.34):
+    for b in (.27,D-.32):pole(L,a,b,37,.055,'CONC' if 'hajatan' in n else 'BLUE')
+   box(L,.14,.19,W-.13,D-.17,37,45,'WHITE' if 'hajatan' in n else 'BLUE')
+   box(L,.16,D-.35,W-.15,D-.23,44,91,'CREAM' if 'hajatan' in n else 'BLUE')
+   if 'hajatan' in n:
+    for i in range(4):
+     a=.18+i*(W-.36)/4
+     box(L,a,D-.36,a+.045,D-.22,47,90,'RED' if i%2 else 'WHITE')
+  elif name=='Bangku plastik warung':
+   box(L,.15,.19,W-.15,D-.17,24,34,'BLUE')
+   for a in (.20,W-.30):
+    box(L,a,.24,a+.18,D-.23,0,24,'BLUE')
+   for i in range(3):
+    a=.27+i*.43
+    box(L,a,.17,a+.12,.23,30,34,'WHITE')
+  elif name=='Meja lesehan':
+   box(L,.13,.16,W-.13,D-.15,8,20,'WOOD')
+   box(L,.15,.17,W-.15,D-.17,20,25,'TERRA')
+   for i in range(4):
+    a=.20+i*.37
+    box(L,a,.18,a+.13,D-.15,23,26,'CREAM')
+  elif name=='Meja registrasi hajatan':
+   for a in (.20,W-.29):
+    for b in (.21,D-.28):pole(L,a,b,46,.045,'WOOD')
+   box(L,.13,.16,W-.13,D-.15,46,54,'WHITE')
+   box(L,.17,.16,W-.16,.23,23,46,'CREAM')
+   box(L,W*.32,.23,W*.54,.44,55,59,'WOOD')
+   box(L,W*.37,.27,W*.48,.36,59,61,'WHITE')
+   ball(L,W*.7,D*.42,56,.10,7,'BLUE')
+  else:
+   for a in (.17,W-.24):
+    for b in (.20,D-.28):pole(L,a,b,50,.055,'WOOD')
+   box(L,.10,.15,W-.10,D-.15,49,57,'WOOD')
+   for i in range(3):
+    a=.26+i*.48
+    ball(L,a,D*.50,58,.10,7,'CREAM')
+  return True
+ if name in ('Rak snack warung','Rak mie instan','Rak sandal masjid','Rak sajadah dan kitab'):
+  shadow(L)
+  for a in (.14,W-.21):
+   for b in (.19,D-.26):pole(L,a,b,102,.06,'WOOD')
+  for h in (8,41,75):
+   box(L,.10,.17,W-.11,D-.17,h,h+5,'WOOD')
+  for row in range(3):
+   for col in range(6):
+    x=.18+col*(W-.38)/6
+    y=.27+(row%2)*.30
+    z=14+row*34
+    if name=='Rak sandal masjid':
+     box(L,x,y,x+.19,y+.32,z,z+6,'DARK')
+     box(L,x+.03,y+.02,x+.10,y+.29,z+6,z+8,'RED' if col%3 else 'BLUE')
+    elif name=='Rak sajadah dan kitab':
+     if row==2:
+      pole(L,x+.08,y,z+13,.09,'CREAM',base=z)
+      box(L,x+.06,y-.11,x+.14,y+.11,z+10,z+15,'RED')
+     else:
+      box(L,x,y,x+.17,y+.26,z,z+17,'GREEN' if col%2 else 'TERRA')
+      box(L,x,y-.01,x+.17,y+.01,z+7,z+10,'GOLD')
+    elif name=='Rak mie instan':
+     box(L,x,y,x+.18,y+.30,z,z+18,'ORANGE' if col%2 else 'YEL')
+     box(L,x+.03,y-.02,x+.15,y+.03,z+6,z+12,'RED')
+    else:
+     box(L,x,y,x+.15,y+.24,z,z+23,'RED' if col%3 else 'BLUE')
+     box(L,x+.03,y-.02,x+.13,y+.02,z+11,z+15,'YEL')
+  return True
+ if name=='Tabung gas melon':
+  shadow(L)
+  from indonesia_200_quality import gas
+  gas(L,2)
+  box(L,.21,.16,W*.64,.24,16,24,'YEL')
+  return True
  return False
