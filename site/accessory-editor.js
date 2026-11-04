@@ -29,6 +29,9 @@ const state={category:human?"hair":"helmet",dir:"se",tool:"pencil",mode:"replace
  cursor:[32,38],selection:null,selectionAnchor:null,pointer:null,cursorMove:null,layers:makeLayers(),
  drafts:{},history:[],redo:[],savedId:null,manualZoom:false,loaded:false};
 for(const kind of KINDS)state.drafts[kind]=kind==="helmet"?state.layers:makeLayers();
+// A Human editor opens on Hair; its active canvas must reference the hair draft,
+// not the initial hidden helmet buffer.
+if(human)state.layers=state.drafts.hair;
 if(allowedKinds.includes(params.get("category"))){
  state.category=params.get("category");state.layers=state.drafts[state.category];
  const b=REGIONS[state.category];state.cursor=[Math.floor((b[0]+b[2])/2),Math.floor((b[1]+b[3])/2)];
