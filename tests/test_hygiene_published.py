@@ -1,7 +1,7 @@
 """Verify native male/female bathroom animation ships as real 4-frame pixels."""
 from pathlib import Path
 import json
-from PIL import Image, ImageChops
+from PIL import Image
 
 out=Path("_site")
 cat=json.loads((out/"catalog.json").read_text())
@@ -19,7 +19,7 @@ for sex in ("male","female"):
         assert image.size==(256,448) and image.mode=="RGBA"
         frame0=image.crop((0,0,64,112))
         frame1=image.crop((64,0,128,112))
-        assert ImageChops.difference(frame0,frame1).getbbox(), (
+        assert frame0.tobytes()!=frame1.tobytes(), (
             f"{sex}: bath animation doesn't actually move")
         for row in range(4):
             for col in range(4):
