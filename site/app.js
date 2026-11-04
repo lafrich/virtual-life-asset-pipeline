@@ -124,6 +124,10 @@ function selectCharacter(character) {
   $("edit-pixels").hidden = character.id !== "legacy_otis" || !character.sheet;
   $("face-tab-count").textContent = String(character.expressions?.length || 0).padStart(2, "0");
   buildFaces(character);
+  // Enter each character with ALL actions visible; stale filters from a
+  // previous actor must not hide Bathtub Bathe in Male/Female motion lists.
+  $("motion-search").value="";
+  $("motion-category").value="all";
   buildMotions(character);
   setInspectorTab("info");
   state.motion = character.motions?.find(m => m.id === "walk" && m.available) || null;
