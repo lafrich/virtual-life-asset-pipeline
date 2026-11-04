@@ -32,6 +32,18 @@ def remap(img, mask, ramp):
 def bbox(img):
     ys, xs = np.nonzero(np.array(img)[..., 3]); return (xs.min(), ys.min()) if len(ys) else (0, 0)
 
+# Rear 3/4 camera: tuck the scalp and helmet slightly back/up relative to
+# the shoulder plane. NE is authored; NW is its actual horizontal mirror.
+# Keep the torso, backpack, arms, and feet at their original V6B pivots.
+REAR_HEAD_OFFSET = (1, -2)
+
+def translate_rgba(sprite, dx, dy):
+    """Shift a single 64x112 RGBA layer without wrapping pixels around."""
+    shifted = Image.new('RGBA', sprite.size)
+    shifted.paste(sprite, (dx, dy))
+    return shifted
+
+
 def render(view, anim='idle', f=0, expr='neutral'):
     base = 'se' if view in ('se', 'sw') else 'ne'
     o, L, pal = base6.render(CFG, f=f, d=base, expr=expr, anim=anim)
@@ -42,6 +54,16 @@ def render(view, anim='idle', f=0, expr='neutral'):
         dd = 3 if anim == 'sleep' else 2
         for k in ('face', 'brows'): L[k] = Image.fromarray(np.roll(np.roll(np.array(L[k]), dd, 0), 1 if base == 'se' else 0, 1))
     br = L['brows']; M.bald(L, pal); L['brows'] = br               # no hair: skin dome (same as the aliens), keep brows
+    if base == 'ne':
+        # Move the actual head layers, not just the helmet. An earlier
+        # helmet-only offset left the nape floating in front of the pack.
+        # Translating all scalp/face/accessory layers together preserves the
+        # four-view pixel shape and animated head bob.
+        dx, dy = REAR_HEAD_OFFSET
+        for key in ('hair_back', 'hair_front', 'face', 'glasses', 'brows'):
+            if key in L:
+                L[key] = translate_rgba(L[key], dx, dy)
+        hd = (hd[0] + dx, hd[1] + dy)
     skin = {tuple(v) for k, v in pal.items() if k.startswith('K') and isinstance(v, tuple)}
     # v2: boots are the plain v6b white boots (as NPC 1 Cosmo / old Rocketta) - no recolour
     sh = np.array(L['shirt']); suit = sorted({tuple(p[:3]) for p in sh[sh[..., 3] == 255]}, key=lum, reverse=True)
