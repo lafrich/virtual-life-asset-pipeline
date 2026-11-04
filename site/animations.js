@@ -43,10 +43,9 @@
     actionFrame.contentWindow?.postMessage({type:"mahluk-action-context",context},location.origin);
   }
   function openActionTab(extra={}){
-    setMode("actions");
-    // Clicking the tab again must not reset a current in-progress drawing.
-    // Explicit edits from Characters/Animations still retarget on demand.
-    if(!actionFrameStarted||Object.keys(extra).length)sendActionContext(actionContext(extra));
+    const url=new URL("https://lafrich.github.io/virtual-office/world-builder/bangun-ruang/");
+    if(extra.actor)url.searchParams.set("actor",extra.actor);
+    window.open(url.href,"_blank","noopener");
   }
   window.VLMahlukActionsTab=Object.freeze({open:openActionTab});
   document.addEventListener("mahluk:open-action-editor",event=>openActionTab(event.detail||{}));
@@ -99,7 +98,7 @@
     const author = el("animation-author");
     const valid=validActionId(actionId);
     author.disabled=!valid||!character;
-    author.textContent=planned?"✎ AUTHOR MISSING PLAYER FRAMES":"✎ EDIT PLAYER FRAMES";
+    author.textContent=planned?"✥ ADJUST IN BANGUN RUANG":"✥ ADJUST IN BANGUN RUANG";
     author.title=valid?"Open this action for the selected player in Mahluk Hidup's integrated pixel editor":"This reference has no player action ID";
     button.title = available ? "Switch to this character and play its original pixel motion" :
       sharedBones ? "Shared skeletal keys support this model category, but this actor has no bound body-part sprites yet" :
@@ -443,7 +442,9 @@
   // and 'library' while still in the temporal-dead-zone, aborting the rest of
   // this script and leaving tabs/buttons without their click handlers.
   // Don't wait for animations.json: the Action Editor opens independently.
-  if(["#actions","#action-editor"].includes(location.hash))openActionTab();
+  if(["#actions","#action-editor"].includes(location.hash)){
+    location.replace?.("https://lafrich.github.io/virtual-office/world-builder/bangun-ruang/");
+  }
   loadTargets();
   (async () => {
     try {
