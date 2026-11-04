@@ -81,6 +81,29 @@
    return sorted[Math.floor(sorted.length*.55)];
   });
  }
+ // Optional skin variation for the canonical Human Male/Female base.
+ // It never recolors the accessory layers; body pixels are repainted
+ // after their original animation frame is drawn.
+ function tintBase(ctx,actor){
+  const base=String(actor?.baseId||actor?.base_id||actor?.base||actor?.id||"");
+  if(!/(?:^|_)human_(?:male|female)_base(?:$|_)/.test(base))return false;
+  const chosen=actor?.skinTone;
+  if(!chosen||chosen==="base"||chosen==="light"||!ctx?.getImageData)return false;
+  let img;try{img=ctx.getImageData(0,0,64,112)}catch{return false}
+  const original=recolorTone(img),tone=declaredTone(actor),d=img.data;
+  for(let i=0;i<d.length;i+=4){
+   const r=d[i],g=d[i+1],b=d[i+2],a=d[i+3];
+   if(a<150||r<72||g<44||b<30||r<=g*1.07||
+      g<=b*1.02||r-g>117||g-b>104||r<b*1.13)continue;
+   const lum=(r*.33+g*.5+b*.17)/
+    Math.max(1,(original[0]*.33+original[1]*.5+original[2]*.17));
+   const v=Math.max(.39,Math.min(1.33,lum));
+   d[i]=Math.min(255,Math.round(tone[0]*v));
+   d[i+1]=Math.min(255,Math.round(tone[1]*v));
+   d[i+2]=Math.min(255,Math.round(tone[2]*v));
+  }
+  ctx.putImageData(img,0,0);return true;
+ }
  function recolorBody(img,tone){
   if(!img?.data)return img;
   const data=img.data;
@@ -142,5 +165,5 @@
   return true;
  }
  return Object.freeze({DIR,RULES,bodyType,rule,resolve,recolorTone,recolorBody,
-  declaredTone,BODY_START_Y,apply});
+  declaredTone,BODY_START_Y,tintBase,apply});
 });
