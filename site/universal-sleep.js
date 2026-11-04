@@ -16,10 +16,14 @@
  const isSleep=id=>IDs.includes(id);
  // Direction is front/back plus the chosen head-to-foot alignment.
  function directionFor(action,dir){
-  const back=dir==="ne"||dir==="nw";
-  if(action==="sleep_bed_right")return back?"ne":"se";
-  if(action==="sleep_bed_left")return back?"nw":"sw";
-  return DIR.includes(dir)?dir:"se";
+  // Preserve all FOUR distinct camera-facing originals; collapsing SW into
+  // SE (or NW into NE) incorrectly duplicates artwork and breaks the actor's
+  // rotation while lying down. Left/right sleep are mirrored bed orientations.
+  const facing=DIR.includes(dir)?dir:"se";
+  if(action==="sleep_bed_right")return facing;
+  if(action==="sleep_bed_left")
+   return ({se:"sw",sw:"se",ne:"nw",nw:"ne"})[facing];
+  return facing;
  }
  function getSource(ch){
   if(!ch||!safePath(ch.sheet))return null;
