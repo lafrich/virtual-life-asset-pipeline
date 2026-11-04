@@ -37,9 +37,10 @@ const fetch=async path=>({ok:true,async json(){
 vm.runInNewContext(js,{document:doc,window,location,URL,URLSearchParams,
  fetch,console,history:{replaceState(){}},setTimeout});
 const frame=get("action-editor-embed");
-assert.equal(frame.src,"about:blank","Hidden legacy iframe should not load");
-assert.match(redirected,/virtual-office\/world-builder\/bangun-ruang/,
- "Legacy #actions deep link should open the new Bangun Ruang alignment workflow");
+assert.match(frame.src,/action-scene-editor\.html/,
+ "Direct #actions should open the Mahluk Hidup multi-actor editor");
+assert.equal(redirected,null,"Opening ACT Editor must not redirect away from Mahluk Hidup");
+assert.equal(get("action-workspace").hidden,false);
 assert.ok(get("switch-chars").handlers.click?.length,"Characters tab missing");
 assert.ok(get("switch-animations").handlers.click?.length,"Animations tab missing");
 assert.ok(get("animation-author").handlers.click?.length,"Adjustment link missing");
@@ -48,5 +49,6 @@ assert.equal(get("character-workspace").hidden,false);
 get("switch-animations").trigger("click");
 assert.equal(get("animation-workspace").hidden,false);
 get("animation-create-action").trigger("click");
-assert.match(opened,/virtual-office\/world-builder\/bangun-ruang/);
-console.log("PASS legacy Action Editor deeplink redirects to Bangun Ruang; native Characters/Animations remain clickable");
+assert.equal(get("action-workspace").hidden,false);
+assert.equal(opened,null,"ACT Editor stays in Mahluk Hidup");
+console.log("PASS #actions opens native multi-character editor; Characters and Animations remain clickable");

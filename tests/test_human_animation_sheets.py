@@ -67,9 +67,10 @@ for c in bodies:
 for actor in bodies:
     def tile(kind,view="se"):
         m=next(m for m in actor["motions"] if m["id"]==kind)
-        with Image.open(root/m["sheet"]) as im:
+        with Image.open(root/(m.get("sheet") or actor["sheet"])) as im:
             index={"se":0,"sw":1,"ne":2,"nw":3}[view]
-            return np.asarray(im.crop((0,index*112,64,(index+1)*112)))
+            row=int(m.get("row",0))+index
+            return np.asarray(im.crop((0,row*112,64,(row+1)*112)))
     for view in ("se","sw","ne","nw"):
         idle=tile("idle",view)
         x0,y0=np.nonzero(idle[:,:,3])[1],np.nonzero(idle[:,:,3])[0]
