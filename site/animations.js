@@ -94,10 +94,13 @@
   function updateApply() {
     const button=el("animation-apply"),actor=selectedTarget();
     const id=actionForClip(selected),motion=actor?.motions?.find(m=>m.id===id);
-    button.disabled=!motion;
-    button.textContent=!motion?"SELECT CHARACTER / ACTION":
-      "▶ "+(motion.playback==="authored"?"ORIGINAL":motion.playback==="procedural"?
-        "AUTO PREVIEW":"REFERENCE")+" / "+actor.name.toUpperCase();
+    const playable=!!(actor?.sheet&&motion?.available&&
+      (motion.playback==="authored"||motion.playback==="procedural"));
+    button.disabled=!playable;
+    button.textContent=!actor?"SELECT CHARACTER":
+      !playable?"NO PLAYABLE ACTOR SPRITE":
+      "▶ "+(motion.playback==="authored"?"ORIGINAL":"OWN-SPRITE AUTO PREVIEW")+
+        " / "+actor.name.toUpperCase();
     button.title=motion?.playback==="authored"?
       "Original frame animation from this character":
       "Shared action preview only; not a finished native sprite animation";
@@ -382,10 +385,15 @@
     const target = selectedTarget();
     const actionId = actionForClip(selected);
     const action = target?.motions?.find(item => item.id === actionId && item.available);
-    if (!target || !action) return;
-    selectCharacter(target);
+    if (!target || !action||!target.sheet||
+        !["authored","procedural"].includes(action.playback)) return;
+    // Apply to the SAME actor object used by the Characters workspace;
+    // duplicate loaded target objects previously desynced motion selection.
+    const selectedActor=state.characters.find(ch=>ch.id===target.id)||target;
+    selectCharacter(selectedActor);
     setInspectorTab("motions");
-    selectMotion(action);
+    const chosen=selectedActor.motions.find(m=>m.id===actionId)||action;
+    selectMotion(chosen);
     setMode("characters");
     location.hash = "#character";
   });
