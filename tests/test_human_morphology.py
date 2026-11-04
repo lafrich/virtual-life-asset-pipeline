@@ -77,5 +77,52 @@ class HumanMorphology(unittest.TestCase):
         self.assertEqual(source.tobytes(),original)
 
 
+    def test_adult_genitals_render_only_on_front_nude_pelvis(self):
+        # Only changed pixels inside the actual moving trouser-body mask,
+        # without adding alpha pixels or touching head, shoulder or feet.
+        skin=(218,172,137,255)
+        body=colored(19,46,31,108,skin)
+        pelvis=colored(24,40,70,97,skin)
+        source=np.asarray(body)
+        p_mask=mask(pelvis)
+        outputs={}
+        for gender in ("male","female"):
+            for direction in ("se","sw","ne","nw"):
+                with self.subTest(gender=gender,direction=direction):
+                    result=shade_human_anatomy(
+                        body,gender,direction,54,70,
+                        (170,115,87),(239,199,167),
+                        pelvis_layer=pelvis,edge_tone=(113,74,61))
+                    frame=np.asarray(result)
+                    delta=np.any(frame[...,:3]!=source[...,:3],axis=2)
+                    self.assertTrue(np.array_equal(frame[...,3],source[...,3]),
+                                    "Anatomy must preserve the native sprite silhouette")
+                    self.assertTrue(np.all(~delta|p_mask),
+                                    "Anatomy must not leave the posed pelvis")
+                    self.assertFalse(delta[:70].any(),"No head/torso edits")
+                    if direction in ("se","sw"):
+                        self.assertGreaterEqual(int(delta.sum()),6,
+                                  "Front nude pelvis must contain visible genital detail")
+                    else:
+                        self.assertFalse(delta.any(),"Rear views have no frontal genitalia")
+                    outputs[(gender,direction)]=result
+        self.assertNotEqual(outputs[("male","se")].tobytes(),
+                            outputs[("female","se")].tobytes(),
+                            "Male shaft/scrotum and female vulva must differ")
+        # Changing hip position changes the genital anchor along with it.
+        moved=colored(29,45,70,97,skin)
+        moved_result=shade_human_anatomy(
+            body,"male","se",54,70,(170,115,87),(239,199,167),
+            pelvis_layer=moved,edge_tone=(113,74,61))
+        a=np.any(np.asarray(outputs[("male","se")])[...,:3]!=source[...,:3],axis=2)
+        b=np.any(np.asarray(moved_result)[...,:3]!=source[...,:3],axis=2)
+        self.assertGreater(np.flatnonzero(np.any(b,axis=0)).mean(),
+                           np.flatnonzero(np.any(a,axis=0)).mean()+3,
+                           "Detail must follow the shifted native pelvis")
+        self.assertEqual(body.tobytes(),Image.fromarray(source,"RGBA").tobytes(),
+                         "The original body layer must remain immutable")
+
+
+
 if __name__=="__main__":
     unittest.main()
