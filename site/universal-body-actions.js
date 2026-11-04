@@ -28,16 +28,20 @@
     actor.baseId||actor.base||actor.id||"").toLowerCase();
   if(/(^|[_-])female($|[_-])|^f$/.test(candidate))return "female";
   if(/(^|[_-])male($|[_-])|^m$/.test(candidate))return "male";
-  // Unknown humanoid NPCs can use a neutral silhouette; non-human /
-  // animal actors are not silently converted into anatomically human sprites.
-  if(actor.template_category==="human"||actor.category==="human")return "male";
-  return null;
+  // An unspecified two-legged game NPC uses a NON-EXPLICIT generic
+  // human mannequin. This is a visual fallback, NOT a claim about the
+  // character's sex. Explicit female/male metadata always overrides it.
+  const label=String(actor.id||"")+" "+String(actor.category||"");
+  if(/(?:alien|robot|grok_bot|animal|hamster|cat|dog|pet|mascot)/i.test(label))
+   return null;
+  return "neutral";
  }
  function rule(action){return RULES[action]||null}
  function resolve(actor,action){
   const r=rule(action),sex=bodyType(actor);
   if(!r||!sex)return null;
-  return {...r,bodyType:sex,sheet:"media/human-"+sex+"-base-action-"+r.baseMotion+".png",
+  return {...r,bodyType:sex,
+   sheet:"media/human-"+(sex==="female"?"female":"male")+"-base-action-"+r.baseMotion+".png",
    actionId:action,directions:DIR,frameMs:r.kind==="bath"?[330,360,380,360]:[400,430,440,430],
    source:"universal-human-body",skin:"source-face"};
  }
