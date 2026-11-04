@@ -54,8 +54,13 @@
   // hair and lying body; those get a safe foam overlay, not a stranger's face.
   if(r.kind==="bathtub"&&!["human_male_base","human_female_base"].includes(actor?.id))
     return null;
+  const origin=String(actor?.baseId||actor?.base_id||actor?.base||actor?.id||"");
+  const humanTemplate=["human_male_base","human_female_base"].includes(origin);
+  const contextualToilet=r.kind==="toilet"&&humanTemplate;
   return {...r,bodyType:sex,
-   sheet:"media/human-"+(sex==="female"?"female":"male")+"-base-action-"+r.baseMotion+".png",
+   facePolicy:contextualToilet?"action-context":"preserve-actor",
+   sheet:"media/human-"+(sex==="female"?"female":"male")+"-base-action-"+
+    (contextualToilet?"toilet":r.baseMotion)+".png",
    actionId:action,directions:DIR,frameMs:r.kind==="bathtub"?[320,340,360,350,340,330]:
     r.kind==="bath"?[330,360,380,360]:[400,430,440,430],
    source:"universal-human-body",skin:"source-face"};
@@ -167,7 +172,15 @@
   // Bath: entirely un-clothed adult mannequin below the head. Hair and
   // distinctive face remain original, with no explicit anatomy drawn.
   const cut=r.coverage==="lower"?68:BODY_START_Y;
-  ctx.drawImage(identity,0,0,64,cut,0,0,64,cut);
+  if(r.facePolicy==="action-context"){
+   // Human template (and its own clones): keep the contextual WC face
+   // and original clothed torso. Render saved hair later in Mahluk Hidup.
+   ctx.drawImage(identity,0,BODY_START_Y,64,cut-BODY_START_Y,
+     0,BODY_START_Y,64,cut-BODY_START_Y);
+  }else{
+   // Other NPCs retain their original identity, face and hair.
+   ctx.drawImage(identity,0,0,64,cut,0,0,64,cut);
+  }
   if(r.kind==="bath"){
    // Original pixel-art bubbles + trickling water, four timed frames.
    const k=f,xx=[22,29,37,27][k],yy=[59,53,64,46][k];
