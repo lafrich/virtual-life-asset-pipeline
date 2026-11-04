@@ -35,16 +35,25 @@ jobs:
       - name: Stage generated artwork and batch metadata
         run: |
           python - <<'PY'
-          import pathlib,shutil
+          import pathlib,shutil,json
           root=pathlib.Path('assets/street_buildings')
           out=pathlib.Path('publish_out')
           n=${{ matrix.shard }}
           meta=root/'_work'/f'indonesia_200_batch_{n}.json'
           assert meta.is_file()
-          for p in root.rglob('id200_*.png'):
-              dest=out/p
-              dest.parent.mkdir(parents=True,exist_ok=True)
-              shutil.copy2(p,dest)
+          rows=json.loads(meta.read_text())
+          assert len(rows)==50
+          for row in rows:
+              for v in row['variants'].values():
+                  source=root/v['file']
+                  paths=(source,
+                    source.with_name(source.stem+'__depth.png'),
+                    source.with_name(source.stem+'__glow.png'))
+                  for p in paths:
+                      if not p.exists():continue
+                      dest=out/p
+                      dest.parent.mkdir(parents=True,exist_ok=True)
+                      shutil.copy2(p,dest)
           target=out/meta
           target.parent.mkdir(parents=True,exist_ok=True)
           shutil.copy2(meta,target)
