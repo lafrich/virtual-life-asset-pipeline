@@ -222,7 +222,7 @@ def facade_pattern(w,h,name,kind,wall,accent,floors=1):
  t.rect(W//2-2,13,W//2+2,70,'DARK',2)
  for x in range(16,W-10,26):
   t.rect(x,16,x+1,68,'CONC',2)
- if kind in ('sekolah','public','ruko','kos','gereja','masjid'):
+ if kind in ('sekolah','public','ruko','kos') or 'kos' in name.lower():
   for z in range(95,H-23,61):
    for x in range(13,W-14,36):
     t.rect(x,z,x+21,z+28,'DARK',2)
@@ -230,6 +230,23 @@ def facade_pattern(w,h,name,kind,wall,accent,floors=1):
     t.rect(x+10,z+3,x+12,z+24,'CONC',2)
     t.rect(x-2,z-2,x+23,z+1,'CREAM',3)
   t.rect(0,89,W,94,'CONC',4)
+ if kind in ('masjid','mushola','gereja'):
+  # Arched prayer-space openings are not corporate-office glazing.
+  for x in range(14,W-15,31):
+   t.rect(x,23,x+19,78,'WOOD',2)
+   t.rect(x+3,26,x+16,69,'GLASS' if kind=='gereja' else 'DARK',2)
+   t.rect(x+5,68,x+14,77,'CREAM',3)
+   if kind!='gereja':t.rect(x+1,20,x+18,24,'GREEN',3)
+ if kind in ('pasar','gudang'):
+  # Large open market bays or metal roll shutters.
+  for x in range(6,W-12,36):
+   t.rect(x,8,x+29,84,'DARK',2)
+   if kind=='gudang':
+    for zz in range(13,82,7):
+     t.rect(x+2,zz,x+27,zz+2,'CONC',3)
+   else:
+    for zz in (16,34,52):
+     t.rect(x+2,zz,x+27,zz+3,'WOOD',2)
  if kind in ('rumah','mushola'):
   for x in (15,W-47):
    t.rect(x,26,x+23,65,'WOOD',2)
@@ -256,6 +273,12 @@ def building(L,s):
  if kind=='mushola':H=129
  if kind=='gereja':H=194
  if cat=='publik':H=135
+ # Each named public type must have its actual silhouette, not office template.
+ if 'kos dua' in name:H=190
+ if 'balai warga' in name:H=133
+ if kind=='masjid':H=151
+ if kind=='gereja':H=162
+ if kind in ('pasar','gudang'):H=135
  accent=PALETTE[(N+1 if cat=='warung' else N+4)%len(PALETTE)]
  if 'Padang' in s['label']:accent='RED'
  elif 'Sunda' in s['label']:accent='GREEN'
@@ -329,7 +352,7 @@ def building(L,s):
    if a+.45<W-.15:
     box(L,a,.12,a+.45,.32,0,18,'WOOD')
     ball(L,a+.22,.26,20,.14,11,'GREEN')
-  if kind=='kos':
+  if kind=='kos' or 'kos dua' in name:
    box(L,.15,.28,W-.15,1.1,93,102,'CONC')
    for a in (.3,W-.33):pole(L,a,.2,127,.05,'WOOD',base=98)
    box(L,.3,.18,W-.3,.28,126,131,'WOOD')
@@ -360,10 +383,13 @@ def building(L,s):
  # Local identity beyond generic sign and windows.
  if kind in ('masjid','mushola'):
   x=W*.60;y=D*.65
-  ball(L,x,y,H+8,.54 if kind=='masjid' else .37,31,'GREEN')
-  ball(L,x,y,H+40,.09,9,'GOLD')
-  pole(L,W-.32,D-.45,H+36,.11,'CREAM')
-  ball(L,W-.32,D-.45,H+36,.15,13,'GREEN')
+  ball(L,x,y,H+8,.82 if kind=='masjid' else .37,45 if kind=='masjid' else 26,'GREEN')
+  ball(L,x,y,H+52 if kind=='masjid' else H+35,.09,10,'GOLD')
+  pole(L,W-.32,D-.45,H+72 if kind=='masjid' else H+35,.11,'CREAM')
+  ball(L,W-.32,D-.45,H+72 if kind=='masjid' else H+35,.15,13,'GREEN')
+  if kind=='masjid':
+   pole(L,.42,D*.72,H+64,.11,'CREAM')
+   ball(L,.42,D*.72,H+64,.15,12,'GREEN')
   box(L,.18,.10,W*.33,.26,11,76,'DARK')
   # 3 pointed entry arches, frontage.
   for i in range(3):
@@ -397,10 +423,14 @@ def building(L,s):
    a=.27+i*.64
    box(L,a,.08,a+.58,.6,68,82,'BLUE' if i%2 else 'TERRA')
  if 'padang' in name:
-  # signature tiered roof crest; Padang detail cannot be merely a colour.
-  for a in (.6,W-.9):
-   box(L,a,D*.5,a+.32,D*.74,H+7,H+26,'WOOD')
-  box(L,.3,D*.4,W-.3,D*.8,H+25,H+35,'TERRA')
+  # Three Minang-inspired overlapping horn-shaped pitched roof sections.
+  # Distinctive silhouette in the sprite rather than a large orange cube.
+  for j in range(3):
+   a=.32+j*(W-.64)/3
+   b=min(W-.05,a+(W-.7)/3)
+   L.gable(a,D*.45,b,D*.83,H+8,H+29+(j%2)*5,'TERRA')
+  for a in (.45,W-.61):
+   box(L,a,D*.52,a+.14,D*.73,H+7,H+21,'WOOD')
  return True
 
 def leaf_fan(L,x,y,z,reach=.62,count=8,green='GREEN',wide=.14,drop=12):
