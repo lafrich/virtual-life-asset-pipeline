@@ -8,6 +8,7 @@ from __future__ import annotations
 import json, math
 from pathlib import Path
 from lib import asset, bshadow, roof_flat, Tex, REG
+from indonesia_200_details import special
 
 SPEC_PATH=Path('assets/street_buildings/_work/indonesia_200_specs.json')
 SPECS=json.loads(SPEC_PATH.read_text(encoding='utf-8'))['items']
@@ -151,6 +152,8 @@ def draw_building(L,s):
   for i in range(3):
    x=.3+i*.65
    if x+.4<W-.1:safe_box(L,x,.08,x+.42,.36,0,23,COLORS[(i+s['num'])%len(COLORS)],3)
+ if s['category']=='warung' or k in ('ruko','public','sekolah','pasar','gudang','masjid','mushola','gereja','bengkel'):
+  nameplate(L,s,paint,H-56)
  if k in ('rumah','ruko'):
   for x in (.3,W-.95):
    safe_box(L,x,.13,x+.62,.46,4,58,'WOOD',3)
@@ -302,6 +305,7 @@ def draw_structure(L,s):
   if a+.3<W:safe_box(L,a,.17,a+.28,.31,22,48,'WOOD',2)
 
 def draw(L,s):
+ if special(L,s):return
  cat=s['category'];kind=s['kind']
  if cat=='transport':draw_vehicle(L,s)
  elif cat in ('warung','bangunan') or (cat=='publik' and kind in ('warung','public','mushola','saung')):
