@@ -244,7 +244,11 @@ def repair_female_chest_voids(sprite:Image.Image,torso_layer:Image.Image,
                 if len(component)>10:
                     border=True
                     break
-                stack.extend(((x+1,y),(x-1,y),(x,y+1),(x,y-1)))
+                # Use 8-connected transparency, not 4-connected. Exterior
+                # shoulder gaps touch the background diagonally and must
+                # NEVER be mistaken for enclosed bust cavities.
+                stack.extend(((x+1,y),(x-1,y),(x,y+1),(x,y-1),
+                              (x+1,y+1),(x-1,y-1),(x-1,y+1),(x+1,y-1)))
             if border or not 1<=len(component)<=6:continue
             mean_x=sum(x for x,y in component)/len(component)
             if not 3<=abs(mean_x-cx)<=10:continue
