@@ -10,6 +10,7 @@ ctx.imageSmoothingEnabled = false;
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const DIRECTION_LABELS = ["SE", "SW", "NE", "NW"];
 const UNIVERSAL_SLEEP = window.VLUniversalSleep;
+const UNIVERSAL_BODY = window.VLUniversalBodyActions;
 const PALETTE = [
   "#f8f6f0","#ffffff","#111111","#003b7a","#1642b5","#457fe5","#a9c5fa",
   "#cabde8","#ffdbad","#e0d6cd","#7d5542","#d6d6d6","#8183a5","#e88291",
@@ -225,6 +226,10 @@ function syncMotionSelection() {
 
 function selectMotion(action) {
   if (!state.selected || !action || !action.available) return;
+  // Preload the matching nude mannequin once when a hygiene action is
+  // selected. Every render keeps the original actor's face and skin.
+  const hygiene=UNIVERSAL_BODY?.resolve(state.selected,action.id);
+  if(hygiene)cachedImage(hygiene.sheet,()=>draw());
   state.mode = "action";
   state.motion = action;
   // Keep the chosen facial expression when switching body motion. Native
@@ -399,7 +404,7 @@ function accessoryFor(actor,category){
  const id=accessoryRuntime.equipment[actor]?.[category];
  return accessoryRuntime.items.find(item=>item.id===id&&item.category===category);
 }
-function drawEquippedAccessory(x,y,z,dirIndex,placement="front"){
+function drawEquippedAccessory(x,y,z,dirIndex,placement="front",targetCtx=ctx){
  if(!state.selected)return;
  // Do not float a backpack/standing outfit over the horizontal sleep pose.
  if(UNIVERSAL_SLEEP?.isSleep(state.motion?.id)&&state.mode==="action")return;
@@ -419,14 +424,14 @@ function drawEquippedAccessory(x,y,z,dirIndex,placement="front"){
   let image=state.imageCache.get(src);
   if(!image)image=cachedImage(src,()=>draw());
   if(image?.complete&&image.naturalWidth===64&&image.naturalHeight===112){
-   ctx.imageSmoothingEnabled=false;
+   targetCtx.imageSmoothingEnabled=false;
    if(category==="bag"&&rearView){
-    ctx.save();
-    ctx.beginPath();ctx.rect(x,y+56*z,64*z,(112-56)*z);
-    ctx.clip();
-    ctx.drawImage(image,x,y,64*z,112*z);
-    ctx.restore();
-   }else ctx.drawImage(image,x,y,64*z,112*z);
+    targetCtx.save();
+    targetCtx.beginPath();targetCtx.rect(x,y+56*z,64*z,(112-56)*z);
+    targetCtx.clip();
+    targetCtx.drawImage(image,x,y,64*z,112*z);
+    targetCtx.restore();
+   }else targetCtx.drawImage(image,x,y,64*z,112*z);
   }
  }
 }
@@ -813,6 +818,31 @@ function draw() {
   ctx.fill();
 
   const d = state.direction === "auto" ? state.autoDir : Number(state.direction);
+  const hygiene=state.mode==="action"&&state.motion?
+   UNIVERSAL_BODY?.resolve(state.selected,state.motion.id):null;
+  if(hygiene){
+    const original=state.motion.source==="custom"?state.motionImage:state.image;
+    const mannequin=cachedImage(hygiene.sheet);
+    if(original?.naturalWidth&&mannequin?.naturalWidth){
+      const off=document.createElement("canvas");off.width=64;off.height=112;
+      const paint=off.getContext("2d",{willReadFrequently:true});
+      paint.imageSmoothingEnabled=false;
+      const row=(state.motion.source==="custom"?0:state.motion.row||0)+d;
+      const frame=state.frame%Math.max(1,state.motion.frames||4);
+      if((frame+1)*64<=original.naturalWidth&&(row+1)*112<=original.naturalHeight){
+        drawEquippedAccessory(0,0,1,d,"back",paint);
+        paint.drawImage(original,frame*64,row*112,64,112,0,0,64,112);
+        drawEquippedAccessory(0,0,1,d,"front",paint);
+        if(UNIVERSAL_BODY.apply(paint,{actor:state.selected,action:state.motion.id,
+             direction:["se","sw","ne","nw"][d],frame,bodyImage:mannequin}))
+          ctx.drawImage(off,x,y,64*z,112*z);
+      }
+    }else{
+      ctx.fillStyle="#35547a";ctx.font="bold 12px monospace";
+      ctx.fillText("LOADING BODY...",x,y+56*z);
+    }
+    return;
+  }
   drawEquippedAccessory(x,y,z,d,"back");
   if (state.image?.complete && state.image.naturalWidth) {
     if (state.mode === "face") {
@@ -1154,8 +1184,24 @@ async function init() {
     const withSleep=payload.characters.map(character=>{
       const existing=Array.isArray(character.motions)?character.motions:[];
       const native=UNIVERSAL_SLEEP?.actionsFor(character)||[];
+      const hygiene=UNIVERSAL_BODY?.resolve(character,"use_toilet");
+      const seated=existing.find(m=>m.id==="sit"&&m.available);
+      const idle=existing.find(m=>m.id==="idle"&&m.available);
+      const bodyActions=hygiene?[
+        ...(["use_toilet","pee","poop"].filter(()=>!!seated).map(id=>({
+          id,name:id.replaceAll("_"," ").toUpperCase(),category:"posture",
+          source:seated.sheet?"custom":"native",sheet:seated.sheet,
+          row:seated.sheet?0:seated.row,frames:4,frame_ms:[400,430,440,430],
+          loop:true,available:true,body_override:"toilet_lower"
+        }))),
+        ...(idle?[{id:"bathe",name:"BATHE / SHOWER",category:"posture",
+          source:idle.sheet?"custom":"native",sheet:idle.sheet,
+          row:idle.sheet?0:idle.row,frames:4,frame_ms:[330,360,380,360],
+          loop:true,available:true,body_override:"bath_full"}]:[])
+      ]:[];
       return {...character,motions:[...existing,
-        ...native.filter(a=>!existing.some(m=>m.id===a.id))]};
+        ...native.filter(a=>!existing.some(m=>m.id===a.id)),
+        ...bodyActions.filter(a=>!existing.some(m=>m.id===a.id))]};
     });
     catalogCharacters=withSleep.filter(c=>!["otis","legacy_otis"].includes(c.id));
     state.characters=withSleep;
