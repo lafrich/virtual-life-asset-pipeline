@@ -96,16 +96,18 @@ function selectCharacter(character) {
   $("canvas-name").textContent = character.id.toUpperCase() + ".SPR";
   $("character-name").textContent = prettyName(character);
   $("prop-type").textContent = String(character.type || "npc").toUpperCase();
-  $("prop-bone-model").textContent = character.skeleton_profile || "UNASSIGNED";
-  $("prop-bone-skin").textContent = character.bone_skin_ready ? "BOUND / QA" : "PENDING PARTS";
+  $("prop-bone-model").textContent = character.skeleton_profile ||
+    (character.sheet?"V6B / SHARED FRAME":"REFERENCE / NO PIXEL RIG");
+  $("prop-bone-skin").textContent = character.bone_skin_ready ? "BOUND / QA" :
+    (character.sheet?"ACTOR-PIXEL PREVIEW":"SOURCE REFERENCE");
   const previewImage = character.thumbnail || character.poster;
   const inspector = $("inspector-thumb");
   inspector.closest(".inspector-art").classList.toggle("empty", !previewImage);
   if (previewImage) inspector.src = freshAssetUrl(previewImage); else inspector.removeAttribute("src");
   inspector.alt = character.name + " pixel-art preview";
   const sheetLink = $("download-sheet");
-  sheetLink.hidden = !character.sheet;
-  if (character.sheet) {
+  sheetLink.hidden = !character.sheet||["source_only","archive_still"].includes(character.asset_status);
+  if (!sheetLink.hidden) {
     sheetLink.href = freshAssetUrl(character.sheet);
     sheetLink.download = character.id + "_v6b_sheet.png";
   } else sheetLink.removeAttribute("href");
@@ -130,7 +132,7 @@ function selectCharacter(character) {
   setStatus("OPEN: " + character.id.toUpperCase() + ".SPR");
   canvas.setAttribute("aria-label", character.name + " sprite — 4 walk directions");
 
-  if (!character.sheet) {
+  if (!character.sheet||["source_only","archive_still"].includes(character.asset_status)) {
     state.playing = false;
     syncPlaybackButton();
     $("canvas-loading").hidden = true;
