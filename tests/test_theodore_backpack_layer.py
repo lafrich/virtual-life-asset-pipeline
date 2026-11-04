@@ -18,6 +18,41 @@ import make_theodore as t
 
 
 class TheodoreBackpack(unittest.TestCase):
+    def test_rear_head_and_helmet_anchor_shift_together(self):
+        # Compare with the untouched V6B head before Theodore's rear-only
+        # depth adjustment. Front/side head placement remains unchanged.
+        self.assertEqual(t.REAR_HEAD_OFFSET, (1, -2))
+        for view in ("ne", "nw"):
+            for motion, frame in (("idle",0),("idle",2),("walk",1),
+                                  ("talk",2),("sit",0)):
+                with self.subTest(view=view,motion=motion,frame=frame):
+                    canonical="ne"
+                    _, native, pal=t.base6.render(t.CFG, f=frame, d=canonical,
+                                                   anim=motion)
+                    brow=native["brows"]
+                    t.M.bald(native,pal)
+                    native["brows"]=brow
+                    original=native["hair_front"]
+                    layers, _, head_anchor, _, _=t.render(view,motion,frame)
+                    expected=t.translate_rgba(original,*t.REAR_HEAD_OFFSET)
+                    self.assertEqual(layers["hair_front"].tobytes(),
+                                     expected.tobytes(),
+                                     "Scalp/nape must follow rear offset")
+                    source_ref=t.base6.render(t.CFG, f=0,d=canonical,
+                                              anim="idle")[1]
+                    motion_ref=t.base6.render(t.CFG, f=frame,d=canonical,
+                                              anim=motion)[1]
+                    x0,y0=t.bbox(source_ref["hair_front"])
+                    x1,y1=t.bbox(motion_ref["hair_front"])
+                    self.assertEqual(head_anchor,
+                        (x1-x0+1,y1-y0-2),
+                        "Helmet/goggle anchor must match translated skull")
+                    # Body pivot and arm geometry are not translated.
+                    self.assertEqual(layers["body"].tobytes(),
+                                     native["body"].tobytes())
+                    self.assertEqual(layers["shirt"].tobytes(),
+                                     native["shirt"].tobytes())
+
     def test_rear_panel_is_on_upper_back_not_hips(self):
         for view in ("ne","nw"):
             for anim,f in (("idle",0),("idle",1),("idle",2),
