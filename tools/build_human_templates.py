@@ -81,11 +81,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
         if str(folder) not in sys.path:sys.path.insert(0,str(folder))
     import base6
     import make_npcs_v2 as M
-    # Human templates get a final repair AFTER skin-clothing recolor, rather
-    # than relying only on the earlier rig weld before female body reshaping.
-    npc_helpers=str(root/"assets"/"npc_pak_ogah")
-    if npc_helpers not in sys.path:sys.path.insert(0,npc_helpers)
-    from job_common import weld_arm_rgba_layers
+    # base6.render() already welds both arm sockets in the NATIVE V6B rig,
+    # after female-specific body shaping. Do not bridge these pixels again:
+    # a second weld creates shoulder stubs that no regular NPC has.
     palettes={
         "male":{"body":"m","skin":"light","hair":"short","hc":"black","top":"tee_long","tc":"paper","pants":"trousers","pc":"paper","shoes":"shoes","sc":"paper"},
         "female":{"body":"f","skin":"light","hair":"short","hc":"black","top":"tee_long","tc":"paper","pants":"trousers","pc":"paper","shoes":"shoes","sc":"paper"},
@@ -127,14 +125,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             pant_rows=np.flatnonzero(np.any(pant_mask,axis=1))
             shirt_top=int(shirt_rows[0]) if len(shirt_rows) else 55
             pants_top=int(pant_rows[0]) if len(pant_rows) else 76
-            # Weld final colored arm layers to the torso, for BOTH male
-            # and female, after bald/head and every source outfit conversion.
-            # The guide/character silhouette remains 64x112 pixel aligned.
-            rendered={k:np.array(v.convert("RGBA"),copy=True)
-                      for k,v in layers.items() if k in ("shirt","outer","arm_near","arm_far")}
-            weld_arm_rgba_layers(rendered)
-            for k in ("arm_near","arm_far"):
-                if k in rendered:layers[k]=Image.fromarray(rendered[k],"RGBA")
+            # No second arm weld: both shoulders already use the same
+            # v6b socket and walking/sitting pivots as ordinary characters.
+            # Skin conversion only changed RGB values; it did not change alpha.
             if lying:
                 flattened=base6.lv.lie_preserve_head(
                     {k:v.convert("RGBA") for k,v in layers.items()},source_dir)
