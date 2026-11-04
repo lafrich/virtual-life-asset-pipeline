@@ -6,6 +6,7 @@ on:
     paths:
       - "assets/street_buildings/_work/indonesia_200_specs.json"
       - "assets/street_buildings/_work/indonesia_200_renderer.py"
+      - "assets/street_buildings/_work/indonesia_200_details.py"
       - "assets/street_buildings/_work/publish_indonesia_200.py"
       - ".github/workflows/publish-indonesia-200.yml"
 permissions:
