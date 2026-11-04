@@ -11,6 +11,7 @@ from lib import asset, bshadow, roof_flat, Tex, REG
 from indonesia_200_details import special
 from indonesia_200_quality import render as quality_render
 from indonesia_200_finishing import quality_override
+from indonesia_200_art_direction_v5 import refine as art_direct
 
 SPEC_PATH=Path('assets/street_buildings/_work/indonesia_200_specs.json')
 SPECS=json.loads(SPEC_PATH.read_text(encoding='utf-8'))['items']
@@ -328,9 +329,10 @@ def draw_structure(L,s):
 def draw(L,s):
  # Quality gate: NO legacy faceless-cube fallback for the 200-asset pack.
  # Every asset must have a recognizable authored v2 recipe.
- if quality_override(L,s):return
- if quality_render(L,s):return
- raise ValueError('Missing Indonesia 200 quality-v2 authored recipe: '+s['id'])
+ if quality_override(L,s) or quality_render(L,s):
+  art_direct(L,s)
+  return
+ raise ValueError('Missing Indonesia 200 authored scene recipe: '+s['id'])
  if special(L,s):return
  cat=s['category'];kind=s['kind']
  if cat=='transport':draw_vehicle(L,s)
