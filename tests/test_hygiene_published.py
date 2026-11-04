@@ -24,6 +24,16 @@ for sex in ("male","female"):
         for row in range(4):
             for col in range(4):
                 assert image.crop((64*col,112*row,64*(col+1),112*(row+1))).getchannel("A").getbbox()
+    soak=animations[f"bathtub_bathe_{sex}_v1"]
+    assert soak["status"]=="ready" and not soak["preview_only"]
+    assert soak["action_id"]=="bathtub_bathe"
+    assert soak["actor"]==item["id"]
+    assert soak["frame_count"]==6
+    assert soak["directions"]==["se","sw","ne","nw"]
+    for label in ("gif","poster"):
+        assert (out/soak[label]).is_file()
+    with Image.open(out/soak["gif"]) as image:
+        assert image.format=="GIF" and image.n_frames==6
     clip=animations[f"bathe_{sex}_v1"]
     assert clip["status"]=="ready" and not clip["preview_only"]
     assert clip["actor"]==item["id"] and clip["action_id"]=="bathe"
