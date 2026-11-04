@@ -3,6 +3,17 @@ name: Human Male-Female — Fast 80-View Animation QA
 on:
   push:
     branches: [main]
+    paths:
+      - ".github/workflows/test-human-animation-atlases.yml"
+      - "tools/build_human_templates.py"
+      - "tools/human_pose_extras.py"
+      - "tests/test_human_animation_sheets.py"
+      - "tests/test_bleh_face_alignment.py"
+      - "site/action-appearance-bridge.js"
+      - "tests/test_action_appearance.cjs"
+      - "assets/npc_preview_v2/base6.py"
+      - "chars-iso/v6b/tools/**"
+  workflow_dispatch:
   pull_request:
     branches: [main]
     paths:
