@@ -83,11 +83,11 @@ def knee_chest_layers(layers:dict,direction:str,frame:int,palette:dict)->dict:
 
 
 def bleh_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,dict]:
-    """Make half-lidded eyes, a teasing open mouth, tongue and subtle blush.
+    """Draw Bleh on the selected actor's REAL mouth/eye anchor.
 
-    The face is drawn at 1 native pixel, on top of the *same actor* head.
-    Modular part images are also returned for saving as selectable assets.
-    Only front-facing SE/SW show expression; rear views do not get false eyes.
+    Native V6B face pixels are already posed and mirrored by base6.render.
+    Locate their authored mouth before replacing the face layer; static
+    coordinates drift on mirrored views and breathing/bobbing frames.
     """
     layers=dict(layers)
     parts={part:Image.new("RGBA",FRAME) for part in PARTS}
@@ -96,48 +96,58 @@ def bleh_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,dict
     face=layers.get("face")
     if face is None:
         return layers,parts
-    body=np.asarray(layers.get("body",Image.new("RGBA",FRAME)).convert("RGBA"))
-    yy,xx=np.nonzero(body[:56,:,3]>0)
-    # Native V6B eye position is around y=44 and head center x=32.
-    top=int(yy.min()) if len(yy) else 32
-    hx=int(round(float(np.median(xx[yy<min(top+25,55)])))) if len(yy) else 32
-    dx=max(-5,min(5,hx-32))
-    dy=max(-4,min(4,top-32))
-    mirror=direction=="sw"
-    x=lambda u: max(0,min(63,(63-u if mirror else u)+(-dx if mirror else dx)))
-    y=lambda v: max(0,min(111,v+dy))
+
+    original_face=np.asarray(face.convert("RGBA"))
+    yy,xx=np.nonzero(original_face[:62,:,3]>0)
+    # Neutral V6B's lowest facial pixels are the mouth (row 50; row 49
+    # on the bobbing idle frames). Read the source instead of guessing
+    # from the head/torso silhouette, whose bounds change with animation.
+    if len(yy):
+        mouth_y=int(yy.max())
+        mouth_band=xx[yy>=mouth_y-1]
+        mouth_x=int(round(float(np.median(mouth_band))))
+    else:
+        mouth_x=28 if direction=="sw" else 35
+        mouth_y=50
+    sign=-1 if direction=="sw" else 1
+    x=lambda u:max(0,min(63,mouth_x+sign*(u-35)))
+    y=lambda v:max(0,min(111,mouth_y+(v-50)))
     shadow=tuple(palette.get("Kh",(202,155,124)))
     dark=tuple(palette.get("K7",(113,76,66)))
-    # V6B 'body' already owns the head's skintone. The native facial atlas
-    # contains pre-rendered eyes and mouth. Replace ONLY those facial parts;
-    # retaining them underneath created duplicated horizontal eye bars.
-    original=Image.new("RGBA",FRAME)
+
+    # The pre-rendered native facial marks are replaced in-place. Keep
+    # the head/body/skin palette and their pivot completely untouched.
     layers["brows"]=Image.new("RGBA",FRAME)
-    # Blush cheeks are translucent, so skin material still shows through.
     cheeks=ImageDraw.Draw(parts["blush"],"RGBA")
-    for px in (24,40):
-        xa1,xa2=sorted((x(px),x(px+3)))
-        cheeks.ellipse((xa1,y(48),xa2,y(51)),fill=(231,100,123,150))
-    # Both eyes half-lidded; one narrowed just a little for a mischievous grin.
+    for left,right in ((28,31),(39,42)):
+        a,b=sorted((x(left),x(right)))
+        cheeks.ellipse((a,y(47),b,y(49)),fill=(231,100,123,150))
+
     eyes=ImageDraw.Draw(parts["eyes"],"RGBA")
-    for eye_x in (28,38):
-        xa1,xa2=sorted((x(eye_x-2),x(eye_x+2)))
-        eyes.line((xa1,y(44),xa2,y(44)),fill=(*dark,255),width=2)
-        # Lower lid peeks from under upper drooping lid.
+    # Match the actual native eyes: near eye spans x29..33, far x38..40.
+    for eye_x,half in ((31,2),(39,1)):
+        a,b=sorted((x(eye_x-half),x(eye_x+half)))
+        eyes.line((a,y(44),b,y(44)),fill=(*dark,255),width=2)
         eyes.point((x(eye_x),y(46)),fill=(*shadow,255))
-    # A 4-frame tongue wag keeps tongue *inside* the mouth then extending.
+
     mouth=ImageDraw.Draw(parts["mouth"],"RGBA")
+    # Original V6B neutral mouth spans x34..36 at y50. Keep the
+    # tongue attached, extending at most 4px below that landmark.
     wag=(-1,0,1,0)[frame%4]
-    xa1,xa2=sorted((x(31),x(37)))
-    mouth.rounded_rectangle((xa1,y(49),xa2,y(53)),radius=2,
+    a,b=sorted((x(33),x(37)))
+    mouth.rounded_rectangle((a,y(49),b,y(52)),radius=1,
                             fill=(*dark,255))
-    tx1,tx2=sorted((x(32+wag),x(36+wag)))
-    mouth.rounded_rectangle((tx1,y(52),tx2,y(57 if frame%4 in (1,2) else 55)),
-                            radius=1,fill=(232,105,139,255))
-    mouth.line((x(34+wag),y(53),x(34+wag),
-                y(56 if frame%4 in (1,2) else 54)),
+    a,b=sorted((x(34+wag),x(36+wag)))
+    tip=54 if frame%4 in (1,2) else 53
+    mouth.rounded_rectangle((a,y(51),b,y(tip)),radius=1,
+                            fill=(232,105,139,255))
+    mouth.line((x(35+wag),y(52),x(35+wag),y(tip)),
                fill=(181,68,104,255),width=1)
+    # The base face was cleared above: restore its discreet nose marker.
+    mouth.point((x(36),y(48)),fill=(*shadow,255))
+
+    updated=Image.new("RGBA",FRAME)
     for part in ("blush","eyes","mouth"):
-        original.alpha_composite(parts[part])
-    layers["face"]=original
+        updated.alpha_composite(parts[part])
+    layers["face"]=updated
     return layers,parts
