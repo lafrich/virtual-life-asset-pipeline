@@ -115,7 +115,10 @@
   // face darks and alpha untouched; tint light/mid/dark skin pixels together.
   for(let i=0;i<data.length;i+=4){
    const r=data[i],g=data[i+1],b=data[i+2],a=data[i+3];
-   if(a<80||r<90||g<60||b<36||r<g*.92||g<b*.94)continue;
+   // Preserve cool blue bath water, off-white foam, hair and eyes.
+   // Warm skin has a reliable red>green>blue ramp in the native V6B palette.
+   if(a<80||r<90||g<60||b<36||r<=g*1.06||g<=b*1.02||
+      r-g>115||g-b>105||r>249&&g>240)continue;
    const lum=(r*.33+g*.51+b*.16)/193;
    const v=Math.max(.40,Math.min(1.26,lum));
    data[i]=Math.max(0,Math.min(255,Math.round(tone[0]*v)));
