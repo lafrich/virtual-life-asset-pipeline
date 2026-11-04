@@ -24,7 +24,7 @@ def plate(L,text,z=85,paint='BLUE'):
 def special(L,s):
  kind=s['kind'];c=s['category'];text=s['label'].lower()
  W,D_=L.W,L.D
- if c=='transport':return vehicle(L,s)
+ if c=='transport':return False  # canonical native transport scene recipe
  if c in ('warung','bangunan','publik') and (c!='publik' or kind in ('public','warung','saung','mushola')):
   return False # Main renderer supplies shop facade; embellishments below.
  if c=='budaya' and kind=='ondel':
