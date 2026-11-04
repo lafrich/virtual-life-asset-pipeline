@@ -96,7 +96,9 @@ function selectCharacter(character) {
   $("canvas-name").textContent = character.id.toUpperCase() + ".SPR";
   $("character-name").textContent = prettyName(character);
   $("prop-type").textContent = String(character.type || "npc").toUpperCase();
-  $("prop-bone-model").textContent = character.skeleton_profile ||
+  $("prop-bone-model").textContent =
+    character.skeleton_profile&&character.skeleton_profile!=="UNASSIGNED"?
+    character.skeleton_profile:
     (character.sheet?"V6B / SHARED FRAME":"REFERENCE / NO PIXEL RIG");
   $("prop-bone-skin").textContent = character.bone_skin_ready ? "BOUND / QA" :
     (character.sheet?"ACTOR-PIXEL PREVIEW":"SOURCE REFERENCE");
@@ -345,21 +347,14 @@ function selectFace(face) {
 }
 
 function startWalking() {
-  if (!state.selected) return;
-  if (!state.selected.sheet) return setStatus("SOURCE ONLY / NO WALK SPRITES");
-  if (!state.selected.motions?.some(m=>m.id==="walk" && m.available))
-    return setStatus("NO AUTHORED WALK FOR THIS CHARACTER");
-  const motion = state.selected.motions?.find(m => m.id === "walk" && m.available);
-  if (motion) return selectMotion(motion);
-  state.mode = "walk";
-  state.playing = !prefersReducedMotion;
-  state.frame = 0;
-  syncPlaybackButton();
-  draw();
+  if(!state.selected)return;
+  const motion=state.selected.motions?.find(m=>m.id==="walk");
+  if(motion)return selectMotion(motion);
+  setStatus("SHARED WALK ACTION NOT LOADED");
 }
 
 function togglePlayback() {
-  if (!state.selected || !state.selected.sheet) return;
+  if (!state.selected || (!state.selected.sheet&&!state.archiveImage)) return;
   // Replay the completed one-shot action when clicking PLAY.
   if (state.mode === "action" && !state.playing && state.motion?.loop === false &&
       state.frame >= state.motion.frames - 1) {
