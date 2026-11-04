@@ -30,6 +30,7 @@ on:
       - "tests/test_universal_sleep.cjs"
       - "tests/test_universal_sleep_geometry.py"
       - "tests/test_universal_sleep_tabs.cjs"
+      - "tests/test_action_editor_interactions.cjs"
       - "tests/test_universal_sleep_published.py"
       - "tests/test_player_action_database.cjs"
       - "tests/test_desktop_layout.cjs"
