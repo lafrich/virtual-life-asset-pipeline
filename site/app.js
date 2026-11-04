@@ -11,6 +11,7 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 const DIRECTION_LABELS = ["SE", "SW", "NE", "NW"];
 const UNIVERSAL_SLEEP = window.VLUniversalSleep;
 const UNIVERSAL_BODY = window.VLUniversalBodyActions;
+const UNIVERSAL_MOTIONS = window.VLUniversalMotions;
 const PALETTE = [
   "#f8f6f0","#ffffff","#111111","#003b7a","#1642b5","#457fe5","#a9c5fa",
   "#cabde8","#ffdbad","#e0d6cd","#7d5542","#d6d6d6","#8183a5","#e88291",
@@ -186,33 +187,32 @@ function buildFaces(character) {
 }
 
 function buildMotions(character) {
-  const grid = $("motion-grid");
-  grid.replaceChildren();
-  const choices = Array.isArray(character.motions) ? character.motions : [];
-  const available = choices.filter(action => action.available);
-  $("motion-tab-count").textContent = String(available.length).padStart(2, "0");
-  $("motion-count").textContent = String(choices.length).padStart(2, "0");
-  choices.forEach(action => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "motion-option";
-    button.disabled = !action.available;
-    button.title = action.available ? "Use " + action.name + " on " + character.name :
-      action.name + " — needs an authored rig for this character";
-    button.setAttribute("aria-pressed", "false");
-    const glyph = document.createElement("span");
-    glyph.textContent = action.available ? "▶" : "⌁";
-    const label = document.createElement("strong");
-    label.textContent = action.name;
-    const tag = document.createElement("small");
-    tag.textContent = action.available ? action.frames + " FR / " +
-      (action.loop ? "LOOP" : "ONCE") : "NEEDS RIG";
+  const grid=$("motion-grid");grid.replaceChildren();
+  const choices=Array.isArray(character.motions)?character.motions:[];
+  const playable=choices.filter(a=>a.playback==="authored");
+  $("motion-tab-count").textContent=String(choices.length).padStart(2,"0");
+  $("motion-count").textContent=String(choices.length).padStart(2,"0");
+  for(const action of choices){
+    const button=document.createElement("button");button.type="button";
+    button.className="motion-option";button.disabled=false;
+    button.title=action.playback==="authored"?
+      "Original frame animation / "+character.name:
+      action.playback==="procedural"?
+      "Universal procedural preview using "+character.name+"'s own pixels; not a final authored animation":
+      "Same action vocabulary; source sprite pending for this archive character";
+    button.setAttribute("aria-pressed","false");
+    const glyph=document.createElement("span");glyph.textContent="▶";
+    const label=document.createElement("strong");label.textContent=action.name;
+    const tag=document.createElement("small");
+    tag.textContent=action.playback==="authored"?
+      action.frames+" FR / NATIVE":action.playback==="procedural"?
+      "AUTO PREVIEW":"SOURCE ONLY";
     button.append(glyph,label,tag);
-    button.addEventListener("click", () => selectMotion(action));
-    grid.append(button);
-  });
-  $("motion-availability-note").textContent =
-    available.length + " RIGGED  /  " + (choices.length - available.length) + " NEEDS WORK";
+    button.addEventListener("click",()=>selectMotion(action));grid.append(button);
+  }
+  $("motion-availability-note").textContent=
+    choices.length+" SHARED ACTIONS / "+playable.length+" AUTHORED / "+
+    (choices.length-playable.length)+" UNIVERSAL PREVIEWS";
 }
 
 function syncMotionSelection() {
@@ -225,7 +225,7 @@ function syncMotionSelection() {
 }
 
 function selectMotion(action) {
-  if (!state.selected || !action || !action.available) return;
+  if (!state.selected || !action) return;
   // Preload the matching nude mannequin once when a hygiene action is
   // selected. Every render keeps the original actor's face and skin.
   const hygiene=UNIVERSAL_BODY?.resolve(state.selected,action.id);
@@ -243,8 +243,10 @@ function selectMotion(action) {
   state.motionImage = null;
   $("canvas-name").textContent = state.selected.id.toUpperCase() + " / " + action.id.toUpperCase();
   const character = state.selected;
-  if (action.source === "custom" && action.sheet) {
-    cachedImage(action.sheet, image => {
+  if ((action.source === "custom" && action.sheet)||
+      (action.source === "procedural" && action.prototype?.sheet &&
+       action.prototype.sheet!==character.sheet)) {
+    cachedImage(action.source==="procedural"?action.prototype.sheet:action.sheet, image => {
       if (state.selected !== character || state.motion !== action) return;
       state.motionImage = image;
       draw();
@@ -835,7 +837,13 @@ function draw() {
     if (state.archiveImage?.naturalWidth) {
       const source = state.archiveImage, aspect = source.width / source.height;
       const h0 = Math.min(h - 60, 310), w0 = Math.min(w - 50,h0 * aspect);
-      ctx.drawImage(source,(w-w0)/2,(h-h0)/2,w0,h0);
+      const offsets=state.mode==="action"?[0,-1,-3,-2,0,1]:[0];
+      ctx.drawImage(source,(w-w0)/2,(h-h0)/2+offsets[state.frame%offsets.length],w0,h0);
+      if(state.mode==="action"){
+       ctx.fillStyle="#173b85";ctx.font="bold 11px monospace";
+       ctx.textAlign="center";
+       ctx.fillText("REFERENCE PREVIEW / NO 4-VIEW SPRITE",w/2,h-17);
+      }
     } else {
       ctx.fillStyle = "#1c3d80"; ctx.font = "bold 17px monospace"; ctx.textAlign="center";
       ctx.fillText("SOURCE REGISTERED",w/2,h/2-10);
@@ -879,6 +887,16 @@ function draw() {
     return;
   }
   drawEquippedAccessory(x,y,z,d,"back");
+  if(state.mode==="action"&&state.motion?.source==="procedural"){
+    const src=state.motionImage?.naturalWidth?state.motionImage:state.image;
+    const done=UNIVERSAL_MOTIONS?.render(ctx,{action:state.motion,
+      image:src,dir:d,frame:state.frame,x,y,scale:z});
+    if(!done){
+      ctx.fillStyle="#173b85";ctx.font="bold 11px monospace";
+      ctx.fillText("LOADING ACTOR PREVIEW",x,y+56*z);
+    }
+    drawEquippedAccessory(x,y,z,d);return;
+  }
   if (state.image?.complete && state.image.naturalWidth) {
     if (state.mode === "face") {
       // Actual character's own 4-frame idle / blink and expression overlays,
@@ -941,7 +959,7 @@ function draw() {
 }
 
 function tick(time) {
-  if (state.playing && state.image?.naturalWidth) {
+  if (state.playing && (state.image?.naturalWidth || state.archiveImage?.naturalWidth)) {
     if (!state.lastFrameTime) state.lastFrameTime = time;
     let frames, duration, done, loop;
     if (state.mode === "face") {
@@ -988,10 +1006,25 @@ function saveCanvasPNG(out, name) {
 
 function exportActionSheet() {
   const action = state.motion || state.selected?.motions?.find(m => m.id === "walk");
-  if (!state.selected || !action?.available || !state.image?.naturalWidth) {
-    setStatus("MOTION NOT RIGGED FOR THIS CHARACTER.");
+  if (!state.selected || !action?.available || !state.image?.naturalWidth){
+    setStatus("SOURCE SPRITE REQUIRED TO EXPORT THIS ACTION.");
     return;
   }
+  if(action.source==="procedural"){
+    const out=document.createElement("canvas");
+    out.width=64*action.frames;out.height=112*4;
+    const paint=out.getContext("2d");paint.imageSmoothingEnabled=false;
+    const src=state.motionImage?.naturalWidth?state.motionImage:state.image;
+    for(let dir=0;dir<4;dir++)for(let frame=0;frame<action.frames;frame++){
+      paint.save();paint.translate(frame*64,dir*112);
+      UNIVERSAL_MOTIONS.render(paint,{action,image:src,dir,frame,x:0,y:0,scale:1});
+      paint.restore();
+    }
+    saveCanvasPNG(out,state.selected.id+"_"+action.id+"_AUTO_PREVIEW.png");
+    setStatus("EXPORTED PROCEDURAL PREVIEW / NOT AUTHOR-APPROVED ACTION");
+    return;
+  }
+  if(action.source==="reference")return setStatus("SOURCE SPRITE REQUIRED TO EXPORT THIS ACTION.");
   const synced=Boolean(state.expression?.motion_sheets?.[action.id]);
   const source=synced?state.motionFaceImage:
     action.source==="custom"?state.motionImage:state.image;
@@ -1239,8 +1272,15 @@ async function init() {
         ...native.filter(a=>!existing.some(m=>m.id===a.id)),
         ...bodyActions.filter(a=>!existing.some(m=>m.id===a.id))]};
     });
-    catalogCharacters=withSleep.filter(c=>!["otis","legacy_otis"].includes(c.id));
-    state.characters=withSleep;
+    const actionResponse=await fetch("./player-actions.json",{cache:"no-store"});
+    if(!actionResponse.ok)throw new Error("SHARED ACTION DB HTTP "+actionResponse.status);
+    const definitions=await actionResponse.json();
+    if(!Array.isArray(definitions.actions)||definitions.actions.length<200)
+      throw new Error("SHARED ACTION DB INCOMPLETE");
+    const unified=withSleep.map(character=>({...character,
+      motions:UNIVERSAL_MOTIONS.catalogFor(character,definitions.actions)}));
+    catalogCharacters=unified.filter(c=>!["otis","legacy_otis"].includes(c.id));
+    state.characters=unified;
     rebuildCustomCharacters();
     const total = String(state.characters.length).padStart(2, "0");
     $("asset-total").textContent = total;
