@@ -1,0 +1,82 @@
+name: Publish Semesta Rider v3 — Full Sprite Set
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "assets/street_vehicles/riders_v3/_work/**"
+      - ".github/workflows/publish-semesta-riders-v3.yml"
+permissions:
+  contents: write
+concurrency:
+  group: semesta-riders-v3
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install native v6b image renderer
+        run: python -m pip install --disable-pip-version-check numpy pillow
+      - name: Rebuild all eight rider types, 4 dirs x 4 frames each
+        run: python assets/street_vehicles/riders_v3/_work/produce.py
+      - name: Audit rider frames and make contact sheet
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          from PIL import Image, ImageOps, ImageDraw
+          root=pathlib.Path('assets/street_vehicles/riders_v3')
+          manifest=json.loads((root/'manifest.json').read_text())
+          sprites=manifest['sprites']
+          ids=['gojek','gojek_pax','maxim','maxim_pax','sma_triple',
+               'commuter_batik_sogan','commuter_batik_blue','commuter_batik_red']
+          assert len(sprites)==len(ids)*4, (len(sprites),len(ids)*4)
+          sizes={}
+          for n in ids:
+              for d in ('se','sw','ne','nw'):
+                  key=f'{n}_{d}'
+                  spec=sprites[key]
+                  assert len(spec['frames'])==4, key
+                  piv=spec['pivot_footprint_centre']
+                  size=spec['size']
+                  assert len(piv)==2 and len(size)==2
+                  assert 0<=piv[0]<=size[0] and 0<piv[1]<=size[1]
+                  for rel in spec['frames']:
+                      p=root/rel
+                      assert p.is_file(),p
+                      with Image.open(p) as im:
+                          assert im.mode=='RGBA' and im.size==tuple(size),p
+                          assert im.getchannel('A').getbbox(),p
+                          box=im.getchannel('A').getbbox()
+                          assert box[0]<box[2] and box[1]<box[3]
+                  sizes.setdefault(n,size)
+          # Dedicated visual audit sheet for all eight real riders; no proxies.
+          w,h=252,350;sheet=Image.new('RGB',(w*4,h*2),(29,38,55))
+          draw=ImageDraw.Draw(sheet)
+          for i,n in enumerate(ids):
+              j=i%4;k=i//4
+              im=Image.open(root/f'frames/{n}_se_f0.png').convert('RGBA')
+              im=im.resize((im.width*3,im.height*3),Image.Resampling.NEAREST)
+              x=j*w+(w-im.width)//2;y=k*h+17
+              sheet.paste(im,(x,y),im)
+              draw.text((j*w+12,k*h+h-24),f'{n} · native v3',fill=(237,244,250))
+          sheet.save(root/'previews/semesta_riders_v3_audit.png')
+          print('VERIFIED',len(ids),'riders,',len(ids)*4*4,'native frame PNGs, sizes',sizes)
+          PY
+      - name: Commit actual original 128 PNGs, sheets, manifest, contact sheet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f assets/street_vehicles/riders_v3/frames/*.png
+          git add -f assets/street_vehicles/riders_v3/sheets/*.png
+          git add -f assets/street_vehicles/riders_v3/previews/semesta_riders_v3_audit.png
+          git add assets/street_vehicles/riders_v3/manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish 128 native rider v3 frames for Semesta (no proxies) [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
