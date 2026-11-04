@@ -137,6 +137,60 @@ def build_native_sleep_previews(out: Path, repo_url: str, characters: list[dict]
     return records
 
 
+def build_bath_previews(out: Path, repo_url: str, characters: list[dict]) -> list[dict]:
+    """Publish genuine Male/Female 4-frame washing motions into Animations."""
+    records=[]
+    dirs=("se","sw","ne","nw")
+    media=out/"media"
+    for gender in ("male","female"):
+        actor=next((c for c in characters if c.get("id")==f"human_{gender}_base"),None)
+        if not actor:raise ValueError(f"Bath base absent: {gender}")
+        motion=next((m for m in actor["motions"]
+                     if m.get("id")=="bathe" and m.get("available")),None)
+        if not motion or motion.get("frames")!=4 or not motion.get("sheet"):
+            raise ValueError(f"Missing 4-frame authored bath motion for {gender}")
+        sheet_path=media/Path(motion["sheet"]).name
+        if not sheet_path.is_file():
+            raise FileNotFoundError(sheet_path)
+        frames=[]
+        with Image.open(sheet_path) as image:
+            atlas=image.convert("RGBA")
+            if atlas.size!=(256,448):
+                raise ValueError(f"Invalid bath sprite sheet {gender}: {atlas.size}")
+            for frame in range(4):
+                picture=Image.new("RGB",(544,266),(39,47,60))
+                painter=ImageDraw.Draw(picture)
+                for i,direction in enumerate(dirs):
+                    tile=atlas.crop((frame*64,i*112,(frame+1)*64,(i+1)*112))
+                    if not tile.getchannel("A").getbbox():
+                        raise ValueError(f"Empty bath frame {gender}/{direction}/{frame}")
+                    picture.paste(tile.resize((128,224),Image.Resampling.NEAREST),
+                                  (8+i*136,4),tile.resize((128,224),Image.Resampling.NEAREST))
+                    painter.text((8+i*136+39,240),direction.upper(),fill=(229,233,240))
+                frames.append(picture)
+        prefix=f"animation-bathe-{gender}"
+        gif=media/(prefix+".gif")
+        poster=media/(prefix+".png")
+        frames[0].save(poster,optimize=True)
+        frames[0].save(gif,save_all=True,append_images=frames[1:],
+                       duration=[330,360,380,360],loop=0,optimize=False)
+        with Image.open(gif) as check:
+            if check.n_frames!=4:raise ValueError("Bath frames collapsed")
+        records.append({
+            "id":f"bathe_{gender}_v1","name":f"BATHE / SHOWER — {gender.upper()}",
+            "kind":"animation","group":"action","status":"ready",
+            "note":"4-FRAME NON-EXPLICIT ADULT BATHING ANIMATION / NATURAL SKIN PALETTE / FOUR DIRECTIONS",
+            "gif":"media/"+gif.name,"poster":"media/"+poster.name,
+            "source_url":repo_url+"/blob/main/tools/build_human_templates.py",
+            "template_json":"","directions":list(dirs),"layout":"four_up",
+            "frame_count":4,"gif_frames":4,"loop":True,
+            "frame_ms":[330,360,380,360],"duration_ms":1430,
+            "preview_only":False,"universal":True,
+            "actor":actor["id"],"action_id":"bathe"
+        })
+    return records
+
+
 def build_animation_catalog(out: Path, repo_url: str,
                             characters: list[dict] | None = None) -> list[dict]:
     media = out / "media"
@@ -295,6 +349,7 @@ def build_animation_catalog(out: Path, repo_url: str,
         })
     if characters is not None:
         shared = build_native_sleep_previews(out, repo_url, characters)
+        shared.extend(build_bath_previews(out, repo_url, characters))
         for row in shared:
             if row["id"] in ids:
                 raise ValueError("Duplicate native sleep action " + row["id"])
