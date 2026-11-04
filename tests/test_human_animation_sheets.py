@@ -87,11 +87,12 @@ for actor in bodies:
         assert x.max()-x.min()>40 and y.max()-y.min()<70,(
             actor["id"],view,"lie_idle is not horizontal")
 for actor in bodies:
-    grimace=next(e for e in actor["expressions"] if e["id"]=="grimace_blush")
-    preview=root/grimace["preview_gif"]
-    assert preview.is_file(),(actor["id"],"grimace GIF missing")
-    with Image.open(preview) as animation:
-        assert animation.size==(512,448) and getattr(animation,"n_frames",0)==4
+    for emotion in ("grimace_blush","cheeky"):
+        item=next(e for e in actor["expressions"] if e["id"]==emotion)
+        preview=root/item["preview_gif"]
+        assert preview.is_file(),(actor["id"],emotion,"GIF missing")
+        with Image.open(preview) as animation:
+            assert animation.size==(512,448) and getattr(animation,"n_frames",0)==4
     expr=next(e for e in actor["expressions"] if e["id"]=="bleh")
     for part in ("eyes","mouth","blush"):
         for pose in ("idle","walk"):
