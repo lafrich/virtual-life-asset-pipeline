@@ -12,7 +12,7 @@ from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"tools"))
-from build_human_templates import sculpt_human_layers,shade_human_anatomy,FRAME
+from build_human_templates import sculpt_human_layers,shade_human_anatomy,shade_human_surface,FRAME
 
 
 def colored(left,right,top,bottom,color=(215,175,141,255)):
@@ -122,6 +122,47 @@ class HumanMorphology(unittest.TestCase):
         self.assertEqual(body.tobytes(),Image.fromarray(source,"RGBA").tobytes(),
                          "The original body layer must remain immutable")
 
+
+
+    def test_surface_anatomy_is_pose_anchored_and_alpha_safe(self):
+        """Torso/chest/back/hip definitions must not spawn extra anatomy
+        or alter the shared rig and outfit-fitting outer silhouette."""
+        skin=(229,188,154,255)
+        body=colored(19,46,31,105,skin)
+        torso=colored(24,42,54,80,skin)
+        pelvis=colored(25,41,78,96,skin)
+        untouched=np.asarray(body)
+        mask_torso=mask(torso)
+        mask_pelvis=mask(pelvis)
+        outputs={}
+        for gender in ("male","female"):
+            for direction in ("se","sw","ne","nw"):
+                with self.subTest(gender=gender,direction=direction):
+                    result=shade_human_surface(
+                        body,gender,direction,torso,pelvis,
+                        (173,121,94),(206,156,121),(238,199,163))
+                    pixels=np.asarray(result)
+                    delta=np.any(pixels[...,:3]!=untouched[...,:3],axis=2)
+                    self.assertTrue(np.array_equal(pixels[...,3],untouched[...,3]))
+                    self.assertTrue(np.all(~delta|(mask_torso|mask_pelvis)))
+                    self.assertGreaterEqual(int(delta.sum()),6)
+                    self.assertFalse(delta[:56].any(), "Head/neck must be untouched")
+                    self.assertFalse(delta[99:].any(), "Legs and feet are not shading targets")
+                    outputs[(gender,direction)]=pixels.copy()
+        self.assertFalse(np.array_equal(outputs[("male","se")],
+                                        outputs[("female","se")]))
+        self.assertFalse(np.array_equal(outputs[("male","ne")],
+                                        outputs[("female","ne")]))
+        # A shifted torso and hip must shift the shading automatically.
+        moved_torso=colored(29,47,54,80,skin)
+        moved_hip=colored(30,46,78,96,skin)
+        moved=shade_human_surface(body,"male","se",moved_torso,moved_hip,
+                                 (173,121,94),(206,156,121),(238,199,163))
+        d0=np.any(outputs[("male","se")][...,:3]!=untouched[...,:3],axis=2)
+        d1=np.any(np.asarray(moved)[...,:3]!=untouched[...,:3],axis=2)
+        self.assertGreater(np.flatnonzero(np.any(d1,axis=0)).mean(),
+                           np.flatnonzero(np.any(d0,axis=0)).mean()+3)
+        self.assertEqual(body.tobytes(),Image.fromarray(untouched,"RGBA").tobytes())
 
 
 if __name__=="__main__":
