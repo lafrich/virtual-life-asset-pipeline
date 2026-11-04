@@ -189,36 +189,51 @@ function buildFaces(character) {
 function buildMotions(character) {
   const grid=$("motion-grid");grid.replaceChildren();
   const choices=Array.isArray(character.motions)?character.motions:[];
-  const playable=choices.filter(a=>a.playback==="authored");
+  const categories=["all",...new Set(choices.map(a=>a.category||"action"))];
+  const filter=$("motion-category"),old=filter.value;
+  filter.replaceChildren();
+  for(const key of categories){
+    const option=document.createElement("option");option.value=key;
+    option.textContent=key==="all"?"ALL CATEGORIES":key.replaceAll("_"," ").toUpperCase();
+    filter.append(option);
+  }
+  filter.value=categories.includes(old)?old:"all";
+  const query=$("motion-search").value.trim().toLowerCase(),category=filter.value;
+  const visible=choices.filter(a=>(category==="all"||a.category===category)&&
+    [a.id,a.name,a.category].join(" ").toLowerCase().includes(query));
   $("motion-tab-count").textContent=String(choices.length).padStart(2,"0");
   $("motion-count").textContent=String(choices.length).padStart(2,"0");
-  for(const action of choices){
+  for(const action of visible){
     const button=document.createElement("button");button.type="button";
     button.className="motion-option";button.disabled=false;
+    button.dataset.motionId=action.id;
     button.title=action.playback==="authored"?
-      "Original frame animation / "+character.name:
+      "Original animation from this character":
       action.playback==="procedural"?
-      "Universal procedural preview using "+character.name+"'s own pixels; not a final authored animation":
-      "Same action vocabulary; source sprite pending for this archive character";
+      "Shared action: procedural preview from the selected character's own sprite":
+      "Shared action: original source has no complete sprite; reference preview only";
     button.setAttribute("aria-pressed","false");
     const glyph=document.createElement("span");glyph.textContent="▶";
     const label=document.createElement("strong");label.textContent=action.name;
     const tag=document.createElement("small");
     tag.textContent=action.playback==="authored"?
-      action.frames+" FR / NATIVE":action.playback==="procedural"?
-      "AUTO PREVIEW":"SOURCE ONLY";
+      action.frames+" FR / AUTHORED":action.playback==="procedural"?
+      "AUTO PREVIEW":"REFERENCE";
     button.append(glyph,label,tag);
     button.addEventListener("click",()=>selectMotion(action));grid.append(button);
   }
+  const authored=choices.filter(a=>a.playback==="authored").length;
+  const auto=choices.filter(a=>a.playback==="procedural").length;
   $("motion-availability-note").textContent=
-    choices.length+" SHARED ACTIONS / "+playable.length+" AUTHORED / "+
-    (choices.length-playable.length)+" UNIVERSAL PREVIEWS";
+    visible.length+" SHOWN / "+choices.length+" COMMON ACTIONS · "+
+    authored+" AUTHORED · "+auto+" AUTO PREVIEW · "+
+    (choices.length-authored-auto)+" SOURCE REFERENCE";
+  syncMotionSelection();
 }
 
 function syncMotionSelection() {
-  const motions = state.selected?.motions || [];
-  [...$("motion-grid").children].forEach((button,i) => {
-    const active = motions[i] === state.motion && state.mode === "action";
+  [...$("motion-grid").children].forEach(button=>{
+    const active=button.dataset.motionId===state.motion?.id&&state.mode==="action";
     button.classList.toggle("active",active);
     button.setAttribute("aria-pressed",String(active));
   });
@@ -860,14 +875,19 @@ function draw() {
   const hygiene=state.mode==="action"&&state.motion?
    UNIVERSAL_BODY?.resolve(state.selected,state.motion.id):null;
   if(hygiene){
-    const original=state.motion.source==="custom"?state.motionImage:state.image;
+    const original=state.motion.source==="custom"?state.motionImage:
+      state.motion.source==="procedural"&&state.motion.prototype?.sheet!==state.selected.sheet?
+      state.motionImage:state.image;
     const mannequin=cachedImage(hygiene.sheet);
     if(original?.naturalWidth&&mannequin?.naturalWidth){
       const off=document.createElement("canvas");off.width=64;off.height=112;
       const paint=off.getContext("2d",{willReadFrequently:true});
       paint.imageSmoothingEnabled=false;
-      const row=(state.motion.source==="custom"?0:state.motion.row||0)+d;
-      const frame=state.frame%Math.max(1,state.motion.frames||4);
+      const row=(state.motion.source==="custom"?0:
+        state.motion.source==="procedural"?
+        state.motion.prototype?.row??state.selected.row_starts?.idle??4:
+        state.motion.row||0)+d;
+      const frame=state.frame%4;
       if((frame+1)*64<=original.naturalWidth&&(row+1)*112<=original.naturalHeight){
         // Mahluk Hidup source head and hair remain; equipped garments,
         // shoes, bags and helmets are never layered into a bath frame.
@@ -888,7 +908,8 @@ function draw() {
   }
   drawEquippedAccessory(x,y,z,d,"back");
   if(state.mode==="action"&&state.motion?.source==="procedural"){
-    const src=state.motionImage?.naturalWidth?state.motionImage:state.image;
+    const src=state.motion.prototype?.sheet!==state.selected.sheet?
+      state.motionImage:state.image;
     const done=UNIVERSAL_MOTIONS?.render(ctx,{action:state.motion,
       image:src,dir:d,frame:state.frame,x,y,scale:z});
     if(!done){
@@ -1277,8 +1298,18 @@ async function init() {
     const definitions=await actionResponse.json();
     if(!Array.isArray(definitions.actions)||definitions.actions.length<200)
       throw new Error("SHARED ACTION DB INCOMPLETE");
+    // Every actor receives the same complete IDs, including unique
+    // creator-authored extras discovered on any other character.
+    const union=[...definitions.actions],known=new Set(union.map(a=>a.id));
+    for(const character of withSleep)for(const motion of character.motions||[]){
+      if(!known.has(motion.id)){
+       known.add(motion.id);union.push({id:motion.id,
+        label:motion.name||motion.id.replaceAll("_"," ").toUpperCase(),
+        category:motion.category||"action"});
+      }
+    }
     const unified=withSleep.map(character=>({...character,
-      motions:UNIVERSAL_MOTIONS.catalogFor(character,definitions.actions)}));
+      motions:UNIVERSAL_MOTIONS.catalogFor(character,union)}));
     catalogCharacters=unified.filter(c=>!["otis","legacy_otis"].includes(c.id));
     state.characters=unified;
     rebuildCustomCharacters();
@@ -1298,4 +1329,10 @@ async function init() {
     setStatus("CATALOG ERROR: " + error.message);
   }
 }
+$("motion-search").addEventListener("input",()=>{
+  if(state.selected)buildMotions(state.selected);
+});
+$("motion-category").addEventListener("change",()=>{
+  if(state.selected)buildMotions(state.selected);
+});
 init();
