@@ -106,23 +106,13 @@ def bleh_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,dict
     mirror=direction=="sw"
     x=lambda u: max(0,min(63,(63-u if mirror else u)+(-dx if mirror else dx)))
     y=lambda v: max(0,min(111,v+dy))
-    skin=tuple(palette.get("Ki",(238,193,151)))
     shadow=tuple(palette.get("Kh",(202,155,124)))
     dark=tuple(palette.get("K7",(113,76,66)))
-    # Wipe only the original expression pixels; retain head shape/outline.
-    original=face.copy()
-    mask=ImageDraw.Draw(original)
-    for rect in ((24,42,42,48),(26,49,39,54)):
-        x1,x2=sorted((x(rect[0]),x(rect[2])))
-        mask.rectangle((x1,y(rect[1]),x2,y(rect[3])),fill=(*skin,255))
-    # Previous brow art must not cover drooped eyelids.
-    if "brows" in layers:
-        brows=layers["brows"].convert("RGBA").copy()
-        for xa in (25,35):
-            xa1,xa2=sorted((x(xa),x(xa+7)))
-            ImageDraw.Draw(brows).rectangle((xa1,y(41),xa2,y(48)),
-                                              fill=(0,0,0,0))
-        layers["brows"]=brows
+    # V6B 'body' already owns the head's skintone. The native facial atlas
+    # contains pre-rendered eyes and mouth. Replace ONLY those facial parts;
+    # retaining them underneath created duplicated horizontal eye bars.
+    original=Image.new("RGBA",FRAME)
+    layers["brows"]=Image.new("RGBA",FRAME)
     # Blush cheeks are translucent, so skin material still shows through.
     cheeks=ImageDraw.Draw(parts["blush"],"RGBA")
     for px in (24,40):
