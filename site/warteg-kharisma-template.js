@@ -151,10 +151,10 @@ function sprite(direction){
  // on every side. The right-hand fascia is a continuous solid strip, not
  // a shortened polygon that exposes the yellow side wall.
  const e=145,peak=180,rf=.62,rb=D+.54,roofL=-.44,roofR=W+.52;
+ poly([[0,1.05,128],[W/2,1.05,peak-7],[W,1.05,128]],'cream',2);
  poly([[roofL,rf,e],[W/2,rf,peak],[W/2,rb,peak],[roofL,rb,e]],'dark',3);
  poly([[W/2,rf,peak],[roofR,rf,e],[roofR,rb,e],[W/2,rb,peak]],'dark',2);
  // Roof gable infill beneath the metal planes at the facade and rear.
- poly([[0,1.05,128],[W/2,1.05,peak-7],[W,1.05,128]],'cream',2);
  // Corrugated seams run the complete roof depth (including right eave).
  for(let a=roofL+.24;a<W/2;a+=.28){
   const z=e+(peak-e)*(a-roofL)/(W/2-roofL);
