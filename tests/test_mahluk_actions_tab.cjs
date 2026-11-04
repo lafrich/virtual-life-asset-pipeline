@@ -22,8 +22,11 @@ assert.ok(animations.includes('window.addEventListener("message"')===false);
 assert.ok(animations.includes('actionFrame.contentWindow?.postMessage'));
 assert.ok(animations.includes('target.searchParams.set("embedded","1")'));
 assert.ok(animations.includes('["#actions","#action-editor"].includes(location.hash)'));
-assert.ok(app.includes('document.dispatchEvent(new CustomEvent("mahluk:open-action-editor"'));
-assert.ok(!app.slice(app.indexOf("function openActionEditor()"),app.indexOf('$("action-studio").addEventListener')).includes("window.open"));
+assert.ok(app.includes('window.open(url.href,"_blank","noopener")'));
+assert.ok(app.includes('virtual-office/world-builder/bangun-ruang/'));
+assert.ok(html.includes('id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace" hidden'));
+assert.ok(html.includes('style="display:none !important" tabindex="-1"'));
+assert.ok(animations.includes('virtual-office/world-builder/bangun-ruang/'));
 assert.ok(editorHtml.includes("ae-embedded"));
 assert.ok(editor.includes('event.data?.type==="mahluk-action-context"'));
 assert.ok(editor.includes('if(changesActor||changesAction){setAction(nextAction);}'));
@@ -56,4 +59,4 @@ assert.ok(embedded.includes(".ae-action-item.chosen"),
  "Selected action must use the shared Paint file-list selection treatment");
 assert.ok(editor.includes('btn.addEventListener("click",()=>setAction(btn.dataset.aeAction))'),
  "Action thumbnails must be interactive, not decorative");
-console.log("PASS 3 native Mahluk Hidup tabs, Paint UI parity, editable action file list and saved frame integration");
+console.log("PASS Mahluk Hidup hides Action Editor tab and routes alignment to Bangun Ruang while preserving legacy pixel sources");
