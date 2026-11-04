@@ -112,39 +112,41 @@ def bleh_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,dict
     sign=-1 if direction=="sw" else 1
     x=lambda u:max(0,min(63,mouth_x+sign*(u-35)))
     y=lambda v:max(0,min(111,mouth_y+(v-50)))
-    shadow=tuple(palette.get("Kh",(202,155,124)))
-    dark=tuple(palette.get("K7",(113,76,66)))
+    lid=tuple(palette.get("K7",(168,112,78)))
+    pupil=tuple(palette.get("0",(48,35,27)))
+    nose=tuple(palette.get("Ke",(174,122,96)))
 
-    # The pre-rendered native facial marks are replaced in-place. Keep
-    # the head/body/skin palette and their pivot completely untouched.
+    # Restore only the native eye / nose / mouth marks. Oversized blush
+    # previously reached the outer ear, and a 5x6 dark mouth read as a
+    # goatee under the chin in 1x pixel art.
     layers["brows"]=Image.new("RGBA",FRAME)
     cheeks=ImageDraw.Draw(parts["blush"],"RGBA")
-    for left,right in ((28,31),(39,42)):
+    for left,right in ((29,30),(39,40)):
         a,b=sorted((x(left),x(right)))
-        cheeks.ellipse((a,y(47),b,y(49)),fill=(231,100,123,150))
+        cheeks.ellipse((a,y(47),b,y(48)),fill=(213,118,122,105))
 
     eyes=ImageDraw.Draw(parts["eyes"],"RGBA")
-    # Match the actual native eyes: near eye spans x29..33, far x38..40.
+    # Retain visible dark pupils beneath the native half-lidded eyes;
+    # solid 2px brown bars looked like missing eyes at native scale.
     for eye_x,half in ((31,2),(39,1)):
         a,b=sorted((x(eye_x-half),x(eye_x+half)))
-        eyes.line((a,y(44),b,y(44)),fill=(*dark,255),width=2)
-        eyes.point((x(eye_x),y(46)),fill=(*shadow,255))
+        eyes.line((a,y(44),b,y(44)),fill=(*lid,255),width=1)
+        a,b=sorted((x(eye_x-1),x(eye_x)))
+        eyes.line((a,y(45),b,y(45)),fill=(*pupil,255),width=1)
 
     mouth=ImageDraw.Draw(parts["mouth"],"RGBA")
-    # Original V6B neutral mouth spans x34..36 at y50. Keep the
-    # tongue attached, extending at most 4px below that landmark.
-    wag=(-1,0,1,0)[frame%4]
-    a,b=sorted((x(33),x(37)))
-    mouth.rounded_rectangle((a,y(49),b,y(52)),radius=1,
-                            fill=(*dark,255))
-    a,b=sorted((x(34+wag),x(36+wag)))
-    tip=54 if frame%4 in (1,2) else 53
+    # Centre on the actual neutral mouth x34..36/y50. The dark opening
+    # is 3x3, with a short attached tongue; NEVER wag sideways off lip.
+    a,b=sorted((x(34),x(36)))
+    mouth.rounded_rectangle((a,y(49),b,y(51)),radius=1,
+                            fill=(*pupil,255))
+    tip=53 if frame%4 in (1,2) else 52
+    a,b=sorted((x(34),x(36)))
     mouth.rounded_rectangle((a,y(51),b,y(tip)),radius=1,
-                            fill=(232,105,139,255))
-    mouth.line((x(35+wag),y(52),x(35+wag),y(tip)),
-               fill=(181,68,104,255),width=1)
-    # The base face was cleared above: restore its discreet nose marker.
-    mouth.point((x(36),y(48)),fill=(*shadow,255))
+                            fill=(224,119,142,255))
+    mouth.point((x(35),y(tip)),fill=(179,79,109,255))
+    # Original face layer was replaced, so restore its subtle nose.
+    mouth.point((x(36),y(48)),fill=(*nose,255))
 
     updated=Image.new("RGBA",FRAME)
     for part in ("blush","eyes","mouth"):
