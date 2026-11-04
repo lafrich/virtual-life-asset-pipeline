@@ -10,7 +10,8 @@
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
-  <script defer src="./app.js?v=bathtub-universal-v3"></script>
+  <script defer src="./expression-context.js?v=expression-context-v1"></script>
+  <script defer src="./app.js?v=expression-context-v1"></script>
   <script defer src="./animations.js?v=bathtub-universal-v3"></script>
 </head>
 <body>
@@ -127,7 +128,11 @@
             <section id="motions-panel" role="tabpanel" aria-labelledby="tab-motions" hidden>
               <div class="property-label">MOTION DATABASE / SELECT ACTION</div>
               <h2 class="face-heading">TRY ON CHAR<span id="motion-count">00</span></h2>
-              <p class="motion-hint" id="motion-expression-active">FACE: NEUTRAL / SAME CHARACTER.</p>
+              <p class="motion-hint" id="motion-expression-active">FACE: AUTO / FOLLOW ACTION.</p>
+              <label class="motion-hint" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input id="motion-auto-face" type="checkbox" checked>
+                AUTO FACE — FOLLOW ACTION
+              </label>
               <div class="motion-filterbar" role="search" aria-label="Filter shared character motions">
                 <input id="motion-search" type="search" placeholder="FIND ACTION..." aria-label="Find action" autocomplete="off">
                 <select id="motion-category" aria-label="Motion category"><option value="all">ALL CATEGORIES</option></select>

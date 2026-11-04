@@ -114,6 +114,8 @@ jobs:
           node --check site/warteg-kharisma-template.js
           node --check site/warteg-interior-paint.js
           node tests/test_warteg_template.cjs
+          node --check site/expression-context.js
+          node tests/test_expression_context.cjs
           node --check site/app.js
           node tests/test_desktop_layout.cjs
           node --check site/animations.js
@@ -199,6 +201,8 @@ jobs:
           test -s _site/style.css
           test -s _site/app.js
           test -s _site/universal-motion-runtime.js
+          test -s _site/expression-context.js
+          test -s _site/expression-contexts.json
           test -s _site/catalog.json
           test -s _site/pixel-editor.html
           test -s _site/accessory-editor.html

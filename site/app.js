@@ -12,6 +12,7 @@ const DIRECTION_LABELS = ["SE", "SW", "NE", "NW"];
 const UNIVERSAL_SLEEP = window.VLUniversalSleep;
 const UNIVERSAL_BODY = window.VLUniversalBodyActions;
 const UNIVERSAL_MOTIONS = window.VLUniversalMotions;
+const EXPRESSION_CONTEXT = window.VLExpressionContext;
 const PALETTE = [
   "#f8f6f0","#ffffff","#111111","#003b7a","#1642b5","#457fe5","#a9c5fa",
   "#cabde8","#ffdbad","#e0d6cd","#7d5542","#d6d6d6","#8183a5","#e88291",
@@ -23,6 +24,7 @@ const state = {
   characters: [], selected: null, type: "all", query: "",
   mode: "walk", expression: null, motion: null, direction: "auto", autoDir: 0,
   playing: !prefersReducedMotion, frame: 0, lastFrameTime: 0,
+  expressionAuto:true,expressionContext:null,
   zoom: 4, bg: "#f8f6f0", grid: false, image: null, motionImage: null,
   faceImage: null, faceOverlay: null, blinkOverlay: null, motionFaceImage: null, archiveImage: null, lastBlink: 0,
   imageCache: new Map(), working: false
@@ -76,6 +78,8 @@ function selectCharacter(character) {
   state.selected = character;
   renderAccessoryStorage();
   state.mode = "walk";
+  state.expressionAuto=true;
+  if($("motion-auto-face"))$("motion-auto-face").checked=true;
   // The base mannequins and Theodore have real same-actor face motion
   // atlases. Activate neutral by default so head/eyes animate on first play.
   state.expression = character.expressions?.find(f=>f.id==="neutral" &&
@@ -260,6 +264,25 @@ function syncMotionSelection() {
   });
 }
 
+function currentActionFace(){
+  if(!state.motion)return {id:"neutral",source:"action",sheet:null};
+  return EXPRESSION_CONTEXT?.playbackFace(
+    state.expressionContext,state.motion,state.frame,
+    state.expression,state.expressionAuto)||{id:"neutral",source:"action",sheet:null};
+}
+function syncActionFaceLabel(){
+  const panel=$("motion-expression-active");
+  if(!panel||!state.motion)return;
+  const face=currentActionFace(),manual=face.source==="manual";
+  const seq=EXPRESSION_CONTEXT?.track(state.expressionContext,state.motion)||["neutral"];
+  const original=state.motion.playback==="authored"||
+    ["native","custom"].includes(state.motion.source);
+  panel.textContent="FACE: "+(manual?"MANUAL":"AUTO")+
+    " / "+face.id.toUpperCase().replaceAll("_"," ")+
+    (manual?" · ACTOR FACE SHEET":
+      " · "+[...new Set(seq)].join(" / ").toUpperCase()+
+      " · "+(original?"AUTHORED":"PROCEDURAL/REFERENCE"));
+}
 function selectMotion(action) {
   if (!state.selected || !action) return;
   // Preload the matching nude mannequin once when a hygiene action is
@@ -288,7 +311,8 @@ function selectMotion(action) {
       draw();
     });
   }
-  const motionFacePath = state.expression?.motion_sheets?.[action.id];
+  const motionFacePath = !state.expressionAuto?
+    state.expression?.motion_sheets?.[action.id]:null;
   if (motionFacePath) {
     const face = state.expression;
     cachedImage(motionFacePath,image=>{
@@ -297,10 +321,7 @@ function selectMotion(action) {
       draw();
     });
   }
-  $("motion-expression-active").textContent = "FACE: " +
-    (state.expression?.label?.toUpperCase() || "NEUTRAL") +
-    (motionFacePath ? " / SYNCED TO HEAD + MOTION." :
-     state.expression?.sheet ? " / IDLE PREVIEW ONLY." : " / SAME CHARACTER.");
+  syncActionFaceLabel();
   syncMotionSelection();
   syncPlaybackButton();
   syncTools();
@@ -312,6 +333,8 @@ function selectFace(face) {
   if (!state.selected || !face) return;
   state.mode = "face";
   state.expression = face;
+  state.expressionAuto=false;
+  if($("motion-auto-face"))$("motion-auto-face").checked=false;
   // Expression pixels only exist on the front SE/SW source views. Show a
   // visible face immediately instead of staying on an automatic/rear view.
   if (face.sheet && (state.direction === "auto" || Number(state.direction) >= 2)) {
@@ -971,7 +994,8 @@ function draw() {
       const custom = state.mode === "action" && motion?.source === "custom";
       // Character-specific expression atlases contain the entire pose,
       // including the correctly positioned eyes/head for each walk frame.
-      const synced = Boolean(state.expression?.motion_sheets?.[motion?.id] &&
+      const synced = Boolean(!state.expressionAuto &&
+        state.expression?.motion_sheets?.[motion?.id] &&
         state.motionFaceImage?.naturalWidth);
       const source = synced ? state.motionFaceImage : custom ? state.motionImage : state.image;
       if (source?.naturalWidth) {
@@ -1033,6 +1057,7 @@ function tick(time) {
         }
       } else state.frame++;
     }
+    syncActionFaceLabel();
     draw();
   }
   requestAnimationFrame(tick);
@@ -1069,7 +1094,8 @@ function exportActionSheet() {
     return;
   }
   if(action.source==="reference")return setStatus("SOURCE SPRITE REQUIRED TO EXPORT THIS ACTION.");
-  const synced=Boolean(state.expression?.motion_sheets?.[action.id]);
+  const synced=Boolean(!state.expressionAuto&&
+    state.expression?.motion_sheets?.[action.id]);
   const source=synced?state.motionFaceImage:
     action.source==="custom"?state.motionImage:state.image;
   if (!source?.naturalWidth) return setStatus("ACTION / FACE SPRITE NOT YET LOADED.");
@@ -1319,6 +1345,12 @@ async function init() {
     const actionResponse=await fetch("./player-actions.json",{cache:"no-store"});
     if(!actionResponse.ok)throw new Error("SHARED ACTION DB HTTP "+actionResponse.status);
     const definitions=await actionResponse.json();
+    const faceResponse=await fetch("./expression-contexts.json",{cache:"no-store"});
+    if(!faceResponse.ok)throw new Error("EXPRESSION DB HTTP "+faceResponse.status);
+    const faceDatabase=await faceResponse.json();
+    if(!EXPRESSION_CONTEXT?.validate(faceDatabase))
+      throw new Error("EXPRESSION DB INVALID");
+    state.expressionContext=faceDatabase;
     if(!Array.isArray(definitions.actions)||definitions.actions.length<200)
       throw new Error("SHARED ACTION DB INCOMPLETE");
     // Every actor receives the same complete IDs, including unique
@@ -1352,6 +1384,12 @@ async function init() {
     setStatus("CATALOG ERROR: " + error.message);
   }
 }
+$("motion-auto-face").addEventListener("change",event=>{
+  state.expressionAuto=Boolean(event.target.checked);
+  const motion=state.motion;
+  if(motion&&state.mode==="action")selectMotion(motion);
+  else syncActionFaceLabel();
+});
 $("motion-search").addEventListener("input",()=>{
   if(state.selected)buildMotions(state.selected);
 });
