@@ -91,36 +91,38 @@
     return targets.find(character => character.id === id) || null;
   }
   function updateApply() {
-    const button = el("animation-apply");
-    const character = selectedTarget();
-    const actionId = actionForClip(selected);
-    const motion = character?.motions?.find(item => item.id === actionId);
-    const planned = selected?.status === "planned";
-    const available = !planned && Boolean(motion?.available);
-    const sharedBones = Boolean(actionId && character?.bone_actions?.includes(actionId));
-    button.disabled = !available; // real preview requires this actor's rendered pixels
-    button.textContent = available ? "▶ TRY ON " + character.name.toUpperCase() :
-      sharedBones ? "SHARED BONES / SKIN PENDING" :
-      planned ? "PLANNED / BONE MOTION NOT AUTHORED" :
-      actionId ? "BONE MOTION NOT AUTHORED" : "REFERENCE ONLY";
-    const author = el("animation-author");
-    const valid=validActionId(actionId);
-    author.disabled=!valid||!character;
-    author.textContent=planned?"✥ ADJUST IN BANGUN RUANG":"✥ ADJUST IN BANGUN RUANG";
-    author.title=valid?"Open this action for the selected player in Mahluk Hidup's integrated pixel editor":"This reference has no player action ID";
-    button.title = available ? "Switch to this character and play its original pixel motion" :
-      sharedBones ? "Shared skeletal keys support this model category, but this actor has no bound body-part sprites yet" :
-      "No authored shared skeletal keys and actor-specific rendered action are available";
+    const button=el("animation-apply"),actor=selectedTarget();
+    const id=actionForClip(selected),motion=actor?.motions?.find(m=>m.id===id);
+    button.disabled=!motion;
+    button.textContent=!motion?"SELECT CHARACTER / ACTION":
+      "▶ "+(motion.playback==="authored"?"ORIGINAL":motion.playback==="procedural"?
+        "AUTO PREVIEW":"REFERENCE")+" / "+actor.name.toUpperCase();
+    button.title=motion?.playback==="authored"?
+      "Original frame animation from this character":
+      "Shared action preview only; not a finished native sprite animation";
+    const author=el("animation-author");
+    author.disabled=!validActionId(id)||!actor;
+    author.textContent="✥ ADJUST IN BANGUN RUANG";
   }
   async function loadTargets() {
     try {
       const response = await fetch("./catalog.json", {cache: "no-store"});
       const catalog = await response.json();
-      targets = Array.isArray(catalog.characters) ? catalog.characters.map(ch=>{
+      const res=await fetch("./player-actions.json",{cache:"no-store"});
+      const canonical=res.ok?(await res.json()).actions:[];
+      const raw=Array.isArray(catalog.characters)?catalog.characters.map(ch=>{
         const old=Array.isArray(ch.motions)?ch.motions:[];
         const shared=window.VLUniversalSleep?.actionsFor(ch)||[];
         return {...ch,motions:[...old,...shared.filter(m=>!old.some(x=>x.id===m.id))]};
-      }) : [];
+      }):[];
+      const union=[...(canonical||[])],ids=new Set(union.map(a=>a.id));
+      for(const ch of raw)for(const m of ch.motions){
+        if(!ids.has(m.id)){
+          ids.add(m.id);union.push({id:m.id,label:m.name,category:m.category});
+        }
+      }
+      targets=raw.map(ch=>({...ch,
+        motions:window.VLUniversalMotions.catalogFor(ch,union)}));
       const select = el("animation-target-char");
       select.replaceChildren();
       for (const character of targets) {
@@ -371,7 +373,7 @@
     openActionTab({actor:selectedTarget()?.id||"ichsan",action:id});
   });
   el("animation-apply").addEventListener("click", () => {
-    if (selected?.status === "planned") return; // roadmap is never playable
+    // Planned entries are shown as procedural preview, not authored.
     const target = selectedTarget();
     const actionId = actionForClip(selected);
     const action = target?.motions?.find(item => item.id === actionId && item.available);
