@@ -2743,6 +2743,52 @@
       "notes": "Needs original, actor-specific frames and compatibility review before use."
     },
     {
+      "id": "bathtub_bathe",
+      "label": "BATHTUB BATHE",
+      "type": "planned",
+      "status": "planned",
+      "modality": "body",
+      "frames": 6,
+      "frame_ms": [
+        320,
+        340,
+        360,
+        350,
+        340,
+        330
+      ],
+      "loop": true,
+      "category": "hygiene",
+      "priority": "P0",
+      "batch": 1,
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "requirements": [
+        "bathtub"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "needs_rig": true,
+      "notes": "Shared action ID: male/female have authored 6-frame awake reclined foam sheets; other actors use labelled own-rig preview until authored."
+    },
+    {
       "id": "change_clothes",
       "label": "CHANGE CLOTHES",
       "type": "planned",
