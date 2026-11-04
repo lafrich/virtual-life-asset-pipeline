@@ -54,10 +54,10 @@ class MotionStudioTests(unittest.TestCase):
 
     def test_central_registry_exposes_all_plans_without_claiming_playability(self):
         all_actions = motion_actions(include_planned=True)
-        self.assertEqual(len(all_actions), 203)
+        self.assertEqual(len(all_actions), 204)
         self.assertEqual(len(self.actions), 7)
         plans = [a for a in all_actions if a.get("status") == "planned"]
-        self.assertEqual(len(plans), 196)
+        self.assertEqual(len(plans), 197)
         for a in plans:
             self.assertEqual(a["type"], "planned")
             self.assertEqual(a["frames"], 0)
