@@ -193,11 +193,11 @@
           "file": "props/id200_transport_becak_kampung_se.png",
           "size": [
             152,
-            150
+            136
           ],
           "pivot": [
             66,
-            114
+            100
           ]
         },
         "ne": {
@@ -215,13 +215,49 @@
           "file": "props/id200_transport_becak_kampung_nw.png",
           "size": [
             152,
-            144
+            142
           ],
           "pivot": [
             66,
-            109
+            106
           ]
         }
+      },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "pedal_becak",
+            "anchor": [
+              0.567,
+              0.48,
+              0.16
+            ],
+            "scale": 0.61,
+            "layer": "rear",
+            "optional": false,
+            "enabledByDefault": false
+          },
+          {
+            "role": "passenger_1",
+            "profile": "human_female_base",
+            "action": "sit_idle_transport",
+            "anchor": [
+              -0.459,
+              0.66,
+              -0.304
+            ],
+            "scale": 0.55,
+            "layer": "front",
+            "optional": true,
+            "enabledByDefault": false
+          }
+        ]
       },
       "size": [
         152,
@@ -268,11 +304,11 @@
           "file": "props/id200_transport_bentor_roda_tiga_se.png",
           "size": [
             152,
-            160
+            136
           ],
           "pivot": [
             66,
-            125
+            100
           ]
         },
         "ne": {
@@ -290,13 +326,49 @@
           "file": "props/id200_transport_bentor_roda_tiga_nw.png",
           "size": [
             152,
-            152
+            142
           ],
           "pivot": [
             66,
-            117
+            106
           ]
         }
+      },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "ride_idle_driver",
+            "anchor": [
+              0.567,
+              0.48,
+              0.16
+            ],
+            "scale": 0.61,
+            "layer": "rear",
+            "optional": false,
+            "enabledByDefault": false
+          },
+          {
+            "role": "passenger_1",
+            "profile": "human_female_base",
+            "action": "sit_idle_transport",
+            "anchor": [
+              -0.459,
+              0.66,
+              -0.304
+            ],
+            "scale": 0.55,
+            "layer": "front",
+            "optional": true,
+            "enabledByDefault": false
+          }
+        ]
       },
       "size": [
         152,
@@ -372,6 +444,42 @@
             163
           ]
         }
+      },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "ride_idle_driver",
+            "anchor": [
+              -0.135,
+              0.84,
+              0.048
+            ],
+            "scale": 0.64,
+            "layer": "rear",
+            "optional": false,
+            "enabledByDefault": false
+          },
+          {
+            "role": "passenger_1",
+            "profile": "human_female_base",
+            "action": "sit_idle_transport",
+            "anchor": [
+              -0.702,
+              0.84,
+              0.016
+            ],
+            "scale": 0.57,
+            "layer": "front",
+            "optional": true,
+            "enabledByDefault": false
+          }
+        ]
       },
       "size": [
         152,
@@ -782,57 +890,79 @@
           "file": "props/id200_transport_motor_bebek_warga_sw.png",
           "size": [
             124,
-            146
+            94
           ],
           "pivot": [
             53,
-            118
+            67
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_bebek_warga_se.png",
           "size": [
             124,
-            150
+            108
           ],
           "pivot": [
             53,
-            122
+            81
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_bebek_warga_ne.png",
           "size": [
             124,
-            144
+            108
           ],
           "pivot": [
             53,
-            117
+            81
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_bebek_warga_nw.png",
           "size": [
             124,
-            148
+            112
           ],
           "pivot": [
             53,
-            121
+            85
           ]
         }
       },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "ride_idle_driver",
+            "anchor": [
+              0.154,
+              0.66,
+              0.038
+            ],
+            "scale": 0.62,
+            "layer": "front",
+            "optional": false,
+            "enabledByDefault": false
+          }
+        ]
+      },
       "size": [
         124,
-        146
+        94
       ],
       "pivot": [
         53,
-        118
+        67
       ],
       "width": 2.48,
-      "height": 2.92
+      "height": 1.88
     },
     {
       "id": "id200_transport_motor_matik_keluarga",
@@ -857,57 +987,107 @@
           "file": "props/id200_transport_motor_matik_keluarga_sw.png",
           "size": [
             124,
-            146
+            110
           ],
           "pivot": [
             53,
-            118
+            83
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_matik_keluarga_se.png",
           "size": [
             124,
-            150
+            108
           ],
           "pivot": [
             53,
-            122
+            81
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_matik_keluarga_ne.png",
           "size": [
             124,
-            144
+            108
           ],
           "pivot": [
             53,
-            117
+            81
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_matik_keluarga_nw.png",
           "size": [
             124,
-            148
+            112
           ],
           "pivot": [
             53,
-            121
+            85
           ]
         }
       },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "ride_idle_driver",
+            "anchor": [
+              0.154,
+              0.66,
+              0.038
+            ],
+            "scale": 0.62,
+            "layer": "front",
+            "optional": false,
+            "enabledByDefault": false
+          },
+          {
+            "role": "passenger_1",
+            "profile": "human_female_base",
+            "action": "ride_idle_passenger",
+            "anchor": [
+              -0.418,
+              0.61,
+              0.038
+            ],
+            "scale": 0.55,
+            "layer": "rear",
+            "optional": false,
+            "enabledByDefault": false
+          },
+          {
+            "role": "child",
+            "profile": "human_child_base",
+            "action": "ride_idle_passenger",
+            "anchor": [
+              -0.176,
+              0.64,
+              0.062
+            ],
+            "scale": 0.41,
+            "layer": "front",
+            "optional": true,
+            "enabledByDefault": true
+          }
+        ]
+      },
       "size": [
         124,
-        146
+        110
       ],
       "pivot": [
         53,
-        118
+        83
       ],
       "width": 2.48,
-      "height": 2.92
+      "height": 2.2
     },
     {
       "id": "id200_transport_sepeda_ontel_tua",
@@ -973,6 +1153,28 @@
           ]
         }
       },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "pedal_bicycle",
+            "anchor": [
+              0.154,
+              0.52,
+              0.038
+            ],
+            "scale": 0.61,
+            "layer": "front",
+            "optional": false,
+            "enabledByDefault": false
+          }
+        ]
+      },
       "size": [
         124,
         106
@@ -1007,57 +1209,79 @@
           "file": "props/id200_transport_sepeda_tukang_roti_sw.png",
           "size": [
             124,
-            146
+            112
           ],
           "pivot": [
             53,
-            118
+            84
           ]
         },
         "se": {
           "file": "props/id200_transport_sepeda_tukang_roti_se.png",
           "size": [
             124,
-            150
+            108
           ],
           "pivot": [
             53,
-            122
+            81
           ]
         },
         "ne": {
           "file": "props/id200_transport_sepeda_tukang_roti_ne.png",
           "size": [
             124,
-            144
+            114
           ],
           "pivot": [
             53,
-            117
+            87
           ]
         },
         "nw": {
           "file": "props/id200_transport_sepeda_tukang_roti_nw.png",
           "size": [
             124,
-            148
+            108
           ],
           "pivot": [
             53,
-            121
+            81
           ]
         }
       },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "pedal_bicycle",
+            "anchor": [
+              0.154,
+              0.52,
+              0.038
+            ],
+            "scale": 0.61,
+            "layer": "front",
+            "optional": false,
+            "enabledByDefault": false
+          }
+        ]
+      },
       "size": [
         124,
-        146
+        112
       ],
       "pivot": [
         53,
-        118
+        84
       ],
       "width": 2.48,
-      "height": 2.92
+      "height": 2.24
     },
     {
       "id": "id200_transport_motor_ojol_box_makanan",
@@ -1082,57 +1306,82 @@
           "file": "props/id200_transport_motor_ojol_box_makanan_sw.png",
           "size": [
             124,
-            146
+            138
           ],
           "pivot": [
             53,
-            118
+            110
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_ojol_box_makanan_se.png",
           "size": [
             124,
-            150
+            114
           ],
           "pivot": [
             53,
-            122
+            87
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_ojol_box_makanan_ne.png",
           "size": [
             124,
-            144
+            138
           ],
           "pivot": [
             53,
-            117
+            110
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_ojol_box_makanan_nw.png",
           "size": [
             124,
-            148
+            130
           ],
           "pivot": [
             53,
-            121
+            102
           ]
         }
       },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "ride_idle_driver",
+            "anchor": [
+              0.154,
+              0.66,
+              0.038
+            ],
+            "scale": 0.62,
+            "layer": "front",
+            "optional": false,
+            "enabledByDefault": false,
+            "equipment": [
+              "helmet"
+            ]
+          }
+        ]
+      },
       "size": [
         124,
-        146
+        138
       ],
       "pivot": [
         53,
-        118
+        110
       ],
       "width": 2.48,
-      "height": 2.92
+      "height": 2.76
     },
     {
       "id": "id200_transport_motor_ojol_dengan_penumpang",
@@ -1157,57 +1406,96 @@
           "file": "props/id200_transport_motor_ojol_dengan_penumpang_sw.png",
           "size": [
             124,
-            152
+            100
           ],
           "pivot": [
             53,
-            125
+            73
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_ojol_dengan_penumpang_se.png",
           "size": [
             124,
-            150
+            108
           ],
           "pivot": [
             53,
-            122
+            81
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_ojol_dengan_penumpang_ne.png",
           "size": [
             124,
-            152
+            108
           ],
           "pivot": [
             53,
-            124
+            81
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_ojol_dengan_penumpang_nw.png",
           "size": [
             124,
-            148
+            112
           ],
           "pivot": [
             53,
-            121
+            85
           ]
         }
       },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "ride_idle_driver",
+            "anchor": [
+              0.154,
+              0.66,
+              0.038
+            ],
+            "scale": 0.62,
+            "layer": "front",
+            "optional": false,
+            "enabledByDefault": false,
+            "equipment": [
+              "helmet"
+            ]
+          },
+          {
+            "role": "passenger_1",
+            "profile": "human_female_base",
+            "action": "ride_idle_passenger",
+            "anchor": [
+              -0.44,
+              0.61,
+              0.038
+            ],
+            "scale": 0.55,
+            "layer": "rear",
+            "optional": false,
+            "enabledByDefault": false
+          }
+        ]
+      },
       "size": [
         124,
-        152
+        100
       ],
       "pivot": [
         53,
-        125
+        73
       ],
       "width": 2.48,
-      "height": 3.04
+      "height": 2.0
     },
     {
       "id": "id200_transport_motor_kurir_barang",
@@ -1232,57 +1520,82 @@
           "file": "props/id200_transport_motor_kurir_barang_sw.png",
           "size": [
             124,
-            146
+            138
           ],
           "pivot": [
             53,
-            118
+            111
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_kurir_barang_se.png",
           "size": [
             124,
-            150
+            116
           ],
           "pivot": [
             53,
-            122
+            88
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_kurir_barang_ne.png",
           "size": [
             124,
-            144
+            140
           ],
           "pivot": [
             53,
-            117
+            112
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_kurir_barang_nw.png",
           "size": [
             124,
-            148
+            126
           ],
           "pivot": [
             53,
-            121
+            99
           ]
         }
       },
+      "npcTransport": {
+        "version": 1,
+        "modular": true,
+        "riderSource": "Mahluk Hidup",
+        "emptyVehicle": true,
+        "slots": [
+          {
+            "role": "driver",
+            "profile": "human_male_base",
+            "action": "ride_idle_driver",
+            "anchor": [
+              0.154,
+              0.66,
+              0.038
+            ],
+            "scale": 0.62,
+            "layer": "front",
+            "optional": false,
+            "enabledByDefault": false,
+            "equipment": [
+              "helmet"
+            ]
+          }
+        ]
+      },
       "size": [
         124,
-        146
+        138
       ],
       "pivot": [
         53,
-        118
+        111
       ],
       "width": 2.48,
-      "height": 2.92
+      "height": 2.76
     },
     {
       "id": "id200_transport_bus_kota_kecil",
