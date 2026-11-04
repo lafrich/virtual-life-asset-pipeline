@@ -101,8 +101,8 @@ class BedSleepHeadRotation(unittest.TestCase):
             flat=v6b.lie_flat({
                 "body":Image.fromarray(body,"RGBA"),
                 "shirt":source["shirt"]},view,"lie")
-            torso=(np.asarray(flat["body"])[...,3]>0 |
-                   np.asarray(flat["shirt"])[...,3]>0)
+            torso=((np.asarray(flat["body"])[...,3]>0) |
+                   (np.asarray(flat["shirt"])[...,3]>0))
             if direction in ("sw","nw"):
                 head_mask=np.fliplr(head_mask)
                 torso=np.fliplr(torso)
