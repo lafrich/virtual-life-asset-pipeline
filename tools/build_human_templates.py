@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from PIL import Image, ImageDraw
 import numpy as np
-from human_pose_extras import knee_chest_layers,bleh_face,PARTS as FACE_PARTS
+from tools.human_pose_extras import knee_chest_layers,bleh_face,PARTS as FACE_PARTS
 
 DIRECTIONS=("se","sw","ne","nw")
 MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6,"squat_idle":4,"squat_down":6,"squat_up":6,"knee_chest_idle":4,"bent_over_idle":4,"lie_idle":4}
