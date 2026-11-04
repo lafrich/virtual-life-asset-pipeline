@@ -1098,14 +1098,11 @@ window.addEventListener("storage",event=>{
  if(event.key===CHAR_STORAGE)rebuildCustomCharacters();
 });
 function openActionEditor(){
-  const motion=state.motion?.id||"";
-  const action=motion==="sit"||motion==="sit_type"?"toilet":
-   motion==="swim"||motion==="bathe"?"bathe":
-   ["sleep","sleep_seat","lie"].includes(motion)?"sleep":null;
-  // Open inside Mahluk Hidup's native third tab, never a new browser window.
-  document.dispatchEvent(new CustomEvent("mahluk:open-action-editor",{
-    detail:{actor:state.selected?.id||"ichsan",...(action?{action}:{})}
-  }));
+  // Asset/action placement belongs to Bangun Ruang's integrated interior
+  // editor. This does not edit sprites or open the removed Action Editor tab.
+  const url=new URL("https://lafrich.github.io/virtual-office/world-builder/bangun-ruang/");
+  if(state.selected?.id)url.searchParams.set("actor",state.selected.id);
+  window.open(url.href,"_blank","noopener");
 }
 $("action-studio").addEventListener("click",openActionEditor);
 $("action-studio-char").addEventListener("click",openActionEditor);
