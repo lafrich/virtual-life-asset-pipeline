@@ -14,7 +14,7 @@ const legacy={id:"legacy_only",sheet:"",poster:"media/legacy.png",
 const entries=[...registry,{id:"actor_special",label:"SPECIAL",category:"social"},
  {id:"bathe",label:"BATHE",category:"hygiene"}];
 test("same canonical union on native, female and archive actors",()=>{
- assert.equal(registry.length,203);
+ assert.equal(registry.length,204);
  const panels=[native,human,legacy].map(a=>U.catalogFor(a,entries));
  for(const p of panels){
   assert.deepEqual(p.map(a=>a.id),entries.map(a=>a.id));
