@@ -6985,36 +6985,36 @@
         "sw": {
           "file": "props/id200_tanaman_pohon_pisang_pekarangan_sw.png",
           "size": [
-            194,
-            168
+            186,
+            180
           ],
           "pivot": [
-            86,
-            124
+            84,
+            136
           ]
         },
         "se": {
           "file": "props/id200_tanaman_pohon_pisang_pekarangan_se.png",
           "size": [
-            194,
-            166
+            186,
+            170
           ],
           "pivot": [
-            86,
-            121
+            84,
+            126
           ]
         }
       },
       "size": [
-        194,
-        168
+        186,
+        180
       ],
       "pivot": [
-        86,
-        124
+        84,
+        136
       ],
-      "width": 3.88,
-      "height": 3.36
+      "width": 3.72,
+      "height": 3.6
     },
     {
       "id": "id200_tanaman_pohon_kelapa_pesisir",
@@ -7038,36 +7038,36 @@
         "sw": {
           "file": "props/id200_tanaman_pohon_kelapa_pesisir_sw.png",
           "size": [
-            194,
-            220
+            186,
+            202
           ],
           "pivot": [
-            86,
-            175
+            84,
+            159
           ]
         },
         "se": {
           "file": "props/id200_tanaman_pohon_kelapa_pesisir_se.png",
           "size": [
-            194,
-            216
+            186,
+            210
           ],
           "pivot": [
-            86,
-            172
+            84,
+            167
           ]
         }
       },
       "size": [
-        194,
-        220
+        186,
+        202
       ],
       "pivot": [
-        86,
-        175
+        84,
+        159
       ],
-      "width": 3.88,
-      "height": 4.4
+      "width": 3.72,
+      "height": 4.04
     },
     {
       "id": "id200_tanaman_pohon_mangga_rindang",
@@ -7091,36 +7091,36 @@
         "sw": {
           "file": "props/id200_tanaman_pohon_mangga_rindang_sw.png",
           "size": [
-            194,
-            214
+            186,
+            218
           ],
           "pivot": [
-            86,
-            169
+            84,
+            174
           ]
         },
         "se": {
           "file": "props/id200_tanaman_pohon_mangga_rindang_se.png",
           "size": [
-            194,
-            214
+            186,
+            222
           ],
           "pivot": [
-            86,
-            169
+            84,
+            179
           ]
         }
       },
       "size": [
-        194,
-        214
+        186,
+        218
       ],
       "pivot": [
-        86,
-        169
+        84,
+        174
       ],
-      "width": 3.88,
-      "height": 4.28
+      "width": 3.72,
+      "height": 4.36
     },
     {
       "id": "id200_tanaman_pohon_pepaya_berbuah",
@@ -7144,36 +7144,36 @@
         "sw": {
           "file": "props/id200_tanaman_pohon_pepaya_berbuah_sw.png",
           "size": [
-            144,
-            186
+            136,
+            182
           ],
           "pivot": [
-            61,
-            154
+            59,
+            150
           ]
         },
         "se": {
           "file": "props/id200_tanaman_pohon_pepaya_berbuah_se.png",
           "size": [
-            144,
-            184
+            136,
+            180
           ],
           "pivot": [
-            61,
-            151
+            59,
+            149
           ]
         }
       },
       "size": [
-        144,
-        186
+        136,
+        182
       ],
       "pivot": [
-        61,
-        154
+        59,
+        150
       ],
-      "width": 2.88,
-      "height": 3.72
+      "width": 2.72,
+      "height": 3.64
     },
     {
       "id": "id200_tanaman_pohon_rambutan",
@@ -7197,36 +7197,36 @@
         "sw": {
           "file": "props/id200_tanaman_pohon_rambutan_sw.png",
           "size": [
-            202,
-            234
+            192,
+            232
           ],
           "pivot": [
-            90,
-            187
+            87,
+            188
           ]
         },
         "se": {
           "file": "props/id200_tanaman_pohon_rambutan_se.png",
           "size": [
-            202,
-            232
+            192,
+            240
           ],
           "pivot": [
-            90,
-            186
+            87,
+            196
           ]
         }
       },
       "size": [
-        202,
-        234
+        192,
+        232
       ],
       "pivot": [
-        90,
-        187
+        87,
+        188
       ],
-      "width": 4.04,
-      "height": 4.68
+      "width": 3.84,
+      "height": 4.64
     },
     {
       "id": "id200_tanaman_pohon_sawo",
@@ -7250,36 +7250,36 @@
         "sw": {
           "file": "props/id200_tanaman_pohon_sawo_sw.png",
           "size": [
-            194,
-            212
+            180,
+            210
           ],
           "pivot": [
-            83,
+            81,
             169
           ]
         },
         "se": {
           "file": "props/id200_tanaman_pohon_sawo_se.png",
           "size": [
-            194,
-            212
+            180,
+            210
           ],
           "pivot": [
-            83,
+            81,
             169
           ]
         }
       },
       "size": [
-        194,
-        212
+        180,
+        210
       ],
       "pivot": [
-        83,
+        81,
         169
       ],
-      "width": 3.88,
-      "height": 4.24
+      "width": 3.6,
+      "height": 4.2
     },
     {
       "id": "id200_tanaman_pohon_ketapang",
@@ -7304,35 +7304,35 @@
           "file": "props/id200_tanaman_pohon_ketapang_sw.png",
           "size": [
             192,
-            224
+            204
           ],
           "pivot": [
             87,
-            179
+            159
           ]
         },
         "se": {
           "file": "props/id200_tanaman_pohon_ketapang_se.png",
           "size": [
             192,
-            224
+            204
           ],
           "pivot": [
             87,
-            179
+            159
           ]
         }
       },
       "size": [
         192,
-        224
+        204
       ],
       "pivot": [
         87,
-        179
+        159
       ],
       "width": 3.84,
-      "height": 4.48
+      "height": 4.08
     },
     {
       "id": "id200_tanaman_pohon_kamboja_bunga",
@@ -7356,36 +7356,36 @@
         "sw": {
           "file": "props/id200_tanaman_pohon_kamboja_bunga_sw.png",
           "size": [
-            170,
-            174
+            160,
+            184
           ],
           "pivot": [
-            74,
-            135
+            71,
+            147
           ]
         },
         "se": {
           "file": "props/id200_tanaman_pohon_kamboja_bunga_se.png",
           "size": [
-            170,
-            182
+            160,
+            176
           ],
           "pivot": [
-            74,
-            143
+            71,
+            140
           ]
         }
       },
       "size": [
-        170,
-        174
+        160,
+        184
       ],
       "pivot": [
-        74,
-        135
+        71,
+        147
       ],
-      "width": 3.4,
-      "height": 3.48
+      "width": 3.2,
+      "height": 3.68
     },
     {
       "id": "id200_tanaman_bougenville_berbunga",
@@ -7409,36 +7409,36 @@
         "sw": {
           "file": "props/id200_tanaman_bougenville_berbunga_sw.png",
           "size": [
-            124,
-            132
+            116,
+            136
           ],
           "pivot": [
-            51,
-            106
+            49,
+            110
           ]
         },
         "se": {
           "file": "props/id200_tanaman_bougenville_berbunga_se.png",
           "size": [
-            124,
-            132
+            116,
+            136
           ],
           "pivot": [
-            51,
-            106
+            49,
+            110
           ]
         }
       },
       "size": [
-        124,
-        132
+        116,
+        136
       ],
       "pivot": [
-        51,
-        106
+        49,
+        110
       ],
-      "width": 2.48,
-      "height": 2.64
+      "width": 2.32,
+      "height": 2.72
     },
     {
       "id": "id200_tanaman_pucuk_merah_pekarangan",
@@ -7463,11 +7463,11 @@
           "file": "props/id200_tanaman_pucuk_merah_pekarangan_sw.png",
           "size": [
             148,
-            134
+            140
           ],
           "pivot": [
             65,
-            101
+            106
           ]
         },
         "se": {
@@ -7478,20 +7478,20 @@
           ],
           "pivot": [
             65,
-            104
+            105
           ]
         }
       },
       "size": [
         148,
-        134
+        140
       ],
       "pivot": [
         65,
-        101
+        106
       ],
       "width": 2.96,
-      "height": 2.68
+      "height": 2.8
     },
     {
       "id": "id200_tanaman_semak_teh_tehan_pagar",
@@ -7516,11 +7516,11 @@
           "file": "props/id200_tanaman_semak_teh_tehan_pagar_sw.png",
           "size": [
             148,
-            108
+            110
           ],
           "pivot": [
             65,
-            75
+            76
           ]
         },
         "se": {
@@ -7531,20 +7531,20 @@
           ],
           "pivot": [
             65,
-            71
+            70
           ]
         }
       },
       "size": [
         148,
-        108
+        110
       ],
       "pivot": [
         65,
-        75
+        76
       ],
       "width": 2.96,
-      "height": 2.16
+      "height": 2.2
     },
     {
       "id": "id200_tanaman_rumpun_bambu",
@@ -7568,36 +7568,36 @@
         "sw": {
           "file": "props/id200_tanaman_rumpun_bambu_sw.png",
           "size": [
-            162,
-            198
+            154,
+            204
           ],
           "pivot": [
-            70,
-            162
+            68,
+            168
           ]
         },
         "se": {
           "file": "props/id200_tanaman_rumpun_bambu_se.png",
           "size": [
-            162,
+            154,
             198
           ],
           "pivot": [
-            70,
-            162
+            68,
+            163
           ]
         }
       },
       "size": [
-        162,
-        198
+        154,
+        204
       ],
       "pivot": [
-        70,
-        162
+        68,
+        168
       ],
-      "width": 3.24,
-      "height": 3.96
+      "width": 3.08,
+      "height": 4.08
     },
     {
       "id": "id200_tanaman_daun_pandan_wangi",
@@ -7621,36 +7621,36 @@
         "sw": {
           "file": "props/id200_tanaman_daun_pandan_wangi_sw.png",
           "size": [
-            130,
-            92
+            122,
+            94
           ],
           "pivot": [
-            54,
-            64
+            52,
+            66
           ]
         },
         "se": {
           "file": "props/id200_tanaman_daun_pandan_wangi_se.png",
           "size": [
-            130,
-            88
+            122,
+            94
           ],
           "pivot": [
-            54,
-            60
+            52,
+            66
           ]
         }
       },
       "size": [
-        130,
-        92
+        122,
+        94
       ],
       "pivot": [
-        54,
-        64
+        52,
+        66
       ],
-      "width": 2.6,
-      "height": 1.84
+      "width": 2.44,
+      "height": 1.88
     },
     {
       "id": "id200_tanaman_monstera_dalam_pot",
@@ -7675,35 +7675,35 @@
           "file": "props/id200_tanaman_monstera_dalam_pot_sw.png",
           "size": [
             148,
-            150
-          ],
-          "pivot": [
-            65,
-            116
-          ]
-        },
-        "se": {
-          "file": "props/id200_tanaman_monstera_dalam_pot_se.png",
-          "size": [
-            148,
             142
           ],
           "pivot": [
             65,
             108
           ]
+        },
+        "se": {
+          "file": "props/id200_tanaman_monstera_dalam_pot_se.png",
+          "size": [
+            148,
+            134
+          ],
+          "pivot": [
+            65,
+            100
+          ]
         }
       },
       "size": [
         148,
-        150
+        142
       ],
       "pivot": [
         65,
-        116
+        108
       ],
       "width": 2.96,
-      "height": 3.0
+      "height": 2.84
     },
     {
       "id": "id200_tanaman_sirih_gading_pot",
@@ -7727,36 +7727,36 @@
         "sw": {
           "file": "props/id200_tanaman_sirih_gading_pot_sw.png",
           "size": [
-            112,
-            148
+            108,
+            136
           ],
           "pivot": [
-            47,
-            124
+            45,
+            112
           ]
         },
         "se": {
           "file": "props/id200_tanaman_sirih_gading_pot_se.png",
           "size": [
-            112,
-            148
+            108,
+            136
           ],
           "pivot": [
-            46,
-            124
+            44,
+            112
           ]
         }
       },
       "size": [
-        112,
-        148
+        108,
+        136
       ],
       "pivot": [
-        47,
-        124
+        45,
+        112
       ],
-      "width": 2.24,
-      "height": 2.96
+      "width": 2.16,
+      "height": 2.72
     },
     {
       "id": "id200_tanaman_lidah_mertua_pot",
@@ -7780,36 +7780,36 @@
         "sw": {
           "file": "props/id200_tanaman_lidah_mertua_pot_sw.png",
           "size": [
-            44,
-            112
+            100,
+            132
           ],
           "pivot": [
-            22,
-            101
+            41,
+            111
           ]
         },
         "se": {
           "file": "props/id200_tanaman_lidah_mertua_pot_se.png",
           "size": [
-            44,
-            112
+            100,
+            134
           ],
           "pivot": [
-            22,
-            102
+            41,
+            112
           ]
         }
       },
       "size": [
-        44,
-        112
+        100,
+        132
       ],
       "pivot": [
-        22,
-        101
+        41,
+        111
       ],
-      "width": 0.88,
-      "height": 2.24
+      "width": 2.0,
+      "height": 2.64
     },
     {
       "id": "id200_tanaman_petak_sawah_padi",
@@ -7834,35 +7834,35 @@
           "file": "props/id200_tanaman_petak_sawah_padi_sw.png",
           "size": [
             148,
-            110
+            90
           ],
           "pivot": [
             65,
-            76
+            57
           ]
         },
         "se": {
           "file": "props/id200_tanaman_petak_sawah_padi_se.png",
           "size": [
             148,
-            108
+            100
           ],
           "pivot": [
             65,
-            74
+            66
           ]
         }
       },
       "size": [
         148,
-        110
+        90
       ],
       "pivot": [
         65,
-        76
+        57
       ],
       "width": 2.96,
-      "height": 2.2
+      "height": 1.8
     },
     {
       "id": "id200_tanaman_ilalang_liar",
@@ -7887,11 +7887,11 @@
           "file": "props/id200_tanaman_ilalang_liar_sw.png",
           "size": [
             148,
-            150
+            144
           ],
           "pivot": [
             65,
-            116
+            111
           ]
         },
         "se": {
@@ -7908,14 +7908,14 @@
       },
       "size": [
         148,
-        150
+        144
       ],
       "pivot": [
         65,
-        116
+        111
       ],
       "width": 2.96,
-      "height": 3.0
+      "height": 2.88
     },
     {
       "id": "id200_tanaman_eceng_gondok_kolam",
@@ -7940,35 +7940,35 @@
           "file": "props/id200_tanaman_eceng_gondok_kolam_sw.png",
           "size": [
             148,
-            66
+            92
           ],
           "pivot": [
             65,
-            33
+            58
           ]
         },
         "se": {
           "file": "props/id200_tanaman_eceng_gondok_kolam_se.png",
           "size": [
             148,
-            66
+            68
           ],
           "pivot": [
             65,
-            33
+            35
           ]
         }
       },
       "size": [
         148,
-        66
+        92
       ],
       "pivot": [
         65,
-        33
+        58
       ],
       "width": 2.96,
-      "height": 1.32
+      "height": 1.84
     },
     {
       "id": "id200_tanaman_teratai_kolam",
@@ -7993,11 +7993,11 @@
           "file": "props/id200_tanaman_teratai_kolam_sw.png",
           "size": [
             148,
-            66
+            76
           ],
           "pivot": [
             65,
-            33
+            42
           ]
         },
         "se": {
@@ -8014,14 +8014,14 @@
       },
       "size": [
         148,
-        66
+        76
       ],
       "pivot": [
         65,
-        33
+        42
       ],
       "width": 2.96,
-      "height": 1.32
+      "height": 1.52
     },
     {
       "id": "id200_budaya_bedug_masjid",
