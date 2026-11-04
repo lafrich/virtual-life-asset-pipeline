@@ -151,7 +151,8 @@ def warp_posture_layers(layers:dict,kind:str,direction:str,frame:int)->dict:
     if kind not in POSTURE_KINDS:
         return layers
     phase=frame%4
-    sway=(0,1,2,1)[phase] if kind in ("squat_idle","knee_chest_idle") else 0
+    sway=((0,1,2,1)[phase] if kind in ("squat_idle","knee_chest_idle") else
+          (0,1,0,-1)[phase] if kind=="bent_over_idle" else 0)
     source_knots=np.array([0,28,52,67,82,91,102,111],dtype=np.float32)
     if kind in ("squat_idle","squat_down","squat_up"):
         # Six authored transition heights between standing and a full squat.
