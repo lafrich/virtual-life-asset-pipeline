@@ -227,7 +227,7 @@
       clip.status === "template" ? "TEMPLATE / DRAFT" :
       clip.status === "source_only" ? "SOURCE / NO RENDER" :
       clip.status === "still" ? "STILL / ONE FRAME" :
-      clip.universal && clip.status === "ready" ? "NATIVE V6B / PLAYABLE" :
+      clip.status === "ready" ? "NATIVE V6B / PLAYABLE" :
       "PREVIEW / NOT IN GAME");
     writing("animation-name", clip.name);
     writing("animation-type", clip.group.toUpperCase());
@@ -241,7 +241,8 @@
       clip.status === "template" ? "TEMPLATE / NO APPROVED POSES" :
       clip.status === "source_only" ? "SOURCE ONLY / NO FRAMES" :
       clip.status === "still" ? "STILL POSE / NO ANIMATION" :
-      clip.universal && clip.status === "ready" ? "UNIVERSAL / READY IN SEMESTA" :
+      clip.status === "ready" ?
+        (clip.universal ? "UNIVERSAL" : "ACTOR NATIVE") + " / READY IN GAME" :
       "PREVIEW ONLY / NOT IN GAME");
     writing("animation-note", [clip.note || "No additional metadata",
       clip.actor ? "SOURCE ACTOR: " + (targets.find(c => c.id === clip.actor)?.name || clip.actor).toUpperCase() : ""
@@ -291,7 +292,7 @@
     renderList(false);
     el("status").textContent = "MOTION: " + clip.id.toUpperCase() +
       (clip.status === "planned" ? " / PLANNED / NOT PLAYABLE" :
-       clip.universal && clip.status === "ready" ? " / UNIVERSAL / PLAYABLE" :
+       clip.status === "ready" ? " / NATIVE / PLAYABLE" :
        clip.status === "template" ? " / DRAFT" : " / PREVIEW");
   }
 
