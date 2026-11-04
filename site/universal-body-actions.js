@@ -48,7 +48,12 @@
   const r=rule(action),sex=bodyType(actor);
   // Do not assign human anatomy to unspecified non-human/neutral actors.
   // They retain their own pose/source under the shared motion fallback.
-  if(!r||!sex||(r.kind==="bathtub"&&sex==="neutral"))return null;
+  if(!r||!sex)return null;
+  // Only the authored Human base actors can use the full replacement sheet.
+  // Other actors (even named/sexed humans) must keep their OWN actual head,
+  // hair and lying body; those get a safe foam overlay, not a stranger's face.
+  if(r.kind==="bathtub"&&!["human_male_base","human_female_base"].includes(actor?.id))
+    return null;
   return {...r,bodyType:sex,
    sheet:"media/human-"+(sex==="female"?"female":"male")+"-base-action-"+r.baseMotion+".png",
    actionId:action,directions:DIR,frameMs:r.kind==="bathtub"?[320,340,360,350,340,330]:
@@ -175,6 +180,37 @@
   }
   return true;
  }
+ function drawBathFoam(ctx,{frame=0,x=0,y=0,scale=1,direction="sw"}={}){
+  // Procedural six-phase foam for any non-base character, applied to its
+  // OWN reclining motion. This never replaces identity or requires a human rig.
+  if(!ctx?.fillRect||!Number.isFinite(scale)||scale<=0)return false;
+  const phase=((Math.floor(frame)%6)+6)%6;
+  let left=14,right=53,baseY=88;
+  if(ctx.getImageData&&scale===1&&x===0&&y===0){
+   try{
+    const pixels=ctx.getImageData(0,0,64,112).data;
+    let lo=64,hi=0,bottom=0,seen=0;
+    for(let py=55;py<101;py++)for(let px=4;px<60;px++){
+     if(pixels[(py*64+px)*4+3]<128)continue;
+     lo=Math.min(lo,px);hi=Math.max(hi,px);bottom=Math.max(bottom,py);seen++;
+    }
+    if(seen>40){left=lo;right=hi;baseY=Math.min(96,Math.max(77,bottom-10));}
+   }catch{/* Static pixel-safe placement if source is not readable */}
+  }
+  const span=Math.max(10,right-left),width=Math.max(1,Math.round(scale));
+  for(let i=0;i<10;i++){
+   const p=(i+.5)/10,xx=left+span*(.25+.69*p);
+   const yy=baseY+(i%3)*2+((i+phase)%3===0?-1:0);
+   ctx.fillStyle=i%3===0?"#d6f6ff":"#f5fbff";
+   ctx.fillRect(Math.round(x+xx*scale),Math.round(y+yy*scale),
+     Math.max(width,Math.round((i%3+2)*scale)),Math.max(width,Math.round(2*scale)));
+   if(i%2===0){
+    ctx.fillStyle="#8ed4e8";
+    ctx.fillRect(Math.round(x+(xx+1)*scale),Math.round(y+(yy+3)*scale),width,width);
+   }
+  }
+  return true;
+ }
  return Object.freeze({DIR,RULES,bodyType,rule,resolve,recolorTone,recolorBody,
-  declaredTone,BODY_START_Y,tintBase,apply});
+  declaredTone,BODY_START_Y,tintBase,apply,drawBathFoam});
 });
