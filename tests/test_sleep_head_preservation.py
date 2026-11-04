@@ -36,13 +36,13 @@ def specimen():
     }
 
 
-def projected_pixel(x,y,pivot,shift,view):
+def projected_pixel(x,y,pivot,shift,view,lift=0):
     neck_x,neck_y=pivot
     dx,dy=shift
     u=y-neck_y
     v=x-neck_x
     sg=1 if view in ("se","sw") else -1
-    return (neck_x+dx+u,neck_y+dy+int(np.floor(u*sg/2))-v)
+    return (neck_x+dx+u,neck_y+dy+lift+int(np.floor(u*sg/2))-v)
 
 
 def adjacent(a,b):
@@ -63,8 +63,9 @@ class BedSleepHeadRotation(unittest.TestCase):
         for view in ("se","ne"):
             pivot=v6b.lie_neck_pivot(source)
             shift=v6b.lie_head_shift(source,view)
+            lift=v6b.lie_head_frame_lift(source,view,shift,pivot)
             self.assertIsNotNone(pivot)
-            output=v6b.lie_preserve_head(source,view,shift,pivot)
+            output=v6b.lie_preserve_head(source,view,shift,pivot,lift)
             original=np.asarray(source["body"])
             result=np.asarray(output["body"])
             # Every original head pixel has the exact original RGBA value
@@ -73,7 +74,7 @@ class BedSleepHeadRotation(unittest.TestCase):
             for y in range(30,56):
                 for x in range(64):
                     if original[y,x,3]==0:continue
-                    rx,ry=projected_pixel(x,y,pivot,shift,view)
+                    rx,ry=projected_pixel(x,y,pivot,shift,view,lift)
                     self.assertTrue(0<=rx<64 and 0<=ry<112)
                     np.testing.assert_array_equal(result[ry,rx],original[y,x],
                         err_msg=f"{view} head pixel ({x},{y}) failed projection")
@@ -83,7 +84,7 @@ class BedSleepHeadRotation(unittest.TestCase):
             face=np.asarray(source["face"])
             face_out=np.asarray(output["face"])
             for y,x in zip(*np.nonzero(face[...,3])):
-                rx,ry=projected_pixel(int(x),int(y),pivot,shift,view)
+                rx,ry=projected_pixel(int(x),int(y),pivot,shift,view,lift)
                 np.testing.assert_array_equal(face_out[ry,rx],face[y,x])
 
     def test_projected_skull_connects_to_original_reclined_shoulder_in_all_views(self):
@@ -94,17 +95,20 @@ class BedSleepHeadRotation(unittest.TestCase):
             view="se" if direction in ("se","sw") else "ne"
             pivot=v6b.lie_neck_pivot(source)
             shift=v6b.lie_head_shift(source,view)
+            lift=v6b.lie_head_frame_lift(source,view,shift,pivot)
             # Isolate the rotated original skull from body/legs.
             head_image=np.asarray(source["body"]).copy()
             head_image[56:]=0
             head=v6b.lie_preserve_head(
-                {"body":Image.fromarray(head_image,"RGBA")},view,shift,pivot)
+                {"body":Image.fromarray(head_image,"RGBA")},view,shift,pivot,lift)
             head_mask=np.asarray(head["body"])[...,3]>0
             flat=v6b.lie_flat({
                 "body":Image.fromarray(body,"RGBA"),
                 "shirt":source["shirt"]},view,"lie")
-            torso=((np.asarray(flat["body"])[...,3]>0) |
-                   (np.asarray(flat["shirt"])[...,3]>0))
+            torso_image=Image.new("RGBA",(64,112))
+            flat_total=Image.alpha_composite(flat["body"],flat["shirt"])
+            torso_image.paste(flat_total,(0,lift))
+            torso=np.asarray(torso_image)[...,3]>0
             if direction in ("sw","nw"):
                 head_mask=np.fliplr(head_mask)
                 torso=np.fliplr(torso)
@@ -119,8 +123,9 @@ class BedSleepHeadRotation(unittest.TestCase):
         for view,sign in (("se",1),("ne",-1)):
             pivot=v6b.lie_neck_pivot(source)
             shift=v6b.lie_head_shift(source,view)
+            lift=v6b.lie_head_frame_lift(source,view,shift,pivot)
             result=np.asarray(v6b.lie_preserve_head(
-                source,view,shift,pivot)["hair_front"])
+                source,view,shift,pivot,lift)["hair_front"])
             # Pixel count and exact RGB values must survive the projection.
             self.assertEqual(int(np.count_nonzero(result[...,3])),len(xx))
             for y,x in zip(yy,xx):
