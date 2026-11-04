@@ -12,6 +12,7 @@ from indonesia_200_details import special
 from indonesia_200_quality import render as quality_render
 from indonesia_200_finishing import quality_override
 from indonesia_200_art_direction_v5 import refine as art_direct
+from indonesia_200_umkm_signature import variant as umkm_signature
 
 SPEC_PATH=Path('assets/street_buildings/_work/indonesia_200_specs.json')
 SPECS=json.loads(SPEC_PATH.read_text(encoding='utf-8'))['items']
@@ -329,6 +330,7 @@ def draw_structure(L,s):
 def draw(L,s):
  # Quality gate: NO legacy faceless-cube fallback for the 200-asset pack.
  # Every asset must have a recognizable authored v2 recipe.
+ if umkm_signature(L,s):return
  if quality_override(L,s) or quality_render(L,s):
   art_direct(L,s)
   return
