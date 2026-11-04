@@ -340,7 +340,17 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 "motion_sheets":{"idle":"media/"+fn,"walk":"media/"+walk_face}})
         results.append({"id":f"human_{gender}_base","name":"Human / "+gender.title()+" Base",
             "type":"npc","template":True,"template_category":"human","gender":gender,
-            "description":"Distinct adult bald "+gender.title()+" skin-toned mannequin with non-explicit morphology guides; modular shirt, pants and shoes.",
+            "bodyType":gender,"skinTone":"base",
+            # This base is the immutable ORIGINAL SKIN + HEAD underneath the
+            # same modular equipment stack used by every Mahluk Hidup human.
+            # No shirt/pants/shoes/hair are baked into saved custom outfits.
+            "modular":{"version":2,"rig":"native_v6b_humanoid","frame":[64,112],
+                       "pivot":[32,100],"directions":list(DIRECTIONS),
+                       "body_base":f"media/{name}-sheet.png",
+                       "layers":["body","face","hair","shirt","pants","shoes"],
+                       "equipment":["hair","shirt","pants","shoes"],
+                       "skin_tones":["base","light","medium","tan","deep","dark"]},
+            "description":"V6B 64×112 adult "+gender.title()+" base with native 4-way animations, distinct body shape and detachable hair, shirt, pants and shoes.",
             "outfit":"unclothed / modular","hairstyle":"bald",
             "sheet":f"media/{name}-sheet.png","walk":f"media/{name}-walk.gif",
             "poster":f"media/{name}-poster.png","thumbnail":f"media/{name}-thumb.png",
