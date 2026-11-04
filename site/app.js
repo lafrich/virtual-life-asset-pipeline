@@ -128,6 +128,7 @@ function selectCharacter(character) {
   // previous actor must not hide Bathtub Bathe in Male/Female motion lists.
   $("motion-search").value="";
   $("motion-category").value="all";
+  $("motion-grid").scrollTop=0;
   buildMotions(character);
   setInspectorTab("info");
   state.motion = character.motions?.find(m => m.id === "walk" && m.available) || null;
