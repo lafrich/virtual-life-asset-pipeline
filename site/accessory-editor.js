@@ -4,9 +4,9 @@
 "use strict";
 const $=id=>document.getElementById(id),core=window.VirtualLifePixelEdit;
 if(!core)return;
-const W=64,H=112,DIRS=["se","sw","ne","nw"],KINDS=["helmet","bag","shirt","pants","shoes"];
-const REGIONS={helmet:[13,22,52,56],bag:[8,43,56,91],shirt:[12,49,53,84],pants:[11,72,54,101],shoes:[10,91,55,108]};
-const LABELS={helmet:"HELM",bag:"TAS",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU"};
+const W=64,H=112,DIRS=["se","sw","ne","nw"],KINDS=["helmet","bag","hair","shirt","pants","shoes"];
+const REGIONS={helmet:[13,22,52,56],bag:[8,43,56,91],hair:[12,16,53,57],shirt:[12,49,53,84],pants:[11,72,54,101],shoes:[10,91,55,108]};
+const LABELS={helmet:"HELM",bag:"TAS",hair:"RAMBUT",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU"};
 const STORE="virtual-life-accessories-v1",EQUIP="virtual-life-accessory-equipment-v1",DRAFT="virtual-life-accessory-drafts-v1";
 const COLORS=["#ffffff","#e9edf2","#bbc7d0","#82929f","#4d5d6f","#17283a","#111111",
  "#61b3c4","#95d7de","#418da5","#2b6479","#183f59","#d63e35","#f87d56",
@@ -16,7 +16,7 @@ const actor=/^[a-z0-9_-]{1,60}$/.test(params.get("actor")||"")?params.get("actor
 const requestedBase=params.get("base")||"astrofrich_base";
 const base=["astrofrich_base","human_male_base","human_female_base"].includes(requestedBase)?requestedBase:"astrofrich_base";
 const human=base.startsWith("human_");
-const allowedKinds=human?["shirt","pants","shoes"]:["helmet","bag"];
+const allowedKinds=human?["hair","shirt","pants","shoes"]:["helmet","bag"];
 const DRAFT_KEY=DRAFT+"-"+base;
 const area=$("acc-scroller"),canvas=$("acc-canvas"),ctx=canvas.getContext("2d",{alpha:false});
 const preview=$("acc-preview"),pc=preview.getContext("2d",{alpha:false});
@@ -24,7 +24,7 @@ const guide=new Image(),guideState={loaded:false};
 const makeLayer=()=>{const c=document.createElement("canvas");c.width=W;c.height=H;return c;};
 const makeLayers=()=>Object.fromEntries(DIRS.map(d=>[d,makeLayer()]));
 const MOBILE=window.matchMedia("(max-width:900px) and (pointer:coarse)").matches;
-const state={category:"helmet",dir:"se",tool:"pencil",mode:"replace",color:"#418da5",brush:1,
+const state={category:human?"hair":"helmet",dir:"se",tool:"pencil",mode:"replace",color:"#418da5",brush:1,
  zoom:MOBILE?4:6,cursorMode:MOBILE,pan:false,grid:false,alpha:.58,tolerance:0,connected:true,
  cursor:[32,38],selection:null,selectionAnchor:null,pointer:null,cursorMove:null,layers:makeLayers(),
  drafts:{},history:[],redo:[],savedId:null,manualZoom:false,loaded:false};
