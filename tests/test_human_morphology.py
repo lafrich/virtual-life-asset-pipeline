@@ -12,7 +12,7 @@ from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"tools"))
-from build_human_templates import sculpt_human_layers,shade_human_anatomy,shade_human_surface,FRAME
+from build_human_templates import sculpt_human_layers,shade_human_anatomy,shade_human_surface,repair_female_chest_voids,FRAME
 
 
 def colored(left,right,top,bottom,color=(215,175,141,255)):
@@ -163,6 +163,31 @@ class HumanMorphology(unittest.TestCase):
         self.assertGreater(np.flatnonzero(np.any(d1,axis=0)).mean(),
                            np.flatnonzero(np.any(d0,axis=0)).mean()+3)
         self.assertEqual(body.tobytes(),Image.fromarray(untouched,"RGBA").tobytes())
+
+
+    def test_female_bust_holes_are_filled_without_changing_outer_shape(self):
+        """Original female native source had two 3px transparent holes,
+        including in its rear view. Fill only fully enclosed chest cavities."""
+        skin=(241,211,181,255)
+        torso=colored(27,38,54,78,skin)
+        baseline=np.asarray(colored(19,46,31,103,skin)).copy()
+        holes=((26,68),(27,68),(27,69),(37,68),(38,68),(37,69))
+        for x,y in holes:
+            baseline[y,x]=(0,0,0,0)
+        source=Image.fromarray(baseline,"RGBA")
+        repaired=repair_female_chest_voids(source,torso,79)
+        output=np.asarray(repaired)
+        for x,y in holes:
+            self.assertEqual(output[y,x,3],255,(x,y))
+            self.assertEqual(tuple(output[y,x,:3]),skin[:3])
+        changed=np.any(output!=baseline,axis=2)
+        expected=np.zeros((112,64),dtype=np.bool_)
+        for x,y in holes:expected[y,x]=True
+        self.assertTrue(np.array_equal(changed,expected),
+                        "Only the enclosed holes may change alpha or color")
+        self.assertEqual(repair_female_chest_voids(
+            colored(19,46,31,103,skin),torso,79).tobytes(),
+            colored(19,46,31,103,skin).tobytes())
 
 
 if __name__=="__main__":
