@@ -8,8 +8,8 @@
   <title>Mahluk Hidup — Character Studio</title>
   <link rel="stylesheet" href="./style.css?v=desktop-viewport-fix-1&amp;action-ui=xp-paint-v3">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
-  <script defer src="./universal-body-actions.js?v=universal-bath-v2"></script>
-  <script defer src="./app.js?v=universal-bath-v2"></script>
+  <script defer src="./universal-body-actions.js?v=human-modular-v3"></script>
+  <script defer src="./app.js?v=human-modular-v3"></script>
   <script defer src="./animations.js?v=universal-wc-bath-v1"></script>
 </head>
 <body>
@@ -149,7 +149,7 @@
             <section id="custom-char-panel" role="tabpanel" aria-labelledby="tab-custom-char" hidden>
               <div class="property-label">CHARACTER CREATOR / MODULAR TEMPLATE</div>
               <h2 class="accessory-panel-title">NEW CUSTOM CHAR <small id="custom-base-summary">ASTROFRICH / HUMAN</small></h2>
-              <p class="motion-hint">Buat karakter Astrofrich atau Human Male/Female. Base Human botak, tubuh polos tanpa pakaian bawaan; baju, celana, dan sepatu menjadi equipment modular saat gameplay.</p>
+              <p class="motion-hint">Male dan Female menggunakan kerangka 64×112 yang sama dengan karakter lain. Body dan skin tone mengikuti base; rambut, baju, celana, dan sepatu adalah layer terpisah yang dapat diganti tanpa mengubah animasi.</p>
               <label class="custom-char-label">CATEGORY
                 <select id="custom-category"><option value="astrofrich">ASTROFRICH</option><option value="human">HUMAN</option></select>
               </label>
@@ -159,7 +159,17 @@
               <label class="custom-char-label">CHARACTER NAME
                 <input id="custom-name" type="text" maxlength="40" placeholder="Nama karakter baru" autocomplete="off">
               </label>
-              <div class="property-label">CUSTOM OUTFIT / EACH WITH 4 DIRECTIONS</div>
+              <label class="custom-char-label" id="custom-skin-row">SKIN TONE / BASE BODY
+                <select id="custom-skin-tone">
+                  <option value="base">ORIGINAL BASE</option>
+                  <option value="light">LIGHT</option>
+                  <option value="medium">MEDIUM</option>
+                  <option value="tan">TAN</option>
+                  <option value="deep">DEEP</option>
+                  <option value="dark">DARK</option>
+                </select>
+              </label>
+              <div class="property-label">MODULAR BODY / HEAD / OUTFIT · 4 DIRECTIONS</div>
               <div id="astrofrich-outfit-slots">
               <div class="accessory-create-buttons">
                 <button type="button" class="chrome-button" id="custom-draw-helmet">✎ DRAW HELM / 4 SIDES</button>
@@ -173,6 +183,12 @@
               </label>
               </div>
               <div id="human-outfit-slots">
+                <div class="accessory-create-buttons">
+                  <button type="button" class="chrome-button" id="custom-draw-hair">✎ DRAW RAMBUT / 4 SIDES</button>
+                </div>
+                <label class="custom-char-label">RAMBUT
+                  <select id="custom-hair"><option value="">— BALD / NO HAIR —</option></select>
+                </label>
                 <div class="accessory-create-buttons">
                   <button type="button" class="chrome-button" id="custom-draw-shirt">✎ DRAW BAJU / 4 SIDES</button>
                   <button type="button" class="chrome-button" id="custom-draw-pants">✎ DRAW CELANA / 4 SIDES</button>
@@ -188,14 +204,14 @@
                   <select id="custom-shoes"><option value="">— NO SHOES —</option></select>
                 </label>
               </div>
-              <p id="custom-animation-count" class="accessory-note">BASE: 7 ANIMATIONS · 5 EXPRESSIONS · 4 DIRECTIONS</p>
+              <p id="custom-animation-count" class="accessory-note">BASE: NATIVE MOTIONS · 5 EXPRESSIONS · 4 DIRECTIONS</p>
               <div class="accessory-create-buttons">
                 <button type="button" class="chrome-button action-main" id="custom-save">↓ SAVE CHARACTER</button>
                 <button type="button" class="chrome-button" id="custom-new">+ NEW BLANK</button>
               </div>
               <div class="property-label">CHARACTER STORAGE / ASTROFRICH + HUMAN</div>
               <div id="custom-storage-list" class="accessory-storage-list" aria-label="Saved Astrofrich and Human custom characters"></div>
-              <p class="accessory-note">Karakter di Character Storage bisa dipilih di daftar karakter. Semua animasi dan ekspresi base dipertahankan; helm/tas adalah layer terpisah yang mengikuti arah gerak.</p>
+              <p class="accessory-note">Body base tetap mengikuti Male/Female dan skin tone tersimpan per karakter. Rambut dan outfit disimpan sebagai equipment 4 arah. Saat mandi, baju dilepas tetapi rambut tetap ada.</p>
             </section>
           </div>
         </aside>
