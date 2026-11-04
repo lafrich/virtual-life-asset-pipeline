@@ -12,7 +12,7 @@ for(const id of ["sleep_bed_right","sleep_bed_left"]){
 }
 assert.ok(html.indexOf("universal-sleep.js")<html.indexOf("animations.js"));
 assert.match(ui,/window\.VLUniversalSleep\?\.actionsFor\(ch\)/);
-assert.match(ui,/clip\.universal && clip\.status === "ready"/);
+assert.match(ui,/APPROVED_ANIMATION_IDS\.has\(clip\.id\)/, "Animations tab uses curated approved animation IDs, not legacy universal flag");
 assert.ok(editor.includes("state.actions=[...universal,...compatActions,...definitions.actions]"),
  "The two universal bed actions must be the FIRST entries, not after 200+ actions");
 assert.ok(editor.includes("Boolean(SLEEP?.resolve(actor(),row.id))"),
