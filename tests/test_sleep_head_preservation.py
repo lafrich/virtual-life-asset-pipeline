@@ -129,15 +129,15 @@ class BedSleepHeadRotation(unittest.TestCase):
             # Pixel count and exact RGB values must survive the projection.
             self.assertEqual(int(np.count_nonzero(result[...,3])),len(xx))
             for y,x in zip(yy,xx):
-                rx,ry=projected_pixel(int(x),int(y),pivot,shift,view)
+                rx,ry=projected_pixel(int(x),int(y),pivot,shift,view,lift)
                 np.testing.assert_array_equal(result[ry,rx],hair[y,x])
             # Moving down the original head axis moves right one pixel and
             # slopes by +1/2 (SE) or -1/2 (NE), matching lie_flat on the torso.
             neck_x,neck_y=pivot
             y0=neck_y-14
             x0=neck_x
-            a=projected_pixel(x0,y0,pivot,shift,view)
-            b=projected_pixel(x0,y0+4,pivot,shift,view)
+            a=projected_pixel(x0,y0,pivot,shift,view,lift)
+            b=projected_pixel(x0,y0+4,pivot,shift,view,lift)
             self.assertEqual(b[0]-a[0],4)
             self.assertEqual(b[1]-a[1],2*sign)
             self.assertNotEqual(b[1]-a[1],0,
