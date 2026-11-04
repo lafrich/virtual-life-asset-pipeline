@@ -28,15 +28,27 @@ assert.equal(BODY.resolve(female,"bathe").sheet,
 assert.equal(BODY.resolve(citizen,"bathe").bodyType,"neutral");
 assert.equal(BODY.resolve(robot,"bathe"),null,"Do not convert robots to human anatomy");
 assert.equal(BODY.resolve(female,"walk"),null);
-for(const actor of [male,female]){
+for(const actor of [{id:"human_male_base",gender:"male"},{id:"human_female_base",gender:"female"}]){
  const soak=BODY.resolve(actor,"bathtub_bathe");
- assert.ok(soak,"Adult Human base needs a real bathtub template");
+ assert.ok(soak,"Native Human base needs a real bathtub template");
  assert.equal(soak.kind,"bathtub");
  assert.equal(soak.coverage,"horizontal");
  assert.equal(soak.frames,6);
  assert.equal(soak.frameMs.length,6);
  assert.equal(soak.sheet,"media/human-"+actor.gender+"-base-action-bathtub_bathe.png");
 }
+for(const actor of [male,female])
+ assert.equal(BODY.resolve(actor,"bathtub_bathe"),null,
+  "Custom characters must retain their OWN head and LIE pose rather than the base mannequin");
+assert.ok(BODY.rule("bathtub_bathe"));
+const foamDraws=[];
+const foamCtx={fillRect(...args){foamDraws.push(args)},fillStyle:""};
+assert.equal(BODY.drawBathFoam(foamCtx,{frame:0}),true);
+assert.ok(foamDraws.length>=12,"Foam visible in an isolated native actor frame");
+const first=foamDraws[0].join(",");
+foamDraws.length=0;
+assert.equal(BODY.drawBathFoam(foamCtx,{frame:2}),true);
+assert.notEqual(foamDraws[0].join(","),first,"Bath foam should animate independently");
 assert.equal(BODY.resolve(citizen,"bathtub_bathe"),null,
  "Unknown body type must not borrow an unrelated adult human's face");
 assert.equal(BODY.resolve(robot,"bathtub_bathe"),null);
@@ -69,6 +81,8 @@ const index=fs.readFileSync("site/index.html","utf8");
 assert.match(script,/UNIVERSAL_BODY\.apply/);
 assert.match(script,/body_override:"toilet_lower"/);
 assert.match(script,/body_override:"bath_full"/);
+assert.match(script,/const choices=\[/,"Character motion list must feature Bathtub for every actor");
+assert.match(script,/drawBathFoam/,"Other character bath preview must overlay foam");
 assert.ok(index.indexOf("universal-body-actions.js")<index.indexOf("app.js"));
 assert.match(anim,/bathe_male_v1/);assert.match(anim,/bathe_female_v1/);
 assert.match(anim,/bathtub_bathe_male_v1/);
