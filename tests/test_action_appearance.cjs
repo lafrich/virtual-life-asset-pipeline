@@ -40,6 +40,23 @@ for(const [angle,lift] of [[0,0],[90,20],[180,88],[270,20]]){
  assert.deepEqual(calls.find(x=>x[0]==="image"),["image","frame",-32,-100,64,112]);
  assert.equal(calls.some(x=>x[0]==="rotate"),angle!==0);
 }
+
+// A translated pose must carry its mouth overlay with its actual head,
+// not with the upright face coordinates saved in the expression atlas.
+function mockHead(left,top){
+ const rgba={width:64,height:112,data:new Uint8ClampedArray(64*112*4)};
+ for(let y=top;y<top+16;y++)for(let x=left;x<left+13;x++)
+  rgba.data[(y*64+x)*4+3]=255;
+ return rgba;
+}
+const baseHead=A.headAnchor(mockHead(20,31));
+const posedHead=A.headAnchor(mockHead(27,45));
+assert.ok(baseHead&&posedHead);
+assert.equal(posedHead.x-baseHead.x,7);
+assert.equal(posedHead.y-baseHead.y,14);
+assert.equal(A.headAnchor(mockHead(20,31)).y,31);
+assert.equal(A.headAnchor({width:64,height:112,data:new Uint8ClampedArray(64*112*4)}),null);
+
 const html=fs.readFileSync("site/action-editor.html","utf8");
 const editor=fs.readFileSync("site/action-editor.js","utf8");
 for(const id of ["template-rotation","template-expression","template-loop"]){
