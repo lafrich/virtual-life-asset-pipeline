@@ -240,3 +240,284 @@ def facade_pattern(w,h,name,kind,wall,accent,floors=1):
  if len(label)>17:label=" ".join(label.split()[:2])[:17]
  t.text(W//2,H-23,label,'WHITE',4,bold=True)
  return t
+
+
+def building(L,s):
+ shadow(L)
+ name=s['label'].lower();kind=s['kind'];cat=s['category']
+ W,D=L.W,L.D;N=s['num']
+ residential=kind in ('rumah','kos','mushola') or name.startswith('rumah ') and cat=='bangunan'
+ cafe=cat=='warung' or kind in ('warung','bengkel')
+ tall=kind in ('ruko','sekolah','public','masjid','gereja','pasar','gudang')
+ H=108 if cafe else 123 if residential else 182 if tall else 144
+ if kind=='ruko':H=193 if 'dua' in name else 229
+ if kind=='sekolah':H=195
+ if kind=='masjid':H=181
+ if kind=='mushola':H=129
+ if kind=='gereja':H=194
+ if cat=='publik':H=135
+ accent=PALETTE[(N+1 if cat=='warung' else N+4)%len(PALETTE)]
+ if 'Padang' in s['label']:accent='RED'
+ elif 'Sunda' in s['label']:accent='GREEN'
+ elif 'puskesmas' in name or 'apotek' in name:accent='TEAL'
+ elif 'laundry' in name or 'air isi ulang' in name:accent='BLUE'
+ elif 'minimarket' in name:accent='RED' if 'merah' in name else 'BLUE'
+ elif kind in ('masjid','mushola'):accent='GREEN'
+ elif 'sekolah' in name:accent='RED'
+ wall='CREAM' if residential or N%3==0 else 'CONC' if N%3==1 else 'WHITE'
+ # walls set back from footpath. Entire upper structure is NOT a faceless cube.
+ fa=lambda w,h:facade_pattern(w,h,s['label'],kind,wall,accent,2 if H>155 else 1)
+ box(L,.08,.55,W-.08,D-.13,0,H,wall,3,front=fa)
+ # straight lintel and genuinely modelled porch/awning depth.
+ box(L,.10,.40,W-.10,.65,74,82,'CONC',2)
+ if cafe:
+  box(L,.10,.22,W-.12,1.28,75,80,'SENG',3)
+  box(L,.10,.19,W-.12,.35,77,90,accent,3)
+  for a in (.12,W-.24):
+   pole(L,a,.23,85,.055,'WOOD')
+  # recessed dark service bay and front-facing display.
+  box(L,.32,.11,W-.32,.36,7,64,'DARK',2)
+  box(L,.45,.08,W-.46,.37,39,47,'WOOD')
+  if any(x in name for x in ('nasi','warteg','padang','sunda','bakso','ayam','mie')):
+   for i in range(5):
+    a=.45+i*.35
+    if a+.26>=W-.3:break
+    box(L,a,.07,a+.26,.29,48,51,'WHITE')
+    ball(L,a+.12,.13,53,.095,8,FOOD[(i+N)%len(FOOD)])
+   # glazed food case.
+   box(L,.42,.09,min(W-.38,2.52),.16,53,68,'GLASS',2)
+  if 'martabak' in name:
+   ball(L,W*.67,.17,51,.27,9,'TERRA')
+   box(L,W*.68,.15,W*.73,.25,59,64,'YEL')
+  elif 'sate' in name or 'gorengan' in name:
+   box(L,W*.62,.09,W*.89,.44,43,55,'DARK')
+   for i in range(5):
+    a=W*.63+i*.13
+    box(L,a,.10,a+.03,.42,55,60,'TERRA')
+  elif 'kopi' in name or 'warmindo' in name:
+   ball(L,W*.72,.17,50,.20,10,'SENG')
+   for i in range(3):box(L,W*.55+i*.22,.1,W*.7+i*.22,.29,50,65,'WARM')
+  elif 'pulsa' in name:
+   for i in range(4):box(L,.35+i*.36,.09,.54+i*.36,.24,49,69,'BLUE' if i%2 else 'RED')
+  elif 'laundry' in name:
+   for a in (.42,1.05,1.69):
+    box(L,a,.08,a+.5,.32,0,49,'WHITE')
+    ball(L,a+.25,.05,29,.14,11,'DARK')
+  elif 'air isi ulang' in name:
+   galons(L,4,'OGLASS',.37,.27)
+  elif 'pangkas' in name:
+   pole(L,.28,.14,112,.10,'WHITE')
+   for z in (25,40,55,70,85,100):
+    box(L,.22,.07,.34,.22,z,z+6,'RED' if z%3 else 'BLUE')
+  elif 'tambal' in name or 'bengkel' in name:
+   for a in (.43,1.11):
+    pole(L,a,.22,30,.21,'DARK')
+   box(L,W*.66,.10,W*.89,.31,0,36,'WOOD')
+  elif 'apot' in name:
+   box(L,W-.47,.10,W-.22,.25,82,110,'GREEN')
+   box(L,W-.57,.10,W-.13,.25,91,100,'GREEN')
+  elif 'jus' in name or 'es teh' in name:
+   galons(L,3,'OGLASS',.38,.26)
+ elif residential:
+  # sheltered porch, entry threshold, terracotta roof and water tank.
+  box(L,.18,.18,W-.2,1.12,0,7,'CONC')
+  for a in (.31,W-.40):pole(L,a,.38,82,.075,'WOOD')
+  box(L,.23,.24,W-.26,1.15,81,90,'WOOD')
+  box(L,W*.42,.12,W*.63,.36,8,62,'WOOD')
+  for i in range(3):
+   a=.28+i*.55
+   if a+.45<W-.15:
+    box(L,a,.12,a+.45,.32,0,18,'WOOD')
+    ball(L,a+.22,.26,20,.14,11,'GREEN')
+  if kind=='kos':
+   box(L,.15,.28,W-.15,1.1,93,102,'CONC')
+   for a in (.3,W-.33):pole(L,a,.2,127,.05,'WOOD',base=98)
+   box(L,.3,.18,W-.3,.28,126,131,'WOOD')
+ else:
+  # side window columns, balcony and approach steps for schools/offices.
+  box(L,.23,.12,W-.2,.60,0,8,'PAVE')
+  box(L,.45,.13,W-.45,.66,8,14,'CONC')
+  if H>170:
+   box(L,.15,.18,W-.16,.60,85,92,'CONC')
+   for i in range(7):
+    a=.33+i*(W-.65)/7
+    box(L,a,.13,a+.05,.33,93,115,'DARK')
+   box(L,.30,.12,W-.28,.25,113,118,'CREAM')
+ # roof silhouettes vary significantly by real-world use.
+ if residential or kind in ('gereja','gudang','pasar'):
+  # sloping tiled kampung roof / warehouse zinc roof
+  L.gable(.02,.50,W-.02,D-.1,H+1,H+22,'TERRA' if residential else 'SENG')
+  for i in range(8):
+   a=.15+i*(W-.32)/8
+   box(L,a,.49,a+.04,D-.13,H+3,H+5,'WOOD' if residential else 'CONC')
+ else:
+  roof_flat(L,.08,.54,W-.08,D-.10,H,ph=7,
+   pm='WHITE' if kind in ('public','sekolah') else 'CONC')
+  if kind in ('ruko','sekolah','public'):
+   for i in range(2):
+    a=W*.23+i*W*.35
+    box(L,a,D*.58,a+.54,D*.75,H+7,H+15,'SENG')
+ # Local identity beyond generic sign and windows.
+ if kind in ('masjid','mushola'):
+  x=W*.60;y=D*.65
+  ball(L,x,y,H+8,.54 if kind=='masjid' else .37,31,'GREEN')
+  ball(L,x,y,H+40,.09,9,'GOLD')
+  pole(L,W-.32,D-.45,H+36,.11,'CREAM')
+  ball(L,W-.32,D-.45,H+36,.15,13,'GREEN')
+  box(L,.18,.10,W*.33,.26,11,76,'DARK')
+  # 3 pointed entry arches, frontage.
+  for i in range(3):
+   a=.42+i*.55
+   ball(L,a,.20,72,.15,11,'CREAM')
+ if kind=='gereja':
+  box(L,W*.5-.07,D*.49,W*.5+.07,D*.62,H+13,H+54,'CREAM')
+  box(L,W*.5-.27,D*.51,W*.5+.27,D*.59,H+28,H+36,'CREAM')
+ if kind=='sekolah':
+  # school flag and tiled front garden beds
+  pole(L,W-.45,.28,110,.05,'CONC')
+  box(L,W-.4,.16,W-.09,.24,81,93,'RED')
+  box(L,W-.4,.16,W-.09,.24,70,81,'WHITE')
+  for i in range(3):
+   a=.34+i*.65
+   ball(L,a,.18,7,.12,10,'GREEN')
+ if kind in ('pasar','warung'):
+  for i in range(4):
+   a=.38+i*.52
+   box(L,a,.08,a+.42,.32,7,16,FOOD[(i+N)%len(FOOD)])
+ if kind=='rumah' and 'subsid' in name:
+  box(L,.1,D-.30,W-.10,D-.17,39,52,'WOOD')
+ if 'minimarket' in name:
+  board(L,'MART',78,accent)
+  for i in range(3):
+   a=W*.28+i*.52
+   box(L,a,.09,a+.3,.28,26,65,'CREAM')
+   box(L,a,.07,a+.3,.13,50,54,'BLUE' if i%2 else 'RED')
+ if kind=='pasar':
+  for i in range(5):
+   a=.27+i*.64
+   box(L,a,.08,a+.58,.6,68,82,'BLUE' if i%2 else 'TERRA')
+ if 'padang' in name:
+  # signature tiered roof crest; Padang detail cannot be merely a colour.
+  for a in (.6,W-.9):
+   box(L,a,D*.5,a+.32,D*.74,H+7,H+26,'WOOD')
+  box(L,.3,D*.4,W-.3,D*.8,H+25,H+35,'TERRA')
+ return True
+
+def leaf_fan(L,x,y,z,reach=.62,count=8,green='GREEN',wide=.14,drop=12):
+ for i in range(count):
+  theta=i*TAU/count
+  ex=x+reach*math.cos(theta);ey=y+reach*math.sin(theta)
+  mx=x+reach*.53*math.cos(theta);my=y+reach*.53*math.sin(theta)
+  box(L,mx-wide,my-wide,mx+wide,my+wide,z-drop*.45,z+1,green,2+i%3)
+  box(L,ex-wide*.78,ey-wide*.78,ex+wide*.78,ey+wide*.78,
+      z-drop,z-drop*.40,green,3)
+ ball(L,x,y,z-4,.20,13,green)
+def forest_crown(L,x,y,z,rad=.46,base='GREEN',fruit=None):
+ for i in range(7):
+  theta=i*TAU/7
+  px=x+rad*.79*math.cos(theta)
+  py=y+rad*.78*math.sin(theta)
+  ball(L,px,py,z-(i%3)*9,.37,24,base,3 if i%2 else 2)
+ ball(L,x,y,z+8,.52,28,base)
+ if fruit:
+  for i in range(9):
+   theta=i*TAU/9
+   xx=x+rad*.92*math.cos(theta);yy=y+rad*.88*math.sin(theta)
+   ball(L,xx,yy,z-24-(i%3)*6,.075,9,fruit,4)
+def palms(L,x,y,z):
+ pole(L,x,y,z,.12,'WOOD')
+ for h in range(16,z,18):
+  box(L,x-.10,y-.09,x+.1,y+.1,h,h+3,'TERRA')
+ leaf_fan(L,x,y,z+5,.97,9,'GREEN',.20,24)
+ for dx,dy in ((.12,.13),(-.10,.18),(.19,-.1)):
+  ball(L,x+dx,y+dy,z-10,.11,13,'WOOD')
+def grass_leaf(L,x,y,h=48,col='TEAL'):
+ pole(L,x,y,h,.035,'GREEN')
+ for dx,dy,dz in ((-.24,0,-11),(.24,0,-13),(0,-.25,-9),(0,.27,-14)):
+  box(L,x+dx-.06,y+dy-.045,x+dx+.06,y+dy+.045,h+dz,h+dz+23,col)
+def plant(L,s):
+ shadow(L);kind=s['kind'];N=s['num'];name=s['label'].lower()
+ X=L.W*.5;Y=L.D*.50
+ if kind in ('air','padi'):
+  if kind=='padi':
+   for i in range(26):
+    a=.16+(i%7)*.32;b=.15+(i//7)*.44
+    grass_leaf(L,a,b,29+(i%4)*6,'GREEN')
+    ball(L,a,b,35+(i%4)*6,.055,9,'YEL')
+  else:
+   # floating leaves + isolated pink/white flowers, without square lake tile
+   for i in range(14):
+    a=.22+(i%4)*.41;b=.15+(i//4)*.37
+    ball(L,a,b,4,.17,4,'GREEN' if i%3 else 'TEAL')
+    if i%4==0:
+     ball(L,a,b,7,.085,7,'PINK' if 'teratai' in name else 'CREAM')
+  return True
+ if kind in ('semak','ilalang','pandan','pot'):
+  if kind=='pot':
+   box(L,X-.37,Y-.32,X+.37,Y+.32,0,26,'TERRA' if 'monstera' in name else 'CONC')
+   box(L,X-.4,Y-.35,X+.4,Y+.35,24,30,'WOOD',2)
+  for i in range(12 if kind=='ilalang' else 8):
+   th=i*TAU/(12 if kind=='ilalang' else 8)
+   ax=X+.38*math.cos(th);ay=Y+.37*math.sin(th)
+   h=(37+i%5*7)+(17 if kind!='ilalang' else 25)
+   grass_leaf(L,ax,ay,h,'GREEN' if i%2 else 'TEAL')
+   if kind=='semak':
+    ball(L,ax,ay,h,.115,10,'PINK' if 'bougenville' in name else 'RED' if i%4==0 else 'GREEN')
+   if kind=='pot' and 'lidah' in name:
+    box(L,ax-.04,ay-.07,ax+.04,ay+.07,30,h+25,'TEAL')
+    box(L,ax-.018,ay-.08,ax+.018,ay+.08,35,h+20,'YEL')
+  return True
+ if kind=='bambu':
+  for j in range(7):
+   xx=X+(j%3-1)*.28;yy=Y+(j//3-1)*.28
+   top=104+(j%4)*12
+   pole(L,xx,yy,top,.055,'TEAL')
+   for h in range(18,top,23):
+    box(L,xx-.065,yy-.065,xx+.065,yy+.065,h,h+2,'YEL')
+   leaf_fan(L,xx,yy,top-.6,.31,6,'GREEN',.08,13)
+  return True
+ if kind=='pisang':
+  for j,(dx,dy,height) in enumerate(((-.32,-.14,116),(.28,.22,97),(-.13,.36,81))):
+   xx=X+dx;yy=Y+dy
+   pole(L,xx,yy,height,.115,'TEAL')
+   for k in range(7):
+    th=k*TAU/7
+    ex=xx+.70*math.cos(th);ey=yy+.65*math.sin(th)
+    mx=(xx+ex)/2;my=(yy+ey)/2
+    box(L,mx-.16,my-.12,mx+.17,my+.12,height-15,height-6,'GREEN',2)
+    box(L,ex-.17,ey-.10,ex+.17,ey+.10,height-24,height-10,'TEAL',3)
+   if j==0:
+    for h in (73,85,97):
+     ball(L,xx+.14,yy+.14,h,.08,8,'YEL')
+  return True
+ if kind=='pepaya':
+  pole(L,X,Y,132,.13,'WOOD')
+  leaf_fan(L,X,Y,138,.73,10,'GREEN',.17,15)
+  for dx,dy,h in ((.18,.11,101),(-.14,.18,115),(.08,-.17,89)):
+   ball(L,X+dx,Y+dy,h,.17,19,'YEL')
+  return True
+ if kind=='kelapa':
+  palms(L,X,Y,136);return True
+ if kind=='kamboja':
+  pole(L,X,Y,92,.15,'CONC')
+  for k in range(5):
+   th=k*TAU/5;xx=X+.5*math.cos(th);yy=Y+.5*math.sin(th)
+   pole(L,xx,yy,102+k%2*10,.055,'CONC',base=40)
+   ball(L,xx,yy,112,.30,21,'TEAL')
+   for j in range(3):
+    ball(L,xx+.1*math.cos(j*TAU/3),yy+.1*math.sin(j*TAU/3),136,.085,8,'CREAM')
+  return True
+ if kind in ('pohon','ketapang'):
+  pole(L,X,Y,119 if kind=='pohon' else 131,.17,'WOOD')
+  fruit=None
+  if 'mangga' in name:fruit='YEL'
+  if 'rambutan' in name:fruit='RED'
+  if 'sawo' in name:fruit='WOOD'
+  forest_crown(L,X,Y,126 if kind=='pohon' else 141,
+     .54 if kind=='pohon' else .77,'TEAL' if kind=='ketapang' or 'sawo' in name else 'GREEN',fruit)
+  if kind=='ketapang':
+   for i in range(5):
+    angle=i*TAU/5
+    ball(L,X+.65*math.cos(angle),Y+.61*math.sin(angle),104,.24,16,'GREEN')
+  return True
+ return False
