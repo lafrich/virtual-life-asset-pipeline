@@ -70,7 +70,7 @@ class RigStudioTests(unittest.TestCase):
             rig=build_rig_packs(site,characters,ROOT)
             self.assertEqual(len(rig["characters"]),4)
             self.assertEqual(len(rig["types"]),4)
-            self.assertEqual(len(rig["registry"]),203)
+            self.assertEqual(len(rig["registry"]),204)
             self.assertEqual([x["model_type"] for x in characters],
                              ["HUMANOID","MASCOT","ALIEN_SUIT","HELMETED"])
             bowie=json.loads((site/characters[0]["motion_pack"]).read_text())
