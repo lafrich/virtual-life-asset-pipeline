@@ -32,6 +32,7 @@ on:
       - "tests/test_sleep_head_preservation.py"
       - "tests/test_universal_sleep_tabs.cjs"
       - "tests/test_mahluk_actions_tab.cjs"
+      - "tests/test_mahluk_action_deeplink.cjs"
       - "tests/test_action_editor_interactions.cjs"
       - "tests/test_universal_sleep_published.py"
       - "tests/test_player_action_database.cjs"
