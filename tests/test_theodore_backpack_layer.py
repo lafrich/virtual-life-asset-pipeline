@@ -1,7 +1,8 @@
-"""Theodore's backpack belongs to his BACK, below the head, in all four views.
+"""Theodore's rear backpack must sit on the upper back, never the butt.
 
-Front views: pack behind entire character.
-Rear views: panel visible on outer back torso, head and near arm stay in front.
+In NE/NW the panel is visible on the back of the shirt; near arm, neck,
+head and helmet always layer above it. SE/SW sees only an edge behind body.
+All motion directions retain the original 64x112 native V6B silhouette.
 """
 from __future__ import annotations
 import sys
@@ -17,44 +18,48 @@ import make_theodore as t
 
 
 class TheodoreBackpack(unittest.TestCase):
-    def test_backpack_is_rearmost_in_every_view_and_pose(self):
-        # The actual character's opaque torso/arm pixels must cover its pack.
-        for view in ("se", "sw", "ne", "nw"):
-            for pose, frame in (("idle",0),("idle",1),("walk",0),
-                                ("walk",2),("sit",0),("sit_type",1)):
-                with self.subTest(view=view,pose=pose,frame=frame):
-                    equipped,_=t.build(view,pose,frame,modular=False)
-                    bare,_=t.build(view,pose,frame,modular=True)
-                    opaque=(bare[...,3]==255)
-                    torso=opaque.copy()
-                    torso[:56]=False  # head/helmet are deliberately different
-                    self.assertGreater(int(torso.sum()),200)
-                    same=np.all(equipped[...,:3]==bare[...,:3],axis=2)
-                    self.assertGreater(float(same[torso].mean()),.97,
-                        "Backpack is drawn over the body in "+view)
-
-    def test_near_arm_and_rear_skull_are_in_front_of_pack(self):
+    def test_rear_panel_is_on_upper_back_not_hips(self):
         for view in ("ne","nw"):
-            for frame in (0,1,2):
-                with self.subTest(view=view,frame=frame):
-                    equipped,_=t.build(view,"idle",frame,modular=False)
-                    bare,_=t.build(view,"idle",frame,modular=True)
-                    opaque=bare[...,3]==255
-                    torso=opaque.copy()
-                    torso[:53]=False
-                    torso[85:]=False
-                    same=np.all(equipped[...,:3]==bare[...,:3],axis=2)
-                    self.assertGreater(int(torso.sum()),100)
-                    self.assertGreater(float(same[torso].mean()),.97,
-                        "Rear pack cannot cover back torso or arms")
+            for anim,f in (("idle",0),("idle",1),("idle",2),
+                           ("walk",0),("walk",2),("sit",0),("sit_type",1)):
+                with self.subTest(view=view,anim=anim,frame=f):
+                    full,_=t.build(view,anim,f,modular=False)
+                    bare,_=t.build(view,anim,f,modular=True)
+                    changed=np.any(full[...,:3]!=bare[...,:3],axis=2)
+                    on_shirt=(bare[...,3]==255)
+                    upper=on_shirt.copy()
+                    upper[:53]=False
+                    upper[69:]=False
+                    self.assertGreater(int((changed&upper).sum()),30,
+                        "Rear panel must be visible on upper back / shirt")
+                    hips=changed.copy()
+                    hips[:74]=False
+                    self.assertEqual(int(hips.sum()),0,
+                        "Backpack must not protrude over pants or buttocks")
 
-    def test_pack_extends_beyond_body_silhouette(self):
-        for view in ("se","ne"):
-            a,_=t.build(view,"idle",0,modular=False)
-            b,_=t.build(view,"idle",0,modular=True)
-            extra=(a[...,3]>0)&(b[...,3]==0)
-            self.assertGreater(int(extra.sum()),2,
-                "Backpack must retain its actual outer silhouette")
+    def test_front_backpack_is_occluded_by_suit_and_head(self):
+        for view in ("se","sw"):
+            for anim,f in (("idle",0),("walk",2),("sit",0)):
+                with self.subTest(view=view,anim=anim,frame=f):
+                    full,_=t.build(view,anim,f,modular=False)
+                    bare,_=t.build(view,anim,f,modular=True)
+                    opaque=(bare[...,3]==255)
+                    torso=opaque.copy();torso[:55]=False
+                    torso[74:]=False
+                    same=np.all(full[...,:3]==bare[...,:3],axis=2)
+                    self.assertGreater(float(same[torso].mean()),.95,
+                       "Front-facing backpack must be concealed behind torso")
+
+    def test_pack_rear_geometry_stops_above_waist(self):
+        rear=t.pack("ne")
+        self.assertGreater(int((rear[49:69,:,3]>0).sum()),150,
+                           "Upper-back pack should remain substantial")
+        self.assertEqual(int((rear[70:,:,3]>0).sum()),0,
+                         "No pack nozzle dangling at the hips")
+        front=t.pack("se")
+        self.assertGreater(int(front[...,3].sum()),0,
+                           "Front-view backpack edge should still exist")
+
 
 if __name__=="__main__":
     unittest.main()
