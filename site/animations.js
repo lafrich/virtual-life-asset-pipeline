@@ -456,7 +456,8 @@
       writing("animation-total", String(clipSet().length).padStart(2, "0"));
       renderList();
       if (["#animations","#motion","#rigs"].includes(location.hash)) {setMode("animations");if(location.hash==="#rigs")history.replaceState(null,"","#animations");}
-      else if (["#actions","#action-editor"].includes(location.hash)) openActionTab();
+      else if (["#actions","#action-editor"].includes(location.hash))
+        location.replace?.("https://lafrich.github.io/virtual-office/world-builder/bangun-ruang/");
     } catch(error) {
       el("animation-loading").textContent = "ANIMATIONS UNAVAILABLE";
       el("status").textContent = "MOTION ERROR: " + error.message;
