@@ -60,6 +60,26 @@ def sculpt_human_layers(layers:dict,gender:str)->dict:
     return layers
 
 
+def animate_rear_typing_hands(layers:dict,direction:str,index:int)->None:
+    """Shift one pixel of each rear typing-hand gesture; shoulder stays fixed."""
+    if direction not in ("ne","nw") or index%4 not in (1,3):
+        return
+    arm=layers.get("arm_near")
+    if arm is None:return
+    a=np.asarray(arm.convert("RGBA")).copy()
+    yy,xx=np.nonzero(a[...,3]>0)
+    if not len(xx):return
+    hand_y=int(yy.max())
+    cols=np.flatnonzero(a[hand_y,:,3]>0)
+    if not len(cols):return
+    dx=1 if index%4==1 else -1
+    if int(cols.min())+dx<1 or int(cols.max())+dx>62:return
+    original=a[hand_y,cols,:].copy()
+    a[hand_y,cols,:]=0
+    a[hand_y,cols+dx,:]=original
+    layers["arm_near"]=Image.fromarray(a,"RGBA")
+
+
 def shade_human_anatomy(sprite:Image.Image,gender:str,direction:str,
                         shirt_top:int,pants_top:int,
                         skin_shade:tuple[int,int,int],
@@ -144,7 +164,10 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # native lie_flat transform used by the original V6B game.
             lying=kind in ("lie","bathtub_bathe")
             source_dir=("se" if direction in ("se","sw") else "ne") if lying else direction
-            face_expression="neutral" if kind=="bathtub_bathe" else "blink" if lying else expression
+            face_expression=("neutral" if kind=="bathtub_bathe" else
+                             "blink" if lying else
+                             "sleepy" if kind in ("sleep_seat","nap_stand") else
+                             expression)
             canvas,layers,pal=base6.render(cfg,f=index%4 if lying else index,d=source_dir,
                                            expr=face_expression,anim=anim)
             M.bald(layers,pal)
@@ -223,6 +246,14 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                            "shoes_over","rips","shirt","arm_near","body_front",
                            "face","hair_front","brows"):
                             if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
+            if kind=="sit_type" and direction in ("ne","nw"):
+                # Original native rear view had four identical typing frames.
+                animate_rear_typing_hands(layers,direction,index)
+                result=Image.new("RGBA",FRAME)
+                for key in ("hair_back","body","arm_far","shoes","pants",
+                            "shoes_over","rips","shirt","arm_near",
+                            "body_front","face","hair_front","brows"):
+                    if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
             # Native body geometry stays intact; outline only the exterior
             # pixels of the assembled native skin-toned mannequin.
             result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))

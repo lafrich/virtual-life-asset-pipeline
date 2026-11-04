@@ -667,7 +667,8 @@ function renderCustomStorage(){
   const label=document.createElement("strong");label.textContent=row.name;
   const meta=document.createElement("small");meta.textContent=
    (HUMAN_BASES.includes(row.base)?"HUMAN "+(row.base.includes("female")?"FEMALE":"MALE"):"ASTROFRICH")+
-   " · 9 MOTIONS · 5 FACES";
+   " · "+(templateFor(row.base)?.motions?.filter(m=>m.available).length||0)+
+    " MOTIONS · "+(templateFor(row.base)?.expressions?.length||0)+" FACES";
   label.append(meta);
   const open=document.createElement("button");open.type="button";open.className="chrome-button";
   open.textContent="OPEN";open.onclick=()=>{

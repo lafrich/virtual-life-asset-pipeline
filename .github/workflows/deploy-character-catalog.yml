@@ -174,6 +174,7 @@ jobs:
           python tests/test_universal_sleep_geometry.py
           python tests/test_universal_sleep_published.py
           python tests/test_hygiene_published.py
+          python tests/test_human_animation_sheets.py
       - name: Render original street vehicles for Semesta
         run: |
           # Same authored sprite pipeline as Mahluk Hidup, not a Semesta proxy.
