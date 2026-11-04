@@ -399,9 +399,29 @@ function drawAccessory(target,p,actor,category,dir){
  const img=picture(path);
  if(img&&img.width===64&&img.height===112)target.drawImage(img,0,0);
 }
+// Cache pose-head locations per atlas frame so a 60fps preview does not
+// repeatedly scan 64x112 pixels for the same authored sprite.
+const atlasHeadCache=new WeakMap();
+function atlasHead(image,sx,sy){
+ if(!image||sx<0||sy<0||sx+64>image.naturalWidth||sy+112>image.naturalHeight)return null;
+ let cached=atlasHeadCache.get(image);
+ if(!cached){cached=new Map();atlasHeadCache.set(image,cached);}
+ const key=sx+":"+sy;
+ if(cached.has(key))return cached.get(key);
+ const cv=document.createElement("canvas");cv.width=64;cv.height=112;
+ const brush=cv.getContext("2d",{willReadFrequently:true});
+ let head=null;
+ try{
+  brush.drawImage(image,sx,sy,64,112,0,0,64,112);
+  head=A.headAnchor(brush.getImageData(0,0,64,112));
+ }catch{/* Unreadable cross-origin sprite must never paint a phantom head. */}
+ cached.set(key,head);
+ return head;
+}
 function drawFacePatch(target,actor,p,m,frame){
- // AUTO uses the authentic facial track already authored in every action
- // atlas. MANUAL overlays a swappable same-actor modular face asset.
+ // AUTO shows the expression authored into the exact current pose.
+ // Manual native expressions must NEVER overlay a full upright HEAD/BODY
+ // rectangle onto squat, knee-chest or bent-over silhouettes.
  if(p.autoFace||["ne","nw"].includes(p.direction))return;
  const faceId=p.faceAssetId||p.expressionId||"neutral";
  const face=(actor.expressions||[]).find(f=>f.id===faceId);
@@ -409,52 +429,49 @@ function drawFacePatch(target,actor,p,m,frame){
  const data=imported?.data;
  if(!face&&!data)return;
  const dirIndex=DIR.indexOf(p.direction);
- const sheet=face?.motion_sheets?.[m.id]||face?.overlay||face?.sheet;
- const source=picture(data||sheet);
+ const matched=face?.motion_sheets?.[m.id];
+ const source=picture(data||matched||face?.overlay||face?.sheet);
  if(!source)return;
- let cropX=0,cropY=0,cropW=32,cropH=29;
- if(!data){
-  // Native expressions are full-body atlases, NOT facial overlays.
-  // Crop just that actor's original face. Walk and Idle prefer matching
-  // frame-by-frame expression atlases, never swap someone else's body.
-  const overlay=face.overlay&&!face.motion_sheets?.[m.id];
-  const rowCount=Math.floor(source.height/112);
-  const row=overlay&&rowCount>=8?4+dirIndex:dirIndex;
-  const columns=Math.floor(source.width/64);
-  if(columns<1||row>=rowCount)return;
-  const frameCount=face.motion_sheets?.[m.id]&&m.id==="walk"?m.frames:
-   Math.max(1,face.frames||4);
-  cropX=(frame%Math.max(1,Math.min(columns,frameCount)))*64+17;
-  cropY=row*112+30;
-  if(cropX+cropW>source.width||cropY+cropH>source.height)return;
- }else if(source.width!==32||source.height!==29){
-  return; // Imported custom emotion PNGs are canonical 32x29 face parts.
- }
- let dx=17+(p.faceOffsetX||0),dy=30+(p.faceOffsetY||0);
- if(p.motionId==="squat_idle"){dy+=17;}
- else if(p.motionId==="knee_chest_idle"){dy+=11;}
- else if(p.motionId==="squat_down"||p.motionId==="squat_up"){
-  const progress=p.motionId==="squat_down"?frame/5:(5-frame)/5;
-  dy+=Math.round(17*progress);
- }
- else if(p.motionId==="bent_over_idle"){
-  dy+=25;dx+=(p.direction==="se"?10:-10);
- }else if(p.motionId==="sit"||p.motionId==="sit_type"){dy+=4;}
- else if(p.motionId==="sleep_seat"){dy+=3;}
- else if(p.motionId==="nap_stand"){dy+=2;}
- const reclined=["lie","lie_idle","bathtub_bathe"].includes(p.motionId);
- target.save();
- target.imageSmoothingEnabled=false;
- if(reclined){
-  // Portrait follows the sideways head on native horizontal actions.
-  const cx=20+(p.faceOffsetX||0),cy=66+(p.faceOffsetY||0);
-  target.translate(cx,cy);
-  target.rotate((p.direction==="se"?-1:1)*Math.PI/2);
-  target.drawImage(source,cropX,cropY,cropW,cropH,
-   -cropW/2,-cropH/2,cropW,cropH);
+ const reclined=["lie","lie_idle","bathtub_bathe"].includes(m.id);
+ // A horizontal head has a different axis. Until a matching horizontal
+ // expression sheet exists, keep the ORIGINAL single posed head; do not
+ // rotate a complete idle portrait on top of the actor.
+ if(reclined&&!matched)return;
+ const baseFrame=frameSource(actor,m,frame,p.direction);
+ const baseImage=picture(baseFrame.src);
+ const posedHead=atlasHead(baseImage,baseFrame.sx,baseFrame.sy);
+ if(!posedHead)return;
+ let sx,sy,sw,sh;
+ if(data){
+  // Imported 32x29 portraits are only a face asset. Clip their inner
+  // features so their border, scalp and background cannot clone the head.
+  if(source.naturalWidth!==32||source.naturalHeight!==29)return;
+  sx=9;sy=10;sw=15;sh=14;
  }else{
-  target.drawImage(source,cropX,cropY,cropW,cropH,dx,dy,cropW,cropH);
+  const overlay=face.overlay&&!matched;
+  const rows=Math.floor(source.naturalHeight/112);
+  const row=overlay&&rows>=8?4+dirIndex:dirIndex;
+  const columns=Math.floor(source.naturalWidth/64);
+  if(!columns||row>=rows)return;
+  const frameCount=matched&&m.id==="walk"?m.frames:Math.max(1,face.frames||4);
+  const col=frame%Math.max(1,Math.min(columns,frameCount));
+  const sourceX=col*64,sourceY=row*112;
+  const originalHead=atlasHead(source,sourceX,sourceY);
+  if(!originalHead)return;
+  const patch=A.nativeFacePatch(originalHead,posedHead,p.faceOffsetX,p.faceOffsetY);
+  if(!patch)return;
+  sx=sourceX+patch.sx;sy=sourceY+patch.sy;
+  sw=patch.w;sh=patch.h;
+  target.save();target.imageSmoothingEnabled=false;
+  target.drawImage(source,sx,sy,sw,sh,patch.dx,patch.dy,sw,sh);
+  target.restore();
+  return;
  }
+ const dx=Math.round(posedHead.x)-7+(p.faceOffsetX||0);
+ const dy=Math.round(posedHead.y)+10+(p.faceOffsetY||0);
+ if(dx<0||dy<0||dx+sw>64||dy+sh>112)return;
+ target.save();target.imageSmoothingEnabled=false;
+ target.drawImage(source,sx,sy,sw,sh,dx,dy,sw,sh);
  target.restore();
 }
 function actorImage(actor,p,m,frame){

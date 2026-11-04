@@ -157,6 +157,41 @@
   if(!parsed)throw Error("ACT file has no valid participants");
   return parsed;
  }
+ // Analyze ONLY the native 64x112 actor frame: the first substantial
+ // horizontal silhouette is the skull on upright actions. Do not use the
+ // already-composited stage, which can include tall bags and helmets.
+ function headAnchor(imageData,width=64,height=112){
+  const pixels=imageData?.data||imageData;
+  if(!pixels||pixels.length<width*height*4)return null;
+  const limit=Math.min(height,88);
+  let top=-1;
+  for(let y=0;y<limit;y++){
+   let occupied=0;
+   for(let x=0;x<width;x++)if(pixels[(y*width+x)*4+3]>=128)occupied++;
+   if(occupied>=5){top=y;break;}
+  }
+  if(top<0)return null;
+  const xs=[];
+  for(let y=top;y<Math.min(limit,top+12);y++)
+   for(let x=0;x<width;x++)
+    if(pixels[(y*width+x)*4+3]>=128)xs.push(x);
+  if(xs.length<8)return null;
+  xs.sort((a,b)=>a-b);
+  return {x:xs[Math.floor(xs.length/2)],y:top};
+ }
+ // Never paste a whole idle head over a posed head. Native expression
+ // sheets are 64x112 FULL BODIES; just the 15x14 INNER face is transferable.
+ // Source & destination are independently measured (squat/bend/idle).
+ function nativeFacePatch(sourceHead,posedHead,offsetX=0,offsetY=0){
+  if(!sourceHead||!posedHead)return null;
+  const sx=Math.round(sourceHead.x)-7,sy=Math.round(sourceHead.y)+10;
+  const dx=Math.round(posedHead.x)-7+Math.round(Number(offsetX)||0);
+  const dy=Math.round(posedHead.y)+10+Math.round(Number(offsetY)||0);
+  const w=15,h=14;
+  if(sx<0||sy<0||sx+w>64||sy+h>112||
+     dx<0||dy<0||dx+w>64||dy+h>112)return null;
+  return {sx,sy,dx,dy,w,h};
+ }
  return Object.freeze({KEY,BIND_KEY,DIR,SLOTS,clean,read,list,get,save,remove,
-  bind,unbind,readBindings,forPlacement,decode});
+  bind,unbind,readBindings,forPlacement,decode,headAnchor,nativeFacePatch});
 });

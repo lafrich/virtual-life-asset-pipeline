@@ -47,3 +47,36 @@ assert.equal(face.participants[0].faceOffsetX,8);
 assert.equal(face.participants[0].faceOffsetY,-4);
 assert.equal(A.clean({...scene,participants:[{...scene.participants[0],
  faceAssetData:"data:text/html;base64,AAAA"}]}).participants[0].faceAssetData,null);
+
+
+// Posture face regression: the old editor pasted a 32x29 full idle head
+// into every squat/bend pose. A 15x14 inner crop must follow the measured
+// head anchor with no second skull silhouette or displaced facial features.
+function frameHead(cx,top){
+ const data=new Uint8ClampedArray(64*112*4);
+ for(let y=top;y<top+21;y++)for(let x=cx-10;x<=cx+10;x++){
+  const i=(y*64+x)*4;data[i+3]=255;
+ }
+ for(let y=top+21;y<100;y++)for(let x=cx-6;x<cx+6;x++){
+  const i=(y*64+x)*4;data[i+3]=255;
+ }
+ return {data,width:64,height:112};
+}
+for(const [motion,cx,top] of [
+ ["idle",33,32],["squat_idle",33,49],["squat_down",33,35],
+ ["knee_chest_idle",33,48],["bent_over_idle",45,56]
+]){
+ const measured=A.headAnchor(frameHead(cx,top));
+ assert.deepEqual(measured,{x:cx,y:top},motion);
+ const patch=A.nativeFacePatch({x:33,y:32},measured);
+ assert.equal(patch.w,15,motion);
+ assert.equal(patch.h,14,motion);
+ assert.equal(patch.sx,26,motion);
+ assert.equal(patch.sy,42,motion);
+ assert.equal(patch.dx,cx-7,motion);
+ assert.equal(patch.dy,top+10,motion);
+}
+assert.deepEqual(A.nativeFacePatch({x:33,y:32},{x:45,y:56},2,-2),
+ {sx:26,sy:42,dx:40,dy:64,w:15,h:14});
+assert.equal(A.nativeFacePatch({x:33,y:32},{x:60,y:90}),null);
+console.log("PASS measured single-head face patch for idle, squat, knee-chest and bending");
