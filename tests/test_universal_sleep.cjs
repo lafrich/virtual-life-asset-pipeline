@@ -39,13 +39,13 @@ assert.equal(sleep.resolve({...original,sheet:"https://evil.invalid/img.png"},"s
 assert.equal(sleep.resolve({...original,sheet:"media/other.png",motions:[{id:"lie",available:true,
  frames:4,row:0,sheet:"https://untrusted.invalid/x.png"}]},"sleep_bed_right"),null);
 assert.equal(sleep.directionFor("sleep_bed_right","se"),"se");
-assert.equal(sleep.directionFor("sleep_bed_right","sw"),"se");
+assert.equal(sleep.directionFor("sleep_bed_right","sw"),"sw");
 assert.equal(sleep.directionFor("sleep_bed_right","ne"),"ne");
-assert.equal(sleep.directionFor("sleep_bed_right","nw"),"ne");
+assert.equal(sleep.directionFor("sleep_bed_right","nw"),"nw");
 assert.equal(sleep.directionFor("sleep_bed_left","se"),"sw");
-assert.equal(sleep.directionFor("sleep_bed_left","sw"),"sw");
+assert.equal(sleep.directionFor("sleep_bed_left","sw"),"se");
 assert.equal(sleep.directionFor("sleep_bed_left","ne"),"nw");
-assert.equal(sleep.directionFor("sleep_bed_left","nw"),"nw");
+assert.equal(sleep.directionFor("sleep_bed_left","nw"),"ne");
 assert.deepEqual([0,1,2,3].map(sleep.breathing),[0,-1,0,1]);
 const index=fs.readFileSync(path.join(__dirname,"../site/index.html"),"utf8");
 const action=fs.readFileSync(path.join(__dirname,"../site/action-editor.js"),"utf8");
@@ -54,4 +54,4 @@ assert.ok(index.indexOf("universal-sleep.js")<index.indexOf("app.js"));
 assert.ok(editor.indexOf("universal-sleep.js")<editor.indexOf("action-editor.js"));
 assert.match(action,/SLEEP\.resolve\(ch,state\.action\)/);
 assert.match(action,/UNIVERSAL V6B/);
-console.log("PASS actor-authored universal bed sleep in 4 directions, right/left, no fake fallback");
+console.log("PASS distinct 4-direction sleep right/left with genuine actor poses and no fake fallback");
