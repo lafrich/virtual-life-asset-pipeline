@@ -35,6 +35,14 @@
    x:clamp(raw.x,-390,390),y:clamp(raw.y,-230,190),
    layer:clamp(raw.layer,-20,20,ordinal),
    objectLayer:raw.objectLayer==="behind"?"behind":"front",
+   faceOffsetX:clamp(raw.faceOffsetX,-32,32),
+   faceOffsetY:clamp(raw.faceOffsetY,-32,32),
+   colors:{
+    shirt:/^#[0-9a-f]{6}$/i.test(raw.colors?.shirt||"")?
+     raw.colors.shirt:"#5072b4",
+    pants:/^#[0-9a-f]{6}$/i.test(raw.colors?.pants||"")?
+     raw.colors.pants:"#424956"
+   },
    equipment
   };
  }
