@@ -29,7 +29,7 @@ jobs:
           import roadside,gang,signals,parkir,jalan_lokal,pendek,taman
           man=json.load(open('assets/street_buildings/manifest.json'))
           groupdir={'jalan':'jalan_besar','loak':'pasar_loak','kampung':'kampung','gang':'gang','prop':'props','sinyal':'sinyal','parkir':'parkir','lokal':'jalan_lokal','pendek':'jalan_besar/pendek','taman':'taman'}
-          names=['kantor_a','kantor_b','indomaret','ruko_a','bank_bca','hotel','kafe_blue_doors','warung_madura','rumah_kampung_a','rumah_kampung_b','pos_ronda','gapura_gang','tiang_listrik','lampu_taman','lampu_lalin_merah','bangku_taman','tong_sampah','meja_taman','gazebo','toko_loak']
+          names=['kantor_a','kantor_b','indomaret','ruko_a','bank_bca','hotel','kafe_blue_doors','warung_madura','rumah_kampung_a','rumah_kampung_b','pos_ronda','gapura_gang','tiang_listrik','lampu_taman','lampu_lalin_merah','bangku_taman','tong_sampah','meja_taman','gazebo','toko_loak','mall','masjid','ruko_b','ruko_c','rumah_kampung_c','rumah_kampung_d','rumah_kampung_e','tiang_trafo','tiang_listrik_polos','lampu_pejalan_merah','pot_tanaman','lapak_barang_bekas','lapak_tas','lapak_aksesori']
           for name in names:
             assert name in REG, 'Missing generator: '+name
             entry=REG[name]
