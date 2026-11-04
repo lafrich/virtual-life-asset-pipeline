@@ -8,24 +8,27 @@ root=Path("_site")
 cat=json.loads((root/"catalog.json").read_text())["characters"]
 expected={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,
           "nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6,
-          "squat_idle":4,"bent_over_idle":4,"lie_idle":4}
+          "squat_idle":4,"squat_down":6,"squat_up":6,"knee_chest_idle":4,"bent_over_idle":4,"lie_idle":4}
 animated={"walk":4,"idle":2,"sit":2,"sleep_seat":2,"nap_stand":2,"sit_type":2,"talk":2,
           "lie":2,"bathe":3,"bathtub_bathe":4,
-          "squat_idle":3,"bent_over_idle":3,"lie_idle":2}
+          "squat_idle":3,"squat_down":4,"squat_up":4,"knee_chest_idle":3,"bent_over_idle":3,"lie_idle":2}
 bodies=[]
 for gender in ("male","female"):
     c=next(x for x in cat if x["id"]==f"human_{gender}_base")
     actions={m["id"]:m for m in c["motions"] if m.get("available")}
     assert set(actions)==set(expected),(gender,sorted(actions))
-    assert len(c["expressions"])==9
+    assert len(c["expressions"])==10
     assert (root/f"media/human-{gender}-base-action-toilet.png").is_file()
     assert {x["id"] for x in c["expressions"]}=={
-        "neutral","smile","happy","sad","angry","surprised","sleepy","blink","embarrassed"}
+        "neutral","smile","happy","sad","angry","surprised","sleepy","blink","embarrassed","bleh"}
     for kind,frames in expected.items():
         action=actions[kind]
         assert action["frames"]==frames and len(action["frame_ms"])==frames
-        if kind in ("squat_idle","bent_over_idle","lie_idle"):
+        if kind in ("squat_idle","knee_chest_idle","bent_over_idle","lie_idle"):
             assert action["category"]=="posture" and action["loop"] is True
+            assert action["posture"]==kind
+        if kind in ("squat_down","squat_up"):
+            assert action["category"]=="posture" and action["loop"] is False
             assert action["posture"]==kind
         assert len(action["expression_sequence"])==frames
         assert action["default_expression"]==action["expression_sequence"][0]
@@ -74,7 +77,7 @@ for actor in bodies:
     for view in ("se","sw","ne","nw"):
         idle=tile("idle",view)
         x0,y0=np.nonzero(idle[:,:,3])[1],np.nonzero(idle[:,:,3])[0]
-        for kind in ("squat_idle","bent_over_idle"):
+        for kind in ("squat_idle","bent_over_idle","knee_chest_idle"):
             pose=tile(kind,view)
             x,y=np.nonzero(pose[:,:,3])[1],np.nonzero(pose[:,:,3])[0]
             assert y.min()>=y0.min()+7,(actor["id"],kind,view,"head did not lower")
@@ -83,4 +86,15 @@ for actor in bodies:
         y,x=np.nonzero(reclined[:,:,3])
         assert x.max()-x.min()>40 and y.max()-y.min()<70,(
             actor["id"],view,"lie_idle is not horizontal")
-print("PASS: 2 gender rigs x 13 actions x 4 directions, 104 directional clips and 3 geometric postures valid")
+for actor in bodies:
+    expr=next(e for e in actor["expressions"] if e["id"]=="bleh")
+    for part in ("eyes","mouth","blush"):
+        for pose in ("idle","walk"):
+            path=root/expr["parts"][part][pose]
+            assert path.is_file(),(actor["id"],part,pose)
+            with Image.open(path) as im:
+                assert im.mode=="RGBA"
+                assert np.any(np.asarray(im)[:,:,3]>0),(path,"empty modular emotion")
+    with Image.open(root/expr["sheet"]) as im:
+        assert im.size==(256,448)
+print("PASS: 2 adult human rigs x 16 actions x 4 directions, 128 clips; knee-chest, squat and bleh face parts validated")
