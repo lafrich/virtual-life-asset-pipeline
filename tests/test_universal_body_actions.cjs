@@ -71,6 +71,15 @@ assert.match(script,/body_override:"toilet_lower"/);
 assert.match(script,/body_override:"bath_full"/);
 assert.ok(index.indexOf("universal-body-actions.js")<index.indexOf("app.js"));
 assert.match(anim,/bathe_male_v1/);assert.match(anim,/bathe_female_v1/);
+assert.match(anim,/bathtub_bathe_male_v1/);
+assert.match(anim,/bathtub_bathe_female_v1/);
+assert.match(anim,/APPROVED_ANIMATION_IDS/,
+ "Published bathtub GIFs must be admitted by the animation browser's visible whitelist");
+const actionEditor=fs.readFileSync("site/action-editor.js","utf8");
+assert.match(actionEditor,/row\.id==="bathtub_bathe"/,
+ "Action Editor must display bathtub for the selected actor, even before actor-specific rigging");
+assert.match(actionEditor,/bathtub_bathe:\["bathtub_bathe","lie"\]/,
+ "Authoring preview must prefer genuine horizontal bathtub frames");
 // Body gender and skin palette are inherited from the immutable template.
 assert.equal(BODY.bodyType({id:"custom_human_f",baseId:"human_female_base"}),"female");
 assert.equal(BODY.bodyType({id:"custom_human_m",baseId:"human_male_base"}),"male");
