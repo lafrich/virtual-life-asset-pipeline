@@ -4,7 +4,7 @@ renderer and is published by indonesia.py with a tested asset manifest.
 No source photos or copyrighted third-party sprites.
 """
 from math import cos, sin, pi
-from lib import asset, grass_ground, ground, bshadow, Tex
+from lib import asset, bshadow, Tex
 
 PLANTS=[
  ("id_pohon_kelapa","Pohon kelapa kampung","plant"),
@@ -37,8 +37,7 @@ PROPS=[
 PACK=PLANTS+PROPS
 
 def base(L,w,d,plant=False):
-    if plant: grass_ground(L,0,0,w,d)
-    else: ground(L,0,0,w,d)
+    # No opaque square ground tiles: sprites must blend with grass, sidewalk or road.
     bshadow(L,0,0,w,d,105)
 
 def trunk(L,a,b,h,r=.085,material="WOOD"):
