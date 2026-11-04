@@ -67,7 +67,9 @@ for(const control of ["save-template","object-layer","template-speed","template-
 assert.ok(html.includes("action-template-bridge.js"));
 assert.ok(editor.includes("T.save(state.actor,state.action"));
 assert.ok(editor.includes('ISO.drawFurniture(sc,geo,p)'));
-assert.ok(editor.includes("const src=state.source?.authored?sourceRect(frame,dir):null"),
- "Unauthored activity must not use idle pixel sheet in live preview");
+assert.ok(editor.includes("const src=(state.source?.authored||state.source?.referencePose)?sourceRect(frame,dir):null"),
+ "Real native poses or explicitly marked actor-native bathtub preview may be drawn");
+assert.ok(editor.includes('referencePose:state.action==="bathtub_bathe"'),
+ "Only the shared bathtub action can borrow an actor-specific source pose");
 assert.ok(editor.includes('if(state.dirty){'),"Saving a reference idle frame must require painted pixels");
 console.log("PASS 4-view Semesta action templates, draft gating, frame holds, front/back object layer and non-destructive editing");
