@@ -665,6 +665,33 @@ def produce_market(L,s):
    box(L,.12,L.D-.38,L.W-.13,L.D-.25,42,85,'BLUE')
   return True
  if k=='gerobak':return cart(L,s)
+ if k in ('kompor','panci','penanak','nampan','lampu'):
+  if k=='kompor':
+   box(L,.24,.23,L.W-.23,L.D-.24,0,29,'DARK')
+   for a in (.56,L.W-.47):
+    ball(L,a,L.D*.5,30,.23,7,'SENG')
+    ball(L,a,L.D*.5,39,.11,5,'ORANGE')
+   box(L,.14,.18,L.W-.15,L.D-.21,28,32,'CONC')
+  elif k=='panci':
+   for a in (.48,1.23):
+    pole(L,a,L.D*.5,55,.30,'SENG')
+    ball(L,a,L.D*.5,55,.3,8,'CONC')
+    box(L,a-.36,L.D*.42,a+.36,L.D*.58,56,62,'WOOD')
+  elif k=='penanak':
+   box(L,.25,.23,L.W-.20,L.D-.2,0,46,'WHITE')
+   box(L,.22,.22,L.W-.18,L.D-.18,45,54,'CONC')
+   ball(L,L.W*.5,L.D*.52,56,.23,8,'WHITE')
+   box(L,L.W*.45,.15,L.W*.57,.24,29,40,'RED')
+  elif k=='nampan':
+   box(L,.15,.18,L.W-.15,L.D-.18,0,9,'SENG')
+   for i in range(15):
+    a=.23+(i%5)*.36;b=.26+(i//5)*.41
+    ball(L,a,b,9,.12,7,'TERRA' if i%2 else 'YEL')
+  elif k=='lampu':
+   pole(L,L.W*.5,L.D*.5,115,.055,'WOOD')
+   ball(L,L.W*.5,L.D*.5,114,.26,13,'YEL')
+   box(L,L.W*.2,L.D*.33,L.W*.8,L.D*.67,111,118,'WOOD')
+  return True
  return None
 
 def home(L,s):
@@ -700,7 +727,7 @@ def home(L,s):
  if k in ('kanopi','pos'):
   for x in (.17,W-.24):
    for y in (.20,D-.28):
-    pole(L,x,y,101,'WOOD' if k=='pos' else 'CONC')
+    pole(L,x,y,101,.055,'WOOD' if k=='pos' else 'CONC')
   box(L,.09,.12,W-.11,D-.12,100,107,'SENG')
   for i in range(8):
    a=.10+i*(W-.2)/8
@@ -763,6 +790,15 @@ def home(L,s):
 def streets(L,s):
  shadow(L);k=s['kind'];name=s['label'].lower();W=L.W;D=L.D
  from indonesia_200_details import special
+ if k=='lampu' and 'merah' not in name:
+  # PJU is an outward-facing lantern, NOT a red/yellow/green traffic signal.
+  pole(L,W*.5,D*.54,133,.075,'CONC' if 'modern' in name else 'WOOD')
+  box(L,W*.46,D*.46,W*.92,D*.55,120,127,'SENG')
+  ball(L,W*.87,D*.5,113,.20,12,'YEL')
+  if 'antik' in name:
+   box(L,W*.73,D*.43,W*.98,D*.57,116,123,'WOOD')
+   ball(L,W*.86,D*.5,114,.22,14,'WARM')
+  return True
  if k in ('cone','hidran','tiang','portal','blok','lampu') or k=='jalan':
   if special(L,s):return True
  if k=='halte':
