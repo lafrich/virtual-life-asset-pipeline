@@ -154,6 +154,7 @@ jobs:
           node tests/test_rig_runtime.cjs
           node tests/test_face_ui_interactions.cjs
           python -m py_compile tools/build_accessory_guide.py tools/build_astrofrich.py tools/build_human_templates.py tools/human_pose_extras.py
+          python -m unittest discover -s tests -p "test_bleh_face_alignment.py" -v
           python -m unittest discover -s tests -p "test_bald_nape.py" -v
           python -m unittest discover -s tests -p "test_rear_head_v6b.py" -v
           python -m unittest discover -s tests -p "test_human_outline.py" -v
