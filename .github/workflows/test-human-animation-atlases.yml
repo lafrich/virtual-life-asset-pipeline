@@ -3,11 +3,16 @@ name: Human Male-Female — Fast 80-View Animation QA
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
     paths:
       - ".github/workflows/test-human-animation-atlases.yml"
       - "tools/build_human_templates.py"
       - "tools/human_pose_extras.py"
       - "tests/test_human_animation_sheets.py"
+      - "tests/test_bleh_face_alignment.py"
+      - "site/action-appearance-bridge.js"
+      - "tests/test_action_appearance.cjs"
       - "assets/npc_preview_v2/base6.py"
       - "chars-iso/v6b/tools/**"
   workflow_dispatch:
@@ -36,7 +41,10 @@ jobs:
           print("Generated",len(chars),"Human base templates")
           PY
       - name: Pixel-by-pixel 80-directional-clip verification
-        run: python tests/test_human_animation_sheets.py
+        run: |
+          python tests/test_human_animation_sheets.py
+          python -m unittest discover -s tests -p 'test_bleh_face_alignment.py' -v
+          node tests/test_action_appearance.cjs
       - name: Publish QA sprite frames for visual review
         if: always()
         uses: actions/upload-artifact@v4
