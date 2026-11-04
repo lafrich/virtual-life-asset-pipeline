@@ -17,10 +17,10 @@ def make(s):
  k=s["kind"]
  name=s["label"].lower()
  W=float(s["W"]);D=float(s["D"])
- def seat(role,at,feet,scale,action,template="human_male_base",layer="front",optional=False):
+ def seat(role,at,feet,scale,action,template="human_male_base",layer="front",optional=False,enabledByDefault=False):
   return dict(role=role,profile=template,action=action,
    anchor=[round(W*at[0]-W*.5,3),round(feet,3),round(D*at[1]-D*.5,3)],
-   scale=scale,layer=layer,optional=optional)
+   scale=scale,layer=layer,optional=optional,enabledByDefault=enabledByDefault)
  slots=[]
  if k in ("becak","bentor"):
   slots=[seat("driver",(.71,.60),.48,.61,
@@ -41,7 +41,7 @@ def make(s):
    # Use the genuine child template only if published. Never fake a child by
    # shrinking an adult male/female body.
    slots.append(seat("child",(.42,.55),.64,.41,"ride_idle_passenger",
-                     "human_child_base",layer="front",optional=True))
+                     "human_child_base",layer="front",optional=True,enabledByDefault=True))
   elif "penumpang" in name:
    slots.append(seat("passenger_1",(.30,.53),.61,.55,"ride_idle_passenger",
                      "human_female_base",layer="rear"))
