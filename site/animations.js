@@ -61,6 +61,14 @@
   const empty = el("animation-missing");
 
   let library = [];
+  let mediaVersion = "";
+  function currentMedia(path){
+    // animations.json is always fetched fresh; append its deployed SHA so a
+    // corrected GIF never gets stuck behind an old browser/CDN cached file.
+    if(!path||!mediaVersion||!/^(?:\.\/)?media\//.test(path))return path;
+    const delimiter=path.includes("?")?"&":"?";
+    return path+delimiter+"v="+encodeURIComponent(mediaVersion);
+  }
   let selected = null;
   let group = "all";
   let query = "";
@@ -185,7 +193,7 @@
     pause.setAttribute("aria-pressed", String(playable && playing));
     el("anim-tool-play").classList.toggle("active", Boolean(playable && playing));
     if (playable || still) {
-      mainImage.src = playable && playing ? selected.gif : selected.poster;
+      mainImage.src = currentMedia(playable && playing ? selected.gif : selected.poster);
       mainImage.alt = selected.name + (playing ? " — animated preview" : " — first frame");
       mainImage.hidden = false;
       empty.hidden = true;
@@ -249,7 +257,7 @@
 
     const dl = el("animation-download");
     if (clip.gif) {
-      dl.href = clip.gif;
+      dl.href = currentMedia(clip.gif);
       dl.download = clip.id + "_preview.gif";
       dl.textContent = "↓ PREVIEW.GIF";
       dl.hidden = false;
@@ -315,7 +323,7 @@
       preview.className = "file-preview animation-item-preview";
       if (clip.poster) {
         const img = document.createElement("img");
-        img.src = clip.poster;
+        img.src = currentMedia(clip.poster);
         img.loading = "lazy";
         img.alt = "";
         preview.append(img);
@@ -452,6 +460,7 @@
       if (!response.ok) throw new Error("HTTP " + response.status);
       const data = await response.json();
       if (!Array.isArray(data.animations)) throw new Error("BAD MOTION INDEX");
+      mediaVersion = typeof data.build_version === "string" ? data.build_version : "";
       library = data.animations;
       writing("animation-total", String(clipSet().length).padStart(2, "0"));
       renderList();
