@@ -22,4 +22,15 @@ for action in ("sleep_bed_right", "sleep_bed_left"):
         assert clip[name] and (OUT / clip[name]).is_file()
     with Image.open(OUT / clip["gif"]) as gif:
         assert gif.format == "GIF" and gif.n_frames == 4
+    with Image.open(OUT / clip["poster"]) as original_poster:
+        poster = original_poster.convert("RGB")
+        # The first two preview panels must not reuse one direction.
+        # Likewise the rear views must be mirrored actor originals, not
+        # duplicated bald circular heads with incorrect torso orientation.
+        frames = [poster.crop((8 + 136*i, 4, 136 + 136*i, 228))
+                  for i in range(4)]
+        assert frames[0].tobytes() != frames[1].tobytes(), (
+            f"{action}: SE and SW have accidentally identical actor frames")
+        assert frames[2].tobytes() != frames[3].tobytes(), (
+            f"{action}: NE and NW have accidentally identical actor frames")
     print("PASS", action, "4 real native V6B animated frames visible in Animations")
