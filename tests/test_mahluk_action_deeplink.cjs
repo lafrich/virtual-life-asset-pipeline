@@ -25,27 +25,28 @@ const get=id=>{if(!ids.has(id))ids.set(id,new El());return ids.get(id);};
 const doc={getElementById:get,querySelector(){return new El();},
  querySelectorAll(){return [];},createDocumentFragment(){return new El();},
  createElement(tag){return new El(tag)},addEventListener(){}};
+let redirected=null,opened=null;
 const location={href:"https://lafrich.github.io/virtual-life-asset-pipeline/#actions",
- origin:"https://lafrich.github.io",search:"",hash:"#actions"};
-const window={};
+ origin:"https://lafrich.github.io",search:"",hash:"#actions",
+ replace(url){redirected=url;}};
+
+const window={open(url){opened=url;}};
 const fetch=async path=>({ok:true,async json(){
  return String(path).includes("animations.json")?{animations:[]}:{characters:[]};
 }});
 vm.runInNewContext(js,{document:doc,window,location,URL,URLSearchParams,
  fetch,console,history:{replaceState(){}},setTimeout});
 const frame=get("action-editor-embed");
-assert.ok(frame.src.includes("action-editor.html"));
-assert.ok(frame.src.includes("embedded=1"));
-assert.equal(get("action-workspace").hidden,false);
-assert.ok(get("switch-chars").handlers.click?.length,"Characters tab handler missing");
-assert.ok(get("switch-animations").handlers.click?.length,"Animations tab handler missing");
-assert.ok(get("switch-actions").handlers.click?.length,"Action Editor handler missing");
-assert.ok(get("animation-author").handlers.click?.length,"Author button handler missing");
+assert.equal(frame.src,"about:blank","Hidden legacy iframe should not load");
+assert.match(redirected,/virtual-office\/world-builder\/bangun-ruang/,
+ "Legacy #actions deep link should open the new Bangun Ruang alignment workflow");
+assert.ok(get("switch-chars").handlers.click?.length,"Characters tab missing");
+assert.ok(get("switch-animations").handlers.click?.length,"Animations tab missing");
+assert.ok(get("animation-author").handlers.click?.length,"Adjustment link missing");
 get("switch-chars").trigger("click");
 assert.equal(get("character-workspace").hidden,false);
-assert.equal(get("action-workspace").hidden,true);
 get("switch-animations").trigger("click");
 assert.equal(get("animation-workspace").hidden,false);
-get("switch-actions").trigger("click");
-assert.equal(get("action-workspace").hidden,false);
-console.log("PASS direct #actions loads after all DOM controls; Characters, Animations, Actions and Author buttons remain clickable");
+get("animation-create-action").trigger("click");
+assert.match(opened,/virtual-office\/world-builder\/bangun-ruang/);
+console.log("PASS legacy Action Editor deeplink redirects to Bangun Ruang; native Characters/Animations remain clickable");
