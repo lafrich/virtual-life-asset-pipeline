@@ -185,7 +185,21 @@ def detail_transport(L,s):
 def detail_buildings(L,s):
  name=s['label'].lower();k=s['kind'];c=s['category'];W=L.W;D=L.D
  big=(c=='bangunan' or c=='publik')
- H=174 if big else 117
+ # Share the canonical building roof elevation so detailing never floats
+ # above a gable or flat roof (a visible regression on the first v5 sheet).
+ residential=k in ('rumah','kos','mushola') or (name.startswith('rumah ') and c=='bangunan')
+ cafe=c=='warung' or k in ('warung','bengkel')
+ tall=k in ('ruko','sekolah','public','masjid','gereja','pasar','gudang')
+ H=108 if cafe else 123 if residential else 182 if tall else 144
+ if k=='ruko':H=193 if 'dua' in name else 229
+ if k=='sekolah':H=195
+ if k=='mushola':H=129
+ if k=='masjid':H=151
+ if k=='gereja':H=162
+ if k in ('pasar','gudang'):H=135
+ if 'kos dua' in name:H=190
+ if 'balai warga' in name:H=133
+ if c=='publik':H=135
  # Details at actual facade level: downpipes, security rail, entry step,
  # shallow door reveal, ventilated brick, electrical conduits.
  box(L,.13,.43,.24,.52,10,min(H-7,91),'CONC',2)
@@ -198,7 +212,7 @@ def detail_buildings(L,s):
   box(L,W*.79,.11,W*.94,.27,26,37,'CONC')
   box(L,W*.80,.10,W*.91,.17,34,40,'DARK')
  # Native local roof/metal gutter seams across all buildings.
- if big and k not in ('mushola','gereja'):
+ if big and not residential and k not in ('mushola','gereja','gudang','pasar'):
   for i in range(5):
    x=.28+i*(W-.56)/5
    if x+.06<W-.15:box(L,x,D*.75,x+.06,D*.88,H+3,H+5,'CONC')
@@ -210,7 +224,7 @@ def detail_buildings(L,s):
     box(L,x+.06,.11,x+.09,.20,103,120,'CONC')
   box(L,W*.61,.14,W*.78,.27,118,122,'DARK')
   if W>5:
-   roof_vent(L,W*.35,D*.68,212 if k=='ruko' else 185)
+   roof_vent(L,W*.35,D*.68,H+8)
  if 'kos' in name or 'kontrakan' in name:
   for j in range(4):
    x=.32+j*.66
@@ -323,11 +337,11 @@ def detail_plants(L,s):
   if 'pisang' in label:
    for j in range(8):
     a=X+.35*math.cos(j*T/8);b=Y+.32*math.sin(j*T/8)
-    box(L,a-.095,b-.10,a+.095,b+.10,h+9,h+16,'TEAL')
+    box(L,a-.095,b-.10,a+.095,b+.10,h-21,h-14,'TEAL')
   if 'kamboja' in label:
    for i in range(7):
     x=X+.33*math.cos(i*T/7);y=Y+.35*math.sin(i*T/7)
-    ball(L,x,y,h+24,.072,6,'CREAM')
+    ball(L,x,y,min(h-5,122),.072,6,'CREAM')
   if 'bambu' in label:
    for i in range(6):
     a=X+.29*math.cos(i*T/6);b=Y+.28*math.sin(i*T/6)
@@ -544,7 +558,7 @@ def detail_culture(L,s):
   for i in range(9):
    x=.34+i*(W-.64)/9
    box(L,x,.24,x+.04,D-.23,54,58,'TERRA')
- if '17' in name or 'merdeka' in name or 'hajatan' in name:
+ if ('17' in name or 'merdeka' in name or 'hajatan' in name) and s['kind'] in ('tenda','panggung','pendopo','gapura','booth'):
   for i in range(8):
    x=.15+i*(W-.30)/8
    box(L,x,.10,x+.09,.22,104,110,'WHITE' if i%2 else 'RED')
