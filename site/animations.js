@@ -19,8 +19,12 @@
     const requested = new URLSearchParams(location.search);
     const chosenMotion=typeof state!=="undefined"?state.motion?.id:"";
     const motionAction=validActionId(chosenMotion)?chosenMotion:"idle";
-    const actor=extra.actor||requested.get("actor")||
-      (typeof state!=="undefined"?state.selected?.id:null)||"ichsan";
+    // Opening a saved multi-character ACT must not silently replace its
+    // first participant with the character selected in the Characters tab.
+    const savedScene=extra.scene||requested.get("scene")||"";
+    const actor=savedScene?(extra.actor||requested.get("actor")||""):
+      (extra.actor||requested.get("actor")||
+       (typeof state!=="undefined"?state.selected?.id:null)||"ichsan");
     const action=extra.action||requested.get("action")||motionAction;
     return {actor,action:validActionId(action)?action:"toilet",
       building:extra.building||requested.get("building")||"",

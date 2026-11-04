@@ -568,6 +568,9 @@ function setupEvents(){
  window.addEventListener("message",event=>{
   if(event.origin!==location.origin||event.data?.type!=="mahluk-action-context")return;
   const context=event.data.context||{};
+  // A scene deep link owns its saved cast, including actor #1. This optional
+  // parent context is for opening a NEW ACT from a selected character only.
+  if(context.scene&&scene?.id===context.scene)return;
   const actor=entries.get(context.actor);
   if(actor&&scene?.participants.length){
    scene.participants[0].actorId=actor.id;
