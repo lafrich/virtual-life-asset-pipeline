@@ -25,8 +25,7 @@ jobs:
       - name: Install original v6b pixel renderer
         run: python -m pip install --disable-pip-version-check numpy pillow
       - name: Render all original car variants including TransJakarta
-        working-directory: assets/street_vehicles/_work
-        run: python produce.py
+        run: python assets/street_vehicles/_work/produce.py
       - name: Verify real 4-view sprites against Semesta catalog geometry
         run: |
           python - <<'PY'
