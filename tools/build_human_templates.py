@@ -10,9 +10,10 @@ import json
 from pathlib import Path
 from PIL import Image, ImageDraw
 import numpy as np
+from human_pose_extras import knee_chest_layers,bleh_face,PARTS as FACE_PARTS
 
 DIRECTIONS=("se","sw","ne","nw")
-MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6,"squat_idle":4,"bent_over_idle":4,"lie_idle":4}
+MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4,"bathtub_bathe":6,"squat_idle":4,"squat_down":6,"squat_up":6,"knee_chest_idle":4,"bent_over_idle":4,"lie_idle":4}
 EXPRESSION_CONTEXTS=json.loads((Path(__file__).resolve().parents[1]/
     "assets/animation_library/expression_contexts.json").read_text(encoding="utf-8"))
 EXPRS=tuple(row["id"] for row in EXPRESSION_CONTEXTS["gallery"])
@@ -127,9 +128,12 @@ def animate_human_micro_motion(sprite:Image.Image,torso:Image.Image,
     return Image.fromarray(img,"RGBA")
 
 
-POSTURE_KINDS=("squat_idle","bent_over_idle")
+POSTURE_KINDS=("squat_idle","squat_down","squat_up","knee_chest_idle","bent_over_idle")
 POSTURE_FRAME_MS={
     "squat_idle":[280,320,300,320],
+    "squat_down":[115,135,145,145,155,165],
+    "squat_up":[165,155,145,145,135,115],
+    "knee_chest_idle":[360,390,360,390],
     "bent_over_idle":[300,330,300,330],
     "lie_idle":[360,390,360,390],
 }
@@ -147,18 +151,23 @@ def warp_posture_layers(layers:dict,kind:str,direction:str,frame:int)->dict:
     if kind not in POSTURE_KINDS:
         return layers
     phase=frame%4
-    sway=(0,1,2,1)[phase] if kind=="squat_idle" else (0,1,0,-1)[phase]
+    sway=(0,1,2,1)[phase] if kind in ("squat_idle","knee_chest_idle") else 0
     source_knots=np.array([0,28,52,67,82,91,102,111],dtype=np.float32)
-    if kind=="squat_idle":
-        # Lower the head ~16px, compact knees near ground, retain planted feet.
-        target_knots=np.array(
-            [0,44+sway,65+sway,79+sway//2,89,96,102,111],
-            dtype=np.float32)
+    if kind in ("squat_idle","squat_down","squat_up"):
+        # Six authored transition heights between standing and a full squat.
+        full=np.array([0,44+sway,65+sway,79+sway//2,89,96,102,111],
+                      dtype=np.float32)
+        progress=(frame/5 if kind=="squat_down" else
+                  (5-frame)/5 if kind=="squat_up" else 1.0)
+        target_knots=source_knots+(full-source_knots)*progress
+    elif kind=="knee_chest_idle":
+        # Original isometric seated rig, compacted to keep knees at the chest.
+        target_knots=np.array([0,43+sway,66+sway,78+sway,89,95,102,111],
+                              dtype=np.float32)
     else:
-        # Forward hinge at waist: head/shoulders descend; hips and feet stay.
-        target_knots=np.array(
-            [0,52+sway,71+sway,82+sway,88,94,102,111],
-            dtype=np.float32)
+        # Forward hinge at waist; hip and feet remain planted.
+        target_knots=np.array([0,52+sway,71+sway,82+sway,88,94,102,111],
+                              dtype=np.float32)
     yy,xx=np.indices((FRAME[1],FRAME[0]))
     src_y=np.rint(np.interp(np.arange(FRAME[1]),
         target_knots,source_knots)).astype(np.int32)
@@ -256,11 +265,14 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
     results=[]
     for gender,cfg in palettes.items():
         name=f"human-{gender}-base"
-        def frame(direction:str,kind:str,index:int,expression:str|None=None,material_sink:dict|None=None):
+        def frame(direction:str,kind:str,index:int,expression:str|None=None,material_sink:dict|None=None,emotion_sink:dict|None=None):
             anim=("sleep" if kind=="sleep_seat" else
                   "tired" if kind=="nap_stand" else
-                  "sit" if kind=="squat_idle" else
-                  "idle" if kind in ("bent_over_idle","bathe") else
+                  "idle" if kind in ("bent_over_idle","bathe") or
+                    (kind=="squat_down" and index==0) or
+                    (kind=="squat_up" and index==5) else
+                  "sit_type" if kind=="knee_chest_idle" else
+                  "sit" if kind in ("squat_idle","squat_down","squat_up") else
                   "lie" if kind in ("lie_idle","bathtub_bathe") else kind)
             # Mirror directions are authored via native v6b, not generic canvas flip.
             # The modular base6 wrapper returns UPRIGHT layers even when its
@@ -271,8 +283,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             selected_expression=(expression if expression is not None
                                  else contextual_expression(kind,index))
             face_expression=("blink" if kind in ("lie","sleep_seat")
-                             else selected_expression)
-            canvas,layers,pal=base6.render(cfg,f=index%4 if lying else index,d=source_dir,
+                             else "neutral" if selected_expression=="bleh" else selected_expression)
+            canvas,layers,pal=base6.render(cfg,f=index%4,d=source_dir,
                                            expr=face_expression,anim=anim)
             M.bald(layers,pal)
             skin=[tuple(pal.get(k,pal["Ki"])) for k in ("K5","K7","Ke","Kh","Ki")]
@@ -291,9 +303,15 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # The native m/f rig already supplies the shared silhouette;
             # do NOT widen shoulders or hips after posing.
             sculpt_human_layers(layers,gender)
+            if selected_expression=="bleh":
+                layers,parts=bleh_face(layers,source_dir,index,pal)
+                if emotion_sink is not None:
+                    emotion_sink.update(parts)
             # Adjust every authored skin/body/eye/arm layer around one
             # 4-way posture, before shading the dynamically located pelvis.
             layers=warp_posture_layers(layers,kind,direction,index)
+            if kind=="knee_chest_idle":
+                layers=knee_chest_layers(layers,direction,index,pal)
             shirt_mask=np.asarray(layers["shirt"].convert("RGBA"))[...,3]>0
             pant_mask=np.asarray(layers["pants"].convert("RGBA"))[...,3]>0
             shirt_rows=np.flatnonzero(np.any(shirt_mask,axis=1))
