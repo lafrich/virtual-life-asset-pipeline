@@ -7,11 +7,11 @@ pelvis shading are purely a visual guide for creating clothing.
 from __future__ import annotations
 import sys
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageDraw
 import numpy as np
 
 DIRECTIONS=("se","sw","ne","nw")
-MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4}
+MOTIONS={"walk":6,"idle":4,"sit":4,"sit_type":4,"sleep_seat":4,"nap_stand":4,"talk":4,"lie":4,"bathe":4}
 EXPRS=("neutral","happy","surprised","angry","sleepy")
 FRAME=(64,112)
 # Native v6b head begins at FY=31. y=53 is the start of the shoulders:
@@ -166,7 +166,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
     for gender,cfg in palettes.items():
         name=f"human-{gender}-base"
         def frame(direction:str,kind:str,index:int,expression:str="neutral"):
-            anim="sleep" if kind=="sleep_seat" else "tired" if kind=="nap_stand" else kind
+            anim="sleep" if kind=="sleep_seat" else "tired" if kind=="nap_stand" else "idle" if kind=="bathe" else kind
             # Mirror directions are authored via native v6b, not generic canvas flip.
             # The modular base6 wrapper returns UPRIGHT layers even when its
             # anim=lie parameter is selected. Apply the SAME pixel-exact
@@ -218,6 +218,45 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             for key in ("hair_back","body","arm_far","shoes","pants","shoes_over",
                         "rips","shirt","arm_near","body_front","face","hair_front","brows"):
                 if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
+            if kind=="bathe":
+                # Native four-frame shower/wash motion. The *near arm* is
+                # redrawn around its own shoulder joint in four distinct
+                # positions. All other layers retain the original identity,
+                # skin palette and 64x112 anchors (no body rotation).
+                arm=layers.get("arm_near")
+                if arm is not None:
+                    alpha=np.asarray(arm.convert("RGBA"))[...,3]
+                    yy,xx=np.nonzero(alpha>0)
+                    if len(xx):
+                        shoulder_y=int(yy.min())
+                        near=xx[yy<=shoulder_y+4]
+                        shoulder_x=int(np.median(near)) if len(near) else int(np.median(xx))
+                        # Remove only original straight arm layer from the
+                        # composite and rebuild it at the same shoulder.
+                        # Prefer regenerating composite from original layers
+                        # to clearing arbitrary pixels from body artwork.
+                        layers["arm_near"]=Image.new("RGBA",FRAME)
+                        bend=(-1,-6,-12,-5)[index%4]
+                        raise_up=(21,15,5,11)[index%4]
+                        hand_x=shoulder_x+bend
+                        hand_y=shoulder_y+raise_up
+                        arm_layer=layers["arm_near"]
+                        draw=ImageDraw.Draw(arm_layer)
+                        outline=tuple(pal.get("K7",(113,74,61)))
+                        skin_middle=tuple(pal.get("Ke",(170,115,87)))
+                        skin_light=tuple(pal.get("Ki",(223,181,147)))
+                        draw.line([(shoulder_x,shoulder_y),
+                           (shoulder_x+(bend//2),shoulder_y+8),
+                           (hand_x,hand_y)],fill=outline,width=5,joint="curve")
+                        draw.line([(shoulder_x,shoulder_y),
+                           (shoulder_x+(bend//2),shoulder_y+8),
+                           (hand_x,hand_y)],fill=skin_middle,width=3,joint="curve")
+                        draw.point((hand_x,hand_y),fill=skin_light)
+                        result=Image.new("RGBA",FRAME)
+                        for key in ("hair_back","body","arm_far","shoes","pants",
+                           "shoes_over","rips","shirt","arm_near","body_front",
+                           "face","hair_front","brows"):
+                            if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
             # A bald, skin-toned body still needs a pixel-art silhouette
             # around its arms, torso, separated legs, and feet.
             result=outline_human_body(result,tuple(pal.get("K7",(105,75,63))))
@@ -229,6 +268,17 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 zzz=_Image.fromarray(base6.lv.zzz_img(
                     "lie",index,source_dir,direction in ("sw","nw")),"RGBA")
                 result.alpha_composite(zzz)
+            if kind=="bathe":
+                # Four original phase offsets; keep effect away from face.
+                water=ImageDraw.Draw(result)
+                phase=index%4
+                for sx,sy in ((16+phase%2,45+phase*4),
+                              (46-phase%2,34+phase*5),
+                              (26+phase*3,69-phase*2)):
+                    water.rectangle((sx,sy,sx+1,sy+3),fill=(155,218,234,180))
+                for sx,sy in ((31+phase,64-phase*3),
+                              (34-phase,70+phase)):
+                    water.rectangle((sx,sy,sx+2,sy+1),fill=(229,249,252,200))
             # Body remains a non-explicit adult mannequin for outfit fitting.
             assert result.size==FRAME
             return result
@@ -272,7 +322,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 make_sheet(kind,count).save(media/fn,optimize=True)
                 motions.append({"id":kind,"name":kind.replace("_"," ").upper(),"category":"action",
                     "source":"custom","sheet":"media/"+fn,"row":0,"available":True,
-                    "frames":count,"frame_ms":[210]*count,"loop":kind in ("talk","sit_type"),"reason":""})
+                    "frames":count,"frame_ms":([330,360,380,360] if kind=="bathe" else [210]*count),
+                    "loop":kind in ("talk","sit_type","bathe"),"reason":""})
         expressions=[]
         for expr in EXPRS:
             fn=f"{name}-expression-{expr}.png"
