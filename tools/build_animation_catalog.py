@@ -8,6 +8,7 @@ This does not generate or modify the playable game or unreviewed action poses.
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 from pathlib import Path
@@ -311,7 +312,7 @@ def build_animation_catalog(out: Path, repo_url: str,
     reserved = ids | {item["id"] for item in registered if item.get("status") != "planned"}
     records.extend(planned_records(backlog_path, reserved))
     (out / "animations.json").write_text(
-        json.dumps({"version": 1, "animations": records}, indent=2, ensure_ascii=False) + "\n",
+        json.dumps({"version": 1, "build_version": os.environ.get("GITHUB_SHA", "local")[:12], "animations": records}, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     print(f"Animation catalog: {len(records)} items ({sum(bool(r['gif']) for r in records)} GIFs)")
