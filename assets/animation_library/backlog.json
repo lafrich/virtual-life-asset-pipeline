@@ -2373,6 +2373,41 @@
       "notes": "Needs original, actor-specific frames and compatibility review before use."
     },
     {
+      "id": "bathtub_bathe",
+      "label": "BATHTUB BATHE",
+      "category": "hygiene",
+      "batch": 1,
+      "priority": "P1",
+      "status": "planned",
+      "type": "body",
+      "phases": [
+        "enter",
+        "loop",
+        "exit"
+      ],
+      "loop": true,
+      "requirements": [
+        "bathtub"
+      ],
+      "event": null,
+      "sync": "solo",
+      "directions": [
+        "se",
+        "sw",
+        "ne",
+        "nw"
+      ],
+      "frame_size": [
+        64,
+        112
+      ],
+      "pivot": [
+        32,
+        100
+      ],
+      "notes": "Globally planned until all actors have approved 4-view sprites; Human Male/Female have authored 6-frame reclined, awake foam sheets."
+    },
+    {
       "id": "change_clothes",
       "label": "CHANGE CLOTHES",
       "category": "hygiene",
