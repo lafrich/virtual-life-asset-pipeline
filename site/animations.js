@@ -144,7 +144,7 @@
   // The legacy catalog stays intact on disk, but is not published to this UI.
   // Build the visible list deliberately, one completed/approved action at a time.
   // Put the explicit IDs of QA-approved animations here when ready.
-  const APPROVED_ANIMATION_IDS = new Set(["sleep_bed_right","sleep_bed_left"]);
+  const APPROVED_ANIMATION_IDS = new Set(["sleep_bed_right","sleep_bed_left","bathe_male_v1","bathe_female_v1"]);
   const clipSet = () => library.filter(clip =>
     APPROVED_ANIMATION_IDS.has(clip.id) &&
     Boolean(clip.gif) &&
