@@ -33,6 +33,7 @@ Makefile, run_all.md, requirements.txt
 | Animations on top of v6b | `assets/anim_ambil_barang`, `assets/anim_nyebrang`, `assets/spawn_hobo/src/spawn.py`, `assets/barista_famima/src/barista.py` | see run_all.md |
 | Street / vehicles / riders | `assets/street_vehicles/_work`, `riders_v3/_work` (`scoot.py`, `chars.py`) | `produce.py`, `sheets.py` |
 | Buildings, roads, signals, props (shared iso engine) | `assets/street_buildings/_work/engine.py`, `lib.py` | `produce.py` |
+| Bangun Ruang Warteg Kharisma (interactive JS native-pixel runtime exception) | `assets/warteg_kharisma/`, `site/warteg-*.js` | `node tests/test_warteg_template.cjs` |
 | Vegetation | `assets/vegetation_kebonsirih/_work` | `build.py` |
 | Office environment (tiles/furniture) | `assets/environment/tools` (+ `palette.json`) | `build.py` |
 | Items | `assets/item_temuan/_work` | `render_items.py`, `props.py` |
