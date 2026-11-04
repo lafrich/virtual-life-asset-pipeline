@@ -125,6 +125,7 @@ function updateActionCoverage(){
  $("action-readiness").textContent=SLEEP?.resolve(actor(),state.action)?
   "UNIVERSAL BED SLEEP / NATIVE V6B · PLAYABLE":
   template?.ready?"SEMESTA TEMPLATE · PLAYABLE":
+  source?.referencePose?"AUTO PREVIEW / OWN LIE + FOAM":
   source?.authored?"NATIVE / REUSABLE POSE":
   edited?"LOCAL DRAFT · NOT PUBLISHED":"PLANNED / UNRENDERED";
  $("action-coverage").textContent=edited+" / "+max+" FRAMES SAVED LOCALLY";
@@ -182,7 +183,10 @@ function actionSource(){
  const sheet=separate?motion.sheet:ch.sheet;
  const frames=Math.max(1,Math.min(12,Number(motion?.frames)||4));
  return {sheet:url(sheet),row:separate?0:Number(motion?.row)||0,
-  frames,sourceFrames:frames,authored,mode:motion?.id||"idle",
+  frames:state.action==="bathtub_bathe"?6:frames,sourceFrames:frames,
+  authored:state.action==="bathtub_bathe"?motion?.id==="bathtub_bathe":authored,
+  referencePose:state.action==="bathtub_bathe"&&motion?.id!=="bathtub_bathe",
+  mode:motion?.id||"idle",
   note:authored?"MOTION: "+motion.id.toUpperCase()+
    (motion.id===state.action?" / NATIVE CHARACTER FRAMES":" / SHARED NATIVE POSE (NOT UNIQUE ACTION)"):
    "UNRENDERED ACTION: "+state.action.toUpperCase()+" · "+(motion?.id||"IDLE").toUpperCase()+
@@ -422,7 +426,7 @@ function render(){
  const image=editedFrame(frame,dir);
  if(image)sourceCtx.drawImage(image,0,0,64,112);
  else {
-  const src=state.source?.authored?sourceRect(frame,dir):null;
+  const src=(state.source?.authored||state.source?.referencePose)?sourceRect(frame,dir):null;
   if(src)sourceCtx.drawImage(...src,0,0,64,112);
   else {
    sourceCtx.fillStyle="#577c9c";sourceCtx.fillRect(22,45,20,40);
@@ -440,6 +444,10 @@ function render(){
    direction:dir,frame,bodyImage:bath.im});
   else if(hygiene.kind==="bathtub")sourceCtx.clearRect(0,0,64,112);
   else sourceCtx.clearRect(0,BODY.BODY_START_Y||53,64,59);
+ }else if(state.action==="bathtub_bathe"){
+  // Native LIE pixels and face belong to the selected character; no
+  // arbitrary human body is substituted for legacy and non-human actors.
+  BODY?.drawBathFoam?.(sourceCtx,{frame,direction:dir});
  }
  const universal=Boolean(SLEEP?.resolve(actor(),state.action));
  const angle=universal?0:P.rotation($("template-rotation").value);
