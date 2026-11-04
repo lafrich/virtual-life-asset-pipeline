@@ -395,7 +395,7 @@ function refreshAccessoryEquipment(){
  // Read the exact supported slot set for both generic and Human characters.
  accessoryRuntime.items=Array.isArray(stored)?stored.filter(x=>x&&
   typeof x.id==="string"&&
-  ["helmet","bag","shirt","pants","shoes"].includes(x.category)&&
+  ["helmet","bag","hair","shirt","pants","shoes"].includes(x.category)&&
   x.frames&&typeof x.frames==="object"&&
   ["se","sw","ne","nw"].every(d=>typeof x.frames[d]==="string")):[];
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
@@ -410,12 +410,13 @@ function accessoryFor(actor,category){
  const id=accessoryRuntime.equipment[actor]?.[category];
  return accessoryRuntime.items.find(item=>item.id===id&&item.category===category);
 }
-function drawEquippedAccessory(x,y,z,dirIndex,placement="front",targetCtx=ctx){
+function drawEquippedAccessory(x,y,z,dirIndex,placement="front",targetCtx=ctx,only=null){
  if(!state.selected)return;
  // Do not float a backpack/standing outfit over the horizontal sleep pose.
  if(UNIVERSAL_SLEEP?.isSleep(state.motion?.id)&&state.mode==="action")return;
  const dirs=["se","sw","ne","nw"];
  for(const category of EQUIPMENT_SLOTS){
+  if(only&&!only.includes(category))continue;
   // FRONT view: pack is behind the entire character.
   // REAR view: camera sees the back surface, so draw it over the torso
   // but clip it BELOW the skull/neck. Never let straps cross the rear head.
@@ -449,13 +450,14 @@ function renderAccessoryStorage(){
  const current=accessoryRuntime.equipment[actor]||{};
  if(!accessoryRuntime.items.length){
   const empty=document.createElement("p");empty.className="accessory-note";
-  empty.textContent="STORAGE EMPTY. CUSTOM HELM OR TAS TO START.";list.append(empty);
+  empty.textContent="STORAGE EMPTY. DRAW RAMBUT / BAJU / CELANA / SEPATU OR HELM / TAS.";list.append(empty);
  }
  for(const item of accessoryRuntime.items.filter(x=>(x.template_base||"astrofrich_base")===selectedBase)){
   const row=document.createElement("div");row.className="accessory-item";
   const name=document.createElement("div");name.className="accessory-name";
   name.textContent=item.name||"UNNAMED ACCESSORY";
-  const meta=document.createElement("small");meta.textContent=(item.category==="helmet"?"HELM":"TAS")+" / 4 VIEW / LOCAL STORAGE";
+  const meta=document.createElement("small");meta.textContent=({helmet:"HELM",bag:"TAS",hair:"RAMBUT",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU"}[item.category]||item.category.toUpperCase())+
+   " / 4 VIEW / LOCAL STORAGE";
   name.append(meta);
   const button=document.createElement("button");button.className="chrome-button";
   const active=current[item.category]===item.id;
@@ -474,7 +476,9 @@ function renderAccessoryStorage(){
   };
   row.append(name,button);list.append(row);
  }
- const count=["helmet","bag"].map(k=>current[k]? (k==="helmet"?"HELM":"TAS")+": "+(accessoryRuntime.items.find(x=>x.id===current[k])?.name||"NONE"):"").filter(Boolean);
+ const count=EQUIPMENT_SLOTS.map(k=>current[k]?
+   ({helmet:"HELM",bag:"TAS",hair:"RAMBUT",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU"}[k]||k.toUpperCase())+
+    ": "+(accessoryRuntime.items.find(x=>x.id===current[k])?.name||"NONE"):"").filter(Boolean);
  $("accessory-equipped").textContent=count.length?"EQUIPPED / "+count.join(" · "):"NO ACCESSORIES ATTACHED TO "+(actor||"CHARACTER").toUpperCase();
 }
 function openAccessoryEditor(category){
@@ -482,14 +486,14 @@ function openAccessoryEditor(category){
  const overlay=$("pixel-editor-overlay");
  overlay.hidden=false;document.body.classList.add("pixel-editor-open");
  $("pixel-editor-heading-title").textContent="AKSESORIS / "+
-  ({helmet:"HELM",bag:"TAS",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU"}[category])+" — PAINT";
+  ({helmet:"HELM",bag:"TAS",hair:"RAMBUT",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU"}[category])+" — PAINT";
  const url=new URL("./accessory-editor.html",window.location.href);
  url.searchParams.set("embedded","1");url.searchParams.set("actor",state.selected?.id||"legacy_theodore");
  const base=(category==="helmet"||category==="bag")?"astrofrich_base":
   (HUMAN_BASES.includes(customBaseId())?customBaseId():"human_male_base");
  url.searchParams.set("category",category);url.searchParams.set("base",base);
  url.searchParams.set("build",spriteBuildVersion);
- url.searchParams.set("version","human-outfits-v1");
+ url.searchParams.set("version","human-modular-v3");
  url.searchParams.set("refresh",String(Date.now()));
  $("pixel-editor-embed").src=url.href;$("close-pixel-editor").focus();
 }
@@ -500,7 +504,7 @@ function openAccessoryEditor(category){
 const CHAR_STORAGE="virtual-life-character-storage-v1";
 const HUMAN_BASES=["human_male_base","human_female_base"];
 const CUSTOM_BASES=["astrofrich_base",...HUMAN_BASES];
-const EQUIPMENT_SLOTS=["shoes","pants","shirt","bag","helmet"];
+const EQUIPMENT_SLOTS=["shoes","pants","shirt","hair","bag","helmet"];
 let catalogCharacters=[],workingCustomId=null;
 function templateFor(id){return catalogCharacters.find(x=>x.id===id&&x.template)||null;}
 function customBaseId(){return CUSTOM_BASES.includes($("custom-base").value)?$("custom-base").value:"astrofrich_base";}
@@ -513,6 +517,8 @@ function savedCustomCharacters(){
 function hydrateCharacter(row,base){
  return {...base,id:row.id,name:row.name,type:"npc",template:false,
   template_category:base.template_category,custom_character:true,base_id:base.id,
+  baseId:base.id,bodyType:base.gender||null,skinTone:HUMAN_BASES.includes(row.base)?
+   (["base","light","medium","tan","deep","dark"].includes(row.skinTone)?row.skinTone:"base"):null,
   description:base.template_category.toUpperCase()+" · "+row.name+" · 4-direction modular outfit / original motion & face atlases"};
 }
 function rebuildCustomCharacters(){
@@ -532,7 +538,7 @@ function rebuildCustomCharacters(){
 function filterEquippedOptions(base,category,previous=""){
  const select=$("custom-"+category);select.replaceChildren();
  const blank=document.createElement("option");
- blank.value="";blank.textContent="— NO "+({shirt:"BAJU",pants:"CELANA",shoes:"SEPATU",
+ blank.value="";blank.textContent="— NO "+({hair:"RAMBUT",shirt:"BAJU",pants:"CELANA",shoes:"SEPATU",
    helmet:"HELM",bag:"TAS"}[category]||category.toUpperCase())+" —";
  select.append(blank);
  const options=accessoryRuntime.items.filter(x=>x.category===category&&
@@ -546,6 +552,7 @@ function filterEquippedOptions(base,category,previous=""){
 function populateCustomAccessories(){
  const baseId=customBaseId(),human=HUMAN_BASES.includes(baseId);
  $("astrofrich-outfit-slots").hidden=human;$("human-outfit-slots").hidden=!human;
+ $("custom-skin-row").hidden=!human;
  $("custom-base-summary").textContent=human?"HUMAN":"ASTROFRICH";
  for(const kind of EQUIPMENT_SLOTS)filterEquippedOptions(baseId,kind,$("custom-"+kind).value);
  const base=templateFor(baseId);
@@ -564,6 +571,7 @@ function syncCustomCategory(){
 function editCustomCharacter(id){
  const row=savedCustomCharacters().find(x=>x.id===id);if(!row)return;
  workingCustomId=row.id;$("custom-name").value=row.name;
+ $("custom-skin-tone").value=["base","light","medium","tan","deep","dark"].includes(row.skinTone)?row.skinTone:"base";
  $("custom-category").value=HUMAN_BASES.includes(row.base)?"human":"astrofrich";
  $("custom-base").value=row.base;syncCustomCategory();
  const equipped=accessoryRuntime.equipment[row.id]||{};
@@ -572,6 +580,7 @@ function editCustomCharacter(id){
 }
 function resetCustomForm(){
  workingCustomId=null;$("custom-name").value="";
+ $("custom-skin-tone").value="base";
  $("custom-category").value="astrofrich";$("custom-base").value="astrofrich_base";
  syncCustomCategory();
  for(const kind of EQUIPMENT_SLOTS)$("custom-"+kind).value="";
@@ -588,7 +597,9 @@ function saveCustomCharacter(){
   id="custom_"+(base.template_category==="human"?"human":"astro")+"_"+
     Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
  }
- const record={id,name,base:baseId,category:base.template_category,updated:Date.now()};
+ const record={id,name,base:baseId,category:base.template_category,
+  ...(HUMAN_BASES.includes(baseId)?{skinTone:$("custom-skin-tone").value}:{}),
+  updated:Date.now()};
  const index=rows.findIndex(x=>x.id===id);
  if(index<0)rows.unshift(record);else rows[index]=record;
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
@@ -636,7 +647,7 @@ function renderCustomStorage(){
   const label=document.createElement("strong");label.textContent=row.name;
   const meta=document.createElement("small");meta.textContent=
    (HUMAN_BASES.includes(row.base)?"HUMAN "+(row.base.includes("female")?"FEMALE":"MALE"):"ASTROFRICH")+
-   " · 7 MOTIONS · 5 FACES";
+   " · 9 MOTIONS · 5 FACES";
   label.append(meta);
   const open=document.createElement("button");open.type="button";open.className="chrome-button";
   open.textContent="OPEN";open.onclick=()=>{
@@ -793,6 +804,20 @@ function drawFaceCloseup(image, direction, frame, label) {
   ctx.fillText("5X PIXEL DETAIL", left, top + cropH * scale + 14);
 }
 
+function drawHumanBaseFrame(image,sx,sy,x,y,w,h){
+  const actor=state.selected;
+  if(!image?.naturalWidth)return;
+  if(!actor?.skinTone||actor.skinTone==="base"||actor.skinTone==="light"||
+    !UNIVERSAL_BODY?.tintBase){
+   ctx.drawImage(image,sx,sy,64,112,x,y,w,h);return;
+  }
+  const off=document.createElement("canvas");off.width=64;off.height=112;
+  const paint=off.getContext("2d",{willReadFrequently:true});
+  paint.imageSmoothingEnabled=false;
+  paint.drawImage(image,sx,sy,64,112,0,0,64,112);
+  UNIVERSAL_BODY.tintBase(paint,actor);
+  ctx.drawImage(off,x,y,w,h);
+}
 function draw() {
   const w = canvas.width, h = canvas.height;
   ctx.imageSmoothingEnabled = false;
@@ -839,9 +864,13 @@ function draw() {
         // Mahluk Hidup source head and hair remain; equipped garments,
         // shoes, bags and helmets are never layered into a bath frame.
         paint.drawImage(original,frame*64,row*112,64,112,0,0,64,112);
+        UNIVERSAL_BODY.tintBase(paint,state.selected);
         if(UNIVERSAL_BODY.apply(paint,{actor:state.selected,action:state.motion.id,
-             direction:["se","sw","ne","nw"][d],frame,bodyImage:mannequin}))
+             direction:["se","sw","ne","nw"][d],frame,bodyImage:mannequin})){
+          // Hair remains part of the head; only clothing is removed for bath.
+          drawEquippedAccessory(0,0,1,d,"front",paint,["hair"]);
           ctx.drawImage(off,x,y,64*z,112*z);
+        }
       }
     }else{
       ctx.fillStyle="#35547a";ctx.font="bold 12px monospace";
@@ -858,7 +887,7 @@ function draw() {
       const col = state.frame % Math.max(1,state.selected.idle_frames || 4);
       if (state.expression?.sheet) {
         if (state.faceImage?.naturalWidth) {
-          ctx.drawImage(state.faceImage,state.frame*64,d*112,64,112,x,y,64*z,112*z);
+          drawHumanBaseFrame(state.faceImage,state.frame*64,d*112,x,y,64*z,112*z);
           drawFaceCloseup(state.faceImage,d,state.frame,state.expression.label);
           drawEquippedAccessory(x,y,z,d);
         } else {
@@ -869,7 +898,7 @@ function draw() {
         }
         return;
       }
-      ctx.drawImage(state.image,col*64,row*112,64,112,x,y,64*z,112*z);
+      drawHumanBaseFrame(state.image,col*64,row*112,x,y,64*z,112*z);
       if (state.faceOverlay?.naturalWidth) {
         ctx.drawImage(state.faceOverlay,col*64,row*112,64,112,x,y,64*z,112*z);
       }
@@ -894,7 +923,7 @@ function draw() {
         const row = (synced ? 0 : (motion?.row ?? 0)) +
           ["se","sw","ne","nw"].indexOf(oriented);
         const breath=sleepPose?UNIVERSAL_SLEEP.breathing(state.frame)*z:0;
-        ctx.drawImage(source,state.frame*64,row*112,64,112,
+        drawHumanBaseFrame(source,state.frame*64,row*112,
           x,y+breath,64*z,112*z);
         // Expression blend is pixel-aligned on the selected actor's native
         // 44-row sheet; never apply original-row deltas onto unrelated custom rigs.
@@ -1123,6 +1152,7 @@ $("custom-save").addEventListener("click",saveCustomCharacter);
 $("custom-new").addEventListener("click",()=>{resetCustomForm();setInspectorTab("custom");});
 $("custom-draw-helmet").addEventListener("click",()=>openAccessoryEditor("helmet"));
 $("custom-draw-bag").addEventListener("click",()=>openAccessoryEditor("bag"));
+$("custom-draw-hair").addEventListener("click",()=>openAccessoryEditor("hair"));
 $("custom-draw-shirt").addEventListener("click",()=>openAccessoryEditor("shirt"));
 $("custom-draw-pants").addEventListener("click",()=>openAccessoryEditor("pants"));
 $("custom-draw-shoes").addEventListener("click",()=>openAccessoryEditor("shoes"));
