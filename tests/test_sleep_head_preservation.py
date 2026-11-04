@@ -1,9 +1,8 @@
-"""Native V6B bed sleep must rotate its full-size head around the neck.
+"""Native V6B bed sleep must project its original head along the body axis.
 
-A standing/vertical head attached to an isometric lying body is not a valid
-sleep pose. All head, eye and hair pixels must rotate together *without*
-scaling or flattening, and must touch the real projected shoulder on both
-perspectives (SE/SW and NE/NW).
+A quarter-turn alone leaves the head too upright against the isometric body.
+The skull/eyes/hair share a neck pivot and an integer-pixel perspective slope,
+without dropping head scanlines or resampling. All four views retain a seam.
 """
 import sys
 from pathlib import Path
@@ -37,10 +36,13 @@ def specimen():
     }
 
 
-def rotated_pixel(x,y,pivot,shift):
+def projected_pixel(x,y,pivot,shift,view):
     neck_x,neck_y=pivot
     dx,dy=shift
-    return (neck_x+dx+y-neck_y,neck_y+dy-(x-neck_x))
+    u=y-neck_y
+    v=x-neck_x
+    sg=1 if view in ("se","sw") else -1
+    return (neck_x+dx+u,neck_y+dy+int(np.floor(u*sg/2))-v)
 
 
 def adjacent(a,b):
@@ -66,25 +68,25 @@ class BedSleepHeadRotation(unittest.TestCase):
             original=np.asarray(source["body"])
             result=np.asarray(output["body"])
             # Every original head pixel has the exact original RGBA value
-            # in its 90-degree CLOCKWISE position, not standing upright.
+            # in the same diagonal projection as the body, not vertical.
             count=0
             for y in range(30,56):
                 for x in range(64):
                     if original[y,x,3]==0:continue
-                    rx,ry=rotated_pixel(x,y,pivot,shift)
+                    rx,ry=projected_pixel(x,y,pivot,shift,view)
                     self.assertTrue(0<=rx<64 and 0<=ry<112)
                     np.testing.assert_array_equal(result[ry,rx],original[y,x],
-                        err_msg=f"{view} head pixel ({x},{y}) failed rotation")
+                        err_msg=f"{view} head pixel ({x},{y}) failed projection")
                     count+=1
             self.assertGreater(count,250)
             # Facial features rotate around EXACTLY the same joint.
             face=np.asarray(source["face"])
             face_out=np.asarray(output["face"])
             for y,x in zip(*np.nonzero(face[...,3])):
-                rx,ry=rotated_pixel(int(x),int(y),pivot,shift)
+                rx,ry=projected_pixel(int(x),int(y),pivot,shift,view)
                 np.testing.assert_array_equal(face_out[ry,rx],face[y,x])
 
-    def test_rotated_skull_connects_to_original_reclined_shoulder_in_all_views(self):
+    def test_projected_skull_connects_to_original_reclined_shoulder_in_all_views(self):
         source=specimen()
         body=np.asarray(source["body"]).copy()
         body[:56]=0
@@ -107,23 +109,34 @@ class BedSleepHeadRotation(unittest.TestCase):
                 head_mask=np.fliplr(head_mask)
                 torso=np.fliplr(torso)
             self.assertTrue(adjacent(head_mask,torso),
-                f"{direction} rotated head no longer touches shoulder")
+                f"{direction} projected head no longer touches shoulder")
 
-    def test_rotation_keeps_size_not_old_sheared_or_upright_pose(self):
+    def test_head_hair_is_unscaled_and_matches_both_body_slopes(self):
         source=specimen()
-        view="ne"
-        pivot=v6b.lie_neck_pivot(source)
-        shift=v6b.lie_head_shift(source,view)
-        head=np.asarray(source["hair_front"])[...,3]>0
-        result=np.asarray(
-            v6b.lie_preserve_head(source,view,shift,pivot)["hair_front"])[...,3]>0
-        self.assertEqual(int(np.sum(result)),int(np.sum(head)))
-        sy,sx=np.nonzero(head);ry,rx=np.nonzero(result)
-        self.assertEqual(int(sx.max()-sx.min()),int(ry.max()-ry.min()))
-        self.assertEqual(int(sy.max()-sy.min()),int(rx.max()-rx.min()))
-        # The topmost hair band was horizontal. During bed sleep it becomes
-        # VERTICAL: previous broken implementation merely translated it.
-        self.assertLess(int(rx.max()-rx.min()),int(ry.max()-ry.min()))
+        hair=np.asarray(source["hair_front"])
+        yy,xx=np.nonzero(hair[...,3]>0)
+        self.assertGreater(len(xx),40)
+        for view,sign in (("se",1),("ne",-1)):
+            pivot=v6b.lie_neck_pivot(source)
+            shift=v6b.lie_head_shift(source,view)
+            result=np.asarray(v6b.lie_preserve_head(
+                source,view,shift,pivot)["hair_front"])
+            # Pixel count and exact RGB values must survive the projection.
+            self.assertEqual(int(np.count_nonzero(result[...,3])),len(xx))
+            for y,x in zip(yy,xx):
+                rx,ry=projected_pixel(int(x),int(y),pivot,shift,view)
+                np.testing.assert_array_equal(result[ry,rx],hair[y,x])
+            # Moving down the original head axis moves right one pixel and
+            # slopes by +1/2 (SE) or -1/2 (NE), matching lie_flat on the torso.
+            neck_x,neck_y=pivot
+            y0=neck_y-14
+            x0=neck_x
+            a=projected_pixel(x0,y0,pivot,shift,view)
+            b=projected_pixel(x0,y0+4,pivot,shift,view)
+            self.assertEqual(b[0]-a[0],4)
+            self.assertEqual(b[1]-a[1],2*sign)
+            self.assertNotEqual(b[1]-a[1],0,
+                "A pure quarter-turn would not follow the isometric slope")
 
 
 if __name__=="__main__":
