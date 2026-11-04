@@ -18,6 +18,9 @@
   return cat==="facial"?"face":"talk";
  }
  function prototype(actor,action){
+  // Unrigged characters must not fake a crouch, forward hip hinge or lie
+  // by reusing a walking, standing or talking sprite.
+  if(["squat_idle","bent_over_idle","lie_idle"].includes(action?.id))return null;
   // Archive-only records may carry a placeholder sheet. Do not mistake that
   // blank asset for an authored four-way character rig.
   if(["source_only","archive_still"].includes(actor?.asset_status))return null;

@@ -72,3 +72,14 @@ test("shared search UI and canonical registry are loaded",()=>{
  assert.ok(html.includes('id="motion-category"'));
  assert.ok(!app.includes('"NEEDS RIG"'));
 });
+
+test("unrigged actors cannot fake squat, bent over or reclining idle",()=>{
+ const defs=["squat_idle","bent_over_idle","lie_idle"].map(id=>
+  ({id,label:id.toUpperCase(),category:"posture"}));
+ const none=U.catalogFor(native,defs);
+ assert.ok(none.every(p=>p.playback==="reference"));
+ const female=U.catalogFor({...human,motions:[
+  ...human.motions,...defs.map(d=>({id:d.id,source:"custom",available:true,
+   sheet:"media/female-"+d.id+".png",frames:4}))]},defs);
+ assert.ok(female.every(p=>p.playback==="authored"&&p.frames===4));
+});

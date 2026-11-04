@@ -162,7 +162,7 @@ function actionSource(){
   bathe:["bathe","swim"],shower:["bathe","swim"],bath:["bathe","swim"],
   sleep:["sleep","sleep_seat","lie","nap_stand"],
   nap:["sleep","sleep_seat"],lie_down:["sleep","lie"],wake_up:["sleep","lie"],
-  lie_idle:["sleep","lie"],bed_enter:["sleep","lie"],bed_exit:["sleep","lie"],
+  lie_idle:["lie_idle","sleep","lie"],bed_enter:["sleep","lie"],bed_exit:["sleep","lie"],
   office_type:["sit_type"],study_online:["sit_type","sit"],
   eat_seated:["sit"],sit_idle:["sit"],sit_down:["sit"],stand_up:["sit"],
   phone_scroll:["sit_type","idle"],phone_type:["sit_type","idle"],
@@ -588,6 +588,21 @@ async function loadCatalog(){
   }
   if(!Array.isArray(definitions.actions)||definitions.actions.length<200)
    throw Error("Player action registry incomplete");
+  // Human posture database: register the 3 actor-specific motions while
+  // retaining the original 204 canonical gameplay action definitions.
+  const postures=Array.isArray(bindings.posture_presets)?bindings.posture_presets:[];
+  for(const preset of postures){
+   if(!escapeId(preset.id)||!Array.isArray(preset.actors))continue;
+   const existing=known.get(preset.id);
+   if(existing){existing.category="posture";existing.posture=true;}
+   else {
+    const row={id:preset.id,label:preset.label||preset.id.toUpperCase(),
+     category:"posture",status:"actor_specific",type:"custom_sheet",
+     frames:preset.frames||4,loop:true,posture:true,
+     requirements:preset.fixtures||[]};
+    definitions.actions.push(row);known.set(row.id,row);
+   }
+  }
   const universal=SLEEP?.definitions||[];
   A.registerActions([...definitions.actions.map(row=>row.id),
    ...universal.map(row=>row.id)]);

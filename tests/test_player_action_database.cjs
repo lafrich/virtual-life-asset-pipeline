@@ -18,6 +18,15 @@ assert.ok([...new Set(registry.map(x=>x.category))].length>=13);
 assert.equal(bindings.bindings.length,16,"Every Bangun Ruang action verb needs a mapping");
 assert.equal(new Set(bindings.bindings.map(x=>x.game_action)).size,16);
 assert.equal(bindings.variants.length,4);
+assert.equal(bindings.posture_presets.length,3);
+for(const p of bindings.posture_presets){
+ assert.ok(["squat_idle","bent_over_idle","lie_idle"].includes(p.id));
+ assert.deepEqual(p.directions,["se","sw","ne","nw"]);
+ assert.deepEqual(p.pivot,[32,100]);
+ assert.equal(p.frames,4);
+}
+assert.ok(editor.includes("bindings.posture_presets"),
+ "Action Editor must register all 3 actor-specific posture presets");
 for(const row of [...bindings.bindings,...bindings.variants]){
  assert.ok(all.has(row.animation_action),"Unknown canonical animation ID: "+row.animation_action);
  assert.ok(/^[a-z_]+$/.test(row.game_action));
