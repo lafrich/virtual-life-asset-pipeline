@@ -19,7 +19,8 @@
   toilet_sit:{kind:"toilet",coverage:"lower",baseMotion:"sit",frames:4},
   bathe:{kind:"bath",coverage:"full",baseMotion:"bathe",frames:4},
   bath:{kind:"bath",coverage:"full",baseMotion:"bathe",frames:4},
-  shower:{kind:"bath",coverage:"full",baseMotion:"bathe",frames:4}
+  shower:{kind:"bath",coverage:"full",baseMotion:"bathe",frames:4},
+  bathtub_bathe:{kind:"bathtub",coverage:"horizontal",baseMotion:"bathtub_bathe",frames:6}
  });
  const DEFAULT_TONE=Object.freeze([223,181,147]);
  const BODY_START_Y=53; // Native V6B scalp/neck ends, naked torso begins.
@@ -45,10 +46,13 @@
  function rule(action){return RULES[action]||null}
  function resolve(actor,action){
   const r=rule(action),sex=bodyType(actor);
-  if(!r||!sex)return null;
+  // Do not assign human anatomy to unspecified non-human/neutral actors.
+  // They retain their own pose/source under the shared motion fallback.
+  if(!r||!sex||(r.kind==="bathtub"&&sex==="neutral"))return null;
   return {...r,bodyType:sex,
    sheet:"media/human-"+(sex==="female"?"female":"male")+"-base-action-"+r.baseMotion+".png",
-   actionId:action,directions:DIR,frameMs:r.kind==="bath"?[330,360,380,360]:[400,430,440,430],
+   actionId:action,directions:DIR,frameMs:r.kind==="bathtub"?[320,340,360,350,340,330]:
+    r.kind==="bath"?[330,360,380,360]:[400,430,440,430],
    source:"universal-human-body",skin:"source-face"};
  }
  function declaredTone(actor){
@@ -124,7 +128,8 @@
   const r=resolve(actor,action);
   if(!r||!bodyImage||!ctx?.getImageData||!ctx?.drawImage)return false;
   const d=DIR.indexOf(direction);if(d<0)return false;
-  if(bodyImage.naturalWidth<256||bodyImage.naturalHeight<448)return false;
+  if((bodyImage.naturalWidth||bodyImage.width)<r.frames*64||
+     (bodyImage.naturalHeight||bodyImage.height)<448)return false;
   let source;
   try{source=ctx.getImageData(0,0,64,112)}catch{return false}
   const doc=ctx.canvas?.ownerDocument||
@@ -134,7 +139,7 @@
   const bg=base.getContext("2d",{willReadFrequently:true});
   if(!bg)return false;
   bg.imageSmoothingEnabled=false;
-  const f=((Math.floor(frame)%4)+4)%4;
+  const f=((Math.floor(frame)%r.frames)+r.frames)%r.frames;
   bg.drawImage(bodyImage,f*64,d*112,64,112,0,0,64,112);
   let pixels=bg.getImageData(0,0,64,112);
   const tone=recolorTone(source,actor);
@@ -146,6 +151,9 @@
   idc.putImageData(source,0,0);
   ctx.clearRect(0,0,64,112);
   ctx.drawImage(base,0,0);
+  // Horizontal bathtub frames are fully authored with OPEN eyes and foam.
+  // Do not paste a standing head/torso from the source onto a lying body.
+  if(r.kind==="bathtub")return true;
   // WC: clothed torso and head remain original; pants/shorts/skirt/legs
   // are replaced with the sex-specific bare seated mannequin.
   // Bath: entirely un-clothed adult mannequin below the head. Hair and
