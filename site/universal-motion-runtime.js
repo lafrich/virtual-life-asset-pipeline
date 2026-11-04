@@ -9,7 +9,7 @@
   const a=action.id||"",cat=action.category||"";
   if(/run|dash|jump|stumble|fall|slip|dance|panic/.test(a))return "energetic";
   if(/walk|sneak|cross_road|backstep|stairs/.test(a)||cat==="movement")return "move";
-  if(/sleep|lie|nap|bed_|faint/.test(a))return "lie";
+  if(/sleep|lie|nap|bed_|faint|bathtub_bathe/.test(a))return "lie";
   if(/sit|toilet|drive|ride_|queue|wait_bus/.test(a))return "sit";
   if(/type|phone|work|write|read|meeting/.test(a))return "type";
   if(/pick|put_down|crouch|clean|sweep|mop|chop/.test(a))return "reach";
@@ -27,7 +27,8 @@
    type:["sit_type","talk","idle"],reach:["sit","talk","idle"],
    gesture:["talk","idle"],wash:["bathe","sit","idle"],face:["idle","talk"],
    talk:["talk","idle"]}[type];
-  const real=prefs.map(id=>own.find(m=>m.id===id&&m.available&&
+  const preferred=action.id==="bathtub_bathe"?["lie","sleep_seat","sit","idle"]:prefs;
+  const real=preferred.map(id=>own.find(m=>m.id===id&&m.available&&
    (m.source==="native"||m.source==="custom"))).find(Boolean);
   if(real)return {id:real.id,row:real.row||0,frames:real.frames||4,
    sheet:real.sheet||actor.sheet||""};
