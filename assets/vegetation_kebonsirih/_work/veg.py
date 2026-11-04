@@ -5,6 +5,13 @@ from PIL import Image, ImageDraw
 def hx(h): return tuple(int(h[i:i+2],16) for i in (1,3,5))
 # 5-tone ramps, darkest -> lightest. Existing game/style-sheet hexes reused where possible.
 R = {
+ 'cendana': ['#46523B','#65734B','#84945C','#A4B473','#C1CD8A'],
+ 'ulin': ['#123B32','#1D5445','#2D7055','#408563','#659F75'],
+ 'eboni': ['#102C2B','#183F36','#235345','#376953','#56836A'],
+ 'tengkawang': ['#204532','#316745','#468552','#65A260','#90B775'],
+ 'meranti': ['#153E30','#215944','#347451','#4E9460','#77B077'],
+ 'bark_ulin': ['#2C2928','#413830','#5C493A','#785C44','#9C7953'],
+ 'bark_eboni': ['#25282A','#37383A','#504843','#6A584C','#846C59'],
  'leaf':   ['#134F2E','#1A6A3A','#22894A','#2A9E52','#4FB36B'],   # game greens; tone 3 = lawn #2A9E52 so shrubs tie into the grass
  'dark':   ['#0F3F26','#155232','#1A6A3A','#22894A','#3FA45E'],   # mahoni, beringin, glodokan
  'asam':   ['#18492C','#1F5F35','#2A7A3E','#3C944B','#62B061'],   # tamarind: olive-dark fine foliage
