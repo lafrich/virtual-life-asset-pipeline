@@ -81,6 +81,7 @@ function renderActionList(){
  const q=state.actionSearch.trim().toLowerCase(),cat=state.actionFilter;
  // Only native motions, saved drafts and ready templates are listed.
  const visible=state.actions.filter(row=>
+  row.id==="bathtub_bathe" ||
   Boolean(SLEEP?.resolve(actor(),row.id)) ||
   A.entries(state.actor,row.id).length>0 ||
   Boolean(T.get(state.actor,row.id)?.ready) ||
@@ -156,6 +157,7 @@ function actionSource(){
  }
  const preferred={
   toilet:["sit","sit_type","toilet"],toilet_sit:["sit","sit_type"],
+  bathtub_bathe:["bathtub_bathe","lie"],
   bathe:["bathe","swim"],shower:["bathe","swim"],bath:["bathe","swim"],
   sleep:["sleep","sleep_seat","lie","nap_stand"],
   nap:["sleep","sleep_seat"],lie_down:["sleep","lie"],wake_up:["sleep","lie"],
@@ -169,7 +171,7 @@ function actionSource(){
  let motion=preferred.map(id=>motions.find(m=>m.id===id)).find(Boolean);
  // Reuse genuinely animated native poses, never an idle frame as gameplay.
  const mapped=!!motion&&new Set([
-  "toilet","toilet_sit","bathe","shower","bath","sleep","nap","lie_down",
+  "toilet","toilet_sit","bathe","bathtub_bathe","shower","bath","sleep","nap","lie_down",
   "wake_up","lie_idle","bed_enter","bed_exit","office_type",
   "eat_seated","sit_idle","sit_down","stand_up","talk"
  ]).has(state.action);
