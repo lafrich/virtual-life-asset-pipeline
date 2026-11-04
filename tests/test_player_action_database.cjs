@@ -18,12 +18,12 @@ assert.ok([...new Set(registry.map(x=>x.category))].length>=13);
 assert.equal(bindings.bindings.length,16,"Every Bangun Ruang action verb needs a mapping");
 assert.equal(new Set(bindings.bindings.map(x=>x.game_action)).size,16);
 assert.equal(bindings.variants.length,4);
-assert.equal(bindings.posture_presets.length,3);
+assert.equal(bindings.posture_presets.length,6);
 for(const p of bindings.posture_presets){
- assert.ok(["squat_idle","bent_over_idle","lie_idle"].includes(p.id));
+ assert.ok(["squat_idle","squat_down","squat_up","knee_chest_idle","bent_over_idle","lie_idle"].includes(p.id));
  assert.deepEqual(p.directions,["se","sw","ne","nw"]);
  assert.deepEqual(p.pivot,[32,100]);
- assert.equal(p.frames,4);
+ assert.equal(p.frames,["squat_down","squat_up"].includes(p.id)?6:4);
 }
 assert.ok(editor.includes("bindings.posture_presets"),
  "Action Editor must register all 3 actor-specific posture presets");
