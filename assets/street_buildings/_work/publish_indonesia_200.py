@@ -8,7 +8,7 @@ Four independent shards, each exactly 50 IDs; merges are published only if
 all 200 PNG + depth output groups are present and valid.
 """
 from __future__ import annotations
-import argparse,json
+import argparse,json,hashlib
 from pathlib import Path
 from PIL import Image,ImageDraw
 from lib import build
@@ -98,6 +98,21 @@ def merge():
    x,y=variant['pivot'];w,h=variant['size']
    assert 0<=x<=w and 0<y<=h
    total+=1
+ # A real named asset must have its own distinctive thumbnail art.
+ # Repeated PNG bytes across different IDs mean the generator has silently
+ # substituted the same generic model; fail the entire publish rather than
+ # showing misleading thumbnails in Semesta.
+ signatures={}
+ duplicates=[]
+ for entry in entries:
+  first=entry['variants'].get('sw') or entry['variants'].get('se')
+  p=ROOT/first['file']
+  digest=hashlib.sha256(p.read_bytes()).hexdigest()
+  if digest in signatures:
+   duplicates.append((signatures[digest],entry['id']))
+  signatures[digest]=entry['id']
+ assert not duplicates,('Different Indonesia assets share identical artwork',duplicates)
+ print('ART DIVERSITY OK:',len(signatures),'unique native sprite thumbnails')
  dest=ROOT/'indonesia_200_catalog.json'
  dest.write_text(json.dumps(dict(version=2,projection='isometric-2:1',
    tile=[64,32],palette='v6b-existing-only',count=200,pack=PACK,
