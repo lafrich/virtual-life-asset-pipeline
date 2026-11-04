@@ -344,6 +344,106 @@
     93.0
    ]
   },
+  "pohon_cendana": {
+   "file": "trees/pohon_cendana.png",
+   "group": "tree",
+   "size": [
+    134,
+    198
+   ],
+   "pivot": [
+    67,
+    181
+   ],
+   "name_id": "Cendana",
+   "latin": "Santalum album",
+   "status": "active",
+   "shadow_rx": 29,
+   "game_size_units": [
+    67.0,
+    99.0
+   ]
+  },
+  "pohon_ulin": {
+   "file": "trees/pohon_ulin.png",
+   "group": "tree",
+   "size": [
+    178,
+    336
+   ],
+   "pivot": [
+    89,
+    312
+   ],
+   "name_id": "Ulin",
+   "latin": "Eusideroxylon zwageri",
+   "status": "active",
+   "shadow_rx": 43,
+   "game_size_units": [
+    89.0,
+    168.0
+   ]
+  },
+  "pohon_kayu_hitam": {
+   "file": "trees/pohon_kayu_hitam.png",
+   "group": "tree",
+   "size": [
+    184,
+    311
+   ],
+   "pivot": [
+    92,
+    285
+   ],
+   "name_id": "Kayu hitam / eboni",
+   "latin": "Diospyros celebica",
+   "status": "active",
+   "shadow_rx": 46,
+   "game_size_units": [
+    92.0,
+    155.5
+   ]
+  },
+  "pohon_tengkawang": {
+   "file": "trees/pohon_tengkawang.png",
+   "group": "tree",
+   "size": [
+    202,
+    347
+   ],
+   "pivot": [
+    101,
+    320
+   ],
+   "name_id": "Tengkawang",
+   "latin": "Shorea stenoptera",
+   "status": "active",
+   "shadow_rx": 49,
+   "game_size_units": [
+    101.0,
+    173.5
+   ]
+  },
+  "pohon_meranti": {
+   "file": "trees/pohon_meranti.png",
+   "group": "tree",
+   "size": [
+    182,
+    383
+   ],
+   "pivot": [
+    91,
+    358
+   ],
+   "name_id": "Meranti",
+   "latin": "Shorea spp.",
+   "status": "active",
+   "shadow_rx": 45,
+   "game_size_units": [
+    91.0,
+    191.5
+   ]
+  },
   "semak_bugenvil": {
    "file": "shrubs_ditahan/semak_bugenvil.png",
    "group": "shrub",
