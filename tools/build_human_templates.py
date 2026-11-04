@@ -374,11 +374,11 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             for y,d in enumerate(DIRECTIONS):
                 for x in range(count):
                     pose=frame(d,kind,x,expression)
-                    if blink and d in ("se","sw") and expression!="sleepy" and x==(3 if kind=="walk" else 2):
+                    if blink and d in ("se","sw") and expression not in ("sleepy","blink") and x==(3 if kind=="walk" else 2):
                         # Same-pose sleepy eyelids, so the blink follows the
                         # breathing/walking head without replacing the mouth.
                         eyes=(22,35,44,49)
-                        closed=frame(d,kind,x,"sleepy")
+                        closed=frame(d,kind,x,"blink")
                         pose.paste(closed.crop(eyes),eyes[:2])
                     img.alpha_composite(pose,(x*64,y*112))
             return img
