@@ -28,6 +28,7 @@ on:
       - "site/**"
       - "tests/test_pose_maker.cjs"
       - "tests/test_modular_rig_v2.cjs"
+      - "tests/test_native_rig_partition.py"
       - "tools/build_human_wardrobe.py"
       - "tests/test_human_wardrobe.py"
       - "tests/test_human_face_neck_preservation.py"
@@ -147,6 +148,7 @@ jobs:
           node --check site/pose-maker.js
           node --test tests/test_pose_maker.cjs
           python -m py_compile tools/build_original_rig_layers.py
+          python -m unittest discover -s tests -p test_native_rig_partition.py
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/modular-rig-v2.js
           node --check site/rig-studio-v2.js
