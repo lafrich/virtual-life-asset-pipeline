@@ -1,0 +1,3374 @@
+{
+  "_meta": {
+    "id": "indonesia-interiors-v1",
+    "version": 1,
+    "source": "site/indonesia-interior-templates.js",
+    "type": "procedural-room-recipes",
+    "projection": "isometric 2:1",
+    "tile_pixels": [
+      64,
+      32
+    ],
+    "base_palette": "virtual-life",
+    "category_count": 5,
+    "template_count": 66,
+    "additional_furniture_types": 43,
+    "asset_approval": "pending",
+    "integration": "Bangun Ruang / Semesta preview",
+    "limitations": "Editor action metadata; gameplay hooks and unrigged animations are not implemented in multiplayer."
+  },
+  "actions": {
+    "eat": {
+      "label": "Makan",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "drink": {
+      "label": "Minum",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "pray": {
+      "label": "Salat",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "watch": {
+      "label": "Nonton",
+      "pose": "idle",
+      "description": "Existing rig preview; gameplay integration remains separate"
+    },
+    "read": {
+      "label": "Baca",
+      "pose": "idle",
+      "description": "Existing rig preview; gameplay integration remains separate"
+    },
+    "play": {
+      "label": "Main",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "exercise": {
+      "label": "Olahraga",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "check_in": {
+      "label": "Daftar / Check-in",
+      "pose": "talk",
+      "description": "Existing rig preview; gameplay integration remains separate"
+    },
+    "treat": {
+      "label": "Periksa / Berobat",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "withdraw": {
+      "label": "Tarik Tunai",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "deposit": {
+      "label": "Setor Tunai",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "pay": {
+      "label": "Bayar",
+      "pose": "talk",
+      "description": "Existing rig preview; gameplay integration remains separate"
+    },
+    "scan": {
+      "label": "Scan Barang",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "repair": {
+      "label": "Perbaiki",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "brew": {
+      "label": "Seduh",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "collect": {
+      "label": "Ambil Barang",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "laundry": {
+      "label": "Cuci Pakaian",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "switch_on": {
+      "label": "Nyalakan",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    },
+    "store": {
+      "label": "Simpan Barang",
+      "pose": null,
+      "description": "Interaction slot / gameplay hook; animation not authored"
+    }
+  },
+  "types": {
+    "floor_mattress": {
+      "label": "Kasur Lantai",
+      "category": "Rumah",
+      "glyph": "🛏",
+      "w": 2,
+      "d": 2,
+      "actions": [
+        "sleep",
+        "rest"
+      ],
+      "visualAs": "floor_mattress",
+      "material": ""
+    },
+    "dining_table": {
+      "label": "Meja Makan",
+      "category": "Rumah",
+      "glyph": "▤",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "eat",
+        "browse"
+      ],
+      "visualAs": "table",
+      "material": ""
+    },
+    "wooden_bench": {
+      "label": "Bangku Panjang",
+      "category": "Rumah",
+      "glyph": "▭",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "sit"
+      ],
+      "visualAs": "wooden_bench",
+      "material": ""
+    },
+    "tv": {
+      "label": "TV Tabung / Layar",
+      "category": "Rumah",
+      "glyph": "▣",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "watch",
+        "switch_on"
+      ],
+      "visualAs": "tv",
+      "material": ""
+    },
+    "fan": {
+      "label": "Kipas Angin",
+      "category": "Rumah",
+      "glyph": "✳",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "switch_on"
+      ],
+      "visualAs": "fan",
+      "material": ""
+    },
+    "shoe_rack": {
+      "label": "Rak Sepatu",
+      "category": "Rumah",
+      "glyph": "▥",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "open",
+        "store"
+      ],
+      "visualAs": "shelf",
+      "material": ""
+    },
+    "prayer_mat": {
+      "label": "Sajadah",
+      "category": "Rumah",
+      "glyph": "▧",
+      "w": 1,
+      "d": 2,
+      "actions": [
+        "pray"
+      ],
+      "visualAs": "prayer_mat",
+      "material": ""
+    },
+    "rice_cooker": {
+      "label": "Rice Cooker",
+      "category": "Dapur",
+      "glyph": "♨",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "cook",
+        "open"
+      ],
+      "visualAs": "rice_cooker",
+      "material": ""
+    },
+    "water_dispenser": {
+      "label": "Dispenser Galon",
+      "category": "Dapur",
+      "glyph": "◈",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "drink"
+      ],
+      "visualAs": "water_dispenser",
+      "material": ""
+    },
+    "dish_rack": {
+      "label": "Rak Piring",
+      "category": "Dapur",
+      "glyph": "▥",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "wash",
+        "store"
+      ],
+      "visualAs": "shelf",
+      "material": ""
+    },
+    "food_vitrine": {
+      "label": "Etalase Lauk",
+      "category": "Kuliner",
+      "glyph": "▤",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "buy",
+        "sell",
+        "browse"
+      ],
+      "visualAs": "food_vitrine",
+      "material": ""
+    },
+    "food_cart": {
+      "label": "Gerobak Makanan",
+      "category": "Kuliner",
+      "glyph": "▥",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "buy",
+        "sell",
+        "cook"
+      ],
+      "visualAs": "food_cart",
+      "material": ""
+    },
+    "noodle_pot": {
+      "label": "Panci Bakso",
+      "category": "Kuliner",
+      "glyph": "◉",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "cook"
+      ],
+      "visualAs": "rice_cooker",
+      "material": ""
+    },
+    "drink_cooler": {
+      "label": "Cooler Minuman",
+      "category": "Kuliner",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "drink",
+        "buy"
+      ],
+      "visualAs": "fridge",
+      "material": ""
+    },
+    "coffee_machine": {
+      "label": "Mesin Kopi",
+      "category": "Kuliner",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "brew"
+      ],
+      "visualAs": "coffee_machine",
+      "material": ""
+    },
+    "aisle_rack": {
+      "label": "Rak Minimarket",
+      "category": "Toko",
+      "glyph": "▥",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "browse",
+        "collect"
+      ],
+      "visualAs": "aisle_rack",
+      "material": ""
+    },
+    "fridge_drinks": {
+      "label": "Kulkas Minuman",
+      "category": "Toko",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "browse",
+        "open",
+        "buy"
+      ],
+      "visualAs": "fridge",
+      "material": ""
+    },
+    "display_freezer": {
+      "label": "Freezer Es Krim",
+      "category": "Toko",
+      "glyph": "▤",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "open",
+        "buy"
+      ],
+      "visualAs": "counter",
+      "material": ""
+    },
+    "checkout": {
+      "label": "Meja Kasir",
+      "category": "Toko",
+      "glyph": "▣",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "pay",
+        "buy",
+        "sell"
+      ],
+      "visualAs": "cashier",
+      "material": ""
+    },
+    "market_crate": {
+      "label": "Keranjang Dagangan",
+      "category": "Toko",
+      "glyph": "▥",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "browse",
+        "collect"
+      ],
+      "visualAs": "market_crate",
+      "material": ""
+    },
+    "atm": {
+      "label": "Mesin ATM",
+      "category": "Publik",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "withdraw",
+        "deposit"
+      ],
+      "visualAs": "atm",
+      "material": ""
+    },
+    "waiting_bench": {
+      "label": "Bangku Tunggu",
+      "category": "Publik",
+      "glyph": "▭",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "sit"
+      ],
+      "visualAs": "sofa",
+      "material": ""
+    },
+    "registration_desk": {
+      "label": "Meja Pendaftaran",
+      "category": "Publik",
+      "glyph": "▤",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "check_in"
+      ],
+      "visualAs": "desk",
+      "material": ""
+    },
+    "clinic_bed": {
+      "label": "Bed Periksa",
+      "category": "Publik",
+      "glyph": "🛏",
+      "w": 2,
+      "d": 2,
+      "actions": [
+        "rest",
+        "treat"
+      ],
+      "visualAs": "bed",
+      "material": ""
+    },
+    "medicine_rack": {
+      "label": "Rak Obat",
+      "category": "Publik",
+      "glyph": "▥",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "browse",
+        "collect"
+      ],
+      "visualAs": "shelf",
+      "material": ""
+    },
+    "squat_toilet": {
+      "label": "WC Jongkok",
+      "category": "Publik",
+      "glyph": "🚽",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "use_toilet",
+        "pee",
+        "poop"
+      ],
+      "visualAs": "squat_toilet",
+      "material": ""
+    },
+    "water_tub": {
+      "label": "Bak Mandi + Gayung",
+      "category": "Publik",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "bathe"
+      ],
+      "visualAs": "water_tub",
+      "material": ""
+    },
+    "wudhu_tap": {
+      "label": "Keran Wudu",
+      "category": "Publik",
+      "glyph": "🚰",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "wash"
+      ],
+      "visualAs": "sink",
+      "material": ""
+    },
+    "bookshelf": {
+      "label": "Rak Buku",
+      "category": "Sekolah",
+      "glyph": "▥",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "browse",
+        "read"
+      ],
+      "visualAs": "shelf",
+      "material": ""
+    },
+    "study_desk": {
+      "label": "Meja Belajar",
+      "category": "Sekolah",
+      "glyph": "▤",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "study",
+        "read"
+      ],
+      "visualAs": "desk",
+      "material": ""
+    },
+    "whiteboard": {
+      "label": "Papan Tulis",
+      "category": "Sekolah",
+      "glyph": "▣",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "study"
+      ],
+      "visualAs": "whiteboard",
+      "material": ""
+    },
+    "arcade": {
+      "label": "Mesin Arcade",
+      "category": "Jasa",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "play"
+      ],
+      "visualAs": "arcade",
+      "material": ""
+    },
+    "game_console": {
+      "label": "Rental PS / TV",
+      "category": "Jasa",
+      "glyph": "▣",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "play",
+        "watch"
+      ],
+      "visualAs": "tv",
+      "material": ""
+    },
+    "salon_chair": {
+      "label": "Kursi Salon",
+      "category": "Jasa",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "sit"
+      ],
+      "visualAs": "office_chair",
+      "material": ""
+    },
+    "salon_mirror": {
+      "label": "Cermin Salon",
+      "category": "Jasa",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "browse"
+      ],
+      "visualAs": "whiteboard",
+      "material": ""
+    },
+    "washing_machine": {
+      "label": "Mesin Cuci",
+      "category": "Jasa",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "laundry"
+      ],
+      "visualAs": "washing_machine",
+      "material": ""
+    },
+    "laundry_counter": {
+      "label": "Loket Laundry",
+      "category": "Jasa",
+      "glyph": "▤",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "pay",
+        "collect"
+      ],
+      "visualAs": "counter",
+      "material": ""
+    },
+    "workbench": {
+      "label": "Meja Bengkel",
+      "category": "Jasa",
+      "glyph": "▤",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "repair",
+        "work"
+      ],
+      "visualAs": "desk",
+      "material": ""
+    },
+    "tool_rack": {
+      "label": "Rak Perkakas",
+      "category": "Jasa",
+      "glyph": "▥",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "repair",
+        "collect"
+      ],
+      "visualAs": "shelf",
+      "material": ""
+    },
+    "gym_mat": {
+      "label": "Matras Olahraga",
+      "category": "Jasa",
+      "glyph": "▧",
+      "w": 1,
+      "d": 2,
+      "actions": [
+        "exercise"
+      ],
+      "visualAs": "prayer_mat",
+      "material": ""
+    },
+    "treadmill": {
+      "label": "Treadmill",
+      "category": "Jasa",
+      "glyph": "▰",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "exercise"
+      ],
+      "visualAs": "treadmill",
+      "material": ""
+    },
+    "trash_bin": {
+      "label": "Tempat Sampah",
+      "category": "Jasa",
+      "glyph": "▣",
+      "w": 1,
+      "d": 1,
+      "actions": [
+        "open"
+      ],
+      "visualAs": "trash_bin",
+      "material": ""
+    },
+    "locker": {
+      "label": "Loker",
+      "category": "Jasa",
+      "glyph": "▥",
+      "w": 2,
+      "d": 1,
+      "actions": [
+        "open",
+        "store"
+      ],
+      "visualAs": "wardrobe",
+      "material": ""
+    }
+  },
+  "templates": {
+    "id_rumah_kampung_sederhana": {
+      "label": "Rumah · Rumah Kampung Sederhana",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "sofa",
+          0.04,
+          0.04
+        ],
+        [
+          "table",
+          0.65,
+          0.04
+        ],
+        [
+          "tv",
+          0.07,
+          0.48
+        ],
+        [
+          "fan",
+          0.65,
+          0.52
+        ],
+        [
+          "shoe_rack",
+          0.37,
+          0.07
+        ],
+        [
+          "prayer_mat",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_rumah_kontrakan_petak": {
+      "label": "Rumah · Rumah Kontrakan Petak",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "floor_mattress",
+          0.04,
+          0.04
+        ],
+        [
+          "wardrobe",
+          0.65,
+          0.04
+        ],
+        [
+          "fan",
+          0.07,
+          0.48
+        ],
+        [
+          "rice_cooker",
+          0.65,
+          0.52
+        ],
+        [
+          "water_dispenser",
+          0.37,
+          0.07
+        ],
+        [
+          "prayer_mat",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_rumah_subsidi": {
+      "label": "Rumah · Rumah Subsidi",
+      "category": "Rumah",
+      "theme": "cream",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "sofa",
+          0.04,
+          0.04
+        ],
+        [
+          "tv",
+          0.65,
+          0.04
+        ],
+        [
+          "dining_table",
+          0.07,
+          0.48
+        ],
+        [
+          "chair",
+          0.65,
+          0.52
+        ],
+        [
+          "fridge",
+          0.37,
+          0.07
+        ],
+        [
+          "shoe_rack",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_rumah_keluarga": {
+      "label": "Rumah · Rumah Keluarga",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "sofa",
+          0.04,
+          0.04
+        ],
+        [
+          "sofa",
+          0.65,
+          0.04
+        ],
+        [
+          "tv",
+          0.07,
+          0.48
+        ],
+        [
+          "dining_table",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "fridge",
+          0.35,
+          0.46
+        ],
+        [
+          "fan",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_rumah_nenek": {
+      "label": "Rumah · Rumah Nenek",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "wooden_bench",
+          0.04,
+          0.04
+        ],
+        [
+          "table",
+          0.65,
+          0.04
+        ],
+        [
+          "tv",
+          0.07,
+          0.48
+        ],
+        [
+          "prayer_mat",
+          0.65,
+          0.52
+        ],
+        [
+          "dish_rack",
+          0.37,
+          0.07
+        ],
+        [
+          "fan",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_apartemen_studio_jakarta": {
+      "label": "Rumah · Apartemen Studio Jakarta",
+      "category": "Rumah",
+      "theme": "blue",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "bed",
+          0.04,
+          0.04
+        ],
+        [
+          "wardrobe",
+          0.65,
+          0.04
+        ],
+        [
+          "desk",
+          0.07,
+          0.48
+        ],
+        [
+          "office_chair",
+          0.65,
+          0.52
+        ],
+        [
+          "fridge",
+          0.37,
+          0.07
+        ],
+        [
+          "tv",
+          0.35,
+          0.46
+        ],
+        [
+          "shower",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kos_mahasiswa": {
+      "label": "Rumah · Kos Mahasiswa",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "floor_mattress",
+          0.04,
+          0.04
+        ],
+        [
+          "study_desk",
+          0.65,
+          0.04
+        ],
+        [
+          "chair",
+          0.07,
+          0.48
+        ],
+        [
+          "fan",
+          0.65,
+          0.52
+        ],
+        [
+          "water_dispenser",
+          0.37,
+          0.07
+        ],
+        [
+          "shoe_rack",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kos_karyawan": {
+      "label": "Rumah · Kos Karyawan",
+      "category": "Rumah",
+      "theme": "cream",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "bed",
+          0.04,
+          0.04
+        ],
+        [
+          "wardrobe",
+          0.65,
+          0.04
+        ],
+        [
+          "study_desk",
+          0.07,
+          0.48
+        ],
+        [
+          "chair",
+          0.65,
+          0.52
+        ],
+        [
+          "tv",
+          0.37,
+          0.07
+        ],
+        [
+          "shoe_rack",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kos_eksklusif": {
+      "label": "Rumah · Kos Eksklusif",
+      "category": "Rumah",
+      "theme": "blue",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "bed",
+          0.04,
+          0.04
+        ],
+        [
+          "wardrobe",
+          0.65,
+          0.04
+        ],
+        [
+          "sofa",
+          0.07,
+          0.48
+        ],
+        [
+          "tv",
+          0.65,
+          0.52
+        ],
+        [
+          "fridge",
+          0.37,
+          0.07
+        ],
+        [
+          "water_dispenser",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kamar_anak": {
+      "label": "Rumah · Kamar Anak",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "floor_mattress",
+          0.04,
+          0.04
+        ],
+        [
+          "study_desk",
+          0.65,
+          0.04
+        ],
+        [
+          "chair",
+          0.07,
+          0.48
+        ],
+        [
+          "bookshelf",
+          0.65,
+          0.52
+        ],
+        [
+          "fan",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kamar_tidur_utama": {
+      "label": "Rumah · Kamar Tidur Utama",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "bed",
+          0.04,
+          0.04
+        ],
+        [
+          "wardrobe",
+          0.65,
+          0.04
+        ],
+        [
+          "wardrobe",
+          0.07,
+          0.48
+        ],
+        [
+          "fan",
+          0.65,
+          0.52
+        ],
+        [
+          "prayer_mat",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_ruang_tamu_lebaran": {
+      "label": "Rumah · Ruang Tamu Lebaran",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "sofa",
+          0.04,
+          0.04
+        ],
+        [
+          "sofa",
+          0.65,
+          0.04
+        ],
+        [
+          "wooden_bench",
+          0.07,
+          0.48
+        ],
+        [
+          "table",
+          0.65,
+          0.52
+        ],
+        [
+          "tv",
+          0.37,
+          0.07
+        ],
+        [
+          "fan",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_dapur_rumah_indonesia": {
+      "label": "Rumah · Dapur Rumah Indonesia",
+      "category": "Rumah",
+      "theme": "warm",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "stove",
+          0.04,
+          0.04
+        ],
+        [
+          "rice_cooker",
+          0.65,
+          0.04
+        ],
+        [
+          "kitchen_sink",
+          0.07,
+          0.48
+        ],
+        [
+          "dish_rack",
+          0.65,
+          0.52
+        ],
+        [
+          "fridge",
+          0.37,
+          0.07
+        ],
+        [
+          "water_dispenser",
+          0.35,
+          0.46
+        ],
+        [
+          "dining_table",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kamar_mandi_rumah": {
+      "label": "Rumah · Kamar Mandi Rumah",
+      "category": "Rumah",
+      "theme": "aqua",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "squat_toilet",
+          0.04,
+          0.04
+        ],
+        [
+          "water_tub",
+          0.65,
+          0.04
+        ],
+        [
+          "sink",
+          0.07,
+          0.48
+        ],
+        [
+          "trash_bin",
+          0.65,
+          0.52
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kamar_mandi_modern": {
+      "label": "Rumah · Kamar Mandi Modern",
+      "category": "Rumah",
+      "theme": "aqua",
+      "min": [
+        5,
+        4
+      ],
+      "items": [
+        [
+          "wc",
+          0.04,
+          0.04
+        ],
+        [
+          "shower",
+          0.65,
+          0.04
+        ],
+        [
+          "sink",
+          0.07,
+          0.48
+        ],
+        [
+          "bathtub",
+          0.65,
+          0.52
+        ],
+        [
+          "trash_bin",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_minimarket_merah_kuning": {
+      "label": "Toko · Minimarket Merah Kuning",
+      "category": "Toko",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "aisle_rack",
+          0.04,
+          0.04
+        ],
+        [
+          "aisle_rack",
+          0.65,
+          0.04
+        ],
+        [
+          "aisle_rack",
+          0.07,
+          0.48
+        ],
+        [
+          "fridge_drinks",
+          0.65,
+          0.52
+        ],
+        [
+          "display_freezer",
+          0.37,
+          0.07
+        ],
+        [
+          "checkout",
+          0.35,
+          0.46
+        ],
+        [
+          "market_crate",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_minimarket_biru_kuning": {
+      "label": "Toko · Minimarket Biru Kuning",
+      "category": "Toko",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "aisle_rack",
+          0.04,
+          0.04
+        ],
+        [
+          "aisle_rack",
+          0.65,
+          0.04
+        ],
+        [
+          "fridge_drinks",
+          0.07,
+          0.48
+        ],
+        [
+          "fridge_drinks",
+          0.65,
+          0.52
+        ],
+        [
+          "checkout",
+          0.37,
+          0.07
+        ],
+        [
+          "market_crate",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_supermarket_grosir": {
+      "label": "Toko · Supermarket Grosir",
+      "category": "Toko",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "aisle_rack",
+          0.04,
+          0.04
+        ],
+        [
+          "aisle_rack",
+          0.65,
+          0.04
+        ],
+        [
+          "aisle_rack",
+          0.07,
+          0.48
+        ],
+        [
+          "aisle_rack",
+          0.65,
+          0.52
+        ],
+        [
+          "display_freezer",
+          0.37,
+          0.07
+        ],
+        [
+          "checkout",
+          0.35,
+          0.46
+        ],
+        [
+          "checkout",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warung_madura_24_jam": {
+      "label": "Toko · Warung Madura 24 Jam",
+      "category": "Toko",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "aisle_rack",
+          0.04,
+          0.04
+        ],
+        [
+          "shelf",
+          0.65,
+          0.04
+        ],
+        [
+          "fridge_drinks",
+          0.07,
+          0.48
+        ],
+        [
+          "checkout",
+          0.65,
+          0.52
+        ],
+        [
+          "market_crate",
+          0.37,
+          0.07
+        ],
+        [
+          "market_crate",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warung_kelontong": {
+      "label": "Toko · Warung Kelontong",
+      "category": "Toko",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "shelf",
+          0.04,
+          0.04
+        ],
+        [
+          "shelf",
+          0.65,
+          0.04
+        ],
+        [
+          "checkout",
+          0.07,
+          0.48
+        ],
+        [
+          "market_crate",
+          0.65,
+          0.52
+        ],
+        [
+          "water_dispenser",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_toko_sembako": {
+      "label": "Toko · Toko Sembako",
+      "category": "Toko",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "aisle_rack",
+          0.04,
+          0.04
+        ],
+        [
+          "shelf",
+          0.65,
+          0.04
+        ],
+        [
+          "market_crate",
+          0.07,
+          0.48
+        ],
+        [
+          "market_crate",
+          0.65,
+          0.52
+        ],
+        [
+          "checkout",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_toko_elektronik": {
+      "label": "Toko · Toko Elektronik",
+      "category": "Toko",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "tv",
+          0.04,
+          0.04
+        ],
+        [
+          "tv",
+          0.65,
+          0.04
+        ],
+        [
+          "aisle_rack",
+          0.07,
+          0.48
+        ],
+        [
+          "checkout",
+          0.65,
+          0.52
+        ],
+        [
+          "computer",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_toko_pakaian": {
+      "label": "Toko · Toko Pakaian",
+      "category": "Toko",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "wardrobe",
+          0.04,
+          0.04
+        ],
+        [
+          "locker",
+          0.65,
+          0.04
+        ],
+        [
+          "shelf",
+          0.07,
+          0.48
+        ],
+        [
+          "checkout",
+          0.65,
+          0.52
+        ],
+        [
+          "waiting_bench",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_toko_buku": {
+      "label": "Toko · Toko Buku",
+      "category": "Toko",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "bookshelf",
+          0.04,
+          0.04
+        ],
+        [
+          "bookshelf",
+          0.65,
+          0.04
+        ],
+        [
+          "bookshelf",
+          0.07,
+          0.48
+        ],
+        [
+          "checkout",
+          0.65,
+          0.52
+        ],
+        [
+          "study_desk",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_toko_bangunan": {
+      "label": "Toko · Toko Bangunan",
+      "category": "Toko",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "tool_rack",
+          0.04,
+          0.04
+        ],
+        [
+          "tool_rack",
+          0.65,
+          0.04
+        ],
+        [
+          "aisle_rack",
+          0.07,
+          0.48
+        ],
+        [
+          "checkout",
+          0.65,
+          0.52
+        ],
+        [
+          "market_crate",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_konter_hp_dan_pulsa": {
+      "label": "Toko · Konter HP dan Pulsa",
+      "category": "Toko",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "counter",
+          0.04,
+          0.04
+        ],
+        [
+          "checkout",
+          0.65,
+          0.04
+        ],
+        [
+          "computer",
+          0.07,
+          0.48
+        ],
+        [
+          "waiting_bench",
+          0.65,
+          0.52
+        ],
+        [
+          "aisle_rack",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_apotek_pinggir_jalan": {
+      "label": "Toko · Apotek Pinggir Jalan",
+      "category": "Toko",
+      "theme": "aqua",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "medicine_rack",
+          0.04,
+          0.04
+        ],
+        [
+          "medicine_rack",
+          0.65,
+          0.04
+        ],
+        [
+          "checkout",
+          0.07,
+          0.48
+        ],
+        [
+          "waiting_bench",
+          0.65,
+          0.52
+        ],
+        [
+          "registration_desk",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warteg_kaki_lima": {
+      "label": "Kuliner · Warteg Kaki Lima",
+      "category": "Kuliner",
+      "theme": "warteg",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "food_vitrine",
+          0.04,
+          0.04
+        ],
+        [
+          "food_vitrine",
+          0.65,
+          0.04
+        ],
+        [
+          "stove",
+          0.07,
+          0.48
+        ],
+        [
+          "rice_cooker",
+          0.65,
+          0.52
+        ],
+        [
+          "dining_table",
+          0.37,
+          0.07
+        ],
+        [
+          "wooden_bench",
+          0.35,
+          0.46
+        ],
+        [
+          "chair",
+          0.02,
+          0.25
+        ],
+        [
+          "water_dispenser",
+          0.81,
+          0.26
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_rumah_makan_padang": {
+      "label": "Kuliner · Rumah Makan Padang",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "food_vitrine",
+          0.04,
+          0.04
+        ],
+        [
+          "food_vitrine",
+          0.65,
+          0.04
+        ],
+        [
+          "checkout",
+          0.07,
+          0.48
+        ],
+        [
+          "dining_table",
+          0.65,
+          0.52
+        ],
+        [
+          "dining_table",
+          0.37,
+          0.07
+        ],
+        [
+          "wooden_bench",
+          0.35,
+          0.46
+        ],
+        [
+          "water_dispenser",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warung_bakso": {
+      "label": "Kuliner · Warung Bakso",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "noodle_pot",
+          0.04,
+          0.04
+        ],
+        [
+          "food_cart",
+          0.65,
+          0.04
+        ],
+        [
+          "dining_table",
+          0.07,
+          0.48
+        ],
+        [
+          "wooden_bench",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "drink_cooler",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warung_mie_ayam": {
+      "label": "Kuliner · Warung Mie Ayam",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "food_cart",
+          0.04,
+          0.04
+        ],
+        [
+          "noodle_pot",
+          0.65,
+          0.04
+        ],
+        [
+          "dining_table",
+          0.07,
+          0.48
+        ],
+        [
+          "chair",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "drink_cooler",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warung_pecel_lele": {
+      "label": "Kuliner · Warung Pecel Lele",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "stove",
+          0.04,
+          0.04
+        ],
+        [
+          "food_cart",
+          0.65,
+          0.04
+        ],
+        [
+          "dining_table",
+          0.07,
+          0.48
+        ],
+        [
+          "wooden_bench",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "water_dispenser",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warung_nasi_kuning": {
+      "label": "Kuliner · Warung Nasi Kuning",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "food_vitrine",
+          0.04,
+          0.04
+        ],
+        [
+          "food_cart",
+          0.65,
+          0.04
+        ],
+        [
+          "stove",
+          0.07,
+          0.48
+        ],
+        [
+          "dining_table",
+          0.65,
+          0.52
+        ],
+        [
+          "wooden_bench",
+          0.37,
+          0.07
+        ],
+        [
+          "water_dispenser",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warkop_pinggir_jalan": {
+      "label": "Kuliner · Warkop Pinggir Jalan",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "stove",
+          0.04,
+          0.04
+        ],
+        [
+          "rice_cooker",
+          0.65,
+          0.04
+        ],
+        [
+          "coffee_machine",
+          0.07,
+          0.48
+        ],
+        [
+          "dining_table",
+          0.65,
+          0.52
+        ],
+        [
+          "wooden_bench",
+          0.37,
+          0.07
+        ],
+        [
+          "chair",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_angkringan": {
+      "label": "Kuliner · Angkringan",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "food_cart",
+          0.04,
+          0.04
+        ],
+        [
+          "food_vitrine",
+          0.65,
+          0.04
+        ],
+        [
+          "wooden_bench",
+          0.07,
+          0.48
+        ],
+        [
+          "wooden_bench",
+          0.65,
+          0.52
+        ],
+        [
+          "drink_cooler",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_roti_bakar_bandung": {
+      "label": "Kuliner · Roti Bakar Bandung",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "stove",
+          0.04,
+          0.04
+        ],
+        [
+          "food_vitrine",
+          0.65,
+          0.04
+        ],
+        [
+          "dining_table",
+          0.07,
+          0.48
+        ],
+        [
+          "dining_table",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "chair",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kedai_kopi_ruko": {
+      "label": "Kuliner · Kedai Kopi Ruko",
+      "category": "Kuliner",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "coffee_machine",
+          0.04,
+          0.04
+        ],
+        [
+          "checkout",
+          0.65,
+          0.04
+        ],
+        [
+          "dining_table",
+          0.07,
+          0.48
+        ],
+        [
+          "wooden_bench",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "fridge_drinks",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kantin_sekolah": {
+      "label": "Kuliner · Kantin Sekolah",
+      "category": "Kuliner",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "food_vitrine",
+          0.04,
+          0.04
+        ],
+        [
+          "food_cart",
+          0.65,
+          0.04
+        ],
+        [
+          "checkout",
+          0.07,
+          0.48
+        ],
+        [
+          "dining_table",
+          0.65,
+          0.52
+        ],
+        [
+          "wooden_bench",
+          0.37,
+          0.07
+        ],
+        [
+          "drink_cooler",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_cafe_modern_jakarta": {
+      "label": "Kuliner · Cafe Modern Jakarta",
+      "category": "Kuliner",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "coffee_machine",
+          0.04,
+          0.04
+        ],
+        [
+          "checkout",
+          0.65,
+          0.04
+        ],
+        [
+          "sofa",
+          0.07,
+          0.48
+        ],
+        [
+          "dining_table",
+          0.65,
+          0.52
+        ],
+        [
+          "dining_table",
+          0.37,
+          0.07
+        ],
+        [
+          "chair",
+          0.35,
+          0.46
+        ],
+        [
+          "fridge_drinks",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_toilet_umum_terminal": {
+      "label": "Publik · Toilet Umum Terminal",
+      "category": "Publik",
+      "theme": "aqua",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "squat_toilet",
+          0.04,
+          0.04
+        ],
+        [
+          "squat_toilet",
+          0.65,
+          0.04
+        ],
+        [
+          "wc",
+          0.07,
+          0.48
+        ],
+        [
+          "sink",
+          0.65,
+          0.52
+        ],
+        [
+          "water_tub",
+          0.37,
+          0.07
+        ],
+        [
+          "trash_bin",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_toilet_mall": {
+      "label": "Publik · Toilet Mall",
+      "category": "Publik",
+      "theme": "aqua",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "wc",
+          0.04,
+          0.04
+        ],
+        [
+          "wc",
+          0.65,
+          0.04
+        ],
+        [
+          "sink",
+          0.07,
+          0.48
+        ],
+        [
+          "sink",
+          0.65,
+          0.52
+        ],
+        [
+          "trash_bin",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_mushola_kampung": {
+      "label": "Publik · Mushola Kampung",
+      "category": "Publik",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "prayer_mat",
+          0.04,
+          0.04
+        ],
+        [
+          "prayer_mat",
+          0.65,
+          0.04
+        ],
+        [
+          "prayer_mat",
+          0.07,
+          0.48
+        ],
+        [
+          "prayer_mat",
+          0.65,
+          0.52
+        ],
+        [
+          "bookshelf",
+          0.37,
+          0.07
+        ],
+        [
+          "wudhu_tap",
+          0.35,
+          0.46
+        ],
+        [
+          "shoe_rack",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_mushola_rest_area": {
+      "label": "Publik · Mushola Rest Area",
+      "category": "Publik",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "prayer_mat",
+          0.04,
+          0.04
+        ],
+        [
+          "prayer_mat",
+          0.65,
+          0.04
+        ],
+        [
+          "prayer_mat",
+          0.07,
+          0.48
+        ],
+        [
+          "prayer_mat",
+          0.65,
+          0.52
+        ],
+        [
+          "wudhu_tap",
+          0.37,
+          0.07
+        ],
+        [
+          "shoe_rack",
+          0.35,
+          0.46
+        ],
+        [
+          "fan",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_puskesmas_pendaftaran": {
+      "label": "Publik · Puskesmas Pendaftaran",
+      "category": "Publik",
+      "theme": "aqua",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "registration_desk",
+          0.04,
+          0.04
+        ],
+        [
+          "waiting_bench",
+          0.65,
+          0.04
+        ],
+        [
+          "waiting_bench",
+          0.07,
+          0.48
+        ],
+        [
+          "medicine_rack",
+          0.65,
+          0.52
+        ],
+        [
+          "trash_bin",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_ruang_periksa_puskesmas": {
+      "label": "Publik · Ruang Periksa Puskesmas",
+      "category": "Publik",
+      "theme": "aqua",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "clinic_bed",
+          0.04,
+          0.04
+        ],
+        [
+          "registration_desk",
+          0.65,
+          0.04
+        ],
+        [
+          "medicine_rack",
+          0.07,
+          0.48
+        ],
+        [
+          "sink",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_klinik_dokter_umum": {
+      "label": "Publik · Klinik Dokter Umum",
+      "category": "Publik",
+      "theme": "aqua",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "clinic_bed",
+          0.04,
+          0.04
+        ],
+        [
+          "desk",
+          0.65,
+          0.04
+        ],
+        [
+          "office_chair",
+          0.07,
+          0.48
+        ],
+        [
+          "medicine_rack",
+          0.65,
+          0.52
+        ],
+        [
+          "sink",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kantor_kelurahan": {
+      "label": "Publik · Kantor Kelurahan",
+      "category": "Publik",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "registration_desk",
+          0.04,
+          0.04
+        ],
+        [
+          "waiting_bench",
+          0.65,
+          0.04
+        ],
+        [
+          "waiting_bench",
+          0.07,
+          0.48
+        ],
+        [
+          "office_chair",
+          0.65,
+          0.52
+        ],
+        [
+          "computer",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kelas_sd_negeri": {
+      "label": "Publik · Kelas SD Negeri",
+      "category": "Publik",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "whiteboard",
+          0.04,
+          0.04
+        ],
+        [
+          "study_desk",
+          0.65,
+          0.04
+        ],
+        [
+          "study_desk",
+          0.07,
+          0.48
+        ],
+        [
+          "study_desk",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "chair",
+          0.35,
+          0.46
+        ],
+        [
+          "bookshelf",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kelas_sma": {
+      "label": "Publik · Kelas SMA",
+      "category": "Publik",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "whiteboard",
+          0.04,
+          0.04
+        ],
+        [
+          "study_desk",
+          0.65,
+          0.04
+        ],
+        [
+          "study_desk",
+          0.07,
+          0.48
+        ],
+        [
+          "study_desk",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "chair",
+          0.35,
+          0.46
+        ],
+        [
+          "bookshelf",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_perpustakaan_umum": {
+      "label": "Publik · Perpustakaan Umum",
+      "category": "Publik",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "bookshelf",
+          0.04,
+          0.04
+        ],
+        [
+          "bookshelf",
+          0.65,
+          0.04
+        ],
+        [
+          "study_desk",
+          0.07,
+          0.48
+        ],
+        [
+          "study_desk",
+          0.65,
+          0.52
+        ],
+        [
+          "chair",
+          0.37,
+          0.07
+        ],
+        [
+          "waiting_bench",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_pos_satpam_komplek": {
+      "label": "Publik · Pos Satpam Komplek",
+      "category": "Publik",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "desk",
+          0.04,
+          0.04
+        ],
+        [
+          "chair",
+          0.65,
+          0.04
+        ],
+        [
+          "fan",
+          0.07,
+          0.48
+        ],
+        [
+          "water_dispenser",
+          0.65,
+          0.52
+        ],
+        [
+          "locker",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_bank_bca_mini": {
+      "label": "Publik · Bank BCA Mini",
+      "category": "Publik",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "atm",
+          0.04,
+          0.04
+        ],
+        [
+          "registration_desk",
+          0.65,
+          0.04
+        ],
+        [
+          "registration_desk",
+          0.07,
+          0.48
+        ],
+        [
+          "waiting_bench",
+          0.65,
+          0.52
+        ],
+        [
+          "office_chair",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_atm_center": {
+      "label": "Publik · ATM Center",
+      "category": "Publik",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "atm",
+          0.04,
+          0.04
+        ],
+        [
+          "atm",
+          0.65,
+          0.04
+        ],
+        [
+          "atm",
+          0.07,
+          0.48
+        ],
+        [
+          "waiting_bench",
+          0.65,
+          0.52
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kantor_startup": {
+      "label": "Jasa · Kantor Startup",
+      "category": "Jasa",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "desk",
+          0.04,
+          0.04
+        ],
+        [
+          "desk",
+          0.65,
+          0.04
+        ],
+        [
+          "office_chair",
+          0.07,
+          0.48
+        ],
+        [
+          "office_chair",
+          0.65,
+          0.52
+        ],
+        [
+          "computer",
+          0.37,
+          0.07
+        ],
+        [
+          "computer",
+          0.35,
+          0.46
+        ],
+        [
+          "water_dispenser",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_ruang_meeting_kantor": {
+      "label": "Jasa · Ruang Meeting Kantor",
+      "category": "Jasa",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "dining_table",
+          0.04,
+          0.04
+        ],
+        [
+          "chair",
+          0.65,
+          0.04
+        ],
+        [
+          "chair",
+          0.07,
+          0.48
+        ],
+        [
+          "chair",
+          0.65,
+          0.52
+        ],
+        [
+          "whiteboard",
+          0.37,
+          0.07
+        ],
+        [
+          "water_dispenser",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_laundry_kiloan": {
+      "label": "Jasa · Laundry Kiloan",
+      "category": "Jasa",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "washing_machine",
+          0.04,
+          0.04
+        ],
+        [
+          "washing_machine",
+          0.65,
+          0.04
+        ],
+        [
+          "laundry_counter",
+          0.07,
+          0.48
+        ],
+        [
+          "locker",
+          0.65,
+          0.52
+        ],
+        [
+          "waiting_bench",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_bengkel_motor": {
+      "label": "Jasa · Bengkel Motor",
+      "category": "Jasa",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "workbench",
+          0.04,
+          0.04
+        ],
+        [
+          "tool_rack",
+          0.65,
+          0.04
+        ],
+        [
+          "tool_rack",
+          0.07,
+          0.48
+        ],
+        [
+          "waiting_bench",
+          0.65,
+          0.52
+        ],
+        [
+          "trash_bin",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_barbershop_kampung": {
+      "label": "Jasa · Barbershop Kampung",
+      "category": "Jasa",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "salon_chair",
+          0.04,
+          0.04
+        ],
+        [
+          "salon_mirror",
+          0.65,
+          0.04
+        ],
+        [
+          "waiting_bench",
+          0.07,
+          0.48
+        ],
+        [
+          "fan",
+          0.65,
+          0.52
+        ],
+        [
+          "checkout",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_salon_kecantikan": {
+      "label": "Jasa · Salon Kecantikan",
+      "category": "Jasa",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "salon_chair",
+          0.04,
+          0.04
+        ],
+        [
+          "salon_chair",
+          0.65,
+          0.04
+        ],
+        [
+          "salon_mirror",
+          0.07,
+          0.48
+        ],
+        [
+          "salon_mirror",
+          0.65,
+          0.52
+        ],
+        [
+          "waiting_bench",
+          0.37,
+          0.07
+        ],
+        [
+          "checkout",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_warnet_jadul": {
+      "label": "Jasa · Warnet Jadul",
+      "category": "Jasa",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "computer",
+          0.04,
+          0.04
+        ],
+        [
+          "computer",
+          0.65,
+          0.04
+        ],
+        [
+          "computer",
+          0.07,
+          0.48
+        ],
+        [
+          "desk",
+          0.65,
+          0.52
+        ],
+        [
+          "desk",
+          0.37,
+          0.07
+        ],
+        [
+          "office_chair",
+          0.35,
+          0.46
+        ],
+        [
+          "checkout",
+          0.02,
+          0.25
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_rental_playstation": {
+      "label": "Jasa · Rental PlayStation",
+      "category": "Jasa",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "game_console",
+          0.04,
+          0.04
+        ],
+        [
+          "game_console",
+          0.65,
+          0.04
+        ],
+        [
+          "sofa",
+          0.07,
+          0.48
+        ],
+        [
+          "sofa",
+          0.65,
+          0.52
+        ],
+        [
+          "checkout",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_rental_arcade": {
+      "label": "Jasa · Rental Arcade",
+      "category": "Jasa",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "arcade",
+          0.04,
+          0.04
+        ],
+        [
+          "arcade",
+          0.65,
+          0.04
+        ],
+        [
+          "arcade",
+          0.07,
+          0.48
+        ],
+        [
+          "checkout",
+          0.65,
+          0.52
+        ],
+        [
+          "waiting_bench",
+          0.37,
+          0.07
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_gym_kecil": {
+      "label": "Jasa · Gym Kecil",
+      "category": "Jasa",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "treadmill",
+          0.04,
+          0.04
+        ],
+        [
+          "treadmill",
+          0.65,
+          0.04
+        ],
+        [
+          "gym_mat",
+          0.07,
+          0.48
+        ],
+        [
+          "gym_mat",
+          0.65,
+          0.52
+        ],
+        [
+          "locker",
+          0.37,
+          0.07
+        ],
+        [
+          "water_dispenser",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_gudang_paket_online": {
+      "label": "Jasa · Gudang Paket Online",
+      "category": "Jasa",
+      "theme": "cream",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "aisle_rack",
+          0.04,
+          0.04
+        ],
+        [
+          "aisle_rack",
+          0.65,
+          0.04
+        ],
+        [
+          "locker",
+          0.07,
+          0.48
+        ],
+        [
+          "workbench",
+          0.65,
+          0.52
+        ],
+        [
+          "checkout",
+          0.37,
+          0.07
+        ],
+        [
+          "trash_bin",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_kamar_hotel_melati": {
+      "label": "Jasa · Kamar Hotel Melati",
+      "category": "Jasa",
+      "theme": "warm",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "bed",
+          0.04,
+          0.04
+        ],
+        [
+          "wardrobe",
+          0.65,
+          0.04
+        ],
+        [
+          "tv",
+          0.07,
+          0.48
+        ],
+        [
+          "chair",
+          0.65,
+          0.52
+        ],
+        [
+          "shower",
+          0.37,
+          0.07
+        ],
+        [
+          "wc",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    },
+    "id_studio_desain_freelance": {
+      "label": "Jasa · Studio Desain Freelance",
+      "category": "Jasa",
+      "theme": "blue",
+      "min": [
+        8,
+        6
+      ],
+      "items": [
+        [
+          "desk",
+          0.04,
+          0.04
+        ],
+        [
+          "computer",
+          0.65,
+          0.04
+        ],
+        [
+          "office_chair",
+          0.07,
+          0.48
+        ],
+        [
+          "bookshelf",
+          0.65,
+          0.52
+        ],
+        [
+          "sofa",
+          0.37,
+          0.07
+        ],
+        [
+          "coffee_machine",
+          0.35,
+          0.46
+        ]
+      ],
+      "source": "indonesia-interior-pack-v1"
+    }
+  }
+}
