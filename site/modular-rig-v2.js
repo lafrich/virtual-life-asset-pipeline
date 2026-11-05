@@ -10,7 +10,8 @@
  if(root)root.VLModularRigV2=api;
 })(typeof window!=="undefined"?window:null,function(root){
  "use strict";
- const ID="human_pixel_reference_v2", W=64,H=112,FRAMES=24, FPS=12;
+ const ID="human_pixel_reference_v2", W=64,H=112,FRAMES=24, FPS=12,
+  ART_REVISION="streetwear-reference-detailed-v2b";
  const DIR=Object.freeze(["se","sw","ne","nw"]);
  const def=(id,parent,x,y,label,kind="body")=>Object.freeze({id,parent,x,y,label,kind});
  const BONES=Object.freeze([
@@ -493,11 +494,11 @@
    facial_children:["brow_l","brow_r","eye_l","eye_r","nose","mouth",
     "blush_l","blush_r","glasses"],
    hair_children:["hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"],
-   art_revision:"detailed-reference-2026-11",
+   art_revision:ART_REVISION,
    style_profile:PROPORTIONS.style,
    proportions:{head:PROPORTIONS.head,shirt:PROPORTIONS.shirt,
     pants:PROPORTIONS.pants,shoes:PROPORTIONS.shoes}};
  }
- return Object.freeze({ID,W,H,DIR,BONES,BMAP,HIERARCHY,EMOTIONS,PALETTE,
+ return Object.freeze({ID,W,H,DIR,ART_REVISION,BONES,BMAP,HIERARCHY,EMOTIONS,PALETTE,
   PROPORTIONS,neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
 });
