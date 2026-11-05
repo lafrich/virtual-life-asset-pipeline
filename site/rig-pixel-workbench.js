@@ -81,7 +81,6 @@
    const paired=other[direction];
    editor.brush(paired,E.W-1-x,y,radius,mode,R.mirrorBone(selected,paired),color);
   }
-  draw();refreshMain();
  }
  function save(){
   if(!editor)return;
@@ -122,7 +121,7 @@
   }catch(error){info("IMPORT FAILED · "+error.message);}
  }
  async function mount(){
-  try{editor=new E.Editor(R);await editor.init();}
+  try{editor=await E.getSharedEditor(R);}
   catch(error){info("EDITOR UNAVAILABLE · "+error.message);return;}
   editor.onChange=()=>{draw();refreshMain();};
   for(const b of R.BONES){
