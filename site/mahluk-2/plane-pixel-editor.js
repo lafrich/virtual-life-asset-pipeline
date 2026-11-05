@@ -42,6 +42,10 @@
    heading:overlay.querySelector("#pixelTitle"),dir:overlay.querySelector("#pixelDirection"),
    color:overlay.querySelector("#pixelColor"),size:overlay.querySelector("#pixelSize"),
    onion:overlay.querySelector("#pixelOnion"),grid:overlay.querySelector("#pixelGrid"),
+   gridType:overlay.querySelector("#pixelGridType"),wrap:overlay.querySelector("#pixelCanvasWrap"),
+   zoom:overlay.querySelector("#pixelZoom"),zoomOut:overlay.querySelector("#pixelZoomOut"),
+   zoomIn:overlay.querySelector("#pixelZoomIn"),zoomFit:overlay.querySelector("#pixelZoomFit"),
+   zoomLabel:overlay.querySelector("#pixelZoomLabel"),
    status:overlay.querySelector("#pixelStatus"),undo:overlay.querySelector("#pixelUndo"),
    redo:overlay.querySelector("#pixelRedo"),apply:overlay.querySelector("#pixelApply"),
    save:overlay.querySelector("#pixelSaveDefault"),restore:overlay.querySelector("#pixelRestore"),
@@ -51,6 +55,8 @@
   const ctx=atlas.getContext("2d",{willReadFrequently:true});
   const out=canvas.getContext("2d");
   let bone="",tool="pencil",dir=0,active=null,history=[],redo=[],dirty=false,source=null,ref=null;
+  let zoom=5,pan=null,pinch=null;
+  const touches=new Map();
   const controls=[...overlay.querySelectorAll("[data-pixel-tool]")];
   const updateHistory=()=>{
    els.undo.disabled=!history.length;els.redo.disabled=!redo.length;
@@ -85,10 +91,11 @@
    }
    out.drawImage(atlas,sx,sy,W,H,0,0,canvas.width,canvas.height);
    if(els.grid.checked){
-    out.save();out.strokeStyle="rgba(60,85,112,.27)";out.lineWidth=1;
-    out.beginPath();
-    for(let x=0;x<=W;x++){const px=Math.round(x*u)+.5;out.moveTo(px,0);out.lineTo(px,canvas.height)}
-    for(let y=0;y<=H;y++){const py=Math.round(y*v)+.5;out.moveTo(0,py);out.lineTo(canvas.width,py)}
+    const step=Math.max(1,Math.min(16,Number(els.gridType.value)||1));
+    out.save();out.strokeStyle=step===1?"rgba(65,94,128,.29)":"rgba(56,111,161,.65)";
+    out.lineWidth=step===1?1:1.5;out.beginPath();
+    for(let x=0;x<=W;x+=step){const px=Math.round(x*u)+.5;out.moveTo(px,0);out.lineTo(px,canvas.height)}
+    for(let y=0;y<=H;y+=step){const py=Math.round(y*v)+.5;out.moveTo(0,py);out.lineTo(canvas.width,py)}
     out.stroke();out.restore();
    }
   }
@@ -129,7 +136,7 @@
    els.color.value=el.dataset.pixelSwatch;selectTool("pencil");
   }));
   els.dir.onchange=()=>{dir=DIR.indexOf(els.dir.value);draw();updateHistory()};
-  els.onion.onchange=draw;els.grid.onchange=draw;
+  els.onion.onchange=draw;els.grid.onchange=draw;els.gridType.onchange=draw;
   els.undo.onclick=()=>historyStep(history,redo);
   els.redo.onclick=()=>historyStep(redo,history);
   els.close.onclick=()=>{overlay.hidden=true};
