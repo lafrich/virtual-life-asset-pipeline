@@ -129,7 +129,8 @@ test("legacy saved rig state normalizes with new face and hair nodes without dis
  assert.ok(after.parts.blush_l);
  assert.equal(after.emotion,"mischievous");
  const exp=R.exportModel(after,R.makeTracks());
- assert.match(exp.art_revision,/detailed-reference/);
+ assert.equal(exp.art_revision,R.ART_REVISION);
+ assert.match(exp.art_revision,/streetwear-reference-detailed/);
  assert.equal(exp.nodes.length,R.BONES.length);
 });
 test("rig studio includes hair and face controls and character expressions get unique thumbnails",()=>{
@@ -139,4 +140,12 @@ test("rig studio includes hair and face controls and character expressions get u
   "blush_l","blush_r","glasses","nose"])assert.ok(studio.includes(part),part);
  assert.match(app,/const faceSheet=makeAtlas\(id\)/);
  assert.match(app,/portrait:faceTile.toDataURL/);
+});
+
+test("updated art migration archives old browser poses instead of silently reusing them",()=>{
+ const studio=fs.readFileSync("site/rig-studio-v2.js","utf8");
+ const app=fs.readFileSync("site/app.js","utf8");
+ assert.match(studio,/artRevision:R\.ART_REVISION/);
+ assert.match(studio,/STORE\+"-previous-reference-backup"/);
+ assert.match(app,/saved\.artRevision===rig\.ART_REVISION/);
 });
