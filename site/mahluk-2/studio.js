@@ -229,6 +229,16 @@ function drawGrid(ctx,w,h,scale){
 }
 function arrows(ctx,pos,scale){
  const u=34*scale/3.25;
+ if(transformMode==="anchor"){
+  ctx.save();
+  ctx.strokeStyle="#7cfff0";ctx.lineWidth=2.4;
+  line(ctx,pos.x-13,pos.y,pos.x+13,pos.y,"#7cfff0",2.4);
+  line(ctx,pos.x,pos.y-13,pos.x,pos.y+13,"#7cfff0",2.4);
+  ctx.beginPath();ctx.arc(pos.x,pos.y,8,0,2*Math.PI);ctx.stroke();
+  ctx.font="12px Consolas";ctx.fillStyle="#b3fff5";
+  ctx.fillText("ANCHOR",pos.x+16,pos.y-9);ctx.restore();
+  return [{id:"anchor",end:pos,color:"#7cfff0"}];
+ }
  if(transformMode==="rotate"){
   ctx.save();ctx.strokeStyle="#eaba71";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(pos.x,pos.y,u,0,Math.PI*2);ctx.stroke();
   ctx.fillStyle="#eaba71";ctx.beginPath();ctx.arc(pos.x+u,pos.y,6,0,Math.PI*2);ctx.fill();
@@ -275,7 +285,7 @@ function drawGame(){
 }
 function paint(){drawEditor();drawGame();}
 function axisButtons(){
- for(const tool of ["Move","Rotate","Scale"])$("tool"+tool).classList.toggle("active",transformMode===tool.toLowerCase());
+ for(const tool of ["Move","Rotate","Scale","Anchor"])$("tool"+tool).classList.toggle("active",transformMode===tool.toLowerCase());
  for(const id of ["x","y","z"])$("axis"+id.toUpperCase()).classList.toggle("active",axis===id);
  $("viewIso").classList.toggle("active",view==="iso");$("viewFront").classList.toggle("active",view==="front");
  $("viewHint").textContent=view==="iso"?"ISOMETRIC · X / Y / Z":"FRONT · FLAT PIXELS";
