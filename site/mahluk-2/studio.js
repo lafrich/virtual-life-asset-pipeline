@@ -190,6 +190,13 @@ function renderableIds(){
  rows.sort((a,b)=>a.z-b.z||a.i-b.i);
  return [...new Set(rows.map(r=>r.id))];
 }
+function visualPlaneOrder(dir){
+ const ids=G.effectiveOrder(rigRules,renderableIds()),world=partWorld();
+ return ids.slice().sort((a,b)=>{
+  const diff=V.depth(world[a],dir)-V.depth(world[b],dir);
+  return Math.abs(diff)>0.001?diff:ids.indexOf(a)-ids.indexOf(b);
+ });
+}
 function getEmotionAsset(id){
  if(typeof id!=="string")return null;
  if(id.startsWith("native:")){
@@ -228,7 +235,7 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode){
  // Explode the individual source planes only in this editor viewport.
  // Export/preview always draws the real world coordinates with gap=0.
  const exploding=Boolean(editorMode&&view==="iso"&&inspectPlaneDepth&&planeGap>0);
- const rankIds=exploding?G.effectiveOrder(rigRules,renderableIds()):null;
+ const rankIds=exploding?visualPlaneOrder(dir):null;
  const ordered=[];let faceAdded=false,glassesAdded=false;
  for(let i=0;i<slots.length;i++){
   const s=slots[i],kind=E.slotKind(s);
@@ -320,8 +327,7 @@ function center(w,h,scale){
 function projectBone(w,h,scale,bone,explode=true){
  const p=partWorld()[bone],b=R.BMAP[bone];if(!p||!b)return null;
  const c=center(w,h,scale),screen=V.planePosition(p,direction,view==="front");
- const ids=explode&&view==="iso"&&inspectPlaneDepth?
-  G.effectiveOrder(rigRules,renderableIds()):[];
+ const ids=explode&&view==="iso"&&inspectPlaneDepth?visualPlaneOrder(direction):[];
  const rank=ids.indexOf(bone),gap=rank>=0?
   V.explosion(rank,ids.length,planeGap,direction):{x:0,y:0};
  return {x:c.x+(screen.x+gap.x)*scale,
@@ -369,10 +375,11 @@ function arrows(ctx,pos,scale){
   ctx.font="12px Consolas";ctx.fillText("SCALE",pos.x+u+8,pos.y-u-5);ctx.restore();
   return [{id:"scale",end:{x:pos.x+u,y:pos.y-u},color:"#d7b8ef"}];
  }
+ const dir=V.config(direction);
  const handles=[
-  {id:"x",end:{x:pos.x+u,y:pos.y},color:"#ff8b7d"},
+  {id:"x",end:{x:pos.x+(dir.mirror?-u:u),y:pos.y},color:"#ff8b7d"},
   {id:"y",end:{x:pos.x,y:pos.y-u},color:"#7fda9a"},
-  {id:"z",end:{x:pos.x-u*.78,y:pos.y-u*.4},color:"#76adfc"}
+  {id:"z",end:{x:pos.x+dir.zx*u*1.2,y:pos.y+dir.zy*u*1.2},color:"#76adfc"}
  ];
  ctx.save();ctx.font=Math.max(11,scale*3.1)+"px Consolas,monospace";
  for(const h of handles){
@@ -386,7 +393,7 @@ function arrows(ctx,pos,scale){
 }
 function drawPlaneDepthGuides(ctx,w,h,scale){
  if(!inspectPlaneDepth||view!=="iso"||planeGap<=0)return;
- const ids=G.effectiveOrder(rigRules,renderableIds()),world=partWorld(),c=center(w,h,scale);
+ const ids=visualPlaneOrder(direction),world=partWorld(),c=center(w,h,scale);
  ctx.save();ctx.setLineDash([4,4]);
  for(let n=0;n<ids.length;n++){
   const id=ids[n],p=world[id];
