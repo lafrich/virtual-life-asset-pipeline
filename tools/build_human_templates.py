@@ -667,7 +667,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                         for slot in stencils:
                             stencils[slot].alpha_composite(
                                 current_materials[slot],(x*64,y*112))
-                    if blink and d in ("se","sw") and expression not in ("sleepy","blink","grimace_blush") and x==(3 if kind=="walk" else 2):
+                    if blink and d in ("se","sw") and expression not in ("sleepy","blink","grimace_blush","cheeky","bleh") and x==(3 if kind=="walk" else 2):
                         # Same-pose sleepy eyelids, so the blink follows the
                         # breathing/walking head without replacing the mouth.
                         eyes=(22,35,44,49)
