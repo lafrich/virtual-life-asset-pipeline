@@ -175,7 +175,7 @@
   async init(){
    this.src=await this.rig.loadNativeArt();
    if(!this.src?.slots?.some(s=>!s.gender))throw Error("Original clothed V6B layers not found");
-   this.rig.setManualLayerProvider((direction,emotion)=>this.layers(direction,emotion));
+   this.rig.setManualLayerProvider((direction,emotion,faceLayers)=>this.layers(direction,emotion,faceLayers));
    return this;
   }
   makeCanvas(){
@@ -216,11 +216,11 @@
    const im=ctx.createImageData(W,H);im.data.set(data);ctx.putImageData(im,0,0);
    return {canvas,data,owner:original.owner,rank:original.rank};
   }
-  layers(direction,emotion="neutral"){
+  layers(direction,emotion="neutral",faceLayers={}){
    if(!DIR.includes(direction)||!this.src)return null;
    if(!this.state.pixels[direction].length&&!this.state.weights[direction].length)
     return null; // protected untouched art is drawn directly from V6B atlas
-   const key=direction+":"+emotion;
+   const key=direction+":"+emotion+":"+JSON.stringify(faceLayers||{});
    if(this.cache.has(key))return this.cache.get(key);
    const dir=DIR.indexOf(direction),source=this.source(direction,emotion);
    const colors=new Map(this.state.pixels[direction].map(row=>[row[0],row.slice(1)]));
@@ -232,8 +232,9 @@
    for(const [order,part] of this.src.slots.entries()){
     if(part.gender)continue;
     const cv=this.makeCanvas(),ctx=cv.getContext("2d",{willReadFrequently:true});
+    const partEmotion=faceLayers?.[part.bone]||emotion;
     ctx.drawImage(part.image,
-     part.expression?Math.max(0,this.src.emotions.indexOf(emotion))*W:0,
+     part.expression?Math.max(0,this.src.emotions.indexOf(partEmotion))*W:0,
      dir*H,W,H,0,0,W,H);
     const image=ctx.getImageData(0,0,W,H),rgba=image.data;
     for(const idx of pixelsToChange){
