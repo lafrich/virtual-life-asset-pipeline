@@ -143,3 +143,41 @@ Use the native source editor/preview for all four directions and test
 other character bases before accepting a global default. This does
 not automatically rebuild archived pre-2.0 characters or past
 published static sprite sheets.
+
+## Master four-direction rig and camera depth inspector — 2026-11-06
+
+Mahluk Hidup 2.0 is the **root/rig** character application, distinct from
+Mahluk Hidup 1.0 action authoring. Every change to an anchor, plane's local
+position / Z depth, scale, angle, visibility and parent hierarchy modifies
+**one canonical rig**, used for all SE/SW/NE/NW native sprite views. Previous
+camera math incorrectly inverted the image for left-hand views but not the
+drag X / rotation / Z editing operations; `view-projection.js` now defines
+the inverse controls and source render for all camera directions.
+
+The viewport includes a **C4D-style Orbit Camera** compass: choose any of
+four directions directly, use the left/right orbit arrows, or press
+`[` and `]`. A live four-view strip in the Inspector redraws all four
+native sprites after every root change. The actual game output uses the same
+canonical transforms but no edit-only visual effects.
+
+Use **ISO → PLANES** to inspect the physical stacking without modifying the
+game. A GAP slider spaces the plane visualizations apart and thin dashed
+lines show the original-to-inspected positions. Inspect the selected bone's
+**LOCAL Z** vs **WORLD Z** in Attributes. Front and back cameras sort actual
+depth in opposite order. PLANES, camera orbit angle, and preview spacing are
+**not saved into the character atlas or general rig**. Reset the view to
+switch back to unseparated artwork.
+
+The Pixel Editor's **SYNC BRUSH · ALL 4 VIEWS** option is enabled by default.
+New pencil, eraser and region fill operations are propagated between camera
+directions using mirrored horizontal source positions as needed. When
+propagating, opaque pixels in other native directions retain their distinct
+outline/silhouette: a front-side limb does NOT replace the authored back-side
+artwork. Turn SYNC off for direction-specific retouching. Existing
+direction-specific edits are not retroactively changed.
+
+**Scope and limitations:** There is a real master *rig* shared by all
+views, not a 3D human mesh. Individual pixel silhouettes remain authored
+per view. An arbitrarily novel front 2D shape cannot automatically produce
+a physically accurate back shape. Re-save the general rig and republish
+previous baked game sprites when necessary.
