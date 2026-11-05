@@ -37,6 +37,17 @@ def lamp(L):
         L.box(a+.02,.37,a+.14,.63,126,129,'WARM',3,glow=True)
         L.box(a+.03,.39,a+.13,.61,124,126,'LITE',3,glow=True)
     L.s.dome(c,r,139,.09,4,'DARK',3)
+    # Cast anchor plate, access door, cable clamp and glowing reflector seams.
+    L.s.cyl(c,r,0,4,.20,'CONC',2)
+    for dx,dy in ((-.14,-.11),(.14,-.11),(-.14,.11),(.14,.11)):
+        L.box(.5+dx-.025,.5+dy-.025,.5+dx+.025,.5+dy+.025,4,6,'LITE',4)
+    L.box(.40,.365,.60,.44,28,43,'CONC',2)
+    L.box(.445,.342,.535,.395,33,39,'DARK',2)
+    for z in (28,45,80,131):
+        L.s.cyl(c,r,z,z+2,.075,'SENG',3)
+    for a in (.17,.74):
+        L.box(a+.03,.31,a+.13,.38,125,128,'CONC',4)
+        L.box(a+.02,.32,a+.13,.40,123,125,'WARM',3,glow=True)
     shadow(L,12,5)
 
 # The two bins are deliberate separate compartments, not a blended yellow/green can.
@@ -49,6 +60,15 @@ def bins(L):
         # Front slot is dark, clearly visible at 1x.
         L.box(a-.11,.14,a+.11,.25,29,32,'DARK',1)
         L.box(a-.17,.24,a-.12,.74,4,35,'DARK',2)
+        # Embossed sorting label, front pull notch and hinge rivets.
+        L.box(a-.15,.16,a+.15,.235,14,22,'CREAM',3)
+        L.box(a-.07,.145,a+.07,.18,18,20,m,3)
+        L.box(a-.05,.13,a+.05,.18,17,19,'DARK',2)
+        for z in (6,32):
+            for dx in (-.19,.18):
+                L.box(a+dx-.018,.16,a+dx+.018,.215,z,z+2,'LITE',4)
+        L.box(a-.205,.22,a+.205,.27,36,38,'SENG',2)
+        L.box(a-.09,.13,a+.09,.22,34,36,'DARK',2)
     for a in (.05,1.24):
         L.box(a,.22,a+.045,.78,0,43,'DARK',3)
     L.box(.05,.49,1.29,.55,9,12,'DARK',2)
@@ -67,6 +87,15 @@ def hydrant(L):
         L.box(a,.40,a+.10,.60,22,32,'RED',2)
         L.box(a-.03,.34,a+.13,.66,25,30,'CONC',3)
         L.box(a-.04,.37,a+.14,.63,26,29,'DARK',2)
+        L.box(a-.005,.34,a+.105,.39,28,31,'SENG',4)
+    # Cast flange bolts, threaded cap, embossed operating indicator.
+    L.s.cyl(c,r,8,11,.225,'RED',2)
+    for x,y in ((.32,.48),(.68,.48),(.50,.32),(.50,.69)):
+        L.box(x-.025,y-.025,x+.025,y+.025,7,9,'SENG',4)
+    for z in (42,46,51):
+        L.s.cyl(c,r,z,z+1,.208,'RED' if z!=51 else 'DARK',3)
+    L.box(.39,.28,.61,.36,19,27,'CREAM',2)
+    L.box(.445,.265,.555,.305,22,24,'RED',3)
     shadow(L,17,6)
 
 def clipped_hedge(L,low=False):
@@ -80,6 +109,12 @@ def clipped_hedge(L,low=False):
         L.box(a,.26,a+.06,.72,z-2,z+2,'GREEN',4)
     for a in np.arange(.17,W-.16,.29):
         L.box(a,.13,a+.035,.22,3,9,'GREEN',1)
+    # The clipped leaf crown has irregular clusters and darker recessed gaps.
+    for i,a in enumerate(np.arange(.16,W-.10,.18)):
+        for bb,z in ((.34,h+2),(.62,h+1)):
+            if (i+int(bb*10))%4==0:continue
+            L.box(a,bb,a+.105,bb+.10,z,z+3,'GRASS' if i%2 else 'TEAL',3)
+            L.box(a+.02,bb+.02,a+.07,bb+.09,z+3,z+4,'GREEN',4)
     shadow(L,int(W*19),8)
 
 @asset('semak_kota_pagar','taman',2,.75,65,note='Semak teh-tehan rapat sebagai divider kota Jakarta')
@@ -96,6 +131,8 @@ def semak_rimbun(L):
     for dx,dy in [(-.2,.05),(.13,-.11),(.24,.22),(-.29,-.20)]:
         cc,rr=c+dx,r+dy
         L.s.cyl(cc,rr,2,10,.028,'GRASS',4)
+    for k,(dx,dy,z) in enumerate(((-.24,-.14,27),(.28,-.05,24),(-.05,.19,30),(.13,.22,34))):
+        L.s.dome(c+dx,r+dy,z,.075,4,'TEAL' if k%2 else 'GREEN',4)
     shadow(L,24,9)
 
 @asset('rumput_kota_rumpun','taman',.8,.8,42,note='Rumpun rumput liar tepi jalan: batang daun hijau beragam tinggi')
@@ -106,6 +143,8 @@ def rumput_rumpun(L):
         xx,rr=c+x,r+y
         L.s.points([xx]*h,[rr+(i/h-.5)*.065 for i in range(h)],
                    list(range(1,h+1)), 'GREEN',3+(k%2))
+    for x,y,h in ((-.11,.04,14),(.14,.11,12),(.04,-.12,18)):
+        L.s.cyl(c+x,r+y,2,h,.018,'GRASS',4)
     shadow(L,13,5)
 
 @asset('rumput_kota_hampar','taman',1.4,1.2,25,note='Hampar rumput kota menempel tanah dengan rumput pendek tersebar')
@@ -113,6 +152,8 @@ def rumput_hampar(L):
     L.top(0,0,L.W,L.D,0,noise_top('GRASS',55,1,2),ground=True,shift=0)
     for a,b in [(0.22,.15),(.62,.28),(1.16,.30),(.31,.82),(.81,.87),(1.21,.95)]:
         L.box(a,b,a+.045,b+.08,0,5+(int(a*10)%3),'GREEN',3)
+    for x,y in ((.38,.34),(.76,.61),(1.08,.52)):
+        L.top(x,y,x+.075,y+.04,0,('GREEN',1),ground=True,shift=0)
     # Ground patches must not throw a broad black object shadow.
 
 @asset('aspal_patch_jakarta','lokal',2,2,20,note='Patch aspal kota gelap lembut dengan tambalan bitumen, tile isometric')
@@ -122,7 +163,11 @@ def aspal_patch(L):
         repaired=(a>.43)&(a<1.37)&(b>.28)&(b<1.48)
         t=np.where(repaired,2,t).astype(np.int8)
         cracks=(abs(a-.92)<.017)&(b>.3)&(b<1.7)
+        cracks|=(abs(b-(a*.11+.33))<.018)&(a>.52)&(a<1.2)
+        cracks|=(abs(b-(1.45-.08*a))<.015)&(a>.70)&(a<1.60)
         t=np.where(cracks,0,t).astype(np.int8)
+        edge=(abs(a-.43)<.025)|(abs(a-1.37)<.025)
+        t=np.where(edge&(b>.28)&(b<1.48),1,t).astype(np.int8)
         return m,t
     L.top(0,0,2,2,0,tx,ground=True,shift=0)
 
@@ -144,9 +189,16 @@ def gutter(L,mode):
         L.top(0,.20,1,.80,1,water,ground=True,shift=0)
         sides=[(0,.03,1,.18),(0,.82,1,.97)]
     for (a,b,x,y) in sides:L.box(a,b,x,y,0,5,'CONC',2)
+    # Concrete casting joints, darker waterline, and localized ripples.
+    for a in (.25,.76):
+        L.box(a,.035,a+.025,.16,5,6,'SENG',3)
+        L.box(a,.84,a+.025,.965,5,6,'SENG',3)
+    for a,bb in ((.23,.38),(.65,.55)):
+        L.top(a,bb,a+.15,bb+.025,2,('WATER',4),ground=True,shift=0)
     if mode=='covered':
         for a in np.arange(.13,.9,.18):
             L.box(a,.14,a+.055,.86,4,6,'DARK',2)
+            L.box(a+.012,.13,a+.04,.19,6,7,'CONC',4)
 
 @asset('selokan_lurus','lokal',1,1,24,note='Selokan beton terbuka modular tile lurus')
 def drain_straight(L): gutter(L,'straight')
@@ -173,6 +225,14 @@ def river(L,bank='both',corner=False):
         L.box(W-.24,0,W-.15,D,0,5,'SOIL',2)
     if corner:
         L.box(.04,0,W,.19,0,8,'CONC',2)
+    # Repeating bank joints and algal waterline, aligned to the tile.
+    for bb in (.24,.90,1.55):
+        if bank in ('both','left'):
+            L.box(.04,bb,.17,bb+.025,9,10,'SENG',2)
+            L.box(.18,bb,.23,bb+.19,2,3,'GREEN',1)
+        if bank in ('both','right'):
+            L.box(W-.17,bb,W-.04,bb+.025,9,10,'SENG',2)
+            L.box(W-.24,bb,W-.19,bb+.19,2,3,'GREEN',1)
     # Water glints are restrained and in the same palette.
     for a,b in [(.64,.34),(1.21,.84),(.83,1.38),(1.19,1.68)]:
         if a<W and b<D:L.top(a,b,a+.21,b+.045,1,('WATER',4),ground=True,shift=0)
