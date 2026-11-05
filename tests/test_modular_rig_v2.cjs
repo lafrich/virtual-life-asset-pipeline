@@ -79,6 +79,7 @@ test("art and studio contain new pixel rig controls without replacing other app 
  assert.ok(html.includes("modular-rig-v2.js"));
  assert.ok(html.includes("rig-studio-v2.js"));
  assert.ok(html.includes("rig-studio-v2.css"));
+ assert.ok(html.includes("original-source-v3"));
  assert.ok(studio.includes("R.key(tracks"));
 });
 
@@ -90,8 +91,8 @@ test("reference silhouette uses independent hair, glasses, blush and enlarged st
  for(const id of ["glasses","nose","blush_l","blush_r"])
   assert.equal(R.HIERARCHY[id],"emotion",id+" belongs to emotion");
  assert.ok(nodes.length>=30);
- assert.deepEqual(R.PROPORTIONS.head,[18,4,33,39]);
- assert.deepEqual(R.PROPORTIONS.shoes,[12,99,42,12]);
+ assert.deepEqual(R.PROPORTIONS.head,[19,31,38,25]);
+ assert.deepEqual(R.PROPORTIONS.shoes,[18,96,30,7]);
  assert.ok(R.PALETTE.hairGlint);
  assert.ok(R.PALETTE.emblem);
  const model=R.referencePose(),initial=R.world(model);
@@ -130,7 +131,7 @@ test("legacy saved rig state normalizes with new face and hair nodes without dis
  assert.equal(after.emotion,"mischievous");
  const exp=R.exportModel(after,R.makeTracks());
  assert.equal(exp.art_revision,R.ART_REVISION);
- assert.match(exp.art_revision,/streetwear-reference-detailed/);
+ assert.match(exp.art_revision,/original-v6b-source-art-rig/);
  assert.equal(exp.nodes.length,R.BONES.length);
 });
 test("rig studio includes hair and face controls and character expressions get unique thumbnails",()=>{
