@@ -22,6 +22,7 @@ from build_human_templates import build_human_templates
 from build_human_wardrobe import build_human_wardrobe
 from build_legacy_character_catalog import prepare_legacy_catalog
 from build_original_rig_layers import generate as build_original_rig_layers
+from build_mahluk2_emotion_planes import build_emotion_plane_library
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -337,6 +338,7 @@ def build():
     results.append(build_astrofrich(ROOT,media))
     results.extend(build_human_templates(ROOT,media))
     build_original_rig_layers(media)
+    build_emotion_plane_library(OUT, results)
     build_human_wardrobe(ROOT,media,OUT)
     ids = [c["id"] for c in results]
     if len(ids) != len(set(ids)):
