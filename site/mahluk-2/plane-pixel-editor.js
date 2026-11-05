@@ -46,7 +46,7 @@
    heading:overlay.querySelector("#pixelTitle"),dir:overlay.querySelector("#pixelDirection"),
    color:overlay.querySelector("#pixelColor"),size:overlay.querySelector("#pixelSize"),
    onion:overlay.querySelector("#pixelOnion"),grid:overlay.querySelector("#pixelGrid"),
-   sync:overlay.querySelector("#pixelSync"),
+   sync:overlay.querySelector("#pixelSync"),syncExisting:overlay.querySelector("#pixelSyncExisting"),
    gridType:overlay.querySelector("#pixelGridType"),wrap:overlay.querySelector("#pixelCanvasWrap"),
    zoom:overlay.querySelector("#pixelZoom"),zoomOut:overlay.querySelector("#pixelZoomOut"),
    zoomIn:overlay.querySelector("#pixelZoomIn"),zoomFit:overlay.querySelector("#pixelZoomFit"),
@@ -202,6 +202,44 @@
   els.dir.onchange=()=>{dir=DIR.indexOf(els.dir.value);ref=refs?.[DIR[dir]]||ref;draw();updateHistory()};
   els.onion.onchange=draw;els.grid.onchange=draw;els.gridType.onchange=draw;
   els.sync.onchange=updateHistory;
+  els.syncExisting.onclick=()=>{
+   if(!source)return;
+   const native=document.createElement("canvas");native.width=W;native.height=H*4;
+   const nativeContext=native.getContext("2d",{willReadFrequently:true});
+   nativeContext.drawImage(source,0,0,W,H*4);
+   const before=nativeContext.getImageData(0,dir*H,W,H).data;
+   const after=ctx.getImageData(0,dir*H,W,H).data;
+   const changed=[];
+   for(let i=0;i<W*H;i++){
+    const p=i*4;
+    if(before[p+3]===0)continue; // Preserve every original opposite silhouette.
+    if(before[p]!==after[p]||before[p+1]!==after[p+1]||
+       before[p+2]!==after[p+2]||before[p+3]!==after[p+3])changed.push(i);
+   }
+   if(!changed.length){
+    els.status.textContent="NO EXISTING SOURCE-PIXEL DIFFERENCES IN "+DIR[dir].toUpperCase();
+    return;
+   }
+   saveHistory();
+   let count=0;
+   for(let target=0;target<DIR.length;target++){
+    if(target===dir)continue;
+    const output=ctx.getImageData(0,target*H,W,H),data=output.data;
+    for(const index of changed){
+     const x=mirroredX(index%W,dir,target),y=Math.floor(index/W),
+      from=index*4,to=(y*W+x)*4;
+     if(data[to+3]===0)continue;
+     if(after[from+3]===0)data[to+3]=0;
+     else{
+      data[to]=after[from];data[to+1]=after[from+1];data[to+2]=after[from+2];
+     }
+     count++;
+    }
+    ctx.putImageData(output,0,target*H);
+   }
+   draw();updateHistory();
+   els.status.textContent="SYNCED "+count+" EXISTING PIXELS · 4 DIRECTIONS · NATIVE SILHOUETTES KEPT";
+  };
   els.undo.onclick=()=>historyStep(history,redo);
   els.redo.onclick=()=>historyStep(redo,history);
   els.close.onclick=()=>{overlay.hidden=true};
