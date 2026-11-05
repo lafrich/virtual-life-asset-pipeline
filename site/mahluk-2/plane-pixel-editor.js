@@ -150,14 +150,27 @@
   function targetDirections(){return els.sync.checked?[0,1,2,3]:[dir]}
   function plot(x,y){
    const size=Math.round(Number(els.size.value)||1);
-   const start=Math.floor((size-1)/2);
+   const start=Math.floor((size-1)/2),ink=rgba(els.color.value);
    for(const target of targetDirections()){
     const mapped=mirroredX(x,dir,target);
     const left=clamp(mapped-start,0,W),top=clamp(y-start+target*H,target*H,(target+1)*H);
     const width=Math.max(0,Math.min(size,W-left));
     const height=Math.max(0,Math.min(size,(target+1)*H-top));
-    if(tool==="eraser")ctx.clearRect(left,top,width,height);
-    else{ctx.fillStyle=els.color.value;ctx.fillRect(left,top,width,height)}
+    if(!width||!height)continue;
+    if(target===dir){
+     if(tool==="eraser")ctx.clearRect(left,top,width,height);
+     else{ctx.fillStyle=els.color.value;ctx.fillRect(left,top,width,height)}
+     continue;
+    }
+    // Other directions preserve their independently authored silhouette.
+    // Recolor/erase only pixels which already belong to that view's plane.
+    const region=ctx.getImageData(left,top,width,height);
+    for(let i=0;i<region.data.length;i+=4){
+     if(region.data[i+3]===0)continue;
+     if(tool==="eraser")region.data[i+3]=0;
+     else{region.data[i]=ink[0];region.data[i+1]=ink[1];region.data[i+2]=ink[2]}
+    }
+    ctx.putImageData(region,left,top);
    }
   }
   function paintPoint(from,to){
