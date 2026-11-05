@@ -382,6 +382,7 @@ async function importPlanePng(file,kind){
   const loaded=new Image();loaded.onload=()=>{
    importedImages.set(asset.id,loaded);
    if(kind==="emotion"){
+    if(frame>0&&!emotionKeys.length)emotionKeys=E.insert(emotionKeys,0,emotionAssetId);
     emotionAssetId=asset.id;
     if(frame>0||emotionKeys.length)emotionKeys=E.insert(emotionKeys,frame,asset.id);
     matchAssetAnimation(asset);makeTimeline()
@@ -543,6 +544,7 @@ function setupEvents(){
  $("visible").onchange=e=>{state.parts[selected].visible=e.target.checked;buildTree()};
  $("emotionAsset").onchange=e=>{
   if(!getEmotionAsset(e.target.value))return;
+  if(frame>0&&!emotionKeys.length)emotionKeys=E.insert(emotionKeys,0,emotionAssetId);
   emotionAssetId=e.target.value;
   if(frame>0||emotionKeys.length)emotionKeys=E.insert(emotionKeys,frame,emotionAssetId);
   const asset=getEmotionAsset(emotionAssetId);
