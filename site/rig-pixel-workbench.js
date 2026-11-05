@@ -15,12 +15,25 @@
  function info(message){const e=$("rig-paint-status");if(e)e.textContent=message;}
  function hex(col){return "#"+col.slice(0,3).map(x=>Number(x).toString(16).padStart(2,"0")).join("");}
  function fromHex(str){const v=str.replace("#","");return [0,2,4].map(i=>parseInt(v.slice(i,i+2),16)).concat(255);}
+ function refreshVersions(){
+  const select=$("rig-paint-version");if(!select||!editor)return;
+  select.replaceChildren();
+  const add=(id,label)=>{
+   const opt=root.document.createElement("option");
+   opt.value=id;opt.textContent=label;select.append(opt);
+  };
+  add("original","ORIGINAL CLOTHED / MASTER");
+  if(editor.activeVersion==="draft")add("draft","WORKING DRAFT");
+  for(const item of editor.listVersions())add(item.id,item.name);
+  select.value=editor.activeVersion;
+ }
  function syncFields(){
   $("rig-paint-bone").value=selected;
   $("rig-paint-size").value=String(radius);
   $("rig-paint-size-out").textContent=String(radius*2+1)+" PX";
   $("rig-paint-color").value=hex(color);
   $("rig-paint-name").value=editor.state.name;
+  refreshVersions();
   $("rig-paint-mirror").checked=mirror;
   $("rig-paint-weights").checked=showWeights;
   for(const button of root.document.querySelectorAll("[data-rig-paint-mode]")){
@@ -84,10 +97,21 @@
  }
  function save(){
   if(!editor)return;
-  editor.state.name=String($("rig-paint-name").value||"CUSTOM CHARACTER 01").trim().slice(0,80);
-  const okay=editor.saveLocal();
-  refreshMain();if(okay)root.document.dispatchEvent(new Event("mahluk:rig-art-saved"));
-  info(okay?"SAVED · CUSTOM ART + WEIGHTS · ORIGINAL SOURCE UNTOUCHED":
+  const value=String($("rig-paint-name").value||"CUSTOM CHARACTER 01").trim().slice(0,80);
+  const modified=E.DIR.some(dir=>
+   editor.state.pixels[dir].length||editor.state.weights[dir].length);
+  editor.state.name=value;
+  // Never save paint into the protected ORIGINAL profile. On the first
+  // painted stroke from MASTER, automatically make a named independent copy.
+  let okay;
+  if(editor.activeVersion==="original"&&modified){
+   const id=editor.saveAsVersion(value==="ORIGINAL CLOTHED MASTER"?"CUSTOM CHARACTER 01":value);
+   okay=Boolean(id);
+  }else okay=editor.saveLocal();
+  refreshVersions();
+  refreshMain();
+  if(okay)root.document.dispatchEvent(new Event("mahluk:rig-art-saved"));
+  info(okay?"SAVED CUSTOM CHARACTER + WEIGHTS · MASTER UNTOUCHED":
    "STORAGE FULL · EXPORT JSON TO KEEP YOUR WORK");
  }
  function download(name,blob){
@@ -139,6 +163,32 @@
   for(const button of root.document.querySelectorAll("[data-rig-paint-mode]"))
    button.onclick=()=>{mode=button.dataset.rigPaintMode;syncFields();draw();};
   $("rig-paint-bone").onchange=e=>{selected=e.target.value;draw();};
+  $("rig-paint-version").onchange=e=>{
+   const id=e.target.value;
+   if(id===editor.activeVersion)return;
+   const dirty=E.DIR.some(dir=>
+    editor.state.pixels[dir].length||editor.state.weights[dir].length);
+   if(editor.activeVersion==="draft"&&dirty){
+    editor.state.name=$("rig-paint-name").value||"CUSTOM CHARACTER 01";
+    editor.saveAsVersion(editor.state.name);
+   }else if(editor.activeVersion==="original"&&dirty){
+    editor.saveAsVersion($("rig-paint-name").value||"CUSTOM CHARACTER 01");
+   }else editor.saveLocal();
+   if(editor.openVersion(id)){syncFields();draw();refreshMain();
+    root.document.dispatchEvent(new Event("mahluk:rig-art-saved"));
+    info(id==="original"?"PROTECTED ORIGINAL CLOTHED MASTER RESTORED":
+     "CUSTOM VERSION LOADED · PIXELS AND WEIGHTS RESTORED");
+   }else{syncFields();info("VERSION NOT FOUND");}
+  };
+  $("rig-paint-save-as").onclick=()=>{
+   editor.state.name=$("rig-paint-name").value||"CUSTOM CHARACTER 01";
+   const id=editor.saveAsVersion(editor.state.name);
+   if(id){
+    syncFields();refreshMain();
+    root.document.dispatchEvent(new Event("mahluk:rig-art-saved"));
+    info("SAVED AS NEW CHARACTER VERSION · "+editor.state.name);
+   }else info("COULD NOT SAVE CUSTOM VERSION · EXPORT JSON");
+  };
   $("rig-paint-size").oninput=e=>{radius=Number(e.target.value);syncFields();};
   $("rig-paint-color").oninput=e=>{color=fromHex(e.target.value);mode="paint";syncFields();};
   $("rig-paint-mirror").onchange=e=>{mirror=e.target.checked;};
