@@ -44,3 +44,45 @@
 .pose-feedback{background:#edede9;border:2px inset #aaa;padding:10px 8px;margin:8px 0 0;min-height:51px;font:11px/1.4 "Courier New",monospace;color:#24467e}
 @media(max-width:1120px){.pose-workspace{grid-template-columns:185px minmax(260px,1fr) 242px}.pose-preview-box canvas{max-width:105px}.pose-sidebar-inner,.pose-right-inner{padding:9px}}
 @media(max-width:780px){.pose-workspace{height:auto;min-height:0;grid-template-columns:1fr}.pose-left,.pose-center,.pose-right{border-right:0;border-bottom:2px solid #85827b}.pose-left .pose-sidebar-inner{max-height:270px}.pose-rig-stage{min-height:350px;height:380px}.pose-center{min-height:600px}.pose-preview-pair canvas{max-width:120px}.pose-right-inner{max-height:none}}
+
+/* C4D-inspired part isolation and diamond dope sheet. */
+.pose-timing-fields{display:grid;grid-template-columns:1.2fr .8fr;gap:9px}
+.pose-timing-fields .pose-label{display:flex;flex-direction:column;gap:5px}
+.pose-timing-fields .pose-input{font-weight:bold;font-size:15px}
+.pose-part-tabs{display:flex;gap:4px;align-items:center;flex-wrap:wrap;padding:8px 10px 7px;border-bottom:1px solid #888;background:#d4d2cd}
+.pose-part-tab{min-width:59px;flex:1;min-height:30px;padding:5px 7px;border:2px outset #eee;background:#e1e1de;color:#364151;font:bold 10px "Courier New",monospace}
+.pose-part-tab.active{color:white;background:#164ba5;border-style:inset;border-color:#395ea5}
+.pose-isolate{display:flex;align-items:center;gap:3px;padding-left:4px;white-space:nowrap;font:bold 10px "Courier New",monospace}
+.pose-isolate input{accent-color:#1454b6}
+.pose-part-guide{min-height:20px;margin:0;padding:5px 12px;background:#ecedeb;font:bold 10px/1.4 "Courier New",monospace;color:#456080}
+.pose-joint-select{width:110px;min-width:0;max-width:120px;height:28px;background:#fff;border:2px inset #aaa;font:10px "Courier New",monospace;color:#283243}
+.pose-joint-controls>button{padding:5px 7px;font-size:10px}
+.pose-joint-label{fill:#324154;font:8px "Courier New",monospace;pointer-events:none;paint-order:stroke;stroke:#e8edf3;stroke-width:2px}
+.pose-handle.is-muted{opacity:.5}
+.pose-segment.is-muted{opacity:.22}
+.pose-part-stage-label{font:bold 12px "Courier New",monospace;paint-order:stroke;stroke:#e8edf3;stroke-width:3px}
+.pose-timeline{padding:9px 10px 10px;gap:6px}
+.pose-timeline-title{gap:5px;flex-wrap:wrap}
+.pose-timeline-title strong{font-size:10px}
+.pose-frame-readout{min-width:36px;color:#143f91;font:bold 12px "Courier New",monospace}
+.pose-timeline-scroll{width:100%;max-height:195px;overflow:auto;background:#e5e7e8;border:2px inset #a7aaa9;scrollbar-color:#acb2b8 #e8e8e8}
+.pose-ruler-wrap,.pose-track-row{display:flex;width:max-content;min-width:100%;min-height:29px}
+.pose-ruler-wrap{background:#d1d3d6;border-bottom:2px solid #9aa1a9}
+.pose-track-row{border-bottom:1px solid #c2c7ce;background:#eef0f2}
+.pose-track-row.active{background:#e2eafa}
+.pose-track-label{position:sticky;left:0;z-index:2;width:79px;min-width:79px;max-width:79px;background:#d6dbe3;border:0;border-right:3px solid var(--track-color,#5f7c9b);border-bottom:1px solid #b4becb;display:grid;place-items:center;font:bold 10px "Courier New",monospace;color:#27364c}
+.pose-track-row.active .pose-track-label{color:#063c96;background:#d4e2fe}
+.pose-ruler,.pose-track-cells{display:grid;width:max-content;align-items:stretch}
+.pose-frame-cell,.pose-diamond-cell{width:26px;min-width:26px;height:29px;margin:0;padding:0;background:transparent;border:0;border-right:1px solid #c3c8d0;position:relative;text-align:center;line-height:1}
+.pose-frame-cell{font:10px "Courier New",monospace;color:#545d6b}
+.pose-frame-cell:hover,.pose-diamond-cell:hover{background:#b7c8e9}
+.pose-frame-cell.is-playhead,.pose-diamond-cell.is-playhead{background:#c3d7fc}
+.pose-frame-cell.is-playhead::before{content:"";position:absolute;top:0;left:9px;right:9px;height:5px;background:#1956c6}
+.pose-diamond{display:inline-block;font-size:15px;color:#9ba4b2;line-height:28px}
+.pose-diamond-cell.is-keyed .pose-diamond{color:#1857b0}
+.pose-track-row.active .pose-diamond-cell.is-keyed .pose-diamond{color:#054fd6}
+.pose-diamond-cell.is-keyed.is-playhead .pose-diamond{color:#082f83;filter:drop-shadow(0 1px white)}
+.pose-scrub-label{display:flex;justify-content:space-between;align-items:center;gap:8px;font:bold 10px "Courier New",monospace}
+.pose-scrub-label span{font-size:9px;color:#5d6775;text-align:right;font-weight:400}
+.pose-key{display:none}
+@media(max-width:1050px){.pose-joint-controls{flex-wrap:wrap;white-space:normal}.pose-joint-controls strong{min-width:72px}.pose-part-tabs{gap:2px}.pose-part-tab{min-width:52px;padding:5px 4px}}
