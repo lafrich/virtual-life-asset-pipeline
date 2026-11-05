@@ -54,3 +54,15 @@
  .rig-v2-editor{min-height:440px}.rig-v2-stage{min-height:400px}
  .rig-v2-inspector{order:2}.rig-v2-timeline{order:3;min-height:345px}
  #rig-v2-main{max-width:240px}.rig-v2-inspector{display:grid;grid-template-columns:1fr 1fr}}
+
+
+/* Precision rig editing: no large opaque dot can obscure native pixels. */
+.rig-v2-gizmo-toggle{display:flex;gap:5px;align-items:center;flex:0 0 auto;
+ font:700 9px "Courier New",monospace;color:#466084;white-space:nowrap;cursor:pointer}
+.rig-v2-gizmo-toggle input{width:12px;height:12px;accent-color:#225bb6}
+.rig-v2-inspector>label:has(select){display:flex;flex-direction:column;align-items:stretch;gap:4px;
+ border:1px solid #c5c5bf;background:#f5f3eb;padding:6px}
+.rig-v2-inspector>label select{width:100%;min-width:0;font:11px "Courier New",monospace;
+ background:white;border:2px inset #bab6ae}
+.rig-v2-center-tools{flex-wrap:wrap;column-gap:4px;row-gap:6px}
+#rig-v2-main{cursor:crosshair}
