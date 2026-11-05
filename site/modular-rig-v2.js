@@ -11,43 +11,43 @@
 })(typeof window!=="undefined"?window:null,function(root){
  "use strict";
  const ID="human_pixel_reference_v2", W=64,H=112,FRAMES=24, FPS=12,
-  ART_REVISION="streetwear-reference-detailed-v2b";
+  ART_REVISION="original-v6b-source-art-rig-v3";
  const DIR=Object.freeze(["se","sw","ne","nw"]);
  const def=(id,parent,x,y,label,kind="body")=>Object.freeze({id,parent,x,y,label,kind});
  const BONES=Object.freeze([
-  def("root",null,32,68,"ROOT"),
-  def("pelvis","root",32,69,"PELVIS"),
-  def("torso","pelvis",32,52,"OVERSIZED T-SHIRT"),
-  def("neck","torso",33,41,"NECK"),
-  def("head","neck",33,28,"HEAD BASE"),
-  def("emotion","head",33,30,"EMOTION / HEAD CHILD","emotion"),
-  def("brow_l","emotion",28,28,"EYEBROW L","emotion"),
-  def("brow_r","emotion",39,28,"EYEBROW R","emotion"),
-  def("eye_l","emotion",28,32,"EYE L","emotion"),
-  def("eye_r","emotion",39,32,"EYE R","emotion"),
-  def("nose","emotion",34,36,"NOSE","emotion"),
-  def("mouth","emotion",35,40,"MOUTH","emotion"),
-  def("blush_l","emotion",25,37,"BLUSH L","emotion"),
-  def("blush_r","emotion",43,37,"BLUSH R","emotion"),
-  def("glasses","emotion",34,31,"GLASSES","accessory"),
-  def("hair_back","head",33,27,"HAIR / BACK","hair"),
-  def("hair_cap","head",33,13,"HAIR / CROWN","hair"),
-  def("fringe_l","head",24,22,"FRINGE / LEFT","hair"),
-  def("fringe_mid","head",33,22,"FRINGE / CENTER","hair"),
-  def("fringe_r","head",42,22,"FRINGE / RIGHT","hair"),
-  def("shoulder_l","torso",21,47,"UPPER ARM L"),
-  def("elbow_l","shoulder_l",14,58,"ELBOW L"),
-  def("wrist_l","elbow_l",19,43,"FOREARM / HAND L"),
-  def("shoulder_r","torso",45,47,"UPPER ARM R"),
-  def("elbow_r","shoulder_r",49,58,"ELBOW R"),
-  def("wrist_r","elbow_r",48,72,"FOREARM / HAND R"),
-  def("hip_l","pelvis",26,71,"THIGH L"),
-  def("knee_l","hip_l",25,88,"KNEE L"),
-  def("ankle_l","knee_l",24,102,"SHIN / SHOE L"),
-  def("hip_r","pelvis",38,71,"THIGH R"),
-  def("knee_r","hip_r",39,88,"KNEE R"),
-  def("ankle_r","knee_r",40,102,"SHIN / SHOE R"),
-  def("phone","wrist_l",17,32,"PHONE / PROP","prop")
+  def("root",null,32,100,"ROOT"),
+  def("pelvis","root",32,80,"PELVIS"),
+  def("torso","pelvis",32,66,"TORSO / ORIGINAL V6B"),
+  def("neck","torso",33,56,"NECK"),
+  def("head","neck",33,44,"HEAD"),
+  def("emotion","head",33,46,"EMOTION / CHILD OF HEAD","emotion"),
+  def("brow_l","emotion",29,44,"BROW L","emotion"),
+  def("brow_r","emotion",39,44,"BROW R","emotion"),
+  def("eye_l","emotion",29,47,"EYE L","emotion"),
+  def("eye_r","emotion",39,47,"EYE R","emotion"),
+  def("nose","emotion",34,49,"NOSE","emotion"),
+  def("mouth","emotion",34,51,"MOUTH","emotion"),
+  def("blush_l","emotion",27,51,"BLUSH L","emotion"),
+  def("blush_r","emotion",40,51,"BLUSH R","emotion"),
+  def("glasses","emotion",34,46,"GLASSES","accessory"),
+  def("hair_back","head",33,41,"HAIR / BACK","hair"),
+  def("hair_cap","head",33,35,"HAIR / TOP","hair"),
+  def("fringe_l","head",26,43,"FRINGE / LEFT","hair"),
+  def("fringe_mid","head",33,43,"FRINGE / CENTER","hair"),
+  def("fringe_r","head",40,43,"FRINGE / RIGHT","hair"),
+  def("shoulder_l","torso",22,60,"UPPER ARM L"),
+  def("elbow_l","shoulder_l",19,71,"ELBOW L"),
+  def("wrist_l","elbow_l",19,82,"HAND L"),
+  def("shoulder_r","torso",43,60,"UPPER ARM R"),
+  def("elbow_r","shoulder_r",46,71,"ELBOW R"),
+  def("wrist_r","elbow_r",46,82,"HAND R"),
+  def("hip_l","pelvis",27,80,"THIGH L"),
+  def("knee_l","hip_l",27,89,"KNEE L"),
+  def("ankle_l","knee_l",27,100,"SHOE L"),
+  def("hip_r","pelvis",38,80,"THIGH R"),
+  def("knee_r","hip_r",38,89,"KNEE R"),
+  def("ankle_r","knee_r",38,100,"SHOE R"),
+  def("phone","wrist_l",18,80,"HELD PROP","prop")
  ]);
  const BMAP=Object.freeze(Object.fromEntries(BONES.map(b=>[b.id,b])));
  const HIERARCHY=Object.freeze(Object.fromEntries(BONES.map(b=>[b.id,b.parent])));
@@ -63,9 +63,9 @@
   shoe:"#f4eee6",shoeLight:"#fffdf7",shoeShade:"#c1b1a6",shoeShadow:"#514745",
   phone:"#211d22",screen:"#35323a",blush:"#e48e82"
  });
- const PROPORTIONS=Object.freeze({head:[18,4,33,39],shirt:[18,42,30,28],
-   pants:[16,69,34,35],shoes:[12,99,42,12],
-   style:"chunky-fringe / narrow glasses / oversized tee / loose trousers / thick sneakers"});
+ const PROPORTIONS=Object.freeze({head:[19,31,38,25],shirt:[19,55,30,26],
+  pants:[19,77,30,20],shoes:[18,96,30,7],
+  style:"original-v6b-iso / genuine source layers / no black outlines"});
  const clone=x=>JSON.parse(JSON.stringify(x));
  const clamp=(v,a,b)=>Math.min(b,Math.max(a,Number(v)||0));
  function neutral(){
@@ -80,7 +80,7 @@
   m.parts.elbow_l.x=0;m.parts.elbow_l.y=0;
   m.parts.wrist_l.x=0;m.parts.wrist_l.y=0;
   m.parts.phone.x=0;m.parts.phone.y=0;
-  m.parts.head.angle=-1;
+  m.parts.head.angle=0;
   return m;
  }
  function normalize(source){
@@ -439,13 +439,74 @@
    }
   });
  }
+
+ // Original source V6B pixel layers. Loaded only from the deployed pipeline
+ // generator; original RGB/alpha, shading and z-order are never reauthored.
+ const ORIGINAL_SOURCE="./media/original-rig/manifest.json";
+ let originalArt=null,loadingOriginal=null;
+ async function loadNativeArt(){
+  if(originalArt)return originalArt;
+  if(loadingOriginal)return loadingOriginal;
+  if(!root?.fetch||!root?.Image)return Promise.reject(new Error("Browser image loader unavailable"));
+  loadingOriginal=(async()=>{
+   const res=await root.fetch(ORIGINAL_SOURCE,{cache:"no-store"});
+   if(!res.ok)throw new Error("Original V6B manifest HTTP "+res.status);
+   const manifest=await res.json();
+   if(manifest.format!=="mahluk-original-source-rig-v1"||
+     manifest.art_style!=="original_v6b"||!Array.isArray(manifest.slots)||
+     !Array.isArray(manifest.directions)||manifest.slots.length<10)
+    throw new Error("Original V6B source manifest invalid");
+   const slots=await Promise.all(manifest.slots.map(async spec=>{
+    if(!BMAP[spec.bone]||!/^media\/original-rig\/[a-z0-9-]+\.png$/.test(spec.src))
+      throw new Error("Invalid source cutout: "+spec.name);
+    const img=await new Promise((resolve,reject)=>{
+     const im=new root.Image();
+     im.onload=()=>resolve(im);
+     im.onerror=()=>reject(new Error("Missing native source part "+spec.name));
+     im.src="./"+spec.src;
+    });
+    if(img.naturalWidth!==W*(spec.expression?manifest.emotions.length:1)||
+       img.naturalHeight!==H*manifest.directions.length)
+     throw new Error("Wrong native cutout dimensions: "+spec.name);
+    return {...spec,image:img};
+   }));
+   originalArt={...manifest,slots};
+   return originalArt;
+  })().catch(error=>{loadingOriginal=null;throw error;});
+  return loadingOriginal;
+ }
+ function drawNative(ctx,state,view,coords){
+  const directionIndex=originalArt.directions.indexOf(view);
+  const expressionIndex=Math.max(0,originalArt.emotions.indexOf(state.emotion));
+  for(const part of originalArt.slots){
+   const b=BMAP[part.bone],n=coords[part.bone];
+   if(!n?.visible||(part.bone==="phone"&&!state.phone))continue;
+   // A source layer is full-frame RGBA in its original local pixel space.
+   // Bone-space transforms are applied only here, never destructively to
+   // the generator art. At neutral the reassembly is pixel-identical.
+   ctx.save();
+   ctx.translate(n.x,n.y);
+   ctx.rotate(n.angle*Math.PI/180);
+   ctx.scale(n.scale,n.scale);
+   ctx.translate(-b.x,-b.y);
+   ctx.drawImage(part.image,
+    part.expression?expressionIndex*W:0,directionIndex*H,W,H,0,0,W,H);
+   ctx.restore();
+  }
+ }
  function draw(ctx,source,direction="se",options={}){
   const state=normalize(source),view=DIR.includes(direction)?direction:state.direction;
   const coords=world(state);
   ctx.save();ctx.imageSmoothingEnabled=false;
   if(options.clear!==false)ctx.clearRect(0,0,W,H);
-  if(view==="sw"||view==="nw"){ctx.translate(W,0);ctx.scale(-1,1);}
-  art(ctx,coords,state,view);ctx.restore();
+  if(originalArt)drawNative(ctx,state,view,coords);
+  else if(!root?.document){
+   // Legacy pure-code Node verification remains available. Browsers never
+   // display the previous rejected procedurally redrawn reference.
+   if(view==="sw"||view==="nw"){ctx.translate(W,0);ctx.scale(-1,1);}
+   art(ctx,coords,state,view);
+  }
+  ctx.restore();
   return coords;
  }
  function spriteSheet(state,frames=4){
@@ -515,5 +576,5 @@
     pants:PROPORTIONS.pants,shoes:PROPORTIONS.shoes}};
  }
  return Object.freeze({ID,W,H,DIR,ART_REVISION,BONES,BMAP,HIERARCHY,EMOTIONS,PALETTE,
-  PROPORTIONS,neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
+  PROPORTIONS,ORIGINAL_SOURCE,loadNativeArt,get hasNativeArt(){return !!originalArt;},neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
 });
