@@ -25,6 +25,7 @@ on:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
       - "site/**"
+      - "tests/test_pose_maker.cjs"
       - "tools/build_human_wardrobe.py"
       - "tests/test_human_wardrobe.py"
       - "tests/test_human_face_neck_preservation.py"
