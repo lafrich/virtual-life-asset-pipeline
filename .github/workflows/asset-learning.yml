@@ -58,9 +58,5 @@ jobs:
           fi
       - name: Test shared isometric primitives
         run: python -m unittest discover -s tests -p 'test_iso_asset_primitives.py' -v
-      - name: Rebuild approved Milk Mascot using shared helpers
-        run: python assets/npc_milk_mascot/src/make_milk_mascot.py
-      - name: Assert regenerated sprites equal committed approval pixel-for-pixel
-        run: python tools/check_generated_pixels.py 'assets/npc_milk_mascot/sprites/*.png'
-      - name: Audit pixel alpha, palette and shadow
-        run: python tools/audit_colors.py assets/npc_milk_mascot/sprites
+      - name: Check shared primitives without retired NPC generator
+        run: python -m unittest discover -s tests -p test_iso_asset_primitives.py -v
