@@ -26,7 +26,11 @@ class Wardrobe(unittest.TestCase):
     self.assertIn("back_sheet",row)
     with Image.open(out/row["back_sheet"]) as rear:
      self.assertEqual(rear.size,(256,112))
-     self.assertTrue(all(rear.crop((d*64,0,(d+1)*64,112)).getbbox() for d in range(4)))
+     # Rear layer can be transparent in the frontal view (or on a
+     # close-cropped haircut). It must NEVER be forced over the face.
+     if any(word in row["id"] for word in ("long","wavy","curtain")):
+      self.assertTrue(any(rear.crop((d*64,0,(d+1)*64,112)).getbbox()
+                          for d in range(4)),row["id"])
    else:self.assertNotIn("back_sheet",row)
    self.assertEqual(row["directions"],["se","sw","ne","nw"])
    with Image.open(out/row["sheet"]) as sheet:
