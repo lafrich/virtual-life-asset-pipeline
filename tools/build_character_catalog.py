@@ -21,6 +21,7 @@ from build_astrofrich import build_astrofrich
 from build_human_templates import build_human_templates
 from build_human_wardrobe import build_human_wardrobe
 from build_legacy_character_catalog import prepare_legacy_catalog
+from build_original_rig_layers import generate as build_original_rig_layers
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -249,6 +250,7 @@ def build():
     shutil.copytree(SITE, OUT)
     media = OUT / "media"
     media.mkdir(exist_ok=True)
+    build_original_rig_layers(media)
     build_accessory_guide(ROOT, media)
 
     index_path = ROOT / "assets/character_stock/index.json"
