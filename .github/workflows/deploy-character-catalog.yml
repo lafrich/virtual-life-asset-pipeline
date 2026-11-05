@@ -148,6 +148,7 @@ jobs:
           node --check site/pose-maker.js
           node --test tests/test_pose_maker.cjs
           python -m py_compile tools/build_original_rig_layers.py tools/build_mahluk2_emotion_planes.py
+          python -m unittest discover -s tests -p test_mahluk2_emotion_builder.py -v
           python -m unittest discover -s tests -p test_native_rig_partition.py
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/mahluk-2/studio.js
