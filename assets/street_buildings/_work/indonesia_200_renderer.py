@@ -15,6 +15,7 @@ from indonesia_200_art_direction_v5 import refine as art_direct
 from indonesia_200_umkm_signature import variant as umkm_signature
 from indonesia_200_vegetation_hifi import render as vegetation_hifi
 from indonesia_200_attribute_detail_v6 import refine as attribute_detail
+from indonesia_200_vehicle_hifi_v7 import render as vehicle_hifi
 
 SPEC_PATH=Path('assets/street_buildings/_work/indonesia_200_specs.json')
 SPECS=json.loads(SPEC_PATH.read_text(encoding='utf-8'))['items']
@@ -332,6 +333,7 @@ def draw_structure(L,s):
 def draw(L,s):
  # Quality gate: NO legacy faceless-cube fallback for the 200-asset pack.
  # Every asset must have a recognizable authored v2 recipe.
+ if vehicle_hifi(L,s):return
  if vegetation_hifi(L,s):return
  if umkm_signature(L,s):return
  if quality_override(L,s):
