@@ -153,7 +153,9 @@ jobs:
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/mahluk-2/studio.js
           node --check site/mahluk-2/emotion-planes.js
+          node --check site/mahluk-2/rig-rules.js
           node --test tests/test_mahluk2_emotion_planes.cjs
+          node --test tests/test_mahluk2_rig_rules.cjs
           test -s site/mahluk-2/index.html
           test -s site/mahluk-2/studio.css
           node --check site/modular-rig-v2.js
@@ -260,6 +262,7 @@ jobs:
           test -s _site/mahluk-2/index.html
           test -s _site/mahluk-2/studio.js
           test -s _site/mahluk-2/emotion-planes.js
+          test -s _site/mahluk-2/rig-rules.js
           test -s _site/emotion-plane-library.json
           python -c 'import json; from pathlib import Path; from PIL import Image; root=Path("_site"); m=json.loads((root/"emotion-plane-library.json").read_text()); entries=m["entries"]; assert len(entries)==24, f"Expected 2 genders x 12 authored expressions, got {len(entries)}"; assert all(Image.open(root/e["src"]).size==(64*e["frames"],448) for e in entries); assert {e["base"] for e in entries}=={"male","female"}; print("Verified 24 original face-only emotion plane atlases")'
           test -s _site/mahluk-2/studio.css
