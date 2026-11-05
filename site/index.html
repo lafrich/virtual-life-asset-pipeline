@@ -7,13 +7,14 @@
   <meta name="description" content="Mahluk Hidup — pixel character creator, modular outfits, animated NPCs and character storage.">
   <title>Mahluk Hidup — Character Studio</title>
   <link rel="stylesheet" href="./style.css?v=custom-model-color-v3">
-  <link rel="stylesheet" href="./pose-maker.css?v=poser-diamond-v2">
+  <link rel="stylesheet" href="./pose-maker.css?v=pixel-mask-v1">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
-  <script defer src="./pose-maker.js?v=poser-diamond-v2"></script>
+  <script defer src="./pose-weights.js?v=pixel-mask-v1"></script>
+  <script defer src="./pose-maker.js?v=pixel-mask-v1"></script>
   <script defer src="./app.js?v=custom-model-color-v4"></script>
   <script defer src="./custom-character-wardrobe.js?v=custom-model-color-v4"></script>
   <script defer src="./animations.js?v=pose-foreground-v1"></script>
@@ -442,6 +443,29 @@
               <div class="pose-preview-box"><strong>MALE BASE</strong><canvas width="64" height="112" id="pose-preview-male" aria-label="Human Male Base converted pose preview"></canvas></div>
               <div class="pose-preview-box"><strong>FEMALE BASE</strong><canvas width="64" height="112" id="pose-preview-female" aria-label="Human Female Base converted pose preview"></canvas></div>
             </div>
+            <section class="pose-weight-editor" aria-label="Edit the per-pixel ownership of the puppet bones">
+              <div class="pose-weight-heading"><strong>PIXEL WEIGHTS / BONE MASK</strong><small>RIG UNCHANGED</small></div>
+              <p class="pose-note">Paint pixels into an individual bone. Every pixel has exactly one owner. Edit MALE/FEMALE and SE/SW/NE/NW separately.</p>
+              <label class="pose-label" for="pose-weight-base">SPRITE BASE</label>
+              <select class="pose-input" id="pose-weight-base">
+                <option value="human_male_base">MALE BASE</option>
+                <option value="human_female_base">FEMALE BASE</option>
+              </select>
+              <label class="pose-label" for="pose-weight-bone">PIXELS FOLLOW THIS BONE</label>
+              <select class="pose-input" id="pose-weight-bone"></select>
+              <div class="pose-weight-tools" role="group" aria-label="Weight brush mode">
+                <button type="button" class="chrome-button active" data-pose-weight-tool="paint" aria-pressed="true">✎ ASSIGN</button>
+                <button type="button" class="chrome-button" data-pose-weight-tool="erase" aria-pressed="false">⌫ STATIC</button>
+                <label>RADIUS <input type="range" id="pose-weight-size" min="0" max="5" step="1" value="1"></label>
+                <output id="pose-weight-size-label" for="pose-weight-size">3 PX</output>
+              </div>
+              <div class="pose-weight-canvas-wrap">
+                <canvas id="pose-weight-canvas" width="64" height="112" aria-label="Paint pixel ownership on original 64 by 112 source sprite"></canvas>
+              </div>
+              <p class="pose-note" id="pose-weight-info" aria-live="polite">LOADING PIXEL WEIGHTS</p>
+              <button type="button" class="chrome-button" id="pose-weight-reset">↺ RESET MASK / CURRENT VIEW</button>
+              <p class="pose-note">Blue = pixels owned by selected bone. STATIC keeps pixels at their source location. Masks auto-save independently of keyframes.</p>
+            </section>
             <button type="button" class="chrome-button" id="pose-play">▶ PLAY</button>
             <button type="button" class="chrome-button" id="pose-new">+ NEW MOTION</button>
             <button type="button" class="chrome-button action-main" id="pose-save">▣ SAVE TO BOTH MOTION LIBRARIES</button>
