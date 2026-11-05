@@ -127,6 +127,14 @@
    }
   return changed;
  }
+ // Subtract affects ONLY the currently selected bone. Pixels keep their
+ // original RGBA texture; losing a bone owner does not erase the sprite.
+ // Unlike STATIC, pixels belonging to neighbouring bones are untouched.
+ function subtract(mask,x,y,radius,segment,transparent,accept){
+  if(!Number.isInteger(segment)||segment<=0||segment>=SEGMENTS.length)return 0;
+  return brush(mask,x,y,radius,0,transparent,(ix,iy,owner)=>
+   owner===segment&&(!accept||accept(ix,iy,owner)));
+ }
  function layers(img,base,dir,frame=0){
   const baseId=base.id||base.base_id||"unknown";
   const key=idKey(baseId,dir),rev=versions.get(key)||0;
@@ -305,15 +313,18 @@
    const item=current();if(!item)return;
    const rect=canvas.getBoundingClientRect();
    const x=(e.clientX-rect.left)*W/rect.width,y=(e.clientY-rect.top)*H/rect.height;
-   const n=mode==="erase"?0:Number(select.value);
+   const n=Number(select.value);
    const start=lastPoint||[x,y],distance=Math.hypot(x-start[0],y-start[1]);
    const steps=Math.max(1,Math.ceil(distance)),radius=Number($("pose-weight-size").value);
    const within=(px,py)=>inFocusRegion(focus,px,py);
    let changed=0;
    for(let i=0;i<=steps;i++){
     const t=i/steps;
-    changed+=brush(item.mask,start[0]+(x-start[0])*t,start[1]+(y-start[1])*t,
-      radius,n,item.tile.data,within);
+    const px=start[0]+(x-start[0])*t,py=start[1]+(y-start[1])*t;
+    if(mode==="subtract")
+     changed+=subtract(item.mask,px,py,radius,n,item.tile.data,within);
+    else changed+=brush(item.mask,px,py,radius,mode==="erase"?0:n,
+     item.tile.data,within);
    }
    lastPoint=[x,y];
    if(changed){touch(item.baseId,item.dir);refresh();}
@@ -339,6 +350,12 @@
   for(const button of root.document.querySelectorAll("[data-pose-weight-tool]"))
    button.addEventListener("click",()=>{
     mode=button.dataset.poseWeightTool;
+    const hint=$("pose-weight-tool-hint");
+    if(hint)hint.textContent={
+     paint:"ASSIGN / add source pixels to the selected bone.",
+     subtract:"UNSELECT / subtract ONLY from the selected bone. Other bone masks stay intact.",
+     erase:"STATIC / remove any bone assignment at the brushed location."
+    }[mode]||"";
     for(const b of root.document.querySelectorAll("[data-pose-weight-tool]")){
      const on=b===button;b.classList.toggle("active",on);
      b.setAttribute("aria-pressed",String(on));
@@ -377,5 +394,5 @@
   return {refresh,setFocus};
  }
  return Object.freeze({W,H,KEY,SEGMENTS,FOCUS,inFocusRegion,focusOwns,encode,decode,defaultMap,brush,getMap,
-  layers,paint,serialize,mount,refresh:()=>editorRefresh?.()});
+  subtract,layers,paint,serialize,mount,refresh:()=>editorRefresh?.()});
 });
