@@ -207,7 +207,7 @@ function pick(id){
  if(!R.BMAP[id])return;
  selected=id;document.querySelectorAll("[data-bone]").forEach(x=>x.classList.toggle("selected",x.dataset.bone===id));
  $("selectedName").textContent=R.BMAP[id].label;
- $("selectedParent").textContent="PARENT: "+(R.BMAP[id].parent||"none");
+ $("selectedParent").textContent="PARENT: "+(id==="glasses"?"head":R.BMAP[id].parent||"none");
  const p=state.parts[id];for(const [k,el] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]])$(el).value=p[k]??0;
  $("visible").checked=p.visible;
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
@@ -232,7 +232,7 @@ function buildTree(){
  pick(selected);
 }
 function applyState(){
- base=R.normalize(state);setProjectFields();buildTree();makeTimeline();paint();
+ setProjectFields();buildTree();makeTimeline();updateEmotionStatus();paint();
 }
 function setProjectFields(){
  $("modelType").value=type;$("outfit").value=outfit;$("outfit").disabled=type==="original";
