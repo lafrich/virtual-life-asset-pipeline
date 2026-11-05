@@ -64,6 +64,11 @@ test("Pixel editor syncs small brush strokes across views by mirroring source po
  assert.equal(P.mirroredX(20,1,3),20);
  const html=fs.readFileSync("site/mahluk-2/index.html","utf8");
  assert.match(html,/id="pixelSync" checked/);
+ assert.match(html,/id="pixelSyncExisting"/);
+ const editor=fs.readFileSync("site/mahluk-2/plane-pixel-editor.js","utf8");
+ assert.match(editor,/els\.syncExisting\.onclick=/);
+ assert.match(editor,/before\[p\+3\]===0/);
+ assert.match(editor,/if\(data\[to\+3\]===0\)continue/);
 });
 
 test("Editor includes clickable orbit gizmo, actual 4-way previews, editor-only depth guides, and publishes unchanged 4-view game output",()=>{
@@ -82,6 +87,9 @@ test("Editor includes clickable orbit gizmo, actual 4-way previews, editor-only 
  assert.match(js,/V\.dragDelta\(dx,dy,scale,direction,"z"\)/);
  assert.match(js,/V\.rotationDelta\(delta,direction\)/);
  assert.match(js,/function setDirection\(dir\)/);
+ assert.match(html,/id="toolOrbit"/);
+ assert.match(js,/if\(drag\.mode==="orbit"\)/);
+ assert.match(js,/V\.orbit\(drag\.baseDir,step\)/);
  assert.match(js,/function drawPlaneDepthGuides\(/);
  assert.match(js,/previewExplode|inspectPlaneDepth/);
 });
