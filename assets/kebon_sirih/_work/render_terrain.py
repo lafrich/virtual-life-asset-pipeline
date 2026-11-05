@@ -56,8 +56,16 @@ def asphalt():
  # Long-jointed patched strip, very low contrast against asphalt body.
  d.line([(13,15),(16,18),(16,27),(19,30)],fill=(*cs[1],255),width=1)
  d.line([(51,37),(49,40),(53,43)],fill=(*cs[2],255),width=1)
- for x,y in [(6,55),(34,12),(46,61),(56,27)]:
+ # Worn asphalt repair island, hairline cracks and scattered stone aggregate.
+ d.polygon([(24,39),(37,37),(42,42),(40,55),(26,56),(21,48)],fill=(*cs[1],255))
+ d.line([(23,40),(26,38),(38,38),(42,42)],fill=(*cs[3],255),width=1)
+ d.line([(40,54),(27,55),(22,49)],fill=(*cs[2],255),width=1)
+ for x,y in [(6,55),(34,12),(46,61),(56,27),(17,43),(7,9)]:
   d.point((x,y),fill=(*cs[3],255))
+ rand=random.Random(803)
+ for _ in range(78):
+  x=rand.randrange(2,62);y=rand.randrange(2,62)
+  d.point((x,y),fill=(*(cs[1] if rand.random()<.57 else cs[2]),255))
  return im
 
 def concrete():
@@ -125,11 +133,17 @@ def grass():
  im=base('grass',901);d=ImageDraw.Draw(im)
  c=img_color('grass')
  rand=random.Random(901)
- for i in range(33):
+ for i in range(80):
   x=rand.randrange(2,N-2);y=rand.randrange(2,N-2)
-  co=c[2] if i%3==0 else c[1]
+  co=c[2] if i%5==0 else (c[1] if i%3 else c[3])
   d.point((x,y),fill=(*co,255))
-  if i%5==0:d.line((x-1,y+1,x,y-1),fill=(*co,255))
+  if i%4==0:d.line((x-1,y+1,x,y-1),fill=(*co,255))
+  if i%11==0:
+   d.line((x-2,y,x+1,y-2),fill=(*c[1],255))
+ # Uneven urban soil exposure rather than uniform suburban carpet.
+ for x,y in [(14,45),(43,11),(53,50)]:
+  for dx,dy in [(0,0),(1,0),(0,1)]:
+   d.point((x+dx,y+dy),fill=(*c[3],255))
  return im
 
 def soil():
