@@ -1423,6 +1423,27 @@ async function init() {
     const unified=withSleep.map(character=>({...character,
       motions:UNIVERSAL_MOTIONS.catalogFor(character,union)}));
     const visible=CHAR_RESET?.active?CHAR_RESET.filter(unified):unified;
+    // The first approved v2 character is authored as genuine independent
+    // cutout modules, not cropped from the archived v6b raster sprites.
+    // Render its source preview locally so old database characters stay hidden.
+    const rig=window.VLModularRigV2;
+    if(rig&&(!CHAR_RESET?.active||CHAR_RESET.visible(rig.ID))){
+      const atlas=rig.spriteSheet(rig.referencePose(),6),sheet=atlas.toDataURL("image/png");
+      const portrait=document.createElement("canvas");portrait.width=64;portrait.height=112;
+      portrait.getContext("2d").drawImage(atlas,0,0,64,112,0,0,64,112);
+      visible.unshift({
+        id:rig.ID,name:"PIXEL REFERENCE 01",type:"npc",
+        template:false,source:"modular-rig-v2",asset_status:"generated_preview",
+        sheet,thumbnail:portrait.toDataURL("image/png"),poster:portrait.toDataURL("image/png"),
+        frame_size:[64,112],row_starts:{walk:0,idle:0,talk:0},
+        idle_frames:6,walk_frames:6,
+        skeleton_profile:"MODULAR PIXEL V2",bone_skin_ready:true,
+        motions:[],expressions:[],palette:"dark streetwear",
+        outfit:"black T-shirt / loose dark trousers / white sneakers",
+        hairstyle:"dark layered fringe",description:
+         "NEW REFERENCE / 4 views / separated head, emotion, eyes, brows, mouth, torso, arms, legs and phone prop. Open 06 / RIG STUDIO to edit."
+      });
+    }
     catalogCharacters=visible.filter(c=>!["otis","legacy_otis"].includes(c.id));
     state.characters=visible;
     rebuildCustomCharacters();
