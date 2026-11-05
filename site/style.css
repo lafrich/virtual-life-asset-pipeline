@@ -560,3 +560,19 @@ body.pixel-editor-open{overflow:hidden}
  .custom-color-control input[type=text]{flex-basis:64px;width:64px;font-size:10px}
  .custom-palette-target{flex-basis:54px;font-size:8px}
 }
+
+
+/* Character reference reset: data remains archived, editing tools remain visible.
+   Hide only obsolete character images and sprite demonstrations. */
+html.character-reference-reset #sprite-canvas,
+html.character-reference-reset #custom-preview,
+html.character-reference-reset #pose-rig,
+html.character-reference-reset #pose-preview-male,
+html.character-reference-reset #pose-preview-female,
+html.character-reference-reset #pose-weight-canvas,
+html.character-reference-reset .pose-preview-box canvas,
+html.character-reference-reset .pose-weight-layer canvas{
+ visibility:hidden!important;
+}
+html.character-reference-reset #custom-preview-status{color:#14478c;font-weight:bold}
+html.character-reference-reset #canvas-loading{max-width:94%;overflow-wrap:anywhere}
