@@ -7,13 +7,13 @@
   <meta name="description" content="Mahluk Hidup — pixel character creator, modular outfits, animated NPCs and character storage.">
   <title>Mahluk Hidup — Character Studio</title>
   <link rel="stylesheet" href="./style.css?v=custom-model-color-v3">
-  <link rel="stylesheet" href="./pose-maker.css?v=pixel-mask-v1">
+  <link rel="stylesheet" href="./pose-maker.css?v=pixel-mask-v2">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
-  <script defer src="./pose-weights.js?v=pixel-mask-v1"></script>
+  <script defer src="./pose-weights.js?v=pixel-mask-v2"></script>
   <script defer src="./pose-maker.js?v=pixel-mask-v1"></script>
   <script defer src="./app.js?v=custom-model-color-v4"></script>
   <script defer src="./custom-character-wardrobe.js?v=custom-model-color-v4"></script>
@@ -445,7 +445,23 @@
             </div>
             <section class="pose-weight-editor" aria-label="Edit the per-pixel ownership of the puppet bones">
               <div class="pose-weight-heading"><strong>PIXEL WEIGHTS / BONE MASK</strong><small>RIG UNCHANGED</small></div>
-              <p class="pose-note">Paint pixels into an individual bone. Every pixel has exactly one owner. Edit MALE/FEMALE and SE/SW/NE/NW separately.</p>
+              <p class="pose-note">BODY AND ARMS ARE SEPARATE PIXEL LAYERS. PICK A LAYER FIRST, THEN ASSIGN ITS PIXELS TO A BONE. RIG + ANIMATION ARE UNCHANGED.</p>
+              <div class="pose-weight-split-grid" role="group" aria-label="Independent pixel layers for torso and arms">
+                <button type="button" class="pose-weight-layer active" data-pose-weight-isolate="body" aria-pressed="true">
+                  <canvas width="64" height="112" aria-hidden="true"></canvas><span>BODY</span>
+                </button>
+                <button type="button" class="pose-weight-layer" data-pose-weight-isolate="arm_l" aria-pressed="false">
+                  <canvas width="64" height="112" aria-hidden="true"></canvas><span>LEFT ARM</span>
+                </button>
+                <button type="button" class="pose-weight-layer" data-pose-weight-isolate="arm_r" aria-pressed="false">
+                  <canvas width="64" height="112" aria-hidden="true"></canvas><span>RIGHT ARM</span>
+                </button>
+              </div>
+              <div class="pose-weight-secondary-groups" role="group" aria-label="Other editable pixel layers">
+                <button type="button" class="pose-weight-layer-mini" data-pose-weight-isolate="head" aria-pressed="false">HEAD</button>
+                <button type="button" class="pose-weight-layer-mini" data-pose-weight-isolate="legs" aria-pressed="false">LEGS</button>
+                <button type="button" class="pose-weight-layer-mini" data-pose-weight-isolate="all" aria-pressed="false">ALL / COMPOSITE</button>
+              </div>
               <label class="pose-label" for="pose-weight-base">SPRITE BASE</label>
               <select class="pose-input" id="pose-weight-base">
                 <option value="human_male_base">MALE BASE</option>
@@ -459,12 +475,17 @@
                 <label>RADIUS <input type="range" id="pose-weight-size" min="0" max="5" step="1" value="1"></label>
                 <output id="pose-weight-size-label" for="pose-weight-size">3 PX</output>
               </div>
+              <div class="pose-weight-zoom-row">
+                <label for="pose-weight-zoom">PIXEL EDIT ZOOM</label>
+                <input id="pose-weight-zoom" type="range" min="2" max="8" step="1" value="4">
+                <output id="pose-weight-zoom-label" for="pose-weight-zoom">4×</output>
+              </div>
               <div class="pose-weight-canvas-wrap">
-                <canvas id="pose-weight-canvas" width="64" height="112" aria-label="Paint pixel ownership on original 64 by 112 source sprite"></canvas>
+                <canvas id="pose-weight-canvas" width="64" height="112" aria-label="Edit isolated arm or body pixel ownership. Other parts are hidden or faint."></canvas>
               </div>
               <p class="pose-note" id="pose-weight-info" aria-live="polite">LOADING PIXEL WEIGHTS</p>
-              <button type="button" class="chrome-button" id="pose-weight-reset">↺ RESET MASK / CURRENT VIEW</button>
-              <p class="pose-note">Blue = pixels owned by selected bone. STATIC keeps pixels at their source location. Masks auto-save independently of keyframes.</p>
+              <button type="button" class="chrome-button" id="pose-weight-reset">↺ RESET SELECTED LAYER / VIEW</button>
+              <p class="pose-note">Blue = selected bone; colored pixels are active layer; ghost pixels can be reclaimed near borders. Other body parts are isolated, not deleted. Separate masks for Male/Female and 4 views. Changes auto-save.</p>
             </section>
             <button type="button" class="chrome-button" id="pose-play">▶ PLAY</button>
             <button type="button" class="chrome-button" id="pose-new">+ NEW MOTION</button>
