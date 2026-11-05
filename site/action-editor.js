@@ -382,6 +382,13 @@ function editedFrame(index,dir){
 }
 function loadFrame(){
  localPose?.close();
+ if(window.VLCharacterReferenceReset?.active){
+  ++state.loadingId;state.undo=[];state.sourceReady=false;state.dirty=false;
+  pc.clearRect(0,0,64,112);
+  $("edit-label").textContent="AWAIT NEW RIG";
+  status(window.VLCharacterReferenceReset.message);
+  render();return;
+ }
  const ticket=++state.loadingId;
  state.undo=[];state.sourceReady=false;state.dirty=false;
  const count=state.source?.frames||4;
