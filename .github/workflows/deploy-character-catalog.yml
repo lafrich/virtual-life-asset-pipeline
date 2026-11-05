@@ -166,6 +166,7 @@ jobs:
           node --check site/mahluk-2/pixel-selection.js
           node --check site/mahluk-2/plane-pixel-editor.js
           node --test tests/test_mahluk2_pixel_select_overlay.cjs
+          node --test tests/test_mahluk2_clipboard.cjs
           node --check site/mahluk-2/view-projection.js
           node --test tests/test_mahluk2_orbit_depth.cjs
           node --test tests/test_mahluk2_root_grid_zoom.cjs
