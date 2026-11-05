@@ -820,6 +820,24 @@ function saveGeneralRig(){
   return true;
  }catch(error){setStatus("GENERAL RIG SAVE FAILED: "+error.message,false);return false}
 }
+function saveGeneralPlanePixel(bone,png){
+ if(!setPlanePixel(bone,png))return false;
+ const prior=masterDocument();
+ // Publishing an edited hand should not silently replace the master head,
+ // anchors, rest pose, hierarchy or other plane artwork.
+ const rules=prior?.rules||rigRules;
+ const parts=prior?.defaultParts||base.parts;
+ const merged={...(prior?.pixelPlanes||{}),[bone]:png};
+ try{
+  const saved=G.save(window.localStorage,R,rules,parts,merged);
+  masterMessage();
+  setStatus("✓ GENERAL PIXEL DEFAULT "+bone.toUpperCase()+
+   " · MASTER v"+saved.revision+" · "+Object.keys(saved.pixelPlanes).length+" ART PLANES",true);
+  return true;
+ }catch(error){
+  setStatus("GENERAL PIXEL SAVE FAILED: "+error.message,false);return false;
+ }
+}
 function loadGeneralRig(){
  const saved=masterDocument();
  if(!saved){setStatus("NO GENERAL DEFAULT RIG SAVED");return}
@@ -838,10 +856,7 @@ function setupEvents(){
  planeEditor=P.create({
   overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
   onApply:(bone,png)=>setPlanePixel(bone,png),
-  onSaveDefault:(bone,png)=>{
-   if(!setPlanePixel(bone,png))return false;
-   return saveGeneralRig();
-  }
+  onSaveDefault:saveGeneralPlanePixel
  });
  $("editPixelPlane").onclick=openPlaneEditor;
  $("openPlaneEditor").onclick=openPlaneEditor;
