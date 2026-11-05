@@ -217,7 +217,9 @@ def cheeky_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,di
                    xy(39,52),xy(37,53),xy(34,53),xy(32,52)],fill=dark)
     mouth.line([xy(33,50),xy(38,50)],fill=white,width=1)
     tongue_end=(53,54,55,54)[phase]
-    mouth.rectangle([xy(35,52),xy(37,tongue_end)],fill=tongue)
+    p0,p1=xy(35,52),xy(37,tongue_end)
+    mouth.rectangle((min(p0[0],p1[0]),min(p0[1],p1[1]),
+                     max(p0[0],p1[0]),max(p0[1],p1[1])),fill=tongue)
     mouth.line([xy(36,53),xy(36,tongue_end)],fill=tongue_shadow,width=1)
     mouth.point(xy(36,48),fill=nose)
     layers["brows"]=Image.new("RGBA",FRAME)
@@ -262,9 +264,13 @@ def grimace_blush_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[
 
     mouth=ImageDraw.Draw(parts["mouth"],"RGBA")
     wobble=(0,0,1,0)[phase]
-    mouth.rounded_rectangle([xy(31,49+wobble),xy(40,53+wobble)],
+    p0,p1=xy(31,49+wobble),xy(40,53+wobble)
+    mouth.rounded_rectangle((min(p0[0],p1[0]),min(p0[1],p1[1]),
+                             max(p0[0],p1[0]),max(p0[1],p1[1])),
                             radius=1,fill=dark)
-    mouth.rectangle([xy(32,50+wobble),xy(39,51+wobble)],fill=white)
+    p0,p1=xy(32,50+wobble),xy(39,51+wobble)
+    mouth.rectangle((min(p0[0],p1[0]),min(p0[1],p1[1]),
+                     max(p0[0],p1[0]),max(p0[1],p1[1])),fill=white)
     for tx in (35,38):
         mouth.point(xy(tx,51+wobble),fill=edge)
     mouth.point(xy(36,48),fill=nose)
