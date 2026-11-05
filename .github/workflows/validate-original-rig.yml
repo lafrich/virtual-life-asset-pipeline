@@ -1,0 +1,38 @@
+name: Original Pixel Rig — Source Fidelity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/build_original_rig_layers.py"
+      - "site/modular-rig-v2.js"
+      - "site/rig-studio-v2.js"
+      - "tests/test_modular_rig_v2.cjs"
+      - ".github/workflows/validate-original-rig.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-source-rig:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout original V6B source
+        uses: actions/checkout@v4
+      - name: Install Python and native pixel dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install numpy Pillow
+      - name: Check all source parts reassemble exactly
+        run: |
+          python tools/build_original_rig_layers.py "$RUNNER_TEMP/native-rig-art"
+          test -s "$RUNNER_TEMP/native-rig-art/original-rig/manifest.json"
+          test -s "$RUNNER_TEMP/native-rig-art/original-rig/source-contact-sheet.png"
+          python -c "import json,os,pathlib; p=pathlib.Path(os.environ['RUNNER_TEMP'])/'native-rig-art/original-rig/manifest.json'; m=json.loads(p.read_text()); assert m['pixels_preserved'] and len(m['slots'])>=10; assert len(m['directions'])==4 and len(m['emotions'])==7"
+      - name: Verify Rig Studio API and old editor compatibility
+        run: |
+          node --check site/modular-rig-v2.js
+          node --check site/rig-studio-v2.js
+          node --test tests/test_modular_rig_v2.cjs
