@@ -14,6 +14,60 @@ const UNIVERSAL_BODY = window.VLUniversalBodyActions;
 const UNIVERSAL_MOTIONS = window.VLUniversalMotions;
 const EXPRESSION_CONTEXT = window.VLExpressionContext;
 const CHAR_RESET = window.VLCharacterReferenceReset;
+
+function modularReferenceRecord(){
+ const rig=window.VLModularRigV2;
+ if(!rig||CHAR_RESET?.active&&!CHAR_RESET.visible(rig.ID))return null;
+ let base=rig.referencePose(),tracks=rig.makeTracks(),count=24;
+ try{
+  const saved=JSON.parse(window.localStorage.getItem("mahluk-modular-rig-studio-v2")||"null");
+  if(saved?.format==="mahluk-rig-studio-v2"){
+   base=rig.normalize(saved.base);
+   tracks=saved.tracks&&typeof saved.tracks==="object"?saved.tracks:tracks;
+   count=Math.max(4,Math.min(96,Number(saved.count)||24));
+  }
+ }catch{}
+ const frames=6,dirs=rig.DIR,canvas=document.createElement("canvas");
+ canvas.width=64*frames;canvas.height=112*4;
+ const ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=false;
+ const tile=document.createElement("canvas");tile.width=64;tile.height=112;
+ const paint=tile.getContext("2d");
+ function makeAtlas(emotion){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let d=0;d<4;d++)for(let fr=0;fr<frames;fr++){
+   const current=rig.sampleTrack(tracks,Math.floor(fr*count/frames),count,base);
+   if(emotion)current.emotion=emotion;
+   paint.clearRect(0,0,64,112);rig.draw(paint,current,dirs[d]);
+   ctx.drawImage(tile,fr*64,d*112);
+  }
+  return canvas.toDataURL("image/png");
+ }
+ const sheet=makeAtlas(),thumb=document.createElement("canvas");
+ thumb.width=64;thumb.height=112;
+ thumb.getContext("2d").drawImage(canvas,0,0,64,112,0,0,64,112);
+ const portrait=thumb.toDataURL("image/png");
+ const expressions=rig.EMOTIONS.map(id=>({
+  id,label:({neutral:"Neutral",happy:"Happy",mischievous:"Jahil / Smirk",
+   angry:"Angry",surprised:"Surprised",blush:"Blush",grin:"Grin"})[id]||id,
+  sheet:makeAtlas(id),portrait,frames,frame_ms:Array(frames).fill(150)
+ }));
+ return {
+  id:rig.ID,name:"PIXEL REFERENCE 01",type:"npc",template:false,
+  source:"modular-rig-v2",asset_status:"generated_preview",sheet,
+  thumbnail:portrait,poster:portrait,frame_size:[64,112],
+  row_starts:{walk:0,idle:0,talk:0},idle_frames:frames,walk_frames:frames,
+  skeleton_profile:"MODULAR PIXEL V2",bone_skin_ready:true,
+  motions:[{id:"idle",name:"MODULAR IDLE REFERENCE",category:"idle",
+   source:"custom",sheet,available:true,frames,frame_ms:Array(frames).fill(150),
+   loop:true,row:0}],
+  expressions,palette:"dark streetwear",
+  outfit:"black T-shirt / relaxed trousers / white sneakers",
+  hairstyle:"dark layered fringe",
+  folder_url:"https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/site/modular-rig-v2.js",
+  description:"NEW REFERENCE / 4 views / head-parented facial emotion cutouts; independent body, arm and leg pivots. Edit in 06 / RIG STUDIO."
+ };
+}
+
 const PALETTE = [
   "#f8f6f0","#ffffff","#111111","#003b7a","#1642b5","#457fe5","#a9c5fa",
   "#cabde8","#ffdbad","#e0d6cd","#7d5542","#d6d6d6","#8183a5","#e88291",
@@ -1423,27 +1477,8 @@ async function init() {
     const unified=withSleep.map(character=>({...character,
       motions:UNIVERSAL_MOTIONS.catalogFor(character,union)}));
     const visible=CHAR_RESET?.active?CHAR_RESET.filter(unified):unified;
-    // The first approved v2 character is authored as genuine independent
-    // cutout modules, not cropped from the archived v6b raster sprites.
-    // Render its source preview locally so old database characters stay hidden.
-    const rig=window.VLModularRigV2;
-    if(rig&&(!CHAR_RESET?.active||CHAR_RESET.visible(rig.ID))){
-      const atlas=rig.spriteSheet(rig.referencePose(),6),sheet=atlas.toDataURL("image/png");
-      const portrait=document.createElement("canvas");portrait.width=64;portrait.height=112;
-      portrait.getContext("2d").drawImage(atlas,0,0,64,112,0,0,64,112);
-      visible.unshift({
-        id:rig.ID,name:"PIXEL REFERENCE 01",type:"npc",
-        template:false,source:"modular-rig-v2",asset_status:"generated_preview",
-        sheet,thumbnail:portrait.toDataURL("image/png"),poster:portrait.toDataURL("image/png"),
-        frame_size:[64,112],row_starts:{walk:0,idle:0,talk:0},
-        idle_frames:6,walk_frames:6,
-        skeleton_profile:"MODULAR PIXEL V2",bone_skin_ready:true,
-        motions:[],expressions:[],palette:"dark streetwear",
-        outfit:"black T-shirt / loose dark trousers / white sneakers",
-        hairstyle:"dark layered fringe",description:
-         "NEW REFERENCE / 4 views / separated head, emotion, eyes, brows, mouth, torso, arms, legs and phone prop. Open 06 / RIG STUDIO to edit."
-      });
-    }
+    const approvedReference=modularReferenceRecord();
+    if(approvedReference)visible.unshift(approvedReference);
     catalogCharacters=visible.filter(c=>!["otis","legacy_otis"].includes(c.id));
     state.characters=visible;
     rebuildCustomCharacters();
@@ -1486,6 +1521,15 @@ $("motion-search").addEventListener("input",()=>{
 });
 $("motion-category").addEventListener("change",()=>{
   if(state.selected)buildMotions(state.selected);
+});
+document.addEventListener("mahluk:modular-rig-saved",()=>{
+  const approved=modularReferenceRecord();
+  if(!approved)return;
+  catalogCharacters=catalogCharacters.filter(c=>c.id!==approved.id);
+  catalogCharacters.unshift(approved);
+  const wasSelected=state.selected?.id===approved.id;
+  rebuildCustomCharacters();
+  if(wasSelected)selectCharacter(approved);
 });
 document.addEventListener("mahluk:pose-saved",()=>{
   if(state.selected&&["human_male_base","human_female_base"].includes(state.selected.id)){
