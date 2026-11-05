@@ -538,7 +538,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
     results=[]
     for gender,cfg in palettes.items():
         name=f"human-{gender}-base"
-        def frame(direction:str,kind:str,index:int,expression:str|None=None,material_sink:dict|None=None,emotion_sink:dict|None=None,depth_sink:dict|None=None):
+        def frame(direction:str,kind:str,index:int,expression:str|None=None,material_sink:dict|None=None,emotion_sink:dict|None=None,depth_sink:dict|None=None,rig_source_sink:dict|None=None):
             anim=("sleep" if kind=="sleep_seat" else
                   "tired" if kind=="nap_stand" else
                   "idle" if kind in ("bent_over_idle","bathe") or
@@ -747,6 +747,18 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 tuple(pal.get("Ke",(170,115,87))),
                 tuple(pal.get("Ki",(223,181,147))))
             assert result.size==FRAME
+            if rig_source_sink is not None:
+                # Expose ORIGINAL BODY PAINT LAYERS from the precise unclothed
+                # generator run, before the final image gets flattened.
+                # The source-layer provenance is required for stable rigging:
+                # using clothed mattes here splits bare shoulders incorrectly.
+                rig_source_sink["layers"]={
+                    key: value.convert("RGBA").copy()
+                    for key,value in layers.items()
+                    if isinstance(value,Image.Image) and value.size==FRAME
+                }
+                rig_source_sink["final"]=result.copy()
+                rig_source_sink["depth_order"]=list(depth_order(kind,direction))
             return result
         def make_sheet(kind,count,expression=None,blink=False,sequence=None,
                        save_outfit_masks=False,save_face_parts=False,
@@ -801,8 +813,35 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                 sheet.alpha_composite(crop,(0,(row+d)*112))
         sheet.save(media/f"{name}-sheet.png",optimize=True)
         guide=Image.new("RGBA",(256,112))
-        for idx,d in enumerate(DIRECTIONS):guide.alpha_composite(frame(d,"idle",0),(idx*64,0))
+        # Materialize the SAME exact source layers and final pixels used by
+        # the actual human template. The dedicated rig builder reads this
+        # small compressed package, rather than reconstructing nude parts
+        # from a separate dressed generator run.
+        native_frames=[]
+        for idx,d in enumerate(DIRECTIONS):
+            rig={}
+            guide.alpha_composite(frame(d,"idle",0,rig_source_sink=rig),(idx*64,0))
+            native_frames.append(rig)
         guide.save(media/f"{name}-guide.png",optimize=True)
+        keys=sorted(set().union(*(r["layers"].keys() for r in native_frames)))
+        blank=np.zeros((112,64,4),dtype=np.uint8)
+        packed={
+            "final":np.stack([np.asarray(r["final"],dtype=np.uint8)
+                              for r in native_frames]),
+        }
+        for key in keys:
+            packed["source__"+key]=np.stack([
+                np.asarray(r["layers"][key],dtype=np.uint8)
+                if key in r["layers"] else blank
+                for r in native_frames
+            ])
+        np.savez_compressed(media/f"{name}-rig-source.npz",**packed)
+        (media/f"{name}-rig-source.json").write_text(json.dumps({
+            "format":"mahluk-native-human-anatomy-source-v1",
+            "gender":gender,"directions":list(DIRECTIONS),"layer_order":
+                native_frames[0]["depth_order"],"source_layers":keys,
+            "frame_size":[64,112],"source_guide":f"{name}-guide.png",
+        },indent=2)+"\\n",encoding="utf-8")
         poster=frame("se","idle",0)
         poster.save(media/f"{name}-thumb.png",optimize=True)
         poster.save(media/f"{name}-poster.png",optimize=True)
