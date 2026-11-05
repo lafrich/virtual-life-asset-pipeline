@@ -490,7 +490,13 @@
    direction_order:[...DIR],frame_size:[W,H],pivot:[32,100],nodes:BONES.map(b=>({
     id:b.id,parent:b.parent,pivot:[b.x,b.y],kind:b.kind
    })),palette:{...PALETTE},model:s,tracks:clone(tracks||makeTracks()),emotion_parent:"head",
-   facial_children:["brow_l","brow_r","eye_l","eye_r","mouth"]};
+   facial_children:["brow_l","brow_r","eye_l","eye_r","nose","mouth",
+    "blush_l","blush_r","glasses"],
+   hair_children:["hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"],
+   art_revision:"detailed-reference-2026-11",
+   style_profile:PROPORTIONS.style,
+   proportions:{head:PROPORTIONS.head,shirt:PROPORTIONS.shirt,
+    pants:PROPORTIONS.pants,shoes:PROPORTIONS.shoes}};
  }
  return Object.freeze({ID,W,H,DIR,BONES,BMAP,HIERARCHY,EMOTIONS,PALETTE,
   PROPORTIONS,neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
