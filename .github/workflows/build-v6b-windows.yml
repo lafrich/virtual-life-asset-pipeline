@@ -64,7 +64,12 @@ jobs:
             if (-not $ready) { throw "Bundled EXE did not start on localhost" }
             $html = Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 "http://127.0.0.1:8788/"
             if ($html.Content -notmatch "V6B GENERATOR STUDIO") { throw "Bundled web UI was not served" }
-            Write-Host "Portable Windows EXE successfully serves native V6B interface."
+            $config = '{"name":"portable_smoke","template":"ichsan","hair_style":"mid","fringe":"curtain","shirt_kind":"tee","pants_kind":"trousers","glasses":true}'
+            $generated = Invoke-RestMethod -Uri "http://127.0.0.1:8788/api/generate" -Method Post -Body $config -ContentType "application/json" -TimeoutSec 300
+            if (-not $generated.id) { throw "Packaged EXE native generator did not return character id" }
+            $atlas = Invoke-WebRequest -UseBasicParsing -TimeoutSec 45 "http://127.0.0.1:8788/api/atlas?id=$($generated.id)&action=idle&expression=neutral"
+            if ($atlas.StatusCode -ne 200) { throw "Native 4-way atlas endpoint failed" }
+            Write-Host "Portable Windows EXE successfully rendered original V6B character and atlas."
           } finally {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
           }
