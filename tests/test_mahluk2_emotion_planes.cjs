@@ -43,10 +43,13 @@ test("glasses follows head but does not inherit Emotion Plane motion",()=>{
 test("2.0 editor has asset pickers, independent glasses import and published game preview",()=>{
  const html=fs.readFileSync("site/mahluk-2/index.html","utf8");
  const app=fs.readFileSync("site/mahluk-2/studio.js","utf8");
- for(const id of ["emotionAsset","emotionImport","emotionKey","emotionUnkey",
+ for(const id of ["emotionAsset","emotionRefresh","emotionDatabaseStatus","emotionKey","emotionUnkey",
   "glassesAsset","glassesImport","game","editor"])
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(app,/emotionPlane:\{asset:emotionAssetId,keys:clone\(emotionKeys\)\}/);
  assert.match(app,/accessoryPlanes:\{glasses:glassesAssetId\}/);
  assert.match(app,/new StorageEvent\("storage"/);
+ assert.ok(!html.includes('id="emotionImport"'),"Use Emotion Studio for pixel authoring, Mahluk 2 for read-only face preview");
+ assert.match(app,/loadDriveEmotions/);
+ assert.match(app,/installEmotionEntries/);
 });
