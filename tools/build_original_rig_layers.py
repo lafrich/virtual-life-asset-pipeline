@@ -131,11 +131,11 @@ def split_source(image: Image.Image, source_key: str):
 
 
 def native_gender_models(media: Path):
-    """Return dressed/undressed pixels AND the true per-material source mattes.
+    """Use exact source layers emitted by the unclothed human generator.
 
-    Both modes use the same V6B bones. The base guide is the *actual* nude
-    human template, with its existing shading preserved. We do not invent
-    body pieces by slicing the flattened guide into rectangles.
+    The native base final pixels and paint layer masks come from the SAME
+    frame call. The outfit is kept separately as native garments, never as
+    another full-bodied sprite. Both modes share anatomical rig sources.
     """
     extra = ROOT / "assets" / "npc_preview_v2"
     if str(extra) not in sys.path:
@@ -143,42 +143,68 @@ def native_gender_models(media: Path):
     import base6
     import make_npcs_v2 as characters
 
-    variants, mattes = {}, {}
+    variants, nude_layers, clothing_layers = {}, {}, {}
     for gender, code in (("male", "m"), ("female", "f")):
-        guide_path = media / f"human-{gender}-base-guide.png"
-        if not guide_path.is_file():
-            raise FileNotFoundError(f"Missing original nude {gender} guide: {guide_path}")
-        guide = Image.open(guide_path).convert("RGBA")
-        if guide.size != (256, 112):
-            raise AssertionError(f"{gender}: nude guide should be 256x112")
-        cfg = {"body": code, "skin": "light", "hair": "short", "hc": "black",
-               "top": "tee_long", "tc": "paper", "pants": "trousers",
-               "pc": "paper", "shoes": "shoes", "sc": "paper"}
-        # Only author SE and NE. Their mates mirror both finished art and the
-        # SAME SOURCE PART MATTES; no side-dependent after-the-fact cutting.
-        for direction in ("se", "ne"):
-            direction_index = DIRS.index(direction)
-            nude = guide.crop((direction_index * 64, 0, (direction_index + 1) * 64, 112))
-            _, native, palette = base6.render(cfg, f=0, d=direction,
-                                               expr="neutral", anim="idle")
-            characters.bald(native, palette)
-            native = {name: part.convert("RGBA") for name, part in native.items()}
-            dressed = Image.new("RGBA", SIZE)
-            for part in native.values():
-                dressed.alpha_composite(part)
-            mattes[(gender, direction)] = native
-            variants[(gender, "base", direction)] = nude
-            variants[(gender, "outfit", direction)] = dressed
-        for source, mirrored in (("se", "sw"), ("ne", "nw")):
-            mattes[(gender, mirrored)] = {
-                name: part.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-                for name, part in mattes[(gender, source)].items()
+        base_name = f"human-{gender}-base"
+        meta_path = media / f"{base_name}-rig-source.json"
+        source_path = media / f"{base_name}-rig-source.npz"
+        if not meta_path.exists() or not source_path.exists():
+            raise FileNotFoundError(f"Missing authored naked anatomical layers: {base_name}")
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        if meta.get("format") != "mahluk-native-human-anatomy-source-v1":
+            raise AssertionError("Invalid native anatomy source format")
+        source_keys = meta.get("source_layers", [])
+        order = [name for name in meta.get("layer_order", []) if name in source_keys]
+        order += [name for name in source_keys if name not in order]
+        cfg = {
+            "body": code, "skin": "light", "hair": "short", "hc": "black",
+            "top": "tee_long", "tc": "paper", "pants": "trousers",
+            "pc": "paper", "shoes": "shoes", "sc": "paper",
+        }
+        with np.load(source_path, allow_pickle=False) as src:
+            for direction_index, direction in ((0, "se"), (2, "ne")):
+                final = np.asarray(src["final"][direction_index]).copy()
+                if final.shape != (112, 64, 4):
+                    raise AssertionError("Wrong authored naked sprite geometry")
+                variants[(gender, "base", direction)] = Image.fromarray(final, "RGBA")
+                nude_layers[(gender, direction)] = {
+                    name: Image.fromarray(np.asarray(
+                        src["source__" + name][direction_index]).copy(), "RGBA")
+                    for name in order if "source__" + name in src.files
+                }
+                _, outfit_parts, palette = base6.render(
+                    cfg, f=0, d=direction, expr="neutral", anim="idle")
+                characters.bald(outfit_parts, palette)
+                garment_names = (
+                    "pants", "shoes", "shoes_over", "rips", "shirt",
+                    "shirt_graphic", "outer", "acc",
+                )
+                # These native garment materials are the only additional
+                # render layers when OUTFIT ON; skin and bones stay unchanged.
+                garment = {
+                    name: outfit_parts[name].convert("RGBA").copy()
+                    for name in garment_names if name in outfit_parts
+                }
+                clothing_layers[(gender, direction)] = garment
+                dressed = variants[(gender, "base", direction)].copy()
+                for name in garment_names:
+                    if name in garment:
+                        dressed.alpha_composite(garment[name])
+                variants[(gender, "outfit", direction)] = dressed
+        for original, mirrored in (("se", "sw"), ("ne", "nw")):
+            nude_layers[(gender, mirrored)] = {
+                name: im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                for name, im in nude_layers[(gender, original)].items()
+            }
+            clothing_layers[(gender, mirrored)] = {
+                name: im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                for name, im in clothing_layers[(gender, original)].items()
             }
             for mode in ("base", "outfit"):
                 variants[(gender, mode, mirrored)] = variants[
-                    (gender, mode, source)
+                    (gender, mode, original)
                 ].transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-    return variants, mattes
+    return variants, nude_layers, clothing_layers
 
 
 def _limb_split(mask: np.ndarray, source: str):
