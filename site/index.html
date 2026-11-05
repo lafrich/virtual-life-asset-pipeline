@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#043d9e">
   <meta name="description" content="Mahluk Hidup — pixel character creator, modular outfits, animated NPCs and character storage.">
   <title>Mahluk Hidup — Character Studio</title>
-  <link rel="stylesheet" href="./style.css?v=desktop-viewport-fix-1&amp;action-ui=shared-motion-v1">
+  <link rel="stylesheet" href="./style.css?v=top-custom-wardrobe-v1">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
-  <script defer src="./app.js?v=expression-context-v1"></script>
-  <script defer src="./animations.js?v=bathtub-universal-v3"></script>
+  <script defer src="./app.js?v=custom-wardrobe-v1"></script>
+  <script defer src="./animations.js?v=top-custom-tab-v1"></script>
 </head>
 <body>
   <div class="desktop">
@@ -37,6 +37,7 @@
         <button type="button" class="library-tab active" id="switch-chars" role="tab" aria-selected="true" aria-controls="character-workspace">01 / CHARACTERS</button>
         <button type="button" class="library-tab" id="switch-animations" role="tab" aria-selected="false" aria-controls="animation-workspace">02 / ANIMATIONS <span id="animation-total">--</span></button>
         <button type="button" class="library-tab" id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace">03 / ACTION EDITOR</button>
+        <button type="button" class="library-tab" id="tab-custom-char" role="tab" aria-selected="false" aria-controls="custom-workspace">04 / NEW CUSTOM CHAR</button>
         <span class="library-version">.V6B / DATABASE</span>
       </div>
       <div class="workspace" id="character-workspace" role="tabpanel" aria-labelledby="switch-chars">
@@ -95,7 +96,6 @@
             <button type="button" class="detail-tab" id="tab-faces" role="tab" aria-controls="faces-panel" aria-selected="false">FACE <span id="face-tab-count">00</span></button>
             <button type="button" class="detail-tab" id="tab-motions" role="tab" aria-controls="motions-panel" aria-selected="false">MOTION <span id="motion-tab-count">00</span></button>
             <button type="button" class="detail-tab" id="tab-accessories" role="tab" aria-controls="accessories-panel" aria-selected="false">AKSESORIS</button>
-            <button type="button" class="detail-tab" id="tab-custom-char" role="tab" aria-controls="custom-char-panel" aria-selected="false">NEW CUSTOM CHAR</button>
           </div>
           <div class="detail-content">
             <section id="info-panel" role="tabpanel" aria-labelledby="tab-info">
@@ -157,7 +157,32 @@
               <p id="accessory-equipped" class="accessory-equipped">NO ACCESSORIES ATTACHED</p>
               <p class="accessory-note">Hanya dua kategori untuk sekarang. PNG aksesori tersimpan terpisah dari sprite asli. Equipment preview lokal di browser ini; tiap arah 64×112.</p>
             </section>
-            <section id="custom-char-panel" role="tabpanel" aria-labelledby="tab-custom-char" hidden>
+
+          </div>
+        </aside>
+      </div>
+
+      <section class="custom-workspace" id="custom-workspace" role="tabpanel" aria-labelledby="tab-custom-char" hidden>
+        <aside class="custom-stage" aria-label="Live four direction character preview">
+          <header class="panel-heading"><strong>CHARACTER PREVIEW</strong><span>V6B / 64×112</span></header>
+          <div class="custom-stage-inner">
+            <div class="custom-preview-window">
+              <div class="custom-preview-title" id="custom-preview-title">NEW_CHARACTER.SPR</div>
+              <canvas id="custom-preview" width="64" height="112" role="img" aria-label="Live male or female character with selected outfit"></canvas>
+              <div class="custom-preview-watermark">MAHLUK HIDUP / CUSTOM</div>
+            </div>
+            <div class="custom-direction-picker" role="group" aria-label="Preview custom character direction">
+              <button type="button" data-custom-dir="se" class="selected" aria-pressed="true">SE</button>
+              <button type="button" data-custom-dir="sw" aria-pressed="false">SW</button>
+              <button type="button" data-custom-dir="ne" aria-pressed="false">NE</button>
+              <button type="button" data-custom-dir="nw" aria-pressed="false">NW</button>
+            </div>
+            <p id="custom-preview-status" class="custom-preview-status">Choose a Human base and outfit to preview.</p>
+            <p class="custom-preview-guide">PREVIEW / 4 DIRECTIONS<br>Custom characters inherit the original Male/Female motion rig. Outfits remain separate PNG layers; existing characters are unchanged.</p>
+          </div>
+        </aside>
+        <div class="custom-form-scroll">
+            <section id="custom-char-panel" class="custom-form-panel" aria-label="Character creator options">
               <div class="property-label">CHARACTER CREATOR / MODULAR TEMPLATE</div>
               <h2 class="accessory-panel-title">NEW CUSTOM CHAR <small id="custom-base-summary">ASTROFRICH / HUMAN</small></h2>
               <p class="motion-hint">Male dan Female menggunakan kerangka 64×112 yang sama dengan karakter lain. Body dan skin tone mengikuti base; rambut, baju, celana, dan sepatu adalah layer terpisah yang dapat diganti tanpa mengubah animasi.</p>
@@ -181,6 +206,7 @@
                 </select>
               </label>
               <div class="property-label">MODULAR BODY / HEAD / OUTFIT · 4 DIRECTIONS</div>
+              <p class="motion-hint" id="custom-preset-status">LOADING NATIVE WARDROBE PRESETS...</p>
               <div id="astrofrich-outfit-slots">
               <div class="accessory-create-buttons">
                 <button type="button" class="chrome-button" id="custom-draw-helmet">✎ DRAW HELM / 4 SIDES</button>
@@ -224,9 +250,8 @@
               <div id="custom-storage-list" class="accessory-storage-list" aria-label="Saved Astrofrich and Human custom characters"></div>
               <p class="accessory-note">Body base tetap mengikuti Male/Female dan skin tone tersimpan per karakter. Rambut dan outfit disimpan sebagai equipment 4 arah. Saat mandi, baju dilepas tetapi rambut tetap ada.</p>
             </section>
-          </div>
-        </aside>
-      </div>
+        </div>
+      </section>
 
       <section class="workspace animation-workspace" id="animation-workspace" role="tabpanel" aria-labelledby="switch-animations" hidden>
         <aside class="tools-panel animation-tools" aria-label="Animation tools">

@@ -472,3 +472,70 @@ body.pixel-editor-open{overflow:hidden}
  .library-tab{flex:1;min-width:0;padding-inline:3px;font-size:clamp(9px,2vw,12px)}
  #switch-actions{font-size:clamp(8px,2vw,11px)}
 }
+
+/* Dedicated fourth top-level XP Paint workspace: creator + full-size preview.
+   Legacy 3-tab character inspector no longer compresses the form. */
+.custom-workspace{
+ display:grid;grid-template-columns:minmax(260px,46%) minmax(340px,54%);
+ min-width:0;min-height:560px;height:clamp(550px,71dvh,820px);
+ background:#b8b6b1;overflow:hidden;
+}
+.custom-stage{min-width:0;min-height:0;display:flex;flex-direction:column;
+ background:#c9c8c4;border-right:2px solid #85817b}
+.custom-stage>.panel-heading{flex:none}
+.custom-stage-inner{min-height:0;overflow-y:auto;display:flex;flex-direction:column;
+ align-items:center;gap:13px;padding:18px 15px}
+.custom-preview-window{display:flex;flex-direction:column;align-items:center;justify-content:center;
+ width:min(100%,370px);border:2px inset #7e7c77;background:#e7e6e2;
+ padding:11px 14px 13px}
+.custom-preview-title{align-self:stretch;font:700 11px "Courier New",monospace;
+ background:#0a419d;color:white;padding:6px 9px;margin-bottom:12px;overflow-wrap:anywhere}
+#custom-preview{display:block;width:auto;height:min(49dvh,370px);max-width:100%;
+ aspect-ratio:64/112;image-rendering:pixelated;image-rendering:crisp-edges;
+ background:repeating-conic-gradient(#eeece6 0% 25%,#d5d4cf 0% 50%) 50% / 14px 14px;
+ border:1px solid #9c9892}
+.custom-preview-watermark{font:9px "Courier New",monospace;color:#77716b;margin-top:9px}
+.custom-direction-picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:5px;width:min(100%,350px)}
+.custom-direction-picker button{font:700 11px "Courier New",monospace;padding:9px 7px;
+ border:2px solid;border-color:white #777 #777 white;background:#dedbd5}
+.custom-direction-picker button.selected{background:#aec7f5;border-color:#4969a1;color:#082b69}
+.custom-preview-status{font:700 11px/1.4 "Courier New",monospace;
+ max-width:350px;text-align:center;margin:0;color:#173b74}
+.custom-preview-guide{max-width:350px;text-align:center;font:10px/1.6 "Courier New",monospace;color:#4c4842;margin:0}
+.custom-form-scroll{min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+ background:#e5e3df;padding:16px 22px 28px}
+.custom-form-panel{max-width:790px;margin:auto;min-width:0}
+.custom-form-panel .accessory-panel-title{font-size:20px}
+.custom-form-panel .custom-char-label{font-size:12px;margin:11px 0}
+.custom-form-panel .custom-char-label select,.custom-form-panel .custom-char-label input{font-size:13px}
+.custom-form-panel .accessory-create-buttons{grid-template-columns:repeat(3,minmax(0,1fr))}
+.custom-form-panel .accessory-create-buttons button{min-height:37px}
+.custom-form-panel #custom-save{background:#d5e3ff;border-color:#fff #5168a0 #5168a0 #fff}
+.custom-form-panel #human-outfit-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.custom-form-panel #human-outfit-slots>.accessory-create-buttons{grid-column:1/-1}
+.custom-form-panel #human-outfit-slots>.accessory-create-buttons:first-child{grid-template-columns:1fr 1fr 1fr}
+.custom-form-panel #astrofrich-outfit-slots>.accessory-create-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+.custom-form-panel .custom-item{grid-template-columns:minmax(0,1fr) auto auto}
+@media(min-width:781px){
+ .custom-workspace{flex:1 1 0;height:auto;min-height:0}
+ .detail-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .detail-tabs > .detail-tab:nth-child(n){grid-column:auto}
+}
+@media(max-width:900px){
+ .custom-workspace{grid-template-columns:minmax(240px,42%) minmax(0,1fr)}
+ .custom-form-scroll{padding:12px}
+}
+@media(max-width:780px){
+ .custom-workspace{height:auto;min-height:0;display:flex;flex-direction:column;overflow:visible}
+ .custom-stage{border-right:0;border-bottom:2px solid #85817b}
+ .custom-stage-inner{padding:12px;gap:8px}
+ #custom-preview{height:240px}
+ .custom-preview-window{width:min(100%,260px)}
+ .custom-preview-guide{display:none}
+ .custom-form-scroll{overflow:visible}
+ .custom-form-panel #human-outfit-slots{grid-template-columns:1fr}
+ .custom-form-panel .accessory-create-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .detail-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .detail-tabs .detail-tab{min-height:35px}
+}

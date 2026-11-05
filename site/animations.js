@@ -10,6 +10,8 @@
   const characterPanel = el("character-workspace");
   const actionTab = el("switch-actions");
   const actionPanel = el("action-workspace");
+  const customTab = el("tab-custom-char");
+  const customPanel = el("custom-workspace");
   const actionFrame = el("action-editor-embed");
   let actionFrameStarted = false;
   let lastActionContext = null;
@@ -166,20 +168,24 @@
     currentTab = mode;
     const animation = mode === "animations";
     const actions = mode === "actions";
+    const custom = mode === "custom";
     clipsPanel.hidden = !animation;
-    characterPanel.hidden = animation || actions;
+    characterPanel.hidden = animation || actions || custom;
     actionPanel.hidden = !actions;
+    customPanel.hidden = !custom;
     motionTab.classList.toggle("active", animation);
-    characterTab.classList.toggle("active", !animation && !actions);
+    characterTab.classList.toggle("active", !animation && !actions && !custom);
     actionTab.classList.toggle("active", actions);
+    customTab.classList.toggle("active", custom);
     motionTab.setAttribute("aria-selected", String(animation));
-    characterTab.setAttribute("aria-selected", String(!animation && !actions));
+    characterTab.setAttribute("aria-selected", String(!animation && !actions && !custom));
     actionTab.setAttribute("aria-selected", String(actions));
+    customTab.setAttribute("aria-selected", String(custom));
     // The original Paint palette remains available in either workspace.
     const total = animation ? clipSet().length : (typeof state !== "undefined" ? state.characters.length : 0);
     el("asset-total").textContent = String(total).padStart(2, "0");
     el("status-asset-count").textContent = String(total).padStart(2, "0");
-    writing("status-object-label", actions ? "FRAMES" : animation ? "CLIPS" : "OBJECTS");
+    writing("status-object-label", actions ? "FRAMES" : animation ? "CLIPS" : custom ? "PRESETS" : "OBJECTS");
     document.querySelector(".window-title strong").textContent = "MAHLUK HIDUP";
     el("menu-file").href = animation
       ? "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/animation_library"
@@ -190,6 +196,7 @@
     el("menu-edit").title = animation ? "Show motion templates" : "Expressions";
     el("menu-view").title = animation ? "Toggle motion canvas grid" : "Toggle canvas grid";
     el("status").textContent = actions ? "MAHLUK HIDUP / ACTION EDITOR + SIMULATION" :
+      custom ? "MAHLUK HIDUP / CUSTOM CHARACTER CREATOR" :
       animation ? "MAHLUK HIDUP / ANIMATIONS" : "MAHLUK HIDUP / CHARACTERS READY";
   }
 
@@ -400,6 +407,12 @@
     location.hash = "#character";
   });
   el("animation-create-action").addEventListener("click", () => openActionTab());
+  window.VLMahlukNavigation=Object.freeze({
+    openCustom:()=>{setMode("custom");history.replaceState(null,"","#custom");},
+    showCharacters:()=>{setMode("characters");history.replaceState(null,"","#character");}
+  });
+  document.addEventListener("mahluk:open-custom-creator",()=>window.VLMahlukNavigation.openCustom());
+  customTab.addEventListener("click",()=>window.VLMahlukNavigation.openCustom());
   motionTab.addEventListener("click", () => setMode("animations"));
   characterTab.addEventListener("click", () => setMode("characters"));
   pause.addEventListener("click", togglePlayback);
@@ -470,6 +483,7 @@
   if(["#actions","#action-editor"].includes(location.hash)){
     openActionTab();
   }
+  if(location.hash==="#custom")setMode("custom");
   loadTargets();
   (async () => {
     try {
@@ -482,6 +496,7 @@
       writing("animation-total", String(clipSet().length).padStart(2, "0"));
       renderList();
       if (["#animations","#motion","#rigs"].includes(location.hash)) {setMode("animations");if(location.hash==="#rigs")history.replaceState(null,"","#animations");}
+      else if(location.hash==="#custom")setMode("custom");
       else if (["#actions","#action-editor"].includes(location.hash))
         openActionTab();
     } catch(error) {
