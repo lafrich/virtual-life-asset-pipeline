@@ -10,7 +10,8 @@
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
 <script defer src="./view-projection.js?v=orbit-master-sync-v2"></script>
-<script defer src="./plane-pixel-editor.js?v=orbit-master-sync-v2"></script>
+<script defer src="./pixel-selection.js?v=select-flip-xp-v1"></script>
+<script defer src="./plane-pixel-editor.js?v=select-flip-xp-v1"></script>
 <script defer src="./studio.js?v=orbit-master-sync-v2"></script>
 </head>
 <body>
@@ -45,8 +46,9 @@
    <div class="object-foot"><button id="editPixelPlane">▦ EDIT PIXELS</button><button id="hideSelected">◉ VISIBILITY</button><button id="resetSelected">↶ RESET PART</button></div>
   </aside>
   <main class="center">
-   <div class="viewbar"><div class="viewtitle"><strong>EDITOR VIEWPORT</strong><span id="viewHint">ISOMETRIC · X / Y / Z</span></div><div class="viewcontrols"><button id="toolMove" class="active" title="Move / W">✥ MOVE</button><button id="toolRotate" title="Rotate / E">↻ ROTATE</button><button id="toolScale" title="Scale / R">◱ SCALE</button><button id="toolAnchor" title="Adjust anchor/pivot / A">⊕ ANCHOR</button><button id="toolOrbit" title="Camera orbit drag: click and drag across the viewport (or Alt+drag)">◌ ORBIT</button><button id="viewIso" class="active" title="3D isometric plane depth inspection">◇ ISO</button><button id="viewFront" title="Flat, orthographic sprite position">▣ FRONT</button><button id="togglePlaneDepth" aria-pressed="false" title="Explode all drawable planes temporarily to inspect their separation, without modifying the game sprite">▤ PLANES</button><label class="depth-gap" title="Visual spacing between separated planes. Preview only">GAP <input id="planeGap" type="range" min="0" max="8" step="0.5" value="2"><span id="planeGapLabel">2.0</span></label><button id="axisX" class="active axis x">X</button><button id="axisY" class="axis y">Y</button><button id="axisZ" class="axis z">Z</button><button id="zoomOut" title="Zoom out / mouse wheel / pinch">−</button><span id="zoomLabel" class="zoom-label">100%</span><button id="zoomIn" title="Zoom in / mouse wheel / pinch">＋</button><button id="viewHome" title="Reset camera">⌖</button></div></div>
+   <div class="viewbar"><div class="viewtitle"><strong>EDITOR VIEWPORT</strong><span id="viewHint">ISOMETRIC · X / Y / Z</span></div><div class="viewcontrols"><button id="toolSelect" title="Click a visible sprite part to select its exact plane / Q">▣ SELECT</button><button id="toolMove" class="active" title="Move / W">✥ MOVE</button><button id="toolRotate" title="Rotate / E">↻ ROTATE</button><button id="toolScale" title="Scale / R">◱ SCALE</button><button id="toolAnchor" title="Adjust anchor/pivot / A">⊕ ANCHOR</button><button id="toolOrbit" title="Camera orbit drag: click and drag across the viewport (or Alt+drag)">◌ ORBIT</button><button id="viewIso" class="active" title="3D isometric plane depth inspection">◇ ISO</button><button id="viewFront" title="Flat, orthographic sprite position">▣ FRONT</button><button id="togglePlaneDepth" aria-pressed="false" title="Explode all drawable planes temporarily to inspect their separation, without modifying the game sprite">▤ PLANES</button><label class="depth-gap" title="Visual spacing between separated planes. Preview only">GAP <input id="planeGap" type="range" min="0" max="8" step="0.5" value="2"><span id="planeGapLabel">2.0</span></label><button id="axisX" class="active axis x">X</button><button id="axisY" class="axis y">Y</button><button id="axisZ" class="axis z">Z</button><button id="zoomOut" title="Zoom out / mouse wheel / pinch">−</button><span id="zoomLabel" class="zoom-label">100%</span><button id="zoomIn" title="Zoom in / mouse wheel / pinch">＋</button><button id="viewHome" title="Reset camera">⌖</button></div></div>
    <div class="viewstage"><canvas id="editor" width="880" height="620" aria-label="Isometric viewport. Drag gizmo axes to move part in X Y Z. Wheel to zoom."></canvas>
+    <div id="selectedPartChip" class="selected-part-chip" aria-live="polite">▣ SELECTED: HEAD</div>
     <div id="orbitGizmo" class="orbit-gizmo" aria-label="Orbit camera gizmo. Changes only your viewing direction; the master rig is shared across four views.">
      <div class="orbit-head"><strong>ORBIT CAMERA</strong><span id="orbitDirectionLabel">SE</span></div>
      <div class="orbit-control">
@@ -124,7 +126,7 @@
   <div class="pixel-toolbar">
    <label>DIRECTION <select id="pixelDirection"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></label>
    <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
-   <button data-pixel-tool="eraser">⌫ ERASER</button>
+   <button data-pixel-tool="eraser">⌫ ERASER</button><button data-pixel-tool="select" title="Draw a rectangle around pixels to select them / S">▣ SELECT</button><button data-pixel-tool="move-pixels" title="Move selected pixels / M">✣ MOVE PIXELS</button>
    <button data-pixel-tool="fill">▤ FILL</button>
    <button data-pixel-tool="picker">◎ PICK</button><button data-pixel-tool="hand" title="Pan canvas by dragging / H">✥ HAND</button>
    <label>COLOR <input id="pixelColor" type="color" value="#211d22"></label>
@@ -147,6 +149,30 @@
     <label class="check"><input type="checkbox" id="pixelSync" checked> SYNC BRUSH · ALL 4 VIEWS</label>
     <button id="pixelSyncExisting" type="button" title="Transfer this view\u0027s existing pixel changes to other camera directions while preserving each native silhouette">↻ SYNC CURRENT EDITS TO 4 VIEWS</button>
     <p class="hint">Brush / eraser edits map to all camera directions while retaining each native silhouette. Disable for angle-specific details.</p>
+    <div class="pixel-reference-controls">
+     <div class="sectionhead">VIEW OVERLAY / REDRAW GUIDE</div>
+     <label>REFERENCE PLANE
+      <select id="pixelReferenceView">
+       <option value="off">OFF / NO OVERLAY</option>
+       <option value="se">SE · FRONT RIGHT</option>
+       <option value="sw">SW · FRONT LEFT</option>
+       <option value="ne">NE · BACK RIGHT</option>
+       <option value="nw">NW · BACK LEFT</option>
+      </select>
+     </label>
+     <label class="check"><input id="pixelReferenceFlip" type="checkbox" checked> AUTO MIRROR REFERENCE</label>
+     <label>OPACITY <input id="pixelReferenceOpacity" type="range" min="5" max="85" step="5" value="40"><span id="pixelReferenceOpacityLabel">40%</span></label>
+     <label>REF OFFSET X <input id="pixelReferenceX" type="number" min="-32" max="32" value="0" step="1"></label>
+     <label>REF OFFSET Y <input id="pixelReferenceY" type="number" min="-56" max="56" value="0" step="1"></label>
+     <p class="hint">Colored ghost overlay shows the selected source view over the active drawing view. For aligning and redrawing only; it is NEVER saved in the PNG.</p>
+    </div>
+    <div class="pixel-selection-controls">
+     <div class="sectionhead">SELECTION / TRANSFORM</div>
+     <div class="plane-buttons"><button id="pixelSelectAll" type="button">▣ SELECT ALL</button><button id="pixelDeselect" type="button">◇ DESELECT</button></div>
+     <div class="plane-buttons"><button id="pixelFlipH" type="button">⇆ FLIP H</button><button id="pixelFlipV" type="button">⇅ FLIP V</button></div>
+     <div class="plane-buttons"><button id="pixelDeleteSelection" type="button">⌫ DELETE PIXELS</button></div>
+     <p class="hint" id="pixelSelectionInfo">No selection. Select rectangle, then Move Pixels or Flip.</p>
+    </div>
     <label class="check"><input type="checkbox" id="pixelOnion" checked> CHARACTER REFERENCE (ONION)</label>
     <div class="pixel-grid-controls">
      <label class="check"><input type="checkbox" id="pixelGrid" checked> GRID MODE</label>
