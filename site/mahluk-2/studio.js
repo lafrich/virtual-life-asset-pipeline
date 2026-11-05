@@ -28,6 +28,7 @@ let rigRules=R&&G?G.defaults(R):null;
 let pixelPlanes={},planeImages=new Map(),planeImageRevision=0,planeEditor=null;
 let undoStack=[],redoStack=[],restoring=false,pinch=null;
 let githubMessage='Checking GitHub master...';
+let cloudRecords=new Map();
 const touchPoints=new Map(),MAX_UNDO=70;
 const studio=$("editor"),game=$("game");
 function snapshot(){
@@ -134,7 +135,12 @@ function zoomTo(next,atX,atY){
 function setStatus(t,ok){$("status").textContent=t;if(ok!==undefined){$("syncLed").classList.toggle("ok",!!ok);$("syncLabel").textContent=ok?"GAME STORAGE READY":"SOURCE UNAVAILABLE";}}
 function safeGet(k,def){try{return JSON.parse(localStorage.getItem(k)||"null")??def}catch{return def}}
 function safePut(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){setStatus("STORAGE FULL / DISABLED: "+e.message,false);return false}}
-function getLibrary(){const a=safeGet(STORAGE,[]);return Array.isArray(a)?a.filter(r=>r&&r.format==="mahluk-2-character-v1").slice(0,40):[]}
+function getLibrary(){
+ const a=safeGet(STORAGE,[]),local=Array.isArray(a)?a.filter(r=>r&&r.format==="mahluk-2-character-v1").slice(0,40):[];
+ const merged=new Map(local.map(r=>[r.id,r]));
+ for(const [id,r] of cloudRecords)merged.set(id,r);
+ return [...merged.values()];
+}
 function pixelPlaneStatus(){
  if(!$("pixelPlaneStatus"))return;
  const count=Object.keys(pixelPlanes).length,has=Object.hasOwn(pixelPlanes,selected);
@@ -938,12 +944,14 @@ function saveGame(){
  identifier=id;updateLibrary();
  document.dispatchEvent(new CustomEvent("mahluk2:published",{detail:{id}}));
  try{window.dispatchEvent(new StorageEvent("storage",{key:STORAGE,newValue:JSON.stringify(next)}))}catch{}
+ // Cloud bridge hears this after the local save succeeded; game storage unchanged.
+ window.dispatchEvent(new CustomEvent("mahluk2:root-saved-for-cloud",{detail:{record}}));
  setStatus("✓ ROOT PUBLISHED "+name+" · 4 DIRECTIONS · ACTIONS STAY IN 1.0 · SEMESTA & BANGUN RUANG",true);
 }
 function updateLibrary(){
  const list=$("library"),records=getLibrary();list.replaceChildren();const starter=document.createElement("option");
  starter.value="";starter.textContent="NEW CHARACTER";list.append(starter);
- for(const r of records){const el=document.createElement("option");el.value=r.id;el.textContent=r.name+" / "+r.id;list.append(el)}
+ for(const r of records){const el=document.createElement("option");el.value=r.id;el.textContent=(cloudRecords.has(r.id)?"☁ ":"")+r.name+" / "+r.id;list.append(el)}
  list.value=identifier||"";
 }
 function loadRecord(id){
@@ -952,8 +960,8 @@ function loadRecord(id){
  identifier=r.id;type=["original","male","female"].includes(r.base)?r.base:"original";
  outfit=r.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,r.bodyPlane===undefined?B.defaultForBase(type):r.bodyPlane);clip="idle";
  // Shared master always takes precedence for new/opened 2.0 characters.
- rigRules=G.normalize(masterDocument()?.rules||r.rigRules,R);
- setPixelPlanes(masterDocument()?.pixelPlanes||r.pixelPlanes||{});
+ rigRules=G.normalize(r.driveFileId?r.rigRules:(masterDocument()?.rules||r.rigRules),R);
+ setPixelPlanes(r.driveFileId?r.pixelPlanes:(masterDocument()?.pixelPlanes||r.pixelPlanes||{}));
  emotionAssetId=getEmotionAsset(r.emotionPlane?.asset)?r.emotionPlane.asset:"native:"+(r.model?.emotion||"neutral");
  emotionKeys=Array.isArray(r.emotionPlane?.keys)?r.emotionPlane.keys.filter(k=>getEmotionAsset(k.asset)&&Number.isInteger(k.frame)).slice(0,48):[];
  glassesAssetId=getGlassesAsset(r.accessoryPlanes?.glasses)?r.accessoryPlanes.glasses:"native";
@@ -1018,6 +1026,7 @@ function saveGeneralRig(){
   githubInfo("Saved locally. "+(S.connected()?"Publishing to GitHub...":"Connect GitHub and click PUBLISH MASTER to sync devices."));
   masterMessage();setStatus("✓ GENERAL DEFAULT RIG SAVED LOCALLY v"+doc.revision,true);
   if(S.connected())void publishGithubMaster();
+  window.dispatchEvent(new CustomEvent("mahluk2:master-saved-for-cloud",{detail:{doc}}));
   return true;
  }catch(error){setStatus("GENERAL RIG SAVE FAILED: "+error.message,false);return false}
 }
@@ -1035,6 +1044,7 @@ function saveGeneralPlanePixel(bone,png){
   masterMessage();
   setStatus("✓ GENERAL PIXEL DEFAULT "+bone.toUpperCase()+" · MASTER v"+saved.revision,true);
   if(S.connected())void publishGithubMaster();
+  window.dispatchEvent(new CustomEvent("mahluk2:master-saved-for-cloud",{detail:{doc:saved}}));
   return true;
  }catch(error){
   setStatus("GENERAL PIXEL SAVE FAILED: "+error.message,false);return false;
@@ -1352,5 +1362,32 @@ async function mount(){
   setStatus("V6B PLANES + MASTER RIG RULES READY · SAVE TO SYNC",true);
  }catch(error){sourceError=String(error.message||error);setStatus("LOAD FAILED · "+sourceError,false)}
 }
+
+// Explicitly scoped bridge for Google Drive. Never writes to Semesta or Emotion Studio.
+window.MH2DriveAdapter=Object.freeze({
+ ready:()=>!!manifest,
+ localRecords:()=>getLibrary(),
+ localMaster:()=>masterDocument(),
+ saveRoot:()=>saveGame(),
+ saveGeneralRig:()=>saveGeneralRig(),
+ updateCloudRecords(records){
+  cloudRecords=new Map((Array.isArray(records)?records:[]).filter(r=>r?.format==="mahluk-2-character-v1"&&r.id).map(r=>[r.id,r]));
+  updateLibrary();
+ },
+ applyMasterFromDrive(doc){
+  if(!doc||doc.format!=="mahluk-2-general-rig-v1"||!doc.rules||!doc.defaultParts)throw Error("Invalid Drive Master Rig");
+  const current=masterDocument();
+  if(current){try{localStorage.setItem("mahluk2-before-drive-master-v1",JSON.stringify(current))}catch{}}
+  remember();
+  localStorage.setItem(G.KEY,JSON.stringify(doc));
+  rigRules=G.normalize(doc.rules,R);setPixelPlanes(doc.pixelPlanes||{});
+  base=R.normalize({parts:doc.defaultParts});state=R.normalize(base);
+  tracks=R.makeTracks();frames=1;frame=0;identifier=null;
+  buildTree();updateLibrary();applyState();masterMessage();
+  setStatus("✓ GOOGLE DRIVE MASTER LOADED / "+(doc.savedAt||"NO DATE"),true);
+ },
+ setStatus:(message,ok)=>setStatus(message,ok)
+});
+
 document.addEventListener("DOMContentLoaded",mount);
 })(window);
