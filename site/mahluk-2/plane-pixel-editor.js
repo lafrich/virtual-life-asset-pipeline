@@ -198,24 +198,66 @@
     setTimeout(()=>URL.revokeObjectURL(url),1500);
    },"image/png");
   };
+  function capture(e){try{canvas.setPointerCapture(e.pointerId)}catch{}}
+  function release(e){try{canvas.releasePointerCapture(e.pointerId)}catch{}}
   canvas.addEventListener("pointerdown",e=>{
-   if(!bone||e.button!==0)return;
+   if(!bone||e.button>1)return;
    e.preventDefault();
-   const p=coords(e);
-   if(tool==="picker"){pipette(p);return}
-   saveHistory();active={id:e.pointerId,at:p};
-   try{canvas.setPointerCapture(e.pointerId)}catch{}
-   paintPoint(p,p);
+   if(e.pointerType==="touch"){
+    touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    capture(e);
+    if(touches.size===2){
+     const pair=touchPair();
+     pinch={distance:pair.distance,zoom,center:pair.center};
+     active=null;pan=null;return;
+    }
+    if(touches.size>2){active=null;return}
+   }
+   if(tool==="hand"||e.button===1||e.altKey){
+    pan={id:e.pointerId,startX:e.clientX,startY:e.clientY,
+     scrollX:els.wrap.scrollLeft,scrollY:els.wrap.scrollTop};
+    active=null;capture(e);return;
+   }
+   const point=coords(e);
+   if(tool==="picker"){pipette(point);return}
+   // A touch that becomes a pinch must not paint a stray first dot.
+   active={id:e.pointerId,at:point,painted:false};
+   capture(e);
+   if(e.pointerType!=="touch"){saveHistory();paintPoint(point,point);active.painted=true}
   });
   canvas.addEventListener("pointermove",e=>{
+   if(e.pointerType==="touch"&&touches.has(e.pointerId)){
+    touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pinch&&touches.size>=2){
+     const pair=touchPair(),ratio=pair.distance/pinch.distance;
+     const dx=pair.center.x-pinch.center.x,dy=pair.center.y-pinch.center.y;
+     setZoom(pinch.zoom*ratio,pair.center.x,pair.center.y);
+     els.wrap.scrollLeft-=dx;els.wrap.scrollTop-=dy;
+     pinch={distance:pair.distance,zoom,center:pair.center};
+     e.preventDefault();return;
+    }
+   }
+   if(pan?.id===e.pointerId){
+    els.wrap.scrollLeft=pan.scrollX+pan.startX-e.clientX;
+    els.wrap.scrollTop=pan.scrollY+pan.startY-e.clientY;
+    e.preventDefault();return;
+   }
    if(active?.id!==e.pointerId)return;
    e.preventDefault();
-   const next=coords(e);paintPoint(active.at,next);active.at=next;
+   const next=coords(e);
+   if(!active.painted){saveHistory();active.painted=true;paintPoint(active.at,active.at)}
+   paintPoint(active.at,next);active.at=next;
   });
   for(const evt of ["pointerup","pointercancel","lostpointercapture"])
    canvas.addEventListener(evt,e=>{
-    if(active?.id===e.pointerId)active=null;
-    if(evt!=="lostpointercapture")try{canvas.releasePointerCapture(e.pointerId)}catch{}
+    if(active?.id===e.pointerId){
+     if(evt==="pointerup"&&!active.painted){saveHistory();paintPoint(active.at,active.at)}
+     active=null;
+    }
+    if(pan?.id===e.pointerId)pan=null;
+    if(e.pointerType==="touch")touches.delete(e.pointerId);
+    if(touches.size<2)pinch=null;
+    if(evt!=="lostpointercapture")release(e);
    });
   overlay.addEventListener("keydown",e=>{
    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){
