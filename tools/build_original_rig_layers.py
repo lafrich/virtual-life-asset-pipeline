@@ -183,7 +183,20 @@ def generate(media: Path):
                     actual.alpha_composite(source)
             if not np.array_equal(np.asarray(expected), np.asarray(actual)):
                 raise AssertionError(f"{direction}/{emotion}: split rig mismatches native V6B pixels")
+    # Human-review contact sheet: same unmodified pixels, only 4x NEAREST.
+    contact = Image.new("RGBA", (64 * 4 * len(DIRS), 112 * 4), (242, 240, 234, 255))
+    for i, direction in enumerate(DIRS):
+        tile = Image.new("RGBA", SIZE)
+        for key in ORDER:
+            image = frames[direction].get((key, "neutral") if key in
+                                          ("face", "brows", "acc_head") else key)
+            if image is not None:
+                tile.alpha_composite(image)
+        contact.alpha_composite(tile.resize((256, 448), Image.Resampling.NEAREST),
+                                (i * 256, 0))
+    contact.save(dest / "source-contact-sheet.png", optimize=True)
     manifest = {
+        "preview": "media/original-rig/source-contact-sheet.png",
         "format": "mahluk-original-source-rig-v1",
         "art_style": "original_v6b",
         "generator": "chars-iso/v6b/tools/live_v6b.py",
