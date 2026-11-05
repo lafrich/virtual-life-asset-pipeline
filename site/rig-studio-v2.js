@@ -1,0 +1,307 @@
+/* Rig Studio v2 — non-destructive companion to existing Mahluk Hidup editors.
+ * All original Pose Maker, Action Editor and sprite catalogs remain unchanged.
+ */
+(function(root){
+ "use strict";
+ const R=root.VLModularRigV2;
+ if(!R||!root.document)return;
+ const STORE="mahluk-modular-rig-studio-v2";
+ const $=id=>document.getElementById(id);
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
+ const fnum=n=>String(Math.round(Number(n)*10)/10);
+ const faces=new Set(["emotion","brow_l","brow_r","eye_l","eye_r","mouth"]);
+ const groups={
+  "ROOT / BODY":["root","pelvis","torso","neck"],
+  "HEAD / EMOTION":["head","emotion","brow_l","brow_r","eye_l","eye_r","mouth"],
+  "ARM L":["shoulder_l","elbow_l","wrist_l","phone"],
+  "ARM R":["shoulder_r","elbow_r","wrist_r"],
+  "LEG L":["hip_l","knee_l","ankle_l"],
+  "LEG R":["hip_r","knee_r","ankle_r"]
+ };
+ let base=R.referencePose(),model=R.normalize(base),tracks=R.makeTracks(),
+  view="se",selected="head",frame=0,count=24,fps=12,playing=false,last=0,acc=0,drag=null;
+ function say(message){$("rig-v2-status").textContent=message;}
+ function select(node){
+  if(!R.BMAP[node])return;
+  selected=node;$("rig-v2-selected").textContent=R.BMAP[node].label;
+  $("rig-v2-parent").textContent=R.HIERARCHY[node]||"—";
+  for(const btn of document.querySelectorAll("[data-rig-v2-bone]")){
+   btn.classList.toggle("active",btn.dataset.rigV2Bone===node);
+  }
+  updateInputs();drawAll();drawTracks();
+ }
+ function updateInputs(){
+  const p=model.parts[selected],fields={x:"rig-v2-x",y:"rig-v2-y",
+   angle:"rig-v2-angle",scale:"rig-v2-scale"};
+  for(const [name,id] of Object.entries(fields))$(id).value=fnum(p[name]);
+  $("rig-v2-visible").checked=p.visible;
+  $("rig-v2-emotion").value=model.emotion;
+  $("rig-v2-phone").checked=model.phone;
+  $("rig-v2-face-note").textContent=faces.has(selected)?
+   "CHILD OF HEAD · PARENT ROTATION/TRANSLATION INHERITED · OWN KEYFRAMES":
+   "MODULAR BODY PART · INDEPENDENT PIVOT, POSITION AND ROTATION";
+ }
+ function drawTo(ctx,direction,controls=false){
+  const canvas=ctx.canvas;ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // No flattening of articulated parts or emotion sprites into the head.
+  R.draw(ctx,model,direction);
+  if(!controls)return;
+  const mirror=direction==="sw"||direction==="nw";
+  const w=R.world(model);
+  for(const b of R.BONES){
+   const p=w[b.id];if(!p.visible)continue;
+   const x=mirror?64-p.x:p.x,y=p.y,isSel=b.id===selected;
+   if(x<0||x>64||y<0||y>112)continue;
+   ctx.fillStyle=isSel?"#fff5a4":b.kind==="emotion"?"#fff0ff":"#bee2ff";
+   ctx.fillRect(Math.round(x)-1,Math.round(y)-1,isSel?4:3,isSel?4:3);
+   ctx.fillStyle=isSel?"#e78300":b.kind==="emotion"?"#bc47a2":"#2064b7";
+   ctx.fillRect(Math.round(x),Math.round(y),1,1);
+  }
+ }
+ function drawAll(){
+  const main=$("rig-v2-main");if(!main)return;
+  drawTo(main.getContext("2d"),view,true);
+  for(const d of R.DIR){
+   const c=$("rig-v2-preview-"+d);if(c)drawTo(c.getContext("2d"),d,false);
+  }
+  $("rig-v2-frame-label").textContent="F "+String(frame+1).padStart(2,"0")+
+   " / "+count+" · "+R.DIR.indexOf(view).toString()+" · "+view.toUpperCase();
+  $("rig-v2-playhead").value=String(frame);
+  $("rig-v2-playhead").max=String(count-1);
+ }
+ function createTree(){
+  const panel=$("rig-v2-tree");panel.replaceChildren();
+  for(const [group,ids] of Object.entries(groups)){
+   const heading=document.createElement("div");heading.className="rig-v2-tree-heading";
+   heading.textContent=group;panel.append(heading);
+   for(const id of ids){
+    const b=R.BMAP[id],btn=document.createElement("button");
+    btn.type="button";btn.className="rig-v2-tree-item";
+    btn.dataset.rigV2Bone=id;btn.textContent=b.label;
+    btn.title=b.parent?"PARENT: "+b.parent:"ROOT";
+    btn.onclick=()=>select(id);panel.append(btn);
+   }
+  }
+ }
+ function go(next){
+  frame=Math.round(clamp(next,0,count-1));
+  model=R.sampleTrack(tracks,frame,count,base);
+  updateInputs();drawAll();drawTracks();
+ }
+ function drawTracks(){
+  const rows=$("rig-v2-tracks");if(!rows)return;rows.replaceChildren();
+  for(const b of R.BONES){
+   const line=document.createElement("div");line.className="rig-v2-track-row";
+   if(b.id===selected)line.classList.add("selected");
+   const label=document.createElement("button");label.type="button";
+   label.className="rig-v2-track-label";label.textContent=b.label;label.title="Edit "+b.label;
+   label.onclick=()=>select(b.id);line.append(label);
+   const grid=document.createElement("div");grid.className="rig-v2-track-grid";
+   grid.style.gridTemplateColumns="repeat("+count+",21px)";
+   for(let f=0;f<count;f++){
+    const key=(tracks[b.id]||[]).some(k=>k.frame===f);
+    const cell=document.createElement("button");cell.type="button";
+    cell.className="rig-v2-frame"+(f===frame?" is-current":"")+(key?" is-keyed":"");
+    cell.innerHTML=key?"◆":"·";cell.title=b.label+" / Frame "+(f+1);
+    cell.onclick=()=>{
+     if(f!==frame)go(f);
+     select(b.id);
+     const index=(tracks[b.id]||[]).findIndex(k=>k.frame===f);
+     if(index>=0){
+      tracks[b.id].splice(index,1);say("◇ KEY DELETED · "+b.label+" · F"+(f+1));
+      model=R.sampleTrack(tracks,frame,count,base);updateInputs();
+     }else{
+      R.key(tracks,b.id,f,model.parts[b.id],model.emotion);
+      say("◆ KEY SET · "+b.label+" · F"+(f+1));
+     }
+     drawAll();drawTracks();
+    };
+    grid.append(cell);
+   }
+   line.append(grid);rows.append(line);
+  }
+ }
+ function save(){
+  try{
+   const data={format:"mahluk-rig-studio-v2",base,tracks,frame,count,fps,view,selected};
+   root.localStorage.setItem(STORE,JSON.stringify(data));
+   say("SAVED TO LOCAL RIG DATABASE · "+R.ID+" · ORIGINALS UNCHANGED");
+  }catch(e){say("SAVE FAILED: "+e.message);}
+ }
+ function restore(){
+  try{
+   const r=JSON.parse(root.localStorage.getItem(STORE)||"null");
+   if(!r||r.format!=="mahluk-rig-studio-v2")return false;
+   base=R.normalize(r.base);tracks=cleanTracks(r.tracks);
+   count=Math.round(clamp(r.count||24,4,96));fps=Math.round(clamp(r.fps||12,4,30));
+   frame=Math.round(clamp(r.frame||0,0,count-1));
+   view=R.DIR.includes(r.view)?r.view:"se";
+   selected=R.BMAP[r.selected]?r.selected:"head";
+   model=R.sampleTrack(tracks,frame,count,base);
+   return true;
+  }catch(e){say("SAVED RIG INVALID · "+e.message);return false;}
+ }
+ function cleanTracks(raw){
+  const out=R.makeTracks();if(!raw||typeof raw!=="object")return out;
+  for(const b of R.BONES){
+   const rows=Array.isArray(raw[b.id])?raw[b.id]:[];
+   for(const item of rows.slice(0,97)){
+    if(!Number.isInteger(item?.frame)||!item.value||item.frame<0||item.frame>95)continue;
+    const state=R.normalize({parts:{[b.id]:item.value}});
+    R.key(out,b.id,item.frame,state.parts[b.id],item.emotion);
+   }
+  }
+  return out;
+ }
+ function download(name,blob){
+  const url=root.URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=name;document.body.append(a);a.click();a.remove();
+  root.setTimeout(()=>root.URL.revokeObjectURL(url),5000);
+ }
+ function exportJSON(){
+  const bundle={...R.exportModel(base,tracks),fps,frames:count};
+  download("pixel_reference_v2_rig.json",new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"}));
+  say("EXPORTED JSON · HIERARCHY, PIVOTS, ALL EMOTION LAYERS + KEYFRAMES");
+ }
+ function exportPNG(){
+  const sheet=document.createElement("canvas");sheet.width=R.W*count;sheet.height=R.H*4;
+  const ctx=sheet.getContext("2d");ctx.imageSmoothingEnabled=false;
+  const tile=document.createElement("canvas");tile.width=R.W;tile.height=R.H;
+  for(let d=0;d<4;d++)for(let f=0;f<count;f++){
+   const sprite=R.sampleTrack(tracks,f,count,base),tc=tile.getContext("2d");
+   tc.clearRect(0,0,R.W,R.H);R.draw(tc,sprite,R.DIR[d]);
+   ctx.drawImage(tile,f*R.W,d*R.H);
+  }
+  sheet.toBlob(blob=>{
+   if(!blob)return say("PNG EXPORT FAILED");
+   download("pixel_reference_v2_4dir_"+count+"f.png",blob);
+   say("EXPORTED 4-DIRECTION RGBA / "+count+" FRAMES · 64×112 / FRAME");
+  },"image/png");
+ }
+ async function importJSON(file){
+  try{
+   if(!file)return;
+   const data=JSON.parse(await file.text());
+   if(data.format!=="mahluk-modular-rig-v2"||data.character_id!==R.ID)throw Error("Wrong rig schema");
+   base=R.normalize(data.model);tracks=cleanTracks(data.tracks);
+   count=Math.round(clamp(data.frames||24,4,96));fps=Math.round(clamp(data.fps||12,4,30));
+   frame=0;model=R.sampleTrack(tracks,0,count,base);
+   $("rig-v2-count").value=String(count);$("rig-v2-fps").value=String(fps);
+   updateInputs();drawAll();drawTracks();say("IMPORTED MODULAR RIG / 4 DIRECTIONS");
+  }catch(e){say("IMPORT FAILED: "+e.message);}
+ }
+ function mount(){
+  const panel=$("rig-v2-workspace"),tab=$("switch-rig-v2");if(!panel||!tab)return;
+  createTree();restore();
+  $("rig-v2-count").value=String(count);$("rig-v2-fps").value=String(fps);
+  const oldTabs=["switch-chars","switch-animations","switch-actions","tab-custom-char","switch-poser"];
+  for(const id of oldTabs)$(id)?.addEventListener("click",()=>{panel.hidden=true;playing=false;},true);
+  tab.addEventListener("click",()=>{
+   for(const id of ["character-workspace","animation-workspace","action-workspace","custom-workspace","pose-workspace"])
+    if($(id))$(id).hidden=true;
+   for(const t of document.querySelectorAll(".library-tab")){
+    t.classList.remove("active");t.setAttribute("aria-selected","false");
+   }
+   panel.hidden=false;tab.classList.add("active");tab.setAttribute("aria-selected","true");
+   say("MODULAR RIG READY · HEAD → EMOTION → EYES / BROWS / MOUTH");
+   drawAll();
+  });
+  for(const btn of document.querySelectorAll("[data-rig-v2-view]"))btn.addEventListener("click",()=>{
+   view=btn.dataset.rigV2View;
+   for(const n of document.querySelectorAll("[data-rig-v2-view]"))n.classList.toggle("active",n===btn);
+   drawAll();
+  });
+  for(const prop of ["x","y","angle","scale"]){
+   $("rig-v2-"+prop).addEventListener("input",e=>{
+    const value=Number(e.target.value);
+    if(Number.isFinite(value)){
+     model.parts[selected][prop]=clamp(value,prop==="scale"?.4:prop==="angle"?-180:-48,
+      prop==="scale"?2:prop==="angle"?180:48);
+     drawAll();
+     say("UNKEYED CHANGE / "+R.BMAP[selected].label+" · CLICK ◆ SET KEY");
+    }
+   });
+  }
+  $("rig-v2-visible").addEventListener("change",e=>{
+   model.parts[selected].visible=e.target.checked;drawAll();
+  });
+  $("rig-v2-emotion").addEventListener("change",e=>{
+   model.emotion=e.target.value;select("emotion");drawAll();
+  });
+  $("rig-v2-phone").addEventListener("change",e=>{model.phone=e.target.checked;base.phone=e.target.checked;drawAll();});
+  const canvas=$("rig-v2-main");
+  const locate=e=>{
+   const rect=canvas.getBoundingClientRect(),mirror=view==="sw"||view==="nw";
+   const x=(e.clientX-rect.left)*R.W/rect.width,y=(e.clientY-rect.top)*R.H/rect.height;
+   return {x:mirror?64-x:x,y};
+  };
+  canvas.addEventListener("pointerdown",e=>{
+   const hit=locate(e),coords=R.world(model);
+   const candidates=R.BONES.map(b=>({id:b.id,dist:Math.hypot(coords[b.id].x-hit.x,coords[b.id].y-hit.y)}))
+    .filter(v=>v.dist<5).sort((a,b)=>a.dist-b.dist);
+   if(candidates.length)select(candidates[0].id);
+   drag={id:e.pointerId,x:hit.x,y:hit.y,node:selected};
+   canvas.setPointerCapture(e.pointerId);e.preventDefault();
+  });
+  canvas.addEventListener("pointermove",e=>{
+   if(!drag||drag.id!==e.pointerId)return;
+   const hit=locate(e),dx=hit.x-drag.x,dy=hit.y-drag.y;
+   const p=R.world(model)[R.HIERARCHY[selected]];
+   const a=(p?.angle||0)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),scale=p?.scale||1;
+   model.parts[selected].x=clamp(model.parts[selected].x+(dx*cs+dy*sn)/scale,-40,40);
+   model.parts[selected].y=clamp(model.parts[selected].y+(-dx*sn+dy*cs)/scale,-48,48);
+   drag.x=hit.x;drag.y=hit.y;updateInputs();drawAll();
+  });
+  for(const type of ["pointerup","pointercancel"])canvas.addEventListener(type,e=>{
+   if(drag?.id===e.pointerId){drag=null;try{canvas.releasePointerCapture(e.pointerId)}catch{}
+    say("PIVOT MOVED · CLICK ◆ SET KEY TO RECORD");}
+  });
+  $("rig-v2-key").onclick=()=>{
+   R.key(tracks,selected,frame,model.parts[selected],model.emotion);
+   drawTracks();say("◆ KEYED "+R.BMAP[selected].label+" / FRAME "+(frame+1));
+  };
+  $("rig-v2-unkey").onclick=()=>{
+   tracks[selected]=(tracks[selected]||[]).filter(k=>k.frame!==frame);
+   model=R.sampleTrack(tracks,frame,count,base);
+   updateInputs();drawAll();drawTracks();say("◇ REMOVED KEY / FRAME "+(frame+1));
+  };
+  $("rig-v2-playhead").oninput=e=>{playing=false;go(Number(e.target.value));};
+  $("rig-v2-count").onchange=e=>{
+   count=Math.round(clamp(e.target.value,4,96));e.target.value=String(count);
+   for(const id of Object.keys(tracks))tracks[id]=tracks[id].filter(k=>k.frame<count);
+   go(Math.min(frame,count-1));
+  };
+  $("rig-v2-fps").onchange=e=>{
+   fps=Math.round(clamp(e.target.value,4,30));e.target.value=String(fps);
+  };
+  $("rig-v2-play").onclick=()=>{
+   playing=!playing;last=0;acc=0;
+   $("rig-v2-play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY";
+  };
+  $("rig-v2-new").onclick=()=>{
+   if(!confirm("RESET TO THE NEW PIXEL REFERENCE POSE? Saved rig data stays in browser."))return;
+   base=R.referencePose();tracks=R.makeTracks();model=R.normalize(base);frame=0;
+   count=24;fps=12;$("rig-v2-count").value="24";$("rig-v2-fps").value="12";
+   updateInputs();drawAll();drawTracks();say("NEW RIG / ORIGINAL REFERENCE RESTORED");
+  };
+  $("rig-v2-rest").onclick=()=>{
+   base=R.neutral();model=R.normalize(base);tracks=R.makeTracks();frame=0;
+   updateInputs();drawAll();drawTracks();say("REST POSE · ARMS UNBENT / NO FORCED WEIGHTS");
+  };
+  $("rig-v2-save").onclick=save;
+  $("rig-v2-export").onclick=exportJSON;$("rig-v2-png").onclick=exportPNG;
+  $("rig-v2-import").onchange=e=>{importJSON(e.target.files?.[0]);e.target.value="";};
+  function tick(now){
+   if(playing&&!panel.hidden){
+    if(last)acc+=Math.min(150,now-last);
+    last=now;
+    if(acc>=1000/fps){acc=0;go((frame+1)%count);}
+   }else last=0;
+   root.requestAnimationFrame(tick);
+  }
+  select(selected);drawAll();drawTracks();root.requestAnimationFrame(tick);
+ }
+ root.addEventListener("DOMContentLoaded",mount);
+ root.VLRigStudioV2=Object.freeze({mount,STORE});
+})(window);
