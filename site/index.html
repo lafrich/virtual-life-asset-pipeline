@@ -7,11 +7,13 @@
   <meta name="description" content="Mahluk Hidup — pixel character creator, modular outfits, animated NPCs and character storage.">
   <title>Mahluk Hidup — Character Studio</title>
   <link rel="stylesheet" href="./style.css?v=custom-model-color-v3">
+  <link rel="stylesheet" href="./pose-maker.css?v=poser-human-v1">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
+  <script defer src="./pose-maker.js?v=poser-human-v1"></script>
   <script defer src="./app.js?v=custom-model-color-v4"></script>
   <script defer src="./custom-character-wardrobe.js?v=custom-model-color-v4"></script>
   <script defer src="./animations.js?v=top-custom-tab-v1"></script>
@@ -39,6 +41,7 @@
         <button type="button" class="library-tab" id="switch-animations" role="tab" aria-selected="false" aria-controls="animation-workspace">02 / ANIMATIONS <span id="animation-total">--</span></button>
         <button type="button" class="library-tab" id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace">03 / ACTION EDITOR</button>
         <button type="button" class="library-tab" id="tab-custom-char" role="tab" aria-selected="false" aria-controls="custom-workspace">04 / NEW CUSTOM CHAR</button>
+        <button type="button" class="library-tab" id="switch-poser" role="tab" aria-selected="false" aria-controls="pose-workspace">05 / POSE MAKER</button>
         <span class="library-version">.V6B / DATABASE</span>
       </div>
       <div class="workspace" id="character-workspace" role="tabpanel" aria-labelledby="switch-chars">
@@ -352,6 +355,82 @@
               <a class="chrome-button action-main" id="animation-download" href="#" download>↓ PREVIEW.GIF</a>
               <a class="chrome-button" id="animation-source" href="#" target="_blank" rel="noopener noreferrer">↗ SOURCE</a>
             </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="pose-workspace" id="pose-workspace" role="tabpanel" aria-labelledby="switch-poser" hidden>
+        <aside class="pose-left">
+          <div class="panel-heading"><strong>HUMAN MOTION</strong><span>MALE + FEMALE</span></div>
+          <div class="pose-sidebar-inner">
+            <label class="pose-label" for="pose-motion-name">MOTION NAME</label>
+            <input class="pose-input" id="pose-motion-name" type="text" maxlength="60" autocomplete="off" value="New Idle" placeholder="Idle gesture name">
+            <label class="pose-label" for="pose-frame-count">ANIMATION FRAMES</label>
+            <select class="pose-input" id="pose-frame-count">
+              <option value="4">4 FRAMES</option><option value="6" selected>6 FRAMES</option>
+              <option value="8">8 FRAMES</option><option value="12">12 FRAMES</option>
+            </select>
+            <label class="pose-label" for="pose-duration">LOOP DURATION</label>
+            <select class="pose-input" id="pose-duration">
+              <option value="600">0.6 SECONDS</option><option value="900">0.9 SECONDS</option>
+              <option value="1200" selected>1.2 SECONDS</option><option value="1800">1.8 SECONDS</option>
+              <option value="2400">2.4 SECONDS</option>
+            </select>
+            <div class="pose-divider"></div>
+            <div class="pose-label">SAVED MOTION DIRECTORY <span id="pose-saved-count">00</span></div>
+            <p class="pose-note">HUMAN BASE / MALE + FEMALE</p>
+            <div id="pose-saved" class="pose-saved" aria-label="Saved Human Base motions"></div>
+            <div class="pose-note pose-storage-note">Saved in this browser's local motion directory. Export PNG + rig JSON for source-control publishing; original animations stay untouched.</div>
+          </div>
+        </aside>
+        <section class="pose-center">
+          <header class="panel-heading"><strong>POSE MAKER .RIG</strong><span>3D PUPPET / 16 JOINTS</span></header>
+          <div class="pose-toolbar">
+            <span>VIEW</span>
+            <button type="button" class="chrome-button active" data-pose-camera="32">SE</button>
+            <button type="button" class="chrome-button" data-pose-camera="-32">SW</button>
+            <button type="button" class="chrome-button" data-pose-camera="148">NE</button>
+            <button type="button" class="chrome-button" data-pose-camera="212">NW</button>
+            <button type="button" class="chrome-button" id="pose-reset">RESET FRAME</button>
+          </div>
+          <div class="pose-rig-stage">
+            <svg id="pose-rig" viewBox="0 0 320 410" role="img" aria-label="Draggable 3D-style stickman rig with individual puppet joints"></svg>
+            <div class="pose-stage-instructions">DRAG JOINT TO POSE · CHANGE DEPTH FOR Z AXIS</div>
+          </div>
+          <div class="pose-joint-controls">
+            <strong id="pose-joint-name">WRIST R</strong>
+            <label for="pose-depth">DEPTH / Z</label>
+            <input id="pose-depth" type="range" min="-25" max="25" step="1" value="0">
+            <output id="pose-depth-value" for="pose-depth">0</output>
+          </div>
+          <div class="pose-timeline">
+            <div class="pose-timeline-title"><strong>IDLE KEYFRAMES</strong>
+              <button type="button" class="chrome-button" id="pose-key-add">+ KEY</button>
+              <button type="button" class="chrome-button" id="pose-key-delete">− KEY</button>
+            </div>
+            <div id="pose-keys" class="pose-keys" role="group" aria-label="Pose keyframe timeline"></div>
+            <label for="pose-time" class="pose-label">SELECTED KEY POSITION</label>
+            <input id="pose-time" type="range" min="0" max="100" value="50" step="1">
+          </div>
+        </section>
+        <aside class="pose-right">
+          <header class="panel-heading"><strong>HUMAN CONVERSION</strong><span>64×112 / V6B</span></header>
+          <div class="pose-right-inner">
+            <p class="pose-note">Live character skin previews from original male and female base atlases. The stickman drives the body pose on both.</p>
+            <label class="pose-label" for="pose-facing">SPRITE DIRECTION</label>
+            <select class="pose-input" id="pose-facing">
+              <option value="0">SE / FRONT</option><option value="1">SW / FRONT</option>
+              <option value="2">NE / BACK</option><option value="3">NW / BACK</option>
+            </select>
+            <div class="pose-preview-pair">
+              <div class="pose-preview-box"><strong>MALE BASE</strong><canvas width="64" height="112" id="pose-preview-male" aria-label="Human Male Base converted pose preview"></canvas></div>
+              <div class="pose-preview-box"><strong>FEMALE BASE</strong><canvas width="64" height="112" id="pose-preview-female" aria-label="Human Female Base converted pose preview"></canvas></div>
+            </div>
+            <button type="button" class="chrome-button" id="pose-play">▶ PLAY</button>
+            <button type="button" class="chrome-button" id="pose-new">+ NEW MOTION</button>
+            <button type="button" class="chrome-button action-main" id="pose-save">▣ SAVE TO BOTH MOTION LIBRARIES</button>
+            <button type="button" class="chrome-button" id="pose-export">↓ EXPORT 4-DIR PNG + RIG JSON</button>
+            <p class="pose-feedback" id="pose-feedback" aria-live="polite">Loading Human Base sprites...</p>
           </div>
         </aside>
       </section>
