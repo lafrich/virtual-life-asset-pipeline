@@ -40,6 +40,11 @@ jobs:
         shell: pwsh
         run: |
           python -m PyInstaller --noconfirm --clean --onedir --windowed --name "V6B Generator Studio" --paths "chars-iso/v6b/tools" --add-data "apps/v6b_studio;apps/v6b_studio" --add-data "chars-iso/v6b/study;chars-iso/v6b/study" --add-data "chars-iso/v6b/live/chars;chars-iso/v6b/live/chars" apps/v6b_studio/desktop.py
+          # live_v6b.py computes ROOT from its bundled module __file__ before
+          # the server can replace ROOT for temporary output. Keep this first
+          # import-time palette at the legacy location relative to the EXE.
+          Copy-Item -Recurse -Force "chars-iso/v6b/study" "dist/V6B Generator Studio/study"
+          if (-not (Test-Path "dist/V6B Generator Studio/study/ref_palette.npy")) { throw "V6B native palette missing" }
           if (-not (Test-Path "dist/V6B Generator Studio/V6B Generator Studio.exe")) { throw "Windows EXE missing" }
       - name: Smoke test packaged EXE server and bundled UI
         shell: pwsh
