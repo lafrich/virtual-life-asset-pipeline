@@ -38,3 +38,48 @@ Character **Head**, **Emotion**, and **Glasses** are distinct, visually composit
 - Published 4-direction animation clips are still baked into Semesta/Bangun Ruang's existing pixel billboard format, so both games stay compatible. This does not replace legacy NPC data or workflows.
 
 Only use a published Human emotion asset on its corresponding Male/Female base. Using another actor's complete full-body expression animation directly would overwrite the character, so the build extracts face-only texture variants rather than treating those sheets as generic overlays.
+
+## Master rig engine — universal default hierarchy, anchors, front/back and Undo (2026-11-05)
+
+Mahluk Hidup 2.0 now owns a **reusable master rig rule document** in
+`localStorage["mahluk-2-general-rig-rules-v1"]`. This is intentionally
+separate from the immutable V6B artwork and per-character action tracks.
+The master document stores:
+
+- An **absolute pixel pivot** (anchor X/Y) per bone/plane, used for rotating
+  and positioning each RGBA cutout. Editing an anchor at a neutral pose does
+  not displace the original painting.
+- **Editable parent hierarchy**, including `Head → Emotion` and
+  `Head → Glasses`. Drag one object onto another in Object Manager or use
+  the **PARENT** dropdown. Invalid self-parenting/cycles are refused.
+- An optional **explicit draw-order stack**. Drag entries in the front/back
+  list or use the ↑/↓ buttons to control which plane appears on top.
+  Order is separate from spatial Z, so depth can be adjusted without
+  silently changing the painter's stack.
+- Optional **default part transforms** (rest pose). Clicking **SAVE AS
+  GENERAL DEFAULT RIG** makes these rules available to new and reopened
+  characters, Male/Female and custom originals. Per-character animation
+  keyframes are not deleted.
+
+Saved character records and project exports include the effective
+`rigRules` and master revision used to author the baked 4-view sprite.
+Opening an old record uses the latest shared master if present; project
+imports may carry their own rig rules until the user applies the master.
+
+**Versioning / safety:** Factory Reset only resets rules in the open editor
+until explicitly saved. Existing old editor data and previous sprites are
+never automatically rewritten. Previously published 4-direction sprites in
+Semesta/Bangun Ruang still need a **re-publish** to reflect a master change.
+Default storage is local to the current `lafrich.github.io` origin/browser;
+export Project JSON when moving to another device.
+
+**Undo/Redo:** toolbar or `Ctrl+Z` / `Ctrl+Shift+Z` (`Ctrl+Y`) for
+plane edits, anchor moves, parent edits, front/back hierarchy, expression
+swaps and animation key changes. A complete gizmo drag makes one undo step.
+
+**Navigation:** scroll wheel to zoom with the mouse, **two-finger pinch**
+(and pan by moving both fingers) on mobile, or use the `−` / `+`
+zoom buttons. **One-finger drag** pans when the gizmo is not grabbed.
+The cursor or pinch midpoint stays under the same point during zoom.
+`W` Move, `E` Rotate, `R` Scale, `A` Anchor Pivot;
+middle mouse drag pans. `⌖` resets zoom and viewport center.
