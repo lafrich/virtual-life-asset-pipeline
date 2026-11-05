@@ -107,6 +107,7 @@
    const saved=JSON.parse(store?.getItem(KEY)||"null");
    return saved?.format===FORMAT?{rules:normalize(saved.rules,rig),
     defaultParts:sanitizeParts(saved.defaultParts,rig),
+    pixelPlanes:sanitizePixelPlanes(saved.pixelPlanes,rig),
     savedAt:saved.savedAt||null,revision:saved.revision||1}:null;
   }catch{return null}
  }
@@ -115,12 +116,24 @@
   const state=rig.normalize({parts});
   return state.parts;
  }
- function save(store,rig,rules,parts){
+ function sanitizePixelPlanes(sources,rig){
+  if(!sources||typeof sources!=="object"||Array.isArray(sources))return {};
+  const out={},valid=new Set(rig.BONES.map(b=>b.id));
+  for(const [bone,value] of Object.entries(sources)){
+   if(!valid.has(bone)||HIDDEN.has(bone)||Object.keys(out).length>=32)continue;
+   const png=typeof value==="string"?value:value?.png;
+   if(typeof png!=="string"||png.length>200000||!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(png))continue;
+   out[bone]=png;
+  }
+  return out;
+ }
+ function save(store,rig,rules,parts,pixelPlanes){
   const prior=read(store,rig),doc={format:FORMAT,version:1,
    rules:normalize(rules,rig),defaultParts:sanitizeParts(parts,rig),
+   pixelPlanes:sanitizePixelPlanes(pixelPlanes===undefined?prior?.pixelPlanes:pixelPlanes,rig),
    revision:(prior?.revision||0)+1,savedAt:new Date().toISOString()};
   store.setItem(KEY,JSON.stringify(doc));return doc;
  }
  return Object.freeze({KEY,FORMAT,HIDDEN,defaults,normalize,canParent,setParent,
-  setAnchor,effectiveOrder,moveLayer,layerRank,world,read,save,sanitizeParts});
+  setAnchor,effectiveOrder,moveLayer,layerRank,world,read,save,sanitizeParts,sanitizePixelPlanes});
 });
