@@ -475,8 +475,14 @@ function drawEquippedAccessory(x,y,z,dirIndex,placement="front",targetCtx=ctx,on
   // This keeps Theodore's torso, shoulders and head in front of the bag.
   if(category==="bag"){
    if(placement!=="back")continue;
+  }else if(category==="hair"){
+   // Native V6B hair is two independent depths. Long rear locks are BEHIND
+   // the actor head, and the fringe is in FRONT; never stack both over face.
+   if(placement==="back"&&!accessoryFor(state.selected.id,"hair")?.back_frames)continue;
   }else if(placement!=="front")continue;
-  const item=accessoryFor(state.selected.id,category),src=item?.frames?.[dirs[dirIndex]];
+  const item=accessoryFor(state.selected.id,category);
+  const src=(category==="hair"&&placement==="back"?
+   item?.back_frames:item?.frames)?.[dirs[dirIndex]];
   const selectedBase=state.selected.base_id||state.selected.id;
   if(item&&(item.template_base||"astrofrich_base")!==selectedBase)continue;
   if(typeof src!=="string"||!src.startsWith("data:image/png;base64,")||src.length>100000)continue;
@@ -599,7 +605,9 @@ function filterEquippedOptions(base,category,previous=""){
   const option=document.createElement("option");option.value=entry.id;
   option.textContent=entry.name||"UNNAMED";select.append(option);
  }
- select.value=options.some(x=>x.id===previous)?previous:"";
+ select.value=(options.some(x=>x.id===previous)||
+   (window.VLHumanWardrobe?.presetsFor?.(base,category)||[]).some(x=>x.id===previous))?
+   previous:"";
 }
 function populateCustomAccessories(){
  const baseId=customBaseId(),human=HUMAN_BASES.includes(baseId);
@@ -657,7 +665,9 @@ async function saveCustomCharacter(){
   id="custom_"+(base.template_category==="human"?"human":"astro")+"_"+
     Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
  }
- const portrait=await window.VLHumanWardrobe?.createPortrait?.(baseId);
+ let portrait=null;
+ try{portrait=await window.VLHumanWardrobe?.createPortrait?.(baseId);}
+ catch(error){setStatus("CHARACTER PREVIEW ERROR: "+error.message);return;}
  const record={id,name,base:baseId,category:base.template_category,
   ...(HUMAN_BASES.includes(baseId)?{skinTone:$("custom-skin-tone").value}:{}),
   ...(portrait?{portrait}:{}),updated:Date.now()};
