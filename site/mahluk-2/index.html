@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1d2532">
-<title>Mahluk Hidup 2.0 — Modular Character Studio</title>
-<link rel="stylesheet" href="./studio.css?v=plane-pixel-v1">
+<title>Mahluk Hidup 2.0 — Character Root Studio</title>
+<link rel="stylesheet" href="./studio.css?v=root-layout-grid-zoom-v2">
 <script defer src="../modular-rig-v2.js?v=mh2"></script>
 <script defer src="./emotion-planes.js?v=1"></script>
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
-<script defer src="./plane-pixel-editor.js?v=plane-pixel-v1"></script>
-<script defer src="./studio.js?v=plane-pixel-v1"></script>
+<script defer src="./plane-pixel-editor.js?v=grid-zoom-pan-v2"></script>
+<script defer src="./studio.js?v=root-layout-grid-zoom-v2"></script>
 </head>
 <body>
 <div class="window">
- <header class="titlebar"><div class="brand"><span class="appicon">✳</span><b>MAHLUK HIDUP <em>2.0</em></b> <small>2.5D CHARACTER STUDIO</small></div><div class="title-actions"><span id="syncLed" class="led"></span><span id="syncLabel">CONNECTING...</span><a href="https://lafrich.github.io/virtual-office/membangun/?app=mahluk2" title="Kembali ke launcher">⌂ MEMBANGUN</a><span class="window-buttons">_ ▢ ×</span></div></header>
- <nav class="menubar"><button id="newChar">File · New</button><button id="undo" title="Undo / Ctrl+Z" disabled>↶ UNDO</button><button id="redo" title="Redo / Ctrl+Shift+Z" disabled>↷ REDO</button><button id="saveChar">▣ Save to Game</button><button id="exportJson">↓ Project JSON</button><button id="exportPng">↓ Sprite PNG</button><label class="importbtn">↑ Import JSON<input id="importJson" type="file" accept=".json,application/json"></label><span class="push"></span><span class="tiny">ORIGINAL V6B SOURCE · 64 × 112</span></nav>
+ <header class="titlebar"><div class="brand"><span class="appicon">✳</span><b>MAHLUK HIDUP <em>2.0</em></b> <small>ROOT / RIG &amp; PLANES</small></div><div class="title-actions"><span id="syncLed" class="led"></span><span id="syncLabel">CONNECTING...</span><a href="https://lafrich.github.io/virtual-office/membangun/?app=mahluk2" title="Kembali ke launcher">⌂ MEMBANGUN</a><span class="window-buttons">_ ▢ ×</span></div></header>
+ <nav class="menubar"><button id="newChar">File · New</button><button id="undo" title="Undo / Ctrl+Z" disabled>↶ UNDO</button><button id="redo" title="Redo / Ctrl+Shift+Z" disabled>↷ REDO</button><button id="saveChar">▣ Save to Game</button><button id="exportJson">↓ Project JSON</button><button id="exportPng">↓ Sprite PNG</button><label class="importbtn">↑ Import JSON<input id="importJson" type="file" accept=".json,application/json"></label><span class="push"></span><a class="legacy-action-link" href="../" title="Animation and action work stays in Mahluk Hidup 1.0">ACTIONS · 1.0</a><span class="tiny">ROOT CHARACTER ENGINE</span></nav>
  <div class="workspace">
   <aside class="objects panel">
    <div class="panelhead"><strong>OBJECT MANAGER</strong><small>HIERARCHY</small></div>
@@ -46,7 +46,7 @@
   <main class="center">
    <div class="viewbar"><div class="viewtitle"><strong>EDITOR VIEWPORT</strong><span id="viewHint">ISOMETRIC · X / Y / Z</span></div><div class="viewcontrols"><button id="toolMove" class="active" title="Move / W">✥ MOVE</button><button id="toolRotate" title="Rotate / E">↻ ROTATE</button><button id="toolScale" title="Scale / R">◱ SCALE</button><button id="toolAnchor" title="Adjust anchor/pivot / A">⊕ ANCHOR</button><button id="viewIso" class="active">◇ ISO</button><button id="viewFront">▣ FRONT</button><button id="axisX" class="active axis x">X</button><button id="axisY" class="axis y">Y</button><button id="axisZ" class="axis z">Z</button><button id="zoomOut" title="Zoom out / mouse wheel / pinch">−</button><span id="zoomLabel" class="zoom-label">100%</span><button id="zoomIn" title="Zoom in / mouse wheel / pinch">＋</button><button id="viewHome" title="Reset camera">⌖</button></div></div>
    <div class="viewstage"><canvas id="editor" width="880" height="620" aria-label="Isometric viewport. Drag gizmo axes to move part in X Y Z. Wheel to zoom."></canvas><div class="cornerinfo"><span>MAHLUK HIDUP® / 2.5D PLANES</span><span>W MOVE · E ROTATE · R SCALE · A ANCHOR · SCROLL / PINCH ZOOM</span></div></div>
-   <div class="timeline">
+   <div class="timeline" id="legacyTimeline" hidden aria-hidden="true">
     <div class="timelinetop"><strong>ANIMATION / DOPE SHEET</strong><label>CLIP <select id="clip"><option value="idle">IDLE</option><option value="walk">WALK</option><option value="talk">TALK</option><option value="sit">SIT</option><option value="lie">LIE</option><option value="custom">CUSTOM</option></select></label><label>FRAMES <input id="frameCount" type="number" min="1" max="48" value="12"></label><label>FPS <input id="fps" type="number" min="1" max="30" value="12"></label><button id="play">▶ PLAY</button><button id="setKey">◆ KEY</button><button id="deleteKey">◇ DELETE</button></div>
     <div class="ruler" id="ruler"></div><div class="keyrows" id="keyrows"></div>
    </div>
@@ -98,12 +98,12 @@
    <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
    <button data-pixel-tool="eraser">⌫ ERASER</button>
    <button data-pixel-tool="fill">▤ FILL</button>
-   <button data-pixel-tool="picker">◎ PICK</button>
+   <button data-pixel-tool="picker">◎ PICK</button><button data-pixel-tool="hand" title="Pan canvas by dragging / H">✥ HAND</button>
    <label>COLOR <input id="pixelColor" type="color" value="#211d22"></label>
    <label>SIZE <select id="pixelSize"><option value="1">1 PX</option><option value="2">2 PX</option><option value="3">3 PX</option><option value="5">5 PX</option></select></label>
   </div>
   <div class="pixel-workarea">
-   <div class="pixel-canvas-wrap"><canvas id="pixelCanvas" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time"></canvas></div>
+   <div class="pixel-canvas-wrap" id="pixelCanvasWrap"><canvas id="pixelCanvas" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time. Scroll to zoom, pinch to zoom on touch."></canvas></div>
    <aside class="pixel-side">
     <div class="sectionhead">PALETTE / SWATCHES</div>
     <div class="pixel-swatches">
@@ -117,7 +117,18 @@
      <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
     </div>
     <label class="check"><input type="checkbox" id="pixelOnion" checked> CHARACTER REFERENCE (ONION)</label>
-    <label class="check"><input type="checkbox" id="pixelGrid"> SHOW PIXEL GRID</label>
+    <div class="pixel-grid-controls">
+     <label class="check"><input type="checkbox" id="pixelGrid" checked> GRID MODE</label>
+     <label>GRID SIZE <select id="pixelGridType"><option value="1">1 × 1 PX</option><option value="8">8 × 8 PX</option><option value="16">16 × 16 PX</option></select></label>
+    </div>
+    <div class="pixel-zoom-controls">
+     <span>ZOOM</span>
+     <button id="pixelZoomOut" title="Zoom out (mouse wheel or pinch)">−</button>
+     <input id="pixelZoom" type="range" min="2" max="16" step="1" value="5" aria-label="Pixel canvas zoom">
+     <button id="pixelZoomIn" title="Zoom in (mouse wheel or pinch)">＋</button>
+     <button id="pixelZoomFit" title="Fit artwork to editor">FIT</button>
+     <span id="pixelZoomLabel">500%</span>
+    </div>
     <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
     <p class="hint">Edits work at native 64 × 112, across four directions. Pencil/eraser can be dragged with mouse or touch. Source planes and rig transforms remain separate.</p>
     <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
