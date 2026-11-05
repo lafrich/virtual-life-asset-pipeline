@@ -217,7 +217,7 @@ def cheeky_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,di
     # Face-width grin. All four animation phases retain attached tongue.
     mouth.polygon([xy(31,50),xy(33,49),xy(37,49),xy(40,50),
                    xy(39,52),xy(37,53),xy(34,53),xy(32,52)],fill=dark)
-    mouth.line([xy(33,50),xy(38,50)],fill=white,width=1)
+    mouth.line([xy(32,50),xy(39,50)],fill=white,width=1)
     tongue_end=(55,57,58,56)[phase]
     p0,p1=xy(35,52),xy(37,tongue_end)
     mouth.rectangle((min(p0[0],p1[0]),min(p0[1],p1[1]),
