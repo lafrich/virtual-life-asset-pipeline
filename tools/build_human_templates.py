@@ -181,7 +181,10 @@ def split_knee_chest_rear_upper(layers:dict,direction:str)->dict:
         knee_top=80
     # Allow shoulders and chest to overlap the bent knees, never lift the
     # actor's original lower hip, shins or feet onto the foreground.
-    divide=max(83,min(90,knee_top+9))
+    # The old cutoff at y=83 exposed only a few crotch pixels; the knees
+    # still read in front of the upper torso. Bring the real navel/waist
+    # skin forward through the contact band, but stop BEFORE the shins.
+    divide=max(90,min(95,knee_top+15))
     upper=body.copy()
     lower=body.copy()
     upper[divide:]=0
@@ -594,9 +597,18 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # v6b socket and walking/sitting pivots as ordinary characters.
             # Skin conversion only changed RGB values; it did not change alpha.
             if lying:
+                front_lie_head=(kind=="lie_idle" and direction in ("se","sw"))
+                # The original front head barely overlapped the shoulder:
+                # its z-order patch changed just 3 visible pixels. Seat the
+                # same unscaled head 3 native pixels deeper over the shoulder
+                # before drawing its real face/hair in the foreground.
+                native={k:v.convert("RGBA") for k,v in layers.items()}
+                head_shift=base6.lv.lie_head_shift(native,source_dir) if front_lie_head else None
+                if head_shift is not None:
+                    head_shift=(head_shift[0]+3,head_shift[1])
                 flattened=base6.lv.lie_preserve_head(
-                    {k:v.convert("RGBA") for k,v in layers.items()},source_dir,
-                    foreground_head=(kind=="lie_idle" and direction in ("se","sw")))
+                    native,source_dir,shift=head_shift,
+                    foreground_head=front_lie_head)
                 mirror=direction in ("sw","nw")
                 layers={k:(v.transpose(Image.Transpose.FLIP_LEFT_RIGHT) if mirror else v)
                         for k,v in flattened.items()}
