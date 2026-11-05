@@ -130,6 +130,136 @@ def split_source(image: Image.Image, source_key: str):
     return {bone: Image.fromarray(data, "RGBA") for bone, data in segments.items()}
 
 
+def native_gender_models(media: Path):
+    """Generate true outfit-free Male/Female bodies + matching clothed sprites.
+
+    The nude source is the already validated native human template guide:
+    no clothing or hair is baked in. The clothed reference uses the SAME
+    male/female body type and native V6B renderer, only with garment layers.
+    Both variants share one rig hierarchy and retain unmodified RGBA pixels.
+    """
+    extra = ROOT / "assets" / "npc_preview_v2"
+    if str(extra) not in sys.path:
+        sys.path.insert(0, str(extra))
+    import base6
+    import make_npcs_v2 as characters
+    variants = {}
+    for gender, code in (("male", "m"), ("female", "f")):
+        guide_path = media / f"human-{gender}-base-guide.png"
+        if not guide_path.is_file():
+            raise FileNotFoundError(f"Native unclothed {gender} base not built: {guide_path}")
+        guide = Image.open(guide_path).convert("RGBA")
+        if guide.size != (256, 112):
+            raise AssertionError(f"{gender} nude human guide must contain four native 64x112 views")
+        cfg = {"body": code, "skin": "light", "hair": "short", "hc": "black",
+               "top": "tee_long", "tc": "paper", "pants": "trousers",
+               "pc": "paper", "shoes": "shoes", "sc": "paper"}
+        for direction_index, direction in enumerate(DIRS):
+            nude = guide.crop((direction_index * 64, 0, (direction_index + 1) * 64, 112))
+            clothed, parts, palette = base6.render(cfg, f=0, d=direction,
+                                                    expr="neutral", anim="idle")
+            characters.bald(parts, palette)
+            # Recompose the *real* native torso/arm/leg materials (no proxy
+            # costume pasted over a different humanoid).
+            dressed = Image.new("RGBA", SIZE)
+            for part in parts.values():
+                dressed.alpha_composite(part.convert("RGBA"))
+            variants[(gender, "base", direction)] = nude
+            variants[(gender, "outfit", direction)] = dressed
+    return variants
+
+
+def split_body_pixels(sprite: Image.Image, direction: str):
+    """One owner per source pixel; local/body side mirrors with the view.
+
+    SW is the mirror of SE and NW the mirror of NE. A screen-right leg in
+    SW/NW is anatomical LEFT, not anatomical RIGHT. The body midline is
+    derived from the real opaque shin rows, not hard-coded x=33.
+    """
+    rgba = np.asarray(sprite.convert("RGBA"))
+    visible = rgba[..., 3] > 0
+    row_centres = []
+    for y in range(84, min(103, rgba.shape[0])):
+        xs = np.flatnonzero(visible[y, 16:50])
+        if len(xs) >= 6:
+            row_centres.append(float(16 + (xs[0] + xs[-1]) / 2))
+    cx = float(np.median(row_centres)) if row_centres else 32.0
+    reverse = direction in ("sw", "nw")
+    groups = {}
+    ys, xs = np.nonzero(visible)
+    for y0, x0 in zip(ys, xs):
+        x, y = int(x0), int(y0)
+        side = "l" if (x < cx) != reverse else "r"
+        if y < 54:
+            if 40 <= y < 49 and 21 <= x <= 44:
+                if y < 44:
+                    bone = "brow_" + side
+                elif y < 48:
+                    bone = "eye_" + side
+                else:
+                    bone = "mouth"
+            else:
+                bone = "head"
+        elif y < 59:
+            bone = "neck" if 26 <= x <= 39 else ("shoulder_" + side)
+        elif y < 76:
+            if x < 22 or x > 42:
+                bone = ("shoulder_" if y < 66 else "elbow_") + side
+            else:
+                bone = "torso"
+        elif y < 81:
+            bone = "pelvis" if 22 <= x <= 42 else "wrist_" + side
+        elif y < 90:
+            bone = "hip_" + side
+        elif y < 101:
+            bone = "knee_" + side
+        else:
+            bone = "ankle_" + side
+        if bone not in groups:
+            groups[bone] = np.zeros((112, 64, 4), dtype=np.uint8)
+        groups[bone][y, x] = rgba[y, x]
+    return {bone: Image.fromarray(pixels, "RGBA") for bone, pixels in groups.items()}
+
+
+def publish_gender_bases(media: Path, dest: Path):
+    variants = native_gender_models(media)
+    slots = []
+    contact = Image.new("RGBA", (2048, 896), (245, 243, 239, 255))
+    for gender_index, gender in enumerate(("male", "female")):
+        for mode_index, mode in enumerate(("base", "outfit")):
+            parts_by_view = {direction: split_body_pixels(
+                variants[(gender, mode, direction)], direction) for direction in DIRS}
+            names = set().union(*(pieces.keys() for pieces in parts_by_view.values()))
+            for bone in sorted(names):
+                atlas = Image.new("RGBA", (64, 448))
+                for index, direction in enumerate(DIRS):
+                    part = parts_by_view[direction].get(bone)
+                    if part:
+                        atlas.alpha_composite(part, (0, index * 112))
+                if not atlas.getbbox():
+                    continue
+                filename = f"{gender}-{mode}-{bone.replace('_', '-')}.png"
+                atlas.save(dest / filename, optimize=True)
+                slots.append({
+                    "name": f"{gender}-{mode}-{bone}",
+                    "gender": gender, "mode": mode,
+                    "bone": bone, "expression": False,
+                    "src": "media/original-rig/" + filename
+                })
+            for index, direction in enumerate(DIRS):
+                source = variants[(gender, mode, direction)]
+                reconstructed = Image.new("RGBA", SIZE)
+                for part in parts_by_view[direction].values():
+                    reconstructed.alpha_composite(part)
+                if not np.array_equal(np.asarray(source), np.asarray(reconstructed)):
+                    raise AssertionError(f"{gender} {mode} {direction}: source pixels changed")
+                contact.alpha_composite(
+                    source.resize((256, 448), Image.Resampling.NEAREST),
+                    (mode_index * 1024 + index * 256, gender_index * 448))
+    contact.save(dest / "gender-bases.png", optimize=True)
+    return slots
+
+
 def generate(media: Path):
     dest = media / "original-rig"
     dest.mkdir(parents=True, exist_ok=True)
@@ -183,6 +313,7 @@ def generate(media: Path):
                     actual.alpha_composite(source)
             if not np.array_equal(np.asarray(expected), np.asarray(actual)):
                 raise AssertionError(f"{direction}/{emotion}: split rig mismatches native V6B pixels")
+    gender_slots = publish_gender_bases(media, dest)
     # Human-review contact sheet: same unmodified pixels, only 4x NEAREST.
     contact = Image.new("RGBA", (64 * 4 * len(DIRS), 112 * 4), (242, 240, 234, 255))
     for i, direction in enumerate(DIRS):
@@ -196,19 +327,21 @@ def generate(media: Path):
                                 (i * 256, 0))
     contact.save(dest / "source-contact-sheet.png", optimize=True)
     manifest = {
-        "preview": "media/original-rig/source-contact-sheet.png",
+        "preview": "media/original-rig/gender-bases.png",
+        "gender_bases": ["male", "female"],
+        "outfit_modes": ["base", "outfit"],
         "format": "mahluk-original-source-rig-v1",
         "art_style": "original_v6b",
         "generator": "chars-iso/v6b/tools/live_v6b.py",
         "reference": "new editable reference using original source art; archived character listings remain hidden",
         "directions": list(DIRS), "emotions": list(EMOTIONS),
-        "frame_size": list(SIZE), "pivot": [32, 100], "slots": slots,
+        "frame_size": list(SIZE), "pivot": [32, 100], "slots": slots + gender_slots,
         "pixels_preserved": True,
         "validation": "28 exact pixel reconstruction checks (4 directions × 7 expressions)"
     }
     (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n",
                                           encoding="utf-8")
-    print(f"ORIGINAL V6B CUTOUTS: {len(slots)} slots, 4 views, 7 faces, pixel-perfect.")
+    print(f"ORIGINAL V6B CUTOUTS: {len(slots)} source + {len(gender_slots)} gender/mode slots, four views, pixel-perfect.")
 
 
 if __name__ == "__main__":
