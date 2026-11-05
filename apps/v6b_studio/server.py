@@ -29,7 +29,7 @@ V6B = REPO / "chars-iso" / "v6b"
 sys.path.insert(0, str(V6B / "tools"))
 import live_v6b as engine  # noqa: E402
 
-HOST = os.environ.get("V6B_HOST", "0.0.0.0" if os.environ.get("RENDER") else "127.0.0.1")
+HOST = os.environ.get("V6B_HOST", "0.0.0.0" if os.environ.get("PORT") else "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8766"))
 MAX_JOBS = 2
 LOCK = threading.Lock()
