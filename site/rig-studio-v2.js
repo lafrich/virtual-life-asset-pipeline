@@ -208,9 +208,15 @@
    updateInputs();drawAll();drawTracks();say("IMPORTED MODULAR RIG / 4 DIRECTIONS");
   }catch(e){say("IMPORT FAILED: "+e.message);}
  }
- function mount(){
+ async function mount(){
   const panel=$("rig-v2-workspace"),tab=$("switch-rig-v2");if(!panel||!tab)return;
   createTree();restore();
+  try{
+   await R.loadNativeArt();
+  }catch(error){
+   say("SOURCE ART FAILED · "+error.message);
+   return;
+  }
   $("rig-v2-count").value=String(count);$("rig-v2-fps").value=String(fps);
   const oldTabs=["switch-chars","switch-animations","switch-actions","tab-custom-char","switch-poser"];
   for(const id of oldTabs)$(id)?.addEventListener("click",()=>{panel.hidden=true;playing=false;},true);
@@ -221,7 +227,7 @@
     t.classList.remove("active");t.setAttribute("aria-selected","false");
    }
    panel.hidden=false;tab.classList.add("active");tab.setAttribute("aria-selected","true");
-   say("MODULAR RIG READY · LAYERED HAIR / GLASSES / HEAD → EMOTION → BROWS, EYES, NOSE, BLUSH, MOUTH");
+   say("ORIGINAL PIPELINE V6B / TRUE SOURCE CUTOUTS · 33 JOINTS · EMOTION FOLLOWS HEAD");
    drawAll();
   });
   for(const btn of document.querySelectorAll("[data-rig-v2-view]"))btn.addEventListener("click",()=>{
