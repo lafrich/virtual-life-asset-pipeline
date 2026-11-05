@@ -191,3 +191,117 @@ button#toolAnchor.active{background:#2b736b;border-color:#8ff7e2;color:#e2fffa}
 #depthReadout{font-variant-numeric:tabular-nums}
 @media(max-width:1130px){.orbit-gizmo{top:8px;right:8px;transform:scale(.86);transform-origin:top right}.viewbar .depth-gap{min-width:122px}.depth-gap input{width:65px}}
 @media(max-width:750px){.orbit-gizmo{transform:scale(.75)}}
+
+/* Membangun desktop family chrome — classic Windows XP/98 visual system.
+ * Match launcher: blue title, warm grey chrome, bevelled borders, Tahoma.
+ * Character viewport remains dark so rig artwork and axis handles read clearly.
+ */
+:root{--bg:#c7c6c3;--panel:#d3d1cd;--panel2:#e3e1dc;
+ --line:#898782;--text:#1a1c20;--muted:#565b62;--blue:#0755b5;
+ --cream:#ede5c6;--yellow:#d6a74d}
+html,body{background:#073b92;color:#151719;font:12px/1.42 Tahoma,"MS Sans Serif",Verdana,sans-serif}
+button{background:#d6d4d0;color:#1b1f25;border:2px solid;border-color:#fff #777975 #777975 #fff;border-radius:0;
+ box-shadow:inset 1px 1px #f3f2ef;line-height:1.22}
+button:hover{background:#bad0f6;color:#132c59}
+button:active,button.active{border-color:#737672 #fff #fff #737672;box-shadow:inset 1px 1px #6d7275}
+button:disabled{opacity:.48;color:#777;cursor:default}
+select,input[type=text],input[type=number]{background:#fff;color:#171b22;border:2px inset #a4a6a5;border-radius:0;padding:5px 6px;font:11px Tahoma,sans-serif}
+select:focus,input:focus-visible,button:focus-visible{outline:1px dotted #163773;outline-offset:1px}
+.window{background:#c7c6c3;max-width:2400px;border:2px solid;border-color:#fff #393b3b #393b3b #fff;outline:1px solid #1c2a42}
+.titlebar{background:linear-gradient(90deg,#042777,#0755b5 64%,#2786d9);border-bottom:2px solid #163970;color:#fff;height:41px}
+.brand{font-weight:bold}.brand em{color:#fff3b6}.brand small{color:#b8e2ff}
+.title-actions a{color:#fff;border:1px solid #9dc9ff;background:#154b99;padding:5px 8px}
+.menubar{background:#d7d5d1;border-bottom:2px solid #96938e;box-shadow:inset 0 1px #fff}
+.menubar button,.menubar .importbtn{color:#23282e;border:1px solid transparent;box-shadow:none;background:transparent;font:11px Tahoma,sans-serif}
+.menubar button:hover,.menubar .importbtn:hover{color:#fff;background:#16499d;border-color:#356cb6}
+.legacy-action-link{color:#173d77;background:#c8d7ef;border:1px solid #8195b7;border-radius:0}
+.legacy-action-link:hover{background:#9cbdf2}
+.tiny{color:#62656a}
+.workspace{grid-template-columns:clamp(212px,18vw,265px) minmax(0,1fr) clamp(290px,25vw,365px);background:#c5c3be}
+.panel{background:#d3d1cd;color:#1c2026}
+.objects{border-right:2px solid #898884}.inspector{border-left:2px solid #898884}
+.panelhead{background:#d0ceca;border-bottom:2px solid #858784;color:#1a2030;font:700 10px "Courier New",monospace;letter-spacing:.055em}
+.panelhead small{color:#4b5b70}
+.sectionhead{background:#e3e1dc;border-top:1px solid #fff;border-bottom:1px solid #999790;color:#1b2b42;font:bold 10px "Courier New",monospace;letter-spacing:.015em}
+.selectline{color:#45484d;font:700 10px "Courier New",monospace}
+.hint{color:#5a5b5f;font:10px/1.55 "Courier New",monospace}
+.tree button{background:transparent;color:#1f2936;box-shadow:none;font:11px Tahoma,sans-serif;border:0}
+.tree button:hover{background:#bfd1ef;color:#08265d}
+.tree button.selected{background:#396aaf;color:#fff;outline:1px dotted #e4efff}
+.tree .dot{color:#9f6822}.tree .eye{color:#63758a}
+.draw-order{border-bottom:2px inset #a8a6a2}
+.draw-row{border-bottom:1px solid #b6b3ae}
+.draw-row .draw-select{background:#e7e5e0;color:#233043}
+.draw-row .draw-select.selected{background:#a9c8f3;color:#102954;border-color:#5676a5}
+.draw-row .draw-step{border-color:#fff #797975 #797975 #fff;background:#e6e3dd}
+.object-foot{background:#cdcbc7;border-top:2px solid #8f8d88}
+#editPixelPlane,.primary,#saveGeneralRig{background:#a9c7f2;color:#102d5b;border-color:#fff #5d7ead #5d7ead #fff;border-radius:0;box-shadow:none}
+.primary:hover,#saveGeneralRig:hover,#editPixelPlane:hover{background:#8cb6f0;color:#091d46}
+.center{background:#a9a8a5}
+.viewbar{background:#d1cfca;border-bottom:2px solid #8a8884;color:#232831}
+.viewtitle strong{font:bold 11px "Courier New",monospace}
+.viewtitle span{color:#526070}
+.viewcontrols button{background:#e3e1dc;color:#252c37;border-color:#fff #777975 #777975 #fff}
+.viewcontrols button.active{background:#a6c7ef;color:#0b325f;border-color:#667e9e #fff #fff #667e9e}
+.viewcontrols button:hover{background:#bed5f5}
+.zoom-label{color:#244a73}
+.viewstage{background:radial-gradient(circle at 50% 42%,#46505d,#26303b 75%);border:2px inset #7a818c;margin:5px;min-height:0}
+.timeline{background:#d4d2cd;border-top:2px solid #868684}
+.ins-section{border-bottom:1px solid #bdbab3}
+.selected-name{color:#192d49}
+.fields label,.check{color:#364251}
+.gamepreview{border:2px inset #8c8c86;background-color:#c5cbd1}
+.directions button{background:#e1dfda;color:#263342}
+.status{background:#d0cec8;color:#26303a;border-top:2px solid #8b8883;font:10px "Courier New",monospace}
+#coords{color:#24466a}
+.object-scroll,.inspector-scroll{scrollbar-color:#a7a7a3 #dedbd5}
+.four-view-check button{background:#e3e3df;border-color:#fff #888 #888 #fff;color:#233040}
+.four-view-check button.active{background:#abcaf4;border-color:#6b82a3 #fff #fff #6b82a3}
+.four-view-check span{font:8px "Courier New",monospace}
+#depthReadout{color:#345272}
+/* Selected art only gets a thin bounded outline, not a full screen rectangle */
+.selected-part-chip{position:absolute;z-index:4;top:10px;left:11px;max-width:min(50%,350px);white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;padding:6px 9px;background:rgba(10,29,51,.91);
+ color:#fae2a0;border:1px solid #d9b668;font:bold 10px "Courier New",monospace;
+ pointer-events:none;box-shadow:1px 2px #09152155}
+/* XP pop-up window for source pixels */
+.pixel-overlay{background:rgba(5,22,50,.72)}
+.pixel-dialog{background:#cac9c6;color:#21262f;border:2px solid;border-color:#fff #444 #444 #fff;box-shadow:8px 11px #07152c66}
+.pixel-dialog-header{background:linear-gradient(90deg,#072d81,#1762c2 65%,#3995da);color:white;padding:8px 10px;border-bottom:2px solid #123f82}
+.pixel-dialog-header button{color:#1c1e21;background:#d8d6d0;border-color:#fff #777 #777 #fff}
+.pixel-toolbar{background:#d9d7d2;border-bottom:2px solid #999793;color:#242a33}
+.pixel-toolbar label{color:#333;font:10px "Courier New",monospace}
+.pixel-toolbar select{color:#1a1e29;background:#fff;border:2px inset #a0a0a0}
+.pixel-toolbar button{background:#e2e0db;color:#242b35;border-color:#fff #7b7b78 #7b7b78 #fff}
+.pixel-toolbar button.active{background:#b3cffe;color:#133d76;border-color:#6c829b #fff #fff #6c829b}
+.pixel-workarea{background:#d0ceca}
+.pixel-canvas-wrap{background:#a7a6a3;border:2px inset #8d8b85}
+.pixel-side{color:#293440}
+.pixel-side .sectionhead{margin-bottom:4px}
+.pixel-side .check{color:#34435a}
+.pixel-side .hint{padding:1px 2px;line-height:1.4}
+.pixel-side>button{background:#d9d7d1;color:#222;border-color:#fff #888 #888 #fff}
+.pixel-side .pixel-swatches button{border:1px solid #747474}
+.pixel-zoom-controls,.pixel-grid-controls{border-bottom:1px solid #9f9d98}
+.pixel-dialog-foot{background:#d2d0cb;color:#1e2d42;border-top:2px solid #a4a29b}
+.pixel-dialog-foot>span{color:#3c526f}
+.pixel-dialog-foot button{background:#e0ded9;color:#253142;border-color:#fff #777 #777 #fff}
+.pixel-dialog-foot button.primary{background:#a9c8f6;color:#143d78;border-color:#fff #5f7da4 #5f7da4 #fff}
+.pixel-reference-controls,.pixel-selection-controls{border:1px solid #a7a4a0;background:#e1dfda;padding:5px}
+.pixel-reference-controls label{display:flex;flex-direction:column;gap:3px;margin:5px 2px;font:10px "Courier New",monospace;color:#3d4146}
+.pixel-reference-controls .check{flex-direction:row;padding:3px 2px}
+.pixel-reference-controls input[type=range]{width:100%;accent-color:#346fbe}
+.pixel-reference-controls select,.pixel-reference-controls input[type=number]{width:100%;background:#fff}
+.pixel-selection-controls .plane-buttons{padding:3px 0}
+#pixelSelectionInfo{font-variant-numeric:tabular-nums}
+@media(max-width:1120px) and (min-width:751px){
+ .workspace{grid-template-columns:195px minmax(0,1fr) 262px}
+ .viewstage{margin:3px}
+}
+@media(max-width:750px){
+ html,body{background:#c7c6c3}
+ .window{height:auto;min-height:100dvh}
+ .objects,.inspector{background:#d3d1cd}
+ .workspace{display:flex;flex-direction:column}
+ .selected-part-chip{max-width:67%}
+}
