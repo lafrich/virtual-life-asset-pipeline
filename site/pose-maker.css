@@ -86,3 +86,17 @@
 .pose-scrub-label span{font-size:9px;color:#5d6775;text-align:right;font-weight:400}
 .pose-key{display:none}
 @media(max-width:1050px){.pose-joint-controls{flex-wrap:wrap;white-space:normal}.pose-joint-controls strong{min-width:72px}.pose-part-tabs{gap:2px}.pose-part-tab{min-width:52px;padding:5px 4px}}
+
+/* Per-pixel bone weight editor: original pose/joint controls untouched. */
+.pose-weight-editor{display:flex;flex-direction:column;gap:8px;border:2px inset #9da3ae;padding:9px;background:#e5e7e9;margin:2px 0 7px}
+.pose-weight-heading{display:flex;justify-content:space-between;gap:6px;align-items:center;font:11px "Courier New",monospace;color:#164995}
+.pose-weight-heading small{font:9px "Courier New",monospace;color:#5d697b}
+.pose-weight-tools{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.pose-weight-tools button{flex:1;min-height:30px;padding:4px;font:bold 10px "Courier New",monospace}
+.pose-weight-tools button.active{background:#1b57ad;color:white;border-style:inset}
+.pose-weight-tools label{font:bold 9px "Courier New",monospace;display:flex;gap:5px;align-items:center;width:100%}
+#pose-weight-size{flex:1;min-width:0;accent-color:#1656ae}
+#pose-weight-size-label{font:bold 10px "Courier New",monospace;white-space:nowrap}
+.pose-weight-canvas-wrap{width:100%;max-height:340px;display:flex;justify-content:center;background:repeating-conic-gradient(#d7dce4 0% 25%,#f2f4f7 0% 50%) 50% / 16px 16px;border:2px inset #959ea9;overflow:hidden;padding:5px}
+#pose-weight-canvas{height:min(325px,60dvh);max-width:100%;width:auto;aspect-ratio:64/112;image-rendering:pixelated;cursor:crosshair;touch-action:none;user-select:none}
+#pose-weight-reset{min-height:31px;padding:4px;font:bold 10px "Courier New",monospace}
