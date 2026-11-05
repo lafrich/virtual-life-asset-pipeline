@@ -399,7 +399,8 @@ def overlap_joint_seams(parts: dict, owner: np.ndarray,
 
 
 def split_body_pixels(sprite: Image.Image, direction: str,
-                      native_layers: dict):
+                      native_layers: dict, require_anatomy: bool = True,
+                      bridge_joints: bool = True):
     """Split the original human sprite by native BODY / ARM / PANTS / FOOT mattes.
 
     Each pixel is stored exactly once. Skin, highlights and anatomical detail
@@ -419,59 +420,104 @@ def split_body_pixels(sprite: Image.Image, direction: str,
         data[select] = rgba[select]
         if np.any(select):
             parts[str(bone)] = Image.fromarray(data, "RGBA")
-    if "torso" not in parts or "head" not in parts:
-        raise AssertionError("Missing native head/torso after rig cutout")
-    if not any(part.startswith("shoulder_") for part in parts):
-        raise AssertionError("Native arm mattes were not processed")
-    return overlap_joint_seams(parts, owner, rgba)
+    if require_anatomy:
+        if "torso" not in parts or "head" not in parts:
+            raise AssertionError("Missing native head/torso after rig cutout")
+        if not any(part.startswith("shoulder_") for part in parts):
+            raise AssertionError("Native arm mattes were not processed")
+    return overlap_joint_seams(parts, owner, rgba) if bridge_joints else parts
 
 
 def publish_gender_bases(media: Path, dest: Path):
-    variants, mattes = native_gender_models(media)
+    """Publish the stable universal rig: anatomy FIRST, clothing as an overlay.
+
+    A bone's human skin atlas is identical in both outfit modes. It is
+    impossible for an outfit toggle to secretly select a differently cut
+    or differently rigged body. The garment atlas only contains materials
+    from the real source renderer (shirt, pants, shoes etc.).
+    """
+    variants, anatomy_sources, clothing_sources = native_gender_models(media)
     slots = []
+
+    def assemble(parts: dict[str, Image.Image]):
+        out = Image.new("RGBA", SIZE)
+        for part in parts.values():
+            out.alpha_composite(part)
+        return out
+
     for gender in ("male", "female"):
+        # SE/SW are strictly mirrored. NE/NW are strictly mirrored.
         for mode in ("base", "outfit"):
             for source, target in (("se", "sw"), ("ne", "nw")):
                 expected = variants[(gender, mode, source)].transpose(
                     Image.Transpose.FLIP_LEFT_RIGHT)
                 if not np.array_equal(np.asarray(expected),
                                       np.asarray(variants[(gender, mode, target)])):
-                    raise AssertionError(f"{gender}/{mode}: {target} must mirror {source}")
+                    raise AssertionError(f"Broken mirror {gender}/{mode}/{target}")
+
+        body_parts = {}
+        garment_parts = {}
+        for direction in DIRS:
+            body = variants[(gender, "base", direction)]
+            body_parts[direction] = split_body_pixels(
+                body, direction, anatomy_sources[(gender, direction)])
+            clothing = clothing_sources[(gender, direction)]
+            overlay = Image.new("RGBA", SIZE)
+            for image in clothing.values():
+                overlay.alpha_composite(image)
+            garment_parts[direction] = split_body_pixels(
+                overlay, direction, clothing, require_anatomy=False,
+                bridge_joints=False)
+            if not np.array_equal(
+                np.asarray(assemble(body_parts[direction])),
+                np.asarray(body)
+            ):
+                raise AssertionError(f"{gender}/{direction}: nude body changed after part split")
+            if not np.array_equal(
+                np.asarray(assemble(garment_parts[direction])),
+                np.asarray(overlay)
+            ):
+                raise AssertionError(f"{gender}/{direction}: clothing overlay changed after split")
+            dressed = body.copy()
+            dressed.alpha_composite(overlay)
+            if not np.array_equal(np.asarray(dressed),
+                                  np.asarray(variants[(gender, "outfit", direction)])):
+                raise AssertionError(f"{gender}/{direction}: outfit changed source appearance")
+
+        for layer_type, by_view in (("body", body_parts), ("garment", garment_parts)):
+            names = sorted(set().union(*(part.keys() for part in by_view.values())))
+            for bone in names:
+                atlas = Image.new("RGBA", (64, 448))
+                for row, direction in enumerate(DIRS):
+                    part = by_view[direction].get(bone)
+                    if part is not None:
+                        atlas.alpha_composite(part, (0, row*112))
+                if not atlas.getbbox():
+                    continue
+                filename = f"{gender}-{layer_type}-{bone.replace('_', '-')}.png"
+                atlas.save(dest / filename, optimize=True)
+                slots.append({
+                    "name": f"{gender}-{layer_type}-{bone}",
+                    "gender": gender,
+                    "mode": "base" if layer_type == "body" else "outfit",
+                    "layer_type": layer_type,
+                    "bone": bone, "expression": False,
+                    "src": "media/original-rig/" + filename,
+                })
+
+    # Source review contact sheet: 4 directions × 2 outfit states × 2
+    # anatomies. Every image is a transparent source RGBA raster at 4x.
     contact = Image.new("RGBA", (2048, 896), (245, 243, 239, 255))
     for gender_index, gender in enumerate(("male", "female")):
         for mode_index, mode in enumerate(("base", "outfit")):
-            parts_by_view = {direction: split_body_pixels(
-                variants[(gender, mode, direction)], direction,
-                mattes[(gender, direction)]) for direction in DIRS}
-            names = set().union(*(pieces.keys() for pieces in parts_by_view.values()))
-            for bone in sorted(names):
-                atlas = Image.new("RGBA", (64, 448))
-                for index, direction in enumerate(DIRS):
-                    part = parts_by_view[direction].get(bone)
-                    if part:
-                        atlas.alpha_composite(part, (0, index * 112))
-                if not atlas.getbbox():
-                    continue
-                filename = f"{gender}-{mode}-{bone.replace('_', '-')}.png"
-                atlas.save(dest / filename, optimize=True)
-                slots.append({
-                    "name": f"{gender}-{mode}-{bone}",
-                    "gender": gender, "mode": mode,
-                    "bone": bone, "expression": False,
-                    "src": "media/original-rig/" + filename
-                })
-            for index, direction in enumerate(DIRS):
-                source = variants[(gender, mode, direction)]
-                reconstructed = Image.new("RGBA", SIZE)
-                for part in parts_by_view[direction].values():
-                    reconstructed.alpha_composite(part)
-                if not np.array_equal(np.asarray(source), np.asarray(reconstructed)):
-                    raise AssertionError(f"{gender} {mode} {direction}: source pixels changed")
+            for row, direction in enumerate(DIRS):
+                sprite = variants[(gender, mode, direction)]
                 contact.alpha_composite(
-                    source.resize((256, 448), Image.Resampling.NEAREST),
-                    (mode_index * 1024 + index * 256, gender_index * 448))
+                    sprite.resize((256, 448), Image.Resampling.NEAREST),
+                    (mode_index*1024 + row*256, gender_index*448))
     contact.save(dest / "gender-bases.png", optimize=True)
     return slots
+
 
 
 def generate(media: Path, with_gender: bool = True):
