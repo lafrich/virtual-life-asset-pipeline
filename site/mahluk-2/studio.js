@@ -515,7 +515,15 @@ function applyState(){
 function setProjectFields(){
  $("modelType").value=type;$("outfit").value=outfit;
  $("outfit").disabled=type==="original"||bodyPlane!=="current";
+ // Never offer the opposite sex anatomy for a Male/Female base.
+ for(const opt of $("bodyPlane").options){
+  opt.disabled=(type==="male"||type==="female")&&
+    opt.value!=="current"&&opt.value!==type;
+ }
  $("bodyPlane").value=bodyPlane;
+ $("bodyPlaneHint").textContent=(type==="male"||type==="female")?
+  "AUTO "+type.toUpperCase()+" / matching nude anatomy. Select CURRENT to keep clothing. Rig and head remain unchanged.":
+  "Original base / choose a nude anatomy source, or keep the original body.";
  $("clip").value=clip;$("frameCount").value=frames;$("fps").value=fps;
 }
 function showTimeline(f){
@@ -755,7 +763,7 @@ function loadRecord(id){
  const r=getLibrary().find(r=>r.id===id);if(!r)return;
  remember();
  identifier=r.id;type=["original","male","female"].includes(r.base)?r.base:"original";
- outfit=r.outfit==="base"?"base":"outfit";bodyPlane=B.normalize(r.bodyPlane);clip=r.clip||"idle";
+ outfit=r.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,r.bodyPlane===undefined?B.defaultForBase(type):r.bodyPlane);clip=r.clip||"idle";
  // Shared master always takes precedence for new/opened 2.0 characters.
  rigRules=G.normalize(masterDocument()?.rules||r.rigRules,R);
  setPixelPlanes(masterDocument()?.pixelPlanes||r.pixelPlanes||{});
@@ -795,7 +803,7 @@ function importProject(file){
   if(v.format!=="mahluk-2-project-v1")throw Error("Unknown Mahluk 2.0 project");
   remember();
   identifier=typeof v.id==="string"&&/^mh2_[a-z0-9]+$/.test(v.id)?v.id:null;
-  type=["original","male","female"].includes(v.base)?v.base:"original";outfit=v.outfit==="base"?"base":"outfit";bodyPlane=B.normalize(v.bodyPlane);clip=["idle","walk","talk","sit","lie","custom"].includes(v.clip)?v.clip:"idle";
+  type=["original","male","female"].includes(v.base)?v.base:"original";outfit=v.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,v.bodyPlane===undefined?B.defaultForBase(type):v.bodyPlane);clip=["idle","walk","talk","sit","lie","custom"].includes(v.clip)?v.clip:"idle";
   state=R.normalize(v.model);base=R.normalize(v.rest||v.model);tracks=R.makeTracks();
   rigRules=G.normalize(v.rigRules||masterDocument()?.rules,R);
   setPixelPlanes(v.pixelPlanes||masterDocument()?.pixelPlanes||{});
@@ -888,11 +896,12 @@ function setupEvents(){
   };
  }
  $("modelType").onchange=e=>{remember();type=e.target.value;
+  bodyPlane=B.defaultForBase(type);
   if(!getEmotionAsset(emotionAssetId)){emotionAssetId="native:neutral";emotionKeys=[]}
   assetOptions();setProjectFields();buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
  $("outfit").onchange=e=>{remember();outfit=e.target.value;buildTree();paint()};
  $("bodyPlane").onchange=e=>{
-  const next=B.normalize(e.target.value);if(next===bodyPlane)return;
+  const next=B.matchingBase(type,e.target.value);if(next===bodyPlane){e.target.value=bodyPlane;return}
   const chosen=slots.filter(s=>s.gender===next&&s.layer_type==="body"&&B.isBodyBone(s.bone));
   if(next!=="current"&&!chosen.length){
    e.target.value=bodyPlane;setStatus("NUDE BODY SOURCE NOT AVAILABLE YET",false);return;
