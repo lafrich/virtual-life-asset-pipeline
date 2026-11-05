@@ -5,12 +5,12 @@
  */
 (function(root){
  "use strict";
- const APPROVED_IDS=Object.freeze([]);
+ const APPROVED_IDS=Object.freeze(["human_pixel_reference_v2"]);
  const allowed=new Set(APPROVED_IDS);
  const api=Object.freeze({
-  mode:"awaiting-new-rig",
+  mode:"new-modular-rig-v2",
   active:true,
-  message:"MENUNGGU ACUAN MODEL & RIG KARAKTER BARU",
+  message:"ACUAN BARU / MODULAR PIXEL RIG V2",
   approvedIds:APPROVED_IDS,
   visible:(actor)=>!!actor&&allowed.has(typeof actor==="string"?actor:actor.id),
   filter:(characters)=>Array.isArray(characters)?characters.filter(actor=>
