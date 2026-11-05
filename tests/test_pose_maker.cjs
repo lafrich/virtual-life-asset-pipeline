@@ -155,3 +155,29 @@ test("Split layer picker and zoom render in Human Pose Maker UI",()=>{
  assert.ok(js.includes("inFocusRegion(focus,px,py)"),"strokes honor edit region");
  assert.ok(js.includes("drawThumbnails(item)"),"part previews update with masks");
 });
+
+test("UNSELECT subtracts only the selected bone without deleting neighboring weights",()=>{
+ const weights=require("../site/pose-weights.js");
+ const pixels=new Uint8ClampedArray(64*112*4);
+ pixels.fill(255);
+ const map=new Uint8Array(64*112);
+ const y=45,x=20,otherX=21;
+ map[y*64+x]=3;
+ map[y*64+otherX]=4;
+ const removed=weights.subtract(map,x,y,1,3,pixels);
+ assert.equal(removed,1,"one matching pixel is subtracted");
+ assert.equal(map[y*64+x],0,"selected bone becomes unassigned/static");
+ assert.equal(map[y*64+otherX],4,"neighbor bone ownership remains intact");
+ assert.equal(weights.subtract(map,otherX,y,0,3,pixels),0,"cannot subtract other bone");
+ assert.equal(weights.subtract(map,otherX,y,0,0,pixels),0,"unassigned bone is not a target");
+ assert.equal(pixels[(y*64+x)*4+3],255,"the original source pixel is untouched");
+});
+test("UNSELECT button and hint exist in Pixel Weights UI",()=>{
+ const fs=require("node:fs");
+ const html=fs.readFileSync("site/index.html","utf8");
+ const js=fs.readFileSync("site/pose-weights.js","utf8");
+ assert.ok(html.includes('data-pose-weight-tool="subtract"'));
+ assert.ok(html.includes('id="pose-weight-tool-hint"'));
+ assert.ok(js.includes('mode==="subtract"'));
+ assert.ok(js.includes('changed+=subtract('));
+});
