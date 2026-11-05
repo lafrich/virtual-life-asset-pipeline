@@ -888,7 +888,8 @@ async function init(){
   ]);
   if(!Array.isArray(cat.characters))throw Error("INVALID CHARACTER CATALOG");
   build=String(cat.build_version||"").slice(0,24);
-  for(const c of cat.characters)if(idOK(c.id)&&SAFE_MEDIA.test(c.sheet||""))entries.set(c.id,c);
+  const visible=window.VLCharacterReferenceReset?.active?window.VLCharacterReferenceReset.filter(cat.characters):cat.characters;
+  for(const c of visible||[])if(idOK(c.id)&&SAFE_MEDIA.test(c.sheet||""))entries.set(c.id,c);
   hydrateCustom();refreshLocal();facesDB=FACE?.validate(expr)?expr:null;
   populateActors();
   ready=true;setupEvents();
@@ -896,7 +897,7 @@ async function init(){
   const preset=params.get("scene");
   const saved=preset?A.get(preset):null;
   const draft=saved||emptyScene();
-  if(!draft)throw Error("NO PUBLISHED CHARACTERS");
+  if(!draft){status(window.VLCharacterReferenceReset?.message||"NO PUBLISHED CHARACTERS");return;}
   const actor=params.get("actor"),motion=params.get("action");
   if(!saved&&entries.has(actor)){
    draft.participants[0].actorId=actor;
