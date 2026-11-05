@@ -1,0 +1,77 @@
+name: V6B Generator Studio — Windows Portable EXE
+
+on:
+  push:
+    branches:
+      - feature/v6b-generator-studio-app
+    paths:
+      - "apps/v6b_studio/**"
+      - ".github/workflows/build-v6b-windows.yml"
+      - "chars-iso/v6b/tools/live_v6b.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  portable-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout original V6B source and Windows application
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          architecture: "x64"
+      - name: Install Python dependencies and packager
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install "pyinstaller>=6.10,<7"
+      - name: Verify original V6B Python generator
+        shell: pwsh
+        run: |
+          python -m py_compile apps/v6b_studio/server.py apps/v6b_studio/desktop.py
+          python -m unittest discover -s apps/v6b_studio -p "test_*.py" -v
+      - name: Bundle portable Windows app with original V6B data
+        shell: pwsh
+        run: |
+          python -m PyInstaller --noconfirm --clean --onedir --windowed --name "V6B Generator Studio" --paths "chars-iso/v6b/tools" --add-data "apps/v6b_studio;apps/v6b_studio" --add-data "chars-iso/v6b/study;chars-iso/v6b/study" --add-data "chars-iso/v6b/live/chars;chars-iso/v6b/live/chars" apps/v6b_studio/desktop.py
+          if (-not (Test-Path "dist/V6B Generator Studio/V6B Generator Studio.exe")) { throw "Windows EXE missing" }
+      - name: Smoke test packaged EXE server and bundled UI
+        shell: pwsh
+        env:
+          V6B_DESKTOP_HEADLESS: "1"
+          V6B_PORT: "8788"
+        run: |
+          $exe = (Resolve-Path "dist/V6B Generator Studio/V6B Generator Studio.exe").Path
+          $process = Start-Process -FilePath $exe -PassThru
+          try {
+            $ready = $false
+            for ($i = 0; $i -lt 35; $i++) {
+              Start-Sleep -Seconds 1
+              try {
+                $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 2 "http://127.0.0.1:8788/health"
+                if ($response.StatusCode -eq 200 -and $response.Content -eq "ok") {
+                  $ready = $true
+                  break
+                }
+              } catch {}
+            }
+            if (-not $ready) { throw "Bundled EXE did not start on localhost" }
+            $html = Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 "http://127.0.0.1:8788/"
+            if ($html.Content -notmatch "V6B GENERATOR STUDIO") { throw "Bundled web UI was not served" }
+            Write-Host "Portable Windows EXE successfully serves native V6B interface."
+          } finally {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+      - name: Upload downloadable Windows application
+        uses: actions/upload-artifact@v4
+        with:
+          name: V6B-Generator-Studio-Windows
+          path: dist/V6B Generator Studio/
+          if-no-files-found: error
+          retention-days: 30
