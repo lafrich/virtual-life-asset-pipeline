@@ -96,3 +96,28 @@ test("Pose Maker UI contains separate parts and a diamond dope sheet",()=>{
  assert.ok(source.includes('setTrackKey(tracks,trackPart,f,draft)'));
  assert.ok(source.includes('deleteTrackKey(tracks,trackPart,f)'));
 });
+
+test("Pixel ownership masks have one non-overlapping owner per source pixel",()=>{
+ const weights=require("../site/pose-weights.js");
+ const source={data:new Uint8ClampedArray(64*112*4)};
+ for(let i=0;i<64*112;i++)source.data[4*i+3]=255;
+ const mask=weights.defaultMap(source);
+ assert.equal(mask.length,64*112);
+ assert.ok(mask.every(v=>v>0&&v<weights.SEGMENTS.length));
+ const x=22,y=55,index=y*64+x,before=mask[index];
+ assert.ok(weights.brush(mask,x,y,0,weights.SEGMENTS.length-1,source.data)>0);
+ assert.equal(mask[index],weights.SEGMENTS.length-1);
+ assert.notEqual(mask[index],before);
+ assert.equal(weights.decode(weights.encode(mask))[index],mask[index]);
+ assert.equal(weights.decode("bad"),null);
+});
+test("Pose Maker includes pixel weight canvas without changing rig",()=>{
+ const fs=require("node:fs"),html=fs.readFileSync("site/index.html","utf8");
+ const source=fs.readFileSync("site/pose-maker.js","utf8");
+ for(const id of ["pose-weight-canvas","pose-weight-base","pose-weight-bone",
+  "pose-weight-size","pose-weight-reset","pose-weight-info"])
+  assert.ok(html.includes('id="'+id+'"'),id+" missing");
+ assert.ok(html.includes("./pose-weights.js"));
+ assert.ok(source.includes("root.VLPoseWeights.paint(ctx,img,base,dir,a,P0,frame)"));
+ assert.ok(source.includes("root.VLPoseWeights?.serialize"));
+});
