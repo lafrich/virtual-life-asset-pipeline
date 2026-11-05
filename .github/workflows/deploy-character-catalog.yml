@@ -123,6 +123,8 @@ jobs:
           node --check site/action-scene-editor.js
           node tests/test_action_scene_bridge.cjs
           node --check site/app.js
+          node --check site/custom-character-wardrobe.js
+          node tests/test_custom_character_creator.cjs
           python -m py_compile tools/build_human_wardrobe.py
           node tests/test_desktop_layout.cjs
           node --check site/animations.js
@@ -213,6 +215,7 @@ jobs:
           test -s _site/index.html
           test -s _site/style.css
           test -s _site/app.js
+          test -s _site/custom-character-wardrobe.js
           test -s _site/human-gameplay-rig.js
           test -s _site/universal-motion-runtime.js
           test -s _site/action-scene-editor.html
