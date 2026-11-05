@@ -139,6 +139,7 @@ jobs:
           python -m py_compile tools/build_human_wardrobe.py
           node tests/test_desktop_layout.cjs
           node --check site/animations.js
+          node --check site/pose-weights.js
           node --check site/pose-maker.js
           node --test tests/test_pose_maker.cjs
           node --check site/universal-motion-runtime.js
