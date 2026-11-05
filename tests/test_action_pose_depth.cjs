@@ -7,10 +7,16 @@ const tab=fs.readFileSync(root+'animations.js','utf8');
 const html=fs.readFileSync(root+'action-scene-editor.html','utf8');
 const rootHtml=fs.readFileSync(root+'index.html','utf8');
 new Function(action);new Function(classic);new Function(tab);
-assert.match(action,/const poseDepthFront=human&&/);
+assert.match(action,/const lieHeadFront=human&&/);
+assert.match(action,/const kneeUpperFront=human&&/);
 assert.match(action,/m\.id==="lie_idle"&&\["se","sw"\]/);
 assert.match(action,/m\.id==="knee_chest_idle"&&\["ne","nw"\]/);
 assert.match(action,/addImage\(brush,m\.depth_front,from\.sx,from\.sy,0,0\)/);
+assert.match(action,/if\(kneeUpperFront\)\{/);
+const kneeBranch=action.split('if(kneeUpperFront){')[1].split('}else{')[0];
+assert.ok(kneeBranch.indexOf('pants')<kneeBranch.indexOf('drawNativeDepth()'),
+  'Rear knees must render before front torso');
+assert.match(action,/if\(lieHeadFront\)drawNativeDepth\(\)/);
 assert.match(action,/HEAD IN FRONT/);
 assert.match(action,/UPPER BODY IN FRONT/);
 assert.match(classic,/depthFront:isSheet\(motion\?\.depth_front\)/);
