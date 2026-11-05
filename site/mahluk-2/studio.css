@@ -81,3 +81,74 @@ button#toolAnchor.active{background:#2b736b;border-color:#8ff7e2;color:#e2fffa}
  .pixel-dialog-foot>span{flex-basis:100%}
  .pixel-dialog-foot button{flex:1}
 }
+
+/* ROOT STUDIO / Desktop overlap regression: no fixed-height toolbar overflow. */
+.timeline[hidden]{display:none!important}
+.window,.workspace,.panel,.center,.viewbar,.viewcontrols,.menubar{min-width:0}
+.window{min-height:0}
+.workspace{overflow:hidden;grid-template-columns:clamp(205px,19vw,258px) minmax(0,1fr) clamp(256px,22vw,310px)}
+.objects,.inspector,.center{overflow:hidden;min-height:0}
+.panelhead{flex-shrink:0}
+.object-scroll,.inspector-scroll{overflow-y:auto;overflow-x:hidden;min-height:0}
+.menubar{height:auto;min-height:38px;flex-wrap:wrap;gap:3px 5px;overflow:visible}
+.menubar button,.menubar .importbtn,.menubar .legacy-action-link{white-space:nowrap}
+.legacy-action-link{font:10px Consolas,monospace;display:inline-flex;align-items:center;color:#bee0ff;text-decoration:none;border:1px solid #627994;border-radius:3px;padding:5px 8px}
+.legacy-action-link:hover{background:#405970}
+.titlebar{min-width:0;gap:8px}
+.titlebar .brand{min-width:0;flex:1;white-space:nowrap}
+.titlebar .title-actions{min-width:0;flex-shrink:0;gap:6px}
+.viewbar{flex-wrap:wrap;align-items:flex-start;align-content:start;gap:5px;flex:none;padding:6px 8px}
+.viewtitle{flex:1 1 100%;min-width:0;justify-content:space-between;white-space:normal}
+.viewcontrols{flex:1 1 100%;display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:3px;min-width:0}
+.viewcontrols button{flex:0 0 auto;white-space:nowrap}
+.viewstage{min-height:0;flex:1 1 0}
+.object-foot{flex-wrap:wrap}
+.object-foot button{min-width:0;white-space:normal}
+.timelinetop{flex-wrap:wrap}
+.ruler{grid-template-columns:132px minmax(0,1fr)}
+.ruler-track,.keycells{min-width:0;overflow-x:auto}
+.keyrow{grid-template-columns:132px minmax(0,1fr)}
+.status{min-width:0;gap:8px}
+.status>span{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:1120px) and (min-width:751px){
+ .workspace{grid-template-columns:202px minmax(0,1fr) 252px}
+ .brand small,.titlebar .window-buttons{display:none}
+ .menubar button,.menubar .importbtn{padding:4px 6px}
+ .viewcontrols button{padding:4px 5px}
+ .object-foot button{flex-basis:45%;font-size:9px}
+}
+@media (max-width:750px){
+ .window{min-height:100dvh}
+ .workspace{overflow:visible}
+ .objects,.inspector{overflow:hidden}
+ .viewbar{flex-wrap:wrap}
+ .viewcontrols{justify-content:flex-start}
+ .center{min-height:490px}
+ .viewstage{flex:1;min-height:255px}
+ .status{gap:5px}
+}
+
+/* Pixel editor: the drawing surface is scrolled, NEVER shrunk behind tools. */
+.pixel-dialog{height:min(880px,calc(100dvh - 28px));min-height:0}
+.pixel-dialog-header,.pixel-toolbar,.pixel-dialog-foot{flex-shrink:0}
+.pixel-workarea{overflow:hidden;min-height:0}
+.pixel-canvas-wrap{display:block;overflow:auto;min-width:0;min-height:0;position:relative;overscroll-behavior:contain}
+#pixelCanvas{display:block;box-sizing:content-box;width:320px;height:560px;max-width:none;max-height:none;min-width:0;min-height:0;flex:none;margin:0 auto;image-rendering:pixelated}
+.pixel-side{overflow-y:auto;min-height:0}
+.pixel-grid-controls{display:flex;flex-direction:column;gap:3px;padding:2px 0 8px;border-bottom:1px solid #4d637d}
+.pixel-grid-controls .check{padding:2px 0}
+.pixel-grid-controls>label:last-child{display:flex;flex-direction:column;gap:4px;color:#b6c9dc}
+.pixel-grid-controls select{width:100%;padding:6px}
+.pixel-zoom-controls{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:6px 0 8px;border-bottom:1px solid #4d637d}
+.pixel-zoom-controls>span:first-child{font:10px Consolas,monospace;color:#b6c9dc}
+.pixel-zoom-controls button{font-size:10px;padding:5px 7px;flex:0 0 auto}
+.pixel-zoom-controls input[type=range]{flex:1 1 64px;min-width:40px;max-width:100%;cursor:pointer;accent-color:#7dbef5}
+#pixelZoomLabel{font:10px Consolas,monospace;color:#cde2f5;min-width:39px;text-align:right}
+@media(max-width:660px){
+ .pixel-dialog{height:calc(100dvh - 6px)}
+ .pixel-workarea{overflow-y:auto;overflow-x:hidden;min-height:0}
+ .pixel-canvas-wrap{flex:0 0 auto;height:min(47dvh,490px);max-height:none}
+ #pixelCanvas{width:320px;max-width:none}
+ .pixel-side{overflow:visible;flex:none}
+ .pixel-zoom-controls input[type=range]{flex:1}
+}
