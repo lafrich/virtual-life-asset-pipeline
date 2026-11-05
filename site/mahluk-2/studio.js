@@ -23,7 +23,7 @@ let emotionAssetId="native:neutral",emotionKeys=[],glassesAssetId="native",userA
 let state=R?.referencePose?.()||null,base=R?.referencePose?.()||null,tracks=R?.makeTracks?.()||{};
 let selected="head",direction="se",type="original",outfit="outfit",bodyPlane="current",clip="idle",frame=0,frames=12,fps=12,playing=false,playSince=0,zoom=3.25;
 let camera={x:0,y:0},view="iso",axis="x",transformMode="move",drag=null,identifier=null;
-let inspectPlaneDepth=false,planeGap=2,orbitTool=false; // Viewer-only camera state, never saved to game.
+let inspectPlaneDepth=false,planeGap=2,orbitTool=false,selectMode=false; // Viewer-only camera and direct-selection state.
 let rigRules=R&&G?G.defaults(R):null;
 let pixelPlanes={},planeImages=new Map(),planeImageRevision=0,planeEditor=null;
 let undoStack=[],redoStack=[],restoring=false,pinch=null;
@@ -526,7 +526,8 @@ function drawGame(){
 }
 function paint(){drawEditor();drawGame();}
 function axisButtons(){
- for(const tool of ["Move","Rotate","Scale","Anchor"])$("tool"+tool).classList.toggle("active",transformMode===tool.toLowerCase());
+ $("toolSelect").classList.toggle("active",selectMode);
+ for(const tool of ["Move","Rotate","Scale","Anchor"])$("tool"+tool).classList.toggle("active",!selectMode&&transformMode===tool.toLowerCase());
  for(const id of ["x","y","z"])$("axis"+id.toUpperCase()).classList.toggle("active",axis===id);
  $("viewIso").classList.toggle("active",view==="iso");$("viewFront").classList.toggle("active",view==="front");
  $("togglePlaneDepth").classList.toggle("active",inspectPlaneDepth&&view==="iso");
@@ -554,6 +555,7 @@ function pick(id){
  for(const element of document.querySelectorAll("[data-bone]"))
   element.classList.toggle("selected",element.dataset.bone===id);
  $("selectedName").textContent=R.BMAP[id].label;
+ $("selectedPartChip").textContent="▣ SELECTED: "+R.BMAP[id].label.toUpperCase();
  const parent=rigRules.parents[id];
  $("selectedParent").textContent="PARENT: "+(parent||"SCENE ROOT");
  const select=$("parentBone");select.replaceChildren();
@@ -1109,11 +1111,15 @@ function setupEvents(){
  $("setKey").onclick=setKey;$("deleteKey").onclick=removeKey;
  $("play").onclick=()=>{playing=!playing;playSince=performance.now();$("play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY"};
  $("gridPreview").onchange=e=>$("game").parentElement.classList.toggle("flat",e.target.checked);
+ $("toolSelect").onclick=()=>{
+  selectMode=true;orbitTool=false;axisButtons();paint();
+  setStatus("SELECT PART · CLICK VISIBLE PIXELS · SHIFT+CLICK CYCLES OVERLAPPING PLANES",true);
+ };
  for(const mode of ["move","rotate","scale","anchor"])$("tool"+mode[0].toUpperCase()+mode.slice(1)).onclick=()=>{
-  orbitTool=false;transformMode=mode;axisButtons();paint()
+  selectMode=false;orbitTool=false;transformMode=mode;axisButtons();paint()
  };
  $("toolOrbit").onclick=()=>{
-  orbitTool=!orbitTool;view="iso";axisButtons();paint();
+  selectMode=false;orbitTool=!orbitTool;view="iso";axisButtons();paint();
   setStatus(orbitTool?"ORBIT CAMERA · DRAG IN VIEWPORT TO CHANGE ANGLE · RIG STAYS FIXED":
    "ORBIT CAMERA OFF · RIG TRANSFORM TOOLS ACTIVE",true);
  };
@@ -1168,10 +1174,19 @@ function setupEvents(){
    e.preventDefault();return;
   }
   const origin=projectBone(studio.width,studio.height,zoom*Math.min(2,devicePixelRatio||1),selected);
-  const handle=lastHandles.find(h=>transformMode==="rotate"?
+  const handle=selectMode||!origin?null:lastHandles.find(h=>transformMode==="rotate"?
     Math.abs(Math.hypot(p.x-origin.x,p.y-origin.y)-h.radius)<hitPadding:
     Math.hypot(h.end.x-p.x,h.end.y-p.y)<hitPadding);
-  const pan=e.button===1||e.altKey||(touching&&!handle);
+  // Inspect actual sprite transparency in reverse draw order, not the
+  // large overlapping 64×112 plane canvases.
+  const hits=hitPlanesAt(p);
+  if(e.button===0&&hits.length&&(selectMode||!handle||e.shiftKey)){
+   const index=hits.indexOf(selected);
+   const candidate=e.shiftKey?hits[(index+1)%hits.length]:hits[0];
+   if(candidate&&candidate!==selected){pick(candidate);e.preventDefault();return}
+   if(selectMode){e.preventDefault();return}
+  }
+  const pan=e.button===1||e.altKey||(touching&&!handle&&!hits.length);
   if(handle&&transformMode==="move")axis=handle.id;
   axisButtons();
   const mode=pan?"pan":handle?transformMode:"none";
@@ -1247,6 +1262,7 @@ function setupEvents(){
  studio.addEventListener("contextmenu",e=>e.preventDefault());
  window.addEventListener("resize",paint);
  window.addEventListener("keydown",e=>{
+  if(planeEditor?.isOpen())return; // Pixel editor owns its shortcuts and Delete key.
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){
    e.preventDefault();if(e.shiftKey)redo();else undo();return;
   }
@@ -1263,6 +1279,7 @@ function setupEvents(){
   if(e.key==="-")zoomTo(zoom/1.2);
   if(e.key==="["||e.key==="ArrowLeft")setDirection(V.orbit(direction,-1));
   if(e.key==="]"||e.key==="ArrowRight")setDirection(V.orbit(direction,1));
+  if(e.key==="q"||e.key==="Q")$("toolSelect").click();
   if(e.key==="p"||e.key==="P")$("togglePlaneDepth").click();
   if(e.key==="o"||e.key==="O")$("toolOrbit").click();
   if(e.key==="k"||e.key==="K")setKey();
