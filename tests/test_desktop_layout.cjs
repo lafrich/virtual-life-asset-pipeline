@@ -14,6 +14,6 @@ assert.match(css,/\.detail-tabs > \.detail-tab:nth-child\(-n\+3\)\{grid-column:s
 assert.match(css,/\.detail-tabs > \.detail-tab:nth-child\(n\+4\)\{grid-column:span 3\}/);
 assert.match(css,/\.chrome-button,\.dir,\.file-filter,\.anim-filter,\.library-tab\{\s*display:inline-flex;align-items:center;justify-content:center;/);
 assert.ok(css.includes('@media(max-width:780px){'),'existing mobile rules missing');
-assert.ok(html.includes('style.css?v=desktop-viewport-fix-1'),'desktop styles not cache-busted');
+assert.ok(html.includes('style.css?v=top-custom-wardrobe-v1'),'desktop styles not cache-busted');
 assert.ok(html.includes('id="character-workspace"')&&html.includes('id="animation-workspace"'));
 console.log('PASS Mahluk Hidup fixed-viewport desktop, internal scroll, centered controls, mobile preserved');
