@@ -304,6 +304,16 @@ function assetOptions(){
  emotion.value=emotionAt();glass.value=glassesAssetId;
  updateEmotionStatus();
 }
+function matchAssetAnimation(asset){
+ if(!asset||asset.frames<=1)return;
+ const authoredBodyKeys=Object.values(tracks).some(keys=>Array.isArray(keys)&&keys.length);
+ if(!authoredBodyKeys){frames=asset.frames;frame=0;$("frameCount").value=frames}
+ else if(asset.frames>frames){frames=asset.frames;$("frameCount").value=frames}
+ if(Array.isArray(asset.frame_ms)&&asset.frame_ms.length===asset.frames&&!authoredBodyKeys){
+  const mean=asset.frame_ms.reduce((sum,n)=>sum+Number(n||0),0)/asset.frame_ms.length;
+  if(mean>0){fps=Math.round(clamp(1000/mean,1,30));$("fps").value=fps}
+ }
+}
 function updateEmotionStatus(){
  const asset=getEmotionAsset(emotionAt());
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
@@ -374,7 +384,7 @@ async function importPlanePng(file,kind){
    if(kind==="emotion"){
     emotionAssetId=asset.id;
     if(frame>0||emotionKeys.length)emotionKeys=E.insert(emotionKeys,frame,asset.id);
-    if(frames<asset.frames){frames=asset.frames;$("frameCount").value=frames;makeTimeline()}
+    matchAssetAnimation(asset);makeTimeline()
    }else glassesAssetId=asset.id;
    assetOptions();paint();
    setStatus("✓ IMPORTED "+kind.toUpperCase()+" PLANE: "+asset.name+" / "+asset.frames+" FRAME(S)",true);
@@ -438,7 +448,11 @@ function saveGame(){
  const clipId=$("clip").value;
  const canvas=bake(frames,clipId);
  const idle=bake(1,"idle").toDataURL("image/png");
- const clips={...(old?.clips||{}),[clipId]:{sheet:canvas.toDataURL("image/png"),frames,frame_ms:Array(frames).fill(Math.round(1000/fps)),loop:true}};
+ const activeEmotion=getEmotionAsset(emotionAt(0));
+ const frameTimes=emotionKeys.length===0&&activeEmotion?.frames===frames&&
+  Array.isArray(activeEmotion.frame_ms)&&activeEmotion.frame_ms.length===frames?
+  activeEmotion.frame_ms:Array(frames).fill(Math.round(1000/fps));
+ const clips={...(old?.clips||{}),[clipId]:{sheet:canvas.toDataURL("image/png"),frames,frame_ms:frameTimes,loop:true}};
  const record={format:"mahluk-2-character-v1",version:1,id,name,base:type,template_base:type==="female"?"human_female_base":"human_male_base",
   outfit,model:R.normalize(state),rest:R.normalize(base),tracks:clone(tracks),frames,fps,clip:clipId,
   emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys)},accessoryPlanes:{glasses:glassesAssetId},
@@ -532,7 +546,7 @@ function setupEvents(){
   emotionAssetId=e.target.value;
   if(frame>0||emotionKeys.length)emotionKeys=E.insert(emotionKeys,frame,emotionAssetId);
   const asset=getEmotionAsset(emotionAssetId);
-  if(asset?.frames>frames){frames=asset.frames;$("frameCount").value=frames}
+  matchAssetAnimation(asset)
   updateEmotionStatus();makeTimeline();paint();
   setStatus("EMOTION PLANE ASSET / "+(asset?.native||asset?.name||"UNKNOWN"),true);
  };
@@ -608,7 +622,10 @@ function setupEvents(){
  function tick(now){
   if(playing&&frames>1){
    elapsed+=Math.max(0,Math.min(80,now-last));
-   const period=1000/fps;
+   const asset=getEmotionAsset(emotionAt());
+   const nativeMs=!emotionKeys.length&&asset?.frames===frames&&
+    Array.isArray(asset.frame_ms)?Number(asset.frame_ms[frame]):NaN;
+   const period=Number.isFinite(nativeMs)&&nativeMs>0?nativeMs:1000/fps;
    if(elapsed>=period){elapsed%=period;showTimeline((frame+1)%frames)}
   }
   last=now;requestAnimationFrame(tick);
