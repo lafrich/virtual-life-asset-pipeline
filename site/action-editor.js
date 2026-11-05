@@ -48,6 +48,17 @@ const state={catalog:[],buildings:[],actor:"ichsan",action:"toilet",direction:"s
  scene:null,prop:null,bgKey:"",bgReady:false,loadingId:0,buildId:"demo",floor:0};
 const status=s=>$("status").textContent=s;
 const notice=s=>$("sim-status").textContent=s;
+ // The local poser operates only on the currently selected action's copy.
+ const localPose=window.VLActionLocalPoser?.mount({
+  onApply:(canvas,target)=>{
+   if(state.actor!==target.actor||state.action!==target.action||
+      state.direction!==target.direction||state.frame!==target.frame)return;
+   remember();pc.clearRect(0,0,64,112);pc.drawImage(canvas,0,0,64,112);
+   state.dirty=true;state.previewFrame=state.frame;
+   state.playing=false;$("play").textContent="▶ PLAY";
+   render();status("LOCAL POSE APPLIED · CLICK SAVE FRAME TO KEEP THIS ACTION-ONLY EDIT");
+  }
+ })||null;
 const escapeId=id=>/^[a-z0-9_-]{1,90}$/.test(id||"");
 const safeJSON=(key,def)=>{try{return JSON.parse(localStorage.getItem(key))??def;}catch{return def;}};
 const opt=(value,text)=>{const o=document.createElement("option");o.value=value;o.textContent=text;return o;};
@@ -203,6 +214,7 @@ function actionSource(){
 }
 function setAction(next){
  if(!A.actions.includes(next))return;
+ localPose?.close();
  state.action=next;$("action").value=next;
  for(const btn of document.querySelectorAll("[data-ae-action]")){
   const chosen=btn.dataset.aeAction===next;
@@ -369,6 +381,7 @@ function editedFrame(index,dir){
  return null;
 }
 function loadFrame(){
+ localPose?.close();
  const ticket=++state.loadingId;
  state.undo=[];state.sourceReady=false;state.dirty=false;
  const count=state.source?.frames||4;
@@ -586,6 +599,8 @@ function save(){
   // A draft starts from a reference; idle is not an authored action.
   if(state.dirty){
    A.set(state.actor,state.action,state.direction,state.frame,px.toDataURL("image/png"));
+   localPose?.commit({actor:state.actor,action:state.action,
+    direction:state.direction,frame:state.frame});
    state.dirty=false;
   }else if(!A.get(state.actor,state.action,state.direction,state.frame)){
    status("DRAW ON THE FRAME BEFORE SAVING · IDLE REFERENCE IS NOT AN ACTION");
@@ -752,6 +767,12 @@ $("furniture").onchange=()=>{state.prop=state.scene?.items?.find(x=>x.id===$("fu
 $("sync").onclick=()=>{readBuildings(state.buildId);status("RELOADED LATEST BANGUN RUANG SAVED DATA");};
 $("frame").oninput=()=>{state.frame=Number($("frame").value);loadFrame();};
 $("pencil").onclick=()=>tool("pencil");$("erase").onclick=()=>tool("erase");$("pick").onclick=()=>tool("pick");
+$("ae-local-pose-open").onclick=()=>{
+ if(!state.sourceReady){status("LOAD AN ACTION FRAME BEFORE OPENING LOCAL POSE MAKER");return;}
+ if(!localPose){status("LOCAL POSE MAKER SCRIPT UNAVAILABLE · RELOAD THE PAGE");return;}
+ localPose.open({actor:state.actor,action:state.action,direction:state.direction,
+  frame:state.frame,canvas:px});
+};
 $("save").onclick=save;
 $("save-template").onclick=saveTemplate;
 $("object-layer").onchange=()=>{render();status("OBJECT DEPTH CHANGED · SAVE TO SEMESTA TO KEEP THIS SETTING");};
@@ -764,6 +785,8 @@ $("reset-frame").onclick=()=>{if(!state.sourceReady)return;remember();originalIn
  state.dirty=true;render();status("SOURCE REFERENCE RESTORED IN EDITOR · SAVE FRAME ONLY IF INTENDED");};
 $("clear").onclick=()=>{if(!state.sourceReady)return;
  A.remove(state.actor,state.action,state.direction,state.frame);
+ localPose?.clear({actor:state.actor,action:state.action,
+  direction:state.direction,frame:state.frame});
  loadFrame();renderActionList();updateActionCoverage();updateTemplateStatus();
  status("LOCAL FRAME REMOVED / SOURCE RESTORED");};
 $("download").onclick=download;
