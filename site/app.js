@@ -201,7 +201,11 @@ function buildFaces(character) {
 
 function buildMotions(character) {
   const grid=$("motion-grid");grid.replaceChildren();
-  const registered=(Array.isArray(character.motions)?character.motions:[]).map(m=>({
+  const builtins=Array.isArray(character.motions)?character.motions:[];
+  // Pose Maker owns its own Male/Female PNGs. Show browser-saved motions
+  // alongside canonical actions, without altering original catalog entries.
+  const poser=window.VLPoseMakerMotion?.listFor(character.id)||[];
+  const registered=[...builtins.filter(m=>!poser.some(p=>p.id===m.id)),...poser].map(m=>({
     ...m,playback:m.playback||(m.available&&["native","custom"].includes(m.source)?
       "authored":m.source==="procedural"?"procedural":"reference")
   }));
@@ -1430,5 +1434,11 @@ $("motion-search").addEventListener("input",()=>{
 });
 $("motion-category").addEventListener("change",()=>{
   if(state.selected)buildMotions(state.selected);
+});
+document.addEventListener("mahluk:pose-saved",()=>{
+  if(state.selected&&["human_male_base","human_female_base"].includes(state.selected.id)){
+    $("motion-search").value="";$("motion-category").value="all";
+    buildMotions(state.selected);
+  }
 });
 init();
