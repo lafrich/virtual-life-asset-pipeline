@@ -247,8 +247,18 @@ function bake(framesToExport,clipName){
  direction=originalDirection;state=originalState;frame=originalFrame;
  return canvas;
 }
+function commitUnkeyedPose(){
+ // C4D-like edits are visible immediately. If the user does not place a
+ // diamond key, the transform still becomes the static rest of the character.
+ for(const bone of R.BONES){
+  if(!(tracks[bone.id]||[]).length)base.parts[bone.id]=clone(state.parts[bone.id]);
+ }
+ base.emotion=state.emotion;
+ base.faceLayers={...state.faceLayers};
+}
 function saveGame(){
  if(!manifest){setStatus("SOURCE NOT LOADED / CANNOT PUBLISH",false);return;}
+ commitUnkeyedPose();
  const library=getLibrary(),name=$("characterName").value.trim()||"My Character 2.0";
  const id=identifier||"mh2_"+Date.now().toString(36);
  const old=library.find(r=>r.id===id);
@@ -290,6 +300,7 @@ function newCharacter(){
  updateLibrary();applyState();setStatus("NEW SOURCE-NATIVE CHARACTER · GAME CONTENT UNCHANGED",true);
 }
 function projectExport(){
+ commitUnkeyedPose();
  const payload={format:"mahluk-2-project-v1",name:$("characterName").value,id:identifier,base:type,outfit,clip,model:state,rest:base,tracks,frames,fps};
  download("mahluk_2_project.json",new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}));
 }
@@ -312,7 +323,7 @@ function setupEvents(){
  $("newChar").onclick=newCharacter;
  $("saveChar").onclick=$("publish").onclick=saveGame;
  $("exportJson").onclick=projectExport;
- $("exportPng").onclick=()=>bake(frames,clip).toBlob(b=>b&&download("mahluk_2_"+clip+"_4dir.png",b),"image/png");
+ $("exportPng").onclick=()=>{commitUnkeyedPose();return bake(frames,clip).toBlob(b=>b&&download("mahluk_2_"+clip+"_4dir.png",b),"image/png")};
  $("importJson").onchange=e=>{importProject(e.target.files?.[0]);e.target.value=""};
  $("hideSelected").onclick=()=>{state.parts[selected].visible=!state.parts[selected].visible;buildTree()};
  $("resetSelected").onclick=()=>{state.parts[selected]={...R.neutral().parts[selected]};pick(selected);setStatus("RESET "+selected)};
