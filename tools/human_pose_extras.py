@@ -188,22 +188,24 @@ def cheeky_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,di
     dark=(*tuple(palette.get("0",(48,35,27))),255)
     edge=(*tuple(palette.get("K7",(113,76,66))),255)
     nose=(*tuple(palette.get("Ke",(174,122,96))),255)
-    white=(246,243,236,255)
+    white=(248,246,240,255)
     blush=(225,128,140,178)
-    tongue=(227,125,151,255)
+    tongue=(224,119,142,255)
     tongue_shadow=(176,71,104,255)
 
     eyes=ImageDraw.Draw(parts["eyes"],"RGBA")
-    # Asymmetric eyebrows and cheeky WINK (near) + open far eye.
+    # Playful asymmetric brows, BOTH eyes open but compact inside the skull.
     brows_bob=(0,-1,-1,0)[phase]
     eyes.line([xy(28,41+brows_bob),xy(30,40+brows_bob),
                xy(32,40+brows_bob)],fill=edge,width=1)
     eyes.line([xy(38,40+brows_bob),xy(40,39+brows_bob),
                xy(42,41+brows_bob)],fill=edge,width=1)
-    eyes.line([xy(29,45),xy(31,44),xy(33,45)],fill=dark,width=1)
+    eyes.polygon([xy(29,44),xy(30,43),xy(32,43),xy(33,45),
+                  xy(32,47),xy(30,47),xy(29,46)],fill=white)
     eyes.polygon([xy(38,44),xy(39,43),xy(41,43),xy(42,45),
                   xy(41,47),xy(39,47),xy(38,46)],fill=white)
     gaze=(0,1,0,-1)[phase]
+    eyes.line([xy(31+gaze,45),xy(31+gaze,46)],fill=dark,width=1)
     eyes.line([xy(40+gaze,45),xy(40+gaze,46)],fill=dark,width=1)
 
     cheeks=ImageDraw.Draw(parts["blush"],"RGBA")
@@ -216,7 +218,7 @@ def cheeky_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[dict,di
     mouth.polygon([xy(31,50),xy(33,49),xy(37,49),xy(40,50),
                    xy(39,52),xy(37,53),xy(34,53),xy(32,52)],fill=dark)
     mouth.line([xy(33,50),xy(38,50)],fill=white,width=1)
-    tongue_end=(53,54,55,54)[phase]
+    tongue_end=(55,57,58,56)[phase]
     p0,p1=xy(35,52),xy(37,tongue_end)
     mouth.rectangle((min(p0[0],p1[0]),min(p0[1],p1[1]),
                      max(p0[0],p1[0]),max(p0[1],p1[1])),fill=tongue)
@@ -242,13 +244,13 @@ def grimace_blush_face(layers:dict,direction:str,frame:int,palette:dict)->tuple[
     phase=frame%4
     edge=(*tuple(palette.get("K7",(113,76,66))),255)
     dark=(*tuple(palette.get("0",(48,35,27))),255)
-    white=(245,243,233,255)
-    pink=(234,128,153,255)
+    white=(248,246,240,255)
+    pink=(224,119,142,255)
     shade=(202,101,128,230)
     nose=(*tuple(palette.get("Ke",(174,122,96))),255)
 
     eyes=ImageDraw.Draw(parts["eyes"],"RGBA")
-    tremble=(0,-1,0,0)[phase]
+    tremble=(0,-1,0,1)[phase]
     eyes.line([xy(28,40+tremble),xy(30,39+tremble),
                xy(32,41+tremble)],fill=edge,width=1)
     eyes.line([xy(38,41+tremble),xy(40,39+tremble),
