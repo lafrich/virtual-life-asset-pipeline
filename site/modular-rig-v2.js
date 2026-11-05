@@ -14,40 +14,57 @@
  const DIR=Object.freeze(["se","sw","ne","nw"]);
  const def=(id,parent,x,y,label,kind="body")=>Object.freeze({id,parent,x,y,label,kind});
  const BONES=Object.freeze([
-  def("root",null,32,61,"ROOT"),
-  def("pelvis","root",32,61,"PELVIS"),def("torso","pelvis",32,39,"TORSO"),
-  def("neck","torso",32,31,"NECK"),def("head","neck",32,25,"HEAD"),
-  def("emotion","head",32,25,"EMOTION / HEAD CHILD","emotion"),
-  def("brow_l","emotion",27,25,"BROW L","emotion"),
-  def("brow_r","emotion",37,25,"BROW R","emotion"),
-  def("eye_l","emotion",28,29,"EYE L","emotion"),
-  def("eye_r","emotion",38,29,"EYE R","emotion"),
-  def("mouth","emotion",34,36,"MOUTH","emotion"),
-  def("shoulder_l","torso",21,42,"SHOULDER L"),
-  def("elbow_l","shoulder_l",17,53,"ELBOW L"),
-  def("wrist_l","elbow_l",18,66,"WRIST / HAND L"),
-  def("shoulder_r","torso",43,42,"SHOULDER R"),
-  def("elbow_r","shoulder_r",49,55,"ELBOW R"),
-  def("wrist_r","elbow_r",49,66,"WRIST / HAND R"),
-  def("hip_l","pelvis",26,65,"THIGH L"),
-  def("knee_l","hip_l",26,84,"KNEE L"),
-  def("ankle_l","knee_l",24,99,"ANKLE / SHOE L"),
-  def("hip_r","pelvis",38,65,"THIGH R"),
-  def("knee_r","hip_r",39,84,"KNEE R"),
-  def("ankle_r","knee_r",40,99,"ANKLE / SHOE R"),
-  def("phone","wrist_l",21,65,"PHONE / PROP","prop")
+  def("root",null,32,68,"ROOT"),
+  def("pelvis","root",32,69,"PELVIS"),
+  def("torso","pelvis",32,52,"OVERSIZED T-SHIRT"),
+  def("neck","torso",33,41,"NECK"),
+  def("head","neck",33,28,"HEAD BASE"),
+  def("emotion","head",33,30,"EMOTION / HEAD CHILD","emotion"),
+  def("brow_l","emotion",28,28,"EYEBROW L","emotion"),
+  def("brow_r","emotion",39,28,"EYEBROW R","emotion"),
+  def("eye_l","emotion",28,32,"EYE L","emotion"),
+  def("eye_r","emotion",39,32,"EYE R","emotion"),
+  def("nose","emotion",34,36,"NOSE","emotion"),
+  def("mouth","emotion",35,40,"MOUTH","emotion"),
+  def("blush_l","emotion",25,37,"BLUSH L","emotion"),
+  def("blush_r","emotion",43,37,"BLUSH R","emotion"),
+  def("glasses","emotion",34,31,"GLASSES","accessory"),
+  def("hair_back","head",33,27,"HAIR / BACK","hair"),
+  def("hair_cap","head",33,13,"HAIR / CROWN","hair"),
+  def("fringe_l","head",24,22,"FRINGE / LEFT","hair"),
+  def("fringe_mid","head",33,22,"FRINGE / CENTER","hair"),
+  def("fringe_r","head",42,22,"FRINGE / RIGHT","hair"),
+  def("shoulder_l","torso",21,47,"UPPER ARM L"),
+  def("elbow_l","shoulder_l",14,58,"ELBOW L"),
+  def("wrist_l","elbow_l",19,43,"FOREARM / HAND L"),
+  def("shoulder_r","torso",45,47,"UPPER ARM R"),
+  def("elbow_r","shoulder_r",49,58,"ELBOW R"),
+  def("wrist_r","elbow_r",48,72,"FOREARM / HAND R"),
+  def("hip_l","pelvis",26,71,"THIGH L"),
+  def("knee_l","hip_l",25,88,"KNEE L"),
+  def("ankle_l","knee_l",24,102,"SHIN / SHOE L"),
+  def("hip_r","pelvis",38,71,"THIGH R"),
+  def("knee_r","hip_r",39,88,"KNEE R"),
+  def("ankle_r","knee_r",40,102,"SHIN / SHOE R"),
+  def("phone","wrist_l",17,32,"PHONE / PROP","prop")
  ]);
  const BMAP=Object.freeze(Object.fromEntries(BONES.map(b=>[b.id,b])));
  const HIERARCHY=Object.freeze(Object.fromEntries(BONES.map(b=>[b.id,b.parent])));
  const EMOTIONS=Object.freeze(["neutral","happy","mischievous","angry","surprised","blush","grin"]);
  const PALETTE=Object.freeze({
-  outline:"#211c1c",hair:"#312725",hairShadow:"#241d1e",hairLight:"#4c3b34",
-  skin:"#ed9b6f",skinLight:"#ffc394",skinShade:"#c6744e",
-  shirt:"#1e1b1b",shirtLight:"#302c2d",shirtShadow:"#131214",
-  pants:"#38312f",pantsLight:"#514642",pantsShade:"#292325",
-  shoe:"#eee9e4",shoeShade:"#b7aaa0",shoeShadow:"#2e292b",
-  phone:"#211e25",screen:"#3b3439",blush:"#e88f84"
+  outline:"#201a1a",outlineDark:"#151112",hair:"#352a27",
+  hairShadow:"#211b1c",hairMid:"#44342e",hairLight:"#5b463d",hairGlint:"#70564a",
+  skin:"#eda176",skinLight:"#ffc497",skinShade:"#c77f57",skinDeep:"#9f5a42",
+  eye:"#241b1a",eyeWhite:"#f9e9da",lens:"#f7e5d5",glasses:"#241d1d",glassesLight:"#564743",
+  shirt:"#211e1f",shirtMid:"#312b2c",shirtLight:"#443a38",shirtShadow:"#121114",
+  pants:"#393131",pantsLight:"#554945",pantsShade:"#292324",pantsFold:"#463b39",
+  emblem:"#f7b93f",emblemLight:"#ffec96",emblemBlue:"#4869ab",
+  shoe:"#f4eee6",shoeLight:"#fffdf7",shoeShade:"#c1b1a6",shoeShadow:"#514745",
+  phone:"#211d22",screen:"#35323a",blush:"#e48e82"
  });
+ const PROPORTIONS=Object.freeze({head:[18,4,33,39],shirt:[18,42,30,28],
+   pants:[16,69,34,35],shoes:[12,99,42,12],
+   style:"chunky-fringe / narrow glasses / oversized tee / loose trousers / thick sneakers"});
  const clone=x=>JSON.parse(JSON.stringify(x));
  const clamp=(v,a,b)=>Math.min(b,Math.max(a,Number(v)||0));
  function neutral(){
@@ -59,10 +76,10 @@
  function referencePose(){
   const m=neutral();
   // Phone-and-fringe stance from the user's new pixel-character reference.
-  m.parts.elbow_l.x=-1;m.parts.elbow_l.y=-8;
-  m.parts.wrist_l.x=10;m.parts.wrist_l.y=-29;
+  m.parts.elbow_l.x=0;m.parts.elbow_l.y=0;
+  m.parts.wrist_l.x=0;m.parts.wrist_l.y=0;
   m.parts.phone.x=0;m.parts.phone.y=0;
-  m.parts.head.angle=-2;
+  m.parts.head.angle=-1;
   return m;
  }
  function normalize(source){
@@ -302,5 +319,5 @@
    facial_children:["brow_l","brow_r","eye_l","eye_r","mouth"]};
  }
  return Object.freeze({ID,W,H,DIR,BONES,BMAP,HIERARCHY,EMOTIONS,PALETTE,
-  neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
+  PROPORTIONS,neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
 });
