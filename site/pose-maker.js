@@ -598,6 +598,10 @@ function mount(){
   $("pose-play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY";
  });
  async function loadBases(){
+  if(root.VLCharacterReferenceReset?.active){
+   inform(root.VLCharacterReferenceReset.message+" · POSE MAKER SIAP UNTUK MODEL BARU");
+   $("pose-save").disabled=true;$("pose-export").disabled=true;return;
+  }
   try{
    const res=await fetch("./catalog.json",{cache:"no-store"});
    if(!res.ok)throw Error("Human catalog HTTP "+res.status);
@@ -613,7 +617,7 @@ function mount(){
  }
  function showSaved(){
   const place=$("pose-saved");place.replaceChildren();
-  const records=read().filter(x=>x.base_id===BASE_IDS[0]);
+  const records=root.VLCharacterReferenceReset?.active?[]:read().filter(x=>x.base_id===BASE_IDS[0]);
   $("pose-saved-count").textContent=String(records.length).padStart(2,"0");
   if(!records.length){place.textContent="NO CUSTOM MOTION YET";return;}
   records.slice().reverse().forEach(record=>{
