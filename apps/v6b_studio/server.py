@@ -123,6 +123,13 @@ def make_config(params: dict):
     }
     c["outfits"] = {"default": outfit}
     c["default_outfit"] = "default"
+    # This extra key is ignored by live_v6b but makes UI exports round-trip.
+    c["_studio"] = {k: v for k, v in params.items() if k in {
+        "name", "template", "hair_style", "fringe", "hair_color", "skin_color",
+        "glasses", "lashes", "mustache", "stubble", "glasses_shape",
+        "shirt_kind", "shirt_color", "outer_color", "pants_kind",
+        "pants_color", "shoes_color", "cardigan_dots", "rips"
+    }}
     return c
 
 
