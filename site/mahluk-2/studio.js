@@ -3,7 +3,7 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1", EMOTIONS=["neutral","happy","mischievous","angry","surprised","blush","grin"];
@@ -249,7 +249,7 @@ function getEmotionAsset(id){
   const name=id.slice(7);
   return (manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
  }
- return publishedAssets.find(a=>a.id===id&&a.base===type)||
+ return publishedAssets.find(a=>a.id===id&&(a.base===type||a.base==="universal"))||
   userAssets.find(a=>a.id===id&&a.kind==="emotion")||null;
 }
 function getGlassesAsset(id){
@@ -786,8 +786,8 @@ function assetOptions(){
  for(const id of manifest?.emotions||EMOTIONS)opt(emotion,"native:"+id,"V6B ORIGINAL / "+id.toUpperCase());
  opt(glass,"native","ORIGINAL GLASSES / V6B");
  opt(glass,"none","NONE / HIDE");
- for(const asset of publishedAssets.filter(a=>a.base===type)){
-  opt(emotion,asset.id,"EXISTING / "+asset.label+" / "+asset.frames+"F");
+ for(const asset of publishedAssets.filter(a=>a.base===type||a.base==="universal")){
+  opt(emotion,asset.id,(asset.base==="universal"?"UNIVERSAL GITHUB / ":"EXISTING / ")+asset.label+" / "+asset.frames+"F");
  }
  for(const asset of userAssets){
   if(asset.kind==="emotion")opt(emotion,asset.id,"IMPORTED / "+asset.name.toUpperCase()+" / "+asset.frames+"F");
@@ -839,7 +839,25 @@ async function loadPublishedAssets(){
   publishedImages.set(asset.id,pic);ready.push(asset);
  }));
  publishedAssets=ready;
+ try{await loadUniversalAssets()}catch(error){setStatus("UNIVERSAL EMOTION LIBRARY OFFLINE: "+error.message,false)}
  assetOptions();
+}
+async function loadUniversalAssets(){
+ // Shared catalog lives in GitHub, not on this browser. Rendered atlas uses the same 64x112 RGBA frames as Emotion Studio.
+ if(!U)throw Error("Missing universal emotion renderer");
+ const {catalog}=await U.loadCatalog();
+ const available=[];
+ for(const entry of catalog.entries){
+  try{
+   const canvas=await U.renderAtlas(entry);
+   if(canvas.width!==64*entry.frames||canvas.height!==448)continue;
+   publishedImages.set(entry.id,canvas);
+   available.push({id:entry.id,label:entry.name,base:entry.base,frames:entry.frames,
+    frame_ms:Array(entry.frames).fill(Math.round(1000/(entry.fps||6))),
+    src:"github-universal",face_only:true});
+  }catch(error){console.warn("Skipped invalid GitHub emotion",entry.id,error)}
+ }
+ publishedAssets=[...publishedAssets.filter(a=>!available.some(x=>x.id===a.id)),...available];
 }
 function loadImportedAssets(){
  userAssets=E.safeAssets(window.localStorage);
