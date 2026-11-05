@@ -299,7 +299,8 @@
   canvas.addEventListener("pointerdown",e=>{
    if(e.button!==0)return;
    const screen=locate(e),coords=R.world(model);
-   const hit=G.hitTest(coords,selected,screen,view);
+   const interactive=jointsVisible?coords:{[selected]:coords[selected]};
+   const hit=G.hitTest(interactive,selected,screen,view);
    if(!hit)return; // Do not accidentally drag character when clicking empty area.
    if(hit.bone!==selected)select(hit.bone);
    const node=R.world(model)[selected],center=G.projected(node,view);
@@ -315,7 +316,8 @@
   canvas.addEventListener("pointermove",e=>{
    const screen=locate(e),coords=R.world(model);
    if(!drag||drag.id!==e.pointerId){
-    const hit=G.hitTest(coords,selected,screen,view);
+    const interactive=jointsVisible?coords:{[selected]:coords[selected]};
+    const hit=G.hitTest(interactive,selected,screen,view);
     canvas.style.cursor=hit?.mode==="rotate"?"crosshair":hit?"move":"default";
     return;
    }
