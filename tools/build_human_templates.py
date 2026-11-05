@@ -192,6 +192,27 @@ def split_knee_chest_rear_upper(layers:dict,direction:str)->dict:
     return adjusted
 
 
+def pose_foreground_overlay(layers:dict,kind:str,direction:str)->Image.Image:
+    """Publish actual source body layers for the two requested depth cases.
+
+    The Action Editor renders flattened animation frames and cannot separate
+    their head/upper torso from legs later. Export this actor-specific 64x112
+    transparent foreground atlas, not a heuristic cut of the finished body.
+    """
+    result=Image.new("RGBA",FRAME)
+    if kind=="lie_idle" and direction in ("se","sw"):
+        keys=("pose_head_rear_hair","pose_head_front","face","hair_front","brows")
+    elif kind=="knee_chest_idle" and direction in ("ne","nw"):
+        keys=("pose_upper_body_front","arm_far","shirt","arm_near",
+              "body_front","face","hair_front","brows")
+    else:
+        return result
+    for key in keys:
+        if key in layers:
+            result.alpha_composite(layers[key].convert("RGBA"))
+    return result
+
+
 def compose_pose_layers(layers:dict,kind:str,direction:str)->Image.Image:
     result=Image.new("RGBA",FRAME)
     if kind in ("lie","lie_idle","bathtub_bathe") and "shadow" in layers:
@@ -514,7 +535,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
     results=[]
     for gender,cfg in palettes.items():
         name=f"human-{gender}-base"
-        def frame(direction:str,kind:str,index:int,expression:str|None=None,material_sink:dict|None=None,emotion_sink:dict|None=None):
+        def frame(direction:str,kind:str,index:int,expression:str|None=None,material_sink:dict|None=None,emotion_sink:dict|None=None,depth_sink:dict|None=None):
             anim=("sleep" if kind=="sleep_seat" else
                   "tired" if kind=="nap_stand" else
                   "idle" if kind in ("bent_over_idle","bathe") or
@@ -581,6 +602,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                         for k,v in flattened.items()}
             if kind=="knee_chest_idle" and direction in ("ne","nw"):
                 layers=split_knee_chest_rear_upper(layers,direction)
+            if depth_sink is not None:
+                depth_sink["front"]=pose_foreground_overlay(layers,kind,direction)
             if material_sink is not None:
                 # Rig-accurate shirt/trouser stencils travel with the FULL
                 # posed silhouette. No standing garment pasted on a squat/lie.
@@ -714,17 +737,23 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             assert result.size==FRAME
             return result
         def make_sheet(kind,count,expression=None,blink=False,sequence=None,
-                       save_outfit_masks=False,save_face_parts=False):
+                       save_outfit_masks=False,save_face_parts=False,
+                       save_depth_front=False):
             img=Image.new("RGBA",(count*64,4*112))
             stencils={slot:Image.new("RGBA",img.size) for slot in ("shirt","pants")} if save_outfit_masks else None
             emotion_parts={part:Image.new("RGBA",img.size) for part in FACE_PARTS} if save_face_parts else None
+            foreground=Image.new("RGBA",img.size) if save_depth_front else None
             for y,d in enumerate(DIRECTIONS):
                 for x in range(count):
                     current_materials={} if save_outfit_masks else None
                     current_parts={} if save_face_parts else None
+                    current_depth={} if save_depth_front else None
                     pose=frame(d,kind,x,
                         sequence[x%len(sequence)] if sequence else expression,
-                        material_sink=current_materials,emotion_sink=current_parts)
+                        material_sink=current_materials,emotion_sink=current_parts,
+                        depth_sink=current_depth)
+                    if foreground is not None:
+                        foreground.alpha_composite(current_depth["front"],(x*64,y*112))
                     if emotion_parts is not None:
                         for part,atlas in emotion_parts.items():
                             atlas.alpha_composite(current_parts.get(part,
@@ -740,6 +769,9 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                         closed=frame(d,kind,x,"blink")
                         pose.paste(closed.crop(eyes),eyes[:2])
                     img.alpha_composite(pose,(x*64,y*112))
+            if foreground is not None:
+                foreground.save(media/f"{name}-action-{kind}-depth-front.png",
+                                optimize=True)
             if stencils is not None:
                 for slot,material in stencils.items():
                     material.save(media/f"{name}-outfit-{kind}-{slot}.png",
@@ -779,10 +811,13 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                     "reason":""})
             else:
                 fn=f"{name}-action-{kind}.png"
-                make_sheet(kind,count,save_outfit_masks=True).save(media/fn,optimize=True)
+                make_sheet(kind,count,save_outfit_masks=True,
+                           save_depth_front=kind in ("lie_idle","knee_chest_idle")).save(media/fn,optimize=True)
                 motions.append({"id":kind,"name":kind.replace("_"," ").upper(),
                     "category":"posture" if kind in POSTURE_FRAME_MS else "action",
                     "source":"custom","sheet":"media/"+fn,"row":0,"available":True,
+                    **({"depth_front":f"media/{name}-action-{kind}-depth-front.png"}
+                       if kind in ("lie_idle","knee_chest_idle") else {}),
                     "frames":count,"frame_ms":(POSTURE_FRAME_MS[kind] if kind in POSTURE_FRAME_MS else
                                 [330,360,380,360] if kind=="bathe" else
                                 [320,340,360,350,340,330] if kind=="bathtub_bathe" else [210]*count),
