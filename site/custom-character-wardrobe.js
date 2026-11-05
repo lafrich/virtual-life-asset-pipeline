@@ -133,6 +133,11 @@ function render(){
  const canvas=$("custom-preview");if(!canvas)return;
  const ctx=canvas.getContext("2d"),base=baseId();
  ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,64,112);
+ if(root.VLCharacterReferenceReset?.active){
+  $("custom-preview-title").textContent="NEW_CHARACTER.SPR";
+  $("custom-preview-status").textContent=root.VLCharacterReferenceReset.message;
+  return;
+ }
  const entry=imageFor(srcFor(sourceForBase(base))),index=DIRS.indexOf(direction);
  if(entry?.ready&&entry.pic.naturalWidth>=384&&entry.pic.naturalHeight>=4928){
   paintSlot(ctx,base,"bag",direction,"front");
@@ -245,6 +250,10 @@ function restoreSaved(equipped,items){
  render();
 }
 async function load(){
+ if(root.VLCharacterReferenceReset?.active){
+  $("custom-preset-status").textContent=root.VLCharacterReferenceReset.message;
+  render();return;
+ }
  try{
   const response=await fetch("./wardrobe-presets.json",{cache:"no-store"});
   if(!response.ok)throw Error("HTTP "+response.status);
