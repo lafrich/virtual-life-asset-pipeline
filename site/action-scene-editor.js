@@ -418,6 +418,62 @@ function atlasHead(image,sx,sy){
  cached.set(key,head);
  return head;
 }
+// Native Male/Female expressions are full body PNG sheets, so transferring
+// the entire rectangular face crop also transfers parts of the jaw and neck.
+// Compare their source frame with its NEUTRAL source frame and transfer only
+// altered facial pixels. Cache the exact per-frame differences for playback.
+const faceDeltaCache=new WeakMap();
+function nativeFaceDelta(source,neutral,srcX,srcY,neutralX,neutralY,patch){
+ if(!source||!neutral||!patch)return null;
+ let entries=faceDeltaCache.get(source);
+ if(!entries){entries=new Map();faceDeltaCache.set(source,entries);}
+ const cacheKey=(neutral.src||"native")+"|"+srcX+","+srcY+"|"+
+   neutralX+","+neutralY+"|"+patch.sx+","+patch.sy;
+ if(entries.has(cacheKey))return entries.get(cacheKey);
+ const canvas=document.createElement("canvas");canvas.width=64;canvas.height=112;
+ const ctx=canvas.getContext("2d",{willReadFrequently:true});
+ if(!ctx)return null;
+ let src,ref;
+ try{
+  ctx.clearRect(0,0,64,112);
+  ctx.drawImage(source,srcX,srcY,64,112,0,0,64,112);
+  src=ctx.getImageData(0,0,64,112).data;
+  ctx.clearRect(0,0,64,112);
+  ctx.drawImage(neutral,neutralX,neutralY,64,112,0,0,64,112);
+  ref=ctx.getImageData(0,0,64,112).data;
+ }catch{return null;}
+ const pixels=[];
+ for(let y=patch.sy;y<patch.sy+patch.h;y++){
+  for(let x=patch.sx;x<patch.sx+patch.w;x++){
+   const i=(y*64+x)*4;
+   if(src[i+3]<100||ref[i+3]<100)continue;
+   if(Math.abs(src[i]-ref[i])<3&&Math.abs(src[i+1]-ref[i+1])<3&&
+      Math.abs(src[i+2]-ref[i+2])<3&&Math.abs(src[i+3]-ref[i+3])<3)continue;
+   pixels.push([x-patch.sx,y-patch.sy,src[i],src[i+1],src[i+2],src[i+3]]);
+  }
+ }
+ if(entries.size>120)entries.clear();
+ entries.set(cacheKey,pixels);
+ return pixels;
+}
+function applyNativeFaceDelta(target,source,neutral,srcX,srcY,
+ neutralX,neutralY,patch){
+ const pixels=nativeFaceDelta(source,neutral,srcX,srcY,neutralX,neutralY,patch);
+ if(!pixels)return false;
+ const dest=target.getImageData(0,0,64,112),data=dest.data;
+ for(const [ox,oy,r,g,b,a] of pixels){
+  const x=patch.dx+ox,y=patch.dy+oy;
+  if(x<0||x>=64||y<0||y>=112)continue;
+  const i=(y*64+x)*4;
+  // Preserve destination alpha, silhouette and all skin/neck outside
+  // the source's genuine facial changes.
+  if(data[i+3]<100)continue;
+  data[i]=r;data[i+1]=g;data[i+2]=b;
+  data[i+3]=Math.max(data[i+3],a);
+ }
+ target.putImageData(dest,0,0);
+ return true;
+}
 function drawFacePatch(target,actor,p,m,frame){
  // AUTO shows the expression authored into the exact current pose.
  // Manual native expressions must NEVER overlay a full upright HEAD/BODY
@@ -460,10 +516,26 @@ function drawFacePatch(target,actor,p,m,frame){
   if(!originalHead)return;
   const patch=A.nativeFacePatch(originalHead,posedHead,p.faceOffsetX,p.faceOffsetY);
   if(!patch)return;
-  sx=sourceX+patch.sx;sy=sourceY+patch.sy;
-  sw=patch.w;sh=patch.h;
+  const humanBase=["human_male_base","human_female_base"].includes(actorBase(actor));
+  if(humanBase){
+   const neutralFace=(actor.expressions||[]).find(f=>f.id==="neutral");
+   const neutralSource=matched?baseFrame.src:(neutralFace?.sheet||actor.sheet);
+   const neutral=picture(neutralSource);
+   if(!neutral)return;
+   const neutralX=matched?baseFrame.sx:sourceX;
+   const neutralY=matched?baseFrame.sy:sourceY;
+   // Face is applied as a DELTA from neutral, not a rectangle of skin.
+   // The complete skull, neck and body keep their own original pixels.
+   applyNativeFaceDelta(target,source,neutral,sourceX,sourceY,
+    neutralX,neutralY,patch);
+   return;
+  }
+  // Non-human archives still use the previous conservative facial crop;
+  // their native portraits/sprites are never edited or reauthored.
+  sx=sourceX+patch.sx+6;sy=sourceY+patch.sy+3;
+  sw=15;sh=14;
   target.save();target.imageSmoothingEnabled=false;
-  target.drawImage(source,sx,sy,sw,sh,patch.dx,patch.dy,sw,sh);
+  target.drawImage(source,sx,sy,sw,sh,patch.dx+6,patch.dy+3,sw,sh);
   target.restore();
   return;
  }

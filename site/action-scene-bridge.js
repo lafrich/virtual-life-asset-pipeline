@@ -184,10 +184,13 @@
  // Source & destination are independently measured (squat/bend/idle).
  function nativeFacePatch(sourceHead,posedHead,offsetX=0,offsetY=0){
   if(!sourceHead||!posedHead)return null;
-  const sx=Math.round(sourceHead.x)-7,sy=Math.round(sourceHead.y)+10;
-  const dx=Math.round(posedHead.x)-7+Math.round(Number(offsetX)||0);
-  const dy=Math.round(posedHead.y)+10+Math.round(Number(offsetY)||0);
-  const w=15,h=14;
+  // Capture features from both eyes through the mouth without lifting the
+  // surrounding neck/head pixels. The compositor copies only the CHANGED
+  // pixels relative to the exact neutral source frame (not this rectangle).
+  const sx=Math.round(sourceHead.x)-13,sy=Math.round(sourceHead.y)+7;
+  const dx=Math.round(posedHead.x)-13+Math.round(Number(offsetX)||0);
+  const dy=Math.round(posedHead.y)+7+Math.round(Number(offsetY)||0);
+  const w=27,h=25;
   if(sx<0||sy<0||sx+w>64||sy+h>112||
      dx<0||dy<0||dx+w>64||dy+h>112)return null;
   return {sx,sy,dx,dy,w,h};
