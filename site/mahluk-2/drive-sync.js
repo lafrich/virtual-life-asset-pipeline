@@ -131,5 +131,36 @@ async function loadAll(){
  }
  return {records,master:manifest.master,folderId:manifest.folderId,errors};
 }
-return Object.freeze({CLIENT_DEFAULT,SCOPE,ROOT,CHILD,connected,getClient,configure,connect,disconnect,ensureLibrary,list,saveCharacter,saveMaster,loadCharacter,loadMaster,loadAll,validCharacter,validMaster});
+
+/* Read Emotion Studio's own Drive folder (read-only). Same OAuth Web client / drive.file grant.
+ * No edits to Emotion Studio and no character-to-game sync.
+ */
+async function loadEmotionDatabase(){
+ if(!connected())throw Error("Connect Google Drive to browse the Emotion Studio database");
+ const roots=await search("root","mimeType = '"+FOLDER+"' and name = '"+qstr(ROOT)+"'");
+ if(!roots.length)return {entries:[],errors:[],reason:"Folder Membangun belum ada"};
+ const folders=await search(roots[0].id,"mimeType = '"+FOLDER+"' and name = 'Emotion Studio'");
+ if(!folders.length)return {entries:[],errors:[],reason:"Emotion Studio belum menyimpan project ke Drive"};
+ const files=(await search(folders[0].id)).filter(x=>x.name.endsWith(".emotion.json"));
+ const entries=[],errors=[];
+ for(let i=0;i<files.length;i+=4){
+  const results=await Promise.all(files.slice(i,i+4).map(async file=>{
+   try{
+    const p=await download(file);
+    if(p.format!=="mahluk-2-universal-emotions-v1"||
+       JSON.stringify(p.cell)!=="[64,112]"||
+       JSON.stringify(p.directions)!=='["se","sw","ne","nw"]'||
+       !Array.isArray(p.entries)||p.entries.length!==1)throw Error("Incompatible emotion project format");
+    const e=p.entries[0];
+    if(!e||!/^[-a-z0-9_]{1,64}$/.test(e.id)||!Number.isInteger(e.frames)||
+       e.frames<1||e.frames>48||
+       (!e.png&&!e.template))throw Error("Invalid emotion entry");
+    return e;
+   }catch(error){errors.push(file.name+": "+error.message);return null}
+  }));
+  entries.push(...results.filter(Boolean));
+ }
+ return {entries,errors,folderId:folders[0].id};
+}
+return Object.freeze({CLIENT_DEFAULT,SCOPE,ROOT,CHILD,connected,getClient,configure,connect,disconnect,ensureLibrary,list,saveCharacter,saveMaster,loadCharacter,loadMaster,loadAll,loadEmotionDatabase,validCharacter,validMaster});
 });
