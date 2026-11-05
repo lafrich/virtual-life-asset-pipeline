@@ -11,7 +11,7 @@
 })(typeof window!=="undefined"?window:null,function(root){
  "use strict";
  const ID="human_pixel_reference_v2", W=64,H=112,FRAMES=24, FPS=12,
-  ART_REVISION="original-v6b-source-art-rig-v3";
+  ART_REVISION="original-gender-base-gizmo-v4";
  const DIR=Object.freeze(["se","sw","ne","nw"]);
  const def=(id,parent,x,y,label,kind="body")=>Object.freeze({id,parent,x,y,label,kind});
  const BONES=Object.freeze([
@@ -72,6 +72,7 @@
   return {format:"mahluk-modular-rig-v2",version:2,character_id:ID,
    frame:[W,H],pivot:[32,100],fps:FPS,frames:FRAMES,direction:"se",
    emotion:"neutral",name:"PIXEL REFERENCE / 01",phone:true,
+   gender:"male",outfit:false,
    parts:Object.fromEntries(BONES.map(b=>[b.id,{x:0,y:0,angle:0,scale:1,visible:true}]))};
  }
  function referencePose(){
@@ -89,6 +90,8 @@
    if(EMOTIONS.includes(source.emotion))state.emotion=source.emotion;
    if(typeof source.name==="string")state.name=source.name.slice(0,72);
    if(typeof source.phone==="boolean")state.phone=source.phone;
+   if(source.gender==="male"||source.gender==="female")state.gender=source.gender;
+   if(typeof source.outfit==="boolean")state.outfit=source.outfit;
    if(DIR.includes(source.direction))state.direction=source.direction;
    state.fps=clamp(source.fps||FPS,4,30);
    state.frames=Math.round(clamp(source.frames||FRAMES,4,96));
@@ -106,13 +109,13 @@
   for(const bone of BONES){
    const p=m.parts[bone.id],parent=bone.parent?out[bone.parent]:null;
    const baseParent=bone.parent?BMAP[bone.parent]:null;
-   const lx=(baseParent?bone.x-baseParent.x:bone.x-32)+p.x;
-   const ly=(baseParent?bone.y-baseParent.y:bone.y-61)+p.y;
+   const lx=(baseParent?bone.x-baseParent.x:bone.x)+p.x;
+   const ly=(baseParent?bone.y-baseParent.y:bone.y)+p.y;
    const rad=parent?parent.angle*Math.PI/180:0;
    const cs=Math.cos(rad),sn=Math.sin(rad),ps=parent?.scale||1;
    out[bone.id]={
-    x:(parent?.x??32)+(lx*cs-ly*sn)*ps,
-    y:(parent?.y??61)+(lx*sn+ly*cs)*ps,
+    x:(parent?.x??0)+(lx*cs-ly*sn)*ps,
+    y:(parent?.y??0)+(lx*sn+ly*cs)*ps,
     angle:(parent?.angle||0)+p.angle,
     scale:ps*p.scale,visible:(parent?.visible??true)&&p.visible,
     parent:bone.parent
@@ -475,22 +478,39 @@
   })().catch(error=>{loadingOriginal=null;throw error;});
   return loadingOriginal;
  }
+ function mirrorBone(id,view){
+  if(view!=="sw"&&view!=="nw")return id;
+  // Anatomical left and right are not tied to the fixed screen-left half.
+  return id.replace(/_(l|r)$/,(_,side)=>side==="l"?"_r":"_l");
+ }
+ function sourceSlot(part,state){
+  if(!part.gender)return true; // Legacy authored source, for compatibility.
+  return part.gender===state.gender&&part.mode===(state.outfit?"outfit":"base");
+ }
  function drawNative(ctx,state,view,coords){
-  const directionIndex=originalArt.directions.indexOf(view);
+  const dir=originalArt.directions.indexOf(view);
+  if(dir<0)return;
   const expressionIndex=Math.max(0,originalArt.emotions.indexOf(state.emotion));
+  const mirrored=view==="sw"||view==="nw";
+  const byGender=originalArt.slots.some(slot=>slot.gender);
   for(const part of originalArt.slots){
+   if(byGender){
+    if(!part.gender||!sourceSlot(part,state))continue;
+   }
    const b=BMAP[part.bone],n=coords[part.bone];
-   if(!n?.visible||(part.bone==="phone"&&!state.phone))continue;
-   // A source layer is full-frame RGBA in its original local pixel space.
-   // Bone-space transforms are applied only here, never destructively to
-   // the generator art. At neutral the reassembly is pixel-identical.
+   if(!b||!n?.visible||(part.bone==="phone"&&!state.phone))continue;
+   // All source atlases already contain true SW/NW mirrored pixels.
+   // Transform *around the mirrored anchor*, not the SE/NE anchor. The
+   // neutral pose must reassemble exactly in every direction.
+   const anchorX=mirrored?W-b.x:b.x;
+   const worldX=mirrored?W-n.x:n.x;
    ctx.save();
-   ctx.translate(n.x,n.y);
-   ctx.rotate(n.angle*Math.PI/180);
+   ctx.translate(worldX,n.y);
+   ctx.rotate((mirrored?-1:1)*n.angle*Math.PI/180);
    ctx.scale(n.scale,n.scale);
-   ctx.translate(-b.x,-b.y);
+   ctx.translate(-anchorX,-b.y);
    ctx.drawImage(part.image,
-    part.expression?expressionIndex*W:0,directionIndex*H,W,H,0,0,W,H);
+    part.expression?expressionIndex*W:0,dir*H,W,H,0,0,W,H);
    ctx.restore();
   }
  }
@@ -571,10 +591,12 @@
     "blush_l","blush_r","glasses"],
    hair_children:["hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"],
    art_revision:ART_REVISION,
+   gender:s.gender,outfit:s.outfit,reference_modes:["base","outfit"],
+   available_genders:["male","female"],
    style_profile:PROPORTIONS.style,
    proportions:{head:PROPORTIONS.head,shirt:PROPORTIONS.shirt,
     pants:PROPORTIONS.pants,shoes:PROPORTIONS.shoes}};
  }
  return Object.freeze({ID,W,H,DIR,ART_REVISION,BONES,BMAP,HIERARCHY,EMOTIONS,PALETTE,
-  PROPORTIONS,ORIGINAL_SOURCE,loadNativeArt,get hasNativeArt(){return !!originalArt;},neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
+  PROPORTIONS,ORIGINAL_SOURCE,mirrorBone,sourceSlot,loadNativeArt,get hasNativeArt(){return !!originalArt;},neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
 });
