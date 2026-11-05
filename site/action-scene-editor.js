@@ -566,24 +566,39 @@ function actorImage(actor,p,m,frame){
  const human=["human_male_base","human_female_base"].includes(actorBase(actor));
  // ACT renders a flattened atlas. Recompose actual original head / torso
  // source layers from this actor's separate published pose foreground.
- const poseDepthFront=human&&(
-  (m.id==="lie_idle"&&["se","sw"].includes(p.direction))||
-  (m.id==="knee_chest_idle"&&["ne","nw"].includes(p.direction)));
- if(poseDepthFront&&SAFE_MEDIA.test(m.depth_front||""))
-  addImage(brush,m.depth_front,from.sx,from.sy,0,0);
- if(human){
-  for(const kind of ["shirt","pants"]){
-   if(p.equipment[kind]==="builtin_"+kind){
-    const maskSrc=m.outfit_masks?.[kind];
-    const mask=maskSrc?tinted(maskSrc,frame,p.direction,p.colors[kind]):null;
-    if(mask)brush.drawImage(mask,0,0);
-   }
+ const lieHeadFront=human&&m.id==="lie_idle"&&["se","sw"].includes(p.direction);
+ const kneeUpperFront=human&&m.id==="knee_chest_idle"&&["ne","nw"].includes(p.direction);
+ const drawNativeDepth=()=>{
+  if((lieHeadFront||kneeUpperFront)&&SAFE_MEDIA.test(m.depth_front||""))
+   addImage(brush,m.depth_front,from.sx,from.sy,0,0);
+ };
+ const builtIn=(slot)=>{
+  const maskSrc=m.outfit_masks?.[slot];
+  const mask=maskSrc?tinted(maskSrc,frame,p.direction,p.colors[slot]):null;
+  if(mask)brush.drawImage(mask,0,0);
+ };
+ if(kneeUpperFront){
+  // Crucial order: trousers/lower legs BEHIND original upper torso;
+  // upper-body depth BEFORE the shirt (including its custom tint).
+  if(p.equipment.pants==="builtin_pants")builtIn("pants");
+  else if(p.equipment.pants!=="none")drawAccessory(brush,p,actor,"pants",p.direction);
+  drawNativeDepth();
+  if(p.equipment.shirt==="builtin_shirt")builtIn("shirt");
+  else if(p.equipment.shirt!=="none")drawAccessory(brush,p,actor,"shirt",p.direction);
+  if(p.equipment.shoes!=="none")drawAccessory(brush,p,actor,"shoes",p.direction);
+ }else{
+  // Preserve the existing source layering for EVERY other action.
+  if(human){
+   for(const kind of ["shirt","pants"])
+    if(p.equipment[kind]==="builtin_"+kind)builtIn(kind);
   }
+  for(const category of ["pants","shirt","shoes"])
+   if(p.equipment[category]!=="none"&&
+      !["builtin_shirt","builtin_pants"].includes(p.equipment[category]))
+    drawAccessory(brush,p,actor,category,p.direction);
+  // Front-facing recline: the complete head is above all torso clothes.
+  if(lieHeadFront)drawNativeDepth();
  }
- for(const category of ["pants","shirt","shoes"])
-  if(p.equipment[category]!=="none"&&
-     !["builtin_shirt","builtin_pants"].includes(p.equipment[category]))
-   drawAccessory(brush,p,actor,category,p.direction);
  drawFacePatch(brush,actor,p,m,frame);
  for(const category of ["hair","helmet"])
   if(p.equipment[category]!=="none")
