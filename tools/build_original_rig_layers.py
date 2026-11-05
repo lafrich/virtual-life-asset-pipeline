@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageChops
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "chars-iso" / "v6b" / "tools"))
@@ -172,7 +172,7 @@ def generate(media: Path):
                     source = atlas.crop((x, direction_index * 112, x + 64,
                                          (direction_index + 1) * 112))
                     actual.alpha_composite(source)
-            if ImageChops.difference(expected, actual).getbbox():
+            if not np.array_equal(np.asarray(expected), np.asarray(actual)):
                 raise AssertionError(f"{direction}/{emotion}: split rig mismatches native V6B pixels")
     manifest = {
         "format": "mahluk-original-source-rig-v1",
