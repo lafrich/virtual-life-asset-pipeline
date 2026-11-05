@@ -4,15 +4,15 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1d2532">
 <title>Mahluk Hidup 2.0 — Character Root Studio</title>
-<link rel="stylesheet" href="./studio.css?v=xp-selection-redraw-v1">
+<link rel="stylesheet" href="./studio.css?v=pixel-copy-toolbar-v2">
 <script defer src="../modular-rig-v2.js?v=mh2"></script>
 <script defer src="./emotion-planes.js?v=1"></script>
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
 <script defer src="./github-master-sync.js?v=github-v1"></script>
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
 <script defer src="./view-projection.js?v=orbit-master-sync-v2"></script>
-<script defer src="./pixel-selection.js?v=xp-selection-redraw-v1"></script>
-<script defer src="./plane-pixel-editor.js?v=xp-selection-redraw-v1"></script>
+<script defer src="./pixel-selection.js?v=pixel-copy-toolbar-v2"></script>
+<script defer src="./plane-pixel-editor.js?v=pixel-copy-toolbar-v2"></script>
 <script defer src="./studio.js?v=xp-selection-redraw-v1"></script>
 </head>
 <body>
@@ -135,7 +135,7 @@
   <div class="pixel-toolbar">
    <label>DIRECTION <select id="pixelDirection"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></label>
    <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
-   <button data-pixel-tool="eraser">⌫ ERASER</button><button data-pixel-tool="select" title="Draw a rectangle around pixels to select them / S">▣ SELECT</button><button data-pixel-tool="move-pixels" title="Move selected pixels / M">✣ MOVE PIXELS</button>
+   <button data-pixel-tool="eraser">⌫ ERASER</button><button data-pixel-tool="select" title="Draw a rectangle around pixels to select them / S">▣ SELECT</button><button id="pixelCopySelection" class="pixel-quick-copy" type="button" title="Copy selected pixels / Ctrl+C">⧉ COPY</button><button id="pixelPasteSelection" class="pixel-quick-paste" type="button" title="Paste into this view / Ctrl+V">▣ PASTE</button><button id="pixelPasteMirrored" class="pixel-quick-mirror" type="button" title="Paste mirrored / Ctrl+Shift+V">⇆ PASTE FLIP</button><button data-pixel-tool="move-pixels" title="Move selected pixels / M">✣ MOVE PIXELS</button>
    <button data-pixel-tool="fill">▤ FILL</button>
    <button data-pixel-tool="picker">◎ PICK</button><button data-pixel-tool="hand" title="Pan canvas by dragging / H">✥ HAND</button>
    <label>COLOR <input id="pixelColor" type="color" value="#211d22"></label>
@@ -177,11 +177,6 @@
     </div>
     <div class="pixel-selection-controls">
      <div class="sectionhead">SELECTION / TRANSFORM</div>
-     <div class="plane-buttons pixel-clipboard-actions">
-      <button id="pixelCopySelection" type="button" title="Copy selected RGBA pixels from active view / Ctrl+C">⧉ COPY</button>
-      <button id="pixelPasteSelection" type="button" title="Paste to active view without changing other views / Ctrl+V">▣ PASTE</button>
-      <button id="pixelPasteMirrored" type="button" title="Paste flipped horizontally, at mirrored X position / Ctrl+Shift+V">⇆ PASTE FLIP</button>
-     </div>
      <label class="check"><input id="pixelPasteReplace" type="checkbox"> REPLACE TRANSPARENT PIXELS</label>
      <p class="hint" id="pixelClipboardInfo" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</p>
      <div class="plane-buttons"><button id="pixelSelectAll" type="button">▣ SELECT ALL</button><button id="pixelDeselect" type="button">◇ DESELECT</button></div>
