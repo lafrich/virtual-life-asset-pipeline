@@ -177,3 +177,52 @@
 .ae-loop-toggle input[type="checkbox"]{width:16px;height:16px;flex:none;accent-color:#1749a1}
 #template-rotation,#template-expression{min-height:32px;cursor:pointer}
 #expression-help{display:block;margin:0 0 11px;font:9px/1.4 "Courier New",monospace;color:#5c5955}
+
+
+/* Action-only pose maker — isolated from canonical Human Pose Maker. */
+.ae-local-pose-launch{border:1px solid #a1a8b4;background:#e4eaf4;padding:8px;margin:8px 0 11px}
+.ae-local-pose-launch>.property-label{font:bold 10px "Courier New",monospace;color:#164395;margin:0 0 6px}
+.ae-local-pose-launch .ae-source-note{margin:6px 0 0;padding:5px;font-size:9px}
+.ae-local-pose-overlay[hidden]{display:none!important}
+.ae-local-pose-overlay{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:12px;background:#091d44c4}
+.ae-local-pose-dialog{display:flex;flex-direction:column;width:min(760px,calc(100vw - 24px));
+ max-height:calc(100dvh - 24px);background:#d0d0ca;border:3px solid #f6f6f3;outline:2px solid #333;
+ box-shadow:7px 10px 0 #0007;color:#202d42;font-family:Tahoma,"Courier New",monospace;overflow:hidden}
+.ae-local-pose-titlebar{display:flex;justify-content:space-between;gap:9px;align-items:center;
+ background:linear-gradient(90deg,#05348a,#2578c8);color:white;padding:7px 10px;min-height:38px;font:bold 12px Tahoma,sans-serif}
+.ae-local-pose-titlebar button{font:bold 11px "Courier New",monospace;padding:4px 9px;color:#122c58;border:2px outset white;background:#efeff4}
+.ae-local-pose-context{display:flex;justify-content:space-between;gap:8px;background:#dfe4ec;
+ border-bottom:1px solid #9ca9be;padding:6px 11px;font:bold 10px "Courier New",monospace;color:#12418b;flex-wrap:wrap}
+.ae-local-pose-workspace{display:grid;grid-template-columns:minmax(230px,1fr) 264px;min-height:0;overflow:hidden}
+.ae-local-pose-stage{display:flex;flex-direction:column;align-items:center;gap:7px;min-height:0;overflow:hidden;padding:12px 8px;background:#bcc6d5}
+.ae-local-pose-canvas-scroll{width:100%;flex:1;min-height:0;overflow:auto;
+ border:2px inset #8294a9;background:repeating-conic-gradient(#d6dee9 0 25%,#f5f8fb 0 50%) 50%/18px 18px;
+ padding:12px;display:flex;align-items:flex-start;justify-content:center}
+#ae-local-pose-canvas{display:block;flex:none;width:auto;height:min(63dvh,570px);max-width:100%;
+ aspect-ratio:64/112;image-rendering:pixelated;cursor:move;touch-action:none;user-select:none}
+.ae-local-pose-stage>.ae-source-note{width:100%;box-sizing:border-box;flex:0 0 auto;font-size:9px;margin:0}
+.ae-local-pose-controls{padding:11px;display:flex;flex-direction:column;gap:7px;
+ background:#d7d6d0;min-height:0;overflow:auto}
+.ae-local-pose-controls .ae-field{margin:0}
+.ae-local-pose-controls .ae-field .property-label{margin:0 0 4px}
+.ae-local-pose-controls input,.ae-local-pose-controls select{box-sizing:border-box;min-width:0;
+ max-width:100%;width:100%;padding:5px;background:#fff;color:#202b40;border:2px inset #aaa;font:11px "Courier New",monospace}
+.ae-local-pose-current{color:#1653a2;font:bold 11px "Courier New",monospace;margin:1px 0}
+.ae-local-pose-mode{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.ae-local-pose-mode button{min-width:0;padding:6px 3px;font:bold 10px "Courier New",monospace}
+.ae-local-pose-mode button.active{background:#1957b7;color:#fff;border-style:inset}
+.ae-local-pose-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.ae-local-pose-fields>label{display:flex;flex-direction:column;gap:4px;font:bold 9px "Courier New",monospace}
+.ae-local-pose-subheading{color:#3f5377;border-top:1px solid #a4acb5;padding-top:7px;font:bold 10px "Courier New",monospace}
+.ae-local-pose-controls>.ae-wide{padding:7px;font:10px "Courier New",monospace}
+.ae-local-pose-save-note{font:9px/1.35 "Courier New",monospace;color:#666}
+#ae-local-pose-note{font-size:9px;margin:2px 0}
+@media(max-width:560px){
+ .ae-local-pose-overlay{padding:3px}
+ .ae-local-pose-dialog{max-height:calc(100dvh - 7px);width:calc(100vw - 7px)}
+ .ae-local-pose-workspace{grid-template-columns:1fr;overflow:auto}
+ .ae-local-pose-stage{min-height:310px;max-height:51dvh}
+ .ae-local-pose-canvas-scroll{min-height:220px}
+ #ae-local-pose-canvas{height:270px}
+ .ae-local-pose-controls{max-height:none;overflow:visible}
+}
