@@ -83,3 +83,17 @@ zoom buttons. **One-finger drag** pans when the gizmo is not grabbed.
 The cursor or pinch midpoint stays under the same point during zoom.
 `W` Move, `E` Rotate, `R` Scale, `A` Anchor Pivot;
 middle mouse drag pans. `⌖` resets zoom and viewport center.
+
+## Body Plane Nude Swap (native male/female)
+
+The **BODY PLANE TEXTURE** selector applies to the *currently open character* without switching its character base, rest pose, hierarchy, pivot, animation, expression, hairstyle, eyewear or other assets.
+
+- `CURRENT / KEEP BODY`: original body appearance and existing Outfit setting, untouched.
+- `NUDE / HUMAN MALE`: only body-bone cutouts are sourced from the existing original Human Male nude anatomy.
+- `NUDE / HUMAN FEMALE`: only body-bone cutouts are sourced from the existing original Human Female nude anatomy.
+
+Covered cutouts: torso, pelvis, shoulders, elbows, wrists/hands, hips, knees, ankles/feet. Head/neck, Emotion Plane, hair, Glasses Plane, phone and all other sources are excluded from replacement. Garment overlays on those body cutouts are hidden while nude is selected, **but the previous Outfit setting remains saved** and is restored automatically on CURRENT.
+
+The PNGs already exist in the original rig manifest as `male/female` `layer_type:"body"` 4-view atlases. This mode only selects the cutout source. It does not regenerate anatomy, mutate body transform keyframes, change rig anchor rules or alter any other plane. It is reversible with Undo/Redo and persists in game saves and exported project JSON. Game previews and published Semesta/Bangun Ruang sprites use the same selection.
+
+The selected base's head still stays intact when a body from the other base is selected; neck seams can vary between source anatomies, so inspect the 4-view preview before publishing. Older characters default to CURRENT on first opening.
