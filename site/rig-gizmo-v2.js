@@ -20,12 +20,9 @@
   return value;
  };
  function hitTest(world,selected,pointer,direction){
+  // Prioritize visible 1px joint pins before the ring so overlapping wrist
+  // and face points remain selectable in the dense 64x112 puppet.
   const point=world[selected]&&projected(world[selected],direction);
-  if(point){
-   const d=distance(pointer,point);
-   if(d>=RING-2.2&&d<=ROTATE_HANDLE+2.5)
-    return {mode:"rotate",bone:selected};
-  }
   let closest=null;
   for(const [id,value] of Object.entries(world)){
    if(!value.visible)continue;
@@ -34,7 +31,13 @@
    if(d<=2.5&&(!closest||d<closest.distance))
     closest={mode:"move",bone:id,distance:d};
   }
-  return closest;
+  if(closest)return closest;
+  if(point){
+   const d=distance(pointer,point);
+   if(d>=RING-2.2&&d<=ROTATE_HANDLE+2.5)
+    return {mode:"rotate",bone:selected};
+  }
+  return null;
  }
  return Object.freeze({W,RING,ROTATE_HANDLE,mirror,projected,distance,angle,deltaAngle,hitTest});
 });
