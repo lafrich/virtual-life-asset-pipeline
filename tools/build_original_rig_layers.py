@@ -324,6 +324,54 @@ def _complete_ownership(owner: np.ndarray, visible: np.ndarray):
     return owner
 
 
+JOINT_SEAMS = (
+    ("torso", "neck"), ("neck", "head"), ("torso", "pelvis"),
+    ("torso", "shoulder_l"), ("torso", "shoulder_r"),
+    ("shoulder_l", "elbow_l"), ("shoulder_r", "elbow_r"),
+    ("elbow_l", "wrist_l"), ("elbow_r", "wrist_r"),
+    ("pelvis", "hip_l"), ("pelvis", "hip_r"),
+    ("hip_l", "knee_l"), ("hip_r", "knee_r"),
+    ("knee_l", "ankle_l"), ("knee_r", "ankle_r"),
+)
+
+
+def overlap_joint_seams(parts: dict, owner: np.ndarray,
+                        rgba: np.ndarray) -> dict:
+    """Give a body part a 1px hidden source-colour cushion at each hinge.
+
+    The renderer is a cutout puppet: if the torso and arm have *no* common
+    pixels, rotating the arm exposes a transparent crack. Pad only their
+    touching boundary with exact opaque original source pixels. At neutral
+    pose both parts draw the SAME original colour at the same coordinates,
+    so the composite remains pixel-perfect. Never enlarge exterior edges,
+    add synthetic flesh, or duplicate semi-transparent face details.
+    """
+    opaque = rgba[..., 3] == 255
+    h, w = owner.shape
+    buffers = {name: np.asarray(image.convert("RGBA")).copy()
+               for name, image in parts.items()}
+
+    def neighbours(mask: np.ndarray):
+        pad = np.pad(mask, 1, constant_values=False)
+        result = np.zeros_like(mask)
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1),
+                       (-1, -1), (-1, 1), (1, -1), (1, 1)):
+            result |= pad[1 + dy:1 + dy + h, 1 + dx:1 + dx + w]
+        return result
+
+    for first, second in JOINT_SEAMS:
+        if first not in buffers or second not in buffers:
+            continue
+        a, b = owner == first, owner == second
+        border = ((a & neighbours(b)) | (b & neighbours(a))) & opaque
+        if not np.any(border):
+            continue
+        for bone in (first, second):
+            buffers[bone][border] = rgba[border]
+    return {name: Image.fromarray(buffer, "RGBA")
+            for name, buffer in buffers.items()}
+
+
 def split_body_pixels(sprite: Image.Image, direction: str,
                       native_layers: dict):
     """Split the original human sprite by native BODY / ARM / PANTS / FOOT mattes.
@@ -349,7 +397,7 @@ def split_body_pixels(sprite: Image.Image, direction: str,
         raise AssertionError("Missing native head/torso after rig cutout")
     if not any(part.startswith("shoulder_") for part in parts):
         raise AssertionError("Native arm mattes were not processed")
-    return parts
+    return overlap_joint_seams(parts, owner, rgba)
 
 
 def publish_gender_bases(media: Path, dest: Path):
