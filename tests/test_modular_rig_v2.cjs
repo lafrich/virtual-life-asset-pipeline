@@ -329,3 +329,55 @@ test("named custom nude/body versions never modify the protected original clothe
  assert.match(html,/id="rig-paint-save-as"/);
  assert.match(html,/id="rig-paint-version"/);
 });
+
+test("manual pixel edits preserve hidden native rig layers and change only targeted pixels",async()=>{
+ const E=require("../site/rig-manual-art.js"),W=64,H=112;
+ class Canvas{
+  constructor(w=W,h=H){this.width=w;this.height=h;this.data=new Uint8ClampedArray(w*h*4);}
+  getContext(){return new Context(this);}
+ }
+ class Context{
+  constructor(canvas){this.canvas=canvas;}
+  clearRect(){this.canvas.data.fill(0);}
+  createImageData(w,h){return {data:new Uint8ClampedArray(w*h*4)};}
+  getImageData(){return {data:new Uint8ClampedArray(this.canvas.data)};}
+  putImageData(image){this.canvas.data.set(image.data);}
+  drawImage(image,...args){
+   const [sx,sy,sw,sh,dx,dy]=args.length===2?
+    [0,0,image.width,image.height,args[0],args[1]]:args;
+   for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){
+    const from=((sy+y)*image.width+sx+x)*4;
+    const to=((dy+y)*this.canvas.width+dx+x)*4;
+    if(to<0||to+3>=this.canvas.data.length||!image.data[from+3])continue;
+    this.canvas.data.set(image.data.subarray(from,from+4),to);
+   }
+  }
+ }
+ const pixel=(canvas,x,y,rgba)=>canvas.data.set(rgba,(y*canvas.width+x)*4);
+ const first=new Canvas(64,448),second=new Canvas(64,448);
+ pixel(first,24,60,[135,95,73,255]);pixel(first,25,61,[125,85,63,255]);
+ pixel(second,24,60,[212,142,105,255]);pixel(second,25,61,[220,150,115,255]);
+ const source={directions:["se","sw","ne","nw"],emotions:[...R.EMOTIONS],
+  slots:[{bone:"torso",gender:null,expression:false,image:first},
+         {bone:"shoulder_l",gender:null,expression:false,image:second}]};
+ let provider=null;
+ const rig={BONES:R.BONES,loadNativeArt:async()=>source,setManualLayerProvider:f=>provider=f};
+ const host={document:{createElement:()=>new Canvas()},localStorage:{
+  getItem:()=>null,setItem:()=>{}
+ }};
+ const editor=new E.Editor(rig,host);await editor.init();
+ assert.equal(editor.layers("se","neutral"),null,"no edits means V6B original slots");
+ editor.setPixel("se",24,60,[248,184,144,255],"torso");
+ const layers=editor.layers("se","neutral");
+ assert.equal(layers.length,3,"both native pieces and one user paint layer must survive");
+ assert.equal(layers[0].image.data[(60*W+24)*4+3],0,"only painted coordinate removed from original");
+ assert.equal(layers[1].image.data[(60*W+24)*4+3],0);
+ assert.equal(layers[0].image.data[(61*W+25)*4+3],255,"hidden torso joint overlap remains");
+ assert.equal(layers[1].image.data[(61*W+25)*4+3],255,"hidden arm overlap remains");
+ assert.equal(first.data[(60*W+24)*4],135,"original atlas immutable");
+ assert.equal(second.data[(60*W+24)*4],212);
+ const edited=layers.find(layer=>layer.image.data[(60*W+24)*4]===248);
+ assert.ok(edited,"user paint becomes own bone-attached layer");
+ assert.equal(edited.bone,"torso");
+ assert.equal(provider("se","neutral").length,3,"runtime consumes exact edit layers");
+});
