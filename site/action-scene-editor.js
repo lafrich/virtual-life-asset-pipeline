@@ -394,8 +394,10 @@ function accessoryFor(p,actor,category){
  return items.find(item=>item.id===id&&item.category===category&&
   (item.template_base||"astrofrich_base")===actorBase(actor))||null;
 }
-function drawAccessory(target,p,actor,category,dir){
- const acc=accessoryFor(p,actor,category),path=acc?.frames?.[dir];
+function drawAccessory(target,p,actor,category,dir,layer="front"){
+ const acc=accessoryFor(p,actor,category);
+ const path=(category==="hair"&&layer==="back"?
+  acc?.back_frames:acc?.frames)?.[dir];
  const img=picture(path);
  if(img&&img.width===64&&img.height===112)target.drawImage(img,0,0);
 }
@@ -552,8 +554,9 @@ function actorImage(actor,p,m,frame){
  brush.imageSmoothingEnabled=false;brush.clearRect(0,0,64,112);
  const base=m.sheet||actor.sheet;
  const from=frameSource(actor,m,frame,p.direction);
- // Back pack is behind the entire actor, including the head.
+ // Bag and the REAR section of modular hair sit behind the character.
  drawAccessory(brush,p,actor,"bag",p.direction);
+ drawAccessory(brush,p,actor,"hair",p.direction,"back");
  if(!addImage(brush,base,from.sx,from.sy,0,0))return null;
  const human=["human_male_base","human_female_base"].includes(actorBase(actor));
  if(human){
