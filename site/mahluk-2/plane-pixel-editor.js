@@ -113,6 +113,21 @@
     out.restore();
    }
    out.drawImage(atlas,sx,sy,W,H,0,0,canvas.width,canvas.height);
+   // Ghost another angle on top of the active cutout to guide redraw.
+   // This is only a display composite: the 64×448 source atlas is intact.
+   const ghost=DIR.indexOf(els.refView.value);
+   if(ghost>=0&&ghost!==dir){
+    const ox=clamp(Number(els.refX.value)||0,-32,32)*u,
+     oy=clamp(Number(els.refY.value)||0,-56,56)*v;
+    const autoFlip=els.refFlip.checked&&
+      ((ghost===1||ghost===3)!==(dir===1||dir===3));
+    out.save();out.imageSmoothingEnabled=false;
+    out.globalAlpha=clamp(Number(els.refOpacity.value)||40,5,85)/100;
+    out.filter="sepia(1) saturate(3) hue-rotate(160deg)";
+    if(autoFlip){out.translate(canvas.width,0);out.scale(-1,1)}
+    out.drawImage(atlas,0,ghost*H,W,H,ox,oy,canvas.width,canvas.height);
+    out.restore();
+   }
    if(els.grid.checked){
     const step=Math.max(1,Math.min(16,Number(els.gridType.value)||1));
     out.save();out.strokeStyle=step===1?"rgba(65,94,128,.29)":"rgba(56,111,161,.65)";
@@ -120,6 +135,14 @@
     for(let x=0;x<=W;x+=step){const px=Math.round(x*u)+.5;out.moveTo(px,0);out.lineTo(px,canvas.height)}
     for(let y=0;y<=H;y+=step){const py=Math.round(y*v)+.5;out.moveTo(0,py);out.lineTo(canvas.width,py)}
     out.stroke();out.restore();
+   }
+   if(selection){
+    const x=selection.x*u,y=selection.y*v,w=selection.w*u,h=selection.h*v;
+    out.save();out.fillStyle="rgba(65,150,225,.11)";out.fillRect(x,y,w,h);
+    out.strokeStyle="#16335a";out.lineWidth=2;out.setLineDash([5,3]);
+    out.strokeRect(x+.5,y+.5,w-1,h-1);out.lineDashOffset=4;
+    out.strokeStyle="#f9feff";out.strokeRect(x+.5,y+.5,w-1,h-1);
+    out.restore();
    }
   }
   function setZoom(next,cx,cy){
