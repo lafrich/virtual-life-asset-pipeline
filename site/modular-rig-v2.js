@@ -11,7 +11,7 @@
 })(typeof window!=="undefined"?window:null,function(root){
  "use strict";
  const ID="human_pixel_reference_v2", W=64,H=112,FRAMES=24, FPS=12,
-  ART_REVISION="original-gender-base-gizmo-v4";
+  ART_REVISION="anatomy-first-universal-rig-v5";
  const DIR=Object.freeze(["se","sw","ne","nw"]);
  const def=(id,parent,x,y,label,kind="body")=>Object.freeze({id,parent,x,y,label,kind});
  const BONES=Object.freeze([
@@ -484,8 +484,14 @@
   return id.replace(/_(l|r)$/,(_,side)=>side==="l"?"_r":"_l");
  }
  function sourceSlot(part,state){
-  if(!part.gender)return true; // Legacy authored source, for compatibility.
-  return part.gender===state.gender&&part.mode===(state.outfit?"outfit":"base");
+  if(!part.gender)return true; // Legacy source record compatibility.
+  if(part.gender!==state.gender)return false;
+  // The body is ALWAYS the same anatomically authored base. Outfit means
+  // additionally drawing native garment RGBA, never swapping the body.
+  if(part.layer_type==="body")return true;
+  if(part.layer_type==="garment")return !!state.outfit;
+  // Keep supporting old archived manifest records.
+  return part.mode===(state.outfit?"outfit":"base");
  }
  function drawNative(ctx,state,view,coords){
   const dir=originalArt.directions.indexOf(view);
