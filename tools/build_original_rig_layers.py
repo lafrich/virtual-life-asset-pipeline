@@ -260,7 +260,7 @@ def publish_gender_bases(media: Path, dest: Path):
     return slots
 
 
-def generate(media: Path):
+def generate(media: Path, with_gender: bool = True):
     dest = media / "original-rig"
     dest.mkdir(parents=True, exist_ok=True)
     frames = original_frames()
@@ -313,7 +313,7 @@ def generate(media: Path):
                     actual.alpha_composite(source)
             if not np.array_equal(np.asarray(expected), np.asarray(actual)):
                 raise AssertionError(f"{direction}/{emotion}: split rig mismatches native V6B pixels")
-    gender_slots = publish_gender_bases(media, dest)
+    gender_slots = publish_gender_bases(media, dest) if with_gender else []
     # Human-review contact sheet: same unmodified pixels, only 4x NEAREST.
     contact = Image.new("RGBA", (64 * 4 * len(DIRS), 112 * 4), (242, 240, 234, 255))
     for i, direction in enumerate(DIRS):
@@ -345,4 +345,5 @@ def generate(media: Path):
 
 
 if __name__ == "__main__":
-    generate(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "_site" / "media")
+    generate(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "_site" / "media",
+             with_gender="--source-only" not in sys.argv)
