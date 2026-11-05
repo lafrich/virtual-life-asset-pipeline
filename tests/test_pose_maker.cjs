@@ -181,3 +181,43 @@ test("UNSELECT button and hint exist in Pixel Weights UI",()=>{
  assert.ok(js.includes('mode==="subtract"'));
  assert.ok(js.includes('changed+=subtract('));
 });
+
+test("Blue area box can be moved and resized without changing the rig",()=>{
+ const maker=require("../site/pose-maker.js"),weights=require("../site/pose-weights.js");
+ const before=maker.neutral();
+ const original=[9,0,46,39];
+ assert.equal(weights.hitRegion(original,20,20),"move");
+ assert.equal(weights.hitRegion(original,9,0),"nw");
+ assert.equal(weights.hitRegion(original,55,39),"se");
+ const shifted=weights.transformRegion(original,"move",4,7);
+ assert.deepEqual(shifted,[13,7,46,39]);
+ const resized=weights.transformRegion(shifted,"se",6,8);
+ assert.deepEqual(resized,[13,7,51,47],"resize clamps at 64-pixel canvas edge");
+ assert.deepEqual(weights.transformRegion([2,3,20,20],"nw",-10,-15),[0,0,22,23]);
+ assert.deepEqual(weights.transformRegion([0,0,64,112],"move",10,10),[0,0,64,112]);
+ assert.deepEqual(maker.neutral(),before,"existing rig defaults remain unchanged");
+});
+test("Saved selection boundaries are independent per base, direction, and body part",()=>{
+ const weights=require("../site/pose-weights.js");
+ const a=weights.getRegion("human_male_base",0,"head");
+ const b=weights.getRegion("human_female_base",0,"head");
+ const c=weights.getRegion("human_male_base",1,"head");
+ const arm=weights.getRegion("human_male_base",0,"arm_l");
+ weights.setRegion("human_male_base",0,"head",[11,13,30,34],false);
+ assert.deepEqual(weights.getRegion("human_male_base",0,"head"),[11,13,30,34]);
+ assert.deepEqual(weights.getRegion("human_female_base",0,"head"),b);
+ assert.deepEqual(weights.getRegion("human_male_base",1,"head"),c);
+ assert.deepEqual(weights.getRegion("human_male_base",0,"arm_l"),arm);
+ assert.ok(weights.inFocusRegion("head",20,20,weights.getRegion("human_male_base",0,"head")));
+ assert.equal(weights.inFocusRegion("head",3,20,weights.getRegion("human_male_base",0,"head")),false);
+ weights.setRegion("human_male_base",0,"head",a,false);
+});
+test("UI exposes drag and resize mode for blue selection rectangle",()=>{
+ const fs=require("node:fs");
+ const html=fs.readFileSync("site/index.html","utf8");
+ const js=fs.readFileSync("site/pose-weights.js","utf8");
+ assert.ok(html.includes('data-pose-weight-tool="box"'));
+ assert.ok(js.includes('mode==="box"'));
+ assert.ok(js.includes("transformRegion(boxDrag.original"));
+ assert.ok(js.includes("getRegion(item.baseId,item.dir,focus)"));
+});
