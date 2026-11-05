@@ -7,6 +7,8 @@ on:
       - "tools/build_original_rig_layers.py"
       - "site/modular-rig-v2.js"
       - "site/rig-studio-v2.js"
+      - "site/rig-manual-art.js"
+      - "site/rig-pixel-workbench.js"
       - "tests/test_modular_rig_v2.cjs"
       - "tests/test_native_rig_partition.py"
       - ".github/workflows/validate-original-rig.yml"
@@ -38,4 +40,6 @@ jobs:
         run: |
           node --check site/modular-rig-v2.js
           node --check site/rig-studio-v2.js
+          node --check site/rig-manual-art.js
+          node --check site/rig-pixel-workbench.js
           node --test tests/test_modular_rig_v2.cjs
