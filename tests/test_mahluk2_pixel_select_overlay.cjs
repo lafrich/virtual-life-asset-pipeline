@@ -55,7 +55,7 @@ test("pixel editor has independently adjustable native-view ghost overlay and se
  assert.match(E,/S\.flip\(image\.data,W,H,selection,axis\)/);
  assert.match(E,/S\.translate\(sourcePixels,W,H,rect,x,y\)/);
  assert.match(E,/S\.rectFromPoints\(active\.origin,next,W,H\)/);
- assert.match(E,/function updateSelection\(/);
+ assert.match(E,/const updateSelection=\(\)=>/);
 });
 test("viewport picks visible source pixels, identifies part, and outlines actual alpha bounds",()=>{
  assert.match(H,/id="toolSelect"/);
