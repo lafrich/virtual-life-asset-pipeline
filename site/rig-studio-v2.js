@@ -3,8 +3,8 @@
  */
 (function(root){
  "use strict";
- const R=root.VLModularRigV2;
- if(!R||!root.document)return;
+ const R=root.VLModularRigV2,G=root.VLRigGizmoV2;
+ if(!R||!G||!root.document)return;
  const STORE="mahluk-modular-rig-studio-v2";
  const $=id=>document.getElementById(id);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
@@ -24,7 +24,7 @@
   "LEG R":["hip_r","knee_r","ankle_r"]
  };
  let base=R.referencePose(),model=R.normalize(base),tracks=R.makeTracks(),
-  view="se",selected="head",frame=0,count=24,fps=12,playing=false,last=0,acc=0,drag=null;
+  view="se",selected="head",frame=0,count=24,fps=12,playing=false,last=0,acc=0,drag=null,jointsVisible=true;
  function say(message){$("rig-v2-status").textContent=message;}
  function select(node){
   if(!R.BMAP[node])return;
@@ -42,6 +42,8 @@
   $("rig-v2-visible").checked=p.visible;
   $("rig-v2-emotion").value=model.emotion;
   $("rig-v2-phone").checked=model.phone;
+  $("rig-v2-gender").value=model.gender;
+  $("rig-v2-outfit").value=model.outfit?"outfit":"base";
   $("rig-v2-face-note").textContent=faces.has(selected)?
    "HEAD → EMOTION CHILD · INDEPENDENT FACIAL POSITION, ROTATION & KEYFRAMES":
    R.BMAP[selected].kind==="hair"?
@@ -51,20 +53,41 @@
  function drawTo(ctx,direction,controls=false){
   const canvas=ctx.canvas;ctx.imageSmoothingEnabled=false;
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  // No flattening of articulated parts or emotion sprites into the head.
   R.draw(ctx,model,direction);
   if(!controls)return;
-  const mirror=direction==="sw"||direction==="nw";
-  const w=R.world(model);
-  for(const b of R.BONES){
-   const p=w[b.id];if(!p.visible)continue;
-   const x=mirror?64-p.x:p.x,y=p.y,isSel=b.id===selected;
-   if(x<0||x>64||y<0||y>112)continue;
-   ctx.fillStyle=isSel?"#fff5a4":b.kind==="emotion"?"#fff0ff":"#bee2ff";
-   ctx.fillRect(Math.round(x)-1,Math.round(y)-1,isSel?4:3,isSel?4:3);
-   ctx.fillStyle=isSel?"#e78300":b.kind==="emotion"?"#bc47a2":"#2064b7";
-   ctx.fillRect(Math.round(x),Math.round(y),1,1);
+  const world=R.world(model);
+  ctx.save();
+  // A 1px translucent dot does not obstruct native 64×112 sprite art.
+  // Only the active joint receives an editable transform gizmo.
+  if(jointsVisible){
+   for(const b of R.BONES){
+    if(b.id===selected)continue;
+    const p=world[b.id];if(!p?.visible)continue;
+    const n=G.projected(p,direction);
+    if(n.x<0||n.x>=64||n.y<0||n.y>=112)continue;
+    ctx.globalAlpha=.20;
+    ctx.fillStyle=b.kind==="emotion"?"#bb6bcd":"#4078b7";
+    ctx.fillRect(Math.round(n.x),Math.round(n.y),1,1);
+   }
   }
+  const p=world[selected];
+  if(p?.visible){
+   const n=G.projected(p,direction),theta=(G.mirror(direction)?-1:1)*p.angle*Math.PI/180-Math.PI/2;
+   ctx.globalAlpha=.58;ctx.strokeStyle="#3f80c7";ctx.lineWidth=.48;
+   ctx.beginPath();ctx.arc(n.x,n.y,G.RING,0,Math.PI*2);ctx.stroke();
+   ctx.globalAlpha=.6;
+   ctx.beginPath();ctx.moveTo(n.x,n.y);
+   ctx.lineTo(n.x+Math.cos(theta)*G.ROTATE_HANDLE,n.y+Math.sin(theta)*G.ROTATE_HANDLE);
+   ctx.stroke();
+   ctx.globalAlpha=.88;ctx.fillStyle="#edfaff";ctx.strokeStyle="#1551a1";
+   ctx.lineWidth=.55;ctx.beginPath();ctx.arc(n.x,n.y,1.8,0,Math.PI*2);
+   ctx.fill();ctx.stroke();
+   ctx.fillStyle="#e4a64d";ctx.strokeStyle="#1551a1";
+   ctx.beginPath();ctx.arc(n.x+Math.cos(theta)*G.ROTATE_HANDLE,
+    n.y+Math.sin(theta)*G.ROTATE_HANDLE,1.8,0,Math.PI*2);
+   ctx.fill();ctx.stroke();
+  }
+  ctx.restore();
  }
  function drawAll(){
   const main=$("rig-v2-main");if(!main)return;
@@ -246,6 +269,20 @@
     }
    });
   }
+  $("rig-v2-gender").addEventListener("change",e=>{
+   base.gender=model.gender=e.target.value==="female"?"female":"male";
+   drawAll();
+   say("BODY BASE: "+model.gender.toUpperCase()+" · BONE SYSTEM UNCHANGED");
+  });
+  $("rig-v2-outfit").addEventListener("change",e=>{
+   base.outfit=model.outfit=e.target.value==="outfit";
+   drawAll();
+   say(model.outfit?"OUTFIT ON · CLOTHING LAYERS VISIBLE":
+    "BASE BODY · CLOTHING OFF · RIG / SKIN PRESERVED");
+  });
+  $("rig-v2-joints-visible").addEventListener("change",e=>{
+   jointsVisible=e.target.checked;drawAll();
+  });
   $("rig-v2-visible").addEventListener("change",e=>{
    model.parts[selected].visible=e.target.checked;drawAll();
   });
@@ -255,30 +292,58 @@
   $("rig-v2-phone").addEventListener("change",e=>{model.phone=e.target.checked;base.phone=e.target.checked;drawAll();});
   const canvas=$("rig-v2-main");
   const locate=e=>{
-   const rect=canvas.getBoundingClientRect(),mirror=view==="sw"||view==="nw";
-   const x=(e.clientX-rect.left)*R.W/rect.width,y=(e.clientY-rect.top)*R.H/rect.height;
-   return {x:mirror?64-x:x,y};
+   const rect=canvas.getBoundingClientRect();
+   return {x:(e.clientX-rect.left)*R.W/rect.width,
+    y:(e.clientY-rect.top)*R.H/rect.height};
   };
   canvas.addEventListener("pointerdown",e=>{
-   const hit=locate(e),coords=R.world(model);
-   const candidates=R.BONES.map(b=>({id:b.id,dist:Math.hypot(coords[b.id].x-hit.x,coords[b.id].y-hit.y)}))
-    .filter(v=>v.dist<5).sort((a,b)=>a.dist-b.dist);
-   if(candidates.length)select(candidates[0].id);
-   drag={id:e.pointerId,x:hit.x,y:hit.y,node:selected};
-   canvas.setPointerCapture(e.pointerId);e.preventDefault();
+   if(e.button!==0)return;
+   const screen=locate(e),coords=R.world(model);
+   const hit=G.hitTest(coords,selected,screen,view);
+   if(!hit)return; // Do not accidentally drag character when clicking empty area.
+   if(hit.bone!==selected)select(hit.bone);
+   const node=R.world(model)[selected],center=G.projected(node,view);
+   drag={id:e.pointerId,mode:hit.mode,node:selected,
+    x:screen.x,y:screen.y,
+    startAngle:G.angle(center,screen),
+    current:model.parts[selected].angle,
+    angle:model.parts[selected].angle};
+   canvas.setPointerCapture(e.pointerId);
+   canvas.style.cursor=hit.mode==="rotate"?"grabbing":"move";
+   e.preventDefault();
   });
   canvas.addEventListener("pointermove",e=>{
-   if(!drag||drag.id!==e.pointerId)return;
-   const hit=locate(e),dx=hit.x-drag.x,dy=hit.y-drag.y;
-   const p=R.world(model)[R.HIERARCHY[selected]];
-   const a=(p?.angle||0)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),scale=p?.scale||1;
-   model.parts[selected].x=clamp(model.parts[selected].x+(dx*cs+dy*sn)/scale,-40,40);
-   model.parts[selected].y=clamp(model.parts[selected].y+(-dx*sn+dy*cs)/scale,-48,48);
-   drag.x=hit.x;drag.y=hit.y;updateInputs();drawAll();
+   const screen=locate(e),coords=R.world(model);
+   if(!drag||drag.id!==e.pointerId){
+    const hit=G.hitTest(coords,selected,screen,view);
+    canvas.style.cursor=hit?.mode==="rotate"?"crosshair":hit?"move":"default";
+    return;
+   }
+   if(drag.mode==="rotate"){
+    const center=G.projected(coords[selected],view);
+    const now=G.angle(center,screen);
+    const sign=G.mirror(view)?-1:1;
+    let deg=drag.angle+sign*G.deltaAngle(drag.startAngle,now);
+    if(e.shiftKey)deg=Math.round(deg/15)*15;
+    model.parts[selected].angle=clamp(deg,-180,180);
+   }else{
+    const prev=G.mirror(view)?64-drag.x:drag.x;
+    const next=G.mirror(view)?64-screen.x:screen.x;
+    const dx=next-prev,dy=screen.y-drag.y;
+    const parent=coords[R.HIERARCHY[selected]];
+    const a=(parent?.angle||0)*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),scale=parent?.scale||1;
+    model.parts[selected].x=clamp(model.parts[selected].x+(dx*cs+dy*sn)/scale,-40,40);
+    model.parts[selected].y=clamp(model.parts[selected].y+(-dx*sn+dy*cs)/scale,-48,48);
+   }
+   drag.x=screen.x;drag.y=screen.y;
+   updateInputs();drawAll();
   });
   for(const type of ["pointerup","pointercancel"])canvas.addEventListener(type,e=>{
-   if(drag?.id===e.pointerId){drag=null;try{canvas.releasePointerCapture(e.pointerId)}catch{}
-    say("PIVOT MOVED · CLICK ◆ SET KEY TO RECORD");}
+   if(drag?.id!==e.pointerId)return;
+   const mode=drag.mode;drag=null;canvas.style.cursor="crosshair";
+   try{canvas.releasePointerCapture(e.pointerId)}catch{}
+   say((mode==="rotate"?"ROTATION":"POSITION")+
+    " ADJUSTED · PRESS ◆ SET KEY TO RECORD THIS FRAME");
   });
   $("rig-v2-key").onclick=()=>{
    R.key(tracks,selected,frame,model.parts[selected],model.emotion);
