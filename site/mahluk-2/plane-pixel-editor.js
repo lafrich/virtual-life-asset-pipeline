@@ -427,13 +427,30 @@
     if(evt!=="lostpointercapture")release(e);
    });
   overlay.addEventListener("keydown",e=>{
+   if(overlay.hidden)return;
+   const typing=["INPUT","SELECT","TEXTAREA"].includes(document.activeElement?.tagName);
+   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="a"&&!typing){
+    e.preventDefault();e.stopPropagation();els.selectAll.click();return;
+   }
+   if(!typing&&e.key==="Delete"){
+    e.preventDefault();e.stopPropagation();els.delSelection.click();return;
+   }
+   if(!typing&&e.key.toLowerCase()==="s"&&!e.ctrlKey&&!e.metaKey){
+    e.preventDefault();e.stopPropagation();selectTool("select");return;
+   }
+   if(!typing&&e.key.toLowerCase()==="m"&&!e.ctrlKey&&!e.metaKey){
+    e.preventDefault();e.stopPropagation();selectTool("move-pixels");return;
+   }
    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){
     e.preventDefault();e.stopPropagation();
     if(e.shiftKey)historyStep(redo,history);else historyStep(history,redo);
    }else if(!["INPUT","SELECT"].includes(document.activeElement?.tagName)&&["=","+","-","0"].includes(e.key)){
     e.preventDefault();e.stopPropagation();
     if(e.key==="0")zoomFit();else setZoom(zoom+(e.key==="-"?-1:1));
-   }else if(e.key==="Escape"){e.stopPropagation();overlay.hidden=true}
+   }else if(e.key==="Escape"){
+    e.stopPropagation();
+    if(selection){selection=null;draw();updateSelection()}else overlay.hidden=true;
+   }
   });
   function open({id,initialAtlas,originalAtlas,referenceImage,referenceImages,direction="se"}){
    if(!id)throw Error("Select an editable plane");
