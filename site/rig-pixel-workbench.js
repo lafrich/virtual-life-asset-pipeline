@@ -87,7 +87,8 @@
   if(!editor)return;
   editor.state.name=String($("rig-paint-name").value||"CUSTOM CHARACTER 01").trim().slice(0,80);
   const okay=editor.saveLocal();
-  refreshMain();info(okay?"SAVED · CUSTOM ART + WEIGHTS · ORIGINAL SOURCE UNTOUCHED":
+  refreshMain();if(okay)root.document.dispatchEvent(new Event("mahluk:rig-art-saved"));
+  info(okay?"SAVED · CUSTOM ART + WEIGHTS · ORIGINAL SOURCE UNTOUCHED":
    "STORAGE FULL · EXPORT JSON TO KEEP YOUR WORK");
  }
  function download(name,blob){
