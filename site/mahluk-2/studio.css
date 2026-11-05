@@ -319,3 +319,13 @@ select:focus,input:focus-visible,button:focus-visible{outline:1px dotted #163773
 #pixelClipboardInfo{min-height:29px;overflow-wrap:anywhere;color:#264d83}
 .pixel-selection-controls>.check{padding:3px 0;font:10px "Courier New",monospace}
 @media(max-width:750px){.pixel-clipboard-actions button{min-height:34px}}
+
+/* Keep clipboard tools immediately beside Select on both editors. */
+.pixel-quick-tools{display:flex;align-items:stretch;gap:3px;flex:1 1 auto;flex-wrap:wrap;
+ padding:3px;background:#ccd4df;border:1px solid #8193ab;min-width:min(100%,310px)}
+.pixel-toolbar .pixel-quick-tools button{font-weight:700;min-height:28px;flex:1 1 63px;
+ white-space:nowrap;padding:5px 7px;font-size:10px}
+.pixel-toolbar #pixelCopySelection{background:#cde3ff;color:#153967;border-color:#fff #6b8db9 #6b8db9 #fff}
+.pixel-toolbar #pixelPasteSelection,.pixel-toolbar #pixelPasteMirrored{background:#e2ebf8;color:#173b64}
+@media(max-width:750px){.pixel-quick-tools{flex:1 1 100%;min-width:0}
+ .pixel-toolbar .pixel-quick-tools button{flex:1 1 calc(50% - 5px);min-height:34px}}
