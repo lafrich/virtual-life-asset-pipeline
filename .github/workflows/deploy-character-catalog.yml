@@ -51,6 +51,7 @@ on:
       - "tests/test_universal_motion_runtime.cjs"
       - "tests/test_desktop_layout.cjs"
       - "tools/build_character_catalog.py"
+      - "tools/build_original_rig_layers.py"
       - "tools/build_rig_studio.py"
       - "tests/test_rig_studio.py"
       - "tests/test_otis_helmet.py"
