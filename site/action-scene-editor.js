@@ -564,6 +564,13 @@ function actorImage(actor,p,m,frame){
  drawAccessory(brush,p,actor,"hair",p.direction,"back");
  if(!addImage(brush,base,from.sx,from.sy,0,0))return null;
  const human=["human_male_base","human_female_base"].includes(actorBase(actor));
+ // ACT renders a flattened atlas. Recompose actual original head / torso
+ // source layers from this actor's separate published pose foreground.
+ const poseDepthFront=human&&(
+  (m.id==="lie_idle"&&["se","sw"].includes(p.direction))||
+  (m.id==="knee_chest_idle"&&["ne","nw"].includes(p.direction)));
+ if(poseDepthFront&&SAFE_MEDIA.test(m.depth_front||""))
+  addImage(brush,m.depth_front,from.sx,from.sy,0,0);
  if(human){
   for(const kind of ["shirt","pants"]){
    if(p.equipment[kind]==="builtin_"+kind){
@@ -637,7 +644,12 @@ function paint(){
  $("act-render-note").textContent="CHAR "+scene.participants.length+" · "+
   (m?m.id.toUpperCase():"UNRIGGED")+
   " · FACE "+String(actual||"NEUTRAL").toUpperCase()+
-  " · DRAG / LAYER "+(selectedActor?.layer??0);
+  " · DRAG / LAYER "+(selectedActor?.layer??0)+
+  (m?.depth_front&&["human_male_base","human_female_base"].includes(actorBase(actor))?
+   m.id==="lie_idle"&&["se","sw"].includes(selectedActor.direction)?
+    " · HEAD IN FRONT":
+   m.id==="knee_chest_idle"&&["ne","nw"].includes(selectedActor.direction)?
+    " · UPPER BODY IN FRONT":"":"");
 }
 function syncPlay(){
  $("act-play").textContent=play?"Ⅱ PAUSE":"▶ PLAY";
