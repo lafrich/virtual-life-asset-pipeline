@@ -539,10 +539,13 @@
   }
   // Keep the original clothed V6B layer order at Z=0. Male/Female base
   // source sheets remain separate and no pixels are invented or redrawn.
-  const parts=originalArt.slots.filter(part=>{
-   if(state.visual==="gender")return !!part.gender&&sourceSlot(part,state);
-   return !part.gender;
-  });
+  const parts=[];
+  for(const part of originalArt.slots){
+   if(state.visual==="gender"){
+    if(!part.gender||!sourceSlot(part,state))continue;
+   }else if(part.gender)continue;
+   parts.push(part);
+  }
   for(const part of depthOrder(parts,coords)){
    if(part.bone==="phone"&&!state.phone)continue;
    const emotion=state.faceLayers[part.bone]||state.emotion;
