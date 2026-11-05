@@ -57,7 +57,7 @@ def mask(part: str, x: int, y: int):
     if part == "held":
         return "phone"
     if part == "hair_front":
-        if y < 45:
+        if y < 39:
             return "hair_cap"
         if x < 30:
             return "fringe_l"
