@@ -630,6 +630,7 @@ function populateCustomAccessories(){
  window.VLHumanWardrobe?.populate?.(baseId);
 }
 function syncCustomCategory(){
+ if(CHAR_RESET?.active)return;
  const category=$("custom-category").value;
  const desired=category==="human"?"human_male_base":"astrofrich_base";
  if((category==="human")!==HUMAN_BASES.includes(customBaseId()))$("custom-base").value=desired;
@@ -648,6 +649,9 @@ function editCustomCharacter(id){
  setInspectorTab("custom");setStatus("EDIT CUSTOM CHAR: "+row.name.toUpperCase());
 }
 function resetCustomForm(){
+ if(CHAR_RESET?.active){
+  workingCustomId=null;$("custom-name").value="";return;
+ }
  workingCustomId=null;$("custom-name").value="";
  $("custom-skin-tone").value="base";
  $("custom-category").value="human";$("custom-base").value="human_male_base";
@@ -719,7 +723,12 @@ function deleteCustomCharacter(id){
 }
 function renderCustomStorage(){
  const list=$("custom-storage-list");if(!list)return;
- list.replaceChildren();const rows=savedCustomCharacters();
+ list.replaceChildren();
+ if(CHAR_RESET?.active){
+  const empty=document.createElement("p");empty.className="accessory-note";
+  empty.textContent=CHAR_RESET.message;list.append(empty);return;
+ }
+ const rows=savedCustomCharacters();
  if(!rows.length){
   const p=document.createElement("p");p.className="accessory-note";
   p.textContent="NO CUSTOM CHARACTERS YET. CHOOSE ASTROFRICH OR HUMAN, NAME, AND SAVE.";list.append(p);
@@ -1311,6 +1320,9 @@ window.addEventListener("storage",event=>{
  if(event.key===CHAR_STORAGE)rebuildCustomCharacters();
 });
 function openActionEditor(){
+  if(CHAR_RESET?.active){
+    setStatus(CHAR_RESET.message);return;
+  }
   // Open multi-character scene composition without modifying the source
   // sprites. Single-frame pixel editing remains in the legacy direct editor.
   window.VLMahlukActionsTab?.open({
