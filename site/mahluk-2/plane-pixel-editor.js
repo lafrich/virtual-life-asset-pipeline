@@ -239,7 +239,41 @@
   overlay.querySelectorAll("[data-pixel-swatch]").forEach(el=>el.addEventListener("click",()=>{
    els.color.value=el.dataset.pixelSwatch;selectTool("pencil");
   }));
-  els.dir.onchange=()=>{dir=DIR.indexOf(els.dir.value);ref=refs?.[DIR[dir]]||ref;draw();updateHistory()};
+  function frameImage(){return ctx.getImageData(0,dir*H,W,H)}
+  function replaceFrame(pixels){
+   const frame=frameImage();frame.data.set(pixels);
+   ctx.putImageData(frame,0,dir*H);
+  }
+  function flipSelection(axis){
+   saveHistory();const image=frameImage();
+   replaceFrame(S.flip(image.data,W,H,selection,axis));
+   draw();updateHistory();
+  }
+  function moveSelectionFrom(sourcePixels,rect,dx,dy){
+   const x=clamp(dx,-W,W),y=clamp(dy,-H,H);
+   replaceFrame(S.translate(sourcePixels,W,H,rect,x,y));
+   selection={x:clamp(rect.x+x,0,W-1),y:clamp(rect.y+y,0,H-1),
+    w:Math.min(rect.w,W-clamp(rect.x+x,0,W-1)),
+    h:Math.min(rect.h,H-clamp(rect.y+y,0,H-1))};
+   draw();updateSelection();
+  }
+  els.selectAll.onclick=()=>{selection={x:0,y:0,w:W,h:H};selectTool("select");draw();updateSelection()};
+  els.deselect.onclick=()=>{selection=null;draw();updateSelection()};
+  els.flipH.onclick=()=>flipSelection("horizontal");
+  els.flipV.onclick=()=>flipSelection("vertical");
+  els.delSelection.onclick=()=>{
+   saveHistory();const box=S.normalizeRect(selection,W,H);
+   ctx.clearRect(box.x,dir*H+box.y,box.w,box.h);draw();updateHistory();
+  };
+  els.dir.onchange=()=>{
+   dir=DIR.indexOf(els.dir.value);ref=refs?.[DIR[dir]]||ref;
+   selection=null;moveStart=null;draw();updateHistory();
+  };
+  const updateRef=()=>{
+   els.refOpacityLabel.textContent=els.refOpacity.value+"%";draw();
+  };
+  for(const el of [els.refView,els.refFlip,els.refOpacity,els.refX,els.refY])
+   el.addEventListener(el===els.refOpacity?"input":"change",updateRef);
   els.onion.onchange=draw;els.grid.onchange=draw;els.gridType.onchange=draw;
   els.sync.onchange=updateHistory;
   els.syncExisting.onclick=()=>{
