@@ -9,12 +9,15 @@
   <title>Mahluk Hidup — Character Studio</title>
   <link rel="stylesheet" href="./style.css?v=custom-model-color-v3">
   <link rel="stylesheet" href="./pose-maker.css?v=pixel-mask-v2">
+  <link rel="stylesheet" href="./rig-studio-v2.css?v=new-rig-v2a">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
   <script defer src="./pose-weights.js?v=pixel-box-v1"></script>
+  <script defer src="./modular-rig-v2.js?v=new-rig-v2a"></script>
+  <script defer src="./rig-studio-v2.js?v=new-rig-v2a"></script>
   <script defer src="./pose-maker.js?v=pixel-mask-v1"></script>
   <script defer src="./app.js?v=custom-model-color-v4"></script>
   <script defer src="./custom-character-wardrobe.js?v=custom-model-color-v4"></script>
@@ -44,6 +47,7 @@
         <button type="button" class="library-tab" id="switch-actions" role="tab" aria-selected="false" aria-controls="action-workspace">03 / ACTION EDITOR</button>
         <button type="button" class="library-tab" id="tab-custom-char" role="tab" aria-selected="false" aria-controls="custom-workspace">04 / NEW CUSTOM CHAR</button>
         <button type="button" class="library-tab" id="switch-poser" role="tab" aria-selected="false" aria-controls="pose-workspace">05 / POSE MAKER</button>
+        <button type="button" class="library-tab" id="switch-rig-v2" role="tab" aria-selected="false" aria-controls="rig-v2-workspace">06 / RIG STUDIO</button>
         <span class="library-version">.V6B / DATABASE</span>
       </div>
       <div class="workspace" id="character-workspace" role="tabpanel" aria-labelledby="switch-chars">
@@ -499,6 +503,77 @@
             <p class="pose-feedback" id="pose-feedback" aria-live="polite">Loading Human Base sprites...</p>
           </div>
         </aside>
+      </section>
+
+
+      <section class="rig-v2-workspace" id="rig-v2-workspace" role="tabpanel" aria-labelledby="switch-rig-v2" hidden>
+        <aside class="rig-v2-sidebar">
+          <strong>NEW CHARACTER / RIG V2</strong>
+          <p class="rig-v2-plain-note">ART: 64×112 PIXELS · FULL-BODY FRINGED HAIR, BLACK T-SHIRT, LOOSE TROUSERS, WHITE SNEAKERS. EVERY BODY PART IS ITS OWN CUTOUT.</p>
+          <strong>BONE HIERARCHY / SELECT PART</strong>
+          <div id="rig-v2-tree" class="rig-v2-tree" aria-label="Modular pixel puppet bone hierarchy"></div>
+          <p class="rig-v2-plain-note">HEAD → EMOTION → BROWS / EYES / MOUTH. MOVING THE HEAD MOVES THE WHOLE FACE; FACIAL PIECES HAVE THEIR OWN INDEPENDENT TRANSFORMS.</p>
+          <button type="button" class="chrome-button" id="rig-v2-new">↺ REFERENCE POSE</button>
+          <button type="button" class="chrome-button" id="rig-v2-rest">⨯ NEUTRAL / REST POSE</button>
+        </aside>
+        <section class="rig-v2-editor">
+          <div class="rig-v2-center-tools">
+            <b>PIXEL REFERENCE 01.SPR</b>
+            <button type="button" class="chrome-button active" data-rig-v2-view="se">SE</button>
+            <button type="button" class="chrome-button" data-rig-v2-view="sw">SW</button>
+            <button type="button" class="chrome-button" data-rig-v2-view="ne">NE</button>
+            <button type="button" class="chrome-button" data-rig-v2-view="nw">NW</button>
+          </div>
+          <div class="rig-v2-stage">
+            <div class="rig-v2-stage-inner">
+              <canvas id="rig-v2-main" width="64" height="112" aria-label="Draggable modular pixel character puppet and facial emotion rig"></canvas>
+            </div>
+            <p class="rig-v2-stage-tips">CLICK A RIG POINT TO SELECT.<br>DRAG A POINT TO MOVE ITS PART.<br><br>HEAD IS THE EMOTION PARENT.<br>USE ◆ TO KEYFRAME.<br><br>RGBA / NEAREST NEIGHBOR.</p>
+          </div>
+          <div class="rig-v2-preview-list" aria-label="Four independent sprite directions">
+            <div class="rig-v2-mini"><b>SE</b><canvas id="rig-v2-preview-se" width="64" height="112"></canvas></div>
+            <div class="rig-v2-mini"><b>SW</b><canvas id="rig-v2-preview-sw" width="64" height="112"></canvas></div>
+            <div class="rig-v2-mini"><b>NE</b><canvas id="rig-v2-preview-ne" width="64" height="112"></canvas></div>
+            <div class="rig-v2-mini"><b>NW</b><canvas id="rig-v2-preview-nw" width="64" height="112"></canvas></div>
+          </div>
+        </section>
+        <aside class="rig-v2-inspector">
+          <strong>SELECTED MODULE</strong>
+          <output id="rig-v2-selected">HEAD</output>
+          <label>PARENT <b id="rig-v2-parent">NECK</b></label>
+          <label>OFFSET X <input id="rig-v2-x" type="number" step="0.5" min="-40" max="40" value="0"></label>
+          <label>OFFSET Y <input id="rig-v2-y" type="number" step="0.5" min="-48" max="48" value="0"></label>
+          <label>ROTATION <input id="rig-v2-angle" type="number" step="1" min="-180" max="180" value="0"></label>
+          <label>SCALE <input id="rig-v2-scale" type="number" step="0.05" min="0.4" max="2" value="1"></label>
+          <label>VISIBLE <input id="rig-v2-visible" type="checkbox" checked></label>
+          <p class="rig-v2-side-note" id="rig-v2-face-note">HEAD-PARENTED EMOTION HAS ITS OWN KEYFRAMES.</p>
+          <strong>EMOTION / SEPARATE FACE CUTOUTS</strong>
+          <select id="rig-v2-emotion" aria-label="Select facial emotion">
+            <option value="neutral">NEUTRAL</option><option value="happy">HAPPY</option>
+            <option value="mischievous">JAHIL / SMIRK</option><option value="angry">ANGRY</option>
+            <option value="surprised">SURPRISED</option><option value="blush">BLUSH</option>
+            <option value="grin">GRIN</option>
+          </select>
+          <label>PHONE PROP <input id="rig-v2-phone" type="checkbox" checked></label>
+          <button type="button" class="chrome-button" id="rig-v2-key">◆ SET KEY</button>
+          <button type="button" class="chrome-button" id="rig-v2-unkey">◇ DELETE KEY</button>
+          <button type="button" class="chrome-button" id="rig-v2-save">▣ SAVE RIG TO LOCAL DATABASE</button>
+          <button type="button" class="chrome-button" id="rig-v2-export">↓ EXPORT RIG JSON</button>
+          <button type="button" class="chrome-button" id="rig-v2-png">↓ EXPORT 4-VIEW PIXEL PNG</button>
+          <label>IMPORT YOUR RIG JSON <input id="rig-v2-import" type="file" accept=".json,application/json"></label>
+        </aside>
+        <section class="rig-v2-timeline">
+          <div class="rig-v2-timeline-head">
+            <strong>MODULAR DOPE SHEET / EACH PART + EACH FACE MODULE</strong>
+            <span id="rig-v2-frame-label">F 01 / 24 · SE</span>
+            <label>FRAMES <input id="rig-v2-count" type="number" min="4" max="96" value="24"></label>
+            <label>FPS <input id="rig-v2-fps" type="number" min="4" max="30" value="12"></label>
+            <button type="button" id="rig-v2-play" class="chrome-button">▶ PLAY</button>
+          </div>
+          <div class="rig-v2-tracks" id="rig-v2-tracks" role="group" aria-label="C4D style per-part diamond keyframes"></div>
+          <div class="rig-v2-timeline-footer"><span>FRAME</span><input id="rig-v2-playhead" type="range" min="0" max="23" step="1" value="0"></div>
+          <p class="rig-v2-status" id="rig-v2-status" aria-live="polite">NEW MODULAR PIXEL REFERENCE · ORIGINAL V6B DATABASE UNTOUCHED</p>
+        </section>
       </section>
 
       <section class="action-workspace" id="action-workspace" role="tabpanel" aria-labelledby="switch-actions" hidden>
