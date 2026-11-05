@@ -117,3 +117,8 @@
 .pose-weight-zoom-row output{min-width:20px;text-align:right}
 .pose-weight-canvas-wrap{max-height:340px;justify-content:flex-start;align-items:flex-start;overflow:auto;scrollbar-width:thin}
 #pose-weight-canvas{flex:none;max-width:none;max-height:none;height:448px;width:256px;margin:auto}
+
+/* Selection boundary editing is separate from brush painting. */
+.pose-weight-tools .pose-weight-box-tool{flex-basis:100%;letter-spacing:.02em}
+.pose-weight-tools .pose-weight-box-tool.active{background:#1752ac;color:#fff}
+#pose-weight-tool-hint{background:#f2f6fd;border:1px solid #becbe0;padding:5px 6px;color:#294b78}
