@@ -409,14 +409,23 @@
    pixels(ctx,p.skinLight,[[47,70,3,5]]);
    R(ctx,46,73,2,3,p.skinShade);
   });
-  if(!back&&state.phone){
+  if(state.phone){
    bound(ctx,"phone",coords,()=>{
     pixels(ctx,p.outline,[[13,23,10,19],[14,22,8,2],[14,40,8,2]]);
     pixels(ctx,p.phone,[[14,24,8,16]]);
-    pixels(ctx,p.screen,[[15,27,6,12]]);
-    pixels(ctx,p.shoeShadow,[[15,25,4,1],[20,28,1,9]]);
-    R(ctx,16,24,2,2,p.glassesLight);
-    R(ctx,17,38,3,1,"#655b65");
+    if(back){
+     // Rear view exposes the phone camera, not the front display.
+     R(ctx,15,25,5,5,p.glassesLight);
+     R(ctx,16,26,2,2,p.outlineDark);
+     R(ctx,19,26,1,1,p.outlineDark);
+     R(ctx,18,29,1,1,p.glassesLight);
+     R(ctx,20,33,1,6,p.screen);
+    }else{
+     pixels(ctx,p.screen,[[15,27,6,12]]);
+     pixels(ctx,p.shoeShadow,[[15,25,4,1],[20,28,1,9]]);
+     R(ctx,16,24,2,2,p.glassesLight);
+     R(ctx,17,38,3,1,"#655b65");
+    }
    });
   }
   bound(ctx,"wrist_l",coords,()=>{
