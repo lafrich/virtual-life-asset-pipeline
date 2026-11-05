@@ -9,17 +9,18 @@
   <title>Mahluk Hidup — Character Studio</title>
   <link rel="stylesheet" href="./style.css?v=custom-model-color-v3">
   <link rel="stylesheet" href="./pose-maker.css?v=pixel-mask-v2">
-  <link rel="stylesheet" href="./rig-studio-v2.css?v=original-source-v3">
+  <link rel="stylesheet" href="./rig-studio-v2.css?v=gender-gizmo-v4">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
   <script defer src="./pose-weights.js?v=pixel-box-v1"></script>
-  <script defer src="./modular-rig-v2.js?v=original-source-v3"></script>
-  <script defer src="./rig-studio-v2.js?v=original-source-v3"></script>
+  <script defer src="./modular-rig-v2.js?v=gender-gizmo-v4"></script>
+  <script defer src="./rig-gizmo-v2.js?v=gender-gizmo-v4"></script>
+  <script defer src="./rig-studio-v2.js?v=gender-gizmo-v4"></script>
   <script defer src="./pose-maker.js?v=pixel-mask-v1"></script>
-  <script defer src="./app.js?v=original-source-v3"></script>
+  <script defer src="./app.js?v=gender-gizmo-v4"></script>
   <script defer src="./custom-character-wardrobe.js?v=custom-model-color-v4"></script>
   <script defer src="./animations.js?v=pose-foreground-v1"></script>
 </head>
@@ -508,7 +509,8 @@
 
       <section class="rig-v2-workspace" id="rig-v2-workspace" role="tabpanel" aria-labelledby="switch-rig-v2" hidden>
         <aside class="rig-v2-sidebar">
-          <strong>NEW CHARACTER / RIG V2</strong>
+          <strong>UNIVERSAL HUMAN / ORIGINAL V6B RIG</strong>
+          <p class="rig-v2-plain-note">MALE &amp; FEMALE use the same bone hierarchy. BASE is unclothed; outfit layers can be switched on without changing rig or skin.</p>
           <p class="rig-v2-plain-note">ORIGINAL PIPELINE V6B ART · 64×112 PX · AUTHENTIC MATERIAL RAMPS / NO BLACK OUTLINES / ORIGINAL RENDER LAYERS. NO REDRAWN PROXY CHARACTER.</p>
           <strong>BONE HIERARCHY / SELECT PART</strong>
           <div id="rig-v2-tree" class="rig-v2-tree" aria-label="Modular pixel puppet bone hierarchy"></div>
@@ -518,7 +520,10 @@
         </aside>
         <section class="rig-v2-editor">
           <div class="rig-v2-center-tools">
-            <b>ORIGINAL PIXEL PIPELINE / RIG.SPR</b>
+            <b>MALE / FEMALE · BASE + OUTFIT</b>
+            <label class="rig-v2-gizmo-toggle" for="rig-v2-joints-visible">
+              <input id="rig-v2-joints-visible" type="checkbox" checked> FAINT JOINTS
+            </label>
             <button type="button" class="chrome-button active" data-rig-v2-view="se">SE</button>
             <button type="button" class="chrome-button" data-rig-v2-view="sw">SW</button>
             <button type="button" class="chrome-button" data-rig-v2-view="ne">NE</button>
@@ -528,7 +533,7 @@
             <div class="rig-v2-stage-inner">
               <canvas id="rig-v2-main" width="64" height="112" aria-label="Draggable modular pixel character puppet and facial emotion rig"></canvas>
             </div>
-            <p class="rig-v2-stage-tips">CLICK A RIG POINT TO SELECT.<br>DRAG A POINT TO MOVE ITS PART.<br><br>HEAD IS THE EMOTION PARENT.<br>USE ◆ TO KEYFRAME.<br><br>RGBA / NEAREST NEIGHBOR.</p>
+            <p class="rig-v2-stage-tips">SMALL FAINT DOTS: JOINTS.<br>DRAG CENTER: MOVE.<br>DRAG OUTER CIRCLE: ROTATE.<br>SHIFT: SNAP ROTATION TO 15°.<br><br>HIDE OTHER JOINTS FOR PRECISION.<br><br>◆ SAVES THE CURRENT FRAME.</p>
           </div>
           <div class="rig-v2-preview-list" aria-label="Four independent sprite directions">
             <div class="rig-v2-mini"><b>SE</b><canvas id="rig-v2-preview-se" width="64" height="112"></canvas></div>
@@ -538,7 +543,21 @@
           </div>
         </section>
         <aside class="rig-v2-inspector">
-          <strong>SELECTED MODULE</strong>
+          <strong>BASE CHARACTER / OUTFIT</strong>
+          <label>BODY BASE
+            <select id="rig-v2-gender" aria-label="Select native human body base">
+              <option value="male">MALE / ADULT</option>
+              <option value="female">FEMALE / ADULT</option>
+            </select>
+          </label>
+          <label>OUTFIT
+            <select id="rig-v2-outfit" aria-label="Choose unclothed base or detachable outfit">
+              <option value="base">BASE / NO OUTFIT</option>
+              <option value="outfit">OUTFIT ON</option>
+            </select>
+          </label>
+          <p class="rig-v2-side-note">The original skin and anatomy remain the base. Clothing is optional. Changing Male/Female does not alter the universal animation joints.</p>
+          <strong>SELECTED MODULE / GIZMO</strong>
           <output id="rig-v2-selected">HEAD</output>
           <label>PARENT <b id="rig-v2-parent">NECK</b></label>
           <label>OFFSET X <input id="rig-v2-x" type="number" step="0.5" min="-40" max="40" value="0"></label>
