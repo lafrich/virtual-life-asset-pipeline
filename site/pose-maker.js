@@ -179,6 +179,36 @@ function renderSheet(base,img,keyframes,n,duration){
  }
  return out;
 }
+
+function zipFiles(entries){
+ const encoder=new TextEncoder(),local=[],central=[];
+ let offset=0,centralSize=0;
+ function head(size){const data=new Uint8Array(size);return {data,v:new DataView(data.buffer)};}
+ function crc32(bytes){
+  let c=0xffffffff;
+  for(const byte of bytes){c^=byte;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0);}
+  return (c^0xffffffff)>>>0;
+ }
+ for(const entry of entries){
+  const path=encoder.encode(entry.name),data=entry.bytes,crc=crc32(data);
+  const l=head(30+path.length);l.v.setUint32(0,0x04034b50,true);
+  l.v.setUint16(4,20,true);l.v.setUint32(14,crc,true);
+  l.v.setUint32(18,data.length,true);l.v.setUint32(22,data.length,true);
+  l.v.setUint16(26,path.length,true);l.data.set(path,30);
+  local.push(l.data,data);
+  const c=head(46+path.length);c.v.setUint32(0,0x02014b50,true);
+  c.v.setUint16(4,20,true);c.v.setUint16(6,20,true);
+  c.v.setUint32(16,crc,true);c.v.setUint32(20,data.length,true);
+  c.v.setUint32(24,data.length,true);c.v.setUint16(28,path.length,true);
+  c.v.setUint32(42,offset,true);c.data.set(path,46);
+  central.push(c.data);centralSize+=c.data.length;offset+=l.data.length+data.length;
+ }
+ const end=head(22);end.v.setUint32(0,0x06054b50,true);
+ end.v.setUint16(8,entries.length,true);end.v.setUint16(10,entries.length,true);
+ end.v.setUint32(12,centralSize,true);end.v.setUint32(16,offset,true);
+ return new Blob([...local,...central,end.data],{type:"application/zip"});
+}
+
 function mount(){
  const tab=document.getElementById("switch-poser"),panel=document.getElementById("pose-workspace");
  if(!tab||!panel)return;
@@ -218,6 +248,8 @@ function mount(){
    b.textContent="F"+(i+1)+" · "+Math.round(key.at*100)+"%";
    b.onclick=()=>{active=i;playing=false;renderAll();};wrap.append(b);
   });
+  $("pose-time").value=String(Math.round(keys[active].at*100));
+  $("pose-time").disabled=active===0||active===keys.length-1;
  }
  function preview(){
   const p=playing?sample(keys,playTime):pose();
@@ -341,14 +373,17 @@ function mount(){
  $("pose-export").addEventListener("click",async()=>{
   try{
    const records=await exportSet();
-   const name=records[0].id;
+   const name=records[0].id,files=[],meta=[];
    for(const rec of records){
-    const blob=await (await fetch(rec.sheet)).blob();
-    download(rec.base_id+"/"+name+".png".replace("/","_"),blob,"image/png");
+    const bytes=new Uint8Array(await (await fetch(rec.sheet)).arrayBuffer());
+    const relative="assets/animation_library/human_pose_maker/"+rec.base_id+"/"+name+".png";
+    files.push({name:relative,bytes});
+    const {sheet,...values}=rec;meta.push({...values,atlas:relative});
    }
-   const meta=records.map(({sheet,...props})=>({...props,atlas:props.base_id+"_"+name+".png"}));
-   download(name+"_motion.json",JSON.stringify({format:"virtual-life-human-pose-v1",motions:meta},null,2),"application/json");
-   inform("EXPORTED 4-DIR PNGs + rig JSON / commit these to publish for everyone.");
+   files.push({name:"assets/animation_library/human_pose_maker/"+name+".json",
+    bytes:new TextEncoder().encode(JSON.stringify({format:"virtual-life-human-pose-v1",motions:meta},null,2))});
+   download(name+"_human_motions.zip",zipFiles(files),"application/zip");
+   inform("EXPORTED ZIP / 2 native-base PNG atlases + editable rig JSON.");
   }catch(e){inform("EXPORT FAILED: "+e.message);}
  });
  $("pose-new").addEventListener("click",()=>{
