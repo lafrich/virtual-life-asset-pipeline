@@ -689,7 +689,8 @@ async function loadCatalog(){
   for(const row of state.actions)$("action").append(opt(row.id,row.label));
   $("new-action").replaceChildren(opt("","SELECT AN ACTION..."));
   for(const row of state.actions)$("new-action").append(opt(row.id,row.label||row.id));
-  state.catalog=(cat.characters||[]).filter(x=>escapeId(x?.id)&&isSheet(x.sheet));
+  const visible=window.VLCharacterReferenceReset?.active?window.VLCharacterReferenceReset.filter(cat.characters):cat.characters;
+  state.catalog=(visible||[]).filter(x=>escapeId(x?.id)&&isSheet(x.sheet));
   const saved=safeJSON("virtual-life-character-storage-v1",[]);
   if(Array.isArray(saved))for(const row of saved){
    const parent=state.catalog.find(x=>x.id===row?.base);
@@ -704,6 +705,7 @@ async function loadCatalog(){
   updateActors();
   renderActionList();
   state.source=actionSource();setAction(state.action);
+  if(window.VLCharacterReferenceReset?.active)status(window.VLCharacterReferenceReset.message+" · ACTION TOOL TETAP TERSEDIA");
   if(pendingContext){const request=pendingContext;pendingContext=null;applyParentContext(request);}
  }catch(e){status("COULD NOT LOAD PLAYER CATALOG: "+e.message);notice("Check Mahluk Hidup Pages build.");}
 }
