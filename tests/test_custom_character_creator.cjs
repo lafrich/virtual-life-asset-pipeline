@@ -28,7 +28,7 @@ assert.match(app,/VLHumanWardrobe\?\.createPortrait/);
 assert.match(app,/VLHumanWardrobe\?\.populate/);
 assert.match(mod,/for\(let i=0;i<4;i\+\+\)/);
 assert.match(mod,/frames\[DIRS\[i\]\]=canvas\.toDataURL/);
-assert.match(mod,/function createPortrait/);
+assert.match(mod,/async function createPortrait/);
 assert.match(mod,/window|root\.VLHumanWardrobe/);
 assert.ok(!mod.includes('setAttribute("src", "https://'));
 console.log("PASS new top custom workspace / native Male Female wardrobe / preview / character save and local game sync");
