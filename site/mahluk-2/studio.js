@@ -295,31 +295,123 @@ function axisButtons(){
  $("viewHint").textContent=view==="iso"?"ISOMETRIC · X / Y / Z":"FRONT · FLAT PIXELS";
 }
 function pick(id){
- if(!R.BMAP[id])return;
- selected=id;document.querySelectorAll("[data-bone]").forEach(x=>x.classList.toggle("selected",x.dataset.bone===id));
+ if(!R.BMAP[id]||G.HIDDEN.has(id))return;
+ selected=id;
+ for(const element of document.querySelectorAll("[data-bone]"))
+  element.classList.toggle("selected",element.dataset.bone===id);
  $("selectedName").textContent=R.BMAP[id].label;
- $("selectedParent").textContent="PARENT: "+(id==="glasses"?"head":R.BMAP[id].parent||"none");
- const p=state.parts[id];for(const [k,el] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]])$(el).value=p[k]??0;
- $("visible").checked=p.visible;
+ const parent=rigRules.parents[id];
+ $("selectedParent").textContent="PARENT: "+(parent||"SCENE ROOT");
+ const select=$("parentBone");select.replaceChildren();
+ if(id==="root"){
+  const opt=document.createElement("option");opt.textContent="SCENE ROOT (fixed)";opt.value="";select.append(opt);
+  select.disabled=true;
+ }else{
+  select.disabled=false;
+  for(const b of R.BONES){
+   if(G.HIDDEN.has(b.id)||!G.canParent(rigRules,id,b.id,R))continue;
+   const opt=document.createElement("option");opt.value=b.id;opt.textContent=b.label;select.append(opt);
+  }
+  select.value=parent||"root";
+ }
+ const part=state.parts[id],anchor=rigRules.anchors[id];
+ for(const [prop,el] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]])
+  $(el).value=part[prop]??0;
+ $("anchorX").value=anchor.x;
+ $("anchorY").value=anchor.y;
+ $("visible").checked=part.visible;
+ const order=G.effectiveOrder(rigRules,renderableIds()),at=order.indexOf(id);
+ $("layerBack").disabled=at<=0;$("layerFront").disabled=at<0||at===order.length-1;
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
  if($("glassesAsset"))$("glassesAsset").value=glassesAssetId;
  paint();
 }
+function moveLayer(id,delta){
+ const current=G.effectiveOrder(rigRules,renderableIds()),at=current.indexOf(id);
+ if(at<0||at+delta<0||at+delta>=current.length)return;
+ remember();
+ G.moveLayer(rigRules,id,delta,current);
+ buildTree();setStatus("DRAW ORDER: "+id.toUpperCase()+" → "+(delta>0?"FRONT":"BACK"));
+}
+function buildDrawOrder(){
+ const holder=$("layerOrder");holder.replaceChildren();
+ const ids=G.effectiveOrder(rigRules,renderableIds());
+ ids.slice().reverse().forEach((id,frontIndex)=>{
+  const index=ids.indexOf(id),row=document.createElement("div");
+  row.className="draw-row";row.draggable=true;row.dataset.plane=id;
+  const button=document.createElement("button");button.type="button";
+  button.className="draw-select"+(selected===id?" selected":"");
+  button.dataset.bone=id;
+  button.textContent=(frontIndex===0?"FRONT  ":String(frontIndex+1).padStart(2,"0")+"  ")+
+   (R.BMAP[id]?.label||id).toUpperCase();
+  button.onclick=()=>pick(id);
+  const up=document.createElement("button");up.className="draw-step";
+  up.textContent="↑";up.title="Bring "+id+" forward";up.disabled=index===ids.length-1;
+  up.onclick=()=>moveLayer(id,1);
+  const down=document.createElement("button");down.className="draw-step";
+  down.textContent="↓";down.title="Send "+id+" backward";down.disabled=index===0;
+  down.onclick=()=>moveLayer(id,-1);
+  row.append(button,up,down);holder.append(row);
+  row.addEventListener("dragstart",event=>event.dataTransfer.setData("text/plain","order:"+id));
+  row.addEventListener("dragover",event=>{event.preventDefault();row.classList.add("drag-over")});
+  row.addEventListener("dragleave",()=>row.classList.remove("drag-over"));
+  row.addEventListener("drop",event=>{
+   event.preventDefault();row.classList.remove("drag-over");
+   const data=event.dataTransfer.getData("text/plain");
+   if(!data.startsWith("order:"))return;
+   const dragged=data.slice(6),order=G.effectiveOrder(rigRules,renderableIds());
+   const source=order.indexOf(dragged),target=order.indexOf(id);
+   if(source<0||target<0||source===target)return;
+   remember();order.splice(source,1);
+   order.splice(order.indexOf(id)+(source<target?1:0),0,dragged);
+   rigRules.order=order;buildTree();
+   setStatus("DRAW ORDER: MOVED "+dragged.toUpperCase());
+  });
+ });
+}
 function buildTree(){
- const holder=$("tree");holder.replaceChildren();const set=new Set(activeSlots().filter(s=>!E.slotKind(s)).map(s=>s.bone));
- set.add("emotion");set.add("glasses");
- for(const [group,bones] of GROUPS){
-  const head=document.createElement("div");head.className="tree-group";head.textContent=group;holder.append(head);
-  for(const id of bones){
-   const b=R.BMAP[id];if(!b)continue;
-   const btn=document.createElement("button");btn.dataset.bone=id;btn.type="button";btn.title="Click to edit plane "+id;
-   const dot=document.createElement("span");dot.className="dot";dot.textContent=set.has(id)?"▣":"◇";
-   const name=document.createElement("span");name.textContent=id.toUpperCase().replaceAll("_"," ");
-   const eye=document.createElement("span");eye.className="eye";eye.textContent=state.parts[id].visible?"◉":"○";eye.classList.toggle("off",!state.parts[id].visible);
-   btn.append(dot,name,eye);btn.addEventListener("click",()=>pick(id));holder.append(btn);
-  }
+ const holder=$("tree");holder.replaceChildren();
+ const drawable=new Set(renderableIds());
+ const valid=R.BONES.filter(b=>!G.HIDDEN.has(b.id));
+ const ids=new Set(valid.map(b=>b.id)),children=new Map();
+ for(const b of valid){
+  const parent=ids.has(rigRules.parents[b.id])?rigRules.parents[b.id]:null;
+  if(!children.has(parent))children.set(parent,[]);
+  children.get(parent).push(b.id);
  }
- $("planeCount").textContent=String(set.size).padStart(2,"0");
+ const visited=new Set();
+ function node(id,depth){
+  if(visited.has(id))return;
+  visited.add(id);
+  const b=R.BMAP[id],button=document.createElement("button");
+  button.dataset.bone=id;button.type="button";button.draggable=id!=="root";
+  button.style.paddingLeft=(12+Math.min(depth,9)*11)+"px";
+  button.title=b.label+" · parent "+(rigRules.parents[id]||"scene")+" · drag onto another bone to reparent";
+  const marker=document.createElement("span");
+  marker.className="dot";marker.textContent=drawable.has(id)?"▣":"◇";
+  const label=document.createElement("span");label.textContent=b.label.toUpperCase();
+  const icon=document.createElement("span");icon.className="eye";
+  icon.textContent=state.parts[id].visible?"◉":"○";
+  button.append(marker,label,icon);holder.append(button);
+  button.onclick=()=>pick(id);
+  button.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain","node:"+id));
+  button.addEventListener("dragover",e=>e.preventDefault());
+  button.addEventListener("drop",e=>{
+   e.preventDefault();
+   const value=e.dataTransfer.getData("text/plain");
+   if(!value.startsWith("node:"))return;
+   const dragged=value.slice(5);
+   if(!G.canParent(rigRules,dragged,id,R))return;
+   remember();G.setParent(rigRules,dragged,id,R);buildTree();
+   setStatus("RE-PARENTED "+dragged+" → "+id);
+  });
+  for(const child of children.get(id)||[])node(child,depth+1);
+ }
+ for(const root of children.get(null)||[])node(root,0);
+ for(const b of valid)if(!visited.has(b.id))node(b.id,0);
+ $("planeCount").textContent=String(drawable.size).padStart(2,"0");
+ buildDrawOrder();
+ if(!R.BMAP[selected]||G.HIDDEN.has(selected))selected="head";
  pick(selected);
 }
 function applyState(){
