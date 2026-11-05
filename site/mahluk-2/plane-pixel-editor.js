@@ -7,7 +7,7 @@
  if(typeof module==="object"&&module.exports)module.exports=api;
  if(root)root.MH2PlanePixelEditor=api;
 })(typeof window!=="undefined"?window:null,function(){"use strict";
- const W=64,H=112,DIR=["se","sw","ne","nw"],MAX_HISTORY=24;
+ const W=64,H=112,DIR=["se","sw","ne","nw"],MAX_HISTORY=24,S=typeof window!=="undefined"?window.MH2PixelSelection:require("./pixel-selection.js");
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  function mirroredX(x,from,to){
   const flip=i=>i===1||i===3; // SW/NW are mirrored camera silhouettes.
@@ -47,6 +47,16 @@
    color:overlay.querySelector("#pixelColor"),size:overlay.querySelector("#pixelSize"),
    onion:overlay.querySelector("#pixelOnion"),grid:overlay.querySelector("#pixelGrid"),
    sync:overlay.querySelector("#pixelSync"),syncExisting:overlay.querySelector("#pixelSyncExisting"),
+   refView:overlay.querySelector("#pixelReferenceView"),
+   refFlip:overlay.querySelector("#pixelReferenceFlip"),
+   refOpacity:overlay.querySelector("#pixelReferenceOpacity"),
+   refOpacityLabel:overlay.querySelector("#pixelReferenceOpacityLabel"),
+   refX:overlay.querySelector("#pixelReferenceX"),refY:overlay.querySelector("#pixelReferenceY"),
+   selectAll:overlay.querySelector("#pixelSelectAll"),
+   deselect:overlay.querySelector("#pixelDeselect"),
+   flipH:overlay.querySelector("#pixelFlipH"),flipV:overlay.querySelector("#pixelFlipV"),
+   delSelection:overlay.querySelector("#pixelDeleteSelection"),
+   selectionInfo:overlay.querySelector("#pixelSelectionInfo"),
    gridType:overlay.querySelector("#pixelGridType"),wrap:overlay.querySelector("#pixelCanvasWrap"),
    zoom:overlay.querySelector("#pixelZoom"),zoomOut:overlay.querySelector("#pixelZoomOut"),
    zoomIn:overlay.querySelector("#pixelZoomIn"),zoomFit:overlay.querySelector("#pixelZoomFit"),
@@ -60,10 +70,17 @@
   const ctx=atlas.getContext("2d",{willReadFrequently:true});
   const out=canvas.getContext("2d");
   let bone="",tool="pencil",dir=0,active=null,history=[],redo=[],dirty=false,source=null,ref=null,refs=null;
-  let zoom=5,pan=null,pinch=null;
+  let zoom=5,pan=null,pinch=null,selection=null,moveStart=null;
   const touches=new Map();
   const controls=[...overlay.querySelectorAll("[data-pixel-tool]")];
+  const updateSelection=()=>{
+   els.selectionInfo.textContent=selection?
+    "SELECTED "+selection.w+"×"+selection.h+" · X"+selection.x+" Y"+selection.y+
+      " · MOVE/FLIP AFFECT THIS VIEW ONLY":
+    "NO SELECTION · FLIP AFFECTS FULL ACTIVE VIEW";
+  };
   const updateHistory=()=>{
+   updateSelection();
    els.undo.disabled=!history.length;els.redo.disabled=!redo.length;
    els.status.textContent=(dirty?"● UNSAVED PIXELS":"ORIGINAL PLANE")+
     " · "+bone.toUpperCase()+" · "+DIR[dir].toUpperCase()+
