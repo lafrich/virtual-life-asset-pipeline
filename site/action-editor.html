@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#073a9d">
 <title>Mahluk Hidup — Action Editor</title>
 <link rel="stylesheet" href="./style.css?v=desktop-viewport-fix-1">
-<link rel="stylesheet" href="./action-editor.css?v=pose-expression-v6">
+<link rel="stylesheet" href="./action-editor.css?v=action-local-poser-v1">
 <script>if(new URLSearchParams(location.search).get("embedded")==="1")document.documentElement.classList.add("ae-embedded");</script>
 <script src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
 <script defer src="./action-frame-bridge.js?v=action-v1"></script>
@@ -17,7 +17,8 @@
 <script defer src="/virtual-office/world-builder/bangun-ruang/interior-isometric.js?v=furniture-action-layer-v11"></script>
 <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
 <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
-<script defer src="./action-editor.js?v=native-depth-saved-edit-v2"></script>
+<script defer src="./action-local-poser.js?v=action-only-v1"></script>
+<script defer src="./action-editor.js?v=action-local-poser-v1"></script>
 </head>
 <body class="ae-body">
 <main class="ae-window">
@@ -103,6 +104,11 @@
         <label class="ae-frame ae-field" for="frame"><span class="ae-property-row"><span>FRAME</span><output id="frame-label">1 / 4</output></span>
           <input id="frame" type="range" min="0" max="3" value="0" step="1">
         </label>
+        <section class="ae-local-pose-launch" aria-label="Action-only pose adjustments">
+          <div class="property-label">POSE MAKER / THIS ACTION ONLY</div>
+          <button type="button" id="ae-local-pose-open" class="chrome-button ae-wide">✳ ADJUST BODY PARTS / CURRENT FRAME</button>
+          <p class="ae-source-note">HEAD · BODY · L/R ARMS · L/R LEGS. Changes go only into this selected action frame when you press SAVE FRAME. Shared rig and motion library stay unchanged.</p>
+        </section>
         <div class="property-label">PIXEL COLOR / BRUSH</div>
         <div class="ae-brush-row">
           <input id="color" type="color" value="#202e43" aria-label="Pixel color">
@@ -173,6 +179,52 @@
         </div>
       </div>
     </aside>
+  </section>
+  <section id="ae-local-pose-overlay" class="ae-local-pose-overlay" hidden aria-label="Action only pose maker">
+    <div class="ae-local-pose-dialog" role="dialog" aria-modal="true" aria-labelledby="ae-local-pose-title">
+      <header class="ae-local-pose-titlebar">
+        <strong id="ae-local-pose-title">✳ ACTION / LOCAL POSE MAKER</strong>
+        <button type="button" id="ae-local-pose-close" aria-label="Close action pose maker">× CLOSE</button>
+      </header>
+      <div class="ae-local-pose-context"><span id="ae-local-pose-context">NO FRAME</span><span>LOCAL FRAME ONLY / NOT A BASE RIG</span></div>
+      <div class="ae-local-pose-workspace">
+        <div class="ae-local-pose-stage">
+          <div class="ae-local-pose-canvas-scroll">
+            <canvas id="ae-local-pose-canvas" width="64" height="112" aria-label="Drag selected body part in pose mode or change its pixel source rectangle in box mode"></canvas>
+          </div>
+          <p class="ae-source-note">POSE: drag to move a body part. SOURCE BOX: drag inside to move the mask area, or its corner/edge handles to resize. This does not edit the original character.</p>
+        </div>
+        <aside class="ae-local-pose-controls">
+          <label class="ae-field" for="ae-local-pose-part"><span class="property-label">BODY PART</span><select id="ae-local-pose-part"></select></label>
+          <p class="ae-local-pose-current" id="ae-local-pose-current">HEAD</p>
+          <div class="ae-local-pose-mode" role="group" aria-label="Choose part pose or edit source region">
+            <button type="button" class="chrome-button active" data-ae-local-mode="pose" aria-pressed="true">MOVE PART</button>
+            <button type="button" class="chrome-button" data-ae-local-mode="region" aria-pressed="false">SOURCE BOX</button>
+          </div>
+          <div class="ae-local-pose-fields">
+            <label for="ae-local-pose-x">X OFFSET<input id="ae-local-pose-x" type="number" min="-48" max="48" step="1" value="0"></label>
+            <label for="ae-local-pose-y">Y OFFSET<input id="ae-local-pose-y" type="number" min="-64" max="64" step="1" value="0"></label>
+            <label for="ae-local-pose-angle">ROTATION °<input id="ae-local-pose-angle" type="number" min="-180" max="180" step="1" value="0"></label>
+            <label for="ae-local-pose-scale">SCALE %<input id="ae-local-pose-scale" type="number" min="40" max="200" step="1" value="100"></label>
+            <label for="ae-local-pose-layer">DRAW ORDER
+              <select id="ae-local-pose-layer"><option value="front">IN FRONT</option><option value="back">BEHIND</option></select>
+            </label>
+          </div>
+          <div class="ae-local-pose-subheading">SOURCE RECT / CURRENT PART</div>
+          <div class="ae-local-pose-fields">
+            <label for="ae-local-pose-rx">X<input id="ae-local-pose-rx" type="number" min="0" max="61" value="13"></label>
+            <label for="ae-local-pose-ry">Y<input id="ae-local-pose-ry" type="number" min="0" max="109" value="0"></label>
+            <label for="ae-local-pose-rw">WIDTH<input id="ae-local-pose-rw" type="number" min="3" max="64" value="38"></label>
+            <label for="ae-local-pose-rh">HEIGHT<input id="ae-local-pose-rh" type="number" min="3" max="112" value="35"></label>
+          </div>
+          <button type="button" id="ae-local-pose-reset-part" class="chrome-button ae-wide">↺ RESET SELECTED PART</button>
+          <p class="ae-source-note" id="ae-local-pose-note" role="status">READY TO ADJUST SELECTED FRAME.</p>
+          <button type="button" id="ae-local-pose-apply" class="chrome-button action-main ae-wide">✓ APPLY TO THIS ACTION FRAME</button>
+          <button type="button" id="ae-local-pose-cancel" class="chrome-button ae-wide">CANCEL / NO CHANGE</button>
+          <small class="ae-local-pose-save-note">Apply previews the fix. Use the existing SAVE FRAME and SAVE TO SEMESTA to publish. It never changes the shared motion database.</small>
+        </aside>
+      </div>
+    </div>
   </section>
   <footer class="ae-footer">MAHLUK HIDUP · 64×112 / 4 DIRECTIONS <span>LOCAL FRAME EDITS · ORIGINAL SPRITE SAFE</span></footer>
 </main>
