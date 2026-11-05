@@ -13,6 +13,8 @@
  const DIR=["se","sw","ne","nw"];
  const STORE="mahluk-clothed-v6b-manual-art-v1";
  const FORMAT="mahluk-original-clothed-manual-art-v1";
+ const LIBRARY_STORE="mahluk-original-v6b-custom-versions-v1";
+ const ACTIVE_STORE="mahluk-original-v6b-active-version-v1";
  const index=(x,y)=>Math.floor(y)*W+Math.floor(x);
  const bounds=(x,y)=>Number.isFinite(x)&&Number.isFinite(y)&&x>=0&&y>=0&&x<W&&y<H;
  const copy=x=>JSON.parse(JSON.stringify(x));
@@ -53,17 +55,60 @@
    this.state=blankState();
    this.src=null;this.baseCache=new Map();this.cache=new Map();
    this.undo=[];this.redo=[];this.onChange=null;
-   this.loadLocal();
+   this.activeVersion="draft";this.loadLocal();
   }
   loadLocal(){
    try{
     this.state=normalizeState(JSON.parse(this.host.localStorage?.getItem(STORE)||"null"),this.bones);
-   }catch{this.state=blankState();}
+    this.activeVersion=this.host.localStorage?.getItem(ACTIVE_STORE)||"draft";
+   }catch{this.state=blankState();this.activeVersion="draft";}
    this.cache.clear();
   }
+  library(){
+   try{
+    const rows=JSON.parse(this.host.localStorage?.getItem(LIBRARY_STORE)||"[]");
+    return Array.isArray(rows)?rows.filter(v=>v&&typeof v.id==="string"&&v.data?.format===FORMAT):[];
+   }catch{return [];}
+  }
+  listVersions(){
+   return this.library().map(v=>({id:v.id,name:v.name}));
+  }
   saveLocal(){
-   try{this.host.localStorage?.setItem(STORE,JSON.stringify(this.state));return true;}
-   catch{return false;}
+   try{
+    this.host.localStorage?.setItem(STORE,JSON.stringify(this.state));
+    this.host.localStorage?.setItem(ACTIVE_STORE,this.activeVersion);
+    if(this.activeVersion!=="draft"&&this.activeVersion!=="original"){
+     const rows=this.library(),item=rows.find(v=>v.id===this.activeVersion);
+     if(item){
+      item.name=this.state.name;item.data=this.serialize();
+      this.host.localStorage?.setItem(LIBRARY_STORE,JSON.stringify(rows));
+     }
+    }
+    return true;
+   }catch{return false;}
+  }
+  saveAsVersion(name){
+   const rows=this.library();
+   const next=rows.reduce((n,v)=>Math.max(n,Number(v.id.replace("custom-",""))||0),0)+1;
+   const id="custom-"+next;
+   this.state.name=String(name||"CUSTOM CHARACTER "+next).slice(0,80);
+   rows.push({id,name:this.state.name,data:this.serialize()});
+   try{
+    this.host.localStorage?.setItem(LIBRARY_STORE,JSON.stringify(rows));
+    this.activeVersion=id;this.saveLocal();return id;
+   }catch{return null;}
+  }
+  openVersion(id){
+   this.snapshot();
+   const version=this.library().find(v=>v.id===id);
+   if(id==="original"){
+    this.state=blankState();this.state.name="ORIGINAL CLOTHED MASTER";
+    this.activeVersion="original";
+   }else if(version){
+    this.state=normalizeState(version.data,this.bones);
+    this.activeVersion=id;
+   }else return false;
+   this.cache.clear();this.saveLocal();this.changed();return true;
   }
   serialize(){return copy(this.state);}
   importState(data){
@@ -210,5 +255,5 @@
   }
   return sharedPromise;
  }
- return Object.freeze({W,H,DIR,STORE,FORMAT,blankState,normalizeState,Editor,getSharedEditor});
+ return Object.freeze({W,H,DIR,STORE,LIBRARY_STORE,FORMAT,blankState,normalizeState,Editor,getSharedEditor});
 });
