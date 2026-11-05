@@ -208,7 +208,7 @@
     capture(e);
     if(touches.size===2){
      const pair=touchPair();
-     pinch={distance:pair.distance,zoom,center:pair.center};
+     pinch={distance:pair.distance,zoom,lastCenter:pair.center};
      active=null;pan=null;return;
     }
     if(touches.size>2){active=null;return}
@@ -230,10 +230,10 @@
     touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pinch&&touches.size>=2){
      const pair=touchPair(),ratio=pair.distance/pinch.distance;
-     const dx=pair.center.x-pinch.center.x,dy=pair.center.y-pinch.center.y;
+     const dx=pair.center.x-pinch.lastCenter.x,dy=pair.center.y-pinch.lastCenter.y;
      setZoom(pinch.zoom*ratio,pair.center.x,pair.center.y);
      els.wrap.scrollLeft-=dx;els.wrap.scrollTop-=dy;
-     pinch={distance:pair.distance,zoom,center:pair.center};
+     pinch.lastCenter=pair.center;
      e.preventDefault();return;
     }
    }
