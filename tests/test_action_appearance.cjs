@@ -59,20 +59,46 @@ assert.equal(A.headAnchor({width:64,height:112,data:new Uint8ClampedArray(64*112
 // A body pose moved +7 right/+14 down must move the actual Bleh face
 // on the scene canvas, while keeping the source crop at its native atlas row.
 const priorDoc=global.document;
+// Two synthetic frames differ ONLY in one facial mark. Native expression
+// must update that mark at the posed head while leaving its neck unchanged.
+function coloredHead(left,top){
+ const img=mockHead(left,top);
+ for(let y=top;y<top+16;y++)for(let x=left;x<left+13;x++){
+  const i=(y*64+x)*4;
+  img.data[i]=194;img.data[i+1]=152;img.data[i+2]=126;
+ }
+ return img;
+}
+const nativeBase=coloredHead(20,31),nativeEmotion=coloredHead(20,31);
+const mark=(40*64+25)*4;
+nativeEmotion.data[mark]=39;nativeEmotion.data[mark+1]=29;nativeEmotion.data[mark+2]=25;
 global.document={createElement(){return {
  width:64,height:112,
- getContext(){return {drawImage(){},getImageData(){return mockHead(20,31);}}}
+ getContext(){
+  let draws=0;
+  return {drawImage(){draws++;},clearRect(){},
+   getImageData(){return draws<=1?nativeEmotion:nativeBase;}};
+ }
 };}};
-const poseCalls=[];
+const posed=coloredHead(27,45);
+let applied=null;
 const poseCtx={
- ...ctx,getImageData(){return mockHead(27,45);},
- drawImage(...a){poseCalls.push(a);}
+ ...ctx,getImageData(){return posed;},
+ putImageData(img){applied=img;},
+ drawImage(){throw Error("Native expressions must not paste a body/neck rectangle");}
 };
 const humanBleh={naturalWidth:256,naturalHeight:448};
+const normal={naturalWidth:256,naturalHeight:448};
+humanBleh.src="media/human-male-base-expression-bleh.png";
+normal.src="media/human-male-base-expression-neutral.png";
 assert.equal(A.drawExpression(poseCtx,{id:"bleh",sheet:"media/human-male-base-expression-bleh.png"},
- "se",0,()=>({ready:true,im:humanBleh})),true);
-assert.deepEqual(poseCalls[0].slice(1,5),[17,30,31,32]);
-assert.deepEqual(poseCalls[0].slice(5,7),[24,44]);
+ "se",0,p=>({ready:true,im:p.endsWith("-neutral.png")?normal:humanBleh})),true);
+assert.ok(applied,"Face delta was not applied");
+const faceMark=(54*64+32)*4;
+assert.equal(applied.data[faceMark],39,"Expression mark must follow posed head");
+const neckMark=(72*64+33)*4;
+assert.deepEqual([...applied.data.slice(neckMark,neckMark+4)],
+ [...posed.data.slice(neckMark,neckMark+4)],"Neck and body must remain untouched");
 if(priorDoc===undefined)delete global.document;else global.document=priorDoc;
 
 const html=fs.readFileSync("site/action-editor.html","utf8");
