@@ -732,26 +732,26 @@ function saveGame(){
  const library=getLibrary(),name=$("characterName").value.trim()||"My Character 2.0";
  const id=identifier||"mh2_"+Date.now().toString(36);
  const old=library.find(r=>r.id===id);
- const clipId=$("clip").value;
- const canvas=bake(frames,clipId);
- const idle=bake(1,"idle").toDataURL("image/png");
- const activeEmotion=getEmotionAsset(emotionAt(0));
- const frameTimes=emotionKeys.length===0&&activeEmotion?.frames===frames&&
-  Array.isArray(activeEmotion.frame_ms)&&activeEmotion.frame_ms.length===frames?
-  activeEmotion.frame_ms:Array(frames).fill(Math.round(1000/fps));
- const clips={...(old?.clips||{}),[clipId]:{sheet:canvas.toDataURL("image/png"),frames,frame_ms:frameTimes,loop:true}};
- const record={format:"mahluk-2-character-v1",version:1,id,name,base:type,template_base:type==="female"?"human_female_base":"human_male_base",
+ // 2.0 publishes the character ROOT only; action clips belong to 1.0.
+ const clipId="idle",rootFrames=1;
+ clip="idle";frames=1;frame=0;
+ const canvas=bake(rootFrames,clipId),rootSheet=canvas.toDataURL("image/png");
+ const clips={...(old?.clips||{}),idle:{
+  sheet:rootSheet,frames:1,frame_ms:[Math.round(1000/fps)],loop:true
+ }};
+ const record={format:"mahluk-2-character-v1",version:1,id,name,
+  role:"character-root",actionEditor:"mahluk-hidup-1.0",base:type,template_base:type==="female"?"human_female_base":"human_male_base",
   outfit,bodyPlane,model:R.normalize(state),rest:R.normalize(base),tracks:clone(tracks),frames,fps,clip:clipId,
   emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys)},accessoryPlanes:{glasses:glassesAssetId},
   rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
   pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),
-  sprite:clipId==="idle"?canvas.toDataURL("image/png"):old?.sprite||idle,clips,updated:Date.now()};
+  sprite:rootSheet,clips,updated:Date.now()};
  const next=[...library.filter(r=>r.id!==id),record].slice(-30);
  if(!safePut(STORAGE,next))return;
  identifier=id;updateLibrary();
  document.dispatchEvent(new CustomEvent("mahluk2:published",{detail:{id}}));
  try{window.dispatchEvent(new StorageEvent("storage",{key:STORAGE,newValue:JSON.stringify(next)}))}catch{}
- setStatus("✓ PUBLISHED "+name+" / "+clipId.toUpperCase()+" / "+frames+" FRAMES · SEMESTA & BANGUN RUANG",true);
+ setStatus("✓ ROOT PUBLISHED "+name+" · 4 DIRECTIONS · ACTIONS STAY IN 1.0 · SEMESTA & BANGUN RUANG",true);
 }
 function updateLibrary(){
  const list=$("library"),records=getLibrary();list.replaceChildren();const starter=document.createElement("option");
@@ -763,7 +763,7 @@ function loadRecord(id){
  const r=getLibrary().find(r=>r.id===id);if(!r)return;
  remember();
  identifier=r.id;type=["original","male","female"].includes(r.base)?r.base:"original";
- outfit=r.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,r.bodyPlane===undefined?B.defaultForBase(type):r.bodyPlane);clip=r.clip||"idle";
+ outfit=r.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,r.bodyPlane===undefined?B.defaultForBase(type):r.bodyPlane);clip="idle";
  // Shared master always takes precedence for new/opened 2.0 characters.
  rigRules=G.normalize(masterDocument()?.rules||r.rigRules,R);
  setPixelPlanes(masterDocument()?.pixelPlanes||r.pixelPlanes||{});
@@ -775,11 +775,11 @@ function loadRecord(id){
  for(const node of R.BONES){for(const key of r.tracks?.[node.id]||[]){
   if(key&&Number.isInteger(key.frame)&&key.value)R.key(tracks,node.id,key.frame,key.value,key.emotion,key.faceEmotion);
  }}
- frames=Math.round(clamp(r.frames||12,1,48));fps=Math.round(clamp(r.fps||12,1,30));frame=0;
+ frames=1;fps=Math.round(clamp(r.fps||12,1,30));frame=0;
  $("characterName").value=r.name;assetOptions();applyState();setStatus("OPENED "+r.name+" / EDIT MODULAR PLANES",true);
 }
 function newCharacter(){
- remember();identifier=null;type="original";outfit="outfit";bodyPlane="current";clip="idle";frames=12;fps=12;frame=0;
+ remember();identifier=null;type="original";outfit="outfit";bodyPlane="current";clip="idle";frames=1;fps=12;frame=0;
  const general=masterDocument();rigRules=G.normalize(general?.rules,R);
  setPixelPlanes(general?.pixelPlanes||{});
  emotionAssetId="native:neutral";emotionKeys=[];glassesAssetId="native";
@@ -803,12 +803,12 @@ function importProject(file){
   if(v.format!=="mahluk-2-project-v1")throw Error("Unknown Mahluk 2.0 project");
   remember();
   identifier=typeof v.id==="string"&&/^mh2_[a-z0-9]+$/.test(v.id)?v.id:null;
-  type=["original","male","female"].includes(v.base)?v.base:"original";outfit=v.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,v.bodyPlane===undefined?B.defaultForBase(type):v.bodyPlane);clip=["idle","walk","talk","sit","lie","custom"].includes(v.clip)?v.clip:"idle";
+  type=["original","male","female"].includes(v.base)?v.base:"original";outfit=v.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,v.bodyPlane===undefined?B.defaultForBase(type):v.bodyPlane);clip="idle";
   state=R.normalize(v.model);base=R.normalize(v.rest||v.model);tracks=R.makeTracks();
   rigRules=G.normalize(v.rigRules||masterDocument()?.rules,R);
   setPixelPlanes(v.pixelPlanes||masterDocument()?.pixelPlanes||{});
   for(const node of R.BONES){for(const k of v.tracks?.[node.id]||[]){if(k&&k.value&&Number.isInteger(k.frame))R.key(tracks,node.id,k.frame,k.value,k.emotion,k.faceEmotion)}}
-  frames=Math.round(clamp(v.frames||12,1,48));fps=Math.round(clamp(v.fps||12,1,30));
+  frames=1;fps=Math.round(clamp(v.fps||12,1,30));
   if(Array.isArray(v.embeddedAssets)&&v.embeddedAssets.length){
    const existing=E.safeAssets(window.localStorage);
    const imported=v.embeddedAssets.filter(a=>a?.format===E.FORMAT&&
@@ -915,7 +915,7 @@ function setupEvents(){
  $("newChar").onclick=newCharacter;
  $("saveChar").onclick=$("publish").onclick=saveGame;
  $("exportJson").onclick=projectExport;
- $("exportPng").onclick=()=>{commitUnkeyedPose();return bake(frames,clip).toBlob(b=>b&&download("mahluk_2_"+clip+"_4dir.png",b),"image/png")};
+ $("exportPng").onclick=()=>{commitUnkeyedPose();return bake(1,"idle").toBlob(b=>b&&download("mahluk_2_root_4dir.png",b),"image/png")};
  $("importJson").onchange=e=>{importProject(e.target.files?.[0]);e.target.value=""};
  $("hideSelected").onclick=()=>{remember();state.parts[selected].visible=!state.parts[selected].visible;buildTree()};
  $("resetSelected").onclick=()=>{remember();state.parts[selected]={...R.neutral().parts[selected]};pick(selected);setStatus("RESET "+selected)};
