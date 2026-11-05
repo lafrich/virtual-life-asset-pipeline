@@ -250,7 +250,6 @@ def build():
     shutil.copytree(SITE, OUT)
     media = OUT / "media"
     media.mkdir(exist_ok=True)
-    build_original_rig_layers(media)
     build_accessory_guide(ROOT, media)
 
     index_path = ROOT / "assets/character_stock/index.json"
@@ -337,6 +336,7 @@ def build():
                                           save_walk_preview, updated_timestamp))
     results.append(build_astrofrich(ROOT,media))
     results.extend(build_human_templates(ROOT,media))
+    build_original_rig_layers(media)
     build_human_wardrobe(ROOT,media,OUT)
     ids = [c["id"] for c in results]
     if len(ids) != len(set(ids)):
