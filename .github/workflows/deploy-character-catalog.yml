@@ -150,6 +150,9 @@ jobs:
           python -m py_compile tools/build_original_rig_layers.py
           python -m unittest discover -s tests -p test_native_rig_partition.py
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
+          node --check site/mahluk-2/studio.js
+          test -s site/mahluk-2/index.html
+          test -s site/mahluk-2/studio.css
           node --check site/modular-rig-v2.js
           node --check site/rig-studio-v2.js
           node --check site/rig-manual-art.js
@@ -251,6 +254,9 @@ jobs:
           test -s _site/media/original-rig/rotation-qa.png
           python -c 'import json,pathlib; s=pathlib.Path("_site"); m=json.loads((s/"media/original-rig/manifest.json").read_text()); parts=m["slots"]; assert m["anatomy_layers_shared_across_outfits"]; assert m["outfit_layer_mode"]=="additive_native_garments"; assert all(len([p for p in parts if p.get("gender")==g and p.get("layer_type")==t])>=(8 if t=="body" else 3) for g in ("male","female") for t in ("body","garment")); assert (s/m["rotation_qa"]).is_file(); print("Verified independently layered human anatomy and removable garments for both genders")'
           test -s _site/media/original-rig/source-contact-sheet.png
+          test -s _site/mahluk-2/index.html
+          test -s _site/mahluk-2/studio.js
+          test -s _site/mahluk-2/studio.css
           test -s _site/modular-rig-v2.js
           test -s _site/rig-studio-v2.js
           test -s _site/rig-manual-art.js
