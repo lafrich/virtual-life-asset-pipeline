@@ -1017,13 +1017,25 @@ function setupEvents(){
  for(const mode of ["move","rotate","scale","anchor"])$("tool"+mode[0].toUpperCase()+mode.slice(1)).onclick=()=>{transformMode=mode;axisButtons();paint()};
  $("viewIso").onclick=()=>{view="iso";axisButtons();paint()};
  $("viewFront").onclick=()=>{view="front";axisButtons();paint()};
+ $("togglePlaneDepth").onclick=()=>{
+  if(view!=="iso")view="iso";
+  inspectPlaneDepth=!inspectPlaneDepth;
+  axisButtons();paint();
+  setStatus(inspectPlaneDepth?
+   "PLANE DEPTH VIEW ON · VISUAL SEPARATION ONLY · NO RIG OR GAME TRANSFORMS CHANGED":
+   "PLANE DEPTH VIEW OFF · ORIGINAL MASTER POSITIONS",true);
+ };
+ $("planeGap").oninput=e=>{planeGap=clamp(Number(e.target.value),0,8);axisButtons();paint()};
+ $("orbitPrev").onclick=()=>setDirection(V.orbit(direction,-1));
+ $("orbitNext").onclick=()=>setDirection(V.orbit(direction,1));
+ for(const el of document.querySelectorAll("[data-orbit-dir],[data-preview-dir]")){
+  el.onclick=()=>setDirection(el.dataset.orbitDir||el.dataset.previewDir);
+ }
  $("zoomIn").onclick=()=>zoomTo(zoom*1.25);
  $("zoomOut").onclick=()=>zoomTo(zoom/1.25);
  $("viewHome").onclick=()=>{camera={x:0,y:0};zoom=3.25;$("zoomLabel").textContent="100%";paint()};
  for(const x of ["x","y","z"])$("axis"+x.toUpperCase()).onclick=()=>{axis=x;axisButtons();paint()};
- for(const el of document.querySelectorAll("[data-dir]"))el.onclick=()=>{
-  direction=el.dataset.dir;document.querySelectorAll("[data-dir]").forEach(b=>b.classList.toggle("active",b===el));paint();
- };
+ for(const el of document.querySelectorAll("[data-dir]"))el.onclick=()=>setDirection(el.dataset.dir);
  function mouse(e){
   const r=studio.getBoundingClientRect(),px=studio.width/r.width,py=studio.height/r.height;
   return {x:(e.clientX-r.left)*px,y:(e.clientY-r.top)*py};
@@ -1083,9 +1095,9 @@ function setupEvents(){
   const dx=p.x-drag.start.x,dy=p.y-drag.start.y,scale=zoom*Math.min(2,devicePixelRatio||1);
   if(drag.mode==="pan"){camera.x=drag.cam.x+dx;camera.y=drag.cam.y+dy}
   else if(drag.mode==="anchor"){
-   const mirror=direction==="sw"||direction==="nw";
    G.setAnchor(rigRules,selected,
-    drag.pivot.x+(mirror?-dx:dx)/scale,drag.pivot.y+dy/scale,R);
+    drag.pivot.x+V.dragDelta(dx,dy,scale,direction,"x"),
+    drag.pivot.y+V.dragDelta(dx,dy,scale,direction,"y"),R);
    $("anchorX").value=Number(rigRules.anchors[selected].x.toFixed(1));
    $("anchorY").value=Number(rigRules.anchors[selected].y.toFixed(1));
   }
@@ -1093,14 +1105,14 @@ function setupEvents(){
    const theta=Math.atan2(p.y-drag.origin.y,p.x-drag.origin.x);
    let delta=(theta-drag.startAngle)*180/Math.PI;
    if(delta>180)delta-=360;if(delta< -180)delta+=360;
-   let deg=clamp(drag.pos.angle+delta,-180,180);
+   let deg=clamp(drag.pos.angle+V.rotationDelta(delta,direction),-180,180);
    if(e.shiftKey)deg=Math.round(deg/15)*15;
    state.parts[selected].angle=deg;
   }
   else if(drag.mode==="scale")state.parts[selected].scale=clamp(drag.pos.scale+dx/(scale*24),.3,3);
-  else if(drag.axis==="x")state.parts[selected].x=clamp(drag.pos.x+dx/scale,-40,40);
-  else if(drag.axis==="y")state.parts[selected].y=clamp(drag.pos.y+dy/scale,-40,40);
-  else if(drag.axis==="z")state.parts[selected].z=clamp(drag.pos.z-dx/(scale*.6),-10,10);
+  else if(drag.axis==="x")state.parts[selected].x=clamp(drag.pos.x+V.dragDelta(dx,dy,scale,direction,"x"),-40,40);
+  else if(drag.axis==="y")state.parts[selected].y=clamp(drag.pos.y+V.dragDelta(dx,dy,scale,direction,"y"),-40,40);
+  else if(drag.axis==="z")state.parts[selected].z=clamp(drag.pos.z+V.dragDelta(dx,dy,scale,direction,"z"),-10,10);
   for(const [k,id] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]])
    $(id).value=Number(state.parts[selected][k].toFixed(1));
   paint();e.preventDefault();
@@ -1136,6 +1148,9 @@ function setupEvents(){
   }
   if(e.key==="+"||e.key==="=")zoomTo(zoom*1.2);
   if(e.key==="-")zoomTo(zoom/1.2);
+  if(e.key==="["||e.key==="ArrowLeft")setDirection(V.orbit(direction,-1));
+  if(e.key==="]"||e.key==="ArrowRight")setDirection(V.orbit(direction,1));
+  if(e.key==="p"||e.key==="P")$("togglePlaneDepth").click();
   if(e.key==="k"||e.key==="K")setKey();
   if(e.key==="Delete")removeKey();
  });
