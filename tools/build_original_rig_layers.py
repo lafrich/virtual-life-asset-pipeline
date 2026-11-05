@@ -78,7 +78,15 @@ def mask(part: str, x: int, y: int):
 
 
 def original_frames():
+    # Use the original native drawing language/palette, not the archived
+    # character's face identity. New editable reference uses a clean face
+    # and an alternate native hair silhouette from the same source engine.
     cfg = json.loads(BASE.read_text(encoding="utf-8"))
+    cfg.pop("mustache", None)
+    cfg.pop("stubble", None)
+    cfg["hair_style"] = "wavy"
+    cfg["fringe"] = "curtain"
+    cfg["name"] = "modular_source_reference"
     outfit = cfg["outfits"][cfg["default_outfit"]]
     se, palette = v6b.build_char_layers(cfg, outfit)
     ne = v6b.back_layers(se, cfg, outfit)
