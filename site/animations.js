@@ -122,7 +122,8 @@
       const catalog = await response.json();
       const res=await fetch("./player-actions.json",{cache:"no-store"});
       const canonical=res.ok?(await res.json()).actions:[];
-      const raw=Array.isArray(catalog.characters)?catalog.characters.map(ch=>{
+      const visible=window.VLCharacterReferenceReset?.active?window.VLCharacterReferenceReset.filter(catalog.characters):catalog.characters;
+      const raw=Array.isArray(visible)?visible.map(ch=>{
         const old=Array.isArray(ch.motions)?ch.motions:[];
         const shared=window.VLUniversalSleep?.actionsFor(ch)||[];
         return {...ch,motions:[...old,...shared.filter(m=>!old.some(x=>x.id===m.id))]};
@@ -160,7 +161,7 @@
   // Put the explicit IDs of QA-approved animations here when ready.
   const APPROVED_ANIMATION_IDS = new Set(["sleep_bed_right","sleep_bed_left","bathe_male_v1","bathe_female_v1",
     "bathtub_bathe_male_v1","bathtub_bathe_female_v1"]);
-  const clipSet = () => library.filter(clip =>
+  const clipSet = () => window.VLCharacterReferenceReset?.active ? [] : library.filter(clip =>
     APPROVED_ANIMATION_IDS.has(clip.id) &&
     Boolean(clip.gif) &&
     (group === "all" || clip.group === group) &&
