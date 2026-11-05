@@ -35,12 +35,82 @@
   legs:Object.freeze({label:"LEGS",segments:Object.freeze([7,8,9,10]),rect:Object.freeze([16,60,34,52])}),
   all:Object.freeze({label:"ALL PIXELS",segments:Object.freeze(SEGMENTS.map((_,i)=>i)),rect:Object.freeze([0,0,W,H])})
  });
- function inFocusRegion(group,x,y){
-  const [left,top,width,height]=(FOCUS[group]||FOCUS.all).rect;
+ function inFocusRegion(group,x,y,rect){
+  const [left,top,width,height]=rect||(FOCUS[group]||FOCUS.all).rect;
   return x>=left&&x<left+width&&y>=top&&y<top+height;
  }
  function focusOwns(group,owner){
   return (FOCUS[group]||FOCUS.all).segments.includes(owner);
+ }
+
+ // Selection rectangles are editing guides only: they do not crop or move
+ // source pixels, rigs, bones, weights, or authored motion keyframes.
+ const REGION_KEY="virtual-life-human-pose-edit-areas-v1";
+ const regions=new Map();
+ let savedRegions=null;
+ function regionStore(){
+  if(savedRegions)return savedRegions;
+  try{
+   const value=JSON.parse(root?.localStorage?.getItem(REGION_KEY)||"{}");
+   savedRegions=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
+  }catch{savedRegions={};}
+  return savedRegions;
+ }
+ const regionKey=(baseId,dir,group)=>baseId+":"+dir+":"+group;
+ function normalizeRegion(rect,fallback=[0,0,W,H]){
+  if(!Array.isArray(rect)||rect.length!==4||rect.some(v=>!Number.isFinite(Number(v))))
+   rect=fallback;
+  const x=Math.round(Math.max(0,Math.min(W-4,Number(rect[0]))));
+  const y=Math.round(Math.max(0,Math.min(H-4,Number(rect[1]))));
+  return [x,y,Math.round(Math.max(4,Math.min(W-x,Number(rect[2])))),
+   Math.round(Math.max(4,Math.min(H-y,Number(rect[3]))))];
+ }
+ function getRegion(baseId,dir,group){
+  if(!FOCUS[group]||group==="all")return [...FOCUS.all.rect];
+  const key=regionKey(baseId,dir,group);
+  if(!regions.has(key)){
+   const rect=regionStore()[key];
+   regions.set(key,normalizeRegion(rect,FOCUS[group].rect));
+  }
+  return [...regions.get(key)];
+ }
+ function setRegion(baseId,dir,group,rect,save=true){
+  if(!FOCUS[group]||group==="all")return null;
+  const key=regionKey(baseId,dir,group),value=normalizeRegion(rect,FOCUS[group].rect);
+  regions.set(key,value);
+  if(save){
+   const db=regionStore();db[key]=[...value];
+   try{root?.localStorage?.setItem(REGION_KEY,JSON.stringify(db));}catch{}
+  }
+  return [...value];
+ }
+ function hitRegion(rect,x,y){
+  const [l,t,w,h]=rect,r=l+w,b=t+h,threshold=2.25;
+  const nearL=Math.abs(x-l)<=threshold,nearR=Math.abs(x-r)<=threshold;
+  const nearT=Math.abs(y-t)<=threshold,nearB=Math.abs(y-b)<=threshold;
+  const inX=x>=l-threshold&&x<=r+threshold;
+  const inY=y>=t-threshold&&y<=b+threshold;
+  if(nearL&&nearT)return "nw";
+  if(nearR&&nearT)return "ne";
+  if(nearL&&nearB)return "sw";
+  if(nearR&&nearB)return "se";
+  if(nearL&&inY)return "w";
+  if(nearR&&inY)return "e";
+  if(nearT&&inX)return "n";
+  if(nearB&&inX)return "s";
+  return x>=l&&x<=r&&y>=t&&y<=b?"move":null;
+ }
+ function transformRegion(rect,handle,dx,dy){
+  let [l,t,w,h]=rect,r=l+w,b=t+h;
+  dx=Math.round(dx);dy=Math.round(dy);
+  if(handle==="move"){
+   return [Math.max(0,Math.min(W-w,l+dx)),Math.max(0,Math.min(H-h,t+dy)),w,h];
+  }
+  if(handle.includes("w"))l=Math.max(0,Math.min(r-4,l+dx));
+  if(handle.includes("e"))r=Math.min(W,Math.max(l+4,r+dx));
+  if(handle.includes("n"))t=Math.max(0,Math.min(b-4,t+dy));
+  if(handle.includes("s"))b=Math.min(H,Math.max(t+4,b+dy));
+  return [l,t,r-l,b-t];
  }
  const maps=new Map(),versions=new Map(),layerCache=new WeakMap();
  let loaded=null,changeCallback=null,editorRefresh=null;
@@ -204,7 +274,7 @@
   const canvas=$("pose-weight-canvas");if(!canvas)return;
   const select=$("pose-weight-bone"),basePicker=$("pose-weight-base"),facing=$("pose-facing");
   const ctx=canvas.getContext("2d",{willReadFrequently:true});
-  let drawing=false,mode="paint",lastPoint=null,focus="body";
+  let drawing=false,mode="paint",lastPoint=null,focus="body",boxDrag=null;
   changeCallback=onChange;
   const thumbButtons=[...root.document.querySelectorAll("[data-pose-weight-isolate]")];
   const thumbCanvases=new Map(thumbButtons.map(b=>[b.dataset.poseWeightIsolate,b.querySelector("canvas")]));
@@ -232,7 +302,7 @@
    select.value=String(candidates.includes(previous)?previous:candidates.find(i=>i!==0)??0);
   }
   function setFocus(next){
-   if(!FOCUS[next]||drawing)return;
+   if(!FOCUS[next]||drawing||boxDrag)return;
    focus=next;syncSelect();
    for(const button of thumbButtons){
     const active=button.dataset.poseWeightIsolate===focus;
@@ -241,11 +311,11 @@
    }
    refresh();
   }
-  function maskDisplay(item,group){
+  function maskDisplay(item,group,editRegion){
    const rgba=item.tile.data.data,out=ctx.createImageData(W,H),dest=out.data;
    for(let p=0;p<PIXELS;p++){
     const a=rgba[p*4+3];if(!a)continue;
-    const x=p%W,y=Math.floor(p/W),owner=item.mask[p],inside=inFocusRegion(group,x,y);
+    const x=p%W,y=Math.floor(p/W),owner=item.mask[p],inside=inFocusRegion(group,x,y,editRegion);
     const ours=group==="all"||focusOwns(group,owner);
     const offset=p*4;
     if(ours){
@@ -279,7 +349,8 @@
    const item=current();ctx.clearRect(0,0,W,H);
    if(!item)return;
    ctx.imageSmoothingEnabled=false;
-   ctx.putImageData(maskDisplay(item,focus),0,0);
+   const editRegion=getRegion(item.baseId,item.dir,focus);
+   ctx.putImageData(maskDisplay(item,focus,editRegion),0,0);
    const selected=Number(select.value),overlay=ctx.createImageData(W,H);
    let assigned=0,groupCount=0;
    for(let p=0;p<PIXELS;p++){
@@ -296,9 +367,16 @@
    ctx.drawImage(overlayCanvas,0,0);
    // Show the actual edit boundary. Unrelated parts are not selectable.
    if(focus!=="all"){
-    const [x,y,w,h]=FOCUS[focus].rect;
+    const [x,y,w,h]=editRegion;
     ctx.save();ctx.strokeStyle="#2259aa";ctx.lineWidth=.6;
-    ctx.setLineDash([2,1]);ctx.strokeRect(x+.3,y+.3,w-.6,h-.6);ctx.restore();
+    ctx.setLineDash([2,1]);ctx.strokeRect(x+.3,y+.3,w-.6,h-.6);
+    if(mode==="box"){
+     ctx.setLineDash([]);ctx.lineWidth=.5;ctx.strokeStyle="#144aa1";ctx.fillStyle="#f9fcff";
+     const handles=[[x,y],[x+w/2,y],[x+w,y],[x,y+h/2],
+      [x+w,y+h/2],[x,y+h],[x+w/2,y+h],[x+w,y+h]];
+     handles.forEach(([hx,hy])=>{ctx.fillRect(hx-1,hy-1,2,2);ctx.strokeRect(hx-1,hy-1,2,2);});
+    }
+    ctx.restore();
    }
    ctx.save();ctx.strokeStyle="rgba(20,52,91,.28)";ctx.lineWidth=.18;
    for(let x=0;x<=W;x+=8){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
@@ -306,7 +384,9 @@
    ctx.restore();
    drawThumbnails(item);
    $("pose-weight-info").textContent=FOCUS[focus].label+" LAYER / "+groupCount+
-    " PIXELS | BONE "+assigned+" PX | "+(item.dir+1)+"/4 · INDEPENDENT EDIT";
+    " PIXELS | BONE "+assigned+" PX | "+(item.dir+1)+"/4 · "+(mode==="box"?
+      "BOX "+editRegion[0]+","+editRegion[1]+" / "+editRegion[2]+"×"+editRegion[3]:
+      "INDEPENDENT EDIT");
   }
   editorRefresh=refresh;
   function stroke(e){
@@ -316,7 +396,8 @@
    const n=Number(select.value);
    const start=lastPoint||[x,y],distance=Math.hypot(x-start[0],y-start[1]);
    const steps=Math.max(1,Math.ceil(distance)),radius=Number($("pose-weight-size").value);
-   const within=(px,py)=>inFocusRegion(focus,px,py);
+   const editRegion=getRegion(item.baseId,item.dir,focus);
+   const within=(px,py)=>inFocusRegion(focus,px,py,editRegion);
    let changed=0;
    for(let i=0;i<=steps;i++){
     const t=i/steps;
@@ -329,15 +410,49 @@
    lastPoint=[x,y];
    if(changed){touch(item.baseId,item.dir);refresh();}
   }
+  function pixelPosition(e){
+   const rect=canvas.getBoundingClientRect();
+   return [(e.clientX-rect.left)*W/rect.width,(e.clientY-rect.top)*H/rect.height];
+  }
   canvas.addEventListener("pointerdown",e=>{
-   if(!current())return;
+   const item=current();if(!item)return;
+   if(mode==="box"){
+    if(focus==="all")return;
+    const [x,y]=pixelPosition(e);
+    const original=getRegion(item.baseId,item.dir,focus),handle=hitRegion(original,x,y);
+    if(!handle)return;
+    boxDrag={baseId:item.baseId,dir:item.dir,group:focus,original,x,y,handle};
+    canvas.setPointerCapture(e.pointerId);e.preventDefault();return;
+   }
    drawing=true;lastPoint=null;canvas.setPointerCapture(e.pointerId);
    stroke(e);e.preventDefault();
   });
   canvas.addEventListener("pointermove",e=>{
-   if(drawing&&canvas.hasPointerCapture(e.pointerId))stroke(e);
+   if(boxDrag&&canvas.hasPointerCapture(e.pointerId)){
+    const [x,y]=pixelPosition(e);
+    setRegion(boxDrag.baseId,boxDrag.dir,boxDrag.group,
+     transformRegion(boxDrag.original,boxDrag.handle,x-boxDrag.x,y-boxDrag.y),false);
+    refresh();return;
+   }
+   if(drawing&&canvas.hasPointerCapture(e.pointerId)){stroke(e);return;}
+   if(mode==="box"){
+    const item=current(),region=item&&getRegion(item.baseId,item.dir,focus);
+    const [x,y]=pixelPosition(e);
+    const handle=region&&focus!=="all"?hitRegion(region,x,y):null;
+    canvas.style.cursor=handle==="move"?"grab":handle==="n"||handle==="s"?"ns-resize":
+     handle==="w"||handle==="e"?"ew-resize":
+     handle==="ne"||handle==="sw"?"nesw-resize":
+     handle==="nw"||handle==="se"?"nwse-resize":"default";
+   }
   });
   function finish(e){
+   if(boxDrag){
+    const rect=getRegion(boxDrag.baseId,boxDrag.dir,boxDrag.group);
+    setRegion(boxDrag.baseId,boxDrag.dir,boxDrag.group,rect,true);
+    boxDrag=null;
+    if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
+    refresh();return;
+   }
    if(!drawing)return;
    drawing=false;lastPoint=null;
    if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
@@ -350,11 +465,13 @@
   for(const button of root.document.querySelectorAll("[data-pose-weight-tool]"))
    button.addEventListener("click",()=>{
     mode=button.dataset.poseWeightTool;
+    canvas.style.cursor=mode==="box"?"default":"crosshair";
     const hint=$("pose-weight-tool-hint");
     if(hint)hint.textContent={
      paint:"ASSIGN / add source pixels to the selected bone.",
      subtract:"UNSELECT / subtract ONLY from the selected bone. Other bone masks stay intact.",
-     erase:"STATIC / remove any bone assignment at the brushed location."
+     erase:"STATIC / remove any bone assignment at the brushed location.",
+     box:"MOVE BOX / drag inside to move, or drag blue corner and edge handles to resize."
     }[mode]||"";
     for(const b of root.document.querySelectorAll("[data-pose-weight-tool]")){
      const on=b===button;b.classList.toggle("active",on);
@@ -369,7 +486,7 @@
    if(focus==="all")item.mask.set(defaults);
    else for(let i=0;i<PIXELS;i++){
     const x=i%W,y=Math.floor(i/W);
-    if(!inFocusRegion(focus,x,y))continue;
+    if(!inFocusRegion(focus,x,y,getRegion(item.baseId,item.dir,focus)))continue;
     if(focusOwns(focus,item.mask[i])||focusOwns(focus,defaults[i]))
      item.mask[i]=defaults[i];
    }
@@ -393,6 +510,6 @@
   setFocus("body");
   return {refresh,setFocus};
  }
- return Object.freeze({W,H,KEY,SEGMENTS,FOCUS,inFocusRegion,focusOwns,encode,decode,defaultMap,brush,getMap,
+ return Object.freeze({W,H,KEY,REGION_KEY,SEGMENTS,FOCUS,inFocusRegion,focusOwns,normalizeRegion,getRegion,setRegion,hitRegion,transformRegion,encode,decode,defaultMap,brush,getMap,
   subtract,layers,paint,serialize,mount,refresh:()=>editorRefresh?.()});
 });
