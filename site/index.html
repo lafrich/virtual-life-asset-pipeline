@@ -16,10 +16,10 @@
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
   <script defer src="./pose-weights.js?v=pixel-box-v1"></script>
-  <script defer src="./modular-rig-v2.js?v=clothed-master-v6"></script>
+  <script defer src="./modular-rig-v2.js?v=split-planes-z-face-v1"></script>
   <script defer src="./rig-gizmo-v2.js?v=anatomy-first-v5"></script>
-  <script defer src="./rig-studio-v2.js?v=clothed-master-v6"></script>
-  <script defer src="./rig-manual-art.js?v=clothed-master-v6"></script>
+  <script defer src="./rig-studio-v2.js?v=split-planes-z-face-v1"></script>
+  <script defer src="./rig-manual-art.js?v=split-planes-z-face-v1"></script>
   <script defer src="./rig-pixel-workbench.js?v=clothed-master-v6"></script>
   <script defer src="./pose-maker.js?v=pixel-mask-v1"></script>
   <script defer src="./app.js?v=clothed-master-v6"></script>
@@ -566,6 +566,7 @@
           <label>PARENT <b id="rig-v2-parent">NECK</b></label>
           <label>OFFSET X <input id="rig-v2-x" type="number" step="0.5" min="-40" max="40" value="0"></label>
           <label>OFFSET Y <input id="rig-v2-y" type="number" step="0.5" min="-48" max="48" value="0"></label>
+          <label>PLANE DEPTH Z <input id="rig-v2-z" type="number" step="1" min="-10" max="10" value="0" title="Negative: behind other cutout planes, positive: in front. Child planes inherit parent Z."></label>
           <label>ROTATION <input id="rig-v2-angle" type="number" step="1" min="-180" max="180" value="0"></label>
           <label>SCALE <input id="rig-v2-scale" type="number" step="0.05" min="0.4" max="2" value="1"></label>
           <label>VISIBLE <input id="rig-v2-visible" type="checkbox" checked></label>
@@ -577,6 +578,16 @@
             <option value="surprised">SURPRISED</option><option value="blush">BLUSH</option>
             <option value="grin">GRIN</option>
           </select>
+          <label>SELECTED FACE PLANE / EXPRESSION
+            <select id="rig-v2-face-layer" aria-label="Override expression for the selected independent facial plane" disabled>
+              <option value="inherit">INHERIT / GLOBAL</option>
+              <option value="neutral">NEUTRAL</option><option value="happy">HAPPY</option>
+              <option value="mischievous">JAHIL / SMIRK</option><option value="angry">ANGRY</option>
+              <option value="surprised">SURPRISED</option><option value="blush">BLUSH</option>
+              <option value="grin">GRIN</option>
+            </select>
+          </label>
+          <p class="rig-v2-side-note">Each original transparent body/face cutout has its own X/Y, Z draw depth, rotation and keyframes. Select an eye, brow, mouth or blush in BONE HIERARCHY to replace only that facial plane.</p>
           <label>PHONE PROP <input id="rig-v2-phone" type="checkbox" checked></label>
           <button type="button" class="chrome-button" id="rig-v2-key">◆ SET KEY</button>
           <button type="button" class="chrome-button" id="rig-v2-unkey">◇ DELETE KEY</button>
