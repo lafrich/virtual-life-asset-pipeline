@@ -125,129 +125,303 @@
   ctx.save();ctx.translate(Math.round(n.x),Math.round(n.y));ctx.rotate(n.angle*Math.PI/180);
   ctx.scale(n.scale,n.scale);ctx.translate(-b.x,-b.y);draw();ctx.restore();
  }
+
+ // Every painted edge is an integer-pixel cluster, never a softened vector
+ // limb or a rectangular crop of another character's sprite.
+ function pixels(ctx,color,rects){
+  for(const r of rects)R(ctx,r[0],r[1],r[2],r[3],color);
+ }
  function segment(ctx,start,end,width,fill,edge,shade,coords){
   const a=coords[start],b=coords[end];if(!a?.visible||!b?.visible)return;
-  const dx=b.x-a.x,dy=b.y-a.y,len=Math.max(2,Math.hypot(dx,dy));
-  const ang=Math.atan2(dy,dx);ctx.save();ctx.translate(Math.round(a.x),Math.round(a.y));
-  ctx.rotate(ang);const w=Math.max(3,width*(a.scale+b.scale)/2);
-  R(ctx,-2,-w/2-1,len+4,w+2,edge);R(ctx,0,-w/2,len,w,fill);
-  R(ctx,1,-w/2+1,Math.max(1,len-2),Math.max(1,w*.22),shade);
-  ctx.restore();
+  const dx=b.x-a.x,dy=b.y-a.y,len=Math.max(1,Math.ceil(Math.hypot(dx,dy)));
+  const w=Math.max(4,Math.round(width*(a.scale+b.scale)/2));
+  for(let i=0;i<=len;i++){
+   const x=Math.round(a.x+dx*i/len),y=Math.round(a.y+dy*i/len);
+   R(ctx,x-Math.floor(w/2)-1,y-Math.floor(w/2)-1,w+2,w+2,edge);
+  }
+  for(let i=0;i<=len;i++){
+   const x=Math.round(a.x+dx*i/len),y=Math.round(a.y+dy*i/len);
+   R(ctx,x-Math.floor(w/2),y-Math.floor(w/2),w,w,fill);
+  }
+  for(let i=1;i<len-1;i+=2){
+   const x=Math.round(a.x+dx*i/len),y=Math.round(a.y+dy*i/len);
+   R(ctx,x-Math.floor(w/2)+1,y-Math.floor(w/2)+1,Math.max(2,Math.floor(w/3)),2,shade);
+  }
  }
- function drawFace(ctx,coords,state,back){
+ function face(ctx,coords,state,back){
   if(back||!coords.emotion.visible)return;
-  const e=state.emotion;
-  const dark=PALETTE.outline;
+  const p=PALETTE,e=state.emotion;
   bound(ctx,"brow_l",coords,()=>{
-    R(ctx,25,e==="angry"?26:24,5,2,dark);
-    if(e==="angry")R(ctx,29,25,1,2,dark);
+   pixels(ctx,p.eye,e==="angry"?[[24,27,6,2],[29,26,2,1]]:
+    e==="surprised"?[[25,26,6,1]]:[[24,28,7,2],[25,27,4,1]]);
   });
-  bound(ctx,"brow_r",coords,()=>R(ctx,36,e==="surprised"?22:24,5,2,dark));
+  bound(ctx,"brow_r",coords,()=>{
+   pixels(ctx,p.eye,e==="angry"?[[37,26,6,2],[36,26,2,1]]:
+    e==="surprised"?[[37,26,6,1]]:[[36,28,7,2],[38,27,4,1]]);
+  });
   bound(ctx,"eye_l",coords,()=>{
-    if(e==="happy"||e==="grin") {R(ctx,26,29,5,1,dark);R(ctx,26,28,1,1,dark);}
-    else{R(ctx,26,28,5,4,"#fff3df");R(ctx,29,28,2,e==="surprised"?3:4,dark);}
+   if(e==="happy"||e==="grin"){
+    pixels(ctx,p.eye,[[25,31,7,2],[26,30,2,1]]);
+   }else{
+    pixels(ctx,p.eyeWhite,[[25,30,7,4]]);
+    pixels(ctx,p.eye,[[29,e==="surprised"?30:31,2,3]]);
+    R(ctx,30,31,1,1,p.outlineDark);
+   }
   });
   bound(ctx,"eye_r",coords,()=>{
-    if(e==="happy"||e==="grin")R(ctx,36,29,4,1,dark);
-    else{R(ctx,36,28,5,4,"#fff3df");R(ctx,38,28,2,4,dark);}
+   if(e==="happy"||e==="grin")pixels(ctx,p.eye,[[37,31,6,2]]);
+   else{
+    pixels(ctx,p.eyeWhite,[[36,30,7,4]]);
+    pixels(ctx,p.eye,[[39,31,2,e==="surprised"?3:2]]);
+    R(ctx,40,31,1,1,p.outlineDark);
+   }
+  });
+  bound(ctx,"nose",coords,()=>{
+   R(ctx,34,34,2,3,p.skinShade);R(ctx,35,36,2,1,p.skinDeep);
+   R(ctx,37,35,1,1,p.skinLight);
   });
   bound(ctx,"mouth",coords,()=>{
    if(e==="happy"||e==="grin"){
-     R(ctx,30,36,9,3,dark);R(ctx,32,38,6,1,"#f7f2e9");
+    pixels(ctx,p.outline,[[32,39,8,2],[33,41,6,1]]);
+    pixels(ctx,p.eyeWhite,[[34,40,4,1]]);
    }else if(e==="surprised"){
-     R(ctx,33,34,4,6,dark);R(ctx,34,36,2,2,"#a14e4d");
+    R(ctx,34,38,5,5,p.outlineDark);R(ctx,35,40,3,2,"#b86467");
    }else if(e==="angry"){
-     R(ctx,32,37,7,2,dark);R(ctx,31,36,2,2,dark);
+    R(ctx,32,40,8,2,p.outline);R(ctx,31,39,2,1,p.outline);
    }else if(e==="mischievous"){
-     R(ctx,32,36,7,2,dark);R(ctx,37,35,2,1,dark);
-   }else R(ctx,32,36,6,2,dark);
+    R(ctx,33,40,7,1,p.outline);R(ctx,39,39,2,1,p.outline);
+   }else{
+    R(ctx,32,40,7,1,p.skinDeep);R(ctx,34,41,4,1,p.outline);
+   }
   });
-  if(e==="blush"){
-   bound(ctx,"emotion",coords,()=>{
-    R(ctx,23,33,6,2,PALETTE.blush);R(ctx,40,33,4,2,PALETTE.blush);
-   });
-  }
+  bound(ctx,"blush_l",coords,()=>{
+   if(["blush","happy","mischievous"].includes(e)){
+    pixels(ctx,p.blush,[[23,36,4,1],[24,38,3,1]]);
+    R(ctx,23,37,2,1,p.skinLight);
+   }
+  });
+  bound(ctx,"blush_r",coords,()=>{
+   if(["blush","happy","mischievous"].includes(e)){
+    pixels(ctx,p.blush,[[42,36,3,1],[41,38,3,1]]);
+   }
+  });
+  // Transparent lens wash goes on after eyes; dark frame and bridge remain
+  // distinct from the head sprite so glasses can be hidden or repositioned.
+  bound(ctx,"glasses",coords,()=>{
+   R(ctx,22,28,12,8,p.glasses);
+   R(ctx,35,28,11,8,p.glasses);
+   R(ctx,24,29,9,5,p.lens);
+   R(ctx,36,29,9,5,p.lens);
+   R(ctx,25,29,3,1,p.shoeLight);
+   R(ctx,37,29,3,1,p.shoeLight);
+   R(ctx,25,31,8,3,"#f4e0cd6b");
+   R(ctx,37,31,7,3,"#f4e0cd6b");
+   R(ctx,33,30,3,2,p.glasses);
+   R(ctx,20,29,3,2,p.glasses);
+   R(ctx,45,29,2,2,p.glassesLight);
+   R(ctx,23,35,11,1,p.glassesLight);R(ctx,35,35,11,1,p.glassesLight);
+  });
+ }
+ function hairBack(ctx,coords,back){
+  const p=PALETTE;
+  bound(ctx,"hair_back",coords,()=>{
+   pixels(ctx,p.outline,[[18,12,30,24],[17,18,32,15],[20,33,27,10],[23,41,21,2],
+     [19,9,27,8],[22,7,21,4]]);
+   pixels(ctx,p.hairShadow,[[20,10,27,26],[19,20,28,16],[23,33,22,8]]);
+   pixels(ctx,p.hair,[[21,10,25,18],[22,23,23,14],[24,35,19,6]]);
+   pixels(ctx,p.hairMid,[[24,12,9,12],[35,11,9,13],[22,26,5,9],[35,25,7,10]]);
+   pixels(ctx,p.hairLight,[[24,14,5,8],[37,13,5,6],[25,29,4,8]]);
+   if(back){
+    pixels(ctx,p.hair,[[19,17,31,20],[22,29,25,12],[26,38,18,5]]);
+    pixels(ctx,p.hairShadow,[[20,26,4,12],[43,24,5,12],[27,37,17,4]]);
+    pixels(ctx,p.hairLight,[[24,16,5,12],[31,11,5,19],[38,19,5,11]]);
+    pixels(ctx,p.hairGlint,[[23,18,2,7],[34,13,2,12],[39,23,2,6]]);
+   }
+  });
+ }
+ function hairCap(ctx,coords,back){
+  const p=PALETTE;
+  bound(ctx,"hair_cap",coords,()=>{
+   pixels(ctx,p.outline,[[18,12,30,12],[20,7,27,18],[23,4,20,16],
+     [25,3,13,5],[15,18,36,7],[17,14,33,6],[21,6,23,7],
+     [14,21,8,6],[43,20,8,7]]);
+   pixels(ctx,p.hairShadow,[[18,13,30,12],[20,8,27,13],[24,5,18,14],
+     [16,20,34,5],[21,6,22,6]]);
+   pixels(ctx,p.hair,[[21,10,25,13],[24,7,19,14],[18,16,29,8],[19,21,27,5]]);
+   pixels(ctx,p.hairMid,[[22,11,10,8],[31,7,9,9],[40,13,6,9],[19,20,7,4]]);
+   pixels(ctx,p.hairLight,[[24,9,8,3],[35,8,6,3],[20,15,5,4],[42,17,3,3],
+     [27,13,4,3]]);
+   pixels(ctx,p.hairGlint,[[27,9,3,2],[36,8,3,2],[23,15,2,2]]);
+   pixels(ctx,p.hairShadow,[[20,19,6,5],[33,17,7,5],[41,22,6,3]]);
+   if(back){
+    pixels(ctx,p.hairMid,[[20,16,6,9],[33,14,9,9]]);
+    pixels(ctx,p.hairLight,[[24,17,5,5],[35,13,6,7]]);
+   }
+  });
+ }
+ function fringe(ctx,coords,back){
+  if(back)return;
+  const p=PALETTE;
+  bound(ctx,"fringe_l",coords,()=>{
+   pixels(ctx,p.outline,[[17,21,10,10],[19,26,7,6],[16,22,5,6]]);
+   pixels(ctx,p.hairShadow,[[18,21,9,9],[20,27,5,4]]);
+   pixels(ctx,p.hair,[[19,19,8,8],[17,23,7,5]]);
+   pixels(ctx,p.hairMid,[[20,20,5,3],[19,24,3,3]]);
+   R(ctx,20,21,2,2,p.hairLight);
+  });
+  bound(ctx,"fringe_mid",coords,()=>{
+   pixels(ctx,p.outline,[[25,19,12,10],[28,24,7,5],[30,27,5,4]]);
+   pixels(ctx,p.hairShadow,[[26,20,10,8],[30,24,5,5]]);
+   pixels(ctx,p.hair,[[27,19,9,7],[29,24,5,3]]);
+   pixels(ctx,p.hairMid,[[28,20,5,3],[33,22,2,3]]);
+   R(ctx,29,19,4,2,p.hairLight);
+  });
+  bound(ctx,"fringe_r",coords,()=>{
+   pixels(ctx,p.outline,[[35,19,12,9],[38,24,8,7],[44,20,5,8]]);
+   pixels(ctx,p.hairShadow,[[36,19,11,9],[39,25,6,4]]);
+   pixels(ctx,p.hair,[[36,19,10,6],[40,24,5,4]]);
+   pixels(ctx,p.hairMid,[[38,20,6,3],[43,23,3,3]]);
+   R(ctx,39,20,4,2,p.hairLight);
+  });
+ }
+ function shoe(ctx,id,left,coords){
+  const p=PALETTE;
+  bound(ctx,id,coords,()=>{
+   const x=left?13:32;
+   pixels(ctx,p.outline,[[x+4,100,15,8],[x+1,104,20,5],[x,106,22,3],
+     [x+5,99,11,3],[x+1,108,20,2]]);
+   pixels(ctx,p.shoeShade,[[x+4,101,15,5],[x+2,104,18,3]]);
+   pixels(ctx,p.shoe,[[x+5,101,13,5],[x+2,105,18,3],[x+3,103,10,3]]);
+   pixels(ctx,p.shoeLight,[[x+6,102,7,2],[x+2,105,9,2],[x+4,107,16,1]]);
+   pixels(ctx,p.shoeShadow,[[x+7,99,6,3],[x+12,102,6,3],[x+15,105,5,1]]);
+   pixels(ctx,p.shoeLight,[[x+7,100,5,2],[x+10,103,3,1],[x+11,105,3,1]]);
+   pixels(ctx,p.outline,[[x+1,108,20,1]]);
+   R(ctx,x+5,107,6,1,p.shoe);
+  });
  }
  function art(ctx,coords,state,view){
   const back=view==="ne"||view==="nw",p=PALETTE;
-  // Separate cutouts: the illustration never originates from overlapping
-  // rectangular crops. Every piece is independently authored and drawn.
+  if(!back)hairBack(ctx,coords,false);
+  // Pants are loose segmented garments, not straight bone-shaped sticks.
   bound(ctx,"pelvis",coords,()=>{
-   R(ctx,21,59,24,13,p.outline);R(ctx,22,61,22,9,p.pants);
-   R(ctx,32,65,3,7,p.pantsShade);
+   pixels(ctx,p.outline,[[19,66,28,12],[20,73,28,5],[22,64,24,5]]);
+   pixels(ctx,p.pants,[[20,67,26,10],[23,76,23,3]]);
+   pixels(ctx,p.pantsLight,[[22,68,8,3],[38,70,6,4]]);
+   pixels(ctx,p.pantsShade,[[31,72,5,7],[23,75,4,2]]);
   });
-  // Far leg, then near leg. Loose trousers bend without dividing source pixels.
-  segment(ctx,"hip_r","knee_r",15,p.pants,p.outline,p.pantsLight,coords);
-  segment(ctx,"knee_r","ankle_r",14,p.pants,p.outline,p.pantsShade,coords);
-  segment(ctx,"hip_l","knee_l",14,p.pants,p.outline,p.pantsLight,coords);
-  segment(ctx,"knee_l","ankle_l",14,p.pants,p.outline,p.pantsShade,coords);
-  const shoe=(id,left)=>bound(ctx,id,coords,()=>{
-   const x=left?16:32;
-   R(ctx,x,96,18,10,p.outline);R(ctx,x+1,96,16,8,p.shoe);
-   R(ctx,x+2,98,7,2,"#fffdf8");R(ctx,x+10,96,3,4,p.shoeShade);
-   R(ctx,x,104,18,2,p.shoeShadow);R(ctx,x+1,102,16,2,"#fffdf8");
+  segment(ctx,"hip_r","knee_r",17,p.pants,p.outline,p.pantsLight,coords);
+  segment(ctx,"knee_r","ankle_r",18,p.pants,p.outline,p.pantsShade,coords);
+  segment(ctx,"hip_l","knee_l",18,p.pants,p.outline,p.pantsLight,coords);
+  segment(ctx,"knee_l","ankle_l",18,p.pants,p.outline,p.pantsShade,coords);
+  bound(ctx,"hip_l",coords,()=>{
+   pixels(ctx,p.pantsLight,[[19,73,4,12],[21,80,3,7]]);
+   pixels(ctx,p.pantsShade,[[29,78,2,10],[22,86,3,2]]);
   });
-  shoe("ankle_r",false);shoe("ankle_l",true);
-  // Far upper arm behind torso, then near lower arm and phone.
-  segment(ctx,"shoulder_r","elbow_r",11,p.shirt,p.outline,p.shirtLight,coords);
+  bound(ctx,"hip_r",coords,()=>{
+   pixels(ctx,p.pantsShade,[[34,74,4,15],[44,78,3,8]]);
+   pixels(ctx,p.pantsLight,[[40,76,4,8],[38,88,3,2]]);
+   // Subtle pixel emblem, attached to the independent right-thigh cutout.
+   pixels(ctx,p.outline,[[40,80,7,9]]);
+   pixels(ctx,p.emblem,[[43,79,2,3],[41,82,5,4],[42,86,4,2]]);
+   pixels(ctx,p.emblemLight,[[44,80,1,3],[42,83,2,2]]);
+   pixels(ctx,p.emblemBlue,[[42,85,2,2],[45,85,1,2]]);
+   R(ctx,43,88,3,1,p.shoe);
+  });
+  bound(ctx,"knee_l",coords,()=>{
+   pixels(ctx,p.pantsShade,[[17,90,4,9],[20,96,3,5],[29,91,3,6]]);
+   pixels(ctx,p.pantsFold,[[22,93,5,3],[19,100,7,2]]);
+  });
+  bound(ctx,"knee_r",coords,()=>{
+   pixels(ctx,p.pantsShade,[[35,93,4,7],[43,93,4,9]]);
+   pixels(ctx,p.pantsFold,[[38,95,4,3],[35,100,9,2]]);
+  });
+  shoe(ctx,"ankle_r",false,coords);
+  shoe(ctx,"ankle_l",true,coords);
+  // Far arm behind tee; wrist is independent of elbow and sleeve.
+  segment(ctx,"shoulder_r","elbow_r",12,p.shirt,p.outline,p.shirtLight,coords);
   segment(ctx,"elbow_r","wrist_r",9,p.skin,p.outline,p.skinLight,coords);
-  bound(ctx,"wrist_r",coords,()=>{
-   R(ctx,44,61,10,8,p.outline);R(ctx,45,62,8,7,p.skin);
-   R(ctx,46,62,5,2,p.skinLight);
-  });
   bound(ctx,"torso",coords,()=>{
-   R(ctx,20,37,26,28,p.outline);
-   R(ctx,21,38,24,26,p.shirt);R(ctx,24,39,18,3,p.shirtLight);
-   R(ctx,22,44,2,16,p.shirtLight);R(ctx,37,48,7,14,p.shirtShadow);
-   R(ctx,20,61,25,5,p.shirtShadow);
-  });
-  bound(ctx,"neck",coords,()=>{
-   R(ctx,27,30,11,10,p.outline);R(ctx,28,31,9,8,p.skinShade);
-   R(ctx,29,32,7,6,p.skin);
-  });
-  segment(ctx,"shoulder_l","elbow_l",11,p.shirt,p.outline,p.shirtLight,coords);
-  segment(ctx,"elbow_l","wrist_l",9,p.skin,p.outline,p.skinLight,coords);
-  bound(ctx,"wrist_l",coords,()=>{
-   R(ctx,14,62,9,8,p.outline);R(ctx,15,62,7,7,p.skin);
-   R(ctx,16,63,5,2,p.skinLight);
-  });
-  if(state.phone&&!back)bound(ctx,"phone",coords,()=>{
-    R(ctx,17,54,11,20,p.outline);R(ctx,18,55,9,17,p.phone);
-    R(ctx,19,57,7,12,p.screen);R(ctx,20,58,5,2,"#555057");
-    R(ctx,21,71,3,1,"#aea3a7");
-  });
-  // Full head skin and hair are their own independent node.
-  bound(ctx,"head",coords,()=>{
-   R(ctx,20,15,25,27,p.outline);
-   R(ctx,22,17,22,23,p.skin);
-   R(ctx,22,17,4,17,p.skinShade);
-   R(ctx,28,31,14,7,p.skinLight);
-   if(!back){
-     R(ctx,42,29,5,9,p.outline);R(ctx,43,30,3,7,p.skinShade);
-     R(ctx,41,32,2,4,p.skinLight);
-     R(ctx,38,39,6,2,p.outline);
-   }
-   // Big layered fringe with irregular pixel silhouettes.
-   R(ctx,17,13,30,13,p.hairShadow);
-   R(ctx,20,9,27,11,p.hair);
-   R(ctx,24,6,20,7,p.hair);
-   R(ctx,28,4,13,5,p.hair);
-   R(ctx,15,17,8,10,p.hairShadow);
-   R(ctx,18,13,9,14,p.hair);
-   R(ctx,22,17,8,6,p.hairShadow);
-   R(ctx,26,18,10,5,p.hair);
-   R(ctx,36,16,11,9,p.hairShadow);
-   R(ctx,22,10,12,3,p.hairLight);
-   R(ctx,34,9,9,4,p.hairLight);
-   R(ctx,19,18,5,5,p.hairLight);
-   R(ctx,37,15,6,4,p.hairLight);
+   pixels(ctx,p.outline,[[20,42,26,27],[18,46,30,20],[20,66,27,5],
+     [24,40,19,7],[22,68,25,3]]);
+   pixels(ctx,p.shirt,[[21,43,25,25],[19,47,28,20],[22,67,24,3]]);
+   pixels(ctx,p.shirtMid,[[24,44,19,5],[21,50,5,13],[35,54,10,12],[24,65,14,3]]);
+   pixels(ctx,p.shirtLight,[[23,45,9,3],[25,48,6,2],[20,54,3,9],[35,62,4,4]]);
+   pixels(ctx,p.shirtShadow,[[34,47,11,9],[39,53,7,12],[21,66,25,3],
+     [35,68,11,2]]);
+   // Collar with sewn-in neckline follows torso, not the hair or head.
+   pixels(ctx,p.outline,[[27,41,13,5],[29,44,9,2]]);
+   pixels(ctx,p.shirtLight,[[28,42,11,2]]);
+   pixels(ctx,p.skinShade,[[30,42,7,2]]);
+   R(ctx,33,44,5,1,p.shirtShadow);
    if(back){
-    R(ctx,20,25,27,14,p.hair);
-    R(ctx,25,30,19,8,p.hairShadow);
-    R(ctx,20,25,4,11,p.hairLight);
+    pixels(ctx,p.shirtMid,[[23,50,15,3],[35,59,8,4]]);
+    R(ctx,20,66,26,2,p.shirtShadow);
+   }else{
+    pixels(ctx,p.shirtShadow,[[29,53,5,12],[25,61,5,5]]);
+    R(ctx,24,52,6,1,p.shirtLight);
    }
   });
-  drawFace(ctx,coords,state,back);
+  segment(ctx,"shoulder_l","elbow_l",12,p.shirt,p.outline,p.shirtLight,coords);
+  segment(ctx,"elbow_l","wrist_l",8,p.skin,p.outline,p.skinLight,coords);
+  bound(ctx,"neck",coords,()=>{
+   pixels(ctx,p.outline,[[29,38,9,8],[31,36,7,4]]);
+   pixels(ctx,p.skinShade,[[30,39,7,5]]);
+   pixels(ctx,p.skin,[[31,39,6,4]]);
+   R(ctx,33,40,3,2,p.skinLight);
+  });
+  // Head base is bald and separate from both back hair and all face details.
+  bound(ctx,"head",coords,()=>{
+   pixels(ctx,p.outline,[[23,17,22,23],[20,21,28,17],[25,38,19,5],
+    [26,15,17,6],[43,26,6,10],[18,26,6,10]]);
+   pixels(ctx,p.skinShade,[[22,21,25,17],[25,37,19,4],
+    [44,27,4,8],[19,27,4,7]]);
+   pixels(ctx,p.skin,[[24,18,22,21],[26,38,15,3],[43,29,4,5]]);
+   pixels(ctx,p.skinLight,[[28,21,17,13],[30,35,12,4]]);
+   pixels(ctx,p.skinShade,[[23,31,5,6],[35,38,8,3]]);
+   pixels(ctx,p.skinLight,[[44,29,2,3],[19,29,3,3]]);
+   if(!back){
+    R(ctx,42,39,5,2,p.outline);
+    R(ctx,40,40,3,1,p.skinShade);
+   }else{
+    pixels(ctx,p.skinShade,[[24,25,22,12]]);
+   }
+  });
+  if(back){
+   hairBack(ctx,coords,true);
+   hairCap(ctx,coords,true);
+  }else{
+   face(ctx,coords,state,false);
+   hairCap(ctx,coords,false);
+   fringe(ctx,coords,false);
+  }
+  // Phone and hands render in front of the face, and are bound to their own
+  // wrist / phone nodes instead of being baked into the shared head sprite.
+  bound(ctx,"wrist_r",coords,()=>{
+   pixels(ctx,p.outline,[[45,69,8,9],[47,76,5,2]]);
+   pixels(ctx,p.skin,[[46,69,6,8]]);
+   pixels(ctx,p.skinLight,[[47,70,3,5]]);
+   R(ctx,46,73,2,3,p.skinShade);
+  });
+  if(!back&&state.phone){
+   bound(ctx,"phone",coords,()=>{
+    pixels(ctx,p.outline,[[13,23,10,19],[14,22,8,2],[14,40,8,2]]);
+    pixels(ctx,p.phone,[[14,24,8,16]]);
+    pixels(ctx,p.screen,[[15,27,6,12]]);
+    pixels(ctx,p.shoeShadow,[[15,25,4,1],[20,28,1,9]]);
+    R(ctx,16,24,2,2,p.glassesLight);
+    R(ctx,17,38,3,1,"#655b65");
+   });
+  }
+  bound(ctx,"wrist_l",coords,()=>{
+   pixels(ctx,p.outline,[[16,38,9,10],[17,46,7,3]]);
+   pixels(ctx,p.skin,[[17,39,7,9]]);
+   pixels(ctx,p.skinLight,[[18,39,4,4],[21,44,2,3]]);
+   R(ctx,17,46,3,2,p.skinShade);
+   if(!back&&state.phone){
+    pixels(ctx,p.skin,[[22,38,4,3],[23,42,4,3],[22,45,3,2]]);
+    R(ctx,25,42,2,1,p.skinLight);
+   }
+  });
  }
  function draw(ctx,source,direction="se",options={}){
   const state=normalize(source),view=DIR.includes(direction)?direction:state.direction;
