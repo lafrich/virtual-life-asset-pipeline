@@ -906,9 +906,20 @@ function setupEvents(){
  studio.addEventListener("contextmenu",e=>e.preventDefault());
  window.addEventListener("resize",paint);
  window.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){
+   e.preventDefault();if(e.shiftKey)redo();else undo();return;
+  }
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="y"){
+   e.preventDefault();redo();return;
+  }
   if(["INPUT","SELECT","TEXTAREA"].includes(document.activeElement?.tagName))return;
   if(e.key==="1"||e.key==="2"||e.key==="3"){axis=["x","y","z"][Number(e.key)-1];axisButtons();paint()}
-  if(["w","e","r"].includes(e.key.toLowerCase())){transformMode={w:"move",e:"rotate",r:"scale"}[e.key.toLowerCase()];axisButtons();paint()}
+  if(["w","e","r","a"].includes(e.key.toLowerCase())){
+   transformMode={w:"move",e:"rotate",r:"scale",a:"anchor"}[e.key.toLowerCase()];
+   axisButtons();paint();
+  }
+  if(e.key==="+"||e.key==="=")zoomTo(zoom*1.2);
+  if(e.key==="-")zoomTo(zoom/1.2);
   if(e.key==="k"||e.key==="K")setKey();
   if(e.key==="Delete")removeKey();
  });
