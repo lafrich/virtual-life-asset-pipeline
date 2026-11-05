@@ -1,0 +1,95 @@
+name: V6B Generator Studio — Windows Portable EXE
+
+on:
+  push:
+    branches:
+      - feature/v6b-generator-studio-app
+    paths:
+      - "apps/v6b_studio/**"
+      - ".github/workflows/build-v6b-windows.yml"
+      - "chars-iso/v6b/tools/live_v6b.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  portable-windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout original V6B source and Windows application
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          architecture: "x64"
+      - name: Install Python dependencies and packager
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install "pyinstaller>=6.10,<7"
+      - name: Verify original V6B Python generator
+        shell: pwsh
+        run: |
+          python -m py_compile apps/v6b_studio/server.py apps/v6b_studio/desktop.py
+          python -m unittest discover -s apps/v6b_studio -p "test_*.py" -v
+      - name: Bundle portable Windows app with original V6B data
+        shell: pwsh
+        run: |
+          python -m PyInstaller --noconfirm --clean --onedir --windowed --name "V6B Generator Studio" --paths "chars-iso/v6b/tools" --add-data "apps/v6b_studio;apps/v6b_studio" --add-data "chars-iso/v6b/study;chars-iso/v6b/study" --add-data "chars-iso/v6b/live/chars;chars-iso/v6b/live/chars" apps/v6b_studio/desktop.py
+          # live_v6b.py computes ROOT from its bundled module __file__ before
+          # the server can replace ROOT for temporary output. Keep this first
+          # import-time palette at the legacy location relative to the EXE.
+          Copy-Item -Recurse -Force "chars-iso/v6b/study" "dist/V6B Generator Studio/study"
+          if (-not (Test-Path "dist/V6B Generator Studio/study/ref_palette.npy")) { throw "V6B native palette missing" }
+          if (-not (Test-Path "dist/V6B Generator Studio/V6B Generator Studio.exe")) { throw "Windows EXE missing" }
+      - name: Smoke test packaged EXE server and bundled UI
+        shell: pwsh
+        env:
+          V6B_DESKTOP_HEADLESS: "1"
+          V6B_PORT: "8788"
+        run: |
+          $exe = (Resolve-Path "dist/V6B Generator Studio/V6B Generator Studio.exe").Path
+          $process = Start-Process -FilePath $exe -PassThru
+          try {
+            $ready = $false
+            for ($i = 0; $i -lt 35; $i++) {
+              Start-Sleep -Seconds 1
+              try {
+                $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 2 "http://127.0.0.1:8788/health"
+                if ($response.StatusCode -eq 200 -and $response.Content -eq "ok") {
+                  $ready = $true
+                  break
+                }
+              } catch {}
+            }
+            if (-not $ready) {
+              $log = Join-Path $env:TEMP "v6b_studio_desktop_error.log"
+              if (Test-Path $log) {
+                Write-Host "Captured launcher error:"
+                Get-Content $log
+              }
+              if ($process.HasExited) { Write-Host "EXE exit code: $($process.ExitCode)" }
+              throw "Bundled EXE did not start on localhost"
+            }
+            $html = Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 "http://127.0.0.1:8788/"
+            if ($html.Content -notmatch "V6B GENERATOR STUDIO") { throw "Bundled web UI was not served" }
+            $config = '{"name":"portable_smoke","template":"ichsan","hair_style":"mid","fringe":"curtain","shirt_kind":"tee","pants_kind":"trousers","glasses":true}'
+            $generated = Invoke-RestMethod -Uri "http://127.0.0.1:8788/api/generate" -Method Post -Body $config -ContentType "application/json" -TimeoutSec 300
+            if (-not $generated.id) { throw "Packaged EXE native generator did not return character id" }
+            $atlas = Invoke-WebRequest -UseBasicParsing -TimeoutSec 45 "http://127.0.0.1:8788/api/atlas?id=$($generated.id)&action=idle&expression=neutral"
+            if ($atlas.StatusCode -ne 200) { throw "Native 4-way atlas endpoint failed" }
+            Write-Host "Portable Windows EXE successfully rendered original V6B character and atlas."
+          } finally {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
+      - name: Upload downloadable Windows application
+        uses: actions/upload-artifact@v4
+        with:
+          name: V6B-Generator-Studio-Windows
+          path: dist/V6B Generator Studio/
+          if-no-files-found: error
+          retention-days: 30
