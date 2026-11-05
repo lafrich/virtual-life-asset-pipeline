@@ -1,0 +1,845 @@
+{
+  "projection": "isometric-2:1",
+  "style": "v6b",
+  "pack": "jakarta-urban-v1",
+  "revision": 1,
+  "aliases": {
+    "lampu_taman": "lampu_taman_jakarta",
+    "tong_sampah": "tong_sampah_jakarta"
+  },
+  "assets": [
+    {
+      "id": "lampu_taman_jakarta",
+      "file": "pipeline:lampu_taman_jakarta",
+      "label": "Lampu Taman Jakarta",
+      "group": "taman",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": true,
+      "note": "Lampu taman Jakarta: tiang urban dua kepala, top warm light, black metal",
+      "size": [
+        34,
+        152
+      ],
+      "pivot": [
+        16,
+        145
+      ],
+      "width": 0.7513,
+      "height": 3.8784,
+      "variants": {
+        "sw": {
+          "file": "taman/lampu_taman_jakarta_sw.png",
+          "size": [
+            34,
+            152
+          ],
+          "pivot": [
+            16,
+            145
+          ]
+        },
+        "se": {
+          "file": "taman/lampu_taman_jakarta_se.png",
+          "size": [
+            34,
+            152
+          ],
+          "pivot": [
+            16,
+            145
+          ]
+        }
+      }
+    },
+    {
+      "id": "tong_sampah_jakarta",
+      "file": "pipeline:tong_sampah_jakarta",
+      "label": "Tong Sampah Jakarta",
+      "group": "taman",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1.3,
+        1
+      ],
+      "collision": true,
+      "note": "Tempat sampah kota 2 bak hijau dan kuning; pegas tutup dan rangka besi",
+      "size": [
+        56,
+        72
+      ],
+      "pivot": [
+        27,
+        56
+      ],
+      "width": 1.2374,
+      "height": 1.8371,
+      "variants": {
+        "sw": {
+          "file": "taman/tong_sampah_jakarta_sw.png",
+          "size": [
+            56,
+            72
+          ],
+          "pivot": [
+            27,
+            56
+          ]
+        },
+        "se": {
+          "file": "taman/tong_sampah_jakarta_se.png",
+          "size": [
+            56,
+            72
+          ],
+          "pivot": [
+            27,
+            57
+          ]
+        }
+      }
+    },
+    {
+      "id": "hydrant_jakarta",
+      "file": "pipeline:hydrant_jakarta",
+      "label": "Hydrant Jakarta",
+      "group": "prop",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": true,
+      "note": "Hydrant merah kota: pipa utama, kopling kiri kanan dan top cap",
+      "size": [
+        42,
+        68
+      ],
+      "pivot": [
+        18,
+        60
+      ],
+      "width": 0.9281,
+      "height": 1.7351,
+      "variants": {
+        "sw": {
+          "file": "props/hydrant_jakarta_sw.png",
+          "size": [
+            42,
+            68
+          ],
+          "pivot": [
+            18,
+            60
+          ]
+        },
+        "se": {
+          "file": "props/hydrant_jakarta_se.png",
+          "size": [
+            42,
+            68
+          ],
+          "pivot": [
+            18,
+            60
+          ]
+        }
+      }
+    },
+    {
+      "id": "semak_kota_pagar",
+      "file": "pipeline:semak_kota_pagar",
+      "label": "Semak Kota Pagar",
+      "group": "taman",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        2,
+        0.75
+      ],
+      "collision": true,
+      "note": "Semak teh-tehan rapat sebagai divider kota Jakarta",
+      "size": [
+        78,
+        68
+      ],
+      "pivot": [
+        34,
+        51
+      ],
+      "width": 1.7236,
+      "height": 1.7351,
+      "variants": {
+        "sw": {
+          "file": "taman/semak_kota_pagar_sw.png",
+          "size": [
+            78,
+            68
+          ],
+          "pivot": [
+            34,
+            51
+          ]
+        },
+        "se": {
+          "file": "taman/semak_kota_pagar_se.png",
+          "size": [
+            86,
+            70
+          ],
+          "pivot": [
+            42,
+            53
+          ]
+        }
+      }
+    },
+    {
+      "id": "semak_kota_pendek",
+      "file": "pipeline:semak_kota_pendek",
+      "label": "Semak Kota Pendek",
+      "group": "taman",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1,
+        0.75
+      ],
+      "collision": true,
+      "note": "Semak taman pendek, bisa disusun modular sepanjang trotoar",
+      "size": [
+        44,
+        40
+      ],
+      "pivot": [
+        18,
+        30
+      ],
+      "width": 0.9723,
+      "height": 1.0206,
+      "variants": {
+        "sw": {
+          "file": "taman/semak_kota_pendek_sw.png",
+          "size": [
+            44,
+            40
+          ],
+          "pivot": [
+            18,
+            30
+          ]
+        },
+        "se": {
+          "file": "taman/semak_kota_pendek_se.png",
+          "size": [
+            52,
+            40
+          ],
+          "pivot": [
+            26,
+            30
+          ]
+        }
+      }
+    },
+    {
+      "id": "semak_kota_rimbun",
+      "file": "pipeline:semak_kota_rimbun",
+      "label": "Semak Kota Rimbun",
+      "group": "taman",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1.35,
+        1.1
+      ],
+      "collision": true,
+      "note": "Semak kota oval tidak beraturan, daun lebih gelap di bawah",
+      "size": [
+        56,
+        52
+      ],
+      "pivot": [
+        25,
+        41
+      ],
+      "width": 1.2374,
+      "height": 1.3268,
+      "variants": {
+        "sw": {
+          "file": "taman/semak_kota_rimbun_sw.png",
+          "size": [
+            56,
+            52
+          ],
+          "pivot": [
+            25,
+            41
+          ]
+        },
+        "se": {
+          "file": "taman/semak_kota_rimbun_se.png",
+          "size": [
+            56,
+            52
+          ],
+          "pivot": [
+            25,
+            41
+          ]
+        }
+      }
+    },
+    {
+      "id": "rumput_kota_rumpun",
+      "file": "pipeline:rumput_kota_rumpun",
+      "label": "Rumput Kota Rumpun",
+      "group": "taman",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        0.8,
+        0.8
+      ],
+      "collision": false,
+      "note": "Rumpun rumput liar tepi jalan: batang daun hijau beragam tinggi",
+      "size": [
+        32,
+        30
+      ],
+      "pivot": [
+        13,
+        23
+      ],
+      "width": 0.7071,
+      "height": 0.7655,
+      "variants": {
+        "sw": {
+          "file": "taman/rumput_kota_rumpun_sw.png",
+          "size": [
+            32,
+            30
+          ],
+          "pivot": [
+            13,
+            23
+          ]
+        },
+        "se": {
+          "file": "taman/rumput_kota_rumpun_se.png",
+          "size": [
+            32,
+            30
+          ],
+          "pivot": [
+            13,
+            23
+          ]
+        }
+      }
+    },
+    {
+      "id": "rumput_kota_hampar",
+      "file": "pipeline:rumput_kota_hampar",
+      "label": "Rumput Kota Hampar",
+      "group": "taman",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1.4,
+        1.2
+      ],
+      "collision": false,
+      "note": "Hampar rumput kota menempel tanah dengan rumput pendek tersebar",
+      "size": [
+        82,
+        42
+      ],
+      "pivot": [
+        41,
+        21
+      ],
+      "width": 1.812,
+      "height": 1.0717,
+      "variants": {
+        "sw": {
+          "file": "taman/rumput_kota_hampar_sw.png",
+          "size": [
+            82,
+            42
+          ],
+          "pivot": [
+            41,
+            21
+          ]
+        },
+        "se": {
+          "file": "taman/rumput_kota_hampar_se.png",
+          "size": [
+            82,
+            42
+          ],
+          "pivot": [
+            41,
+            21
+          ]
+        }
+      }
+    },
+    {
+      "id": "aspal_patch_jakarta",
+      "file": "pipeline:aspal_patch_jakarta",
+      "label": "Aspal Patch Jakarta",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        2,
+        2
+      ],
+      "collision": false,
+      "note": "Patch aspal kota gelap lembut dengan tambalan bitumen, tile isometric",
+      "size": [
+        128,
+        64
+      ],
+      "pivot": [
+        64,
+        32
+      ],
+      "width": 2.8284,
+      "height": 1.633,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/aspal_patch_jakarta_sw.png",
+          "size": [
+            128,
+            64
+          ],
+          "pivot": [
+            64,
+            32
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/aspal_patch_jakarta_se.png",
+          "size": [
+            128,
+            64
+          ],
+          "pivot": [
+            64,
+            32
+          ]
+        }
+      }
+    },
+    {
+      "id": "selokan_lurus",
+      "file": "pipeline:selokan_lurus",
+      "label": "Selokan Lurus",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": false,
+      "note": "Selokan beton terbuka modular tile lurus",
+      "size": [
+        64,
+        38
+      ],
+      "pivot": [
+        32,
+        21
+      ],
+      "width": 1.4142,
+      "height": 0.9696,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/selokan_lurus_sw.png",
+          "size": [
+            64,
+            38
+          ],
+          "pivot": [
+            32,
+            21
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/selokan_lurus_se.png",
+          "size": [
+            64,
+            38
+          ],
+          "pivot": [
+            32,
+            21
+          ]
+        }
+      }
+    },
+    {
+      "id": "selokan_belok",
+      "file": "pipeline:selokan_belok",
+      "label": "Selokan Belok",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": false,
+      "note": "Selokan beton belok 90 derajat",
+      "size": [
+        64,
+        38
+      ],
+      "pivot": [
+        32,
+        21
+      ],
+      "width": 1.4142,
+      "height": 0.9696,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/selokan_belok_sw.png",
+          "size": [
+            64,
+            38
+          ],
+          "pivot": [
+            32,
+            21
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/selokan_belok_se.png",
+          "size": [
+            64,
+            36
+          ],
+          "pivot": [
+            32,
+            19
+          ]
+        }
+      }
+    },
+    {
+      "id": "selokan_simpang",
+      "file": "pipeline:selokan_simpang",
+      "label": "Selokan Simpang",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": false,
+      "note": "Selokan beton simpang T",
+      "size": [
+        64,
+        38
+      ],
+      "pivot": [
+        32,
+        21
+      ],
+      "width": 1.4142,
+      "height": 0.9696,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/selokan_simpang_sw.png",
+          "size": [
+            64,
+            38
+          ],
+          "pivot": [
+            32,
+            21
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/selokan_simpang_se.png",
+          "size": [
+            64,
+            38
+          ],
+          "pivot": [
+            32,
+            21
+          ]
+        }
+      }
+    },
+    {
+      "id": "selokan_grill",
+      "file": "pipeline:selokan_grill",
+      "label": "Selokan Grill",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": false,
+      "note": "Selokan tutup kisi besi dan air gelap",
+      "size": [
+        64,
+        38
+      ],
+      "pivot": [
+        32,
+        21
+      ],
+      "width": 1.4142,
+      "height": 0.9696,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/selokan_grill_sw.png",
+          "size": [
+            64,
+            38
+          ],
+          "pivot": [
+            32,
+            21
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/selokan_grill_se.png",
+          "size": [
+            64,
+            38
+          ],
+          "pivot": [
+            32,
+            21
+          ]
+        }
+      }
+    },
+    {
+      "id": "sungai_lurus",
+      "file": "pipeline:sungai_lurus",
+      "label": "Sungai Lurus",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        2,
+        2
+      ],
+      "collision": false,
+      "note": "Sungai kota aliran keruh tenang, dua bibir beton",
+      "size": [
+        128,
+        74
+      ],
+      "pivot": [
+        64,
+        41
+      ],
+      "width": 2.8284,
+      "height": 1.8881,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/sungai_lurus_sw.png",
+          "size": [
+            128,
+            74
+          ],
+          "pivot": [
+            64,
+            41
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/sungai_lurus_se.png",
+          "size": [
+            128,
+            74
+          ],
+          "pivot": [
+            64,
+            41
+          ]
+        }
+      }
+    },
+    {
+      "id": "sungai_tepi_kiri",
+      "file": "pipeline:sungai_tepi_kiri",
+      "label": "Sungai Tepi Kiri",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        2,
+        2
+      ],
+      "collision": false,
+      "note": "Sungai tepi/tanggul beton sisi kiri",
+      "size": [
+        128,
+        74
+      ],
+      "pivot": [
+        64,
+        41
+      ],
+      "width": 2.8284,
+      "height": 1.8881,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/sungai_tepi_kiri_sw.png",
+          "size": [
+            128,
+            74
+          ],
+          "pivot": [
+            64,
+            41
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/sungai_tepi_kiri_se.png",
+          "size": [
+            128,
+            64
+          ],
+          "pivot": [
+            64,
+            32
+          ]
+        }
+      }
+    },
+    {
+      "id": "sungai_tepi_kanan",
+      "file": "pipeline:sungai_tepi_kanan",
+      "label": "Sungai Tepi Kanan",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        2,
+        2
+      ],
+      "collision": false,
+      "note": "Sungai tepi/tanggul beton sisi kanan",
+      "size": [
+        128,
+        64
+      ],
+      "pivot": [
+        64,
+        32
+      ],
+      "width": 2.8284,
+      "height": 1.633,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/sungai_tepi_kanan_sw.png",
+          "size": [
+            128,
+            64
+          ],
+          "pivot": [
+            64,
+            32
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/sungai_tepi_kanan_se.png",
+          "size": [
+            128,
+            74
+          ],
+          "pivot": [
+            64,
+            41
+          ]
+        }
+      }
+    },
+    {
+      "id": "sungai_belok",
+      "file": "pipeline:sungai_belok",
+      "label": "Sungai Belok",
+      "group": "lokal",
+      "source": "pipeline-street",
+      "published": true,
+      "pack": "jakarta-urban-v1",
+      "footprint": [
+        2,
+        2
+      ],
+      "collision": false,
+      "note": "Sungai kota sudut tikungan dengan beton bantaran",
+      "size": [
+        128,
+        74
+      ],
+      "pivot": [
+        64,
+        41
+      ],
+      "width": 2.8284,
+      "height": 1.8881,
+      "variants": {
+        "sw": {
+          "file": "jalan_lokal/sungai_belok_sw.png",
+          "size": [
+            128,
+            74
+          ],
+          "pivot": [
+            64,
+            41
+          ]
+        },
+        "se": {
+          "file": "jalan_lokal/sungai_belok_se.png",
+          "size": [
+            128,
+            74
+          ],
+          "pivot": [
+            64,
+            41
+          ]
+        }
+      }
+    }
+  ]
+}
