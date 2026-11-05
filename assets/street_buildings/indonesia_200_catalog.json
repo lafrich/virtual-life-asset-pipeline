@@ -21,6 +21,7 @@
       "note": "Angkot kota — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "angkot",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -33,22 +34,22 @@
           "file": "props/id200_transport_angkot_kota_sw.png",
           "size": [
             210,
-            208
+            216
           ],
           "pivot": [
             96,
-            160
+            168
           ]
         },
         "se": {
           "file": "props/id200_transport_angkot_kota_se.png",
           "size": [
             210,
-            210
+            216
           ],
           "pivot": [
             95,
-            161
+            167
           ]
         },
         "ne": {
@@ -66,24 +67,24 @@
           "file": "props/id200_transport_angkot_kota_nw.png",
           "size": [
             210,
-            210
+            208
           ],
           "pivot": [
             95,
-            161
+            160
           ]
         }
       },
       "size": [
         210,
-        208
+        216
       ],
       "pivot": [
         96,
-        160
+        168
       ],
       "width": 4.2,
-      "height": 4.16
+      "height": 4.32
     },
     {
       "id": "id200_transport_bajaj_oranye",
@@ -97,6 +98,7 @@
       "note": "Bajaj oranye — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "bajaj",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -109,57 +111,57 @@
           "file": "props/id200_transport_bajaj_oranye_sw.png",
           "size": [
             152,
-            170
+            162
           ],
           "pivot": [
             67,
-            134
+            127
           ]
         },
         "se": {
           "file": "props/id200_transport_bajaj_oranye_se.png",
           "size": [
             152,
-            170
+            162
           ],
           "pivot": [
             66,
-            135
+            127
           ]
         },
         "ne": {
           "file": "props/id200_transport_bajaj_oranye_ne.png",
           "size": [
             152,
-            170
+            162
           ],
           "pivot": [
             67,
-            135
+            127
           ]
         },
         "nw": {
           "file": "props/id200_transport_bajaj_oranye_nw.png",
           "size": [
             152,
-            172
+            162
           ],
           "pivot": [
             66,
-            136
+            127
           ]
         }
       },
       "size": [
         152,
-        170
+        162
       ],
       "pivot": [
         67,
-        134
+        127
       ],
       "width": 3.04,
-      "height": 3.4
+      "height": 3.24
     },
     {
       "id": "id200_transport_becak_kampung",
@@ -173,6 +175,7 @@
       "note": "Becak kampung — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "becak",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -185,44 +188,44 @@
           "file": "props/id200_transport_becak_kampung_sw.png",
           "size": [
             152,
-            158
+            176
           ],
           "pivot": [
             67,
-            122
+            140
           ]
         },
         "se": {
           "file": "props/id200_transport_becak_kampung_se.png",
           "size": [
             152,
-            136
+            154
           ],
           "pivot": [
             66,
-            100
+            119
           ]
         },
         "ne": {
           "file": "props/id200_transport_becak_kampung_ne.png",
           "size": [
             152,
-            164
+            176
           ],
           "pivot": [
             67,
-            129
+            140
           ]
         },
         "nw": {
           "file": "props/id200_transport_becak_kampung_nw.png",
           "size": [
             152,
-            142
+            154
           ],
           "pivot": [
             66,
-            106
+            119
           ]
         }
       },
@@ -264,14 +267,14 @@
       },
       "size": [
         152,
-        158
+        176
       ],
       "pivot": [
         67,
-        122
+        140
       ],
       "width": 3.04,
-      "height": 3.16
+      "height": 3.52
     },
     {
       "id": "id200_transport_bentor_roda_tiga",
@@ -285,6 +288,7 @@
       "note": "Bentor roda tiga — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "bentor",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -297,44 +301,44 @@
           "file": "props/id200_transport_bentor_roda_tiga_sw.png",
           "size": [
             152,
-            158
+            176
           ],
           "pivot": [
             67,
-            122
+            140
           ]
         },
         "se": {
           "file": "props/id200_transport_bentor_roda_tiga_se.png",
           "size": [
             152,
-            136
+            154
           ],
           "pivot": [
             66,
-            100
+            119
           ]
         },
         "ne": {
           "file": "props/id200_transport_bentor_roda_tiga_ne.png",
           "size": [
             152,
-            164
+            176
           ],
           "pivot": [
             67,
-            129
+            140
           ]
         },
         "nw": {
           "file": "props/id200_transport_bentor_roda_tiga_nw.png",
           "size": [
             152,
-            142
+            154
           ],
           "pivot": [
             66,
-            106
+            119
           ]
         }
       },
@@ -376,14 +380,14 @@
       },
       "size": [
         152,
-        158
+        176
       ],
       "pivot": [
         67,
-        122
+        140
       ],
       "width": 3.04,
-      "height": 3.16
+      "height": 3.52
     },
     {
       "id": "id200_transport_delman_andong",
@@ -397,6 +401,7 @@
       "note": "Delman andong — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "andong",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -409,44 +414,44 @@
           "file": "props/id200_transport_delman_andong_sw.png",
           "size": [
             152,
-            198
+            184
           ],
           "pivot": [
             67,
-            163
+            148
           ]
         },
         "se": {
           "file": "props/id200_transport_delman_andong_se.png",
           "size": [
             152,
-            198
+            170
           ],
           "pivot": [
             66,
-            163
+            134
           ]
         },
         "ne": {
           "file": "props/id200_transport_delman_andong_ne.png",
           "size": [
             152,
-            198
+            184
           ],
           "pivot": [
             67,
-            163
+            148
           ]
         },
         "nw": {
           "file": "props/id200_transport_delman_andong_nw.png",
           "size": [
             152,
-            198
+            172
           ],
           "pivot": [
             66,
-            163
+            137
           ]
         }
       },
@@ -488,14 +493,14 @@
       },
       "size": [
         152,
-        198
+        184
       ],
       "pivot": [
         67,
-        163
+        148
       ],
       "width": 3.04,
-      "height": 3.96
+      "height": 3.68
     },
     {
       "id": "id200_transport_elf_travel_antarkota",
@@ -509,6 +514,7 @@
       "note": "Elf travel antarkota — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "bus",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -521,57 +527,57 @@
           "file": "props/id200_transport_elf_travel_antarkota_sw.png",
           "size": [
             254,
-            232
+            240
           ],
           "pivot": [
             118,
-            172
+            179
           ]
         },
         "se": {
           "file": "props/id200_transport_elf_travel_antarkota_se.png",
           "size": [
             254,
-            232
+            240
           ],
           "pivot": [
             117,
-            171
+            179
           ]
         },
         "ne": {
           "file": "props/id200_transport_elf_travel_antarkota_ne.png",
           "size": [
             254,
-            232
+            240
           ],
           "pivot": [
             118,
-            172
+            180
           ]
         },
         "nw": {
           "file": "props/id200_transport_elf_travel_antarkota_nw.png",
           "size": [
             254,
-            232
+            240
           ],
           "pivot": [
             117,
-            171
+            180
           ]
         }
       },
       "size": [
         254,
-        232
+        240
       ],
       "pivot": [
         118,
-        172
+        179
       ],
       "width": 5.08,
-      "height": 4.64
+      "height": 4.8
     },
     {
       "id": "id200_transport_pikap_sayur_keliling",
@@ -585,6 +591,7 @@
       "note": "Pikap sayur keliling — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "pickup",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -608,33 +615,33 @@
           "file": "props/id200_transport_pikap_sayur_keliling_se.png",
           "size": [
             210,
-            196
+            190
           ],
           "pivot": [
             95,
-            147
+            142
           ]
         },
         "ne": {
           "file": "props/id200_transport_pikap_sayur_keliling_ne.png",
           "size": [
             210,
-            190
+            176
           ],
           "pivot": [
             96,
-            141
+            127
           ]
         },
         "nw": {
           "file": "props/id200_transport_pikap_sayur_keliling_nw.png",
           "size": [
             210,
-            194
+            192
           ],
           "pivot": [
             95,
-            145
+            143
           ]
         }
       },
@@ -661,6 +668,7 @@
       "note": "Pikap galon isi ulang — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "pickup",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -673,57 +681,57 @@
           "file": "props/id200_transport_pikap_galon_isi_ulang_sw.png",
           "size": [
             210,
-            174
+            178
           ],
           "pivot": [
             96,
-            126
+            130
           ]
         },
         "se": {
           "file": "props/id200_transport_pikap_galon_isi_ulang_se.png",
           "size": [
             210,
-            196
+            190
           ],
           "pivot": [
             95,
-            147
+            142
           ]
         },
         "ne": {
           "file": "props/id200_transport_pikap_galon_isi_ulang_ne.png",
           "size": [
             210,
-            188
+            178
           ],
           "pivot": [
             96,
-            140
+            130
           ]
         },
         "nw": {
           "file": "props/id200_transport_pikap_galon_isi_ulang_nw.png",
           "size": [
             210,
-            194
+            192
           ],
           "pivot": [
             95,
-            145
+            143
           ]
         }
       },
       "size": [
         210,
-        174
+        178
       ],
       "pivot": [
         96,
-        126
+        130
       ],
       "width": 4.2,
-      "height": 3.48
+      "height": 3.56
     },
     {
       "id": "id200_transport_truk_pasir_proyek",
@@ -737,6 +745,7 @@
       "note": "Truk pasir proyek — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "truck",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -760,33 +769,33 @@
           "file": "props/id200_transport_truk_pasir_proyek_se.png",
           "size": [
             210,
-            196
+            190
           ],
           "pivot": [
             95,
-            147
+            142
           ]
         },
         "ne": {
           "file": "props/id200_transport_truk_pasir_proyek_ne.png",
           "size": [
             210,
-            182
+            174
           ],
           "pivot": [
             96,
-            134
+            126
           ]
         },
         "nw": {
           "file": "props/id200_transport_truk_pasir_proyek_nw.png",
           "size": [
             210,
-            194
+            192
           ],
           "pivot": [
             95,
-            145
+            143
           ]
         }
       },
@@ -813,6 +822,7 @@
       "note": "Truk material bangunan — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "truck",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -836,33 +846,33 @@
           "file": "props/id200_transport_truk_material_bangunan_se.png",
           "size": [
             210,
-            196
+            190
           ],
           "pivot": [
             95,
-            147
+            142
           ]
         },
         "ne": {
           "file": "props/id200_transport_truk_material_bangunan_ne.png",
           "size": [
             210,
-            182
+            178
           ],
           "pivot": [
             96,
-            134
+            129
           ]
         },
         "nw": {
           "file": "props/id200_transport_truk_material_bangunan_nw.png",
           "size": [
             210,
-            194
+            192
           ],
           "pivot": [
             95,
-            145
+            143
           ]
         }
       },
@@ -889,6 +899,7 @@
       "note": "Motor bebek warga — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "motor",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -901,44 +912,44 @@
           "file": "props/id200_transport_motor_bebek_warga_sw.png",
           "size": [
             124,
-            94
+            104
           ],
           "pivot": [
             53,
-            67
+            77
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_bebek_warga_se.png",
           "size": [
             124,
-            108
+            122
           ],
           "pivot": [
             53,
-            81
+            94
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_bebek_warga_ne.png",
           "size": [
             124,
-            108
+            104
           ],
           "pivot": [
             53,
-            81
+            76
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_bebek_warga_nw.png",
           "size": [
             124,
-            112
+            120
           ],
           "pivot": [
             53,
-            85
+            93
           ]
         }
       },
@@ -966,14 +977,14 @@
       },
       "size": [
         124,
-        94
+        104
       ],
       "pivot": [
         53,
-        67
+        77
       ],
       "width": 2.48,
-      "height": 1.88
+      "height": 2.08
     },
     {
       "id": "id200_transport_motor_matik_keluarga",
@@ -987,6 +998,7 @@
       "note": "Motor matik keluarga — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "motor",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -999,6 +1011,28 @@
           "file": "props/id200_transport_motor_matik_keluarga_sw.png",
           "size": [
             124,
+            112
+          ],
+          "pivot": [
+            53,
+            84
+          ]
+        },
+        "se": {
+          "file": "props/id200_transport_motor_matik_keluarga_se.png",
+          "size": [
+            124,
+            122
+          ],
+          "pivot": [
+            53,
+            94
+          ]
+        },
+        "ne": {
+          "file": "props/id200_transport_motor_matik_keluarga_ne.png",
+          "size": [
+            124,
             110
           ],
           "pivot": [
@@ -1006,37 +1040,15 @@
             83
           ]
         },
-        "se": {
-          "file": "props/id200_transport_motor_matik_keluarga_se.png",
-          "size": [
-            124,
-            108
-          ],
-          "pivot": [
-            53,
-            81
-          ]
-        },
-        "ne": {
-          "file": "props/id200_transport_motor_matik_keluarga_ne.png",
-          "size": [
-            124,
-            108
-          ],
-          "pivot": [
-            53,
-            81
-          ]
-        },
         "nw": {
           "file": "props/id200_transport_motor_matik_keluarga_nw.png",
           "size": [
             124,
-            112
+            120
           ],
           "pivot": [
             53,
-            85
+            93
           ]
         }
       },
@@ -1092,14 +1104,14 @@
       },
       "size": [
         124,
-        110
+        112
       ],
       "pivot": [
         53,
-        83
+        84
       ],
       "width": 2.48,
-      "height": 2.2
+      "height": 2.24
     },
     {
       "id": "id200_transport_sepeda_ontel_tua",
@@ -1113,6 +1125,7 @@
       "note": "Sepeda ontel tua — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "sepeda",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -1125,44 +1138,44 @@
           "file": "props/id200_transport_sepeda_ontel_tua_sw.png",
           "size": [
             124,
-            106
+            108
           ],
           "pivot": [
             53,
-            78
+            81
           ]
         },
         "se": {
           "file": "props/id200_transport_sepeda_ontel_tua_se.png",
           "size": [
             124,
-            108
+            116
           ],
           "pivot": [
             53,
-            81
+            89
           ]
         },
         "ne": {
           "file": "props/id200_transport_sepeda_ontel_tua_ne.png",
           "size": [
             124,
-            108
+            106
           ],
           "pivot": [
             53,
-            80
+            79
           ]
         },
         "nw": {
           "file": "props/id200_transport_sepeda_ontel_tua_nw.png",
           "size": [
             124,
-            108
+            114
           ],
           "pivot": [
             53,
-            81
+            87
           ]
         }
       },
@@ -1190,14 +1203,14 @@
       },
       "size": [
         124,
-        106
+        108
       ],
       "pivot": [
         53,
-        78
+        81
       ],
       "width": 2.48,
-      "height": 2.12
+      "height": 2.16
     },
     {
       "id": "id200_transport_sepeda_tukang_roti",
@@ -1211,6 +1224,7 @@
       "note": "Sepeda tukang roti — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "sepeda",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -1223,26 +1237,37 @@
           "file": "props/id200_transport_sepeda_tukang_roti_sw.png",
           "size": [
             124,
-            112
+            130
           ],
           "pivot": [
             53,
-            84
+            103
           ]
         },
         "se": {
           "file": "props/id200_transport_sepeda_tukang_roti_se.png",
           "size": [
             124,
-            108
+            116
           ],
           "pivot": [
             53,
-            81
+            89
           ]
         },
         "ne": {
           "file": "props/id200_transport_sepeda_tukang_roti_ne.png",
+          "size": [
+            124,
+            132
+          ],
+          "pivot": [
+            53,
+            104
+          ]
+        },
+        "nw": {
+          "file": "props/id200_transport_sepeda_tukang_roti_nw.png",
           "size": [
             124,
             114
@@ -1250,17 +1275,6 @@
           "pivot": [
             53,
             87
-          ]
-        },
-        "nw": {
-          "file": "props/id200_transport_sepeda_tukang_roti_nw.png",
-          "size": [
-            124,
-            108
-          ],
-          "pivot": [
-            53,
-            81
           ]
         }
       },
@@ -1288,14 +1302,14 @@
       },
       "size": [
         124,
-        112
+        130
       ],
       "pivot": [
         53,
-        84
+        103
       ],
       "width": 2.48,
-      "height": 2.24
+      "height": 2.6
     },
     {
       "id": "id200_transport_motor_ojol_box_makanan",
@@ -1309,6 +1323,7 @@
       "note": "Motor ojol box makanan — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "motor",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -1321,44 +1336,44 @@
           "file": "props/id200_transport_motor_ojol_box_makanan_sw.png",
           "size": [
             124,
-            138
+            144
           ],
           "pivot": [
             53,
-            110
+            116
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_ojol_box_makanan_se.png",
           "size": [
             124,
-            114
+            124
           ],
           "pivot": [
             53,
-            87
+            97
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_ojol_box_makanan_ne.png",
           "size": [
             124,
-            138
+            144
           ],
           "pivot": [
             53,
-            110
+            116
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_ojol_box_makanan_nw.png",
           "size": [
             124,
-            130
+            124
           ],
           "pivot": [
             53,
-            102
+            97
           ]
         }
       },
@@ -1389,14 +1404,14 @@
       },
       "size": [
         124,
-        138
+        144
       ],
       "pivot": [
         53,
-        110
+        116
       ],
       "width": 2.48,
-      "height": 2.76
+      "height": 2.88
     },
     {
       "id": "id200_transport_motor_ojol_dengan_penumpang",
@@ -1410,6 +1425,7 @@
       "note": "Motor ojol dengan penumpang — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "motor",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -1422,44 +1438,44 @@
           "file": "props/id200_transport_motor_ojol_dengan_penumpang_sw.png",
           "size": [
             124,
-            100
+            112
           ],
           "pivot": [
             53,
-            73
+            84
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_ojol_dengan_penumpang_se.png",
           "size": [
             124,
-            108
+            122
           ],
           "pivot": [
             53,
-            81
+            94
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_ojol_dengan_penumpang_ne.png",
           "size": [
             124,
-            108
+            110
           ],
           "pivot": [
             53,
-            81
+            82
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_ojol_dengan_penumpang_nw.png",
           "size": [
             124,
-            112
+            120
           ],
           "pivot": [
             53,
-            85
+            93
           ]
         }
       },
@@ -1504,14 +1520,14 @@
       },
       "size": [
         124,
-        100
+        112
       ],
       "pivot": [
         53,
-        73
+        84
       ],
       "width": 2.48,
-      "height": 2.0
+      "height": 2.24
     },
     {
       "id": "id200_transport_motor_kurir_barang",
@@ -1525,6 +1541,7 @@
       "note": "Motor kurir barang — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "motor",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -1537,44 +1554,44 @@
           "file": "props/id200_transport_motor_kurir_barang_sw.png",
           "size": [
             124,
-            138
+            146
           ],
           "pivot": [
             53,
-            111
+            119
           ]
         },
         "se": {
           "file": "props/id200_transport_motor_kurir_barang_se.png",
           "size": [
             124,
-            116
+            128
           ],
           "pivot": [
             53,
-            88
+            100
           ]
         },
         "ne": {
           "file": "props/id200_transport_motor_kurir_barang_ne.png",
           "size": [
             124,
-            140
+            146
           ],
           "pivot": [
             53,
-            112
+            119
           ]
         },
         "nw": {
           "file": "props/id200_transport_motor_kurir_barang_nw.png",
           "size": [
             124,
-            126
+            128
           ],
           "pivot": [
             53,
-            99
+            100
           ]
         }
       },
@@ -1605,14 +1622,14 @@
       },
       "size": [
         124,
-        138
+        146
       ],
       "pivot": [
         53,
-        111
+        119
       ],
       "width": 2.48,
-      "height": 2.76
+      "height": 2.92
     },
     {
       "id": "id200_transport_bus_kota_kecil",
@@ -1626,6 +1643,7 @@
       "note": "Bus kota kecil — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "bus",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -1638,57 +1656,57 @@
           "file": "props/id200_transport_bus_kota_kecil_sw.png",
           "size": [
             254,
-            226
+            240
           ],
           "pivot": [
             118,
-            165
+            179
           ]
         },
         "se": {
           "file": "props/id200_transport_bus_kota_kecil_se.png",
           "size": [
             254,
-            226
+            240
           ],
           "pivot": [
             117,
-            166
+            179
           ]
         },
         "ne": {
           "file": "props/id200_transport_bus_kota_kecil_ne.png",
           "size": [
             254,
-            226
+            240
           ],
           "pivot": [
             118,
-            165
+            180
           ]
         },
         "nw": {
           "file": "props/id200_transport_bus_kota_kecil_nw.png",
           "size": [
             254,
-            226
+            240
           ],
           "pivot": [
             117,
-            166
+            180
           ]
         }
       },
       "size": [
         254,
-        226
+        240
       ],
       "pivot": [
         118,
-        165
+        179
       ],
       "width": 5.08,
-      "height": 4.52
+      "height": 4.8
     },
     {
       "id": "id200_transport_ambulans_puskesmas",
@@ -1702,6 +1720,7 @@
       "note": "Ambulans puskesmas — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "van",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -1714,57 +1733,57 @@
           "file": "props/id200_transport_ambulans_puskesmas_sw.png",
           "size": [
             210,
-            208
+            216
           ],
           "pivot": [
             96,
-            160
+            168
           ]
         },
         "se": {
           "file": "props/id200_transport_ambulans_puskesmas_se.png",
           "size": [
             210,
-            210
+            216
           ],
           "pivot": [
             95,
-            161
+            168
           ]
         },
         "ne": {
           "file": "props/id200_transport_ambulans_puskesmas_ne.png",
           "size": [
             210,
-            208
+            218
           ],
           "pivot": [
             96,
-            160
+            169
           ]
         },
         "nw": {
           "file": "props/id200_transport_ambulans_puskesmas_nw.png",
           "size": [
             210,
-            210
+            218
           ],
           "pivot": [
             95,
-            161
+            169
           ]
         }
       },
       "size": [
         210,
-        208
+        216
       ],
       "pivot": [
         96,
-        160
+        168
       ],
       "width": 4.2,
-      "height": 4.16
+      "height": 4.32
     },
     {
       "id": "id200_transport_mobil_angkut_sampah",
@@ -1778,6 +1797,7 @@
       "note": "Mobil angkut sampah — Indonesian environment, native isometric 2:1",
       "category": "transport",
       "assetKind": "truck",
+      "transportDetailRevision": "id200-vehicle-v7",
       "visualDetailRevision": null,
       "objectCategory": "vehicle",
       "collision": true,
@@ -1790,57 +1810,57 @@
           "file": "props/id200_transport_mobil_angkut_sampah_sw.png",
           "size": [
             210,
-            174
+            192
           ],
           "pivot": [
             96,
-            126
+            144
           ]
         },
         "se": {
           "file": "props/id200_transport_mobil_angkut_sampah_se.png",
           "size": [
             210,
-            196
+            190
           ],
           "pivot": [
             95,
-            147
+            142
           ]
         },
         "ne": {
           "file": "props/id200_transport_mobil_angkut_sampah_ne.png",
           "size": [
             210,
-            182
+            192
           ],
           "pivot": [
             96,
-            134
+            144
           ]
         },
         "nw": {
           "file": "props/id200_transport_mobil_angkut_sampah_nw.png",
           "size": [
             210,
-            194
+            192
           ],
           "pivot": [
             95,
-            145
+            143
           ]
         }
       },
       "size": [
         210,
-        174
+        192
       ],
       "pivot": [
         96,
-        126
+        144
       ],
       "width": 4.2,
-      "height": 3.48
+      "height": 3.84
     },
     {
       "id": "id200_jalan_halte_bus_transjakarta",
@@ -1854,6 +1874,7 @@
       "note": "Halte bus TransJakarta — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "halte",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -1908,6 +1929,7 @@
       "note": "Halte angkot pinggir jalan — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "halte",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -1962,6 +1984,7 @@
       "note": "Pos polisi kecil — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "pos",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2016,6 +2039,7 @@
       "note": "Portal kampung — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "portal",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2070,6 +2094,7 @@
       "note": "Gapura RT RW — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "gapura",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2124,6 +2149,7 @@
       "note": "Zebra cross — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "jalan",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2178,6 +2204,7 @@
       "note": "Polisi tidur — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "jalan",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2232,6 +2259,7 @@
       "note": "Pembatas beton jalan — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "blok",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2286,6 +2314,7 @@
       "note": "Kerucut lalu lintas — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "cone",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2340,6 +2369,7 @@
       "note": "Lampu merah simpang — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "lampu",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2394,6 +2424,7 @@
       "note": "Lampu jalan antik — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "tiang",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2448,6 +2479,7 @@
       "note": "Lampu PJU modern — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "tiang",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2502,6 +2534,7 @@
       "note": "Tiang kabel listrik — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "tiang",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2556,6 +2589,7 @@
       "note": "Gardu listrik pinggir jalan — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "gardu",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2610,6 +2644,7 @@
       "note": "Trafo pinggir jalan — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "gardu",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2664,6 +2699,7 @@
       "note": "Spanduk melintang jalan — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "banner",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2718,6 +2754,7 @@
       "note": "Papan nama gang — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "papan",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2772,6 +2809,7 @@
       "note": "Pos parkir — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "pos",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2826,6 +2864,7 @@
       "note": "Hidran pemadam — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "hidran",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2880,6 +2919,7 @@
       "note": "Palang parkir — Indonesian environment, native isometric 2:1",
       "category": "jalan",
       "assetKind": "portal",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -2934,6 +2974,7 @@
       "note": "Warteg etalase hijau — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -2988,6 +3029,7 @@
       "note": "Warmindo mie instan — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3042,6 +3084,7 @@
       "note": "Rumah makan Padang — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3096,6 +3139,7 @@
       "note": "Warung nasi Sunda — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3150,6 +3194,7 @@
       "note": "Kedai mie ayam — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3204,6 +3249,7 @@
       "note": "Warung bakso — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3258,6 +3304,7 @@
       "note": "Warung sate ayam — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3312,6 +3359,7 @@
       "note": "Tenda pecel lele — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "tenda",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3366,6 +3414,7 @@
       "note": "Booth martabak — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3420,6 +3469,7 @@
       "note": "Warung gorengan — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3474,6 +3524,7 @@
       "note": "Booth es teh dan jus — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3528,6 +3579,7 @@
       "note": "Kedai kopi tubruk — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3582,6 +3634,7 @@
       "note": "Toko sembako — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3636,6 +3689,7 @@
       "note": "Depot air isi ulang — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3690,6 +3744,7 @@
       "note": "Laundry kiloan — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3744,6 +3799,7 @@
       "note": "Konter pulsa dan HP — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3798,6 +3854,7 @@
       "note": "Tambal ban motor — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3852,6 +3909,7 @@
       "note": "Pangkas rambut — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3906,6 +3964,7 @@
       "note": "Fotokopi dan ATK — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -3960,6 +4019,7 @@
       "note": "Apotek kampung — Indonesian environment, native isometric 2:1",
       "category": "warung",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4014,6 +4074,7 @@
       "note": "Rumah subsidi sederhana — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "rumah",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4068,6 +4129,7 @@
       "note": "Rumah kampung tembok — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "rumah",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4122,6 +4184,7 @@
       "note": "Rumah kontrakan petak — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "rumah",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4176,6 +4239,7 @@
       "note": "Rumah kos dua lantai — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "rumah",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4230,6 +4294,7 @@
       "note": "Ruko dua lantai — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "ruko",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4284,6 +4349,7 @@
       "note": "Ruko tiga lantai — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "ruko",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4338,6 +4404,7 @@
       "note": "Minimarket warna merah kuning — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "minimarket",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4392,6 +4459,7 @@
       "note": "Minimarket warna biru kuning — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "minimarket",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4446,6 +4514,7 @@
       "note": "Bengkel motor warga — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "bengkel",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4500,6 +4569,7 @@
       "note": "Puskesmas kecamatan — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "public",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4554,6 +4624,7 @@
       "note": "Kantor kelurahan — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "public",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4608,6 +4679,7 @@
       "note": "Kantor kecamatan — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "public",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4662,6 +4734,7 @@
       "note": "Balai warga — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "public",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4716,6 +4789,7 @@
       "note": "Sekolah dasar negeri — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "sekolah",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4770,6 +4844,7 @@
       "note": "Gedung SMP SMA — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "sekolah",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4824,6 +4899,7 @@
       "note": "Mushola kampung — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "mushola",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4878,6 +4954,7 @@
       "note": "Masjid lingkungan — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "masjid",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4932,6 +5009,7 @@
       "note": "Gereja kecil — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "gereja",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -4986,6 +5064,7 @@
       "note": "Pasar tradisional — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "pasar",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -5040,6 +5119,7 @@
       "note": "Gudang toko bangunan — Indonesian environment, native isometric 2:1",
       "category": "bangunan",
       "assetKind": "gudang",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "building",
       "collision": true,
@@ -5094,6 +5174,7 @@
       "note": "Lapak sayur segar — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "lapak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5170,6 +5251,7 @@
       "note": "Lapak buah lokal — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "lapak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5246,6 +5328,7 @@
       "note": "Lapak ikan basah — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "lapak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5322,6 +5405,7 @@
       "note": "Lapak ayam potong — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "lapak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5398,6 +5482,7 @@
       "note": "Lapak bumbu dapur — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "lapak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5474,6 +5559,7 @@
       "note": "Karung beras bertumpuk — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "karung",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5528,6 +5614,7 @@
       "note": "Peti buah plastik — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "peti",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5582,6 +5669,7 @@
       "note": "Tabung LPG bertumpuk — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "gas",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5636,6 +5724,7 @@
       "note": "Galon air bertumpuk — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "galon",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5690,6 +5779,7 @@
       "note": "Etalase jajanan pasar — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "etalase",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5744,6 +5834,7 @@
       "note": "Payung pedagang pasar — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "payung",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5798,6 +5889,7 @@
       "note": "Tenda biru pasar — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "tenda",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -5874,6 +5966,7 @@
       "note": "Meja makan warung — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "meja",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "furniture",
       "collision": false,
@@ -5928,6 +6021,7 @@
       "note": "Kursi plastik warung — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "kursi",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "furniture",
       "collision": false,
@@ -5982,6 +6076,7 @@
       "note": "Freezer es krim — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "freezer",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6036,6 +6131,7 @@
       "note": "Rak snack warung — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "rak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "furniture",
       "collision": false,
@@ -6090,6 +6186,7 @@
       "note": "Rak mie instan — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "rak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "furniture",
       "collision": false,
@@ -6144,6 +6241,7 @@
       "note": "Timbangan pasar — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "timbangan",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6198,6 +6296,7 @@
       "note": "Gerobak sampah pasar — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6274,6 +6373,7 @@
       "note": "Kotak styrofoam ikan — Indonesian environment, native isometric 2:1",
       "category": "pasar",
       "assetKind": "peti",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6328,6 +6428,7 @@
       "note": "Jemuran pakaian warga — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "jemuran",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6382,6 +6483,7 @@
       "note": "Toren air rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "toren",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6436,6 +6538,7 @@
       "note": "Antena televisi rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "antena",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6490,6 +6593,7 @@
       "note": "Parabola rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "parabola",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6544,6 +6648,7 @@
       "note": "Pagar besi rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "pagar",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6598,6 +6703,7 @@
       "note": "Pagar roster — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "pagar",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6652,6 +6758,7 @@
       "note": "Tembok roster — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "pagar",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6706,6 +6813,7 @@
       "note": "Kanopi rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "kanopi",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6760,6 +6868,7 @@
       "note": "Carport sederhana — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "kanopi",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6814,6 +6923,7 @@
       "note": "Pot tanaman depan rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "pot",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6868,6 +6978,7 @@
       "note": "Rak sandal rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "rak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6922,6 +7033,7 @@
       "note": "Kandang ayam pekarangan — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "kandang",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -6976,6 +7088,7 @@
       "note": "Sangkar burung gantung — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "sangkar",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -7030,6 +7143,7 @@
       "note": "Pos ronda kampung — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "pos",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -7084,6 +7198,7 @@
       "note": "Bangku pos ronda — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "bangku",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -7138,6 +7253,7 @@
       "note": "Papan pengumuman RT RW — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "papan",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -7192,6 +7308,7 @@
       "note": "Tempat sampah rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "sampah",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -7246,6 +7363,7 @@
       "note": "Kotak meteran listrik — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "kotak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -7300,6 +7418,7 @@
       "note": "Tempat wudhu rumah — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "wudhu",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -7354,6 +7473,7 @@
       "note": "Sumur pompa air — Indonesian environment, native isometric 2:1",
       "category": "rumah",
       "assetKind": "pompa",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -7408,6 +7528,7 @@
       "note": "Pohon pisang pekarangan — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pisang",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7462,6 +7583,7 @@
       "note": "Pohon kelapa pesisir — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "kelapa",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7516,6 +7638,7 @@
       "note": "Pohon mangga rindang — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pohon",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7570,6 +7693,7 @@
       "note": "Pohon pepaya berbuah — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pepaya",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7624,6 +7748,7 @@
       "note": "Pohon rambutan — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pohon",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7678,6 +7803,7 @@
       "note": "Pohon sawo — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pohon",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7732,6 +7858,7 @@
       "note": "Pohon ketapang — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "ketapang",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7786,6 +7913,7 @@
       "note": "Pohon kamboja bunga — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "kamboja",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7840,6 +7968,7 @@
       "note": "Bougenville berbunga — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "semak",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7894,6 +8023,7 @@
       "note": "Pucuk merah pekarangan — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "semak",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -7948,6 +8078,7 @@
       "note": "Semak teh tehan pagar — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "semak",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8002,6 +8133,7 @@
       "note": "Rumpun bambu — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "bambu",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8056,6 +8188,7 @@
       "note": "Daun pandan wangi — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pandan",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8110,6 +8243,7 @@
       "note": "Monstera dalam pot — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pot",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8164,6 +8298,7 @@
       "note": "Sirih gading pot — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pot",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8218,6 +8353,7 @@
       "note": "Lidah mertua pot — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "pot",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8272,6 +8408,7 @@
       "note": "Petak sawah padi — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "padi",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8326,6 +8463,7 @@
       "note": "Ilalang liar — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "ilalang",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8380,6 +8518,7 @@
       "note": "Eceng gondok kolam — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "air",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8434,6 +8573,7 @@
       "note": "Teratai kolam — Indonesian environment, native isometric 2:1",
       "category": "tanaman",
       "assetKind": "air",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "plant",
       "collision": false,
@@ -8488,6 +8628,7 @@
       "note": "Bedug masjid — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "bedug",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8542,6 +8683,7 @@
       "note": "Rak sandal masjid — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "rak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8596,6 +8738,7 @@
       "note": "Rak sajadah dan kitab — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "rak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8650,6 +8793,7 @@
       "note": "Tiang toa masjid — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "toa",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8704,6 +8848,7 @@
       "note": "Umbul umbul merah putih — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "umbul",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8758,6 +8903,7 @@
       "note": "Tiang bendera Merah Putih — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "bendera",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8812,6 +8958,7 @@
       "note": "Gapura perayaan 17 Agustus — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "gapura",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8866,6 +9013,7 @@
       "note": "Panggung acara 17 Agustus — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "panggung",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8920,6 +9068,7 @@
       "note": "Panjat pinang — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "pinang",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -8974,6 +9123,7 @@
       "note": "Kursi hajatan — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "kursi",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9028,6 +9178,7 @@
       "note": "Tenda hajatan warga — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "tenda",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9082,6 +9233,7 @@
       "note": "Sound system hajatan — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "speaker",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9136,6 +9288,7 @@
       "note": "Booth posyandu — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "booth",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9190,6 +9343,7 @@
       "note": "Pendopo warga — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "pendopo",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9244,6 +9398,7 @@
       "note": "Tugu kampung — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "tugu",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9298,6 +9453,7 @@
       "note": "Ondel ondel Betawi — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "ondel",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9352,6 +9508,7 @@
       "note": "Baliho informasi kampung — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "baliho",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9406,6 +9563,7 @@
       "note": "Banner pengajian warga — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "banner",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9460,6 +9618,7 @@
       "note": "Tempat cuci tangan acara — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "wastafel",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9514,6 +9673,7 @@
       "note": "Meja registrasi hajatan — Indonesian environment, native isometric 2:1",
       "category": "budaya",
       "assetKind": "meja",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9568,6 +9728,7 @@
       "note": "Gerobak bakmi ayam — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9644,6 +9805,7 @@
       "note": "Gerobak sate ayam — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9720,6 +9882,7 @@
       "note": "Gerobak bubur ayam — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9796,6 +9959,7 @@
       "note": "Gerobak es cendol — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9872,6 +10036,7 @@
       "note": "Gerobak es doger — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -9948,6 +10113,7 @@
       "note": "Gerobak cilok — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10024,6 +10190,7 @@
       "note": "Gerobak ketoprak — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10100,6 +10267,7 @@
       "note": "Gerobak pempek — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10176,6 +10344,7 @@
       "note": "Gerobak tahu bulat — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10252,6 +10421,7 @@
       "note": "Gerobak jagung bakar — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10328,6 +10498,7 @@
       "note": "Gerobak kerak telor — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10404,6 +10575,7 @@
       "note": "Gerobak nasi goreng — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10480,6 +10652,7 @@
       "note": "Kompor kaki lima — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "kompor",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10534,6 +10707,7 @@
       "note": "Tabung gas melon — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "gas",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10588,6 +10762,7 @@
       "note": "Panci bakso besar — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "panci",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10642,6 +10817,7 @@
       "note": "Rice cooker warung — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "penanak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10696,6 +10872,7 @@
       "note": "Nampan gorengan — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "nampan",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10750,6 +10927,7 @@
       "note": "Meja lesehan — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "meja",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10804,6 +10982,7 @@
       "note": "Bangku plastik warung — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "bangku",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10858,6 +11037,7 @@
       "note": "Lampu gantung warung — Indonesian environment, native isometric 2:1",
       "category": "gerobak",
       "assetKind": "lampu",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": false,
@@ -10912,6 +11092,7 @@
       "note": "ATM booth perbankan — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "booth",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -10966,6 +11147,7 @@
       "note": "Pom bensin mini — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "pommini",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11020,6 +11202,7 @@
       "note": "Pangkalan ojek — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "pos",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11074,6 +11257,7 @@
       "note": "Papan pangkalan becak — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "papan",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11128,6 +11312,7 @@
       "note": "Toilet umum kampung — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "public",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
@@ -11182,6 +11367,7 @@
       "note": "Bak sampah komunal — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "sampah",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11236,6 +11422,7 @@
       "note": "Kontainer sampah kota — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "sampah",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11290,6 +11477,7 @@
       "note": "Gerobak petugas kebersihan — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "gerobak",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11344,6 +11532,7 @@
       "note": "Menara BTS — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "bts",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11398,6 +11587,7 @@
       "note": "Warnet kampung — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
@@ -11452,6 +11642,7 @@
       "note": "Rental PlayStation — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
@@ -11506,6 +11697,7 @@
       "note": "Penjahit dan obras — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "warung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
@@ -11560,6 +11752,7 @@
       "note": "Kantor urusan agama — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "public",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
@@ -11614,6 +11807,7 @@
       "note": "Koperasi simpan pinjam — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "public",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
@@ -11668,6 +11862,7 @@
       "note": "Saung makan Sunda — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "saung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
@@ -11722,6 +11917,7 @@
       "note": "Gazebo bambu — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "saung",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
@@ -11776,6 +11972,7 @@
       "note": "Stand sangkar burung — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "sangkar",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11830,6 +12027,7 @@
       "note": "Lapangan voli kampung — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "lapangan",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11884,6 +12082,7 @@
       "note": "Ring basket sekolah — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "basket",
+      "transportDetailRevision": null,
       "visualDetailRevision": "atribut-kota-v6",
       "objectCategory": "street",
       "collision": true,
@@ -11938,6 +12137,7 @@
       "note": "Mushola kompleks — Indonesian environment, native isometric 2:1",
       "category": "publik",
       "assetKind": "mushola",
+      "transportDetailRevision": null,
       "visualDetailRevision": null,
       "objectCategory": "street",
       "collision": true,
