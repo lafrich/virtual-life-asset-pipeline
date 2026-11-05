@@ -298,3 +298,34 @@ test("manual character workbench is connected to the original rig, weight tools 
  assert.ok(ui.includes("getSharedEditor"));
  assert.ok(app.includes("rig-art-saved"));
 });
+
+test("named custom nude/body versions never modify the protected original clothed V6B",()=>{
+ const E=require("../site/rig-manual-art.js");
+ const saved=new Map(),host={document:{},localStorage:{
+  getItem:key=>saved.get(key)||null,setItem:(key,val)=>saved.set(key,val)
+ }};
+ const editor=new E.Editor(R,host);
+ editor.setPixel("se",24,61,[215,156,114,255],"torso");
+ const id=editor.saveAsVersion("NUDE V1");
+ assert.equal(id,"custom-1");
+ assert.equal(editor.activeVersion,"custom-1");
+ assert.equal(editor.listVersions().length,1);
+ assert.equal(editor.openVersion("original"),true);
+ assert.equal(editor.state.pixels.se.length,0);
+ assert.equal(editor.state.weights.se.length,0);
+ assert.equal(editor.openVersion(id),true);
+ assert.equal(editor.state.name,"NUDE V1");
+ assert.equal(editor.state.pixels.se.length,1);
+ editor.setPixel("se",25,62,[232,171,131,255],"torso");
+ assert.equal(editor.saveLocal(),true);
+ const second=new E.Editor(R,host);
+ assert.equal(second.activeVersion,id);
+ assert.equal(second.state.pixels.se.length,2);
+ assert.equal(second.openVersion("original"),true);
+ assert.equal(second.state.pixels.se.length,0);
+ assert.equal(second.openVersion(id),true);
+ assert.equal(second.state.pixels.se.length,2);
+ const html=fs.readFileSync("site/index.html","utf8");
+ assert.match(html,/id="rig-paint-save-as"/);
+ assert.match(html,/id="rig-paint-version"/);
+});
