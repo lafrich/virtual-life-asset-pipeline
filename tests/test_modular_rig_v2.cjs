@@ -234,3 +234,20 @@ test("anatomy-first renderer always draws ONE naked base, with clothing as an op
  assert.ok(guide.includes("rig_source_sink"));
  assert.ok(guide.includes('f"{name}-rig-source.npz"'));
 });
+
+test("outfit changes do not replace the underlying body bones",()=>{
+ for(const gender of ["male","female"]){
+  const bare=R.neutral();bare.gender=gender;
+  const dressed=R.normalize({...bare,outfit:true});
+  const parts=["head","torso","shoulder_l","elbow_l","wrist_l","hip_l","knee_l","ankle_l"];
+  for(const name of parts){
+   assert.deepEqual(R.world(bare)[name],R.world(dressed)[name]);
+   const base={gender,layer_type:"body",bone:name};
+   assert.equal(R.sourceSlot(base,bare),true);
+   assert.equal(R.sourceSlot(base,dressed),true);
+  }
+  const clothing={gender,layer_type:"garment",bone:"torso"};
+  assert.equal(R.sourceSlot(clothing,bare),false);
+  assert.equal(R.sourceSlot(clothing,dressed),true);
+ }
+});
