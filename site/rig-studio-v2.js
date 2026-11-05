@@ -234,6 +234,7 @@
  async function mount(){
   const panel=$("rig-v2-workspace"),tab=$("switch-rig-v2");if(!panel||!tab)return;
   createTree();restore();
+  root.addEventListener("mahluk:rig-art-changed",()=>drawAll());
   try{
    await R.loadNativeArt();
   }catch(error){
@@ -250,7 +251,7 @@
     t.classList.remove("active");t.setAttribute("aria-selected","false");
    }
    panel.hidden=false;tab.classList.add("active");tab.setAttribute("aria-selected","true");
-   say("ORIGINAL PIPELINE V6B / TRUE SOURCE CUTOUTS · 33 JOINTS · EMOTION FOLLOWS HEAD");
+   say("RESTORED CLOTHED V6B MASTER · EDIT PIXELS + WEIGHTS TO BUILD YOUR OWN CHARACTER");
    drawAll();
   });
   for(const btn of document.querySelectorAll("[data-rig-v2-view]"))btn.addEventListener("click",()=>{
@@ -277,8 +278,7 @@
   $("rig-v2-outfit").addEventListener("change",e=>{
    base.outfit=model.outfit=e.target.value==="outfit";
    drawAll();
-   say(model.outfit?"OUTFIT ON · CLOTHING LAYERS VISIBLE":
-    "BASE BODY · CLOTHING OFF · RIG / SKIN PRESERVED");
+   say("ORIGINAL CLOTHED MASTER IS FIXED · USE EDIT PIXELS + WEIGHTS FOR YOUR OWN VERSION");
   });
   $("rig-v2-joints-visible").addEventListener("change",e=>{
    jointsVisible=e.target.checked;drawAll();
@@ -370,7 +370,7 @@
    $("rig-v2-play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY";
   };
   $("rig-v2-new").onclick=()=>{
-   if(!confirm("RESET TO THE NEW PIXEL REFERENCE POSE? Saved rig data stays in browser."))return;
+   if(!confirm("Restore original clothed rig pose? Your custom pixel edits stay saved separately."))return;
    base=R.referencePose();tracks=R.makeTracks();model=R.normalize(base);frame=0;
    count=24;fps=12;$("rig-v2-count").value="24";$("rig-v2-fps").value="12";
    updateInputs();drawAll();drawTracks();say("NEW RIG / ORIGINAL REFERENCE RESTORED");
