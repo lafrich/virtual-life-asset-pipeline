@@ -97,3 +97,49 @@ Covered cutouts: torso, pelvis, shoulders, elbows, wrists/hands, hips, knees, an
 The PNGs already exist in the original rig manifest as `male/female` `layer_type:"body"` 4-view atlases. This mode only selects the cutout source. It does not regenerate anatomy, mutate body transform keyframes, change rig anchor rules or alter any other plane. It is reversible with Undo/Redo and persists in game saves and exported project JSON. Game previews and published Semesta/Bangun Ruang sprites use the same selection.
 
 The selected base's head still stays intact when a body from the other base is selected; neck seams can vary between source anatomies, so inspect the 4-view preview before publishing. Older characters default to CURRENT on first opening.
+
+## Per-plane Pixel Editor / saved universal art (2026-11-05)
+
+Select an editable plane in Object Manager (for example `WRIST L` or
+`WRIST R` for its hand) and choose **EDIT PIXELS**. The new modal paints
+its own source RGBA atlas at the **original 64 × 112 pixels for each of four
+directions SE/SW/NE/NW** (64 × 448 when stored). Existing source cutouts are
+flattened only *for that selected plane*, at their native coordinates.
+
+The pixel editor provides pencil, eraser (true transparency), flood fill,
+color picker, native 1/2/3/5 pixel brushes, a color palette, a reference
+character at reduced opacity, optional grid, separate editing per direction,
+local pixel Undo/Redo and PNG export. Mouse and touch drawing both work.
+Nothing is repainted by the body rig generator.
+
+- **APPLY TO THIS CHARACTER** replaces the selected bone's RGBA cutout in
+  the current character and baked game preview/sprite only. Whole-plane
+  transforms and keyframes still work normally; edited pixels are not
+  stacked as a second semi-transparent copy.
+- **SAVE AS GENERAL DEFAULT** replaces that particular plane in the
+  universal master library, preserving the previously saved anchors,
+  hierarchy, rest pose and every other plane. Shared artwork lives in
+  `localStorage["mahluk-2-general-rig-rules-v1"]` under `pixelPlanes`.
+  New and reopened 2.0 characters load the latest master artwork. Users
+  must re-publish already baked gameplay sprites to update Semesta or
+  Bangun Ruang.
+- **RESTORE ORIGINAL PIXELS** in the modal restores the unmodified native
+  source for the selected plane *in the editing canvas*. **APPLY** or
+  **SAVE AS GENERAL DEFAULT** commits that pixel version.
+  **RESTORE ORIGINAL PIXELS** in the main Inspector clears only this
+  character's pixel override until saved again.
+- The main Rig **SAVE AS GENERAL DEFAULT RIG** also captures current
+  plane artwork alongside anchors, parent/draw order and default pose.
+- Project JSON exports and per-character save records embed the selected
+  edited plane PNGs so they can be imported/reopened. Global storage is
+  per origin/browser; export the project to keep copies outside browser
+  storage. The UI refuses oversized PNG records rather than silently
+  losing other user data.
+
+**Important:** General pixel art is authored on the active base, but
+intentionally shared by bone ID across Mahluk 2.0 characters. A newly
+painted hand may therefore have a mismatched skin tone on another base.
+Use the native source editor/preview for all four directions and test
+other character bases before accepting a global default. This does
+not automatically rebuild archived pre-2.0 characters or past
+published static sprite sheets.
