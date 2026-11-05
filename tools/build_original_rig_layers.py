@@ -516,6 +516,15 @@ def publish_gender_bases(media: Path, dest: Path):
                     sprite.resize((256, 448), Image.Resampling.NEAREST),
                     (mode_index*1024 + row*256, gender_index*448))
     contact.save(dest / "gender-bases.png", optimize=True)
+    for gender in ("male", "female"):
+        body = [row for row in slots if row["gender"] == gender
+                and row["layer_type"] == "body"]
+        clothes = [row for row in slots if row["gender"] == gender
+                   and row["layer_type"] == "garment"]
+        if len(body) < 8 or len(clothes) < 3:
+            raise AssertionError(
+                f"{gender}: expected independent anatomical cutouts and removable garments"
+            )
     return slots
 
 
@@ -590,6 +599,10 @@ def generate(media: Path, with_gender: bool = True):
         "preview": "media/original-rig/gender-bases.png",
         "gender_bases": ["male", "female"],
         "outfit_modes": ["base", "outfit"],
+        "anatomy_source": "human-male-base and human-female-base",
+        "anatomy_layers_shared_across_outfits": True,
+        "outfit_layer_mode": "additive_native_garments",
+        "rig_pivot": [32, 100],
         "format": "mahluk-original-source-rig-v1",
         "art_style": "original_v6b",
         "generator": "chars-iso/v6b/tools/live_v6b.py",
