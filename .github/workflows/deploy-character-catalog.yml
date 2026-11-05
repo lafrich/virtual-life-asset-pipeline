@@ -25,6 +25,8 @@ on:
       - ".github/workflows/deploy-character-catalog.yml"
       - "assets/**"
       - "site/**"
+      - "tools/build_human_wardrobe.py"
+      - "tests/test_human_wardrobe.py"
       - "tools/build_human_templates.py"
       - "tools/human_pose_extras.py"
       - "site/universal-body-actions.js"
@@ -121,6 +123,7 @@ jobs:
           node --check site/action-scene-editor.js
           node tests/test_action_scene_bridge.cjs
           node --check site/app.js
+          python -m py_compile tools/build_human_wardrobe.py
           node tests/test_desktop_layout.cjs
           node --check site/animations.js
           node --check site/universal-motion-runtime.js
@@ -186,6 +189,7 @@ jobs:
           python tests/test_universal_sleep_published.py
           python tests/test_hygiene_published.py
           python tests/test_human_animation_sheets.py
+          python tests/test_human_wardrobe.py
       - name: Render original street vehicles for Semesta
         run: |
           # Same authored sprite pipeline as Mahluk Hidup, not a Semesta proxy.
@@ -232,6 +236,7 @@ jobs:
           test -s _site/media/astrofrich-base-sheet.png
           test -s _site/media/human-male-base-sheet.png
           test -s _site/media/human-female-base-sheet.png
+          test -s _site/wardrobe-presets.json
           test -s _site/media/human-male-base-guide.png
           test -s _site/media/human-female-base-guide.png
           python -c 'from PIL import Image; import json; from pathlib import Path; data=json.loads(Path("_site/catalog.json").read_text()); ids={c["id"] for c in data["characters"]}; assert "legacy_otis" not in ids and "otis" not in ids; bases=[c for c in data["characters"] if c.get("template_category")=="human"]; assert {c["id"] for c in bases}=={"human_male_base","human_female_base"}; assert all(len(c["expressions"])==12 and len([m for m in c["motions"] if m["available"]])==16 for c in bases); assert all(Image.open("_site/media/human-"+g+"-base-guide.png").size==(256,112) for g in ("male","female")); print("Otis retired, Human Male and Female full modular sprite atlases valid")'
