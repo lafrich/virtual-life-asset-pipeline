@@ -10,10 +10,28 @@ from __future__ import annotations
 import os
 import shutil
 import sys
+import tempfile
 import threading
+import traceback
 import webbrowser
+from pathlib import Path
 
-import server
+
+def write_crash_log():
+    """Keep an actionable diagnosis when PyInstaller --windowed hides stderr."""
+    path = Path(tempfile.gettempdir()) / "v6b_studio_desktop_error.log"
+    try:
+        path.write_text(traceback.format_exc(), encoding="utf-8")
+    except OSError:
+        pass
+    return str(path)
+
+
+try:
+    import server
+except BaseException:
+    write_crash_log()
+    raise
 
 
 def stop_jobs():
@@ -101,7 +119,11 @@ def run_desktop():
 
 
 if __name__ == "__main__":
-    if os.environ.get("V6B_DESKTOP_HEADLESS") == "1":
-        run_headless()
-    else:
-        sys.exit(run_desktop())
+    try:
+        if os.environ.get("V6B_DESKTOP_HEADLESS") == "1":
+            run_headless()
+        else:
+            sys.exit(run_desktop())
+    except BaseException:
+        write_crash_log()
+        raise
