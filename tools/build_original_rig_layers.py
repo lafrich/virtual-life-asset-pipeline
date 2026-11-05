@@ -166,6 +166,12 @@ def native_gender_models(media: Path):
                 dressed.alpha_composite(part.convert("RGBA"))
             variants[(gender, "base", direction)] = nude
             variants[(gender, "outfit", direction)] = dressed
+        # Force exact direction pairs, including anatomy and 1px highlights:
+        # SE<->SW and NE<->NW, never mixing front SW with rear NE.
+        for mode in ("base", "outfit"):
+            for source, target in (("se", "sw"), ("ne", "nw")):
+                variants[(gender, mode, target)] = variants[(gender, mode, source)].transpose(
+                    Image.Transpose.FLIP_LEFT_RIGHT)
     return variants
 
 
@@ -224,6 +230,14 @@ def split_body_pixels(sprite: Image.Image, direction: str):
 def publish_gender_bases(media: Path, dest: Path):
     variants = native_gender_models(media)
     slots = []
+    for gender in ("male", "female"):
+        for mode in ("base", "outfit"):
+            for source, target in (("se", "sw"), ("ne", "nw")):
+                expected = variants[(gender, mode, source)].transpose(
+                    Image.Transpose.FLIP_LEFT_RIGHT)
+                if not np.array_equal(np.asarray(expected),
+                                      np.asarray(variants[(gender, mode, target)])):
+                    raise AssertionError(f"{gender}/{mode}: {target} must mirror {source}")
     contact = Image.new("RGBA", (2048, 896), (245, 243, 239, 255))
     for gender_index, gender in enumerate(("male", "female")):
         for mode_index, mode in enumerate(("base", "outfit")):
