@@ -25,14 +25,13 @@ test("Emotion Studio reuses the existing Mahluk 2 pixel editor and publishes Git
  assert.match(js,/function applyFrame\(/);
  assert.match(js,/beforeunload/);
 });
-test("Mahluk Hidup 2 selects the universal GitHub expressions alongside existing authored expressions",()=>{
+test("Emotion Studio and Mahluk Hidup 2 remain disconnected until the new rig is ready",()=>{
  const html=read("site/mahluk-2/index.html"),js=read("site/mahluk-2/studio.js");
- assert.ok(html.includes("../emotion-studio/emotion-library.js"));
- assert.ok(html.includes("OPEN EMOTION STUDIO"));
- assert.match(js,/async function loadUniversalAssets\(/);
- assert.match(js,/await loadUniversalAssets\(\)/);
- assert.match(js,/a\.base==="universal"/);
- assert.ok(js.includes('src:"github-universal"'));
+ assert.ok(!html.includes("../emotion-studio/emotion-library.js"));
+ assert.ok(!html.includes("refreshUniversalEmotions"));
+ assert.ok(!js.includes("loadUniversalAssets"));
+ assert.match(js,/manual PNG import independent/);
+ assert.ok(read("site/emotion-studio/index.html").includes("id=\"pixelOverlay\""));
 });
 test("GitHub integration uses authenticated content API without persisting credentials",()=>{
  const js=read("site/emotion-studio/emotion-library.js");
