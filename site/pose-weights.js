@@ -23,6 +23,25 @@
   {id:"upper_leg_r",label:"RIGHT / THIGH",rect:[31,62,14,22]},
   {id:"lower_leg_r",label:"RIGHT / SHIN + FOOT",rect:[31,80,14,23]}
  ]);
+ /* These edit groups are UI selections, not new bones or keyframe tracks.
+  * Their native-pixel paint regions slightly overlap at the shoulder so
+  * artists can reassign troublesome shoulder pixels between arm and torso.
+  * The stored ownership map still has exactly one owner per pixel. */
+ const FOCUS=Object.freeze({
+  body:Object.freeze({label:"BODY",segments:Object.freeze([1]),rect:Object.freeze([17,27,30,45])}),
+  arm_l:Object.freeze({label:"LEFT ARM",segments:Object.freeze([3,4]),rect:Object.freeze([7,31,23,47])}),
+  arm_r:Object.freeze({label:"RIGHT ARM",segments:Object.freeze([5,6]),rect:Object.freeze([35,31,23,47])}),
+  head:Object.freeze({label:"HEAD",segments:Object.freeze([2]),rect:Object.freeze([9,0,46,39])}),
+  legs:Object.freeze({label:"LEGS",segments:Object.freeze([7,8,9,10]),rect:Object.freeze([16,60,34,52])}),
+  all:Object.freeze({label:"ALL PIXELS",segments:Object.freeze(SEGMENTS.map((_,i)=>i)),rect:Object.freeze([0,0,W,H])})
+ });
+ function inFocusRegion(group,x,y){
+  const [left,top,width,height]=(FOCUS[group]||FOCUS.all).rect;
+  return x>=left&&x<left+width&&y>=top&&y<top+height;
+ }
+ function focusOwns(group,owner){
+  return (FOCUS[group]||FOCUS.all).segments.includes(owner);
+ }
  const maps=new Map(),versions=new Map(),layerCache=new WeakMap();
  let loaded=null,changeCallback=null,editorRefresh=null;
  const idKey=(base,dir)=>base+":"+dir;
@@ -93,7 +112,7 @@
   const key=idKey(baseId,dir);versions.set(key,(versions.get(key)||0)+1);
   if(changeCallback)changeCallback();
  }
- function brush(mask,x,y,radius,segment,transparent){
+ function brush(mask,x,y,radius,segment,transparent,accept){
   if(!mask||mask.length!==PIXELS||!Number.isInteger(segment)||
     segment<0||segment>=SEGMENTS.length)return 0;
   const px=Math.floor(x),py=Math.floor(y),r=Math.max(0,Math.min(12,Math.floor(radius)));
@@ -103,6 +122,7 @@
     if((ix-px)**2+(iy-py)**2>r*r)continue;
     const n=iy*W+ix;
     if(transparent&&transparent[n*4+3]===0)continue;
+    if(accept&&!accept(ix,iy,mask[n]))continue;
     if(mask[n]!==segment){mask[n]=segment;changed++;}
    }
   return changed;
@@ -175,46 +195,110 @@
   const $=id=>root.document.getElementById(id);
   const canvas=$("pose-weight-canvas");if(!canvas)return;
   const select=$("pose-weight-bone"),basePicker=$("pose-weight-base"),facing=$("pose-facing");
-  SEGMENTS.forEach((s,index)=>{
-   const option=root.document.createElement("option");option.value=String(index);
-   option.textContent=s.label;select.append(option);
-  });
-  select.value="1";
-  changeCallback=onChange;
   const ctx=canvas.getContext("2d",{willReadFrequently:true});
-  let drawing=false,mode="paint",lastPoint=null;
-  const overlayCanvas=root.document.createElement("canvas");overlayCanvas.width=W;overlayCanvas.height=H;
+  let drawing=false,mode="paint",lastPoint=null,focus="body";
+  changeCallback=onChange;
+  const thumbButtons=[...root.document.querySelectorAll("[data-pose-weight-isolate]")];
+  const thumbCanvases=new Map(thumbButtons.map(b=>[b.dataset.poseWeightIsolate,b.querySelector("canvas")]));
+  const overlayCanvas=root.document.createElement("canvas");
+  overlayCanvas.width=W;overlayCanvas.height=H;
+  const sourceCache=new Map();
   const current=()=>{
    const baseId=basePicker.value,dir=Number(facing.value);
    if(!source[baseId]||!images[baseId])return null;
-   const t=tile(images[baseId],source[baseId],dir);
-   return {baseId,dir,base:source[baseId],img:images[baseId],tile:t,
-    mask:getMap(baseId,dir,images[baseId],source[baseId])};
+   const key=idKey(baseId,dir);
+   const img=images[baseId],base=source[baseId];
+   let t=sourceCache.get(key);
+   if(!t||t.img!==img){t={...tile(img,base,dir),img};sourceCache.set(key,t);}
+   return {baseId,dir,base,img,tile:t,mask:getMap(baseId,dir,img,base)};
   };
+  function syncSelect(){
+   const previous=Number(select.value);
+   const candidates=FOCUS[focus].segments;
+   select.replaceChildren();
+   for(const index of candidates){
+    const option=root.document.createElement("option");
+    option.value=String(index);option.textContent=SEGMENTS[index].label;
+    select.append(option);
+   }
+   select.value=String(candidates.includes(previous)?previous:candidates.find(i=>i!==0)??0);
+  }
+  function setFocus(next){
+   if(!FOCUS[next]||drawing)return;
+   focus=next;syncSelect();
+   for(const button of thumbButtons){
+    const active=button.dataset.poseWeightIsolate===focus;
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-pressed",String(active));
+   }
+   refresh();
+  }
+  function maskDisplay(item,group){
+   const rgba=item.tile.data.data,out=ctx.createImageData(W,H),dest=out.data;
+   for(let p=0;p<PIXELS;p++){
+    const a=rgba[p*4+3];if(!a)continue;
+    const x=p%W,y=Math.floor(p/W),owner=item.mask[p],inside=inFocusRegion(group,x,y);
+    const ours=group==="all"||focusOwns(group,owner);
+    const offset=p*4;
+    if(ours){
+     for(let i=0;i<3;i++)dest[offset+i]=rgba[offset+i];
+     dest[offset+3]=a;
+    }else if(inside){
+     // Faint source silhouette shows reclaimable pixels without showing the
+     // other body part as a full-strength overlapping selection.
+     for(let i=0;i<3;i++)dest[offset+i]=Math.round(rgba[offset+i]*.4+151);
+     dest[offset+3]=Math.min(a,65);
+    }
+   }
+   return out;
+  }
+  function drawThumbnails(item){
+   for(const [id,preview] of thumbCanvases){
+    if(!preview)continue;
+    const tctx=preview.getContext("2d",{willReadFrequently:true});
+    tctx.clearRect(0,0,W,H);tctx.imageSmoothingEnabled=false;
+    const src=item.tile.data.data,output=tctx.createImageData(W,H),out=output.data;
+    for(let p=0;p<PIXELS;p++){
+     if(focusOwns(id,item.mask[p])){
+      const n=p*4;out[n]=src[n];out[n+1]=src[n+1];
+      out[n+2]=src[n+2];out[n+3]=src[n+3];
+     }
+    }
+    tctx.putImageData(output,0,0);
+   }
+  }
   function refresh(){
    const item=current();ctx.clearRect(0,0,W,H);
    if(!item)return;
-   ctx.imageSmoothingEnabled=false;ctx.drawImage(item.tile.canvas,0,0);
+   ctx.imageSmoothingEnabled=false;
+   ctx.putImageData(maskDisplay(item,focus),0,0);
    const selected=Number(select.value),overlay=ctx.createImageData(W,H);
-   let assigned=0;
+   let assigned=0,groupCount=0;
    for(let p=0;p<PIXELS;p++){
     const alpha=item.tile.data.data[p*4+3];if(!alpha)continue;
-    const on=item.mask[p]===selected;
-    if(on)assigned++;
-    const pos=p*4;
-    overlay.data[pos]=on?43:17;
-    overlay.data[pos+1]=on?134:31;
-    overlay.data[pos+2]=on?255:51;
-    overlay.data[pos+3]=on?132:37;
+    const belongs=focus==="all"||focusOwns(focus,item.mask[p]);
+    if(belongs)groupCount++;
+    if(item.mask[p]!==selected)continue;
+    assigned++;
+    const n=p*4;
+    overlay.data[n]=34;overlay.data[n+1]=125;
+    overlay.data[n+2]=251;overlay.data[n+3]=130;
    }
    overlayCanvas.getContext("2d").putImageData(overlay,0,0);
    ctx.drawImage(overlayCanvas,0,0);
-   ctx.save();ctx.strokeStyle="rgba(20,52,91,.35)";ctx.lineWidth=.18;
+   // Show the actual edit boundary. Unrelated parts are not selectable.
+   if(focus!=="all"){
+    const [x,y,w,h]=FOCUS[focus].rect;
+    ctx.save();ctx.strokeStyle="#2259aa";ctx.lineWidth=.6;
+    ctx.setLineDash([2,1]);ctx.strokeRect(x+.3,y+.3,w-.6,h-.6);ctx.restore();
+   }
+   ctx.save();ctx.strokeStyle="rgba(20,52,91,.28)";ctx.lineWidth=.18;
    for(let x=0;x<=W;x+=8){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
    for(let y=0;y<=H;y+=8){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
    ctx.restore();
-   $("pose-weight-info").textContent=assigned+" PX / "+SEGMENTS[selected].label+
-    " / "+(item.dir+1)+" OF 4 · PAINT SAVES MASK AUTOMATICALLY";
+   drawThumbnails(item);
+   $("pose-weight-info").textContent=FOCUS[focus].label+" LAYER / "+groupCount+
+    " PIXELS | BONE "+assigned+" PX | "+(item.dir+1)+"/4 · INDEPENDENT EDIT";
   }
   editorRefresh=refresh;
   function stroke(e){
@@ -224,37 +308,54 @@
    const n=mode==="erase"?0:Number(select.value);
    const start=lastPoint||[x,y],distance=Math.hypot(x-start[0],y-start[1]);
    const steps=Math.max(1,Math.ceil(distance)),radius=Number($("pose-weight-size").value);
+   const within=(px,py)=>inFocusRegion(focus,px,py);
    let changed=0;
    for(let i=0;i<=steps;i++){
     const t=i/steps;
     changed+=brush(item.mask,start[0]+(x-start[0])*t,start[1]+(y-start[1])*t,
-     radius,n,item.tile.data);
+      radius,n,item.tile.data,within);
    }
    lastPoint=[x,y];
    if(changed){touch(item.baseId,item.dir);refresh();}
   }
   canvas.addEventListener("pointerdown",e=>{
    if(!current())return;
-   drawing=true;lastPoint=null;canvas.setPointerCapture(e.pointerId);stroke(e);e.preventDefault();
+   drawing=true;lastPoint=null;canvas.setPointerCapture(e.pointerId);
+   stroke(e);e.preventDefault();
   });
-  canvas.addEventListener("pointermove",e=>{if(drawing&&canvas.hasPointerCapture(e.pointerId))stroke(e);});
+  canvas.addEventListener("pointermove",e=>{
+   if(drawing&&canvas.hasPointerCapture(e.pointerId))stroke(e);
+  });
   function finish(e){
    if(!drawing)return;
    drawing=false;lastPoint=null;
    if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
    persist();refresh();
   }
-  canvas.addEventListener("pointerup",finish);canvas.addEventListener("pointercancel",finish);
+  canvas.addEventListener("pointerup",finish);
+  canvas.addEventListener("pointercancel",finish);
+  for(const button of thumbButtons)
+   button.addEventListener("click",()=>setFocus(button.dataset.poseWeightIsolate));
   for(const button of root.document.querySelectorAll("[data-pose-weight-tool]"))
    button.addEventListener("click",()=>{
     mode=button.dataset.poseWeightTool;
     for(const b of root.document.querySelectorAll("[data-pose-weight-tool]")){
-     const on=b===button;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));
+     const on=b===button;b.classList.toggle("active",on);
+     b.setAttribute("aria-pressed",String(on));
     }
    });
   $("pose-weight-reset").addEventListener("click",()=>{
    const item=current();if(!item)return;
-   maps.set(idKey(item.baseId,item.dir),defaultMap(item.tile.data));
+   // Reset only the active split layer, leaving all other masks intact.
+   // ALL is an explicit full reset.
+   const defaults=defaultMap(item.tile.data);
+   if(focus==="all")item.mask.set(defaults);
+   else for(let i=0;i<PIXELS;i++){
+    const x=i%W,y=Math.floor(i/W);
+    if(!inFocusRegion(focus,x,y))continue;
+    if(focusOwns(focus,item.mask[i])||focusOwns(focus,defaults[i]))
+     item.mask[i]=defaults[i];
+   }
    touch(item.baseId,item.dir);persist();refresh();
   });
   select.addEventListener("change",refresh);
@@ -262,9 +363,19 @@
   facing.addEventListener("change",refresh);
   $("pose-weight-size").addEventListener("input",e=>
    $("pose-weight-size-label").textContent=String(2*Number(e.target.value)+1)+" PX");
-  refresh();
-  return {refresh};
+  $("pose-weight-zoom").addEventListener("input",e=>{
+   const factor=Number(e.target.value);
+   canvas.style.width=(W*factor)+"px";
+   canvas.style.height=(H*factor)+"px";
+   $("pose-weight-zoom-label").textContent=factor+"×";
+  });
+  const initialZoom=Number($("pose-weight-zoom").value)||4;
+  canvas.style.width=(W*initialZoom)+"px";
+  canvas.style.height=(H*initialZoom)+"px";
+  $("pose-weight-zoom-label").textContent=initialZoom+"×";
+  setFocus("body");
+  return {refresh,setFocus};
  }
- return Object.freeze({W,H,KEY,SEGMENTS,encode,decode,defaultMap,brush,getMap,
+ return Object.freeze({W,H,KEY,SEGMENTS,FOCUS,inFocusRegion,focusOwns,encode,decode,defaultMap,brush,getMap,
   layers,paint,serialize,mount,refresh:()=>editorRefresh?.()});
 });
