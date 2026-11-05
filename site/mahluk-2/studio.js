@@ -22,7 +22,7 @@ const GROUPS=[
 let manifest=null,images=new Map(),slots=[],sourceError="";
 let state=R?.referencePose?.()||null,base=R?.referencePose?.()||null,tracks=R?.makeTracks?.()||{};
 let selected="head",direction="se",type="original",outfit="outfit",clip="idle",frame=0,frames=12,fps=12,playing=false,playSince=0,zoom=3.25;
-let camera={x:0,y:0},view="iso",axis="x",drag=null,identifier=null;
+let camera={x:0,y:0},view="iso",axis="x",transformMode="move",drag=null,identifier=null;
 const studio=$("editor"),game=$("game");
 function setStatus(t,ok){$("status").textContent=t;if(ok!==undefined){$("syncLed").classList.toggle("ok",!!ok);$("syncLabel").textContent=ok?"GAME STORAGE READY":"SOURCE UNAVAILABLE";}}
 function safeGet(k,def){try{return JSON.parse(localStorage.getItem(k)||"null")??def}catch{return def}}
@@ -94,6 +94,18 @@ function drawGrid(ctx,w,h,scale){
 }
 function arrows(ctx,pos,scale){
  const u=34*scale/3.25;
+ if(transformMode==="rotate"){
+  ctx.save();ctx.strokeStyle="#eaba71";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(pos.x,pos.y,u,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle="#eaba71";ctx.beginPath();ctx.arc(pos.x+u,pos.y,6,0,Math.PI*2);ctx.fill();
+  ctx.font="12px Consolas";ctx.fillText("ROTATE",pos.x+u+8,pos.y-5);ctx.restore();
+  return [{id:"rotate",end:{x:pos.x+u,y:pos.y},color:"#eaba71",center:pos,radius:u}];
+ }
+ if(transformMode==="scale"){
+  ctx.save();ctx.strokeStyle="#d7b8ef";ctx.lineWidth=2;ctx.strokeRect(pos.x-14,pos.y-14,28,28);
+  ctx.fillStyle="#d7b8ef";ctx.fillRect(pos.x+u-6,pos.y-u-6,12,12);
+  ctx.font="12px Consolas";ctx.fillText("SCALE",pos.x+u+8,pos.y-u-5);ctx.restore();
+  return [{id:"scale",end:{x:pos.x+u,y:pos.y-u},color:"#d7b8ef"}];
+ }
  const handles=[
   {id:"x",end:{x:pos.x+u,y:pos.y},color:"#ff8b7d"},
   {id:"y",end:{x:pos.x,y:pos.y-u},color:"#7fda9a"},
@@ -128,6 +140,7 @@ function drawGame(){
 }
 function paint(){drawEditor();drawGame();}
 function axisButtons(){
+ for(const tool of ["Move","Rotate","Scale"])$("tool"+tool).classList.toggle("active",transformMode===tool.toLowerCase());
  for(const id of ["x","y","z"])$("axis"+id.toUpperCase()).classList.toggle("active",axis===id);
  $("viewIso").classList.toggle("active",view==="iso");$("viewFront").classList.toggle("active",view==="front");
  $("viewHint").textContent=view==="iso"?"ISOMETRIC · X / Y / Z":"FRONT · FLAT PIXELS";
@@ -322,6 +335,7 @@ function setupEvents(){
  $("setKey").onclick=setKey;$("deleteKey").onclick=removeKey;
  $("play").onclick=()=>{playing=!playing;playSince=performance.now();$("play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY"};
  $("gridPreview").onchange=e=>$("game").parentElement.classList.toggle("flat",e.target.checked);
+ for(const mode of ["move","rotate","scale"])$("tool"+mode[0].toUpperCase()+mode.slice(1)).onclick=()=>{transformMode=mode;axisButtons();paint()};
  $("viewIso").onclick=()=>{view="iso";axisButtons();paint()};
  $("viewFront").onclick=()=>{view="front";axisButtons();paint()};
  $("viewHome").onclick=()=>{camera={x:0,y:0};zoom=3.25;paint()};
@@ -336,10 +350,15 @@ function setupEvents(){
  studio.addEventListener("pointerdown",e=>{
   if(!state||!manifest)return;
   const p=mouse(e),pan=e.button===1||e.altKey;
-  const handle=!pan&&lastHandles.find(h=>Math.hypot(h.end.x-p.x,h.end.y-p.y)<19);
-  if(handle)axis=handle.id;
+  const origin=projectBone(studio.width,studio.height,zoom*Math.min(2,devicePixelRatio||1),selected);
+  const handle=!pan&&lastHandles.find(h=>transformMode==="rotate"?
+    Math.abs(Math.hypot(p.x-origin.x,p.y-origin.y)-h.radius)<16:
+    Math.hypot(h.end.x-p.x,h.end.y-p.y)<21);
+  if(handle&&transformMode==="move")axis=handle.id;
   axisButtons();
-  drag={pointer:e.pointerId,start:p,pos:clone(state.parts[selected]),cam:{...camera},mode:pan?"pan":handle?"move":"none",axis};
+  drag={pointer:e.pointerId,start:p,pos:clone(state.parts[selected]),cam:{...camera},
+   mode:pan?"pan":handle?transformMode:"none",axis,origin,
+   startAngle:origin?Math.atan2(p.y-origin.y,p.x-origin.x):0};
   if(drag.mode!=="none"){studio.setPointerCapture(e.pointerId);e.preventDefault()}
  });
  studio.addEventListener("pointermove",e=>{
@@ -347,10 +366,19 @@ function setupEvents(){
   if(drag.mode==="none")return;
   const p=mouse(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y,scale=zoom*Math.min(2,devicePixelRatio||1);
   if(drag.mode==="pan"){camera.x=drag.cam.x+dx;camera.y=drag.cam.y+dy}
+  else if(drag.mode==="rotate"){
+   const theta=Math.atan2(p.y-drag.origin.y,p.x-drag.origin.x);
+   let delta=(theta-drag.startAngle)*180/Math.PI;
+   if(delta>180)delta-=360;if(delta< -180)delta+=360;
+   let deg=clamp(drag.pos.angle+delta,-180,180);
+   if(e.shiftKey)deg=Math.round(deg/15)*15;
+   state.parts[selected].angle=deg;
+  }
+  else if(drag.mode==="scale")state.parts[selected].scale=clamp(drag.pos.scale+dx/(scale*24),.3,3);
   else if(drag.axis==="x")state.parts[selected].x=clamp(drag.pos.x+dx/scale,-40,40);
   else if(drag.axis==="y")state.parts[selected].y=clamp(drag.pos.y+dy/scale,-40,40);
   else if(drag.axis==="z")state.parts[selected].z=clamp(drag.pos.z-dx/(scale*.6),-10,10);
-  for(const [k,id] of [["x","posX"],["y","posY"],["z","posZ"]])$(id).value=Number(state.parts[selected][k].toFixed(1));
+  for(const [k,id] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]])$(id).value=Number(state.parts[selected][k].toFixed(1));
   paint();
  });
  for(const evt of ["pointerup","pointercancel"])studio.addEventListener(evt,e=>{if(drag?.pointer===e.pointerId){drag=null;try{studio.releasePointerCapture(e.pointerId)}catch{}}});
@@ -360,6 +388,7 @@ function setupEvents(){
  window.addEventListener("keydown",e=>{
   if(["INPUT","SELECT","TEXTAREA"].includes(document.activeElement?.tagName))return;
   if(e.key==="1"||e.key==="2"||e.key==="3"){axis=["x","y","z"][Number(e.key)-1];axisButtons();paint()}
+  if(["w","e","r"].includes(e.key.toLowerCase())){transformMode={w:"move",e:"rotate",r:"scale"}[e.key.toLowerCase()];axisButtons();paint()}
   if(e.key==="k"||e.key==="K")setKey();
   if(e.key==="Delete")removeKey();
  });
