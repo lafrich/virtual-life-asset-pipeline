@@ -79,7 +79,7 @@ test("art and studio contain new pixel rig controls without replacing other app 
  assert.ok(html.includes("modular-rig-v2.js"));
  assert.ok(html.includes("rig-studio-v2.js"));
  assert.ok(html.includes("rig-studio-v2.css"));
- assert.ok(html.includes("original-source-v3"));
+ assert.ok(html.includes("gender-gizmo-v4"));
  assert.ok(studio.includes("R.key(tracks"));
 });
 
@@ -131,7 +131,7 @@ test("legacy saved rig state normalizes with new face and hair nodes without dis
  assert.equal(after.emotion,"mischievous");
  const exp=R.exportModel(after,R.makeTracks());
  assert.equal(exp.art_revision,R.ART_REVISION);
- assert.match(exp.art_revision,/original-v6b-source-art-rig/);
+ assert.match(exp.art_revision,/original-gender-base-gizmo/);
  assert.equal(exp.nodes.length,R.BONES.length);
 });
 test("rig studio includes hair and face controls and character expressions get unique thumbnails",()=>{
@@ -149,4 +149,64 @@ test("updated art migration archives old browser poses instead of silently reusi
  assert.match(studio,/artRevision:R\.ART_REVISION/);
  assert.match(studio,/STORE\+"-previous-reference-backup"/);
  assert.match(app,/saved\.artRevision===rig\.ART_REVISION/);
+});
+
+test("universal male/female base is unclothed by default, and outfit is detachable",()=>{
+ const original=R.neutral();
+ assert.equal(original.gender,"male");
+ assert.equal(original.outfit,false);
+ const female=R.normalize({...original,gender:"female",outfit:true});
+ assert.equal(female.gender,"female");
+ assert.equal(female.outfit,true);
+ const male=R.normalize({...female,gender:"male",outfit:false});
+ assert.equal(male.gender,"male");
+ assert.equal(male.outfit,false);
+ assert.equal(R.exportModel(female,R.makeTracks()).gender,"female");
+ assert.ok(R.sourceSlot({gender:"male",mode:"base"},male));
+ assert.ok(!R.sourceSlot({gender:"female",mode:"base"},male));
+ assert.ok(R.sourceSlot({gender:"female",mode:"outfit"},female));
+ assert.ok(!R.sourceSlot({gender:"female",mode:"base"},female));
+});
+test("bone world origins stay true to native source pixel coordinates",()=>{
+ const neutral=R.world(R.neutral());
+ for(const bone of R.BONES){
+  assert.equal(neutral[bone.id].x,bone.x,bone.id+" X");
+  assert.equal(neutral[bone.id].y,bone.y,bone.id+" Y");
+ }
+ assert.equal(neutral.root.y,100,"root should no longer shift all pixels by -39");
+});
+test("anatomical left/right mapping is mirror-aware without stealing opposite leg",()=>{
+ for(const dir of R.DIR){
+  assert.equal(R.mirrorBone("hip_l",dir),dir==="sw"||dir==="nw"?"hip_r":"hip_l");
+  assert.equal(R.mirrorBone("knee_r",dir),dir==="sw"||dir==="nw"?"knee_l":"knee_r");
+ }
+});
+test("gizmo uses discreet pins and a selected rotation ring with snap-capable angle math",()=>{
+ const G=require("../site/rig-gizmo-v2.js");
+ const a={x:22,y:60,visible:true},b={x:42,y:60,visible:true};
+ const world={shoulder_l:a,shoulder_r:b};
+ assert.deepEqual(G.projected(a,"sw"),{x:42,y:60});
+ assert.deepEqual(G.projected(a,"ne"),{x:22,y:60});
+ assert.equal(G.hitTest(world,"shoulder_l",{x:22,y:60},"se").bone,"shoulder_l");
+ assert.equal(G.hitTest(world,"shoulder_l",{x:30,y:60},"se").mode,"rotate");
+ assert.equal(Math.round(G.deltaAngle(0,Math.PI/2)),90);
+ assert.equal(Math.round(G.deltaAngle(0,-Math.PI/2)),-90);
+ const studio=fs.readFileSync("site/rig-studio-v2.js","utf8");
+ const html=fs.readFileSync("site/index.html","utf8");
+ for(const el of ["rig-v2-gender","rig-v2-outfit","rig-v2-joints-visible"])
+  assert.ok(html.includes('id="'+el+'"'));
+ assert.ok(studio.includes("ctx.globalAlpha=.20"));
+ assert.ok(studio.includes("G.hitTest("));
+ assert.ok(studio.includes('drag.mode==="rotate"'));
+});
+test("source generator checks 16 gender/outfit direction variants for pixel-exact skin ownership",()=>{
+ const py=fs.readFileSync("tools/build_original_rig_layers.py","utf8");
+ const build=fs.readFileSync("tools/build_character_catalog.py","utf8");
+ assert.ok(py.includes('def native_gender_models('));
+ assert.ok(py.includes('def split_body_pixels('));
+ assert.ok(py.includes('def publish_gender_bases('));
+ assert.ok(py.includes('np.array_equal'));
+ assert.ok(py.includes('Image.Transpose.FLIP_LEFT_RIGHT'));
+ assert.ok(build.indexOf('build_original_rig_layers(media)')>
+   build.indexOf('results.extend(build_human_templates(ROOT,media))'));
 });
