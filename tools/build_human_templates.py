@@ -150,7 +150,7 @@ LIE_IDLE_FRONT_DEPTH_ORDER=(
 )
 KNEE_CHEST_REAR_DEPTH_ORDER=(
     "hair_back","body","shoes","pants","shoes_over","rips",
-    "pose_upper_body_front","arm_far","shirt","arm_near",
+    "arm_far","arm_near","pose_upper_body_front","shirt",
     "body_front","face","hair_front","brows"
 )
 
@@ -206,7 +206,7 @@ def pose_foreground_overlay(layers:dict,kind:str,direction:str)->Image.Image:
     if kind=="lie_idle" and direction in ("se","sw"):
         keys=("pose_head_rear_hair","pose_head_front","face","hair_front","brows")
     elif kind=="knee_chest_idle" and direction in ("ne","nw"):
-        keys=("pose_upper_body_front","arm_far","shirt","arm_near",
+        keys=("arm_far","arm_near","pose_upper_body_front","shirt",
               "body_front","face","hair_front","brows")
     else:
         return result
