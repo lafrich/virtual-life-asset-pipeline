@@ -126,7 +126,8 @@
   try{
    const data={format:"mahluk-rig-studio-v2",base,tracks,frame,count,fps,view,selected};
    root.localStorage.setItem(STORE,JSON.stringify(data));
-   say("SAVED TO LOCAL RIG DATABASE · "+R.ID+" · ORIGINALS UNCHANGED");
+   root.document.dispatchEvent(new CustomEvent("mahluk:modular-rig-saved",{detail:{id:R.ID}}));
+   say("SAVED + SYNCED TO CHARACTER VIEWER · "+R.ID+" · ORIGINALS UNCHANGED");
   }catch(e){say("SAVE FAILED: "+e.message);}
  }
  function restore(){
