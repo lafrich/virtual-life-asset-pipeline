@@ -211,12 +211,12 @@
   bound(ctx,"glasses",coords,()=>{
    R(ctx,22,28,12,8,p.glasses);
    R(ctx,35,28,11,8,p.glasses);
-   R(ctx,24,29,9,5,p.lens);
-   R(ctx,36,29,9,5,p.lens);
+   R(ctx,24,29,9,5,"#fff5e529");
+   R(ctx,36,29,9,5,"#fff5e529");
    R(ctx,25,29,3,1,p.shoeLight);
    R(ctx,37,29,3,1,p.shoeLight);
-   R(ctx,25,31,8,3,"#f4e0cd6b");
-   R(ctx,37,31,7,3,"#f4e0cd6b");
+   R(ctx,25,30,8,3,"#f4e0cd21");
+   R(ctx,37,30,7,3,"#f4e0cd21");
    R(ctx,33,30,3,2,p.glasses);
    R(ctx,20,29,3,2,p.glasses);
    R(ctx,45,29,2,2,p.glassesLight);
@@ -252,7 +252,10 @@
    pixels(ctx,p.hairMid,[[22,11,10,8],[31,7,9,9],[40,13,6,9],[19,20,7,4]]);
    pixels(ctx,p.hairLight,[[24,9,8,3],[35,8,6,3],[20,15,5,4],[42,17,3,3],
      [27,13,4,3]]);
-   pixels(ctx,p.hairGlint,[[27,9,3,2],[36,8,3,2],[23,15,2,2]]);
+   pixels(ctx,p.hairGlint,[[27,9,3,2],[36,8,3,2],[23,15,2,2],
+    [31,6,2,1],[39,11,2,1],[21,18,1,2],[44,16,2,1]]);
+   pixels(ctx,p.hairShadow,[[29,14,2,5],[36,13,2,3],[23,21,2,3]]);
+   R(ctx,32,10,1,3,p.hairMid);
    pixels(ctx,p.hairShadow,[[20,19,6,5],[33,17,7,5],[41,22,6,3]]);
    if(back){
     pixels(ctx,p.hairMid,[[20,16,6,9],[33,14,9,9]]);
@@ -295,7 +298,10 @@
    pixels(ctx,p.shoe,[[x+5,101,13,5],[x+2,105,18,3],[x+3,103,10,3]]);
    pixels(ctx,p.shoeLight,[[x+6,102,7,2],[x+2,105,9,2],[x+4,107,16,1]]);
    pixels(ctx,p.shoeShadow,[[x+7,99,6,3],[x+12,102,6,3],[x+15,105,5,1]]);
-   pixels(ctx,p.shoeLight,[[x+7,100,5,2],[x+10,103,3,1],[x+11,105,3,1]]);
+   pixels(ctx,p.shoeLight,[[x+7,100,5,2],[x+10,103,3,1],[x+11,105,3,1],
+    [x+4,105,4,1],[x+3,107,5,1]]);
+   pixels(ctx,p.shoeShadow,[[x+10,101,2,1],[x+10,103,2,1],[x+10,105,2,1]]);
+   pixels(ctx,p.shoeShade,[[x+14,102,4,2],[x+15,105,3,1]]);
    pixels(ctx,p.outline,[[x+1,108,20,1]]);
    R(ctx,x+5,107,6,1,p.shoe);
   });
