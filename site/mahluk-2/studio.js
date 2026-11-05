@@ -3,7 +3,7 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions,D=window.MH2DriveSync;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1";
@@ -28,6 +28,8 @@ let rigRules=R&&G?G.defaults(R):null;
 let pixelPlanes={},planeImages=new Map(),planeImageRevision=0,planeEditor=null;
 let undoStack=[],redoStack=[],restoring=false,pinch=null;
 let githubMessage='Checking GitHub master...';
+const emotionDatabase=new Map(),emotionFrames=new Map();
+let emotionDatabaseLoading=false;
 let cloudRecords=new Map();
 const touchPoints=new Map(),MAX_UNDO=70;
 const studio=$("editor"),game=$("game");
@@ -209,6 +211,9 @@ function fullCharacterReference(dir=direction){
  return ref;
 }
 function openPlaneEditor(){
+ if(selected==="emotion"){
+  setStatus("EMOTION IS READ-ONLY HERE · OPEN EMOTION STUDIO TO EDIT FACE PIXELS",true);return;
+ }
  if(!manifest||!planeEditor||!R.BMAP[selected]||G.HIDDEN.has(selected))return;
  if(!renderableIds().includes(selected)){
   setStatus("SELECT A DRAWABLE PLANE, LIKE WRIST L / WRIST R / HEAD, NOT A RIG CONTROL",false);return;
@@ -219,6 +224,7 @@ function openPlaneEditor(){
   referenceImages:refs,referenceImage:refs[direction],direction});
 }
 function clearPlanePixel(){
+ if(selected==="emotion"){setStatus("EMOTION PIXELS ARE OWNED BY EMOTION STUDIO",true);return}
  if(!pixelPlanes[selected])return;
  remember();delete pixelPlanes[selected];planeImages.delete(selected);
  buildTree();pixelPlaneStatus();paint();
@@ -260,7 +266,7 @@ function getEmotionAsset(id){
   const name=id.slice(7);
   return name==="neutral"&&(manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
  }
- return publishedAssets.find(a=>a.id===id&&a.base===type)||
+ return emotionDatabase.get(id)||publishedAssets.find(a=>a.id===id&&a.base===type)||
   userAssets.find(a=>a.id===id&&a.kind==="emotion")||null;
 }
 function getGlassesAsset(id){
@@ -284,7 +290,7 @@ function sourceImage(asset,dir,f){
   return img?{image:img,sx:0,sy:DIR.indexOf(dir)*112}:null;
  }
  if(asset.id==="none")return null;
- const img=(asset.src?publishedImages:importedImages).get(asset.id);
+ const img=asset.database?emotionFrames.get(asset.id):(asset.src?publishedImages:importedImages).get(asset.id);
  return img?{image:img,sx:(f%asset.frames)*64,sy:DIR.indexOf(dir)*112}:null;
 }
 function renderLayers(ctx,dir,ox,oy,mag,editorMode,hitOut=null){
@@ -636,8 +642,8 @@ function pick(id){
  $("layerBack").disabled=at<=0;$("layerFront").disabled=at<0||at===order.length-1;
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
  if($("glassesAsset"))$("glassesAsset").value=glassesAssetId;
- $("openPlaneEditor").disabled=!renderableIds().includes(id);
- $("editPixelPlane").disabled=!renderableIds().includes(id);
+ $("openPlaneEditor").disabled=id==="emotion"||!renderableIds().includes(id);
+ $("editPixelPlane").disabled=id==="emotion"||!renderableIds().includes(id);
  pixelPlaneStatus();paint();
 }
 function moveLayer(id,delta){
@@ -797,6 +803,10 @@ function assetOptions(){
  opt(emotion,"native:neutral","SOURCE / NEUTRAL FALLBACK");
  opt(glass,"native","ORIGINAL GLASSES / V6B");
  opt(glass,"none","NONE / HIDE");
+ for(const asset of emotionDatabase.values()){
+  if(asset.base!=="universal"&&asset.base!==type)continue;
+  opt(emotion,asset.id,(asset.origin==="drive"?"☁ DRIVE / ":"DATABASE / ")+asset.name.toUpperCase()+" / "+asset.frames+"F");
+ }
  for(const asset of publishedAssets.filter(a=>a.base===type)){
   opt(emotion,asset.id,"EXISTING / "+asset.label+" / "+asset.frames+"F");
  }
@@ -814,6 +824,9 @@ function matchAssetAnimation(asset){
  const authoredBodyKeys=Object.values(tracks).some(keys=>Array.isArray(keys)&&keys.length);
  if(!authoredBodyKeys){frames=asset.frames;frame=0;$("frameCount").value=frames}
  else if(asset.frames>frames){frames=asset.frames;$("frameCount").value=frames}
+ if(!authoredBodyKeys&&Number.isFinite(Number(asset.fps))&&Number(asset.fps)>0){
+  fps=Math.round(clamp(asset.fps,1,30));$("fps").value=fps;
+ }
  if(Array.isArray(asset.frame_ms)&&asset.frame_ms.length===asset.frames&&!authoredBodyKeys){
   const mean=asset.frame_ms.reduce((sum,n)=>sum+Number(n||0),0)/asset.frame_ms.length;
   if(mean>0){fps=Math.round(clamp(1000/mean,1,30));$("fps").value=fps}
@@ -822,13 +835,62 @@ function matchAssetAnimation(asset){
 function updateEmotionStatus(){
  const asset=getEmotionAsset(emotionAt());
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
- if($("emotionStatus"))$("emotionStatus").textContent=(asset?.native?"ORIGINAL SOURCE / ":"IMPORTED ANIMATED PLANE / ")+
+ if($("emotionStatus"))$("emotionStatus").textContent=(asset?.native?"ORIGINAL SOURCE / ":asset?.database?"EMOTION STUDIO DATABASE / ":"IMPORTED PLANE / ")+
   (asset?.frames||1)+" FRAME(S) · "+emotionKeys.length+" IMAGE SWAP KEY(S)";
 }
+async function installEmotionEntries(entries,origin="starter"){
+ if(!U)throw Error("Emotion renderer is missing");
+ let added=0,failed=0;
+ for(const entry of entries||[]){
+  if(!U.validEntry(entry)){failed++;continue}
+  try{
+   const atlas=await U.renderAtlas(entry);
+   if(atlas.width!==entry.frames*64||atlas.height!==448)throw Error("Invalid atlas size");
+   const id="db:"+entry.id,asset={
+    id,name:entry.name,label:entry.name,base:entry.base||"universal",
+    kind:"emotion",frames:entry.frames,fps:entry.fps||6,database:true,origin
+   };
+   emotionDatabase.set(id,asset);emotionFrames.set(id,atlas);
+   added++;
+  }catch(error){console.warn("Emotion preview skipped",entry?.id,error);failed++}
+ }
+ assetOptions();paint();
+ return {added,failed};
+}
 async function loadPublishedAssets(){
- // Deliberately standalone: Emotion Studio library is NOT consumed here yet.
- // Keep the native neutral face and manual PNG import independent.
- publishedAssets=[];publishedImages.clear();assetOptions();
+ if(!U){setStatus("EMOTION DATABASE RENDERER UNAVAILABLE · NEUTRAL FALLBACK",false);return}
+ try{
+  const result=await U.loadCatalog();
+  const n=await installEmotionEntries(result.catalog.entries,"starter");
+  if($("emotionDatabaseStatus"))$("emotionDatabaseStatus").textContent=
+   "DATABASE READY · "+n.added+" STARTER EMOTIONS · Connect Google Drive for edited versions";
+ }catch(error){
+  if($("emotionDatabaseStatus"))$("emotionDatabaseStatus").textContent=
+   "STARTER CATALOG UNAVAILABLE · CONNECT DRIVE OR RELOAD · "+error.message;
+  console.warn("Emotion starter load",error);
+ }
+}
+async function loadDriveEmotions(){
+ if(emotionDatabaseLoading)return;
+ if(!D?.connected()){
+  if($("emotionDatabaseStatus"))$("emotionDatabaseStatus").textContent=
+   "CONNECT GOOGLE DRIVE IN THE DRIVE PANEL TO OPEN YOUR EMOTION STUDIO PROJECTS";
+  setStatus("CONNECT GOOGLE DRIVE FIRST · EMOTION DATABASE STARTER REMAINS AVAILABLE",false);
+  return;
+ }
+ emotionDatabaseLoading=true;
+ $("emotionRefresh").disabled=true;
+ try{
+  if($("emotionDatabaseStatus"))$("emotionDatabaseStatus").textContent="LOADING EMOTION STUDIO PROJECTS FROM GOOGLE DRIVE...";
+  const loaded=await D.loadEmotionDatabase();
+  const n=await installEmotionEntries(loaded.entries,"drive");
+  $("emotionDatabaseStatus").textContent="✓ "+n.added+" DRIVE EMOTIONS LOADED · "+(loaded.errors?.length||0)+" ERRORS · SELECT FROM EMOTION ASSET LIBRARY";
+  if(!n.added&&loaded.reason)$("emotionDatabaseStatus").textContent=loaded.reason+" · Save one emotion to Drive from Emotion Studio first";
+  setStatus("✓ EMOTION DATABASE UPDATED · "+n.added+" DRIVE ASSETS · PREVIEW ONLY",true);
+ }catch(error){
+  $("emotionDatabaseStatus").textContent="DRIVE EMOTIONS UNAVAILABLE · "+error.message;
+  setStatus("EMOTION DRIVE LOAD FAILED · "+error.message,false);
+ }finally{emotionDatabaseLoading=false;$("emotionRefresh").disabled=false}
 }
 function loadImportedAssets(){
  userAssets=E.safeAssets(window.localStorage);
@@ -1144,7 +1206,8 @@ function setupEvents(){
   setStatus("EMOTION PLANE ASSET / "+(asset?.native||asset?.name||"UNKNOWN"),true);
  };
  $("glassesAsset").onchange=e=>{remember();glassesAssetId=e.target.value;paint();setStatus("GLASSES PLANE / "+glassesAssetId,true)};
- $("emotionImport").onchange=e=>{importPlanePng(e.target.files?.[0],"emotion");e.target.value=""};
+ $("emotionRefresh").onclick=loadDriveEmotions;
+ window.addEventListener("mahluk2:drive-connected",()=>void loadDriveEmotions());
  $("glassesImport").onchange=e=>{importPlanePng(e.target.files?.[0],"glasses");e.target.value=""};
  $("emotionKey").onclick=setEmotionKey;
  $("emotionUnkey").onclick=removeEmotionKey;
@@ -1343,7 +1406,7 @@ function setupEvents(){
  requestAnimationFrame(tick);
 }
 async function mount(){
- if(!R||!E||!G||!B||!P||!V||!S){setStatus("RIG / FOUR-VIEW / GITHUB SYNC ENGINE NOT FOUND",false);return}
+ if(!R||!E||!G||!B||!P||!V||!S||!U){setStatus("RIG / FOUR-VIEW / GITHUB SYNC ENGINE NOT FOUND",false);return}
  setupEvents();
  try{
   const resp=await fetch("../media/original-rig/manifest.json",{cache:"no-store"});
