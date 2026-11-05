@@ -181,7 +181,7 @@ def split_knee_chest_rear_upper(layers:dict,direction:str)->dict:
         knee_top=80
     # Allow shoulders and chest to overlap the bent knees, never lift the
     # actor's original lower hip, shins or feet onto the foreground.
-    divide=max(80,min(90,knee_top+9))
+    divide=max(83,min(90,knee_top+9))
     upper=body.copy()
     lower=body.copy()
     upper[divide:]=0
