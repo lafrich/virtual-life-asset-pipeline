@@ -102,11 +102,19 @@ class OriginalAnatomicalPartitionTests(unittest.TestCase):
         owner = native_owner_map(layers, "se")
         mask = np.asarray(frame)[..., 3] > 0
         self.assertTrue(np.all(owner[mask] != ""))
-        # No group can own more pixels than the final sprite.
+        # Intentional 1px cushions share EXACT opaque native skin pixels at
+        # joints, without altering the original assembled pixel art.
         parts = split_body_pixels(frame, "se", layers)
         count = sum(np.count_nonzero(np.asarray(part)[..., 3])
                     for part in parts.values())
-        self.assertEqual(count, int(np.count_nonzero(mask)))
+        self.assertGreaterEqual(count, int(np.count_nonzero(mask)))
+        self.assertTrue(np.array_equal(np.asarray(combine(parts)),
+                                       np.asarray(frame)))
+        upper = np.asarray(parts["shoulder_l"])
+        lower = np.asarray(parts["elbow_l"])
+        shared = (upper[..., 3] > 0) & (lower[..., 3] > 0)
+        self.assertTrue(np.any(shared), "elbow must have a hidden 1px hinge cushion")
+        self.assertTrue(np.array_equal(upper[shared], lower[shared]))
 
 
 if __name__ == "__main__":
