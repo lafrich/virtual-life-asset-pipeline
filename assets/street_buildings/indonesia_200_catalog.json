@@ -413,11 +413,11 @@
         "sw": {
           "file": "props/id200_transport_delman_andong_sw.png",
           "size": [
-            152,
+            154,
             184
           ],
           "pivot": [
-            67,
+            69,
             148
           ]
         },
@@ -446,11 +446,11 @@
         "nw": {
           "file": "props/id200_transport_delman_andong_nw.png",
           "size": [
-            152,
+            154,
             172
           ],
           "pivot": [
-            66,
+            69,
             137
           ]
         }
@@ -492,14 +492,14 @@
         ]
       },
       "size": [
-        152,
+        154,
         184
       ],
       "pivot": [
-        67,
+        69,
         148
       ],
-      "width": 3.04,
+      "width": 3.08,
       "height": 3.68
     },
     {
