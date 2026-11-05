@@ -79,7 +79,7 @@ test("art and studio contain new pixel rig controls without replacing other app 
  assert.ok(html.includes("modular-rig-v2.js"));
  assert.ok(html.includes("rig-studio-v2.js"));
  assert.ok(html.includes("rig-studio-v2.css"));
- assert.ok(html.includes("anatomy-first-v5"));
+ assert.ok(html.includes("clothed-master-v6"));
  assert.ok(studio.includes("R.key(tracks"));
 });
 
@@ -131,7 +131,7 @@ test("legacy saved rig state normalizes with new face and hair nodes without dis
  assert.equal(after.emotion,"mischievous");
  const exp=R.exportModel(after,R.makeTracks());
  assert.equal(exp.art_revision,R.ART_REVISION);
- assert.match(exp.art_revision,/anatomy-first-universal-rig/);
+ assert.match(exp.art_revision,/clothed-v6b-manual-art-weights/);
  assert.equal(exp.nodes.length,R.BONES.length);
 });
 test("rig studio includes hair and face controls and character expressions get unique thumbnails",()=>{
@@ -151,10 +151,11 @@ test("updated art migration archives old browser poses instead of silently reusi
  assert.match(app,/saved\.artRevision===rig\.ART_REVISION/);
 });
 
-test("universal male/female base is unclothed by default, and outfit is detachable",()=>{
+test("original clothed V6B is the default master while legacy nude generator remains optional",()=>{
  const original=R.neutral();
  assert.equal(original.gender,"male");
- assert.equal(original.outfit,false);
+ assert.equal(original.outfit,true);
+ assert.equal(original.visual,"original_clothed");
  const female=R.normalize({...original,gender:"female",outfit:true});
  assert.equal(female.gender,"female");
  assert.equal(female.outfit,true);
@@ -250,4 +251,50 @@ test("outfit changes do not replace the underlying body bones",()=>{
   assert.equal(R.sourceSlot(clothing,bare),false);
   assert.equal(R.sourceSlot(clothing,dressed),true);
  }
+});
+
+
+test("manual editor saves individual RGBA and bone weights without changing V6B master",()=>{
+ const E=require("../site/rig-manual-art.js");
+ const saved=new Map(),host={document:{},localStorage:{
+  getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value)
+ }};
+ const editor=new E.Editor(R,host);
+ assert.equal(editor.state.original,"protected-native-v6b-clothed");
+ assert.equal(editor.state.pixels.se.length,0);
+ editor.snapshot();
+ assert.equal(editor.setPixel("se",24,62,[201,146,111,255],"torso"),true);
+ assert.equal(editor.setWeight("se",24,62,"shoulder_l"),true);
+ assert.equal(editor.state.pixels.se[0][0],62*64+24);
+ assert.equal(editor.state.weights.se[0][1],"shoulder_l");
+ assert.equal(editor.saveLocal(),true);
+ const another=new E.Editor(R,host);
+ assert.equal(another.state.pixels.se.length,1);
+ assert.equal(another.state.weights.se.length,1);
+ assert.deepEqual(another.state.pixels.sw,[]);
+ assert.equal(editor.history("undo"),true);
+ assert.equal(editor.state.pixels.se.length,0);
+ assert.equal(editor.state.weights.se.length,0);
+ editor.reset("se");
+ assert.equal(editor.state.original,"protected-native-v6b-clothed");
+});
+test("manual character workbench is connected to the original rig, weight tools and exports",()=>{
+ const html=fs.readFileSync("site/index.html","utf8");
+ const ui=fs.readFileSync("site/rig-pixel-workbench.js","utf8");
+ const rig=fs.readFileSync("site/modular-rig-v2.js","utf8");
+ const app=fs.readFileSync("site/app.js","utf8");
+ for(const id of ["rig-v2-edit-art","rig-v2-manual-editor","rig-paint-canvas",
+  "rig-paint-color","rig-paint-bone","rig-paint-undo","rig-paint-redo",
+  "rig-paint-save","rig-paint-export","rig-paint-png","rig-paint-reset",
+  "rig-paint-mirror","rig-paint-import"])
+  assert.ok(html.includes('id="'+id+'"'),"missing "+id);
+ for(const name of ["paint","erase","pick","weight","unweight"])
+  assert.ok(html.includes('data-rig-paint-mode="'+name+'"'),name);
+ assert.ok(html.includes("rig-manual-art.js"));
+ assert.ok(html.includes("rig-pixel-workbench.js"));
+ assert.ok(rig.includes('state.visual!=="gender"'));
+ assert.ok(rig.includes('else if(part.gender)continue;'));
+ assert.ok(rig.includes("setManualLayerProvider"));
+ assert.ok(ui.includes("getSharedEditor"));
+ assert.ok(app.includes("rig-art-saved"));
 });
