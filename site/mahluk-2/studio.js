@@ -413,6 +413,86 @@ function drawPlaneDepthGuides(ctx,w,h,scale){
  }
  ctx.restore();
 }
+// Hit-test against the REAL alpha content of each transformed cutout.
+const planeBoundsCache=new WeakMap();
+const planeSampler=document.createElement("canvas");planeSampler.width=1;planeSampler.height=1;
+const planeSamplerCtx=planeSampler.getContext("2d",{willReadFrequently:true});
+function planeAlphaBounds(src){
+ let slices=planeBoundsCache.get(src.image);
+ if(!slices){slices=new Map();planeBoundsCache.set(src.image,slices)}
+ const key=src.sx+":"+src.sy;
+ if(slices.has(key))return slices.get(key);
+ const tile=document.createElement("canvas");tile.width=64;tile.height=112;
+ const c=tile.getContext("2d",{willReadFrequently:true});
+ c.imageSmoothingEnabled=false;
+ c.drawImage(src.image,src.sx,src.sy,64,112,0,0,64,112);
+ const data=c.getImageData(0,0,64,112).data;
+ let minX=64,minY=112,maxX=-1,maxY=-1;
+ for(let y=0;y<112;y++)for(let x=0;x<64;x++){
+  if(data[(y*64+x)*4+3]<16)continue;
+  minX=Math.min(minX,x);minY=Math.min(minY,y);
+  maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
+ }
+ const rect=maxX<0?null:{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
+ slices.set(key,rect);return rect;
+}
+function planeLocalAt(hit,x,y){
+ const scale=hit.planeScale||1,dx=(x-hit.tx)/scale,dy=(y-hit.ty)/scale;
+ const cos=Math.cos(hit.rad),sin=Math.sin(hit.rad);
+ return {x:cos*dx+sin*dy+hit.ax,y:-sin*dx+cos*dy+hit.ay};
+}
+function planePixelAt(hit,x,y){
+ const local=planeLocalAt(hit,x,y),ix=Math.floor(local.x),iy=Math.floor(local.y);
+ if(ix<0||ix>=64||iy<0||iy>=112)return false;
+ try{
+  planeSamplerCtx.clearRect(0,0,1,1);
+  planeSamplerCtx.imageSmoothingEnabled=false;
+  planeSamplerCtx.drawImage(hit.src.image,hit.src.sx+ix,hit.src.sy+iy,1,1,0,0,1,1);
+  return planeSamplerCtx.getImageData(0,0,1,1).data[3]>=16;
+ }catch{return false}
+}
+function hitPlanesAt(point){
+ const matches=[],seen=new Set();
+ for(let i=lastPlaneHits.length-1;i>=0;i--){
+  const hit=lastPlaneHits[i];
+  if(seen.has(hit.bone))continue;
+  if(!planePixelAt(hit,point.x,point.y))continue;
+  matches.push(hit.bone);seen.add(hit.bone);
+ }
+ return matches;
+}
+function drawSelectedPlaneOutline(ctx,hits,id){
+ const pieces=hits.filter(hit=>hit.bone===id);
+ let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+ for(const hit of pieces){
+  const bounds=planeAlphaBounds(hit.src);
+  if(!bounds)continue;
+  const xs=[bounds.x-hit.ax,bounds.x+bounds.w-hit.ax];
+  const ys=[bounds.y-hit.ay,bounds.y+bounds.h-hit.ay];
+  for(const x of xs)for(const y of ys){
+   const dx=x*hit.planeScale,dy=y*hit.planeScale;
+   const px=hit.tx+Math.cos(hit.rad)*dx-Math.sin(hit.rad)*dy;
+   const py=hit.ty+Math.sin(hit.rad)*dx+Math.cos(hit.rad)*dy;
+   x0=Math.min(x0,px);y0=Math.min(y0,py);
+   x1=Math.max(x1,px);y1=Math.max(y1,py);
+  }
+ }
+ if(!Number.isFinite(x0))return;
+ const pad=2;
+ ctx.save();ctx.lineWidth=1.25;
+ ctx.strokeStyle="#f7d57b";ctx.setLineDash([5,3]);
+ ctx.strokeRect(Math.round(x0-pad)+.5,Math.round(y0-pad)+.5,
+  Math.max(1,Math.round(x1-x0+pad*2)),Math.max(1,Math.round(y1-y0+pad*2)));
+ ctx.setLineDash([]);
+ const label=(R.BMAP[id]?.label||id).toUpperCase();
+ ctx.font="bold 11px Tahoma,Arial,sans-serif";
+ const labelWidth=ctx.measureText(label).width+12;
+ const labelX=Math.max(4,Math.min(ctx.canvas.width-labelWidth-4,x0));
+ const labelY=Math.max(4,y0-20);
+ ctx.fillStyle="#f6d37e";ctx.fillRect(labelX,labelY,labelWidth,17);
+ ctx.fillStyle="#12203c";ctx.fillText(label,labelX+6,labelY+12);
+ ctx.restore();
+}
 let lastHandles=[],lastPlaneHits=[];
 function drawEditor(){
  if(!state||!manifest)return;
