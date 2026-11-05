@@ -409,6 +409,7 @@ function saveGame(){
  const clips={...(old?.clips||{}),[clipId]:{sheet:canvas.toDataURL("image/png"),frames,frame_ms:Array(frames).fill(Math.round(1000/fps)),loop:true}};
  const record={format:"mahluk-2-character-v1",version:1,id,name,base:type,template_base:type==="female"?"human_female_base":"human_male_base",
   outfit,model:R.normalize(state),rest:R.normalize(base),tracks:clone(tracks),frames,fps,clip:clipId,
+  emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys)},accessoryPlanes:{glasses:glassesAssetId},
   sprite:clipId==="idle"?canvas.toDataURL("image/png"):old?.sprite||idle,clips,updated:Date.now()};
  const next=[...library.filter(r=>r.id!==id),record].slice(-30);
  if(!safePut(STORAGE,next))return;
@@ -427,22 +428,29 @@ function loadRecord(id){
  const r=getLibrary().find(r=>r.id===id);if(!r)return;
  identifier=r.id;type=["original","male","female"].includes(r.base)?r.base:"original";
  outfit=r.outfit==="base"?"base":"outfit";clip=r.clip||"idle";
+ emotionAssetId=getEmotionAsset(r.emotionPlane?.asset)?r.emotionPlane.asset:"native:"+(r.model?.emotion||"neutral");
+ emotionKeys=Array.isArray(r.emotionPlane?.keys)?r.emotionPlane.keys.filter(k=>getEmotionAsset(k.asset)&&Number.isInteger(k.frame)).slice(0,48):[];
+ glassesAssetId=getGlassesAsset(r.accessoryPlanes?.glasses)?r.accessoryPlanes.glasses:"native";
  base=R.normalize(r.rest||r.model);state=R.normalize(r.model);
  tracks=R.makeTracks();
  for(const node of R.BONES){for(const key of r.tracks?.[node.id]||[]){
   if(key&&Number.isInteger(key.frame)&&key.value)R.key(tracks,node.id,key.frame,key.value,key.emotion,key.faceEmotion);
  }}
  frames=Math.round(clamp(r.frames||12,1,48));fps=Math.round(clamp(r.fps||12,1,30));frame=0;
- $("characterName").value=r.name;applyState();setStatus("OPENED "+r.name+" / EDIT MODULAR PLANES",true);
+ $("characterName").value=r.name;assetOptions();applyState();setStatus("OPENED "+r.name+" / EDIT MODULAR PLANES",true);
 }
 function newCharacter(){
  identifier=null;type="original";outfit="outfit";clip="idle";frames=12;fps=12;frame=0;
+ emotionAssetId="native:neutral";emotionKeys=[];glassesAssetId="native";
  state=R.referencePose();base=R.referencePose();tracks=R.makeTracks();$("characterName").value="My Character 2.0";
- updateLibrary();applyState();setStatus("NEW SOURCE-NATIVE CHARACTER · GAME CONTENT UNCHANGED",true);
+ updateLibrary();assetOptions();applyState();setStatus("NEW SOURCE-NATIVE CHARACTER · GAME CONTENT UNCHANGED",true);
 }
 function projectExport(){
  commitUnkeyedPose();
- const payload={format:"mahluk-2-project-v1",name:$("characterName").value,id:identifier,base:type,outfit,clip,model:state,rest:base,tracks,frames,fps};
+ const needed=new Set([emotionAssetId,glassesAssetId,...emotionKeys.map(k=>k.asset)]);
+ const payload={format:"mahluk-2-project-v1",name:$("characterName").value,id:identifier,base:type,outfit,clip,model:state,rest:base,tracks,frames,fps,
+  emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys)},accessoryPlanes:{glasses:glassesAssetId},
+  embeddedAssets:userAssets.filter(a=>needed.has(a.id))};
  download("mahluk_2_project.json",new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}));
 }
 function importProject(file){
@@ -454,7 +462,18 @@ function importProject(file){
   state=R.normalize(v.model);base=R.normalize(v.rest||v.model);tracks=R.makeTracks();
   for(const node of R.BONES){for(const k of v.tracks?.[node.id]||[]){if(k&&k.value&&Number.isInteger(k.frame))R.key(tracks,node.id,k.frame,k.value,k.emotion,k.faceEmotion)}}
   frames=Math.round(clamp(v.frames||12,1,48));fps=Math.round(clamp(v.fps||12,1,30));
-  $("characterName").value=String(v.name||"Imported 2.0").slice(0,40);frame=0;applyState();setStatus("IMPORTED PROJECT / NOT YET PUBLISHED",true);
+  if(Array.isArray(v.embeddedAssets)&&v.embeddedAssets.length){
+   const existing=E.safeAssets(window.localStorage);
+   const imported=v.embeddedAssets.filter(a=>a?.format===E.FORMAT&&
+    typeof a.png==="string"&&a.png.startsWith("data:image/png;base64,")&&
+    a.png.length<1500000&&Number.isInteger(a.frames)&&a.frames>=1&&a.frames<=48);
+   E.saveAssets(window.localStorage,[...existing.filter(a=>!imported.some(b=>b.id===a.id)),...imported].slice(-12));
+  }
+  loadImportedAssets();
+  emotionAssetId=getEmotionAsset(v.emotionPlane?.asset)?v.emotionPlane.asset:"native:"+(v.model?.emotion||"neutral");
+  emotionKeys=Array.isArray(v.emotionPlane?.keys)?v.emotionPlane.keys.filter(k=>getEmotionAsset(k.asset)&&Number.isInteger(k.frame)).slice(0,48):[];
+  glassesAssetId=getGlassesAsset(v.accessoryPlanes?.glasses)?v.accessoryPlanes.glasses:"native";
+  $("characterName").value=String(v.name||"Imported 2.0").slice(0,40);frame=0;assetOptions();applyState();setStatus("IMPORTED PROJECT / NOT YET PUBLISHED",true);
  }).catch(e=>setStatus("IMPORT FAILED: "+e.message,false));
 }
 function setupEvents(){
@@ -474,13 +493,20 @@ function setupEvents(){
   }};
  }
  $("visible").onchange=e=>{state.parts[selected].visible=e.target.checked;buildTree()};
- $("globalEmotion").onchange=e=>{state.emotion=e.target.value;paint()};
- $("faceEmotion").onchange=e=>{
-  if(!FACE.has(selected))return;
-  if(e.target.value==="inherit")delete state.faceLayers[selected];
-  else state.faceLayers[selected]=e.target.value;
-  paint();
+ $("emotionAsset").onchange=e=>{
+  if(!getEmotionAsset(e.target.value))return;
+  emotionAssetId=e.target.value;
+  if(frame>0||emotionKeys.length)emotionKeys=E.insert(emotionKeys,frame,emotionAssetId);
+  const asset=getEmotionAsset(emotionAssetId);
+  if(asset?.frames>frames){frames=asset.frames;$("frameCount").value=frames}
+  updateEmotionStatus();makeTimeline();paint();
+  setStatus("EMOTION PLANE ASSET / "+(asset?.native||asset?.name||"UNKNOWN"),true);
  };
+ $("glassesAsset").onchange=e=>{glassesAssetId=e.target.value;paint();setStatus("GLASSES PLANE / "+glassesAssetId,true)};
+ $("emotionImport").onchange=e=>{importPlanePng(e.target.files?.[0],"emotion");e.target.value=""};
+ $("glassesImport").onchange=e=>{importPlanePng(e.target.files?.[0],"glasses");e.target.value=""};
+ $("emotionKey").onclick=setEmotionKey;
+ $("emotionUnkey").onclick=removeEmotionKey;
  $("frameCount").onchange=e=>{frames=Math.round(clamp(e.target.value,1,48));frame=0;makeTimeline();paint()};
  $("fps").onchange=e=>{fps=Math.round(clamp(e.target.value,1,30));e.target.value=fps};
  $("clip").onchange=e=>{clip=e.target.value;setStatus("AUTHORING CLIP "+clip.toUpperCase()+" / SAVE TO PUBLISH")};
@@ -564,6 +590,7 @@ async function mount(){
   const m=await resp.json();
   if(m.format!=="mahluk-original-source-rig-v1")throw Error("Invalid authored V6B manifest");
   await loadImagesFromManifest(m);
+  loadImportedAssets();
   const draft=safeGet(DRAFT,null);
   if(draft?.format==="mahluk-2-project-v1"){
    // Drafts are intentionally NOT auto-loaded as game-ready characters.
