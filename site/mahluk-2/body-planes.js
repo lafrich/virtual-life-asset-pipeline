@@ -16,6 +16,18 @@
   "hip_l","knee_l","ankle_l","hip_r","knee_r","ankle_r"]);
  const BODY=new Set(BONE_IDS);
  function normalize(mode){return MODES.includes(mode)?mode:"current"}
+ function matchingBase(base,mode){
+  // Male/female rig bases own the corresponding nude texture.
+  // "current" stays available as an explicit dressed/original opt-out.
+  if(base==="male"||base==="female"){
+   if(mode==="current")return "current";
+   return base;
+  }
+  return normalize(mode);
+ }
+ function defaultForBase(base){
+  return base==="male"||base==="female"?base:"current";
+ }
  function isBodyBone(bone){return BODY.has(bone)}
  function selected(slot,{base="original",outfit="outfit",bodyPlane="current"}={}){
   const swap=normalize(bodyPlane);
@@ -38,5 +50,5 @@
   const owner=slots.findIndex(s=>!s.gender&&s.bone===slot.bone&&!s.expression);
   return owner>=0?owner+index/100000:index;
  }
- return Object.freeze({MODES,BONE_IDS,normalize,isBodyBone,selected,drawIndex});
+ return Object.freeze({MODES,BONE_IDS,normalize,matchingBase,defaultForBase,isBodyBone,selected,drawIndex});
 });
