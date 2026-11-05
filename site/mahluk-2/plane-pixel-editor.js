@@ -52,6 +52,11 @@
    refOpacity:overlay.querySelector("#pixelReferenceOpacity"),
    refOpacityLabel:overlay.querySelector("#pixelReferenceOpacityLabel"),
    refX:overlay.querySelector("#pixelReferenceX"),refY:overlay.querySelector("#pixelReferenceY"),
+   copy:overlay.querySelector("#pixelCopySelection"),
+   paste:overlay.querySelector("#pixelPasteSelection"),
+   pasteMirror:overlay.querySelector("#pixelPasteMirrored"),
+   pasteReplace:overlay.querySelector("#pixelPasteReplace"),
+   clipboardInfo:overlay.querySelector("#pixelClipboardInfo"),
    selectAll:overlay.querySelector("#pixelSelectAll"),
    deselect:overlay.querySelector("#pixelDeselect"),
    flipH:overlay.querySelector("#pixelFlipH"),flipV:overlay.querySelector("#pixelFlipV"),
@@ -72,8 +77,30 @@
   let bone="",tool="pencil",dir=0,active=null,history=[],redo=[],dirty=false,source=null,ref=null,refs=null;
   let zoom=5,pan=null,pinch=null,selection=null,moveStart=null;
   const touches=new Map();
+  // Shared by the Mahluk 2 and Emotion Studio editors on the same GitHub Pages
+  // origin. Clipboard is not part of character/master-rig saves or GitHub.
+  const CLIP_KEY="mh2-rgba-clipboard-v1";
+  let clipboard=null;
+  function currentClipboard(){
+   try{
+    const saved=JSON.parse(window.localStorage.getItem(CLIP_KEY));
+    if(S.validStamp(saved,W,H))
+     return {...saved,pixels:new Uint8ClampedArray(saved.pixels)};
+   }catch{}
+   return clipboard&&S.validStamp(clipboard,W,H)?clipboard:null;
+  }
+  function updateClipboardInfo(){
+   const saved=currentClipboard();
+   const available=!!saved;
+   els.paste.disabled=!available;els.pasteMirror.disabled=!available;
+   els.clipboardInfo.textContent=available?
+    "READY · "+(saved.bone||"PLANE").toUpperCase()+" / "+(saved.direction||"SE").toUpperCase()+
+    " · "+saved.w+"×"+saved.h+" PX · COPY BETWEEN VIEWS / PARTS":
+    "CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)";
+  }
   const controls=[...overlay.querySelectorAll("[data-pixel-tool]")];
   const updateSelection=()=>{
+   updateClipboardInfo();
    els.selectionInfo.textContent=selection?
     "SELECTED "+selection.w+"×"+selection.h+" · X"+selection.x+" Y"+selection.y+
       " · MOVE/FLIP AFFECT THIS VIEW ONLY":
@@ -244,6 +271,37 @@
    const frame=frameImage();frame.data.set(pixels);
    ctx.putImageData(frame,0,dir*H);
   }
+  function copySelection(){
+   if(!bone)return;
+   clipboard={...S.copy(frameImage().data,W,H,selection),
+    bone,direction:DIR[dir]};
+   try{window.localStorage.setItem(CLIP_KEY,JSON.stringify({
+    ...clipboard,pixels:Array.from(clipboard.pixels)
+   }))}catch{/* Copy still works in this editor when browser storage is unavailable. */}
+   updateClipboardInfo();
+   els.status.textContent="COPIED "+clipboard.w+"×"+clipboard.h+" PIXELS · "+
+    bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · SWITCH VIEW THEN PASTE";
+  }
+  function pasteSelection(mirror=false){
+   const stamp=currentClipboard();
+   if(!stamp){els.status.textContent="NO COPIED PIXELS · SELECT + COPY FIRST";return;}
+   const destX=selection?selection.x:(mirror?W-stamp.x-stamp.w:stamp.x);
+   const destY=selection?selection.y:stamp.y;
+   const dx=clamp(destX,0,W-1),dy=clamp(destY,0,H-1);
+   saveHistory();
+   replaceFrame(S.paste(frameImage().data,W,H,stamp,{
+    x:dx,y:dy,mirror,replace:els.pasteReplace.checked
+   }));
+   selection={x:dx,y:dy,w:Math.min(stamp.w,W-dx),h:Math.min(stamp.h,H-dy)};
+   selectTool("move-pixels");
+   draw();updateHistory();
+   els.status.textContent="PASTED "+stamp.w+"×"+stamp.h+" RGBA · "+
+    (mirror?"HORIZONTAL MIRROR · ":"")+DIR[dir].toUpperCase()+
+    " · DRAG TO ALIGN · UNDO AVAILABLE";
+  }
+  els.copy.onclick=copySelection;
+  els.paste.onclick=()=>pasteSelection(false);
+  els.pasteMirror.onclick=()=>pasteSelection(true);
   function flipSelection(axis){
    saveHistory();const image=frameImage();
    replaceFrame(S.flip(image.data,W,H,selection,axis));
@@ -429,6 +487,11 @@
   overlay.addEventListener("keydown",e=>{
    if(overlay.hidden)return;
    const typing=["INPUT","SELECT","TEXTAREA"].includes(document.activeElement?.tagName);
+   if((e.ctrlKey||e.metaKey)&&!typing){
+    const k=e.key.toLowerCase();
+    if(k==="c"){e.preventDefault();e.stopPropagation();copySelection();return;}
+    if(k==="v"){e.preventDefault();e.stopPropagation();pasteSelection(e.shiftKey);return;}
+   }
    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="a"&&!typing){
     e.preventDefault();e.stopPropagation();els.selectAll.click();return;
    }
@@ -466,6 +529,7 @@
    els.heading.textContent="PIXEL EDITOR / "+id.replaceAll("_"," ").toUpperCase();
    els.dir.value=DIR[dir];selectTool("pencil");overlay.hidden=false;
    draw();zoomFit();updateHistory();
+   canvas.focus({preventScroll:true});
   }
   return {open,isOpen:()=>!overlay.hidden,close:()=>{overlay.hidden=true}};
  }
