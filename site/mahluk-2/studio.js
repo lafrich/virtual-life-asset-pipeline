@@ -736,6 +736,27 @@ function resetFactoryRig(){
  setStatus("FACTORY RIG RULES LOADED IN EDITOR · SAVED MASTER REMAINS UNCHANGED");
 }
 function setupEvents(){
+ $("undo").onclick=undo;$("redo").onclick=redo;
+ $("saveGeneralRig").onclick=saveGeneralRig;
+ $("loadGeneralRig").onclick=loadGeneralRig;
+ $("factoryRig").onclick=resetFactoryRig;
+ $("layerFront").onclick=()=>moveLayer(selected,1);
+ $("layerBack").onclick=()=>moveLayer(selected,-1);
+ $("parentBone").onchange=e=>{
+  const chosen=e.target.value;
+  if(!G.canParent(rigRules,selected,chosen,R))return;
+  remember();G.setParent(rigRules,selected,chosen,R);buildTree();
+  setStatus("RE-PARENTED "+selected.toUpperCase()+" → "+chosen.toUpperCase());
+ };
+ for(const [axis,id] of [["x","anchorX"],["y","anchorY"]]){
+  $(id).addEventListener("focus",remember);
+  $(id).oninput=e=>{
+   const n=Number(e.target.value);if(!Number.isFinite(n))return;
+   const old=rigRules.anchors[selected];
+   G.setAnchor(rigRules,selected,axis==="x"?n:old.x,axis==="y"?n:old.y,R);
+   paint();
+  };
+ }
  $("modelType").onchange=e=>{remember();type=e.target.value;
   if(!getEmotionAsset(emotionAssetId)){emotionAssetId="native:neutral";emotionKeys=[]}
   assetOptions();buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
@@ -777,10 +798,12 @@ function setupEvents(){
  $("setKey").onclick=setKey;$("deleteKey").onclick=removeKey;
  $("play").onclick=()=>{playing=!playing;playSince=performance.now();$("play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY"};
  $("gridPreview").onchange=e=>$("game").parentElement.classList.toggle("flat",e.target.checked);
- for(const mode of ["move","rotate","scale"])$("tool"+mode[0].toUpperCase()+mode.slice(1)).onclick=()=>{transformMode=mode;axisButtons();paint()};
+ for(const mode of ["move","rotate","scale","anchor"])$("tool"+mode[0].toUpperCase()+mode.slice(1)).onclick=()=>{transformMode=mode;axisButtons();paint()};
  $("viewIso").onclick=()=>{view="iso";axisButtons();paint()};
  $("viewFront").onclick=()=>{view="front";axisButtons();paint()};
- $("viewHome").onclick=()=>{camera={x:0,y:0};zoom=3.25;paint()};
+ $("zoomIn").onclick=()=>zoomTo(zoom*1.25);
+ $("zoomOut").onclick=()=>zoomTo(zoom/1.25);
+ $("viewHome").onclick=()=>{camera={x:0,y:0};zoom=3.25;$("zoomLabel").textContent="100%";paint()};
  for(const x of ["x","y","z"])$("axis"+x.toUpperCase()).onclick=()=>{axis=x;axisButtons();paint()};
  for(const el of document.querySelectorAll("[data-dir]"))el.onclick=()=>{
   direction=el.dataset.dir;document.querySelectorAll("[data-dir]").forEach(b=>b.classList.toggle("active",b===el));paint();
@@ -849,7 +872,7 @@ function setupEvents(){
  requestAnimationFrame(tick);
 }
 async function mount(){
- if(!R){setStatus("RIG ENGINE NOT FOUND",false);return}
+ if(!R||!E||!G){setStatus("RIG / RULE ENGINE NOT FOUND",false);return}
  setupEvents();
  try{
   const resp=await fetch("../media/original-rig/manifest.json",{cache:"no-store"});
@@ -864,7 +887,10 @@ async function mount(){
    // Drafts are intentionally NOT auto-loaded as game-ready characters.
    setStatus("SOURCE READY · SELECT CHARACTER OR CREATE NEW",true);
   }
-  updateLibrary();applyState();setStatus("V6B TRANSPARENT PLANES READY · SAVE TO SYNC",true);
+  const general=masterDocument();rigRules=G.normalize(general?.rules,R);
+  if(general?.defaultParts){state=R.normalize({parts:general.defaultParts});base=R.normalize(state)}
+  updateLibrary();applyState();masterMessage();historyButtons();
+  setStatus("V6B PLANES + MASTER RIG RULES READY · SAVE TO SYNC",true);
  }catch(error){sourceError=String(error.message||error);setStatus("LOAD FAILED · "+sourceError,false)}
 }
 document.addEventListener("DOMContentLoaded",mount);
