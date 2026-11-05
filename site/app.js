@@ -591,6 +591,10 @@ function filterEquippedOptions(base,category,previous=""){
  select.append(blank);
  const options=accessoryRuntime.items.filter(x=>x.category===category&&
   (x.template_base||"astrofrich_base")===base);
+ for(const preset of window.VLHumanWardrobe?.presetsFor?.(base,category)||[]){
+  const option=document.createElement("option");option.value=preset.id;
+  option.textContent=preset.name;select.append(option);
+ }
  for(const entry of options){
   const option=document.createElement("option");option.value=entry.id;
   option.textContent=entry.name||"UNNAMED";select.append(option);
@@ -625,6 +629,7 @@ function editCustomCharacter(id){
  $("custom-base").value=row.base;syncCustomCategory();
  const equipped=accessoryRuntime.equipment[row.id]||{};
  for(const kind of EQUIPMENT_SLOTS)filterEquippedOptions(row.base,kind,equipped[kind]);
+ window.VLHumanWardrobe?.restoreSaved?.(equipped,accessoryRuntime.items);
  setInspectorTab("custom");setStatus("EDIT CUSTOM CHAR: "+row.name.toUpperCase());
 }
 function resetCustomForm(){
@@ -640,8 +645,9 @@ async function saveCustomCharacter(){
  if(!base){setStatus("CUSTOM BASE NOT YET AVAILABLE: "+baseId);return}
  const name=$("custom-name").value.trim().replace(/\s+/g," ").slice(0,40);
  if(!name){setStatus("ENTER A CHARACTER NAME BEFORE SAVING");$("custom-name").focus();return}
+ let selectedOutfit={};
  try{
-  await window.VLHumanWardrobe?.materializeSelected?.(baseId);
+  selectedOutfit=await window.VLHumanWardrobe?.materializeSelected?.(baseId)||{};
   refreshAccessoryEquipment();
  }catch(error){setStatus("WARDROBE PRESET NOT SAVED: "+error.message);return;}
  const rows=savedCustomCharacters();
@@ -660,6 +666,7 @@ async function saveCustomCharacter(){
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
  const slots={};
  for(const kind of EQUIPMENT_SLOTS){
+  if(selectedOutfit[kind]){slots[kind]=selectedOutfit[kind];continue;}
   const found=accessoryRuntime.items.find(x=>x.id===$("custom-"+kind).value &&
    (x.template_base||"astrofrich_base")===baseId && x.category===kind);
   if(found)slots[kind]=found.id;
@@ -1169,6 +1176,16 @@ function renderPalette() {
     button.setAttribute("aria-pressed", String(color === state.bg));
     button.classList.toggle("active", color === state.bg);
     button.addEventListener("click", () => {
+      if(!$("custom-workspace").hidden&&window.VLHumanWardrobe?.setPaletteColor?.(color)){
+        for(const other of grid.children){
+         const selected=other===button;
+         other.classList.toggle("active",selected);
+         other.setAttribute("aria-pressed",String(selected));
+        }
+        $("current-color").style.backgroundColor=color;
+        setStatus("CUSTOM CHARACTER COLOR: "+color.toUpperCase());
+        return;
+      }
       state.bg = color;
       $("canvas-space").style.setProperty("--canvas", color);
       $("current-color").style.backgroundColor = color;

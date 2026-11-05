@@ -539,3 +539,24 @@ body.pixel-editor-open{overflow:hidden}
  .detail-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
  .detail-tabs .detail-tab{min-height:35px}
 }
+
+/* Color is independent of outfit model; 4 custom hex pickers + bottom palette target. */
+.custom-color-control{display:flex;align-items:center;gap:7px;min-width:0;grid-column:auto;
+ background:#d8d6d0;border:1px solid #aaa6a0;padding:7px;margin:-2px 0 10px}
+.custom-color-control>label{flex:1 1 auto;font:700 10px "Courier New",monospace}
+.custom-color-control input[type=color]{flex:0 0 36px;width:36px;height:31px;
+ border:2px inset #89847d;background:white;padding:1px;cursor:pointer}
+.custom-color-control input[type=text]{flex:0 0 75px;min-width:0;width:75px;height:31px;
+ padding:4px;font:700 11px "Courier New",monospace;border:2px inset #888;background:white}
+.custom-palette-target{flex:0 0 62px;min-width:0;height:31px;
+ border:2px solid;border-color:#fff #777 #777 #fff;background:#e2dfd9;
+ font:700 9px "Courier New",monospace}
+.custom-palette-target.selected{background:#b2c7f5;color:#103682;
+ border-color:#4567a6}
+.custom-form-panel #human-outfit-slots>.custom-color-control{align-self:start}
+@media(max-width:900px){
+ .custom-color-control{gap:4px;padding:5px}
+ .custom-color-control>label{font-size:9px}
+ .custom-color-control input[type=text]{flex-basis:64px;width:64px;font-size:10px}
+ .custom-palette-target{flex-basis:54px;font-size:8px}
+}

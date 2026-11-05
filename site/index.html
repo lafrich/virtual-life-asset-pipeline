@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#043d9e">
   <meta name="description" content="Mahluk Hidup — pixel character creator, modular outfits, animated NPCs and character storage.">
   <title>Mahluk Hidup — Character Studio</title>
-  <link rel="stylesheet" href="./style.css?v=top-custom-wardrobe-v1">
+  <link rel="stylesheet" href="./style.css?v=custom-model-color-v3">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
-  <script defer src="./app.js?v=custom-wardrobe-v2"></script>
-  <script defer src="./custom-character-wardrobe.js?v=custom-wardrobe-v2"></script>
+  <script defer src="./app.js?v=custom-model-color-v3"></script>
+  <script defer src="./custom-character-wardrobe.js?v=custom-model-color-v3"></script>
   <script defer src="./animations.js?v=top-custom-tab-v1"></script>
 </head>
 <body>
@@ -227,6 +227,12 @@
                 <label class="custom-char-label">RAMBUT
                   <select id="custom-hair"><option value="">— BALD / NO HAIR —</option></select>
                 </label>
+<div class="custom-color-control" data-slot="hair">
+  <label for="custom-hair-color">WARNA HAIR</label>
+  <input type="color" id="custom-hair-color" value="#4b352b" title="Choose custom hair color">
+  <input type="text" id="custom-hair-hex" value="#4b352b" maxlength="7" inputmode="text" aria-label="Custom hair hex color">
+  <button type="button" class="custom-palette-target" data-palette-slot="hair" aria-pressed="true">PALETTE</button>
+ </div>
                 <div class="accessory-create-buttons">
                   <button type="button" class="chrome-button" id="custom-draw-shirt">✎ DRAW BAJU / 4 SIDES</button>
                   <button type="button" class="chrome-button" id="custom-draw-pants">✎ DRAW CELANA / 4 SIDES</button>
@@ -235,12 +241,30 @@
                 <label class="custom-char-label">BAJU
                   <select id="custom-shirt"><option value="">— NO SHIRT —</option></select>
                 </label>
+<div class="custom-color-control" data-slot="shirt">
+  <label for="custom-shirt-color">WARNA SHIRT</label>
+  <input type="color" id="custom-shirt-color" value="#eee9e0" title="Choose custom shirt color">
+  <input type="text" id="custom-shirt-hex" value="#eee9e0" maxlength="7" inputmode="text" aria-label="Custom shirt hex color">
+  <button type="button" class="custom-palette-target" data-palette-slot="shirt" aria-pressed="false">PALETTE</button>
+ </div>
                 <label class="custom-char-label">CELANA
                   <select id="custom-pants"><option value="">— NO PANTS —</option></select>
                 </label>
+<div class="custom-color-control" data-slot="pants">
+  <label for="custom-pants-color">WARNA PANTS</label>
+  <input type="color" id="custom-pants-color" value="#3a495c" title="Choose custom pants color">
+  <input type="text" id="custom-pants-hex" value="#3a495c" maxlength="7" inputmode="text" aria-label="Custom pants hex color">
+  <button type="button" class="custom-palette-target" data-palette-slot="pants" aria-pressed="false">PALETTE</button>
+ </div>
                 <label class="custom-char-label">SEPATU
                   <select id="custom-shoes"><option value="">— NO SHOES —</option></select>
                 </label>
+<div class="custom-color-control" data-slot="shoes">
+  <label for="custom-shoes-color">WARNA SHOES</label>
+  <input type="color" id="custom-shoes-color" value="#2c3138" title="Choose custom shoes color">
+  <input type="text" id="custom-shoes-hex" value="#2c3138" maxlength="7" inputmode="text" aria-label="Custom shoes hex color">
+  <button type="button" class="custom-palette-target" data-palette-slot="shoes" aria-pressed="false">PALETTE</button>
+ </div>
               </div>
               <p id="custom-animation-count" class="accessory-note">BASE: NATIVE MOTIONS · CONTEXTUAL EXPRESSIONS · 4 DIRECTIONS</p>
               <div class="accessory-create-buttons">
@@ -338,8 +362,8 @@
 
       <section class="palette-panel" aria-label="Canvas color palette">
         <div class="foreground-chip" title="Current canvas color"><span class="bg-color-chip" id="current-color"></span><small>BG</small></div>
-        <div class="swatches" id="swatches" role="group" aria-label="Canvas background color"></div>
-        <div class="palette-note">PICK A COLOR.</div>
+        <div class="swatches" id="swatches" role="group" aria-label="Background or selected custom character clothing color"></div>
+        <div class="palette-note" id="palette-note">BG COLOR · PICK A SWATCH</div>
       </section>
       <footer class="statusbar" role="status">
         <span class="status-left" id="status">READY.</span>
