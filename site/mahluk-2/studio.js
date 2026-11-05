@@ -96,15 +96,19 @@ function activeSlots(){return slots.filter(slotAllowed)}
 function faceEmotion(s){return state.faceLayers?.[s.bone]||state.emotion||"neutral"}
 function partWorld(){return G.world(state,rigRules,R)}
 function renderableIds(){
- const list=[];const seen=new Set();
- for(const s of slots){
-  const kind=E.slotKind(s);
+ const scene=manifest?G.world(state,rigRules,R):{},rows=[];let last=0;
+ for(let i=0;i<slots.length;i++){
+  const s=slots[i],kind=E.slotKind(s);
   const id=kind==="emotion"?"emotion":kind==="glasses"?"glasses":s.bone;
-  if(!id||G.HIDDEN.has(id)||(!kind&&!slotAllowed(s))||seen.has(id))continue;
-  seen.add(id);list.push(id);
+  if(!id||G.HIDDEN.has(id)||(!kind&&!slotAllowed(s)))continue;
+  rows.push({id,i,z:(scene[id]?.z||0)+(type!=="original"&&kind?20:0)});
+  last=i;
  }
- for(const id of ["emotion","glasses"])if(!seen.has(id)){seen.add(id);list.push(id)}
- return list;
+ for(const id of ["emotion","glasses"]){
+  if(!rows.some(r=>r.id===id))rows.push({id,i:++last,z:(scene[id]?.z||0)+(type!=="original"?20:0)});
+ }
+ rows.sort((a,b)=>a.z-b.z||a.i-b.i);
+ return [...new Set(rows.map(r=>r.id))];
 }
 function getEmotionAsset(id){
  if(typeof id!=="string")return null;
