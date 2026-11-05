@@ -13,37 +13,38 @@ FRAME=(64,112)
 # but images are generated separately against their own native body geometry.
 PRESETS={
  "hair":[
-  ("short_black","Short / Black",dict(hair="short",hc="black")),
-  ("swept_black","Swept / Black",dict(hair="swept",hc="black")),
-  ("curtain_brown","Curtain / Brown",dict(hair="mid_curtain",hc="walnut")),
-  ("bob_brown","Bob / Chestnut",dict(hair="mid",hc="darkwalnut")),
-  ("long_black","Long / Black",dict(hair="long",hc="black")),
-  ("wavy_brown","Wavy / Brown",dict(hair="wavy",hc="walnut")),
-  ("short_silver","Short / Silver",dict(hair="short",hc="silver")),
+  ("short","Short",dict(hair="short",hc="silver")),
+  ("swept","Side Swept",dict(hair="swept",hc="silver")),
+  ("curtain","Curtain",dict(hair="mid_curtain",hc="silver")),
+  ("bob","Bob",dict(hair="mid",hc="silver")),
+  ("wavy","Wavy",dict(hair="wavy",hc="silver")),
+  ("wavy_curtain","Wavy Curtain",dict(hair="wavy_curtain",hc="silver")),
+  ("long","Long",dict(hair="long",hc="silver")),
+  ("long_curtain","Long Curtain",dict(hair="long_curtain",hc="silver")),
  ],
  "shirt":[
-  ("tee_white","T-Shirt / White",dict(top="tee",tc="paper")),
-  ("tee_black","T-Shirt / Black",dict(top="tee",tc="black")),
-  ("long_navy","Long Sleeve / Navy",dict(top="tee_long",tc="navy")),
-  ("shirt_ivory","Button Shirt / Ivory",dict(top="shirt",tc="ivory")),
-  ("shirt_blue","Button Shirt / Blue",dict(top="shirt_l",tc="steel")),
-  ("hoodie_red","Hoodie / Burgundy",dict(top="hoodie",tc="oxblood")),
+  ("tee","T-Shirt",dict(top="tee",tc="paper")),
+  ("long_sleeve","Long Sleeve",dict(top="tee_long",tc="paper")),
+  ("shirt","Button Shirt",dict(top="shirt",tc="paper")),
+  ("shirt_long","Long Button Shirt",dict(top="shirt_l",tc="paper")),
+  ("hoodie","Hoodie",dict(top="hoodie",tc="paper")),
+  ("cardigan","Cardigan",dict(top="hoodie",tc="paper")),
  ],
  "pants":[
-  ("trousers_black","Trousers / Black",dict(pants="trousers",pc="night")),
-  ("denim_blue","Denim / Blue",dict(pants="trousers",pc="steel")),
-  ("baggy_grey","Baggy / Grey",dict(pants="baggy",pc="slate")),
-  ("ripped_dark","Ripped / Dark",dict(pants="trousers_ripped",pc="charcoal")),
+  ("trousers","Trousers",dict(pants="trousers",pc="paper")),
+  ("denim","Denim",dict(pants="trousers",pc="paper")),
+  ("baggy","Baggy",dict(pants="baggy",pc="paper")),
+  ("ripped","Ripped Jeans",dict(pants="trousers_ripped",pc="paper")),
  ],
  "shoes":[
-  ("sneakers_white","Sneakers / White",dict(shoes="sneakers",sc="paper")),
-  ("sneakers_dark","Sneakers / Dark",dict(shoes="sneakers",sc="night")),
-  ("boots_brown","Boots / Brown",dict(shoes="boots",sc="walnut")),
-  ("hightops_grey","High Tops / Grey",dict(shoes="hightops",sc="grey")),
+  ("shoes","Classic Shoes",dict(shoes="shoes",sc="paper")),
+  ("sneakers","Sneakers",dict(shoes="sneakers",sc="paper")),
+  ("boots","Boots",dict(shoes="boots",sc="paper")),
+  ("hightops","High Tops",dict(shoes="hightops",sc="paper")),
  ]
 }
 STACK={
- "hair":("hair_back","hair_front"),
+ "hair":("hair_front",),
  "shirt":("shirt","shirt_graphic","outer"),
  "pants":("pants","rips"),
  "shoes":("shoes","shoes_over"),
@@ -65,21 +66,31 @@ def build_human_wardrobe(root:Path,media:Path,site:Path)->list[dict]:
    for variant,label,changes in recipes:
     cfg={**_config(gender),**changes}
     strip=Image.new("RGBA",(64*4,112))
+    rear=Image.new("RGBA",(64*4,112)) if slot=="hair" else None
     for index,direction in enumerate(DIRS):
      _,layers,_=base6.render(cfg,f=0,d=direction,expr="neutral",anim="idle")
      part=Image.new("RGBA",FRAME)
      for key in STACK[slot]:
       if key in layers:part.alpha_composite(layers[key].convert("RGBA"))
+     if rear is not None:
+      behind=layers.get("hair_back",Image.new("RGBA",FRAME)).convert("RGBA")
+      rear.alpha_composite(behind,(index*64,0))
      if part.getchannel("A").getbbox() is None:
       raise ValueError(f"Missing native {slot}: {gender}/{variant}/{direction}")
      strip.alpha_composite(part,(index*64,0))
     filename=f"wardrobe-{gender}-{slot}-{variant}.png"
     strip.save(media/filename,optimize=True)
+    # The original bug stacked rear hair OVER the face. Publish rear layer
+    # independently and render it BEHIND the base head, in every direction.
+    back_filename=f"wardrobe-{gender}-hairback-{variant}.png" if rear is not None else ""
+    if rear is not None:rear.save(media/back_filename,optimize=True)
     records.append({"id":f"preset_{base}_{slot}_{variant}",
        "name":label,"category":slot,"template_base":base,
-       "sheet":"media/"+filename,"directions":list(DIRS),
+       "sheet":"media/"+filename,
+       **({"back_sheet":"media/"+back_filename} if back_filename else {}),
+       "directions":list(DIRS),
        "size":[64,112],"source":"native-v6b-wardrobe"})
- result={"version":1,"format":"mahluk-hidup-native-wardrobe-v1",
+ result={"version":2,"format":"mahluk-hidup-native-wardrobe-v1",
    "directions":list(DIRS),"frame":[64,112],"pivot":[32,100],
    "presets":records}
  (site/"wardrobe-presets.json").write_text(
