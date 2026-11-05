@@ -14,7 +14,7 @@ def shadow(L,rx=13,ry=5):
 def noise_top(material,seed=0,dark=2,bright=3,extra=None):
     def fn(a,b):
         x=np.floor(a*25).astype(np.int32); y=np.floor(b*25).astype(np.int32)
-        h=((x*374761393)^(y*668265263)^(seed*1442695041))&1023
+        h=((x*374761393)^(y*668265263)^(np.int64(seed)*1442695041))&1023
         m=np.full(a.shape,MI[material],dtype=np.int16)
         t=np.where(h<36,dark,np.where(h>984,bright+1,bright)).astype(np.int8)
         if extra: m,t=extra(a,b,m,t,h)
