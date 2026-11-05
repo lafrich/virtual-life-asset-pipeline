@@ -173,11 +173,22 @@ New pencil, eraser and region fill operations are propagated between camera
 directions using mirrored horizontal source positions as needed. When
 propagating, opaque pixels in other native directions retain their distinct
 outline/silhouette: a front-side limb does NOT replace the authored back-side
-artwork. Turn SYNC off for direction-specific retouching. Existing
-direction-specific edits are not retroactively changed.
+artwork. Turn SYNC off for direction-specific retouching. To update artwork
+that was **already** edited in only one direction, open that plane and
+click **SYNC CURRENT EDITS TO 4 VIEWS**. This transfers only the pixels
+that differ from the native source in the selected master direction,
+preserving opposite view silhouettes. Check the four directions and
+then Save as General Default. Pixel Undo still works.
 
 **Scope and limitations:** There is a real master *rig* shared by all
 views, not a 3D human mesh. Individual pixel silhouettes remain authored
 per view. An arbitrarily novel front 2D shape cannot automatically produce
 a physically accurate back shape. Re-save the general rig and republish
 previous baked game sprites when necessary.
+
+Use **ORBIT** in the viewport (or **Alt + drag**, or press **O** and
+drag) to orbit between the four authored camera directions using the
+mouse, without modifying the character. A continuous 3D orbit angle
+is intentionally not generated from 2D sprites; the four original
+artwork angles remain the ground truth. Press **P** for an exploded
+plane inspect view. Camera direction and spacing remain preview-only.
