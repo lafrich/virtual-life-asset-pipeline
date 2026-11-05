@@ -155,7 +155,9 @@ jobs:
           node --check site/mahluk-2/emotion-planes.js
           node --check site/mahluk-2/rig-rules.js
           node --check site/mahluk-2/body-planes.js
+          node --check site/mahluk-2/pixel-selection.js
           node --check site/mahluk-2/plane-pixel-editor.js
+          node --test tests/test_mahluk2_pixel_select_overlay.cjs
           node --check site/mahluk-2/view-projection.js
           node --test tests/test_mahluk2_orbit_depth.cjs
           node --test tests/test_mahluk2_root_grid_zoom.cjs
@@ -271,6 +273,7 @@ jobs:
           test -s _site/mahluk-2/emotion-planes.js
           test -s _site/mahluk-2/rig-rules.js
           test -s _site/mahluk-2/body-planes.js
+          test -s _site/mahluk-2/pixel-selection.js
           test -s _site/mahluk-2/plane-pixel-editor.js
           test -s _site/mahluk-2/view-projection.js
           test -s _site/emotion-plane-library.json
