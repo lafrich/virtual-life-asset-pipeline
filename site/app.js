@@ -1531,7 +1531,7 @@ $("motion-search").addEventListener("input",()=>{
 $("motion-category").addEventListener("change",()=>{
   if(state.selected)buildMotions(state.selected);
 });
-document.addEventListener("mahluk:modular-rig-saved",()=>{
+function refreshApprovedModularReference(){
   const approved=modularReferenceRecord();
   if(!approved)return;
   catalogCharacters=catalogCharacters.filter(c=>c.id!==approved.id);
@@ -1539,7 +1539,9 @@ document.addEventListener("mahluk:modular-rig-saved",()=>{
   const wasSelected=state.selected?.id===approved.id;
   rebuildCustomCharacters();
   if(wasSelected)selectCharacter(approved);
-});
+}
+document.addEventListener("mahluk:modular-rig-saved",refreshApprovedModularReference);
+document.addEventListener("mahluk:rig-art-saved",refreshApprovedModularReference);
 document.addEventListener("mahluk:pose-saved",()=>{
   if(state.selected&&["human_male_base","human_female_base"].includes(state.selected.id)){
     $("motion-search").value="";$("motion-category").value="all";
