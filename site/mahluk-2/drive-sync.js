@@ -93,8 +93,8 @@ async function saveCharacter(record,expectedModifiedTime=null){
  if(!validCharacter(record))throw Error("Invalid Mahluk Hidup 2 root record");
  const folderId=await ensureLibrary(),files=await search(folderId,"name = '"+filename(record.id)+"'");
  const old=files[0]||null;
- if(old&&expectedModifiedTime&&expectedModifiedTime!==old.modifiedTime)
-  throw Error("Character was updated on another device. Load Drive before overwriting.");
+ if(old&&(!expectedModifiedTime||expectedModifiedTime!==old.modifiedTime))
+  throw Error("Character exists on Drive or was updated elsewhere. LOAD DRIVE LIBRARY before overwriting.");
  const data={...record};delete data.driveFileId;delete data.driveModifiedTime;
  const file=await upload({name:filename(record.id),mimeType:"application/json",parents:[folderId],
   appProperties:{application:"mahluk-hidup-2",kind:"character-root",characterId:record.id}},
