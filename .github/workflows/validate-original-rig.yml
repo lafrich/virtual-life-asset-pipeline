@@ -27,7 +27,7 @@ jobs:
       - run: python -m pip install numpy Pillow
       - name: Check all source parts reassemble exactly
         run: |
-          python tools/build_original_rig_layers.py "$RUNNER_TEMP/native-rig-art"
+          python tools/build_original_rig_layers.py "$RUNNER_TEMP/native-rig-art" --source-only
           test -s "$RUNNER_TEMP/native-rig-art/original-rig/manifest.json"
           test -s "$RUNNER_TEMP/native-rig-art/original-rig/source-contact-sheet.png"
           python -c "import json,os,pathlib; p=pathlib.Path(os.environ['RUNNER_TEMP'])/'native-rig-art/original-rig/manifest.json'; m=json.loads(p.read_text()); assert m['pixels_preserved'] and len(m['slots'])>=10; assert len(m['directions'])==4 and len(m['emotions'])==7"
