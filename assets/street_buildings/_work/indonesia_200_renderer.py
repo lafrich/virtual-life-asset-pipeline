@@ -14,6 +14,7 @@ from indonesia_200_finishing import quality_override
 from indonesia_200_art_direction_v5 import refine as art_direct
 from indonesia_200_umkm_signature import variant as umkm_signature
 from indonesia_200_vegetation_hifi import render as vegetation_hifi
+from indonesia_200_attribute_detail_v6 import refine as attribute_detail
 
 SPEC_PATH=Path('assets/street_buildings/_work/indonesia_200_specs.json')
 SPECS=json.loads(SPEC_PATH.read_text(encoding='utf-8'))['items']
@@ -333,8 +334,12 @@ def draw(L,s):
  # Every asset must have a recognizable authored v2 recipe.
  if vegetation_hifi(L,s):return
  if umkm_signature(L,s):return
- if quality_override(L,s) or quality_render(L,s):
+ if quality_override(L,s):
+  attribute_detail(L,s)
+  return
+ if quality_render(L,s):
   art_direct(L,s)
+  attribute_detail(L,s)
   return
  raise ValueError('Missing Indonesia 200 authored scene recipe: '+s['id'])
  if special(L,s):return
