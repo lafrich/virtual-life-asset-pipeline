@@ -362,6 +362,21 @@
    }
    const point=coords(e);
    if(tool==="picker"){pipette(point);return}
+   if(tool==="select"){
+    selection=S.rectFromPoints(point,point,W,H);
+    active={id:e.pointerId,at:point,origin:point,mode:"select",painted:true};
+    capture(e);draw();updateSelection();return;
+   }
+   if(tool==="move-pixels"){
+    if(!selection){els.status.textContent="SELECT A RECTANGLE FIRST (▣ SELECT)";return}
+    if(!S.contains(selection,point.x,point.y)){
+     els.status.textContent="DRAG FROM INSIDE SELECTED PIXELS";return;
+    }
+    saveHistory();
+    moveStart={rect:{...selection},pixels:frameImage().data.slice(),from:point};
+    active={id:e.pointerId,at:point,mode:"move-pixels",painted:true};
+    capture(e);return;
+   }
    // A touch that becomes a pinch must not paint a stray first dot.
    active={id:e.pointerId,at:point,painted:false};
    capture(e);
@@ -387,6 +402,15 @@
    if(active?.id!==e.pointerId)return;
    e.preventDefault();
    const next=coords(e);
+   if(active.mode==="select"){
+    selection=S.rectFromPoints(active.origin,next,W,H);
+    draw();updateSelection();return;
+   }
+   if(active.mode==="move-pixels"&&moveStart){
+    moveSelectionFrom(moveStart.pixels,moveStart.rect,
+     next.x-moveStart.from.x,next.y-moveStart.from.y);
+    return;
+   }
    if(!active.painted){saveHistory();active.painted=true;paintPoint(active.at,active.at)}
    paintPoint(active.at,next);active.at=next;
   });
@@ -394,7 +418,8 @@
    canvas.addEventListener(evt,e=>{
     if(active?.id===e.pointerId){
      if(evt==="pointerup"&&!active.painted){saveHistory();paintPoint(active.at,active.at)}
-     active=null;
+     active=null;moveStart=null;
+     updateSelection();
     }
     if(pan?.id===e.pointerId)pan=null;
     if(e.pointerType==="touch")touches.delete(e.pointerId);
@@ -414,7 +439,10 @@
    if(!id)throw Error("Select an editable plane");
    bone=id;dir=Math.max(0,DIR.indexOf(direction));source=originalAtlas||null;
    refs=referenceImages||null;ref=refs?.[DIR[dir]]||referenceImage||null;
-   history=[];redo=[];dirty=false;active=null;
+   history=[];redo=[];dirty=false;active=null;selection=null;moveStart=null;
+   els.refView.value=dir===0?"off":"se";
+   els.refOpacity.value="40";els.refOpacityLabel.textContent="40%";
+   els.refFlip.checked=true;els.refX.value="0";els.refY.value="0";
    ctx.clearRect(0,0,W,H*4);
    if(initialAtlas)ctx.drawImage(initialAtlas,0,0,W,H*4);
    else if(source)ctx.drawImage(source,0,0,W,H*4);
