@@ -46,11 +46,17 @@ function modularReferenceRecord(){
  thumb.width=64;thumb.height=112;
  thumb.getContext("2d").drawImage(canvas,0,0,64,112,0,0,64,112);
  const portrait=thumb.toDataURL("image/png");
- const expressions=rig.EMOTIONS.map(id=>({
-  id,label:({neutral:"Neutral",happy:"Happy",mischievous:"Jahil / Smirk",
-   angry:"Angry",surprised:"Surprised",blush:"Blush",grin:"Grin"})[id]||id,
-  sheet:makeAtlas(id),portrait,frames,frame_ms:Array(frames).fill(150)
- }));
+ const expressions=rig.EMOTIONS.map(id=>{
+  const faceSheet=makeAtlas(id),faceTile=document.createElement("canvas");
+  faceTile.width=64;faceTile.height=112;
+  faceTile.getContext("2d").drawImage(canvas,0,0,64,112,0,0,64,112);
+  return {
+   id,label:({neutral:"Neutral",happy:"Happy",mischievous:"Jahil / Smirk",
+    angry:"Angry",surprised:"Surprised",blush:"Blush",grin:"Grin"})[id]||id,
+   sheet:faceSheet,portrait:faceTile.toDataURL("image/png"),
+   frames,frame_ms:Array(frames).fill(150)
+  };
+ });
  return {
   id:rig.ID,name:"PIXEL REFERENCE 01",type:"npc",template:false,
   source:"modular-rig-v2",asset_status:"generated_preview",sheet,
@@ -61,10 +67,10 @@ function modularReferenceRecord(){
    source:"custom",sheet,available:true,frames,frame_ms:Array(frames).fill(150),
    loop:true,row:0}],
   expressions,palette:"dark streetwear",
-  outfit:"black T-shirt / relaxed trousers / white sneakers",
-  hairstyle:"dark layered fringe",
+  outfit:"oversized black tee / loose charcoal pants / chunky white sneakers",
+  hairstyle:"voluminous dark-brown crown + three independent fringe pieces",
   folder_url:"https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/site/modular-rig-v2.js",
-  description:"NEW REFERENCE / 4 views / head-parented facial emotion cutouts; independent body, arm and leg pivots. Edit in 06 / RIG STUDIO."
+  description:"DETAILED PIXEL REFERENCE / 4 directions / true modular head, hair crown + fringe, glasses, eyes, brows, cheeks, torso, loose trousers, shoes. Edit in 06 / RIG STUDIO."
  };
 }
 
