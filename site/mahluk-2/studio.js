@@ -94,7 +94,18 @@ function slotAllowed(s){
 }
 function activeSlots(){return slots.filter(slotAllowed)}
 function faceEmotion(s){return state.faceLayers?.[s.bone]||state.emotion||"neutral"}
-function partWorld(){return E.accessoryWorld(state,R)}
+function partWorld(){return G.world(state,rigRules,R)}
+function renderableIds(){
+ const list=[];const seen=new Set();
+ for(const s of slots){
+  const kind=E.slotKind(s);
+  const id=kind==="emotion"?"emotion":kind==="glasses"?"glasses":s.bone;
+  if(!id||G.HIDDEN.has(id)||(!kind&&!slotAllowed(s))||seen.has(id))continue;
+  seen.add(id);list.push(id);
+ }
+ for(const id of ["emotion","glasses"])if(!seen.has(id)){seen.add(id);list.push(id)}
+ return list;
+}
 function getEmotionAsset(id){
  if(typeof id!=="string")return null;
  if(id.startsWith("native:")){
@@ -148,7 +159,12 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode){
  }
  if(!faceAdded)ordered.push({kind:"emotion",bone:"emotion",i:slots.length+1});
  if(!glassesAdded)ordered.push({kind:"glasses",bone:"glasses",i:slots.length+2});
+ const ids=renderableIds();
  ordered.sort((a,b)=>{
+  if(rigRules.order.length){
+   const ra=G.layerRank(rigRules,a.bone,ids),rb=G.layerRank(rigRules,b.bone,ids);
+   return ra-rb||a.i-b.i;
+  }
   const za=(world[a.bone]?.z||0)+(type!=="original"&&a.kind!=="body"?20:0);
   const zb=(world[b.bone]?.z||0)+(type!=="original"&&b.kind!=="body"?20:0);
   return za-zb||a.i-b.i;
@@ -166,14 +182,15 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode){
   if(!src)continue;
   // Each source RGBA occupies exactly one plane with independent transform.
   // Emotion and glasses are sibling children of head (not face micro-bones).
-  const mx=mirror?64-p.x:p.x,ax=mirror?64-bone.x:bone.x;
+  const pivot=rigRules.anchors[item.bone]||{x:bone.x,y:bone.y};
+  const mx=mirror?64-p.x:p.x,ax=mirror?64-pivot.x:pivot.x;
   const dzx=view==="iso"||!editorMode?-.60*p.z:0;
   const dzy=view==="iso"||!editorMode?-.28*p.z:0;
   ctx.save();ctx.imageSmoothingEnabled=false;
   ctx.translate(ox+(mx+dzx)*mag,oy+(p.y+dzy)*mag);
   ctx.rotate((mirror?-1:1)*p.angle*Math.PI/180);
   ctx.scale(p.scale*mag,p.scale*mag);
-  ctx.drawImage(src.image,src.sx,src.sy,64,112,-ax,-bone.y,64,112);
+  ctx.drawImage(src.image,src.sx,src.sy,64,112,-ax,-pivot.y,64,112);
   ctx.restore();
  }
 }
