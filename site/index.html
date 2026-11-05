@@ -13,7 +13,7 @@
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
-  <script defer src="./pose-weights.js?v=pixel-mask-v2"></script>
+  <script defer src="./pose-weights.js?v=pixel-mask-v3"></script>
   <script defer src="./pose-maker.js?v=pixel-mask-v1"></script>
   <script defer src="./app.js?v=custom-model-color-v4"></script>
   <script defer src="./custom-character-wardrobe.js?v=custom-model-color-v4"></script>
@@ -470,11 +470,13 @@
               <label class="pose-label" for="pose-weight-bone">PIXELS FOLLOW THIS BONE</label>
               <select class="pose-input" id="pose-weight-bone"></select>
               <div class="pose-weight-tools" role="group" aria-label="Weight brush mode">
-                <button type="button" class="chrome-button active" data-pose-weight-tool="paint" aria-pressed="true">✎ ASSIGN</button>
-                <button type="button" class="chrome-button" data-pose-weight-tool="erase" aria-pressed="false">⌫ STATIC</button>
+                <button type="button" class="chrome-button active" data-pose-weight-tool="paint" aria-pressed="true" title="Add pixels to selected bone">✎ ASSIGN</button>
+                <button type="button" class="chrome-button" data-pose-weight-tool="subtract" aria-pressed="false" title="Remove only selected bone's pixels from its mask, without deleting the sprite">− UNSELECT</button>
+                <button type="button" class="chrome-button" data-pose-weight-tool="erase" aria-pressed="false" title="Make any painted pixels static, regardless of original bone">⌫ STATIC</button>
                 <label>RADIUS <input type="range" id="pose-weight-size" min="0" max="5" step="1" value="1"></label>
                 <output id="pose-weight-size-label" for="pose-weight-size">3 PX</output>
               </div>
+              <p class="pose-note pose-weight-tool-hint" id="pose-weight-tool-hint" aria-live="polite">ASSIGN / add source pixels to the selected bone.</p>
               <div class="pose-weight-zoom-row">
                 <label for="pose-weight-zoom">PIXEL EDIT ZOOM</label>
                 <input id="pose-weight-zoom" type="range" min="2" max="8" step="1" value="4">
@@ -485,7 +487,7 @@
               </div>
               <p class="pose-note" id="pose-weight-info" aria-live="polite">LOADING PIXEL WEIGHTS</p>
               <button type="button" class="chrome-button" id="pose-weight-reset">↺ RESET SELECTED LAYER / VIEW</button>
-              <p class="pose-note">Blue = selected bone; colored pixels are active layer; ghost pixels can be reclaimed near borders. Other body parts are isolated, not deleted. Separate masks for Male/Female and 4 views. Changes auto-save.</p>
+              <p class="pose-note">UNSELECT subtracts only from the selected bone mask; it does not delete sprite pixels or alter other bone masks. STATIC releases any bone assignment. Edits save per Male/Female and direction.</p>
             </section>
             <button type="button" class="chrome-button" id="pose-play">▶ PLAY</button>
             <button type="button" class="chrome-button" id="pose-new">+ NEW MOTION</button>
