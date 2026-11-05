@@ -152,3 +152,42 @@ button#toolAnchor.active{background:#2b736b;border-color:#8ff7e2;color:#e2fffa}
  .pixel-side{overflow:visible;flex:none}
  .pixel-zoom-controls input[type=range]{flex:1}
 }
+
+/* C4D-inspired 2.5D character root: independent orbit camera / depth inspection. */
+.viewbar .depth-gap{display:flex;align-items:center;gap:5px;font:10px Consolas,monospace;color:#afc4d8;padding-left:5px;min-width:145px}
+.depth-gap input{width:82px;min-width:60px;accent-color:#79b6df;cursor:pointer}
+.depth-gap span{min-width:24px;font-variant-numeric:tabular-nums}
+.depth-gap:has(input:disabled){opacity:.4}
+#togglePlaneDepth.active{background:#366684;border-color:#9ac6f3}
+.orbit-gizmo{position:absolute;top:14px;right:14px;width:152px;z-index:5;color:#e0ebfa;background:rgba(19,30,43,.86);border:1px solid rgba(124,153,184,.56);border-radius:6px;box-shadow:0 3px 18px #1119;padding:7px;user-select:none;touch-action:manipulation}
+.orbit-head{display:flex;justify-content:space-between;align-items:center;font:9px Consolas,monospace;letter-spacing:.08em}
+.orbit-head span{color:#b3d6ff;font-size:11px}
+.orbit-control{display:flex;gap:2px;align-items:center;justify-content:space-between;margin-top:5px}
+.orbit-control>button{width:27px;height:29px;padding:0;font-size:20px;border:0;background:transparent;color:#a9c4e3}
+.orbit-control>button:hover{color:white;background:#355371}
+.orbit-compass{width:78px;height:84px;position:relative;background:radial-gradient(circle,#394b5e 0%,#243649 55%,#1b2938 78%);border-radius:50%;border:1px solid #607d9b}
+.orbit-compass::before,.orbit-compass::after{content:"";position:absolute;top:50%;left:50%;width:52px;border-top:1px dashed #71879b;transform-origin:center;pointer-events:none}
+.orbit-compass::before{transform:translate(-50%,-50%) rotate(45deg)}
+.orbit-compass::after{transform:translate(-50%,-50%) rotate(-45deg)}
+.orbit-axes{position:absolute;inset:0;pointer-events:none;font:700 9px Consolas,monospace;color:#f8f9fc}
+.orbit-axes i{position:absolute;display:block;font-style:normal;z-index:1}
+.orbit-x{color:#ff8c7c;left:34px;top:38px}
+.orbit-y{color:#89e7a4;left:34px;top:15px}
+.orbit-z{color:#7eaefe;left:47px;top:33px}
+.orbit-compass button{position:absolute;min-width:25px;height:21px;z-index:2;padding:0;font:9px Consolas,monospace;border-radius:11px;background:#20394e;color:#b7d2eb;border:1px solid #56758e}
+.orbit-compass button.active{color:white;background:#387caf;border-color:#c6e8ff;box-shadow:0 0 6px #4897cc9a}
+.orbit-compass button:hover{background:#517eaa;color:white}
+.orbit-nw{left:2px;top:5px}
+.orbit-ne{right:2px;top:5px}
+.orbit-sw{left:2px;bottom:4px}
+.orbit-se{right:2px;bottom:4px}
+.orbit-caption{margin:4px auto 0;text-align:center;font:9px Consolas,monospace;color:#9ab5cd}
+.four-view-check{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin:9px 7px}
+.four-view-check button{min-width:0;overflow:hidden;padding:4px 1px;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid #516881;background:#25394c}
+.four-view-check button.active{background:#385d7e;border-color:#8dc8f0}
+.four-view-check button:hover{background:#41617a}
+.four-view-check canvas{display:block;width:100%;max-width:64px;height:auto;aspect-ratio:64/112;image-rendering:pixelated;background:repeating-conic-gradient(#4b6277 0 25%,#344759 0 50%) 50%/12px 12px}
+.four-view-check span{font:8px Consolas,monospace;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#depthReadout{font-variant-numeric:tabular-nums}
+@media(max-width:1130px){.orbit-gizmo{top:8px;right:8px;transform:scale(.86);transform-origin:top right}.viewbar .depth-gap{min-width:122px}.depth-gap input{width:65px}}
+@media(max-width:750px){.orbit-gizmo{transform:scale(.75)}}
