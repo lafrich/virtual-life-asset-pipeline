@@ -137,10 +137,16 @@ function render(){
  if(entry?.ready&&entry.pic.naturalWidth>=384&&entry.pic.naturalHeight>=4928){
   paintSlot(ctx,base,"bag",direction,"front");
   paintSlot(ctx,base,"hair",direction,"back");
-  ctx.drawImage(entry.pic,0,(4+index)*112,64,112,0,0,64,112);
+  const body=document.createElement("canvas");
+  body.width=64;body.height=112;
+  const bodyCtx=body.getContext("2d",{willReadFrequently:true});
+  bodyCtx.imageSmoothingEnabled=false;
+  bodyCtx.drawImage(entry.pic,0,(4+index)*112,64,112,0,0,64,112);
   if(BASES.includes(base)&&root.VLUniversalBodyActions?.tintBase)
-   root.VLUniversalBodyActions.tintBase(ctx,{
+   root.VLUniversalBodyActions.tintBase(bodyCtx,{
     id:base,skinTone:$("custom-skin-tone").value});
+  // Tint only the native skin, not the warm hair placed BEHIND that skin.
+  ctx.drawImage(body,0,0);
   for(const slot of ["shoes","pants","shirt","hair","helmet"])
    paintSlot(ctx,base,slot,direction);
  }
@@ -215,9 +221,14 @@ async function createPortrait(base=baseId()){
  const ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=false;
  await paintSaved(ctx,base,"bag");
  await paintSaved(ctx,base,"hair","back");
- ctx.drawImage(main,0,4*112,64,112,0,0,64,112);
+ const body=document.createElement("canvas");
+ body.width=64;body.height=112;
+ const bodyCtx=body.getContext("2d",{willReadFrequently:true});
+ bodyCtx.imageSmoothingEnabled=false;
+ bodyCtx.drawImage(main,0,4*112,64,112,0,0,64,112);
  if(BASES.includes(base)&&root.VLUniversalBodyActions?.tintBase)
-  root.VLUniversalBodyActions.tintBase(ctx,{id:base,skinTone:$("custom-skin-tone").value});
+  root.VLUniversalBodyActions.tintBase(bodyCtx,{id:base,skinTone:$("custom-skin-tone").value});
+ ctx.drawImage(body,0,0);
  for(const slot of ["shoes","pants","shirt","hair","helmet"])
   await paintSaved(ctx,base,slot);
  return canvas.toDataURL("image/png");
