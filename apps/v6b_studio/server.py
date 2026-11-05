@@ -23,8 +23,10 @@ from urllib.parse import parse_qs, urlsplit
 
 from PIL import Image
 
-HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[1]
+# Resolve bundled sources and reference .npy files in a PyInstaller Windows build.
+# In source mode these paths resolve to the repository checkout.
+REPO = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
+HERE = REPO / "apps" / "v6b_studio"
 V6B = REPO / "chars-iso" / "v6b"
 sys.path.insert(0, str(V6B / "tools"))
 import live_v6b as engine  # noqa: E402
