@@ -219,32 +219,53 @@
   layers(direction,emotion="neutral"){
    if(!DIR.includes(direction)||!this.src)return null;
    if(!this.state.pixels[direction].length&&!this.state.weights[direction].length)
-    return null; // untouched: always render protected original source pixels
+    return null; // protected untouched art is drawn directly from V6B atlas
    const key=direction+":"+emotion;
    if(this.cache.has(key))return this.cache.get(key);
-   const base=this.composite(direction,emotion);
-   const owner=new Int16Array(base.owner);
-   for(const [idx,bone] of this.state.weights[direction])
-    owner[idx]=this.bones.indexOf(bone);
-   const buffers=new Map();
-   for(let p=0;p<PIXELS;p++){
-    if(!base.data[p*4+3])continue;
-    let bone=this.bones[owner[p]];
-    if(!bone)bone="root";
-    if(!buffers.has(bone))buffers.set(bone,new Uint8ClampedArray(PIXELS*4));
-    const b=buffers.get(bone),offset=p*4;
-    b.set(base.data.subarray(offset,offset+4),offset);
+   const dir=DIR.indexOf(direction),source=this.source(direction,emotion);
+   const colors=new Map(this.state.pixels[direction].map(row=>[row[0],row.slice(1)]));
+   const weights=new Map(this.state.weights[direction]);
+   const pixelsToChange=new Set([...colors.keys(),...weights.keys()]);
+   const parts=[],rank=source.rank;
+   // Keep EVERY native art cutout and its original hidden, overlapping
+   // pixels. Editing one pixel cannot flatten or destroy the other parts.
+   for(const [order,part] of this.src.slots.entries()){
+    if(part.gender)continue;
+    const cv=this.makeCanvas(),ctx=cv.getContext("2d",{willReadFrequently:true});
+    ctx.drawImage(part.image,
+     part.expression?Math.max(0,this.src.emotions.indexOf(emotion))*W:0,
+     dir*H,W,H,0,0,W,H);
+    const image=ctx.getImageData(0,0,W,H),rgba=image.data;
+    for(const idx of pixelsToChange){
+     const off=idx*4;
+     rgba[off]=rgba[off+1]=rgba[off+2]=rgba[off+3]=0;
+    }
+    if(pixelsToChange.size)ctx.putImageData(image,0,0);
+    parts.push({bone:part.bone,image:cv,order,kind:"source"});
    }
-   const order=[...buffers.keys()].sort((a,b)=>
-    (base.rank[a]??this.bones.indexOf(a)*.001)-
-    (base.rank[b]??this.bones.indexOf(b)*.001));
-   const parts=order.map(bone=>{
+   // Only user-painted/weight-edited coordinates become override pixels.
+   // The original transparent overlaps at shoulders, hips and face remain.
+   const newData=new Map();
+   for(const idx of pixelsToChange){
+    const old=source.color.data.slice(idx*4,idx*4+4);
+    const rgba=colors.get(idx)||old;
+    if(!rgba[3])continue; // eraser removes only this coordinate
+    const owner=weights.get(idx)||this.bones[source.owner[idx]]||"root";
+    const bone=this.bones.includes(owner)?owner:"root";
+    if(!newData.has(bone))newData.set(bone,new Uint8ClampedArray(PIXELS*4));
+    newData.get(bone).set(rgba,idx*4);
+   }
+   for(const [bone,data] of newData){
     const cv=this.makeCanvas(),context=cv.getContext("2d");
-    const img=context.createImageData(W,H);img.data.set(buffers.get(bone));
-    context.putImageData(img,0,0);
-    return {bone,image:cv};
-   });
-   this.cache.set(key,parts);return parts;
+    const image=context.createImageData(W,H);image.data.set(data);
+    context.putImageData(image,0,0);
+    // Render after the original layer owning that bone and before the
+    // character's later foreground parts (eyes, fringe, near hand etc.).
+    parts.push({bone,image:cv,order:(rank[bone]??-1)+.5,kind:"override"});
+   }
+   parts.sort((a,b)=>a.order-b.order);
+   const output=parts.map(({bone,image})=>({bone,image}));
+   this.cache.set(key,output);return output;
   }
  }
  let sharedPromise=null;
