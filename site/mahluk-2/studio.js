@@ -154,6 +154,9 @@ function fullCharacterReference(){
 }
 function openPlaneEditor(){
  if(!manifest||!planeEditor||!R.BMAP[selected]||G.HIDDEN.has(selected))return;
+ if(!renderableIds().includes(selected)){
+  setStatus("SELECT A DRAWABLE PLANE, LIKE WRIST L / WRIST R / HEAD, NOT A RIG CONTROL",false);return;
+ }
  const source=nativePlaneAtlas(selected),src=planeImages.get(selected);
  planeEditor.open({id:selected,originalAtlas:source,initialAtlas:src||source,
   referenceImage:fullCharacterReference(),direction});
@@ -414,6 +417,8 @@ function pick(id){
  $("layerBack").disabled=at<=0;$("layerFront").disabled=at<0||at===order.length-1;
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
  if($("glassesAsset"))$("glassesAsset").value=glassesAssetId;
+ $("openPlaneEditor").disabled=!renderableIds().includes(id);
+ $("editPixelPlane").disabled=!renderableIds().includes(id);
  pixelPlaneStatus();paint();
 }
 function moveLayer(id,delta){
