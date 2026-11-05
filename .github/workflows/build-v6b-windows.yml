@@ -61,7 +61,15 @@ jobs:
                 }
               } catch {}
             }
-            if (-not $ready) { throw "Bundled EXE did not start on localhost" }
+            if (-not $ready) {
+              $log = Join-Path $env:TEMP "v6b_studio_desktop_error.log"
+              if (Test-Path $log) {
+                Write-Host "Captured launcher error:"
+                Get-Content $log
+              }
+              if ($process.HasExited) { Write-Host "EXE exit code: $($process.ExitCode)" }
+              throw "Bundled EXE did not start on localhost"
+            }
             $html = Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 "http://127.0.0.1:8788/"
             if ($html.Content -notmatch "V6B GENERATOR STUDIO") { throw "Bundled web UI was not served" }
             $config = '{"name":"portable_smoke","template":"ichsan","hair_style":"mid","fringe":"curtain","shirt_kind":"tee","pants_kind":"trousers","glasses":true}'
