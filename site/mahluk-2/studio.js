@@ -3,7 +3,7 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1", EMOTIONS=["neutral","happy","mischievous","angry","surprised","blush","grin"];
@@ -24,11 +24,12 @@ let state=R?.referencePose?.()||null,base=R?.referencePose?.()||null,tracks=R?.m
 let selected="head",direction="se",type="original",outfit="outfit",bodyPlane="current",clip="idle",frame=0,frames=12,fps=12,playing=false,playSince=0,zoom=3.25;
 let camera={x:0,y:0},view="iso",axis="x",transformMode="move",drag=null,identifier=null;
 let rigRules=R&&G?G.defaults(R):null;
+let pixelPlanes={},planeImages=new Map(),planeImageRevision=0,planeEditor=null;
 let undoStack=[],redoStack=[],restoring=false,pinch=null;
 const touchPoints=new Map(),MAX_UNDO=70;
 const studio=$("editor"),game=$("game");
 function snapshot(){
- return clone({state,base,tracks,rigRules,emotionAssetId,emotionKeys,glassesAssetId,
+ return clone({state,base,tracks,rigRules,pixelPlanes,emotionAssetId,emotionKeys,glassesAssetId,
   selected,type,outfit,bodyPlane,clip,frames,fps,frame,identifier,characterName:$("characterName").value});
 }
 function historyButtons(){
@@ -46,6 +47,7 @@ function restore(snapshotValue){
  try{
   state=R.normalize(snapshotValue.state);base=R.normalize(snapshotValue.base);
   tracks=clone(snapshotValue.tracks);rigRules=G.normalize(snapshotValue.rigRules,R);
+  setPixelPlanes(snapshotValue.pixelPlanes||{});
   emotionAssetId=snapshotValue.emotionAssetId;emotionKeys=clone(snapshotValue.emotionKeys);
   glassesAssetId=snapshotValue.glassesAssetId;
   selected=snapshotValue.selected;type=snapshotValue.type;outfit=snapshotValue.outfit;
