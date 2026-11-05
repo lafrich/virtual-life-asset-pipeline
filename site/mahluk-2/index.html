@@ -4,12 +4,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1d2532">
 <title>Mahluk Hidup 2.0 — Modular Character Studio</title>
-<link rel="stylesheet" href="./studio.css?v=general-rig-anchor-undo-pinch-v1">
+<link rel="stylesheet" href="./studio.css?v=plane-pixel-v1">
 <script defer src="../modular-rig-v2.js?v=mh2"></script>
 <script defer src="./emotion-planes.js?v=1"></script>
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
-<script defer src="./studio.js?v=nude-body-plane-v1"></script>
+<script defer src="./plane-pixel-editor.js?v=plane-pixel-v1"></script>
+<script defer src="./studio.js?v=plane-pixel-v1"></script>
 </head>
 <body>
 <div class="window">
@@ -40,7 +41,7 @@
     <p class="hint">Drag rows, or use ↑/↓ to move planes in front or behind. This affects the real game sprite too.</p>
     <div id="layerOrder" class="draw-order" role="list" aria-label="Editable plane front/back order"></div>
    </div>
-   <div class="object-foot"><button id="hideSelected">◉ VISIBILITY</button><button id="resetSelected">↶ RESET PART</button></div>
+   <div class="object-foot"><button id="editPixelPlane">▦ EDIT PIXELS</button><button id="hideSelected">◉ VISIBILITY</button><button id="resetSelected">↶ RESET PART</button></div>
   </aside>
   <main class="center">
    <div class="viewbar"><div class="viewtitle"><strong>EDITOR VIEWPORT</strong><span id="viewHint">ISOMETRIC · X / Y / Z</span></div><div class="viewcontrols"><button id="toolMove" class="active" title="Move / W">✥ MOVE</button><button id="toolRotate" title="Rotate / E">↻ ROTATE</button><button id="toolScale" title="Scale / R">◱ SCALE</button><button id="toolAnchor" title="Adjust anchor/pivot / A">⊕ ANCHOR</button><button id="viewIso" class="active">◇ ISO</button><button id="viewFront">▣ FRONT</button><button id="axisX" class="active axis x">X</button><button id="axisY" class="axis y">Y</button><button id="axisZ" class="axis z">Z</button><button id="zoomOut" title="Zoom out / mouse wheel / pinch">−</button><span id="zoomLabel" class="zoom-label">100%</span><button id="zoomIn" title="Zoom in / mouse wheel / pinch">＋</button><button id="viewHome" title="Reset camera">⌖</button></div></div>
@@ -54,6 +55,12 @@
    <div class="panelhead"><strong>ATTRIBUTES</strong><small>OBJECT</small></div>
    <div class="inspector-scroll">
     <section class="ins-section"><div class="sectionhead">SELECTION</div><div class="selected-name" id="selectedName">HEAD</div><p class="hint" id="selectedParent">Parent: neck</p><div class="fields"><label>X <input id="posX" type="number" step=".5"></label><label>Y <input id="posY" type="number" step=".5"></label><label>Z <input id="posZ" type="number" step=".5"></label><label>ROT° <input id="angle" type="number" step="5"></label><label>SCALE <input id="scale" type="number" step=".1" min=".3" max="3"></label></div><label class="check"><input type="checkbox" id="visible" checked> VISIBLE / PLANE ACTIVE</label></section>
+    <section class="ins-section"><div class="sectionhead">PIXEL ART / SELECTED PLANE</div>
+     <p class="hint">Edit the selected plane's original RGBA pixels. All four isometric directions have their own editable frame. Bone rigging stays unchanged.</p>
+     <button id="openPlaneEditor" class="primary">▦ OPEN PIXEL EDITOR</button>
+     <div class="plane-buttons"><button id="clearPixelPlane">↶ RESTORE ORIGINAL PIXELS</button></div>
+     <p class="hint" id="pixelPlaneStatus">NO PIXEL OVERRIDE · SOURCE ART</p>
+    </section>
     <section class="ins-section"><div class="sectionhead">GENERAL RIG / PIVOTS & PARENTING</div>
      <p class="hint">ANCHOR is the plane's rotation pivot, separate from its position. Set the parent and front/back order, then save as the shared rig rule.</p>
      <label class="selectline">PARENT / HIERARCHY<select id="parentBone" aria-label="Parent bone"></select></label>
@@ -82,6 +89,47 @@
   </aside>
  </div>
  <footer class="status"><span id="status">LOADING SOURCE RIG ...</span><span id="coords">X 0 · Y 0 · Z 0</span><span class="push"></span><span>MAHLUK 2.0 / SEMESTA / BANGUN RUANG</span></footer>
+</div>
+<div id="pixelOverlay" class="pixel-overlay" hidden>
+ <section class="pixel-dialog" role="dialog" aria-modal="true" aria-labelledby="pixelTitle">
+  <header class="pixel-dialog-header"><strong id="pixelTitle">PIXEL EDITOR / SELECTED PLANE</strong><button id="pixelClose" title="Close editor">×</button></header>
+  <div class="pixel-toolbar">
+   <label>DIRECTION <select id="pixelDirection"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></label>
+   <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
+   <button data-pixel-tool="eraser">⌫ ERASER</button>
+   <button data-pixel-tool="fill">▤ FILL</button>
+   <button data-pixel-tool="picker">◎ PICK</button>
+   <label>COLOR <input id="pixelColor" type="color" value="#211d22"></label>
+   <label>SIZE <select id="pixelSize"><option value="1">1 PX</option><option value="2">2 PX</option><option value="3">3 PX</option><option value="5">5 PX</option></select></label>
+  </div>
+  <div class="pixel-workarea">
+   <div class="pixel-canvas-wrap"><canvas id="pixelCanvas" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time"></canvas></div>
+   <aside class="pixel-side">
+    <div class="sectionhead">PALETTE / SWATCHES</div>
+    <div class="pixel-swatches">
+     <button data-pixel-swatch="#1b1519" style="--swatch:#1b1519" title="Dark ink"></button>
+     <button data-pixel-swatch="#443330" style="--swatch:#443330" title="Shadow"></button>
+     <button data-pixel-swatch="#b97656" style="--swatch:#b97656" title="Skin shade"></button>
+     <button data-pixel-swatch="#e9a77c" style="--swatch:#e9a77c" title="Skin"></button>
+     <button data-pixel-swatch="#ffc99b" style="--swatch:#ffc99b" title="Highlight"></button>
+     <button data-pixel-swatch="#f4ece5" style="--swatch:#f4ece5" title="White"></button>
+     <button data-pixel-swatch="#5b718d" style="--swatch:#5b718d" title="Blue"></button>
+     <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
+    </div>
+    <label class="check"><input type="checkbox" id="pixelOnion" checked> CHARACTER REFERENCE (ONION)</label>
+    <label class="check"><input type="checkbox" id="pixelGrid"> SHOW PIXEL GRID</label>
+    <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
+    <p class="hint">Edits work at native 64 × 112, across four directions. Pencil/eraser can be dragged with mouse or touch. Source planes and rig transforms remain separate.</p>
+    <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
+    <button id="pixelExport">↓ EXPORT 4-DIR PNG</button>
+   </aside>
+  </div>
+  <footer class="pixel-dialog-foot">
+   <span id="pixelStatus">SOURCE READY</span>
+   <button id="pixelApply">APPLY TO THIS CHARACTER</button>
+   <button id="pixelSaveDefault" class="primary">▣ SAVE AS GENERAL DEFAULT</button>
+  </footer>
+ </section>
 </div>
 </body>
 </html>
