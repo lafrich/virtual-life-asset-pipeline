@@ -121,3 +121,37 @@ test("Pose Maker includes pixel weight canvas without changing rig",()=>{
  assert.ok(source.includes("root.VLPoseWeights.paint(ctx,img,base,dir,a,P0,frame)"));
  assert.ok(source.includes("root.VLPoseWeights?.serialize"));
 });
+
+test("Torso and left/right arms have independently selectable pixel layers",()=>{
+ const weights=require("../site/pose-weights.js");
+ assert.deepEqual(weights.FOCUS.body.segments,[1]);
+ assert.deepEqual(weights.FOCUS.arm_l.segments,[3,4]);
+ assert.deepEqual(weights.FOCUS.arm_r.segments,[5,6]);
+ assert.ok(weights.focusOwns("arm_l",3));
+ assert.ok(weights.focusOwns("arm_l",4));
+ assert.equal(weights.focusOwns("arm_l",1),false);
+ assert.equal(weights.focusOwns("arm_r",3),false);
+ assert.ok(weights.inFocusRegion("body",22,45));
+ assert.ok(weights.inFocusRegion("arm_l",21,45),"shoulder can be reassigned");
+ assert.equal(weights.inFocusRegion("arm_l",43,45),false);
+ const image=new Uint8ClampedArray(64*112*4);
+ image.fill(255);
+ const owned=new Uint8Array(64*112);
+ const guard=(x,y)=>weights.inFocusRegion("arm_l",x,y);
+ const affected=weights.brush(owned,43,45,3,3,image,guard);
+ assert.equal(affected,0,"left-arm edit cannot paint right arm");
+ assert.equal(owned[45*64+43],0);
+ assert.ok(weights.brush(owned,21,45,0,3,image,guard)>0);
+ assert.equal(owned[45*64+21],3);
+});
+test("Split layer picker and zoom render in Human Pose Maker UI",()=>{
+ const fs=require("node:fs");
+ const html=fs.readFileSync("site/index.html","utf8");
+ const js=fs.readFileSync("site/pose-weights.js","utf8");
+ for(const layer of ["body","arm_l","arm_r","head","legs","all"])
+  assert.ok(html.includes('data-pose-weight-isolate="'+layer+'"'),layer);
+ assert.ok(html.includes('id="pose-weight-zoom"'));
+ assert.ok(js.includes("syncSelect()"),"group bone dropdown is filtered");
+ assert.ok(js.includes("inFocusRegion(focus,px,py)"),"strokes honor edit region");
+ assert.ok(js.includes("drawThumbnails(item)"),"part previews update with masks");
+});
