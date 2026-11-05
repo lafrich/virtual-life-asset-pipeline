@@ -445,8 +445,8 @@ function makeTimeline(){
     pick(id);
     if(id==="emotion"){
      if(keyed)removeEmotionKey();else setEmotionKey();
-    }else if(keyed)tracks[id]=tracks[id].filter(k=>k.frame!==i);
-    else R.key(tracks,id,i,state.parts[id],state.emotion,state.faceLayers?.[id]);
+    }else if(keyed){remember();tracks[id]=tracks[id].filter(k=>k.frame!==i)}
+    else{remember();R.key(tracks,id,i,state.parts[id],state.emotion,state.faceLayers?.[id])}
     makeTimeline();setStatus((keyed?"REMOVED":"KEYED")+" "+id+" AT FRAME "+(i+1));
    };
    cells.append(cell);
@@ -456,12 +456,12 @@ function makeTimeline(){
 }
 function setKey(){
  if(selected==="emotion"){setEmotionKey();return;}
- R.key(tracks,selected,frame,state.parts[selected],state.emotion,state.faceLayers?.[selected]);
+ remember();R.key(tracks,selected,frame,state.parts[selected],state.emotion,state.faceLayers?.[selected]);
  setStatus("◆ KEYFRAME / "+selected+" / "+(frame+1));makeTimeline();
 }
 function removeKey(){
  if(selected==="emotion"){removeEmotionKey();return;}
- tracks[selected]=(tracks[selected]||[]).filter(k=>k.frame!==frame);
+ remember();tracks[selected]=(tracks[selected]||[]).filter(k=>k.frame!==frame);
  setStatus("◇ KEY REMOVED / "+selected+" / "+(frame+1));makeTimeline();
 }
 function assetOptions(){
@@ -561,7 +561,7 @@ async function importPlanePng(file,kind){
   E.saveAssets(window.localStorage,next);
   userAssets=next;
   const loaded=new Image();loaded.onload=()=>{
-   importedImages.set(asset.id,loaded);
+   remember();importedImages.set(asset.id,loaded);
    if(kind==="emotion"){
     if(frame>0&&!emotionKeys.length)emotionKeys=E.insert(emotionKeys,0,emotionAssetId);
     emotionAssetId=asset.id;
@@ -575,12 +575,12 @@ async function importPlanePng(file,kind){
  }catch(error){setStatus("ASSET IMPORT FAILED: "+error.message,false)}
 }
 function setEmotionKey(){
- emotionKeys=E.insert(emotionKeys,frame,emotionAssetId);
+ remember();emotionKeys=E.insert(emotionKeys,frame,emotionAssetId);
  updateEmotionStatus();makeTimeline();paint();
  setStatus("◆ EMOTION ASSET KEY / F"+(frame+1)+" / "+emotionAssetId,true);
 }
 function removeEmotionKey(){
- emotionKeys=emotionKeys.filter(key=>key.frame!==frame);
+ remember();emotionKeys=emotionKeys.filter(key=>key.frame!==frame);
  updateEmotionStatus();makeTimeline();paint();setStatus("◇ REMOVED EMOTION ASSET KEY / F"+(frame+1));
 }
 function loadImagesFromManifest(j){
@@ -655,6 +655,7 @@ function updateLibrary(){
 }
 function loadRecord(id){
  const r=getLibrary().find(r=>r.id===id);if(!r)return;
+ remember();
  identifier=r.id;type=["original","male","female"].includes(r.base)?r.base:"original";
  outfit=r.outfit==="base"?"base":"outfit";clip=r.clip||"idle";
  // Shared master always takes precedence for new/opened 2.0 characters.
@@ -671,7 +672,7 @@ function loadRecord(id){
  $("characterName").value=r.name;assetOptions();applyState();setStatus("OPENED "+r.name+" / EDIT MODULAR PLANES",true);
 }
 function newCharacter(){
- identifier=null;type="original";outfit="outfit";clip="idle";frames=12;fps=12;frame=0;
+ remember();identifier=null;type="original";outfit="outfit";clip="idle";frames=12;fps=12;frame=0;
  const general=masterDocument();rigRules=G.normalize(general?.rules,R);
  emotionAssetId="native:neutral";emotionKeys=[];glassesAssetId="native";
  state=general?.defaultParts?R.normalize({parts:general.defaultParts}):R.referencePose();
@@ -691,6 +692,7 @@ function importProject(file){
  if(!file)return;file.text().then(raw=>{
   const v=JSON.parse(raw);
   if(v.format!=="mahluk-2-project-v1")throw Error("Unknown Mahluk 2.0 project");
+  remember();
   identifier=typeof v.id==="string"&&/^mh2_[a-z0-9]+$/.test(v.id)?v.id:null;
   type=["original","male","female"].includes(v.base)?v.base:"original";outfit=v.outfit==="base"?"base":"outfit";clip=["idle","walk","talk","sit","lie","custom"].includes(v.clip)?v.clip:"idle";
   state=R.normalize(v.model);base=R.normalize(v.rest||v.model);tracks=R.makeTracks();
@@ -734,26 +736,28 @@ function resetFactoryRig(){
  setStatus("FACTORY RIG RULES LOADED IN EDITOR · SAVED MASTER REMAINS UNCHANGED");
 }
 function setupEvents(){
- $("modelType").onchange=e=>{type=e.target.value;
+ $("modelType").onchange=e=>{remember();type=e.target.value;
   if(!getEmotionAsset(emotionAssetId)){emotionAssetId="native:neutral";emotionKeys=[]}
   assetOptions();buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
- $("outfit").onchange=e=>{outfit=e.target.value;buildTree();paint()};
+ $("outfit").onchange=e=>{remember();outfit=e.target.value;buildTree();paint()};
  $("library").onchange=e=>{if(e.target.value)loadRecord(e.target.value);else newCharacter()};
  $("newChar").onclick=newCharacter;
  $("saveChar").onclick=$("publish").onclick=saveGame;
  $("exportJson").onclick=projectExport;
  $("exportPng").onclick=()=>{commitUnkeyedPose();return bake(frames,clip).toBlob(b=>b&&download("mahluk_2_"+clip+"_4dir.png",b),"image/png")};
  $("importJson").onchange=e=>{importProject(e.target.files?.[0]);e.target.value=""};
- $("hideSelected").onclick=()=>{state.parts[selected].visible=!state.parts[selected].visible;buildTree()};
- $("resetSelected").onclick=()=>{state.parts[selected]={...R.neutral().parts[selected]};pick(selected);setStatus("RESET "+selected)};
+ $("hideSelected").onclick=()=>{remember();state.parts[selected].visible=!state.parts[selected].visible;buildTree()};
+ $("resetSelected").onclick=()=>{remember();state.parts[selected]={...R.neutral().parts[selected]};pick(selected);setStatus("RESET "+selected)};
  for(const [key,id] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]]){
+  $(id).addEventListener("focus",remember);
   $(id).oninput=e=>{let value=Number(e.target.value);if(Number.isFinite(value)){
    state.parts[selected][key]=key==="scale"?clamp(value,.3,3):key==="angle"?clamp(value,-180,180):key==="z"?clamp(value,-10,10):clamp(value,-40,40);paint();
   }};
  }
- $("visible").onchange=e=>{state.parts[selected].visible=e.target.checked;buildTree()};
+ $("visible").onchange=e=>{remember();state.parts[selected].visible=e.target.checked;buildTree()};
  $("emotionAsset").onchange=e=>{
   if(!getEmotionAsset(e.target.value))return;
+  remember();
   if(frame>0&&!emotionKeys.length)emotionKeys=E.insert(emotionKeys,0,emotionAssetId);
   emotionAssetId=e.target.value;
   if(frame>0||emotionKeys.length)emotionKeys=E.insert(emotionKeys,frame,emotionAssetId);
@@ -762,14 +766,14 @@ function setupEvents(){
   updateEmotionStatus();makeTimeline();paint();
   setStatus("EMOTION PLANE ASSET / "+(asset?.native||asset?.name||"UNKNOWN"),true);
  };
- $("glassesAsset").onchange=e=>{glassesAssetId=e.target.value;paint();setStatus("GLASSES PLANE / "+glassesAssetId,true)};
+ $("glassesAsset").onchange=e=>{remember();glassesAssetId=e.target.value;paint();setStatus("GLASSES PLANE / "+glassesAssetId,true)};
  $("emotionImport").onchange=e=>{importPlanePng(e.target.files?.[0],"emotion");e.target.value=""};
  $("glassesImport").onchange=e=>{importPlanePng(e.target.files?.[0],"glasses");e.target.value=""};
  $("emotionKey").onclick=setEmotionKey;
  $("emotionUnkey").onclick=removeEmotionKey;
- $("frameCount").onchange=e=>{frames=Math.round(clamp(e.target.value,1,48));frame=0;makeTimeline();paint()};
- $("fps").onchange=e=>{fps=Math.round(clamp(e.target.value,1,30));e.target.value=fps};
- $("clip").onchange=e=>{clip=e.target.value;setStatus("AUTHORING CLIP "+clip.toUpperCase()+" / SAVE TO PUBLISH")};
+ $("frameCount").onchange=e=>{remember();frames=Math.round(clamp(e.target.value,1,48));frame=0;makeTimeline();paint()};
+ $("fps").onchange=e=>{remember();fps=Math.round(clamp(e.target.value,1,30));e.target.value=fps};
+ $("clip").onchange=e=>{remember();clip=e.target.value;setStatus("AUTHORING CLIP "+clip.toUpperCase()+" / SAVE TO PUBLISH")};
  $("setKey").onclick=setKey;$("deleteKey").onclick=removeKey;
  $("play").onclick=()=>{playing=!playing;playSince=performance.now();$("play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY"};
  $("gridPreview").onchange=e=>$("game").parentElement.classList.toggle("flat",e.target.checked);
