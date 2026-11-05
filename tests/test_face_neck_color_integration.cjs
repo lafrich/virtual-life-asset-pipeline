@@ -1,0 +1,32 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const scene=fs.readFileSync('site/action-scene-editor.js','utf8');
+const bridge=fs.readFileSync('site/action-scene-bridge.js','utf8');
+const appearance=fs.readFileSync('site/action-appearance-bridge.js','utf8');
+const custom=fs.readFileSync('site/custom-character-wardrobe.js','utf8');
+const app=fs.readFileSync('site/app.js','utf8');
+const html=fs.readFileSync('site/index.html','utf8');
+for(const file of [scene,bridge,appearance,custom,app])new Function(file);
+assert.match(scene,/function applyNativeFaceDelta/);
+assert.match(scene,/applyNativeFaceDelta\(target,source,neutral/);
+assert.match(scene,/const neutralFace=\(actor\.expressions\|\|\[\]\)/);
+assert.match(scene,/target\.putImageData\(dest,0,0\)/);
+assert.match(appearance,/function drawNativeHumanFace/);
+assert.match(appearance,/return drawNativeHumanFace\(ctx,image,neutral,src,shift\)/);
+assert.match(bridge,/const w=27,h=25/);
+assert.match(custom,/paintSlot\(ctx,base,"hair",direction,"back"\)/);
+assert.match(custom,/paintSaved\(ctx,base,"hair","back"\)/);
+assert.match(custom,/back_frames\[DIRS\[i\]\]=frameOf/);
+assert.match(scene,/drawAccessory\(brush,p,actor,"hair",p\.direction,"back"\)/);
+assert.match(app,/item\?\.back_frames:item\?\.frames/);
+assert.match(app,/setPaletteColor\?\.\(color\)/);
+for(const slot of ['hair','shirt','pants','shoes']){
+ assert.ok(html.includes('id="custom-'+slot+'-color"'),slot);
+ assert.ok(html.includes('id="custom-'+slot+'-hex"'),slot);
+ assert.ok(html.includes('data-palette-slot="'+slot+'"'),slot);
+}
+assert.match(custom,/function recolor\(ctx,hex\)/);
+assert.match(custom,/materializeSelected\(base=baseId\(\)\)/);
+assert.match(custom,/selected\[slot\]=variant/);
+console.log('PASS character model/color UI, back hair depth, and neck-preserving facial delta across preview engines');

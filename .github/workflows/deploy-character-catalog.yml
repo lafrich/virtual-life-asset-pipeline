@@ -27,6 +27,8 @@ on:
       - "site/**"
       - "tools/build_human_wardrobe.py"
       - "tests/test_human_wardrobe.py"
+      - "tests/test_human_face_neck_preservation.py"
+      - "tests/test_face_neck_color_integration.cjs"
       - "tools/build_human_templates.py"
       - "tools/human_pose_extras.py"
       - "site/universal-body-actions.js"
@@ -128,6 +130,7 @@ jobs:
           node --check site/app.js
           node --check site/custom-character-wardrobe.js
           node tests/test_custom_character_creator.cjs
+          node tests/test_face_neck_color_integration.cjs
           python -m py_compile tools/build_human_wardrobe.py
           node tests/test_desktop_layout.cjs
           node --check site/animations.js
@@ -195,6 +198,7 @@ jobs:
           python tests/test_hygiene_published.py
           python tests/test_human_animation_sheets.py
           python tests/test_human_wardrobe.py
+          python tests/test_human_face_neck_preservation.py
       - name: Render original street vehicles for Semesta
         run: |
           # Same authored sprite pipeline as Mahluk Hidup, not a Semesta proxy.
