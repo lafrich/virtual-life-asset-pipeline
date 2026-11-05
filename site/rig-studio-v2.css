@@ -66,3 +66,5 @@
  background:white;border:2px inset #bab6ae}
 .rig-v2-center-tools{flex-wrap:wrap;column-gap:4px;row-gap:6px}
 #rig-v2-main{cursor:crosshair}
+
+.rig-v2-inspector{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
