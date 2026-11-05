@@ -45,7 +45,7 @@
    <label>SIZE <select id="pixelSize"><option value="1">1 PX</option><option value="2">2 PX</option><option value="3">3 PX</option><option value="5">5 PX</option></select></label>
   </div>
   <div class="pixel-workarea">
-   <div class="pixel-canvas-wrap" id="pixelCanvasWrap"><canvas id="pixelCanvas" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time. Scroll to zoom, pinch to zoom on touch."></canvas></div>
+   <div class="pixel-canvas-wrap" id="pixelCanvasWrap"><canvas id="pixelCanvas" tabindex="0" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time. Scroll to zoom, pinch to zoom on touch."></canvas></div>
    <aside class="pixel-side">
     <div class="sectionhead">PALETTE / SWATCHES</div>
     <div class="pixel-swatches">
@@ -80,6 +80,13 @@
     </div>
     <div class="pixel-selection-controls">
      <div class="sectionhead">SELECTION / TRANSFORM</div>
+     <div class="plane-buttons pixel-clipboard-actions">
+      <button id="pixelCopySelection" type="button" title="Copy selected RGBA pixels from active view / Ctrl+C">⧉ COPY</button>
+      <button id="pixelPasteSelection" type="button" title="Paste to active view without changing other views / Ctrl+V">▣ PASTE</button>
+      <button id="pixelPasteMirrored" type="button" title="Paste flipped horizontally, at mirrored X position / Ctrl+Shift+V">⇆ PASTE FLIP</button>
+     </div>
+     <label class="check"><input id="pixelPasteReplace" type="checkbox"> REPLACE TRANSPARENT PIXELS</label>
+     <p class="hint" id="pixelClipboardInfo" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</p>
      <div class="plane-buttons"><button id="pixelSelectAll" type="button">▣ SELECT ALL</button><button id="pixelDeselect" type="button">◇ DESELECT</button></div>
      <div class="plane-buttons"><button id="pixelFlipH" type="button">⇆ FLIP H</button><button id="pixelFlipV" type="button">⇅ FLIP V</button></div>
      <div class="plane-buttons"><button id="pixelDeleteSelection" type="button">⌫ DELETE PIXELS</button></div>
