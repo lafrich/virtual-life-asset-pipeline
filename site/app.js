@@ -565,6 +565,8 @@ function hydrateCharacter(row,base){
   template_category:base.template_category,custom_character:true,base_id:base.id,
   baseId:base.id,bodyType:base.gender||null,skinTone:HUMAN_BASES.includes(row.base)?
    (["base","light","medium","tan","deep","dark"].includes(row.skinTone)?row.skinTone:"base"):null,
+  thumbnail:typeof row.portrait==="string"&&/^data:image\/png;base64,/.test(row.portrait)?
+   row.portrait:base.thumbnail,
   description:base.template_category.toUpperCase()+" · "+row.name+" · 4-direction modular outfit / original motion & face atlases"};
 }
 function rebuildCustomCharacters(){
@@ -606,6 +608,7 @@ function populateCustomAccessories(){
   base.template_category.toUpperCase()+" · "+base.motions.filter(m=>m.available).length+
   " ANIMATIONS · "+base.expressions.length+" EXPRESSIONS · 4 DIRECTIONS":
   "TEMPLATE LOADING";
+ window.VLHumanWardrobe?.populate?.(baseId);
 }
 function syncCustomCategory(){
  const category=$("custom-category").value;
@@ -627,15 +630,20 @@ function editCustomCharacter(id){
 function resetCustomForm(){
  workingCustomId=null;$("custom-name").value="";
  $("custom-skin-tone").value="base";
- $("custom-category").value="astrofrich";$("custom-base").value="astrofrich_base";
+ $("custom-category").value="human";$("custom-base").value="human_male_base";
  syncCustomCategory();
  for(const kind of EQUIPMENT_SLOTS)$("custom-"+kind).value="";
+ window.VLHumanWardrobe?.chooseStarter?.();
 }
-function saveCustomCharacter(){
+async function saveCustomCharacter(){
  const baseId=customBaseId(),base=templateFor(baseId);
  if(!base){setStatus("CUSTOM BASE NOT YET AVAILABLE: "+baseId);return}
  const name=$("custom-name").value.trim().replace(/\s+/g," ").slice(0,40);
  if(!name){setStatus("ENTER A CHARACTER NAME BEFORE SAVING");$("custom-name").focus();return}
+ try{
+  await window.VLHumanWardrobe?.materializeSelected?.(baseId);
+  refreshAccessoryEquipment();
+ }catch(error){setStatus("WARDROBE PRESET NOT SAVED: "+error.message);return;}
  const rows=savedCustomCharacters();
  if(rows.length>=60&&!workingCustomId){setStatus("CHARACTER STORAGE LIMIT: 60");return}
  let id=workingCustomId;
@@ -643,9 +651,10 @@ function saveCustomCharacter(){
   id="custom_"+(base.template_category==="human"?"human":"astro")+"_"+
     Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
  }
+ const portrait=await window.VLHumanWardrobe?.createPortrait?.(baseId);
  const record={id,name,base:baseId,category:base.template_category,
   ...(HUMAN_BASES.includes(baseId)?{skinTone:$("custom-skin-tone").value}:{}),
-  updated:Date.now()};
+  ...(portrait?{portrait}:{}),updated:Date.now()};
  const index=rows.findIndex(x=>x.id===id);
  if(index<0)rows.unshift(record);else rows[index]=record;
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
@@ -662,7 +671,7 @@ function saveCustomCharacter(){
  workingCustomId=id;accessoryRuntime.equipment=equipment;
  rebuildCustomCharacters();
  const actor=state.characters.find(x=>x.id===id);
- if(actor){selectCharacter(actor);setInspectorTab("custom")}
+ if(actor){selectCharacter(actor);window.VLMahlukNavigation?.showCharacters?.()}
  setStatus("SAVED "+name.toUpperCase()+" / "+base.template_category.toUpperCase()+
   " / "+base.motions.filter(x=>x.available).length+" MOTIONS / "+
   base.expressions.length+" FACES / 4 DIRECTIONS · SYNCED LOCALLY TO SEMESTA + BANGUN RUANG");
@@ -712,15 +721,14 @@ function setInspectorTab(tab) {
   const isFace = tab === "faces";
   const isMotion = tab === "motions";
   const isAccessories = tab === "accessories";
-  const isCustom = tab === "custom";
-  $("info-panel").hidden = isFace || isMotion || isAccessories || isCustom;
+  if(tab==="custom"){window.VLMahlukNavigation?.openCustom?.();return;}
+  $("info-panel").hidden = isFace || isMotion || isAccessories;
   $("faces-panel").hidden = !isFace;
   $("motions-panel").hidden = !isMotion;
   $("accessories-panel").hidden = !isAccessories;
-  $("custom-char-panel").hidden = !isCustom;
-  for (const [id,active] of [["tab-info", !isFace && !isMotion && !isAccessories && !isCustom],
+  for (const [id,active] of [["tab-info", !isFace && !isMotion && !isAccessories],
                              ["tab-faces", isFace], ["tab-motions", isMotion],
-                             ["tab-accessories", isAccessories],["tab-custom-char",isCustom]]) {
+                             ["tab-accessories", isAccessories]]) {
     $(id).classList.toggle("active",active);
     $(id).setAttribute("aria-selected",String(active));
   }
@@ -735,7 +743,6 @@ function setInspectorTab(tab) {
     if (choice) selectMotion(choice);
   }
   if(isAccessories)renderAccessoryStorage();
-  if(isCustom){populateCustomAccessories();renderCustomStorage();}
   syncTools();
 }
 
@@ -1372,7 +1379,7 @@ async function init() {
     const total = String(state.characters.length).padStart(2, "0");
     $("asset-total").textContent = total;
     $("status-asset-count").textContent = total;
-    syncCustomCategory();
+    resetCustomForm();
     renderFileList();
     if (!state.characters.length) {
       $("canvas-loading").hidden = true;
