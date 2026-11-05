@@ -231,7 +231,7 @@ function sourceImage(asset,dir,f){
  const img=(asset.src?publishedImages:importedImages).get(asset.id);
  return img?{image:img,sx:(f%asset.frames)*64,sy:DIR.indexOf(dir)*112}:null;
 }
-function renderLayers(ctx,dir,ox,oy,mag,editorMode){
+function renderLayers(ctx,dir,ox,oy,mag,editorMode,hitOut=null){
  const world=partWorld(),mirror=V.config(dir).mirror,di=DIR.indexOf(dir);
  // Explode the individual source planes only in this editor viewport.
  // Export/preview always draws the real world coordinates with gap=0.
@@ -302,11 +302,14 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode){
   const screen=V.planePosition(p,dir,view==="front"&&editorMode);
   const rank=rankIds?rankIds.indexOf(item.bone):-1;
   const exploded=rank>=0?V.explosion(rank,rankIds.length,planeGap,dir):{x:0,y:0};
+  const tx=ox+(screen.x+exploded.x)*mag,ty=oy+(screen.y+exploded.y)*mag;
+  const rad=(mirror?-1:1)*p.angle*Math.PI/180,planeScale=p.scale*mag;
   ctx.save();ctx.imageSmoothingEnabled=false;
-  ctx.translate(ox+(screen.x+exploded.x)*mag,oy+(screen.y+exploded.y)*mag);
-  ctx.rotate((mirror?-1:1)*p.angle*Math.PI/180);
-  ctx.scale(p.scale*mag,p.scale*mag);
+  ctx.translate(tx,ty);
+  ctx.rotate(rad);
+  ctx.scale(planeScale,planeScale);
   ctx.drawImage(src.image,src.sx,src.sy,64,112,-ax,-pivot.y,64,112);
+  if(hitOut)hitOut.push({bone:item.bone,src,tx,ty,rad,planeScale,ax,ay:pivot.y});
   if(exploding&&rank>=0){
    // Thin outlines reveal each distinct RGBA plane without altering it.
    ctx.strokeStyle=item.bone===selected?"rgba(255,211,117,.92)":"rgba(133,191,242,.24)";
@@ -410,13 +413,15 @@ function drawPlaneDepthGuides(ctx,w,h,scale){
  }
  ctx.restore();
 }
-let lastHandles=[];
+let lastHandles=[],lastPlaneHits=[];
 function drawEditor(){
  if(!state||!manifest)return;
  const {w,h,dpr}=stageDimensions(),ctx=studio.getContext("2d");
  ctx.clearRect(0,0,w,h);
  const mag=zoom*dpr,c=center(w,h,mag);
- drawGrid(ctx,w,h,mag);drawPlaneDepthGuides(ctx,w,h,mag);renderLayers(ctx,direction,c.x,c.y,mag,true);
+ drawGrid(ctx,w,h,mag);drawPlaneDepthGuides(ctx,w,h,mag);
+ lastPlaneHits=[];renderLayers(ctx,direction,c.x,c.y,mag,true,lastPlaneHits);
+ drawSelectedPlaneOutline(ctx,lastPlaneHits,selected);
  const target=projectBone(w,h,mag,selected);
  if(target){ctx.save();ctx.strokeStyle="#f8c576";ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.strokeRect(target.x-9,target.y-9,18,18);ctx.setLineDash([]);ctx.restore();lastHandles=arrows(ctx,target,mag)}
  else lastHandles=[];
