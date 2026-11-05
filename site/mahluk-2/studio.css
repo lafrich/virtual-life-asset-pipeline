@@ -40,3 +40,44 @@ button#toolAnchor.active{background:#2b736b;border-color:#8ff7e2;color:#e2fffa}
  .draw-order{max-height:185px}
  .object-scroll{overflow:auto}
 }
+
+/* Native pixel-plane editing dialog. 64x112 is never resampled for saved art. */
+.pixel-overlay[hidden]{display:none!important}
+.pixel-overlay{position:fixed;inset:0;z-index:50;background:rgba(8,13,22,.88);display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto}
+.pixel-dialog{display:flex;flex-direction:column;width:min(1010px,100%);max-height:calc(100dvh - 28px);overflow:hidden;background:#263449;color:#ebf2fc;border:1px solid #7e96b3;box-shadow:0 15px 65px #06090e}
+.pixel-dialog-header{background:linear-gradient(#507caa,#2b527f);padding:9px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;font:12px Consolas,monospace;letter-spacing:.04em}
+.pixel-dialog-header button{background:#cbd8e7;color:#1e3147;min-width:28px;font-size:18px;padding:0 7px}
+.pixel-toolbar{display:flex;gap:6px;padding:9px;align-items:center;flex-wrap:wrap;background:#2a3b53;border-bottom:1px solid #5a708a}
+.pixel-toolbar label{display:flex;align-items:center;gap:4px;font:10px Consolas,monospace}
+.pixel-toolbar select{max-width:160px;padding:6px;background:#1d3047;color:#e7f2fd}
+.pixel-toolbar button{font-size:10px;padding:6px 8px}
+.pixel-toolbar button.active{background:#326c9b;border-color:#a8d3ff}
+.pixel-toolbar input[type=color]{width:38px;height:27px;border:1px solid #627d9c;background:transparent;padding:1px;cursor:pointer}
+.pixel-workarea{display:flex;flex:1;min-height:0;gap:11px;padding:10px;overflow:auto}
+.pixel-canvas-wrap{display:flex;align-items:flex-start;justify-content:center;flex:1;min-width:0;min-height:0;overflow:auto;border:1px solid #4c617b;background:#182639;padding:9px}
+#pixelCanvas{width:min(384px,100%);height:auto;aspect-ratio:64/112;image-rendering:pixelated;touch-action:none;cursor:crosshair;background:#dae2e9;flex:none}
+.pixel-side{width:220px;flex:none;display:flex;flex-direction:column;gap:9px;font:10px Consolas,monospace}
+.pixel-side .hint{line-height:1.5}
+.pixel-side>button{padding:8px 4px;font-size:10px}
+.pixel-side .plane-buttons{padding:0}
+.pixel-side .check{display:flex;gap:6px;align-items:center}
+.pixel-swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.pixel-swatches button{height:27px;background:var(--swatch);border:1px solid #8d9cad;padding:0;min-width:0}
+.pixel-swatches button:hover{outline:2px solid #fff;outline-offset:1px}
+.pixel-dialog-foot{display:flex;align-items:center;gap:9px;border-top:1px solid #5e7490;padding:9px;background:#2c3d53;flex-wrap:wrap}
+.pixel-dialog-foot>span{margin-right:auto;flex:1;min-width:180px;font:10px Consolas,monospace;color:#afcce6}
+.pixel-dialog-foot button{padding:9px 11px;font:10px Consolas,monospace}
+#editPixelPlane{background:#32698b;border-color:#97caff}
+#openPlaneEditor{margin-top:7px}
+#pixelPlaneStatus{font-size:10px}
+@media(max-width:660px){
+ .pixel-overlay{padding:3px}
+ .pixel-dialog{width:100%;max-height:calc(100dvh - 6px)}
+ .pixel-workarea{flex-direction:column;gap:8px}
+ .pixel-canvas-wrap{overflow:auto;flex:none;max-height:min(48dvh,510px)}
+ #pixelCanvas{width:min(270px,100%);max-width:100%;flex:none}
+ .pixel-side{width:100%}
+ .pixel-swatches{grid-template-columns:repeat(8,minmax(0,1fr))}
+ .pixel-dialog-foot>span{flex-basis:100%}
+ .pixel-dialog-foot button{flex:1}
+}
