@@ -66,6 +66,8 @@ on:
       - "tests/test_human_outline.py"
       - "tests/test_human_morphology.py"
       - "tests/test_human_pose_depth.py"
+      - "tests/test_human_pose_depth_published.py"
+      - "tests/test_action_pose_depth.cjs"
       - "tests/test_shared_arm_attachment.py"
       - "tests/test_actual_shoulder_sprites.py"
       - "tests/test_legacy_arm_roots.py"
@@ -128,6 +130,7 @@ jobs:
           node --check site/action-scene-bridge.js
           node --check site/action-scene-editor.js
           node tests/test_action_scene_bridge.cjs
+          node tests/test_action_pose_depth.cjs
           node --check site/app.js
           node --check site/custom-character-wardrobe.js
           node tests/test_custom_character_creator.cjs
@@ -201,6 +204,7 @@ jobs:
           python tests/test_universal_sleep_published.py
           python tests/test_hygiene_published.py
           python tests/test_human_animation_sheets.py
+          python tests/test_human_pose_depth_published.py
           python -m unittest discover -s tests -p "test_human_pose_depth.py" -v
           python tests/test_human_wardrobe.py
           python tests/test_human_face_neck_preservation.py

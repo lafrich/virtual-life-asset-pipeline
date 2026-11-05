@@ -184,6 +184,7 @@ function actionSource(){
  const frames=Math.max(1,Math.min(12,Number(motion?.frames)||4));
  return {sheet:url(sheet),row:separate?0:Number(motion?.row)||0,
   frames:state.action==="bathtub_bathe"?6:frames,sourceFrames:frames,
+  depthFront:isSheet(motion?.depth_front)?motion.depth_front:null,
   authored:state.action==="bathtub_bathe"?motion?.id==="bathtub_bathe":authored,
   referencePose:state.action==="bathtub_bathe"&&motion?.id!=="bathtub_bathe",
   mode:motion?.id||"idle",
@@ -328,7 +329,12 @@ function sourceRect(index,dir){
 function originalInto(ctx,index,dir){
  ctx.clearRect(0,0,64,112);
  const src=sourceRect(index,dir);
- if(src){ctx.drawImage(...src,0,0,64,112);return true;}
+ if(src){
+  ctx.drawImage(...src,0,0,64,112);
+  const depth=state.source?.depthFront?pic(url(state.source.depthFront)):null;
+  if(depth?.ready)ctx.drawImage(depth.im,src[1],src[2],64,112,0,0,64,112);
+  return true;
+ }
  return false;
 }
 function editedFrame(index,dir){
@@ -427,8 +433,11 @@ function render(){
  if(image)sourceCtx.drawImage(image,0,0,64,112);
  else {
   const src=(state.source?.authored||state.source?.referencePose)?sourceRect(frame,dir):null;
-  if(src)sourceCtx.drawImage(...src,0,0,64,112);
-  else {
+  if(src){
+   sourceCtx.drawImage(...src,0,0,64,112);
+   const depth=state.source?.depthFront?pic(url(state.source.depthFront)):null;
+   if(depth?.ready)sourceCtx.drawImage(depth.im,src[1],src[2],64,112,0,0,64,112);
+  }else {
    sourceCtx.fillStyle="#577c9c";sourceCtx.fillRect(22,45,20,40);
    sourceCtx.fillStyle="#d8b49b";sourceCtx.fillRect(23,23,18,23);
   }

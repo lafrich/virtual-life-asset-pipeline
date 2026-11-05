@@ -42,6 +42,8 @@
       const target=new URL("./action-scene-editor.html",location.href);
       target.searchParams.set("embedded","1");
       target.searchParams.set("ui","multi-character-act-v1");
+      // Force a fresh ACT document after native pose z-order updates.
+      target.searchParams.set("poseDepth","head-upper-front-v1");
       for(const [key,value] of Object.entries(context))if(value)target.searchParams.set(key,value);
       actionFrameStarted=true;
       actionFrame.src=target.href;
