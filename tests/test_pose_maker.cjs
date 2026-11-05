@@ -152,7 +152,7 @@ test("Split layer picker and zoom render in Human Pose Maker UI",()=>{
   assert.ok(html.includes('data-pose-weight-isolate="'+layer+'"'),layer);
  assert.ok(html.includes('id="pose-weight-zoom"'));
  assert.ok(js.includes("syncSelect()"),"group bone dropdown is filtered");
- assert.ok(js.includes("inFocusRegion(focus,px,py)"),"strokes honor edit region");
+ assert.ok(js.includes("inFocusRegion(focus,px,py,editRegion)"),"strokes honor movable per-view edit region");
  assert.ok(js.includes("drawThumbnails(item)"),"part previews update with masks");
 });
 
