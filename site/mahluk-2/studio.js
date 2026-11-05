@@ -835,6 +835,17 @@ function resetFactoryRig(){
  setStatus("FACTORY RIG RULES LOADED IN EDITOR · SAVED MASTER REMAINS UNCHANGED");
 }
 function setupEvents(){
+ planeEditor=P.create({
+  overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
+  onApply:(bone,png)=>setPlanePixel(bone,png),
+  onSaveDefault:(bone,png)=>{
+   if(!setPlanePixel(bone,png))return false;
+   return saveGeneralRig();
+  }
+ });
+ $("editPixelPlane").onclick=openPlaneEditor;
+ $("openPlaneEditor").onclick=openPlaneEditor;
+ $("clearPixelPlane").onclick=clearPlanePixel;
  $("undo").onclick=undo;$("redo").onclick=redo;
  $("saveGeneralRig").onclick=saveGeneralRig;
  $("loadGeneralRig").onclick=loadGeneralRig;
@@ -1048,7 +1059,7 @@ function setupEvents(){
  requestAnimationFrame(tick);
 }
 async function mount(){
- if(!R||!E||!G||!B){setStatus("RIG / BODY PLANE ENGINE NOT FOUND",false);return}
+ if(!R||!E||!G||!B||!P){setStatus("RIG / PIXEL PLANE ENGINE NOT FOUND",false);return}
  setupEvents();
  try{
   const resp=await fetch("../media/original-rig/manifest.json",{cache:"no-store"});
