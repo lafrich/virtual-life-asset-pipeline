@@ -1,0 +1,58 @@
+name: Publish Jakarta urban Semesta assets
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/street_buildings/_work/jakarta_urban.py'
+      - 'assets/street_buildings/_work/publish_jakarta_urban.py'
+      - '.github/workflows/publish-jakarta-urban.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: jakarta-urban-native-assets
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install native v6b renderer
+        run: python -m pip install numpy pillow
+      - name: Render Jakarta source sprites, native pixel depth and catalogue
+        run: python assets/street_buildings/_work/publish_jakarta_urban.py
+      - name: Check catalogue files and depth dimensions
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          root=Path('assets/street_buildings')
+          m=json.load(open(root/'jakarta_urban_catalog.json'))
+          assert m['projection']=='isometric-2:1' and len(m['assets'])==17
+          for entry in m['assets']:
+              for direction,v in entry['variants'].items():
+                  p=root/v['file'];dep=p.with_name(p.stem+'__depth.png')
+                  assert p.exists() and dep.exists(),(p,dep)
+                  with Image.open(p) as im,Image.open(dep) as dm:
+                      assert im.size==dm.size==tuple(v['size'])
+                      assert im.mode==dm.mode=='RGBA'
+          print('All Jakarta assets + native depth verified')
+          PY
+      - name: Publish generated assets and native catalog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f assets/street_buildings/taman/*jakarta*.png assets/street_buildings/props/*jakarta*.png || true
+          git add -f assets/street_buildings/taman/semak_kota_*.png assets/street_buildings/taman/rumput_kota_*.png || true
+          git add -f assets/street_buildings/jalan_lokal/aspal_patch_jakarta*.png assets/street_buildings/jalan_lokal/selokan_*.png assets/street_buildings/jalan_lokal/sungai_*.png
+          git add assets/street_buildings/jakarta_urban_catalog.json
+          git add -f assets/street_buildings/previews/jakarta_urban_contact.png
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish Jakarta props, vegetation, drains and river [skip ci]"
+            git push
+          fi
