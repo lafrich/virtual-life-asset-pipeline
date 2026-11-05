@@ -365,17 +365,15 @@
           <div class="pose-sidebar-inner">
             <label class="pose-label" for="pose-motion-name">MOTION NAME</label>
             <input class="pose-input" id="pose-motion-name" type="text" maxlength="60" autocomplete="off" value="New Idle" placeholder="Idle gesture name">
-            <label class="pose-label" for="pose-frame-count">ANIMATION FRAMES</label>
-            <select class="pose-input" id="pose-frame-count">
-              <option value="4">4 FRAMES</option><option value="6" selected>6 FRAMES</option>
-              <option value="8">8 FRAMES</option><option value="12">12 FRAMES</option>
-            </select>
-            <label class="pose-label" for="pose-duration">LOOP DURATION</label>
-            <select class="pose-input" id="pose-duration">
-              <option value="600">0.6 SECONDS</option><option value="900">0.9 SECONDS</option>
-              <option value="1200" selected>1.2 SECONDS</option><option value="1800">1.8 SECONDS</option>
-              <option value="2400">2.4 SECONDS</option>
-            </select>
+            <div class="pose-timing-fields">
+              <label class="pose-label" for="pose-frame-count">TOTAL FRAMES
+                <input class="pose-input" id="pose-frame-count" type="number" min="4" max="96" step="1" value="24">
+              </label>
+              <label class="pose-label" for="pose-fps">FPS
+                <input class="pose-input" id="pose-fps" type="number" min="4" max="30" step="1" value="12">
+              </label>
+            </div>
+            <p class="pose-note">FRAME <strong id="pose-current-frame">01</strong> / <span id="pose-frame-total">24</span> · <span id="pose-duration-label">2.00S</span> LOOP</p>
             <div class="pose-divider"></div>
             <div class="pose-label">SAVED MOTION DIRECTORY <span id="pose-saved-count">00</span></div>
             <p class="pose-note">HUMAN BASE / MALE + FEMALE</p>
@@ -384,7 +382,15 @@
           </div>
         </aside>
         <section class="pose-center">
-          <header class="panel-heading"><strong>POSE MAKER .RIG</strong><span>3D PUPPET / 17 JOINTS</span></header>
+          <header class="panel-heading"><strong>POSE MAKER .RIG</strong><span>4 PARTS / 17 JOINTS</span></header>
+          <div class="pose-part-tabs" role="group" aria-label="Choose one anatomical rig part">
+            <button type="button" class="pose-part-tab active" data-pose-part="body" aria-pressed="true">BODY</button>
+            <button type="button" class="pose-part-tab" data-pose-part="head" aria-pressed="false">HEAD</button>
+            <button type="button" class="pose-part-tab" data-pose-part="arms" aria-pressed="false">ARMS</button>
+            <button type="button" class="pose-part-tab" data-pose-part="legs" aria-pressed="false">LEGS</button>
+            <label class="pose-isolate"><input id="pose-isolate" type="checkbox"> SOLO</label>
+          </div>
+          <p id="pose-part-guide" class="pose-part-guide">MOVE PELVIS TO REPOSITION THE WHOLE RIG.</p>
           <div class="pose-toolbar">
             <span>VIEW</span>
             <button type="button" class="chrome-button active" data-pose-camera="32">SE</button>
@@ -395,22 +401,32 @@
           </div>
           <div class="pose-rig-stage">
             <svg id="pose-rig" viewBox="0 0 320 410" role="img" aria-label="Draggable 3D-style stickman rig with individual puppet joints"></svg>
-            <div class="pose-stage-instructions">DRAG JOINT TO POSE · CHANGE DEPTH FOR Z AXIS</div>
+            <div class="pose-stage-instructions">DRAG ACTIVE PART'S JOINTS · DEPTH Z IN INSPECTOR</div>
           </div>
           <div class="pose-joint-controls">
-            <strong id="pose-joint-name">WRIST R</strong>
-            <label for="pose-depth">DEPTH / Z</label>
+            <strong id="pose-joint-name">PELVIS</strong>
+            <select class="pose-joint-select" id="pose-joint-select" aria-label="Select active joint"></select>
+            <label for="pose-depth">Z</label>
             <input id="pose-depth" type="range" min="-25" max="25" step="1" value="0">
             <output id="pose-depth-value" for="pose-depth">0</output>
+            <button type="button" class="chrome-button" id="pose-reset-part">RESET PART</button>
           </div>
-          <div class="pose-timeline">
-            <div class="pose-timeline-title"><strong>IDLE KEYFRAMES</strong>
-              <button type="button" class="chrome-button" id="pose-key-add">+ KEY</button>
-              <button type="button" class="chrome-button" id="pose-key-delete">− KEY</button>
+          <div class="pose-timeline" aria-label="Per-frame diamond animation timeline">
+            <div class="pose-timeline-title"><strong>DOPE SHEET / KEYFRAME EDITOR</strong>
+              <span class="pose-frame-readout" id="pose-playhead-label">F 01</span>
+              <button type="button" class="chrome-button" id="pose-key-add">◆ SET KEY</button>
+              <button type="button" class="chrome-button" id="pose-key-delete">◇ DELETE</button>
             </div>
-            <div id="pose-keys" class="pose-keys" role="group" aria-label="Pose keyframe timeline"></div>
-            <label for="pose-time" class="pose-label">SELECTED KEY POSITION</label>
-            <input id="pose-time" type="range" min="0" max="100" value="50" step="1">
+            <div class="pose-timeline-scroll" id="pose-timeline-scroll">
+              <div class="pose-ruler-wrap">
+                <div class="pose-track-label">FRAME</div>
+                <div class="pose-ruler" id="pose-ruler" role="group" aria-label="Select frame playhead"></div>
+              </div>
+              <div id="pose-keys" class="pose-keys" role="group" aria-label="Separate diamond keyframe tracks for Body Head Arms and Legs"></div>
+            </div>
+            <label class="pose-scrub-label" for="pose-time">PLAYHEAD <span>SLIDE TO SCRUB / CLICK DIAMOND TO ADD OR REMOVE A KEY</span></label>
+            <input id="pose-time" type="range" min="0" max="23" value="0" step="1" aria-label="Current frame">
+            <p class="pose-note">Changes are previews until you set a diamond on the chosen part.</p>
           </div>
         </section>
         <aside class="pose-right">
