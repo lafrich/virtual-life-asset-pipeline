@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import re
 import shutil
 import sys
@@ -28,9 +29,9 @@ V6B = REPO / "chars-iso" / "v6b"
 sys.path.insert(0, str(V6B / "tools"))
 import live_v6b as engine  # noqa: E402
 
-HOST = "127.0.0.1"
-PORT = 8766
-MAX_JOBS = 6
+HOST = os.environ.get("V6B_HOST", "0.0.0.0" if os.environ.get("RENDER") else "127.0.0.1")
+PORT = int(os.environ.get("PORT", "8766"))
+MAX_JOBS = 2
 LOCK = threading.Lock()
 JOBS: OrderedDict[str, dict] = OrderedDict()
 STYLES = {"mid", "wavy", "long"}
@@ -227,6 +228,9 @@ class Handler(BaseHTTPRequestHandler):
         parts = urlsplit(self.path)
         query = parse_qs(parts.query)
         try:
+            if parts.path == "/health":
+                self.write(200, b"ok", "text/plain; charset=utf-8")
+                return
             if parts.path in ("/", "/index.html", "/style.css", "/app.js"):
                 name = "index.html" if parts.path == "/" else parts.path[1:]
                 mime = ("text/html; charset=utf-8" if name.endswith(".html")
@@ -280,7 +284,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     print(f"V6B Generator Studio — http://{HOST}:{PORT}")
-    print("Local-only. Ctrl+C to close; generated previews are temporary.")
+    print("Temporary previews only. Ctrl+C to close the server.")
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     try:
         server.serve_forever()
