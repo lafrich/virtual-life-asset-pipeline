@@ -445,6 +445,7 @@ def publish_gender_bases(media: Path, dest: Path):
             out.alpha_composite(part)
         return out
 
+    qa_parts = {}
     for gender in ("male", "female"):
         # SE/SW are strictly mirrored. NE/NW are strictly mirrored.
         for mode in ("base", "outfit"):
@@ -484,6 +485,7 @@ def publish_gender_bases(media: Path, dest: Path):
                                   np.asarray(variants[(gender, "outfit", direction)])):
                 raise AssertionError(f"{gender}/{direction}: outfit changed source appearance")
 
+        qa_parts[gender] = (body_parts, garment_parts)
         for layer_type, by_view in (("body", body_parts), ("garment", garment_parts)):
             names = sorted(set().union(*(part.keys() for part in by_view.values())))
             for bone in names:
@@ -516,6 +518,49 @@ def publish_gender_bases(media: Path, dest: Path):
                     sprite.resize((256, 448), Image.Resampling.NEAREST),
                     (mode_index*1024 + row*256, gender_index*448))
     contact.save(dest / "gender-bases.png", optimize=True)
+
+    # Diagnostic proof that source cutouts remain independent when elbow and
+    # knee rotate. This is generated FROM THE SAME RGBA ATLAS MATERIALS;
+    # no hand-drawn replacement sprites, animations or third-party assets.
+    pose_cases = (
+        ("NEUTRAL", (), 0, (0, 0)),
+        ("ELBOW +22", ("elbow_l", "wrist_l"), 22, (19, 71)),
+        ("ELBOW -22", ("elbow_l", "wrist_l"), -22, (19, 71)),
+        ("KNEE +18", ("knee_l", "ankle_l"), 18, (27, 89)),
+        ("KNEE -18", ("knee_l", "ankle_l"), -18, (27, 89)),
+    )
+    qa = Image.new("RGBA", (len(pose_cases)*256, 8*448),
+                   (246, 243, 238, 255))
+    row = 0
+    for gender in ("male", "female"):
+        body_by_view, clothing_by_view = qa_parts[gender]
+        for mode in ("base", "outfit"):
+            for direction in ("se", "ne"):
+                native = variants[(gender, mode, direction)]
+                for column, (_, affected, degrees, pivot) in enumerate(pose_cases):
+                    sprite = Image.new("RGBA", SIZE)
+                    for content in (
+                        body_by_view[direction],
+                        clothing_by_view[direction] if mode=="outfit" else {},
+                    ):
+                        for bone, tile in content.items():
+                            if bone in affected:
+                                tile = tile.rotate(
+                                    degrees, resample=Image.Resampling.NEAREST,
+                                    center=pivot, expand=False,
+                                )
+                            sprite.alpha_composite(tile)
+                    if not affected and not np.array_equal(
+                        np.asarray(sprite), np.asarray(native)
+                    ):
+                        raise AssertionError(
+                            f"Joint QA neutral changed source: {gender}/{mode}/{direction}")
+                    qa.alpha_composite(
+                        sprite.resize((256, 448), Image.Resampling.NEAREST),
+                        (column*256, row*448),
+                    )
+                row += 1
+    qa.save(dest / "rotation-qa.png", optimize=True)
     for gender in ("male", "female"):
         body = [row for row in slots if row["gender"] == gender
                 and row["layer_type"] == "body"]
@@ -597,6 +642,7 @@ def generate(media: Path, with_gender: bool = True):
     contact.save(dest / "source-contact-sheet.png", optimize=True)
     manifest = {
         "preview": "media/original-rig/gender-bases.png",
+        "rotation_qa": "media/original-rig/rotation-qa.png",
         "gender_bases": ["male", "female"],
         "outfit_modes": ["base", "outfit"],
         "anatomy_source": "human-male-base and human-female-base",
