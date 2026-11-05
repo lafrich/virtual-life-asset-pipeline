@@ -9,6 +9,8 @@
 <script defer src="./emotion-planes.js?v=1"></script>
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
 <script defer src="./github-master-sync.js?v=github-v1"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script defer src="./drive-sync.js?v=mh2-drive-v1"></script>
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
 <script defer src="./view-projection.js?v=orbit-master-sync-v2"></script>
 <script defer src="./pixel-selection.js?v=pixel-copy-toolbar-v2"></script>
@@ -110,6 +112,18 @@
       <label class="selectline">GLASSES / ACCESSORY ASSET<select id="glassesAsset"><option value="native">ORIGINAL GLASSES</option><option value="none">NONE / HIDE</option></select></label>
       <label class="importbtn asset-import">＋ IMPORT ACCESSORY PNG ATLAS<input id="glassesImport" type="file" accept="image/png,.png"></label>
       <p class="hint">Select GLASSES in Object Manager to move, rotate, scale, depth-sort or animate its own plane. PHONE remains a separate plane too.</p>
+    </section>
+    <section class="ins-section" id="driveSection">
+      <div class="sectionhead">GOOGLE DRIVE / PERSONAL CLOUD LIBRARY</div>
+      <p class="hint">Same Google account on PC + HP. Store actual edited root characters and master rig. Local Save works offline; GitHub publication stays optional.</p>
+      <label class="selectline">GOOGLE OAUTH WEB CLIENT ID
+        <input id="driveClientId" type="text" autocomplete="off" placeholder="xxxx.apps.googleusercontent.com" spellcheck="false">
+      </label>
+      <div class="plane-buttons"><button id="driveConnect" type="button">☁ CONNECT GOOGLE DRIVE</button><button id="driveDisconnect" type="button">DISCONNECT</button></div>
+      <div class="plane-buttons"><button id="driveLoadLibrary" type="button">↓ LOAD CHARACTERS FROM DRIVE</button><button id="driveSaveRoot" type="button">↑ SAVE ROOT TO DRIVE</button></div>
+      <div class="plane-buttons"><button id="driveLoadMaster" type="button">↓ LOAD MASTER FROM DRIVE</button><button id="driveSaveMaster" type="button">↑ SAVE MASTER TO DRIVE</button></div>
+      <p id="driveStatus" class="hint" aria-live="polite">NOT CONNECTED · Google OAuth is needed for cross-device saves.</p>
+      <p class="hint">Google Drive location: Membangun / Mahluk Hidup 2. Uses drive.file access; no Client Secret, no GitHub token. Emotion Studio and Semesta remain separate.</p>
     </section>
     <section class="ins-section"><div class="sectionhead">ROOT CHARACTER / PUBLISH</div><label class="selectline">NAME<input id="characterName" type="text" maxlength="40" value="My Character 2.0"></label><p class="hint">Shared anatomy, plane artwork, anchors and hierarchy. Actions remain in Mahluk Hidup 1.0.</p><button id="publish" class="primary">✳ SAVE + SYNC ROOT</button></section>
     <section class="ins-section">
