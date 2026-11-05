@@ -153,6 +153,12 @@ jobs:
           python -m unittest discover -s tests -p test_native_rig_partition.py
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/mahluk-2/studio.js
+          node --check site/emotion-studio/emotion-library.js
+          node --check site/emotion-studio/studio.js
+          node --test tests/test_emotion_studio.cjs
+          test -s site/emotion-studio/index.html
+          test -s site/emotion-studio/studio.css
+          python -m json.tool site/emotion-studio/catalog.json > /dev/null
           node --check site/mahluk-2/emotion-planes.js
           node --check site/mahluk-2/github-master-sync.js
           node --test tests/test_mahluk2_github_sync.cjs
@@ -272,6 +278,10 @@ jobs:
           python -c 'import json,pathlib; s=pathlib.Path("_site"); m=json.loads((s/"media/original-rig/manifest.json").read_text()); parts=m["slots"]; assert m["anatomy_layers_shared_across_outfits"]; assert m["outfit_layer_mode"]=="additive_native_garments"; assert all(len([p for p in parts if p.get("gender")==g and p.get("layer_type")==t])>=(8 if t=="body" else 3) for g in ("male","female") for t in ("body","garment")); assert (s/m["rotation_qa"]).is_file(); print("Verified independently layered human anatomy and removable garments for both genders")'
           test -s _site/media/original-rig/source-contact-sheet.png
           test -s _site/mahluk-2/index.html
+          test -s _site/emotion-studio/index.html
+          test -s _site/emotion-studio/catalog.json
+          test -s _site/emotion-studio/studio.js
+          test -s _site/emotion-studio/emotion-library.js
           test -s _site/mahluk-2/studio.js
           test -s _site/mahluk-2/emotion-planes.js
           test -s _site/mahluk-2/rig-rules.js
