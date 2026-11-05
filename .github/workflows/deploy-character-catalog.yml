@@ -147,7 +147,7 @@ jobs:
           node --check site/pose-maker.js
           node --test tests/test_pose_maker.cjs
           python -m py_compile tools/build_original_rig_layers.py
-          python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation
+          python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/modular-rig-v2.js
           node --check site/rig-studio-v2.js
           node --test tests/test_modular_rig_v2.cjs
@@ -243,6 +243,7 @@ jobs:
           test -s _site/index.html
           test -s _site/style.css
           test -s _site/media/original-rig/manifest.json
+          test -s _site/media/original-rig/gender-bases.png
           test -s _site/media/original-rig/source-contact-sheet.png
           test -s _site/modular-rig-v2.js
           test -s _site/rig-studio-v2.js
