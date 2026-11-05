@@ -38,6 +38,8 @@ class DepthTest(unittest.TestCase):
             order=depth_order("knee_chest_idle",direction)
             self.assertGreater(order.index("pose_upper_body_front"),order.index("pants"))
             self.assertGreater(order.index("arm_far"),order.index("pants"))
+            self.assertGreater(order.index("pose_upper_body_front"),
+                               order.index("arm_near"))
             actor=Image.new("RGBA",FRAME)
             for y in (66,80,96):actor.putpixel((31,y),(200,140,100,255))
             legs=Image.new("RGBA",FRAME)
