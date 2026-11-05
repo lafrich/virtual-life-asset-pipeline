@@ -42,6 +42,7 @@ on:
       - "tests/test_mahluk_actions_tab.cjs"
       - "tests/test_mahluk_action_deeplink.cjs"
       - "tests/test_action_editor_interactions.cjs"
+      - "tests/test_action_editor_native_depth.cjs"
       - "tests/test_universal_sleep_published.py"
       - "tests/test_player_action_database.cjs"
       - "site/universal-motion-runtime.js"
@@ -164,6 +165,7 @@ jobs:
           node tests/test_action_templates.cjs
           node tests/test_action_appearance.cjs
           node tests/test_action_editor_interactions.cjs
+          node tests/test_action_editor_native_depth.cjs
           node --check site/master-parts.js
           node tests/test_master_parts.cjs
           node tests/test_pixel_editor.cjs
