@@ -60,7 +60,9 @@ test("independent per-part diamond keys and emotion IDs survive interpolation",(
  assert.equal(sampled.emotion,"blush");
  const exported=R.exportModel(base,tracks);
  assert.equal(exported.emotion_parent,"head");
- assert.deepEqual(exported.facial_children,["brow_l","brow_r","eye_l","eye_r","mouth"]);
+ assert.deepEqual(exported.facial_children,["brow_l","brow_r","eye_l","eye_r",
+  "nose","mouth","blush_l","blush_r","glasses"]);
+ assert.deepEqual(exported.hair_children,["hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"]);
  assert.equal(exported.tracks.head[0].frame,8);
  assert.equal(exported.model.character_id,R.ID);
 });
@@ -78,4 +80,63 @@ test("art and studio contain new pixel rig controls without replacing other app 
  assert.ok(html.includes("rig-studio-v2.js"));
  assert.ok(html.includes("rig-studio-v2.css"));
  assert.ok(studio.includes("R.key(tracks"));
+});
+
+
+test("reference silhouette uses independent hair, glasses, blush and enlarged streetwear proportions",()=>{
+ const nodes=R.BONES.map(x=>x.id);
+ for(const id of ["hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"])
+  assert.equal(R.HIERARCHY[id],"head",id+" belongs to moving head");
+ for(const id of ["glasses","nose","blush_l","blush_r"])
+  assert.equal(R.HIERARCHY[id],"emotion",id+" belongs to emotion");
+ assert.ok(nodes.length>=30);
+ assert.deepEqual(R.PROPORTIONS.head,[18,4,33,39]);
+ assert.deepEqual(R.PROPORTIONS.shoes,[12,99,42,12]);
+ assert.ok(R.PALETTE.hairGlint);
+ assert.ok(R.PALETTE.emblem);
+ const model=R.referencePose(),initial=R.world(model);
+ model.parts.head.angle=17;model.parts.head.x=3;
+ const moved=R.world(model);
+ assert.notEqual(moved.hair_cap.x,initial.hair_cap.x);
+ assert.notEqual(moved.glasses.x,initial.glasses.x);
+ model.parts.glasses.x=4;
+ const changed=R.world(model);
+ assert.notEqual(changed.glasses.x,moved.glasses.x);
+ assert.equal(changed.head.x,moved.head.x);
+});
+test("all four directions and seven facial emotions render fully using pixel-aligned rectangles",()=>{
+ const canvas={save(){},restore(){},translate(){},scale(){},rotate(){},
+  fillRect(x,y,w,h){assert.ok([x,y,w,h].every(Number.isFinite));this.rects++;},
+  clearRect(){this.clears++;},
+  rects:0,clears:0};
+ for(const direction of R.DIR){
+  const pose=R.referencePose();
+  for(const emotion of R.EMOTIONS){
+   pose.emotion=emotion;
+   R.draw(canvas,pose,direction);
+  }
+ }
+ assert.ok(canvas.rects>1500,"detailed pixel-cluster renderer draws every view and expression");
+ assert.equal(canvas.clears,28);
+});
+test("legacy saved rig state normalizes with new face and hair nodes without discarding older keyframes",()=>{
+ const before={parts:{head:{x:3,y:4,angle:2,scale:1,visible:true}},
+  emotion:"mischievous",phone:true};
+ const after=R.normalize(before);
+ assert.equal(after.parts.head.x,3);
+ assert.ok(after.parts.glasses);
+ assert.ok(after.parts.fringe_mid);
+ assert.ok(after.parts.blush_l);
+ assert.equal(after.emotion,"mischievous");
+ const exp=R.exportModel(after,R.makeTracks());
+ assert.match(exp.art_revision,/detailed-reference/);
+ assert.equal(exp.nodes.length,R.BONES.length);
+});
+test("rig studio includes hair and face controls and character expressions get unique thumbnails",()=>{
+ const studio=fs.readFileSync("site/rig-studio-v2.js","utf8");
+ const app=fs.readFileSync("site/app.js","utf8");
+ for(const part of ["hair_back","hair_cap","fringe_l","fringe_mid","fringe_r",
+  "blush_l","blush_r","glasses","nose"])assert.ok(studio.includes(part),part);
+ assert.match(app,/const faceSheet=makeAtlas\(id\)/);
+ assert.match(app,/portrait:faceTile.toDataURL/);
 });
