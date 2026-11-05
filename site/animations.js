@@ -12,6 +12,8 @@
   const actionPanel = el("action-workspace");
   const customTab = el("tab-custom-char");
   const customPanel = el("custom-workspace");
+  const poseTab = el("switch-poser");
+  const posePanel = el("pose-workspace");
   const actionFrame = el("action-editor-embed");
   let actionFrameStarted = false;
   let lastActionContext = null;
@@ -169,25 +171,31 @@
     const animation = mode === "animations";
     const actions = mode === "actions";
     const custom = mode === "custom";
+    const poser = mode === "poser";
     clipsPanel.hidden = !animation;
-    characterPanel.hidden = animation || actions || custom;
+    characterPanel.hidden = animation || actions || custom || poser;
     actionPanel.hidden = !actions;
     customPanel.hidden = !custom;
+    posePanel.hidden = !poser;
     motionTab.classList.toggle("active", animation);
-    characterTab.classList.toggle("active", !animation && !actions && !custom);
+    characterTab.classList.toggle("active", !animation && !actions && !custom && !poser);
     actionTab.classList.toggle("active", actions);
     customTab.classList.toggle("active", custom);
+    poseTab.classList.toggle("active", poser);
     motionTab.setAttribute("aria-selected", String(animation));
-    characterTab.setAttribute("aria-selected", String(!animation && !actions && !custom));
+    characterTab.setAttribute("aria-selected", String(!animation && !actions && !custom && !poser));
     actionTab.setAttribute("aria-selected", String(actions));
     customTab.setAttribute("aria-selected", String(custom));
+    poseTab.setAttribute("aria-selected", String(poser));
     // The original Paint palette remains available in either workspace.
     const total = animation ? clipSet().length : (typeof state !== "undefined" ? state.characters.length : 0);
     el("asset-total").textContent = String(total).padStart(2, "0");
     el("status-asset-count").textContent = String(total).padStart(2, "0");
-    writing("status-object-label", actions ? "FRAMES" : animation ? "CLIPS" : custom ? "PRESETS" : "OBJECTS");
+    writing("status-object-label", actions ? "FRAMES" : animation ? "CLIPS" : custom ? "PRESETS" : poser ? "POSES" : "OBJECTS");
     document.querySelector(".window-title strong").textContent = "MAHLUK HIDUP";
-    el("menu-file").href = animation
+    el("menu-file").href = poser
+      ? "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/animation_library"
+      : animation
       ? "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/animation_library"
       : "https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/assets/character_stock";
     el("menu-help").href = animation
@@ -196,6 +204,7 @@
     el("menu-edit").title = animation ? "Show motion templates" : "Expressions";
     el("menu-view").title = animation ? "Toggle motion canvas grid" : "Toggle canvas grid";
     el("status").textContent = actions ? "MAHLUK HIDUP / ACTION EDITOR + SIMULATION" :
+      poser ? "MAHLUK HIDUP / HUMAN POSE MAKER" :
       custom ? "MAHLUK HIDUP / CUSTOM CHARACTER CREATOR" :
       animation ? "MAHLUK HIDUP / ANIMATIONS" : "MAHLUK HIDUP / CHARACTERS READY";
   }
@@ -409,10 +418,12 @@
   el("animation-create-action").addEventListener("click", () => openActionTab());
   window.VLMahlukNavigation=Object.freeze({
     openCustom:()=>{setMode("custom");history.replaceState(null,"","#custom");},
-    showCharacters:()=>{setMode("characters");history.replaceState(null,"","#character");}
+    showCharacters:()=>{setMode("characters");history.replaceState(null,"","#character");},
+    openPose:()=>{setMode("poser");history.replaceState(null,"","#pose-maker");}
   });
   document.addEventListener("mahluk:open-custom-creator",()=>window.VLMahlukNavigation.openCustom());
   customTab.addEventListener("click",()=>window.VLMahlukNavigation.openCustom());
+  poseTab.addEventListener("click",()=>window.VLMahlukNavigation.openPose());
   motionTab.addEventListener("click", () => setMode("animations"));
   characterTab.addEventListener("click", () => setMode("characters"));
   pause.addEventListener("click", togglePlayback);
@@ -484,6 +495,7 @@
     openActionTab();
   }
   if(location.hash==="#custom")setMode("custom");
+  if(location.hash==="#pose-maker")setMode("poser");
   loadTargets();
   (async () => {
     try {
@@ -497,6 +509,7 @@
       renderList();
       if (["#animations","#motion","#rigs"].includes(location.hash)) {setMode("animations");if(location.hash==="#rigs")history.replaceState(null,"","#animations");}
       else if(location.hash==="#custom")setMode("custom");
+      else if(location.hash==="#pose-maker")setMode("poser");
       else if (["#actions","#action-editor"].includes(location.hash))
         openActionTab();
     } catch(error) {
