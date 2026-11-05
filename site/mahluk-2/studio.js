@@ -417,7 +417,8 @@ function applyState(){
  setProjectFields();buildTree();makeTimeline();updateEmotionStatus();paint();
 }
 function setProjectFields(){
- $("modelType").value=type;$("outfit").value=outfit;$("outfit").disabled=type==="original";
+ $("modelType").value=type;$("outfit").value=outfit;
+ $("outfit").disabled=type==="original"||bodyPlane!=="current";
  $("bodyPlane").value=bodyPlane;
  $("clip").value=clip;$("frameCount").value=frames;$("fps").value=fps;
 }
@@ -767,7 +768,7 @@ function setupEvents(){
   if(next!=="current"&&!chosen.length){
    e.target.value=bodyPlane;setStatus("NUDE BODY SOURCE NOT AVAILABLE YET",false);return;
   }
-  remember();bodyPlane=next;buildTree();paint();
+  remember();bodyPlane=next;setProjectFields();buildTree();paint();
   setStatus(next==="current"?
    "✓ ORIGINAL BODY RESTORED · EVERYTHING ELSE UNCHANGED":
    "✓ "+next.toUpperCase()+" NUDE BODY PLANES ACTIVE · HEAD / FACE / ACCESSORIES / RIG UNCHANGED",true);
