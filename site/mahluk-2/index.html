@@ -4,13 +4,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1d2532">
 <title>Mahluk Hidup 2.0 — Character Root Studio</title>
-<link rel="stylesheet" href="./studio.css?v=root-layout-grid-zoom-v2">
+<link rel="stylesheet" href="./studio.css?v=four-view-orbit-v1">
 <script defer src="../modular-rig-v2.js?v=mh2"></script>
 <script defer src="./emotion-planes.js?v=1"></script>
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
+<script defer src="./view-projection.js?v=four-view-orbit-v1"></script>
 <script defer src="./plane-pixel-editor.js?v=grid-zoom-pan-v2"></script>
-<script defer src="./studio.js?v=root-layout-grid-zoom-v2"></script>
+<script defer src="./studio.js?v=four-view-orbit-v1"></script>
 </head>
 <body>
 <div class="window">
@@ -44,8 +45,24 @@
    <div class="object-foot"><button id="editPixelPlane">▦ EDIT PIXELS</button><button id="hideSelected">◉ VISIBILITY</button><button id="resetSelected">↶ RESET PART</button></div>
   </aside>
   <main class="center">
-   <div class="viewbar"><div class="viewtitle"><strong>EDITOR VIEWPORT</strong><span id="viewHint">ISOMETRIC · X / Y / Z</span></div><div class="viewcontrols"><button id="toolMove" class="active" title="Move / W">✥ MOVE</button><button id="toolRotate" title="Rotate / E">↻ ROTATE</button><button id="toolScale" title="Scale / R">◱ SCALE</button><button id="toolAnchor" title="Adjust anchor/pivot / A">⊕ ANCHOR</button><button id="viewIso" class="active">◇ ISO</button><button id="viewFront">▣ FRONT</button><button id="axisX" class="active axis x">X</button><button id="axisY" class="axis y">Y</button><button id="axisZ" class="axis z">Z</button><button id="zoomOut" title="Zoom out / mouse wheel / pinch">−</button><span id="zoomLabel" class="zoom-label">100%</span><button id="zoomIn" title="Zoom in / mouse wheel / pinch">＋</button><button id="viewHome" title="Reset camera">⌖</button></div></div>
-   <div class="viewstage"><canvas id="editor" width="880" height="620" aria-label="Isometric viewport. Drag gizmo axes to move part in X Y Z. Wheel to zoom."></canvas><div class="cornerinfo"><span>MAHLUK HIDUP® / 2.5D PLANES</span><span>W MOVE · E ROTATE · R SCALE · A ANCHOR · SCROLL / PINCH ZOOM</span></div></div>
+   <div class="viewbar"><div class="viewtitle"><strong>EDITOR VIEWPORT</strong><span id="viewHint">ISOMETRIC · X / Y / Z</span></div><div class="viewcontrols"><button id="toolMove" class="active" title="Move / W">✥ MOVE</button><button id="toolRotate" title="Rotate / E">↻ ROTATE</button><button id="toolScale" title="Scale / R">◱ SCALE</button><button id="toolAnchor" title="Adjust anchor/pivot / A">⊕ ANCHOR</button><button id="viewIso" class="active" title="3D isometric plane depth inspection">◇ ISO</button><button id="viewFront" title="Flat, orthographic sprite position">▣ FRONT</button><button id="togglePlaneDepth" aria-pressed="false" title="Explode all drawable planes temporarily to inspect their separation, without modifying the game sprite">▤ PLANES</button><label class="depth-gap" title="Visual spacing between separated planes. Preview only">GAP <input id="planeGap" type="range" min="0" max="8" step="0.5" value="2"><span id="planeGapLabel">2.0</span></label><button id="axisX" class="active axis x">X</button><button id="axisY" class="axis y">Y</button><button id="axisZ" class="axis z">Z</button><button id="zoomOut" title="Zoom out / mouse wheel / pinch">−</button><span id="zoomLabel" class="zoom-label">100%</span><button id="zoomIn" title="Zoom in / mouse wheel / pinch">＋</button><button id="viewHome" title="Reset camera">⌖</button></div></div>
+   <div class="viewstage"><canvas id="editor" width="880" height="620" aria-label="Isometric viewport. Drag gizmo axes to move part in X Y Z. Wheel to zoom."></canvas>
+    <div id="orbitGizmo" class="orbit-gizmo" aria-label="Orbit camera gizmo. Changes only your viewing direction; the master rig is shared across four views.">
+     <div class="orbit-head"><strong>ORBIT CAMERA</strong><span id="orbitDirectionLabel">SE</span></div>
+     <div class="orbit-control">
+      <button id="orbitPrev" type="button" title="Orbit camera left by 90 degrees">↶</button>
+      <div class="orbit-compass">
+       <span class="orbit-axes" aria-hidden="true"><i class="orbit-x">X</i><i class="orbit-y">Y</i><i class="orbit-z">Z</i></span>
+       <button type="button" data-orbit-dir="nw" class="orbit-nw" aria-label="Orbit to northwest / back left">NW</button>
+       <button type="button" data-orbit-dir="ne" class="orbit-ne" aria-label="Orbit to northeast / back right">NE</button>
+       <button type="button" data-orbit-dir="sw" class="orbit-sw" aria-label="Orbit to southwest / front left">SW</button>
+       <button type="button" data-orbit-dir="se" class="orbit-se active" aria-label="Orbit to southeast / front right">SE</button>
+      </div>
+      <button id="orbitNext" type="button" title="Orbit camera right by 90 degrees">↷</button>
+     </div>
+     <div class="orbit-caption">ONE RIG · 4 VIEWS</div>
+    </div>
+    <div class="cornerinfo"><span>MAHLUK HIDUP® / 2.5D PLANES</span><span>W MOVE · E ROTATE · R SCALE · A ANCHOR · SCROLL / PINCH ZOOM</span></div></div>
    <div class="timeline" id="legacyTimeline" hidden aria-hidden="true">
     <div class="timelinetop"><strong>ANIMATION / DOPE SHEET</strong><label>CLIP <select id="clip"><option value="idle">IDLE</option><option value="walk">WALK</option><option value="talk">TALK</option><option value="sit">SIT</option><option value="lie">LIE</option><option value="custom">CUSTOM</option></select></label><label>FRAMES <input id="frameCount" type="number" min="1" max="48" value="12"></label><label>FPS <input id="fps" type="number" min="1" max="30" value="12"></label><button id="play">▶ PLAY</button><button id="setKey">◆ KEY</button><button id="deleteKey">◇ DELETE</button></div>
     <div class="ruler" id="ruler"></div><div class="keyrows" id="keyrows"></div>
@@ -84,6 +101,17 @@
       <p class="hint">Select GLASSES in Object Manager to move, rotate, scale, depth-sort or animate its own plane. PHONE remains a separate plane too.</p>
     </section>
     <section class="ins-section"><div class="sectionhead">ROOT CHARACTER / PUBLISH</div><label class="selectline">NAME<input id="characterName" type="text" maxlength="40" value="My Character 2.0"></label><p class="hint">Shared anatomy, plane artwork, anchors and hierarchy. Actions remain in Mahluk Hidup 1.0.</p><button id="publish" class="primary">✳ SAVE + SYNC ROOT</button></section>
+    <section class="ins-section">
+     <div class="sectionhead">MASTER RIG / 4-WAY VIEW CHECK</div>
+     <p class="hint">Changes to position, anchor, scale, rotation, Z and hierarchy apply to all four views. Select a camera angle below to inspect its own native artwork.</p>
+     <div class="four-view-check" id="fourViewCheck">
+      <button type="button" data-preview-dir="se" class="active"><canvas id="previewSE" width="64" height="112"></canvas><span>SE · FRONT R</span></button>
+      <button type="button" data-preview-dir="sw"><canvas id="previewSW" width="64" height="112"></canvas><span>SW · FRONT L</span></button>
+      <button type="button" data-preview-dir="ne"><canvas id="previewNE" width="64" height="112"></canvas><span>NE · BACK R</span></button>
+      <button type="button" data-preview-dir="nw"><canvas id="previewNW" width="64" height="112"></canvas><span>NW · BACK L</span></button>
+     </div>
+     <p class="hint" id="depthReadout">MASTER DEPTH · Z = 0.0</p>
+    </section>
     <section class="ins-section"><div class="sectionhead">ACTUAL GAME OUTPUT</div><div class="gamepreview"><canvas id="game" width="64" height="112"></canvas></div><div class="directions" id="directions"><button data-dir="se" class="active">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button></div><label class="check"><input id="gridPreview" type="checkbox"> CHECKER / TRANSPARENT BG</label><p class="hint" id="gameHint">This is the exact baked game sprite, not a 3D proxy.</p></section>
    </div>
   </aside>
