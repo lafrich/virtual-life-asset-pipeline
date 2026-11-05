@@ -210,12 +210,13 @@ function pick(id){
  $("selectedParent").textContent="PARENT: "+(R.BMAP[id].parent||"none");
  const p=state.parts[id];for(const [k,el] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]])$(el).value=p[k]??0;
  $("visible").checked=p.visible;
- $("faceEmotion").disabled=!FACE.has(id);$("faceEmotion").value=state.faceLayers?.[id]||"inherit";
- $("globalEmotion").value=state.emotion;
+ if($("emotionAsset"))$("emotionAsset").value=emotionAt();
+ if($("glassesAsset"))$("glassesAsset").value=glassesAssetId;
  paint();
 }
 function buildTree(){
- const holder=$("tree");holder.replaceChildren();const set=new Set(activeSlots().map(s=>s.bone));
+ const holder=$("tree");holder.replaceChildren();const set=new Set(activeSlots().filter(s=>!E.slotKind(s)).map(s=>s.bone));
+ set.add("emotion");set.add("glasses");
  for(const [group,bones] of GROUPS){
   const head=document.createElement("div");head.className="tree-group";head.textContent=group;holder.append(head);
   for(const id of bones){
@@ -227,7 +228,7 @@ function buildTree(){
    btn.append(dot,name,eye);btn.addEventListener("click",()=>pick(id));holder.append(btn);
   }
  }
- $("planeCount").textContent=String(activeSlots().length).padStart(2,"0");
+ $("planeCount").textContent=String(set.size).padStart(2,"0");
  pick(selected);
 }
 function applyState(){
@@ -240,7 +241,7 @@ function setProjectFields(){
 function showTimeline(f){
  frame=Math.round(clamp(f,0,frames-1));
  state=R.sampleTrack(tracks,frame,frames,base);
- pick(selected);makeTimeline();paint();
+ pick(selected);updateEmotionStatus();makeTimeline();paint();
 }
 function makeTimeline(){
  const ruler=$("ruler");ruler.replaceChildren();
@@ -248,18 +249,20 @@ function makeTimeline(){
  const bar=document.createElement("div");bar.className="ruler-track";
  for(let i=0;i<frames;i++){const b=document.createElement("button");b.textContent=String(i+1);b.className=i===frame?"current":"";b.onclick=()=>{playing=false;$("play").textContent="▶ PLAY";showTimeline(i)};bar.append(b)}ruler.append(bar);
  const content=$("keyrows");content.replaceChildren();
- for(const id of ["root","pelvis","torso","head","shoulder_l","shoulder_r","elbow_l","elbow_r","wrist_l","wrist_r","hip_l","hip_r","knee_l","knee_r","ankle_l","ankle_r","emotion","eye_l","eye_r","brow_l","brow_r","mouth","blush_l","blush_r"]){
+ for(const id of ["root","pelvis","torso","head","emotion","glasses","shoulder_l","shoulder_r","elbow_l","elbow_r","wrist_l","wrist_r","hip_l","hip_r","knee_l","knee_r","ankle_l","ankle_r","phone"]){
   const row=document.createElement("div");row.className="keyrow";
   const label=document.createElement("button");label.className="keylabel"+(selected===id?" selected":"");label.textContent=id.replaceAll("_"," ").toUpperCase();label.onclick=()=>pick(id);row.append(label);
   const cells=document.createElement("div");cells.className="keycells";
   for(let i=0;i<frames;i++){
-   const keyed=(tracks[id]||[]).some(x=>x.frame===i);
+   const keyed=(id==="emotion"?emotionKeys:(tracks[id]||[])).some(x=>x.frame===i);
    const cell=document.createElement("button");cell.className=(i===frame?"current ":"")+(keyed?"keyed":"");
    cell.textContent=keyed?"◆":"·";cell.title=id+" / frame "+(i+1)+" / click to add or remove key";
    cell.onclick=()=>{
     if(i!==frame)showTimeline(i);
     pick(id);
-    if(keyed)tracks[id]=tracks[id].filter(k=>k.frame!==i);
+    if(id==="emotion"){
+     if(keyed)removeEmotionKey();else setEmotionKey();
+    }else if(keyed)tracks[id]=tracks[id].filter(k=>k.frame!==i);
     else R.key(tracks,id,i,state.parts[id],state.emotion,state.faceLayers?.[id]);
     makeTimeline();setStatus((keyed?"REMOVED":"KEYED")+" "+id+" AT FRAME "+(i+1));
    };
@@ -269,10 +272,12 @@ function makeTimeline(){
  }
 }
 function setKey(){
+ if(selected==="emotion"){setEmotionKey();return;}
  R.key(tracks,selected,frame,state.parts[selected],state.emotion,state.faceLayers?.[selected]);
  setStatus("◆ KEYFRAME / "+selected+" / "+(frame+1));makeTimeline();
 }
 function removeKey(){
+ if(selected==="emotion"){removeEmotionKey();return;}
  tracks[selected]=(tracks[selected]||[]).filter(k=>k.frame!==frame);
  setStatus("◇ KEY REMOVED / "+selected+" / "+(frame+1));makeTimeline();
 }
@@ -374,7 +379,7 @@ function bake(framesToExport,clipName){
  for(let d=0;d<4;d++){
   direction=DIR[d];
   for(let f=0;f<n;f++){
-   state=n===1?originalState:R.sampleTrack(tracks,f,n,base);
+   frame=f;state=n===1?originalState:R.sampleTrack(tracks,f,n,base);
    const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");
    renderLayers(tc,direction,0,0,1,false);
    ctx.drawImage(tile,64*f,112*d);
