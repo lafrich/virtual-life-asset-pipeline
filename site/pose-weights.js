@@ -182,7 +182,8 @@
   select.value="1";
   changeCallback=onChange;
   const ctx=canvas.getContext("2d",{willReadFrequently:true});
-  let drawing=false,mode="paint";
+  let drawing=false,mode="paint",lastPoint=null;
+  const overlayCanvas=root.document.createElement("canvas");overlayCanvas.width=W;overlayCanvas.height=H;
   const current=()=>{
    const baseId=basePicker.value,dir=Number(facing.value);
    if(!source[baseId]||!images[baseId])return null;
@@ -206,7 +207,8 @@
     overlay.data[pos+2]=on?255:51;
     overlay.data[pos+3]=on?132:37;
    }
-   ctx.putImageData(overlay,0,0);
+   overlayCanvas.getContext("2d").putImageData(overlay,0,0);
+   ctx.drawImage(overlayCanvas,0,0);
    ctx.save();ctx.strokeStyle="rgba(20,52,91,.35)";ctx.lineWidth=.18;
    for(let x=0;x<=W;x+=8){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
    for(let y=0;y<=H;y+=8){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
@@ -220,18 +222,25 @@
    const rect=canvas.getBoundingClientRect();
    const x=(e.clientX-rect.left)*W/rect.width,y=(e.clientY-rect.top)*H/rect.height;
    const n=mode==="erase"?0:Number(select.value);
-   if(brush(item.mask,x,y,Number($("pose-weight-size").value),n,item.tile.data)){
-    touch(item.baseId,item.dir);refresh();
+   const start=lastPoint||[x,y],distance=Math.hypot(x-start[0],y-start[1]);
+   const steps=Math.max(1,Math.ceil(distance)),radius=Number($("pose-weight-size").value);
+   let changed=0;
+   for(let i=0;i<=steps;i++){
+    const t=i/steps;
+    changed+=brush(item.mask,start[0]+(x-start[0])*t,start[1]+(y-start[1])*t,
+     radius,n,item.tile.data);
    }
+   lastPoint=[x,y];
+   if(changed){touch(item.baseId,item.dir);refresh();}
   }
   canvas.addEventListener("pointerdown",e=>{
    if(!current())return;
-   drawing=true;canvas.setPointerCapture(e.pointerId);stroke(e);e.preventDefault();
+   drawing=true;lastPoint=null;canvas.setPointerCapture(e.pointerId);stroke(e);e.preventDefault();
   });
   canvas.addEventListener("pointermove",e=>{if(drawing&&canvas.hasPointerCapture(e.pointerId))stroke(e);});
   function finish(e){
    if(!drawing)return;
-   drawing=false;
+   drawing=false;lastPoint=null;
    if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerId);
    persist();refresh();
   }
