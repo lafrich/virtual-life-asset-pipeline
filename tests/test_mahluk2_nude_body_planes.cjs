@@ -48,7 +48,18 @@ test("2.0 UI exposes body plane selector and keeps snapshots, JSON and game spri
  assert.match(app,/selected,type,outfit,bodyPlane,clip/);
  assert.match(app,/outfit,bodyPlane,model:R.normalize/);
  assert.match(app,/const payload=.*?outfit,bodyPlane,clip/);
- assert.match(app,/bodyPlane=B.normalize\(r.bodyPlane\)/);
- assert.match(app,/bodyPlane=B.normalize\(v.bodyPlane\)/);
+ assert.match(app,/bodyPlane=B.matchingBase\(type,r.bodyPlane===undefined\?/);
+ assert.match(app,/bodyPlane=B.matchingBase\(type,v.bodyPlane===undefined\?/);
  assert.match(app,/B\.selected\(s,\{base:type,outfit,bodyPlane\}\)/);
+});
+
+test("Male/Female base automatically chooses matching nude body, never opposite anatomy",()=>{
+ assert.equal(B.defaultForBase("female"),"female");
+ assert.equal(B.defaultForBase("male"),"male");
+ assert.equal(B.defaultForBase("original"),"current");
+ assert.equal(B.matchingBase("male","female"),"male");
+ assert.equal(B.matchingBase("female","male"),"female");
+ assert.equal(B.matchingBase("male","current"),"current");
+ assert.equal(B.matchingBase("female","current"),"current");
+ assert.equal(B.matchingBase("original","female"),"female");
 });
