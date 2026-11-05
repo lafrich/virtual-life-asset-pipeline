@@ -26,6 +26,7 @@ on:
       - ".github/workflows/validate-original-rig.yml"
       - "assets/**"
       - "site/**"
+      - "tests/test_mahluk2_*.cjs"
       - "tests/test_pose_maker.cjs"
       - "tests/test_modular_rig_v2.cjs"
       - "tests/test_native_rig_partition.py"
