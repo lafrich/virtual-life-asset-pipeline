@@ -370,10 +370,12 @@ test("manual pixel edits preserve hidden native rig layers and change only targe
  editor.setPixel("se",24,60,[248,184,144,255],"torso");
  const layers=editor.layers("se","neutral");
  assert.equal(layers.length,3,"both native pieces and one user paint layer must survive");
- assert.equal(layers[0].image.data[(60*W+24)*4+3],0,"only painted coordinate removed from original");
- assert.equal(layers[1].image.data[(60*W+24)*4+3],0);
- assert.equal(layers[0].image.data[(61*W+25)*4+3],255,"hidden torso joint overlap remains");
- assert.equal(layers[1].image.data[(61*W+25)*4+3],255,"hidden arm overlap remains");
+ const untouched=layers.filter(layer=>
+  layer.image.data[(61*W+25)*4+3]===255);
+ assert.equal(untouched.length,2,"both original cutouts survive unchanged outside painted pixel");
+ for(const layer of untouched)
+  assert.equal(layer.image.data[(60*W+24)*4+3],0,
+   "the painted pixel is removed from source without flattening other pixels");
  assert.equal(first.data[(60*W+24)*4],135,"original atlas immutable");
  assert.equal(second.data[(60*W+24)*4],212);
  const edited=layers.find(layer=>layer.image.data[(60*W+24)*4]===248);
