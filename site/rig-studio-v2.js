@@ -36,11 +36,14 @@
   updateInputs();drawAll();drawTracks();
  }
  function updateInputs(){
-  const p=model.parts[selected],fields={x:"rig-v2-x",y:"rig-v2-y",
+  const p=model.parts[selected],fields={x:"rig-v2-x",y:"rig-v2-y",z:"rig-v2-z",
    angle:"rig-v2-angle",scale:"rig-v2-scale"};
   for(const [name,id] of Object.entries(fields))$(id).value=fnum(p[name]);
   $("rig-v2-visible").checked=p.visible;
   $("rig-v2-emotion").value=model.emotion;
+  const face=R.FACE_BONES.includes(selected);
+  $("rig-v2-face-layer").disabled=!face;
+  $("rig-v2-face-layer").value=face?(model.faceLayers[selected]||"inherit"):"inherit";
   $("rig-v2-phone").checked=model.phone;
   $("rig-v2-gender").value=model.gender;
   $("rig-v2-outfit").value=model.outfit?"outfit":"base";
@@ -142,7 +145,7 @@
       tracks[b.id].splice(index,1);say("◇ KEY DELETED · "+b.label+" · F"+(f+1));
       model=R.sampleTrack(tracks,frame,count,base);updateInputs();
      }else{
-      R.key(tracks,b.id,f,model.parts[b.id],model.emotion);
+      R.key(tracks,b.id,f,model.parts[b.id],model.emotion,model.faceLayers[b.id]);
       say("◆ KEY SET · "+b.label+" · F"+(f+1));
      }
      drawAll();drawTracks();
@@ -189,7 +192,7 @@
    for(const item of rows.slice(0,97)){
     if(!Number.isInteger(item?.frame)||!item.value||item.frame<0||item.frame>95)continue;
     const state=R.normalize({parts:{[b.id]:item.value}});
-    R.key(out,b.id,item.frame,state.parts[b.id],item.emotion);
+    R.key(out,b.id,item.frame,state.parts[b.id],item.emotion,item.faceEmotion);
    }
   }
   return out;
@@ -259,12 +262,12 @@
    for(const n of document.querySelectorAll("[data-rig-v2-view]"))n.classList.toggle("active",n===btn);
    drawAll();
   });
-  for(const prop of ["x","y","angle","scale"]){
+  for(const prop of ["x","y","z","angle","scale"]){
    $("rig-v2-"+prop).addEventListener("input",e=>{
     const value=Number(e.target.value);
     if(Number.isFinite(value)){
-     model.parts[selected][prop]=clamp(value,prop==="scale"?0.4:prop==="angle"?-180:-48,
-      prop==="scale"?2:prop==="angle"?180:48);
+     model.parts[selected][prop]=clamp(value,prop==="scale"?0.4:prop==="angle"?-180:prop==="z"?-10:-48,
+      prop==="scale"?2:prop==="angle"?180:prop==="z"?10:48);
      drawAll();
      say("UNKEYED CHANGE / "+R.BMAP[selected].label+" · CLICK ◆ SET KEY");
     }
@@ -288,6 +291,13 @@
   });
   $("rig-v2-emotion").addEventListener("change",e=>{
    model.emotion=e.target.value;select("emotion");drawAll();
+  });
+  $("rig-v2-face-layer").addEventListener("change",e=>{
+   if(!R.FACE_BONES.includes(selected))return;
+   const emotion=e.target.value;
+   if(emotion==="inherit")delete model.faceLayers[selected];
+   else if(R.EMOTIONS.includes(emotion))model.faceLayers[selected]=emotion;
+   drawAll();say("FACE PLANE "+selected.toUpperCase()+" / "+emotion.toUpperCase()+" · PRESS ◆ SET KEY");
   });
   $("rig-v2-phone").addEventListener("change",e=>{model.phone=e.target.checked;base.phone=e.target.checked;drawAll();});
   const canvas=$("rig-v2-main");
@@ -348,7 +358,7 @@
     " ADJUSTED · PRESS ◆ SET KEY TO RECORD THIS FRAME");
   });
   $("rig-v2-key").onclick=()=>{
-   R.key(tracks,selected,frame,model.parts[selected],model.emotion);
+   R.key(tracks,selected,frame,model.parts[selected],model.emotion,model.faceLayers[selected]);
    drawTracks();say("◆ KEYED "+R.BMAP[selected].label+" / FRAME "+(frame+1));
   };
   $("rig-v2-unkey").onclick=()=>{
