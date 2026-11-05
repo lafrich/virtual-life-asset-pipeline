@@ -9,6 +9,10 @@
 })(typeof window!=="undefined"?window:null,function(){"use strict";
  const W=64,H=112,DIR=["se","sw","ne","nw"],MAX_HISTORY=24;
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+ function mirroredX(x,from,to){
+  const flip=i=>i===1||i===3; // SW/NW are mirrored camera silhouettes.
+  return flip(from)===flip(to)?x:W-1-x;
+ }
  function rasterLine(x0,y0,x1,y1,plot){
   x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);
   let dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1,err=dx+dy;
@@ -42,6 +46,7 @@
    heading:overlay.querySelector("#pixelTitle"),dir:overlay.querySelector("#pixelDirection"),
    color:overlay.querySelector("#pixelColor"),size:overlay.querySelector("#pixelSize"),
    onion:overlay.querySelector("#pixelOnion"),grid:overlay.querySelector("#pixelGrid"),
+   sync:overlay.querySelector("#pixelSync"),
    gridType:overlay.querySelector("#pixelGridType"),wrap:overlay.querySelector("#pixelCanvasWrap"),
    zoom:overlay.querySelector("#pixelZoom"),zoomOut:overlay.querySelector("#pixelZoomOut"),
    zoomIn:overlay.querySelector("#pixelZoomIn"),zoomFit:overlay.querySelector("#pixelZoomFit"),
@@ -62,6 +67,7 @@
    els.undo.disabled=!history.length;els.redo.disabled=!redo.length;
    els.status.textContent=(dirty?"● UNSAVED PIXELS":"ORIGINAL PLANE")+
     " · "+bone.toUpperCase()+" · "+DIR[dir].toUpperCase()+
+    (els.sync.checked?" · SYNC 4 VIEW":" · VIEW ONLY")+
     " · "+history.length+" undo steps";
   };
   function saveHistory(){
@@ -141,19 +147,29 @@
     y:clamp(Math.floor((e.clientY-rect.top)/rect.height*H),0,H-1)
    };
   }
+  function targetDirections(){return els.sync.checked?[0,1,2,3]:[dir]}
   function plot(x,y){
    const size=Math.round(Number(els.size.value)||1);
    const start=Math.floor((size-1)/2);
-   const left=clamp(x-start,0,W),top=clamp(y-start+dir*H,dir*H,(dir+1)*H);
-   const width=Math.min(size,W-left),height=Math.min(size,(dir+1)*H-top);
-   if(tool==="eraser")ctx.clearRect(left,top,width,height);
-   else{ctx.fillStyle=els.color.value;ctx.fillRect(left,top,width,height)}
+   for(const target of targetDirections()){
+    const mapped=mirroredX(x,dir,target);
+    const left=clamp(mapped-start,0,W),top=clamp(y-start+target*H,target*H,(target+1)*H);
+    const width=Math.max(0,Math.min(size,W-left));
+    const height=Math.max(0,Math.min(size,(target+1)*H-top));
+    if(tool==="eraser")ctx.clearRect(left,top,width,height);
+    else{ctx.fillStyle=els.color.value;ctx.fillRect(left,top,width,height)}
+   }
   }
   function paintPoint(from,to){
    if(tool==="fill"){
-    const image=ctx.getImageData(0,dir*H,W,H),color=rgba(els.color.value);
-    if(flood(image.data,W,H,to.x,to.y,tool==="eraser"?[0,0,0,0]:color))
-     ctx.putImageData(image,0,dir*H);
+    const color=rgba(els.color.value);
+    for(const target of targetDirections()){
+     const x=mirroredX(to.x,dir,target),image=ctx.getImageData(0,target*H,W,H);
+     // Never fill an unoccupied background on another native angle.
+     const oldAlpha=image.data[(to.y*W+x)*4+3];
+     if(target!==dir&&oldAlpha===0)continue;
+     if(flood(image.data,W,H,x,to.y,color))ctx.putImageData(image,0,target*H);
+    }
    }else rasterLine(from.x,from.y,to.x,to.y,plot);
    draw();
   }
@@ -172,6 +188,7 @@
   }));
   els.dir.onchange=()=>{dir=DIR.indexOf(els.dir.value);draw();updateHistory()};
   els.onion.onchange=draw;els.grid.onchange=draw;els.gridType.onchange=draw;
+  els.sync.onchange=updateHistory;
   els.undo.onclick=()=>historyStep(history,redo);
   els.redo.onclick=()=>historyStep(redo,history);
   els.close.onclick=()=>{overlay.hidden=true};
@@ -281,5 +298,5 @@
   }
   return {open,isOpen:()=>!overlay.hidden,close:()=>{overlay.hidden=true}};
  }
- return Object.freeze({W,H,DIR,rasterLine,flood,rgba,create});
+ return Object.freeze({W,H,DIR,rasterLine,flood,rgba,mirroredX,create});
 });
