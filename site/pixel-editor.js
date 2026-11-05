@@ -624,6 +624,10 @@ function initControls(){
 async function init(){
  initControls();fitMobileZoom();render();
  window.addEventListener("resize",()=>{fitMobileZoom();});
+ if(window.VLCharacterReferenceReset?.active){
+  $("source-state").textContent=window.VLCharacterReferenceReset.message;
+  status(window.VLCharacterReferenceReset.message);return;
+ }
  try{
   const response=await fetch("./motion-packs/legacy_otis.json",{cache:"no-store"});
   if(!response.ok)throw Error("Motion pack unavailable: "+response.status);
