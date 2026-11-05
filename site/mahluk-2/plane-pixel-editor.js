@@ -263,6 +263,9 @@
    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){
     e.preventDefault();e.stopPropagation();
     if(e.shiftKey)historyStep(redo,history);else historyStep(history,redo);
+   }else if(!["INPUT","SELECT"].includes(document.activeElement?.tagName)&&["=","+","-","0"].includes(e.key)){
+    e.preventDefault();e.stopPropagation();
+    if(e.key==="0")zoomFit();else setZoom(zoom+(e.key==="-"?-1:1));
    }else if(e.key==="Escape"){e.stopPropagation();overlay.hidden=true}
   });
   function open({id,initialAtlas,originalAtlas,referenceImage,direction="se"}){
@@ -274,7 +277,7 @@
    else if(source)ctx.drawImage(source,0,0,W,H*4);
    els.heading.textContent="PIXEL EDITOR / "+id.replaceAll("_"," ").toUpperCase();
    els.dir.value=DIR[dir];selectTool("pencil");overlay.hidden=false;
-   draw();updateHistory();
+   draw();zoomFit();updateHistory();
   }
   return {open,isOpen:()=>!overlay.hidden,close:()=>{overlay.hidden=true}};
  }
