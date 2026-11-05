@@ -36,6 +36,7 @@ def one(s):
   group=group,source='pipeline-street',pack=PACK,country='ID',published=True,
   note=s['label']+' — Indonesian environment, native isometric 2:1',
   category=s['category'],assetKind=s['kind'],
+  transportDetailRevision=('id200-vehicle-v7' if s['category']=='transport' else None),
   visualDetailRevision=('atribut-kota-v6' if s['group']=='prop' and s['category'] in ('jalan','pasar','rumah','budaya','gerobak','publik') else None),
   objectCategory=('plant' if s['category']=='tanaman' else
     'vehicle' if s['category']=='transport' else
