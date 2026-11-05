@@ -857,7 +857,7 @@ async function loadUniversalAssets(){
     src:"github-universal",face_only:true});
   }catch(error){console.warn("Skipped invalid GitHub emotion",entry.id,error)}
  }
- publishedAssets=[...publishedAssets.filter(a=>!available.some(x=>x.id===a.id)),...available];
+ publishedAssets=[...publishedAssets.filter(a=>a.src!=="github-universal"&&!available.some(x=>x.id===a.id)),...available];
 }
 function loadImportedAssets(){
  userAssets=E.safeAssets(window.localStorage);
@@ -1169,6 +1169,7 @@ function setupEvents(){
   setStatus("EMOTION PLANE ASSET / "+(asset?.native||asset?.name||"UNKNOWN"),true);
  };
  $("glassesAsset").onchange=e=>{remember();glassesAssetId=e.target.value;paint();setStatus("GLASSES PLANE / "+glassesAssetId,true)};
+ $("refreshUniversalEmotions").onclick=async()=>{try{await loadUniversalAssets();assetOptions();paint();setStatus("GITHUB EMOTIONS REFRESHED · UNIVERSAL LIBRARY READY",true)}catch(error){setStatus("REFRESH FAILED: "+error.message,false)}};
  $("emotionImport").onchange=e=>{importPlanePng(e.target.files?.[0],"emotion");e.target.value=""};
  $("glassesImport").onchange=e=>{importPlanePng(e.target.files?.[0],"glasses");e.target.value=""};
  $("emotionKey").onclick=setEmotionKey;
