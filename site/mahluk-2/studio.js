@@ -89,6 +89,82 @@ function setStatus(t,ok){$("status").textContent=t;if(ok!==undefined){$("syncLed
 function safeGet(k,def){try{return JSON.parse(localStorage.getItem(k)||"null")??def}catch{return def}}
 function safePut(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){setStatus("STORAGE FULL / DISABLED: "+e.message,false);return false}}
 function getLibrary(){const a=safeGet(STORAGE,[]);return Array.isArray(a)?a.filter(r=>r&&r.format==="mahluk-2-character-v1").slice(0,40):[]}
+function pixelPlaneStatus(){
+ if(!$("pixelPlaneStatus"))return;
+ const count=Object.keys(pixelPlanes).length,has=Object.hasOwn(pixelPlanes,selected);
+ $("pixelPlaneStatus").textContent=has?
+  "EDITED PIXELS · "+selected.toUpperCase()+" · "+count+" CUSTOM PLANE(S)":
+  "SOURCE PIXELS · "+count+" OTHER CUSTOM PLANE(S)";
+}
+function setPixelPlanes(values){
+ pixelPlanes=G.sanitizePixelPlanes(values,R);
+ const revision=++planeImageRevision;planeImages.clear();
+ for(const [id,png] of Object.entries(pixelPlanes)){
+  const img=new Image();
+  img.onload=()=>{
+   if(revision!==planeImageRevision)return;
+   if(img.naturalWidth===64&&img.naturalHeight===448)planeImages.set(id,img);
+   pixelPlaneStatus();paint();
+  };
+  img.onerror=()=>setStatus("INVALID PIXEL PLANE "+id,false);
+  img.src=png;
+ }
+ pixelPlaneStatus();
+}
+function setPlanePixel(id,png){
+ const valid=G.sanitizePixelPlanes({[id]:png},R);
+ if(!valid[id]){setStatus("PIXEL PLANE TOO LARGE OR INVALID",false);return false}
+ remember();pixelPlanes[id]=png;
+ const img=new Image(),revision=planeImageRevision;
+ img.onload=()=>{
+  if(revision!==planeImageRevision||pixelPlanes[id]!==png)return;
+  if(img.naturalWidth!==64||img.naturalHeight!==448){
+   setStatus("PIXEL PLANE MUST BE 64×448 PNG",false);return;
+  }
+  planeImages.set(id,img);pixelPlaneStatus();paint();
+ };
+ img.src=png;
+ pixelPlaneStatus();
+ setStatus("✓ PIXEL EDIT APPLIED TO "+id.toUpperCase()+" · SAVE AS GENERAL DEFAULT TO REUSE",true);
+ return true;
+}
+function nativePlaneAtlas(id){
+ const c=document.createElement("canvas");c.width=64;c.height=448;
+ const ctx=c.getContext("2d");ctx.imageSmoothingEnabled=false;
+ for(let d=0;d<4;d++){
+  const direction=DIR[d],offset=d*112;
+  if(id==="emotion"||id==="glasses"){
+   const asset=id==="emotion"?getEmotionAsset(emotionAt()):getGlassesAsset(glassesAssetId);
+   const src=sourceImage(asset,direction,frame);
+   if(src)ctx.drawImage(src.image,src.sx,src.sy,64,112,0,offset,64,112);
+   continue;
+  }
+  for(const slot of slots){
+   if(slot.bone!==id||E.slotKind(slot)||!slotAllowed(slot))continue;
+   const image=images.get(slot.src);
+   if(image)ctx.drawImage(image,0,offset,64,112,0,offset,64,112);
+  }
+ }
+ return c;
+}
+function fullCharacterReference(){
+ const ref=document.createElement("canvas");ref.width=64;ref.height=112;
+ renderLayers(ref.getContext("2d"),direction,0,0,1,false);
+ return ref;
+}
+function openPlaneEditor(){
+ if(!manifest||!planeEditor||!R.BMAP[selected]||G.HIDDEN.has(selected))return;
+ const source=nativePlaneAtlas(selected),src=planeImages.get(selected);
+ planeEditor.open({id:selected,originalAtlas:source,initialAtlas:src||source,
+  referenceImage:fullCharacterReference(),direction});
+}
+function clearPlanePixel(){
+ if(!pixelPlanes[selected])return;
+ remember();delete pixelPlanes[selected];planeImages.delete(selected);
+ buildTree();pixelPlaneStatus();paint();
+ setStatus("SOURCE PIXELS RESTORED FOR "+selected.toUpperCase()+" · SAVE GENERAL DEFAULT TO UPDATE MASTER",true);
+}
+
 function slotAllowed(s){
  return B.selected(s,{base:type,outfit,bodyPlane});
 }
