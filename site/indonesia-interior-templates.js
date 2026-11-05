@@ -20,9 +20,9 @@ function prop(label,category,glyph,w,d,actions,visualAs='',material=''){
  return {label,category,glyph,w,d,actions:actions.split(','),visualAs,material};
 }
 const types={
- floor_mattress:prop('Kasur Lantai','Rumah','🛏',2,2,'sleep,rest','bed'),
+ floor_mattress:prop('Kasur Lantai','Rumah','🛏',2,2,'sleep,rest','floor_mattress'),
  dining_table:prop('Meja Makan','Rumah','▤',2,1,'eat,browse','table'),
- wooden_bench:prop('Bangku Panjang','Rumah','▭',2,1,'sit','sofa'),
+ wooden_bench:prop('Bangku Panjang','Rumah','▭',2,1,'sit','wooden_bench'),
  tv:prop('TV Tabung / Layar','Rumah','▣',2,1,'watch,switch_on','tv'),
  fan:prop('Kipas Angin','Rumah','✳',1,1,'switch_on','fan'),
  shoe_rack:prop('Rak Sepatu','Rumah','▥',2,1,'open,store','shelf'),
@@ -31,7 +31,7 @@ const types={
  water_dispenser:prop('Dispenser Galon','Dapur','◈',1,1,'drink','water_dispenser'),
  dish_rack:prop('Rak Piring','Dapur','▥',2,1,'wash,store','shelf'),
  food_vitrine:prop('Etalase Lauk','Kuliner','▤',2,1,'buy,sell,browse','food_vitrine'),
- food_cart:prop('Gerobak Makanan','Kuliner','▥',2,1,'buy,sell,cook','counter'),
+ food_cart:prop('Gerobak Makanan','Kuliner','▥',2,1,'buy,sell,cook','food_cart'),
  noodle_pot:prop('Panci Bakso','Kuliner','◉',1,1,'cook','rice_cooker'),
  drink_cooler:prop('Cooler Minuman','Kuliner','▣',1,1,'drink,buy','fridge'),
  coffee_machine:prop('Mesin Kopi','Kuliner','▣',1,1,'brew','coffee_machine'),
@@ -45,8 +45,8 @@ const types={
  registration_desk:prop('Meja Pendaftaran','Publik','▤',2,1,'check_in','desk'),
  clinic_bed:prop('Bed Periksa','Publik','🛏',2,2,'rest,treat','bed'),
  medicine_rack:prop('Rak Obat','Publik','▥',2,1,'browse,collect','shelf'),
- squat_toilet:prop('WC Jongkok','Publik','🚽',1,1,'use_toilet,pee,poop','wc'),
- water_tub:prop('Bak Mandi + Gayung','Publik','▣',1,1,'bathe','bathtub'),
+ squat_toilet:prop('WC Jongkok','Publik','🚽',1,1,'use_toilet,pee,poop','squat_toilet'),
+ water_tub:prop('Bak Mandi + Gayung','Publik','▣',1,1,'bathe','water_tub'),
  wudhu_tap:prop('Keran Wudu','Publik','🚰',1,1,'wash','sink'),
  bookshelf:prop('Rak Buku','Sekolah','▥',2,1,'browse,read','shelf'),
  study_desk:prop('Meja Belajar','Sekolah','▤',2,1,'study,read','desk'),
