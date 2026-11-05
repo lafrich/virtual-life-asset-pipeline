@@ -82,7 +82,8 @@ for(const item of ["shirt","pants","shoes"]){
 }
 assert.match(editor,/human-/);
 assert.ok(editor.includes("base-guide.png"),"Human guide filename must match generated sprite guide");
-assert.match(app,/catalogCharacters=unified.filter\(/);
+assert.match(app,/catalogCharacters=visible.filter\(/);
+assert.match(app,/CHAR_RESET\?\.active\?CHAR_RESET.filter\(unified\):unified/);
 assert.match(app,/UNIVERSAL_MOTIONS.catalogFor\(character,union\)/,"All custom characters share canonical motion IDs");
 assert.match(app,/UNIVERSAL_SLEEP\?\.actionsFor\(character\)/);
 assert.match(app,/function saveCustomCharacter\(/);
