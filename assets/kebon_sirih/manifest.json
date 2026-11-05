@@ -115,6 +115,26 @@
       "color_space": "srgb",
       "wrap": "repeat",
       "pixelated": true
+    },
+    "drain": {
+      "file": "terrain/drain.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
+    },
+    "river": {
+      "file": "terrain/river.png",
+      "size": [
+        64,
+        64
+      ],
+      "color_space": "srgb",
+      "wrap": "repeat",
+      "pixelated": true
     }
   }
 }
