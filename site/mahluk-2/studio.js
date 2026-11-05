@@ -135,8 +135,12 @@ function zoomTo(next,atX,atY){
 function setStatus(t,ok){$("status").textContent=t;if(ok!==undefined){$("syncLed").classList.toggle("ok",!!ok);$("syncLabel").textContent=ok?"GAME STORAGE READY":"SOURCE UNAVAILABLE";}}
 function safeGet(k,def){try{return JSON.parse(localStorage.getItem(k)||"null")??def}catch{return def}}
 function safePut(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){setStatus("STORAGE FULL / DISABLED: "+e.message,false);return false}}
+function getLocalLibrary(){
+ const a=safeGet(STORAGE,[]);
+ return Array.isArray(a)?a.filter(r=>r&&r.format==="mahluk-2-character-v1").slice(0,40):[];
+}
 function getLibrary(){
- const a=safeGet(STORAGE,[]),local=Array.isArray(a)?a.filter(r=>r&&r.format==="mahluk-2-character-v1").slice(0,40):[];
+ const local=getLocalLibrary();
  const merged=new Map(local.map(r=>[r.id,r]));
  for(const [id,r] of cloudRecords)merged.set(id,r);
  return [...merged.values()];
@@ -922,9 +926,9 @@ function commitUnkeyedPose(){
 function saveGame(){
  if(!manifest){setStatus("SOURCE NOT LOADED / CANNOT PUBLISH",false);return;}
  commitUnkeyedPose();
- const library=getLibrary(),name=$("characterName").value.trim()||"My Character 2.0";
+ const library=getLocalLibrary(),name=$("characterName").value.trim()||"My Character 2.0";
  const id=identifier||"mh2_"+Date.now().toString(36);
- const old=library.find(r=>r.id===id);
+ const old=getLibrary().find(r=>r.id===id);
  // 2.0 publishes the character ROOT only; action clips belong to 1.0.
  const clipId="idle",rootFrames=1;
  clip="idle";frames=1;frame=0;
