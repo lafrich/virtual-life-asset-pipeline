@@ -148,6 +148,49 @@ def water():
   d.line((x+3,y+2,x+w-2,y+2),fill=(*c[1],255))
  return im
 
+
+# Jakarta urban drainage channel / larger river: native 64x64 nearest pixels.
+# Concrete edges and water use only existing approved Kebon Sirih color ramps.
+# The repeating texture is on a true horizontal 3D terrain tile, not a billboard.
+def drain():
+ im=base('road_concrete',1107);d=ImageDraw.Draw(im)
+ conc=img_color('road_concrete');wat=img_color('water')
+ # Narrow open drainage channel follows vertical tile boundary across rows.
+ d.rectangle((11,0,53,63),fill=(*conc[1],255))
+ d.rectangle((14,0,50,63),fill=(*conc[3],255))
+ d.rectangle((19,0,45,63),fill=(*wat[1],255))
+ d.rectangle((23,0,42,63),fill=(*wat[0],255))
+ d.line((14,0,14,63),fill=(*conc[2],255),width=2)
+ d.line((49,0,49,63),fill=(*conc[0],255),width=2)
+ for y in (5,24,45):
+  d.line((25,y,36,y),fill=(*wat[2],255))
+  d.line((28,y+2,38,y+2),fill=(*wat[1],255))
+ for y in (14,36,58):
+  d.line((4,y,11,y),fill=(*conc[2],255))
+  d.line((53,y+5,60,y+5),fill=(*conc[1],255))
+ return im
+
+def river():
+ im=base('water',1521);d=ImageDraw.Draw(im)
+ wat=img_color('water');conc=img_color('road_concrete')
+ # Concrete-banked city river. Side seams tile on Y, no floating spray.
+ d.rectangle((0,0,9,63),fill=(*conc[1],255))
+ d.rectangle((54,0,63,63),fill=(*conc[1],255))
+ d.rectangle((10,0,13,63),fill=(*conc[0],255))
+ d.rectangle((50,0,53,63),fill=(*conc[3],255))
+ d.line((14,0,14,63),fill=(*wat[3],255),width=2)
+ d.line((49,0,49,63),fill=(*wat[1],255),width=2)
+ # Muddy turquoise-brown water reads as urban, never pure blue.
+ d.rectangle((18,0,46,63),fill=(*wat[1],255))
+ rnd=random.Random(1521)
+ for _ in range(41):
+  x=rnd.randint(19,45);y=rnd.randrange(64);w=rnd.randint(2,10)
+  d.line((x,y,min(46,x+w),y),fill=(*(wat[2] if rnd.random()<.36 else wat[0]),255))
+ for y in (7,27,48):
+  d.line((3,y,8,y),fill=(*conc[2],255))
+  d.line((56,y+6,61,y+6),fill=(*conc[0],255))
+ return im
+
 sources={
  'road_asphalt':asphalt(),
  'road_concrete':concrete(),
@@ -159,7 +202,9 @@ sources={
  'plaza':pave('plaza',818),
  'grass':grass(),
  'soil':soil(),
- 'water':water()
+ 'water':water(),
+ 'drain':drain(),
+ 'river':river()
 }
 manifest={'style':'Kebon Sirih, Menteng, Jakarta Pusat — 2026 urban pixel streetscape',
  'revision':1,'projection':'flat seamless per-world-cell albedo for Three.js orthographic 2:1 projection',
