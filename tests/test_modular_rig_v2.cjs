@@ -238,7 +238,7 @@ test("anatomy-first renderer always draws ONE naked base, with clothing as an op
 
 test("outfit changes do not replace the underlying body bones",()=>{
  for(const gender of ["male","female"]){
-  const bare=R.neutral();bare.gender=gender;
+  const bare=R.neutral();bare.gender=gender;bare.outfit=false;
   const dressed=R.normalize({...bare,outfit:true});
   const parts=["head","torso","shoulder_l","elbow_l","wrist_l","hip_l","knee_l","ankle_l"];
   for(const name of parts){
