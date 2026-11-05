@@ -27,35 +27,133 @@ def screw(L,x,y,z):
 def strip(L,x0,x1,z,m='DARK',y=.105,h=3):
     B(L,x0,y,x1,y+.065,z,z+h,m,3)
 
-def wheel(L,x,y,r=.26,spokes=False):
-    """Real rubber shoulder, metal hub, lug nuts, optional bicycle spokes."""
-    c,rr=L.cr(x,y)
-    L.s.cyl(c,rr,3,18,r,'DARK',2)
-    L.s.cyl(c,rr,17,20,r*.72,'CONC',2)
-    L.s.cyl(c,rr,20,22,r*.39,'SENG',4)
-    L.s.cyl(c,rr,22,23,r*.18,'DARK',2)
-    for j in range(5):
-        t=j*TAU/5
-        xx=x+math.cos(t)*r*.48;yy=y+math.sin(t)*r*.48
-        dot(L,xx,yy,22,'LITE',.028)
-    if spokes:
-        for j in range(10):
-            t=j*TAU/10
-            xx=x+math.cos(t)*r*.65;yy=y+math.sin(t)*r*.65
-            pole(L,xx,yy,14,18,'SENG',.018)
-    # Rubber arch/panel above the tire; does not convert into a cuboid wheel.
-    B(L,x-r*.65,y-.12,x+r*.67,y+.12,20,24,'DARK',2)
+def wheel(L,x,y,r=.30,style='car',single_track=False):
+    """Native SDF-reference wheel: horizontal-AXIS disc in local x/z plane.
 
-def chassis(L,W,D,paint='CREAM',axles=None):
+    TJ/stock cars use wheel_mat based on radial distance in (x,z) and a
+    horizontal axle along vehicle width. Prior ID200 wrongly used Spr.cyl
+    (vertical Z axis), which rendered bolts on a horizontal top cap.
+    This samples a true exposed round sidewall + tire shoulder + rim into
+    the native pixel-depth renderer; all holes/spokes are world-space.
+    """
+    import numpy as np
+    from lib import MI
+    W,D=L.W,L.D
+    near=(y<=D*.5)
+    # Automobile wheels sit against the OUTER side panels, not inside
+    # the blocky chassis. Bicycle and motor wheels remain on centerline.
+    face_y=(y-.105 if single_track else (.075 if near else D-.075))
+    face_y=max(.025,min(D-.025,face_y))
+    rz=32*r*(.94 if style=='bicycle' else .98)
+    center_z=rz+2.0
+    rx=r*(1.04 if style=='heavy' else 1.0)
+    # One native texel (or finer): keep it pixel art, never interpolate.
+    ax=np.arange(x-rx-.02,x+rx+.02,1/48,dtype=float)
+    zz=np.arange(1,max(2,int(center_z+rz+2)),.72,dtype=float)
+    A,Z=np.meshgrid(ax,zz,indexing='xy')
+    U=(A-x)/rx
+    V=(Z-center_z)/rz
+    radial=np.sqrt(U*U+V*V)
+    angle=np.arctan2(V,U)
+    mask=(radial<=1)&(Z>=1)
+    mat=np.full(radial.shape,MI['DARK'],dtype=np.int16)
+    tone=np.full(radial.shape,2,dtype=np.int8)
+    # Beveled and shaded tire crown / sidewall. Tread grooves around the
+    # circumference, dark rubber, narrow reflective edge.
+    tread=(radial>.89)&(radial<=1)
+    sidewall=(radial>.77)&(radial<=.89)
+    mat[tread]=MI['OFF'];tone[tread]=np.where(
+        (np.floor((angle+math.pi)*13).astype(int)%4)==0,1,2)[tread]
+    mat[sidewall]=MI['DARK'];tone[sidewall]=np.where(
+        (angle>-1.0)&(angle<1.5),3,1)[sidewall]
+    bead=(radial>.69)&(radial<=.77)
+    mat[bead]=MI['SENG'];tone[bead]=2
+    inner=(radial<=.69)
+    mat[inner]=MI['OFF'];tone[inner]=1
+    if style=='bicycle':
+        # Slender rim + actual OPEN gaps through wire spokes; no solid disc.
+        rim=(radial>.76)&(radial<=.84)
+        mat[rim]=MI['LITE'];tone[rim]=3
+        open_hole=(radial>.21)&(radial<=.76)
+        mask[open_hole]=False
+        spoke=open_hole&(np.abs(np.sin(angle*10))<.10)
+        mask[spoke]=True
+        mat[spoke]=MI['SENG'];tone[spoke]=4
+    elif style=='motor':
+        # 5 bold alloy spokes around brake disc; readable at native 1x.
+        rim=(radial>.64)&(radial<=.75)
+        mat[rim]=MI['SENG'];tone[rim]=4
+        ring=(radial>.37)&(radial<=.46)
+        mat[ring]=MI['CONC'];tone[ring]=3
+        alloy=(radial>.23)&(radial<.69)&(np.abs(np.sin(angle*2.5))<.34)
+        mat[alloy]=MI['LITE'];tone[alloy]=3
+        holes=(radial>.42)&(radial<.64)&(~alloy)
+        mat[holes]=MI['OFF'];tone[holes]=0
+    elif style=='heavy':
+        # TJ / truck 6-hole steel wheel, 8 bolts, heavy dark tire shoulder.
+        rim=(radial>.24)&(radial<=.69)
+        mat[rim]=MI['SENG'];tone[rim]=2
+        lip=(radial>.60)&(radial<=.69)
+        mat[lip]=MI['LITE'];tone[lip]=3
+        vents=(radial>.39)&(radial<.55)&(np.abs(np.sin(angle*3))<.39)
+        mat[vents]=MI['OFF'];tone[vents]=0
+        rivets=(radial>.295)&(radial<.365)&(np.abs(np.sin(angle*4))<.30)
+        mat[rivets]=MI['LITE'];tone[rivets]=4
+    else:
+        # Sedan/angkot/van 5-spoke wheel with recessed holes and hub cover.
+        rim=(radial>.28)&(radial<=.68)
+        mat[rim]=MI['CONC'];tone[rim]=3
+        lip=(radial>.59)&(radial<=.69)
+        mat[lip]=MI['LITE'];tone[lip]=3
+        slots=(radial>.33)&(radial<.57)&(np.abs(np.sin(angle*2.5))>.40)
+        mat[slots]=MI['OFF'];tone[slots]=1
+        spokes=(radial>.32)&(radial<.63)&(np.abs(np.sin(angle*2.5))<.22)
+        mat[spokes]=MI['LITE'];tone[spokes]=3
+    # Centre cap and axle are not simply painted on the top of a Z cylinder.
+    hub=(radial<=.205)
+    mat[hub]=MI['DARK'];tone[hub]=3
+    hub_ring=(radial>.13)&(radial<=.22)
+    mat[hub_ring]=MI['LITE'];tone[hub_ring]=4
+    core=(radial<=.075)
+    mat[core]=MI['SENG'];tone[core]=3
+    # Shoulder and wheel disc at separate physical depths, so viewed from
+    # any of four directions, wheel is neither cardboard nor a top-down peg.
+    for offset,limit in ((-.020,1.00),(.005,.99),(.027,.78)):
+        layer=mask&(radial<=limit)
+        if not layer.any():continue
+        yy=np.full(int(layer.sum()),face_y+offset if near or single_track else face_y-offset)
+        xx=A[layer];hh=Z[layer]
+        cc,rr=L.cr(xx,yy)
+        L.s.points(cc,rr,hh,mat[layer],tone[layer])
+    return face_y,center_z,rz
+
+def wheel_arch(L,x,y,r,paint='CONC',single_track=False):
+    """Semicircular visible wheel opening following the tire, not flat bar."""
+    import numpy as np
+    D=L.D
+    near=y<=D*.5
+    yy=y-.140 if single_track else (.047 if near else D-.047)
+    yy=max(.020,min(D-.020,yy))
+    rad=r*1.15
+    zc=r*32*.98+2
+    t=np.linspace(.025,math.pi-.025,116)
+    xx=x+rad*np.cos(t)
+    zz=zc+rad*32*.98*np.sin(t)
+    # Pair of curved, stepped outlines, matching stock vehicle SDF fender.
+    for dz,mat,tone in ((-1.4,'OFF',1),(0,'DARK',2),(2,'CONC',3)):
+        cc,rr=L.cr(xx,np.full(xx.shape,yy))
+        L.s.points(cc,rr,zz+dz,mat,tone)
+
+def chassis(L,W,D,paint='CREAM',axles=None,wheel_style='car'):
     axles=axles or (.55,W-.64)
     B(L,.17,.19,W-.16,D-.18,23,43,'DARK',2)
     B(L,.20,.19,W-.20,D-.19,42,48,paint,2)
-    # Side running board + rubber guard, front and rear mudguard.
     B(L,.33,.12,W-.32,.20,23,26,'SENG',2)
+    radius=.38 if wheel_style=='heavy' and W>=5 else .345 if wheel_style=='heavy' else .30
     for x in axles:
         for y in (D*.23,D*.80):
-            wheel(L,x,y,.265)
-            B(L,x-.29,.14,x+.29,.22,28,32,'DARK',2)
+            wheel(L,x,y,radius,wheel_style)
+            wheel_arch(L,x,y,radius,paint)
     for x in (.23,W-.26):
         for y in (.17,D-.23):
             screw(L,x,y,29)
@@ -108,7 +206,7 @@ def van(L,s):
     is_elf='elf' in n
     bus_city='bus kota' in n
     paint='WHITE' if is_ambulance or is_elf else 'TEAL' if is_angkot else 'BLUE'
-    _shadow(L);chassis(L,W,D,paint)
+    _shadow(L);chassis(L,W,D,paint,wheel_style='heavy' if is_elf or bus_city else 'car')
     B(L,.23,.20,W-.25,D-.20,47,108 if is_angkot else 116,paint,3)
     B(L,.25,.17,W-.25,D-.22,107 if is_angkot else 115,
       114 if is_angkot else 123,'CONC' if is_elf else paint,3)
@@ -172,7 +270,7 @@ def truck(L,s):
     W,D=L.W,L.D;n=s['label'].lower();is_pickup=s['kind']=='pickup'
     garbage='sampah' in n
     color='GREEN' if garbage else 'WHITE' if is_pickup else 'TERRA'
-    _shadow(L);chassis(L,W,D,color)
+    _shadow(L);chassis(L,W,D,color,wheel_style='car' if is_pickup else 'heavy')
     cargo_end=W*.62
     # Cabin is separate: stepped bonnet, raked windshield and two mirrors.
     B(L,W*.62,.22,W-.19,D-.20,46,91,'WHITE' if is_pickup else 'CREAM',3)
@@ -255,7 +353,8 @@ def tricycle(L,s):
     _shadow(L)
     # Three visually separated wheels including powered rear wheel.
     for x,y,r in ((.38,D*.26,.28),(.38,D*.78,.28),(W-.43,D*.52,.27)):
-        wheel(L,x,y,r,spokes=(k=='becak'))
+        wheel(L,x,y,r,'motor' if bajaj or (k=='bentor' and x>W*.5) else 'bicycle',single_track=x>W*.5)
+        wheel_arch(L,x,y,r,'ORANGE' if bajaj else 'GREEN' if k=='bentor' else 'WOOD',single_track=x>W*.5)
     B(L,.18,.24,W-.18,D-.22,20,28,'DARK')
     if bajaj:
         B(L,.32,.23,W-.28,D-.20,26,52,'ORANGE')
@@ -310,7 +409,8 @@ def horse_cart(L,s):
     # Horse at the nose; carriage has independent spoked wheels, wooden body.
     # Driver/passenger actors remain modular and are NOT drawn here.
     for x,y in ((.40,D*.28),(1.34,D*.77)):
-        wheel(L,x,y,.38,True)
+        wheel(L,x,y,.38,'bicycle')
+        wheel_arch(L,x,y,.38,'WOOD')
     B(L,.18,.22,1.45,D-.20,36,79,'WOOD',3)
     B(L,.23,.19,1.41,D-.24,79,86,'TERRA')
     for x in (.22,1.28):
@@ -348,8 +448,9 @@ def bike(L,s):
     bicycle=k=='sepeda';is_matic='matik' in n;is_bebek='bebek' in n
     _shadow(L)
     left,right=.28,W-.30;yy=D*.54
-    wheel(L,left,yy,.295 if bicycle else .235,bicycle)
-    wheel(L,right,yy,.295 if bicycle else .235,bicycle)
+    for x in (left,right):
+        wheel(L,x,yy,.335 if bicycle else .285,'bicycle' if bicycle else 'motor',single_track=True)
+        wheel_arch(L,x,yy,.335 if bicycle else .285,'DARK',single_track=True)
     # Bicycle triangle / motor crankframe in the same footprint.
     B(L,left+.17,yy-.07,right-.13,yy+.065,22,29,'DARK')
     B(L,left+.42,yy-.125,right-.42,yy+.13,28,33,'CONC',2)
