@@ -224,7 +224,11 @@ function sourceImage(asset,dir,f){
  return img?{image:img,sx:(f%asset.frames)*64,sy:DIR.indexOf(dir)*112}:null;
 }
 function renderLayers(ctx,dir,ox,oy,mag,editorMode){
- const world=partWorld(),mirror=dir==="sw"||dir==="nw",di=DIR.indexOf(dir);
+ const world=partWorld(),mirror=V.config(dir).mirror,di=DIR.indexOf(dir);
+ // Explode the individual source planes only in this editor viewport.
+ // Export/preview always draws the real world coordinates with gap=0.
+ const exploding=Boolean(editorMode&&view==="iso"&&inspectPlaneDepth&&planeGap>0);
+ const rankIds=exploding?G.effectiveOrder(rigRules,renderableIds()):null;
  const ordered=[];let faceAdded=false,glassesAdded=false;
  for(let i=0;i<slots.length;i++){
   const s=slots[i],kind=E.slotKind(s);
@@ -255,13 +259,18 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode){
  }
  const ids=renderableIds();
  ordered.sort((a,b)=>{
+  // Depth is a single shared world coordinate, but the camera sees the
+  // opposite stacking order from behind. Do not keep front painter
+  // order when an actual Z difference is present.
+  const za=V.depth(world[a.bone],dir),zb=V.depth(world[b.bone],dir);
+  if(Math.abs(za-zb)>0.001)return za-zb;
   if(rigRules.order.length){
    const ra=G.layerRank(rigRules,a.bone,ids),rb=G.layerRank(rigRules,b.bone,ids);
    return ra-rb||a.i-b.i;
   }
-  const za=(world[a.bone]?.z||0)+(type!=="original"&&a.kind!=="body"?20:0);
-  const zb=(world[b.bone]?.z||0)+(type!=="original"&&b.kind!=="body"?20:0);
-  return za-zb||a.i-b.i;
+  const fa=type!=="original"&&(a.kind==="emotion"||a.kind==="glasses")?20:0;
+  const fb=type!=="original"&&(b.kind==="emotion"||b.kind==="glasses")?20:0;
+  return fa-fb||a.i-b.i;
  });
  for(const item of ordered){
   const bone=R.BMAP[item.bone],p=world[item.bone];
@@ -281,14 +290,21 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode){
   // Each source RGBA occupies exactly one plane with independent transform.
   // Emotion and glasses are sibling children of head (not face micro-bones).
   const pivot=rigRules.anchors[item.bone]||{x:bone.x,y:bone.y};
-  const mx=mirror?64-p.x:p.x,ax=mirror?64-pivot.x:pivot.x;
-  const dzx=view==="iso"||!editorMode?-.60*p.z:0;
-  const dzy=view==="iso"||!editorMode?-.28*p.z:0;
+  const ax=mirror?64-pivot.x:pivot.x;
+  const screen=V.planePosition(p,dir,view==="front"&&editorMode);
+  const rank=rankIds?rankIds.indexOf(item.bone):-1;
+  const exploded=rank>=0?V.explosion(rank,rankIds.length,planeGap,dir):{x:0,y:0};
   ctx.save();ctx.imageSmoothingEnabled=false;
-  ctx.translate(ox+(mx+dzx)*mag,oy+(p.y+dzy)*mag);
+  ctx.translate(ox+(screen.x+exploded.x)*mag,oy+(screen.y+exploded.y)*mag);
   ctx.rotate((mirror?-1:1)*p.angle*Math.PI/180);
   ctx.scale(p.scale*mag,p.scale*mag);
   ctx.drawImage(src.image,src.sx,src.sy,64,112,-ax,-pivot.y,64,112);
+  if(exploding&&rank>=0){
+   // Thin outlines reveal each distinct RGBA plane without altering it.
+   ctx.strokeStyle=item.bone===selected?"rgba(255,211,117,.92)":"rgba(133,191,242,.24)";
+   ctx.lineWidth=(item.bone===selected?1:0.45)/Math.max(0.001,p.scale*mag);
+   ctx.strokeRect(-ax,-pivot.y,64,112);
+  }
   ctx.restore();
  }
 }
