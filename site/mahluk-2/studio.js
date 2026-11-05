@@ -760,7 +760,7 @@ function setupEvents(){
  }
  $("modelType").onchange=e=>{remember();type=e.target.value;
   if(!getEmotionAsset(emotionAssetId)){emotionAssetId="native:neutral";emotionKeys=[]}
-  assetOptions();buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
+  assetOptions();setProjectFields();buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
  $("outfit").onchange=e=>{remember();outfit=e.target.value;buildTree();paint()};
  $("bodyPlane").onchange=e=>{
   const next=B.normalize(e.target.value);if(next===bodyPlane)return;
