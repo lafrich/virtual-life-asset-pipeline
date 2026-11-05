@@ -131,7 +131,7 @@
  }
  function save(){
   try{
-   const data={format:"mahluk-rig-studio-v2",base,tracks,frame,count,fps,view,selected};
+   const data={format:"mahluk-rig-studio-v2",artRevision:R.ART_REVISION,base,tracks,frame,count,fps,view,selected};
    root.localStorage.setItem(STORE,JSON.stringify(data));
    root.document.dispatchEvent(new CustomEvent("mahluk:modular-rig-saved",{detail:{id:R.ID}}));
    say("SAVED + SYNCED TO CHARACTER VIEWER · "+R.ID+" · ORIGINALS UNCHANGED");
@@ -139,8 +139,17 @@
  }
  function restore(){
   try{
-   const r=JSON.parse(root.localStorage.getItem(STORE)||"null");
+   const raw=root.localStorage.getItem(STORE);
+   const r=JSON.parse(raw||"null");
    if(!r||r.format!=="mahluk-rig-studio-v2")return false;
+   if(r.artRevision!==R.ART_REVISION){
+    // Keep the user's old adjustments in a separate archive, and start the
+    // new proportions from a clean base rather than applying obsolete offsets.
+    if(!root.localStorage.getItem(STORE+"-previous-reference-backup"))
+     root.localStorage.setItem(STORE+"-previous-reference-backup",raw);
+    say("OLDER POSE ARCHIVED · NEW DETAIL/PROPORTION REFERENCE LOADED");
+    return false;
+   }
    base=R.normalize(r.base);tracks=cleanTracks(r.tracks);
    count=Math.round(clamp(r.count||24,4,96));fps=Math.round(clamp(r.fps||12,4,30));
    frame=Math.round(clamp(r.frame||0,0,count-1));
