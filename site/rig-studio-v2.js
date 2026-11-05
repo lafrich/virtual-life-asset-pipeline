@@ -216,7 +216,7 @@
    $("rig-v2-"+prop).addEventListener("input",e=>{
     const value=Number(e.target.value);
     if(Number.isFinite(value)){
-     model.parts[selected][prop]=clamp(value,prop==="scale"?.4:prop==="angle"?-180:-48,
+     model.parts[selected][prop]=clamp(value,prop==="scale"?0.4:prop==="angle"?-180:-48,
       prop==="scale"?2:prop==="angle"?180:48);
      drawAll();
      say("UNKEYED CHANGE / "+R.BMAP[selected].label+" · CLICK ◆ SET KEY");
