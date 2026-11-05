@@ -246,8 +246,9 @@ function visualPlaneOrder(dir){
 function getEmotionAsset(id){
  if(typeof id!=="string")return null;
  if(id.startsWith("native:")){
+  // Only neutral remains a local fallback. Authored emotions live in Emotion Studio.
   const name=id.slice(7);
-  return (manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
+  return name==="neutral"&&(manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
  }
  return publishedAssets.find(a=>a.id===id&&(a.base===type||a.base==="universal"))||
   userAssets.find(a=>a.id===id&&a.kind==="emotion")||null;
@@ -783,7 +784,7 @@ function assetOptions(){
  const opt=(list,value,label)=>{
   const o=document.createElement("option");o.value=value;o.textContent=label;list.append(o);
  };
- for(const id of manifest?.emotions||EMOTIONS)opt(emotion,"native:"+id,"V6B ORIGINAL / "+id.toUpperCase());
+ opt(emotion,"native:neutral","SOURCE / NEUTRAL FALLBACK");
  opt(glass,"native","ORIGINAL GLASSES / V6B");
  opt(glass,"none","NONE / HIDE");
  for(const asset of publishedAssets.filter(a=>a.base===type||a.base==="universal")){
@@ -815,31 +816,10 @@ function updateEmotionStatus(){
   (asset?.frames||1)+" FRAME(S) · "+emotionKeys.length+" IMAGE SWAP KEY(S)";
 }
 async function loadPublishedAssets(){
- const response=await fetch("../emotion-plane-library.json",{cache:"no-store"});
- if(!response.ok)throw Error("Existing emotion gallery unavailable: HTTP "+response.status);
- const catalog=await response.json();
- if(catalog.format!=="mahluk-2-published-emotion-planes-v1"||!Array.isArray(catalog.entries))
-  throw Error("Unrecognized published Emotion Plane manifest");
- const rows=catalog.entries.filter(x=>
-  x&&["male","female"].includes(x.base)&&
-  typeof x.id==="string"&&x.id.startsWith("human-"+x.base+"-")&&
-  typeof x.src==="string"&&x.src.startsWith("media/mahluk2-emotions/")&&
-  !x.src.includes("..")&&x.src.endsWith(".png")&&
-  Number.isInteger(x.frames)&&x.frames>0&&x.frames<=48);
- const ready=[];
- await Promise.all(rows.map(async asset=>{
-  const pic=await new Promise((resolve,reject)=>{
-   const img=new Image();
-   img.onload=()=>resolve(img);
-   img.onerror=()=>reject(Error("Missing published expression plane "+asset.id));
-   img.src="../"+asset.src;
-  });
-  if(pic.naturalWidth!==64*asset.frames||pic.naturalHeight!==448)
-   throw Error("Published emotion dimensions invalid: "+asset.id);
-  publishedImages.set(asset.id,pic);ready.push(asset);
- }));
- publishedAssets=ready;
- try{await loadUniversalAssets()}catch(error){setStatus("UNIVERSAL EMOTION LIBRARY OFFLINE: "+error.message,false)}
+ // Emotion Studio is the sole published emotion catalog for Mahluk Hidup 2.
+ publishedAssets=[];
+ publishedImages.clear();
+ await loadUniversalAssets();
  assetOptions();
 }
 async function loadUniversalAssets(){
@@ -1378,7 +1358,7 @@ async function mount(){
   if(m.format!=="mahluk-original-source-rig-v1")throw Error("Invalid authored V6B manifest");
   await loadImagesFromManifest(m);
   loadImportedAssets();
-  try{await loadPublishedAssets()}catch(error){setStatus("ORIGINAL EMOTIONS READY · EXISTING HUMAN ANIMATION LIBRARY NOT YET AVAILABLE: "+error.message,true)}
+  try{await loadPublishedAssets()}catch(error){setStatus("UNIVERSAL EMOTION STUDIO UNAVAILABLE · NEUTRAL FALLBACK ACTIVE: "+error.message,false)}
   const draft=safeGet(DRAFT,null);
   if(draft?.format==="mahluk-2-project-v1"){
    // Drafts are intentionally NOT auto-loaded as game-ready characters.
