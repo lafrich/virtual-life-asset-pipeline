@@ -6,7 +6,7 @@
 const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
-const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1", EMOTIONS=["neutral","happy","mischievous","angry","surprised","blush","grin"];
+const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1";
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,Number(x)||0));
 const clone=x=>JSON.parse(JSON.stringify(x));
 const GROUPS=[
