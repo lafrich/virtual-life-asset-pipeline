@@ -543,9 +543,14 @@ function drawFacePatch(target,actor,p,m,frame){
  }
  const dx=Math.round(posedHead.x)-7+(p.faceOffsetX||0);
  const dy=Math.round(posedHead.y)+10+(p.faceOffsetY||0);
- if(dx<0||dy<0||dx+sw>64||dy+sh>112)return;
+ // Imported portrait may include skin/neck pixels. Constrain it strictly
+ // to the CURRENT actor's facial zone, regardless of the user's offsets.
+ // Even an opaque 32x29 screenshot can never replace the neckline.
+ const faceBottom=Math.round(posedHead.y)+22;
+ const safeH=Math.max(0,Math.min(sh,faceBottom-dy));
+ if(!safeH||dx<0||dy<0||dx+sw>64||dy+safeH>112)return;
  target.save();target.imageSmoothingEnabled=false;
- target.drawImage(source,sx,sy,sw,sh,dx,dy,sw,sh);
+ target.drawImage(source,sx,sy,sw,safeH,dx,dy,sw,safeH);
  target.restore();
 }
 function actorImage(actor,p,m,frame){
