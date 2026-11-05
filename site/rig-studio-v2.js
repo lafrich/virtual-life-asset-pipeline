@@ -9,12 +9,17 @@
  const $=id=>document.getElementById(id);
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
  const fnum=n=>String(Math.round(Number(n)*10)/10);
- const faces=new Set(["emotion","brow_l","brow_r","eye_l","eye_r","mouth"]);
+ const faces=new Set(["emotion","brow_l","brow_r","eye_l","eye_r","nose","mouth",
+  "blush_l","blush_r","glasses"]);
  const groups={
   "ROOT / BODY":["root","pelvis","torso","neck"],
-  "HEAD / EMOTION":["head","emotion","brow_l","brow_r","eye_l","eye_r","mouth"],
-  "ARM L":["shoulder_l","elbow_l","wrist_l","phone"],
-  "ARM R":["shoulder_r","elbow_r","wrist_r"],
+  "HEAD BASE":["head","hair_back","hair_cap"],
+  "HAIR / INDEPENDENT FRINGE":["fringe_l","fringe_mid","fringe_r"],
+  "HEAD → EMOTION / FACE":["emotion","brow_l","brow_r","eye_l","eye_r",
+    "nose","mouth","blush_l","blush_r","glasses"],
+  "LEFT ARM":["shoulder_l","elbow_l","wrist_l"],
+  "RIGHT ARM":["shoulder_r","elbow_r","wrist_r"],
+  "PROP / PHONE":["phone"],
   "LEG L":["hip_l","knee_l","ankle_l"],
   "LEG R":["hip_r","knee_r","ankle_r"]
  };
@@ -38,8 +43,10 @@
   $("rig-v2-emotion").value=model.emotion;
   $("rig-v2-phone").checked=model.phone;
   $("rig-v2-face-note").textContent=faces.has(selected)?
-   "CHILD OF HEAD · PARENT ROTATION/TRANSLATION INHERITED · OWN KEYFRAMES":
-   "MODULAR BODY PART · INDEPENDENT PIVOT, POSITION AND ROTATION";
+   "HEAD → EMOTION CHILD · INDEPENDENT FACIAL POSITION, ROTATION & KEYFRAMES":
+   R.BMAP[selected].kind==="hair"?
+    "HEAD → SEPARATE HAIR CUTOUT · INHERITS HEAD PIVOT":
+    "MODULAR BODY PART · INDEPENDENT PIVOT, POSITION AND ROTATION";
  }
  function drawTo(ctx,direction,controls=false){
   const canvas=ctx.canvas;ctx.imageSmoothingEnabled=false;
@@ -205,7 +212,7 @@
     t.classList.remove("active");t.setAttribute("aria-selected","false");
    }
    panel.hidden=false;tab.classList.add("active");tab.setAttribute("aria-selected","true");
-   say("MODULAR RIG READY · HEAD → EMOTION → EYES / BROWS / MOUTH");
+   say("MODULAR RIG READY · LAYERED HAIR / GLASSES / HEAD → EMOTION → BROWS, EYES, NOSE, BLUSH, MOUTH");
    drawAll();
   });
   for(const btn of document.querySelectorAll("[data-rig-v2-view]"))btn.addEventListener("click",()=>{
