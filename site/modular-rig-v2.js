@@ -11,7 +11,7 @@
 })(typeof window!=="undefined"?window:null,function(root){
  "use strict";
  const ID="human_pixel_reference_v2", W=64,H=112,FRAMES=24, FPS=12,
-  ART_REVISION="anatomy-first-universal-rig-v5";
+  ART_REVISION="clothed-v6b-manual-art-weights-v6";
  const DIR=Object.freeze(["se","sw","ne","nw"]);
  const def=(id,parent,x,y,label,kind="body")=>Object.freeze({id,parent,x,y,label,kind});
  const BONES=Object.freeze([
@@ -72,7 +72,7 @@
   return {format:"mahluk-modular-rig-v2",version:2,character_id:ID,
    frame:[W,H],pivot:[32,100],fps:FPS,frames:FRAMES,direction:"se",
    emotion:"neutral",name:"PIXEL REFERENCE / 01",phone:true,
-   gender:"male",outfit:false,
+   gender:"male",outfit:true,visual:"original_clothed",
    parts:Object.fromEntries(BONES.map(b=>[b.id,{x:0,y:0,angle:0,scale:1,visible:true}]))};
  }
  function referencePose(){
@@ -92,6 +92,7 @@
    if(typeof source.phone==="boolean")state.phone=source.phone;
    if(source.gender==="male"||source.gender==="female")state.gender=source.gender;
    if(typeof source.outfit==="boolean")state.outfit=source.outfit;
+   if(source.visual==="gender"||source.visual==="original_clothed")state.visual=source.visual;
    if(DIR.includes(source.direction))state.direction=source.direction;
    state.fps=clamp(source.fps||FPS,4,30);
    state.frames=Math.round(clamp(source.frames||FRAMES,4,96));
@@ -446,7 +447,11 @@
  // Original source V6B pixel layers. Loaded only from the deployed pipeline
  // generator; original RGB/alpha, shading and z-order are never reauthored.
  const ORIGINAL_SOURCE="./media/original-rig/manifest.json";
- let originalArt=null,loadingOriginal=null;
+ let originalArt=null,loadingOriginal=null,manualLayerProvider=null;
+ function setManualLayerProvider(provider){
+  if(provider!==null&&typeof provider!=="function")throw Error("Manual layer provider must be a function");
+  manualLayerProvider=provider;
+ }
  async function loadNativeArt(){
   if(originalArt)return originalArt;
   if(loadingOriginal)return loadingOriginal;
@@ -493,31 +498,43 @@
   // Keep supporting old archived manifest records.
   return part.mode===(state.outfit?"outfit":"base");
  }
+ function drawRigLayer(ctx,image,bone,view,coords,dir,expression=0,isExpression=false){
+  const anchor=BMAP[bone],node=coords[bone];
+  if(!anchor||!node?.visible)return;
+  const mirrored=view==="sw"||view==="nw";
+  ctx.save();
+  ctx.translate(mirrored?W-node.x:node.x,node.y);
+  ctx.rotate((mirrored?-1:1)*node.angle*Math.PI/180);
+  ctx.scale(node.scale,node.scale);
+  ctx.translate(-(mirrored?W-anchor.x:anchor.x),-anchor.y);
+  if(isExpression)ctx.drawImage(image,expression*W,dir*H,W,H,0,0,W,H);
+  else if(image.width===W&&image.height===H)ctx.drawImage(image,0,0);
+  else ctx.drawImage(image,0,dir*H,W,H,0,0,W,H);
+  ctx.restore();
+ }
  function drawNative(ctx,state,view,coords){
   const dir=originalArt.directions.indexOf(view);
   if(dir<0)return;
   const expressionIndex=Math.max(0,originalArt.emotions.indexOf(state.emotion));
-  const mirrored=view==="sw"||view==="nw";
-  const byGender=originalArt.slots.some(slot=>slot.gender);
-  for(const part of originalArt.slots){
-   if(byGender){
-    if(!part.gender||!sourceSlot(part,state))continue;
+  if(state.visual!=="gender"&&manualLayerProvider){
+   const manual=manualLayerProvider(view,state.emotion);
+   if(manual){
+    for(const part of manual){
+     if(part.bone==="phone"&&!state.phone)continue;
+     drawRigLayer(ctx,part.image,part.bone,view,coords,dir);
+    }
+    return;
    }
-   const b=BMAP[part.bone],n=coords[part.bone];
-   if(!b||!n?.visible||(part.bone==="phone"&&!state.phone))continue;
-   // All source atlases already contain true SW/NW mirrored pixels.
-   // Transform *around the mirrored anchor*, not the SE/NE anchor. The
-   // neutral pose must reassemble exactly in every direction.
-   const anchorX=mirrored?W-b.x:b.x;
-   const worldX=mirrored?W-n.x:n.x;
-   ctx.save();
-   ctx.translate(worldX,n.y);
-   ctx.rotate((mirrored?-1:1)*n.angle*Math.PI/180);
-   ctx.scale(n.scale,n.scale);
-   ctx.translate(-anchorX,-b.y);
-   ctx.drawImage(part.image,
-    part.expression?expressionIndex*W:0,dir*H,W,H,0,0,W,H);
-   ctx.restore();
+  }
+  // Original V6B CLOTHED artwork is the approved, protected master.
+  // Gender-specific auto-nude parts are legacy data and are never used in
+  // this mode; the manual artwork editor creates user-owned copies instead.
+  for(const part of originalArt.slots){
+   if(state.visual==="gender"){
+    if(!part.gender||!sourceSlot(part,state))continue;
+   }else if(part.gender)continue;
+   if(part.bone==="phone"&&!state.phone)continue;
+   drawRigLayer(ctx,part.image,part.bone,view,coords,dir,expressionIndex,part.expression);
   }
  }
  function draw(ctx,source,direction="se",options={}){
@@ -597,12 +614,12 @@
     "blush_l","blush_r","glasses"],
    hair_children:["hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"],
    art_revision:ART_REVISION,
-   gender:s.gender,outfit:s.outfit,reference_modes:["base","outfit"],
+   gender:s.gender,outfit:s.outfit,visual:s.visual,reference_modes:["original_clothed","manual_edited"],
    available_genders:["male","female"],
    style_profile:PROPORTIONS.style,
    proportions:{head:PROPORTIONS.head,shirt:PROPORTIONS.shirt,
     pants:PROPORTIONS.pants,shoes:PROPORTIONS.shoes}};
  }
  return Object.freeze({ID,W,H,DIR,ART_REVISION,BONES,BMAP,HIERARCHY,EMOTIONS,PALETTE,
-  PROPORTIONS,ORIGINAL_SOURCE,mirrorBone,sourceSlot,loadNativeArt,get hasNativeArt(){return !!originalArt;},neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
+  PROPORTIONS,ORIGINAL_SOURCE,mirrorBone,sourceSlot,setManualLayerProvider,loadNativeArt,get hasNativeArt(){return !!originalArt;},neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
 });
