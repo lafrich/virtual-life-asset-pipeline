@@ -37,25 +37,83 @@ function slotAllowed(s){
 function activeSlots(){return slots.filter(slotAllowed)}
 function faceEmotion(s){return state.faceLayers?.[s.bone]||state.emotion||"neutral"}
 function partWorld(){return E.accessoryWorld(state,R)}
+function getEmotionAsset(id){
+ if(id.startsWith("native:")){
+  const name=id.slice(7);
+  return (manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
+ }
+ return userAssets.find(a=>a.id===id&&a.kind==="emotion")||null;
+}
+function getGlassesAsset(id){
+ if(id==="none"||id==="native")return {id,frames:1};
+ return userAssets.find(a=>a.id===id&&a.kind==="glasses")||null;
+}
+function emotionAt(f=frame){
+ const proposed=E.sample(emotionKeys,f,emotionAssetId);
+ return getEmotionAsset(proposed)?proposed:emotionAssetId;
+}
+function faceSource(direction,emotion){
+ const key=direction+":"+emotion;
+ if(!nativeFaces.has(key))nativeFaces.set(key,E.makeNativePlane(slots,images,direction,emotion,manifest));
+ return nativeFaces.get(key);
+}
+function sourceImage(asset,dir,f){
+ if(!asset)return null;
+ if(asset.native)return {image:faceSource(dir,asset.native),sx:0,sy:0};
+ if(asset.id==="native"){
+  const slot=slots.find(E.glassesSlot),img=slot&&images.get(slot.src);
+  return img?{image:img,sx:0,sy:DIR.indexOf(dir)*112}:null;
+ }
+ if(asset.id==="none")return null;
+ const img=importedImages.get(asset.id);
+ return img?{image:img,sx:(f%asset.frames)*64,sy:DIR.indexOf(dir)*112}:null;
+}
 function renderLayers(ctx,dir,ox,oy,mag,editorMode){
  const world=partWorld(),mirror=dir==="sw"||dir==="nw",di=DIR.indexOf(dir);
- const ordered=activeSlots().map((s,i)=>({s,i,z:(world[s.bone]?.z||0)+(type!=="original"&&s.expression?20:0)}))
-   .sort((a,b)=>a.z-b.z||a.i-b.i);
- for(const {s} of ordered){
-  const p=world[s.bone],bone=R.BMAP[s.bone],img=images.get(s.src);
-  if(!p?.visible||!bone||!img)continue;
-  const idx=s.expression?Math.max(0,EMOTIONS.indexOf(faceEmotion(s))):0;
-  // X and Y preserve exact native sprite layout. Z offsets plane in the
-  // isometric view and controls occlusion order, without morphing source pixels.
+ const ordered=[];let faceAdded=false,glassesAdded=false;
+ for(let i=0;i<slots.length;i++){
+  const s=slots[i],kind=E.slotKind(s);
+  if(kind==="emotion"){
+   if(!faceAdded){ordered.push({kind:"emotion",bone:"emotion",i});faceAdded=true}
+   continue;
+  }
+  if(kind==="glasses"){
+   if(!glassesAdded){ordered.push({kind:"glasses",bone:"glasses",i});glassesAdded=true}
+   continue;
+  }
+  // Native Human anatomy contains neutral eye/mouth cutouts. Suppress
+  // them: one explicit Emotion Plane owns the whole face, never the rig.
+  if(type!=="original"&&FACE.has(s.bone))continue;
+  if(slotAllowed(s))ordered.push({kind:"body",bone:s.bone,i,s});
+ }
+ if(!faceAdded)ordered.push({kind:"emotion",bone:"emotion",i:slots.length+1});
+ if(!glassesAdded)ordered.push({kind:"glasses",bone:"glasses",i:slots.length+2});
+ ordered.sort((a,b)=>{
+  const za=(world[a.bone]?.z||0)+(type!=="original"&&a.kind!=="body"?20:0);
+  const zb=(world[b.bone]?.z||0)+(type!=="original"&&b.kind!=="body"?20:0);
+  return za-zb||a.i-b.i;
+ });
+ for(const item of ordered){
+  const bone=R.BMAP[item.bone],p=world[item.bone];
+  if(!p?.visible||!bone)continue;
+  let src;
+  if(item.kind==="emotion")src=sourceImage(getEmotionAsset(emotionAt()),dir,frame);
+  else if(item.kind==="glasses")src=sourceImage(getGlassesAsset(glassesAssetId),dir,frame);
+  else {
+   const image=images.get(item.s.src);
+   src=image?{image,sx:0,sy:di*112}:null;
+  }
+  if(!src)continue;
+  // Each source RGBA occupies exactly one plane with independent transform.
+  // Emotion and glasses are sibling children of head (not face micro-bones).
   const mx=mirror?64-p.x:p.x,ax=mirror?64-bone.x:bone.x;
   const dzx=view==="iso"||!editorMode?-.60*p.z:0;
   const dzy=view==="iso"||!editorMode?-.28*p.z:0;
-  ctx.save();
-  ctx.imageSmoothingEnabled=false;
+  ctx.save();ctx.imageSmoothingEnabled=false;
   ctx.translate(ox+(mx+dzx)*mag,oy+(p.y+dzy)*mag);
   ctx.rotate((mirror?-1:1)*p.angle*Math.PI/180);
   ctx.scale(p.scale*mag,p.scale*mag);
-  ctx.drawImage(img,idx*64,di*112,64,112,-ax,-bone.y,64,112);
+  ctx.drawImage(src.image,src.sx,src.sy,64,112,-ax,-bone.y,64,112);
   ctx.restore();
  }
 }
