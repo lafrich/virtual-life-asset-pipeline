@@ -128,6 +128,8 @@ function tweenTrack(records,frame,frames,part){
  const sorted=[...records].sort((a,b)=>a.frame-b.frame);
  if(sorted.length===1)return sorted[0].pose;
  const at=((frame%frames)+frames)%frames;
+ const exact=sorted.find(key=>key.frame===at);
+ if(exact)return exact.pose;
  let left=sorted[sorted.length-1],right=sorted[0],span=frames-left.frame+right.frame,pos=at-left.frame;
  for(let i=0;i<sorted.length-1;i++){
   if(at>=sorted[i].frame&&at<sorted[i+1].frame){
