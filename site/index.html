@@ -9,18 +9,20 @@
   <title>Mahluk Hidup — Character Studio</title>
   <link rel="stylesheet" href="./style.css?v=custom-model-color-v3">
   <link rel="stylesheet" href="./pose-maker.css?v=pixel-mask-v2">
-  <link rel="stylesheet" href="./rig-studio-v2.css?v=anatomy-first-v5">
+  <link rel="stylesheet" href="./rig-studio-v2.css?v=clothed-master-v6">
   <script defer src="./universal-sleep.js?v=correct-four-view-rot90-20261104"></script>
   <script defer src="./universal-body-actions.js?v=bathtub-universal-v3"></script>
   <script defer src="./human-gameplay-rig.js?v=base-human-gameplay-v1"></script>
   <script defer src="./universal-motion-runtime.js?v=bathtub-soak-v1"></script>
   <script defer src="./expression-context.js?v=expression-context-v1"></script>
   <script defer src="./pose-weights.js?v=pixel-box-v1"></script>
-  <script defer src="./modular-rig-v2.js?v=anatomy-first-v5"></script>
+  <script defer src="./modular-rig-v2.js?v=clothed-master-v6"></script>
   <script defer src="./rig-gizmo-v2.js?v=anatomy-first-v5"></script>
-  <script defer src="./rig-studio-v2.js?v=anatomy-first-v5"></script>
+  <script defer src="./rig-studio-v2.js?v=clothed-master-v6"></script>
+  <script defer src="./rig-manual-art.js?v=clothed-master-v6"></script>
+  <script defer src="./rig-pixel-workbench.js?v=clothed-master-v6"></script>
   <script defer src="./pose-maker.js?v=pixel-mask-v1"></script>
-  <script defer src="./app.js?v=anatomy-first-v5"></script>
+  <script defer src="./app.js?v=clothed-master-v6"></script>
   <script defer src="./custom-character-wardrobe.js?v=custom-model-color-v4"></script>
   <script defer src="./animations.js?v=pose-foreground-v1"></script>
 </head>
@@ -509,8 +511,8 @@
 
       <section class="rig-v2-workspace" id="rig-v2-workspace" role="tabpanel" aria-labelledby="switch-rig-v2" hidden>
         <aside class="rig-v2-sidebar">
-          <strong>UNIVERSAL HUMAN / ORIGINAL V6B RIG</strong>
-          <p class="rig-v2-plain-note">MALE &amp; FEMALE use the same bone hierarchy. BASE is unclothed; outfit layers can be switched on without changing rig or skin.</p>
+          <strong>ORIGINAL CLOTHED V6B / MANUAL RIG</strong>
+          <p class="rig-v2-plain-note">RESTORED ORIGINAL CLOTHED REFERENCE. Master artwork is locked. Make your own nude/body variant with PIXEL + WEIGHT EDITOR; auto-nude is disabled.</p>
           <p class="rig-v2-plain-note">ORIGINAL PIPELINE V6B ART · 64×112 PX · AUTHENTIC MATERIAL RAMPS / NO BLACK OUTLINES / ORIGINAL RENDER LAYERS. NO REDRAWN PROXY CHARACTER.</p>
           <strong>BONE HIERARCHY / SELECT PART</strong>
           <div id="rig-v2-tree" class="rig-v2-tree" aria-label="Modular pixel puppet bone hierarchy"></div>
@@ -520,7 +522,7 @@
         </aside>
         <section class="rig-v2-editor">
           <div class="rig-v2-center-tools">
-            <b>MALE / FEMALE · BASE + OUTFIT</b>
+            <b>ORIGINAL CLOTHED · EDIT YOUR OWN VERSION</b>
             <label class="rig-v2-gizmo-toggle" for="rig-v2-joints-visible">
               <input id="rig-v2-joints-visible" type="checkbox" checked> FAINT JOINTS
             </label>
@@ -543,20 +545,22 @@
           </div>
         </section>
         <aside class="rig-v2-inspector">
-          <strong>BASE CHARACTER / OUTFIT</strong>
-          <label>BODY BASE
+          <strong>ORIGINAL SOURCE / MANUAL ART</strong>
+          <button type="button" class="chrome-button rig-v2-edit-button" id="rig-v2-edit-art">✎ EDIT PIXELS + BONE WEIGHTS</button>
+          <p class="rig-v2-side-note">Protected original CLOTHED V6B. Draw or erase pixels; assign each pixel to a bone. Custom version saves independently from original.</p>
+          <label hidden>BODY BASE
             <select id="rig-v2-gender" aria-label="Select native human body base">
               <option value="male">MALE / ADULT</option>
               <option value="female">FEMALE / ADULT</option>
             </select>
           </label>
-          <label>OUTFIT
+          <label hidden>OUTFIT
             <select id="rig-v2-outfit" aria-label="Choose unclothed base or detachable outfit">
               <option value="base">BASE / NO OUTFIT</option>
               <option value="outfit">OUTFIT ON</option>
             </select>
           </label>
-          <p class="rig-v2-side-note">The original skin and anatomy remain the base. Clothing is optional. Changing Male/Female does not alter the universal animation joints.</p>
+          <p class="rig-v2-side-note" hidden>Automatic gender/nude generator is archived. Use the manual editor for new designs.</p>
           <strong>SELECTED MODULE / GIZMO</strong>
           <output id="rig-v2-selected">HEAD</output>
           <label>PARENT <b id="rig-v2-parent">NECK</b></label>
@@ -591,7 +595,76 @@
           </div>
           <div class="rig-v2-tracks" id="rig-v2-tracks" role="group" aria-label="C4D style per-part diamond keyframes"></div>
           <div class="rig-v2-timeline-footer"><span>FRAME</span><input id="rig-v2-playhead" type="range" min="0" max="23" step="1" value="0"></div>
-          <p class="rig-v2-status" id="rig-v2-status" aria-live="polite">NEW MODULAR PIXEL REFERENCE · ORIGINAL V6B DATABASE UNTOUCHED</p>
+          <p class="rig-v2-status" id="rig-v2-status" aria-live="polite">ORIGINAL CLOTHED V6B · YOUR CUSTOM ART IS STORED SEPARATELY</p>
+        </section>
+        <section id="rig-v2-manual-editor" class="rig-v2-manual-editor" role="dialog" aria-label="Paint original clothed character and edit bone weights" aria-modal="true" hidden>
+          <div class="rig-paint-title">
+            <strong>CHARACTER ART + PIXEL WEIGHTS .PNT</strong>
+            <button id="rig-paint-close" type="button" class="chrome-button">× CLOSE / SAVE</button>
+          </div>
+          <div class="rig-paint-layout">
+            <aside class="rig-paint-tools">
+              <strong>EDIT TOOLS</strong>
+              <div class="rig-paint-tools-grid" role="group" aria-label="Pixel and weight brush modes">
+                <button type="button" data-rig-paint-mode="paint" class="chrome-button active">✎ PENCIL</button>
+                <button type="button" data-rig-paint-mode="erase" class="chrome-button">⌫ ERASE PIXEL</button>
+                <button type="button" data-rig-paint-mode="pick" class="chrome-button">◉ PICK COLOR</button>
+                <button type="button" data-rig-paint-mode="weight" class="chrome-button">+ ASSIGN WEIGHT</button>
+                <button type="button" data-rig-paint-mode="unweight" class="chrome-button">− UNSELECT WEIGHT</button>
+              </div>
+              <label for="rig-paint-size">BRUSH RADIUS</label>
+              <input type="range" id="rig-paint-size" min="0" max="4" step="1" value="1">
+              <output id="rig-paint-size-out">3 PX</output>
+              <div class="rig-paint-tools-grid">
+                <button type="button" class="chrome-button" id="rig-paint-undo">↶ UNDO</button>
+                <button type="button" class="chrome-button" id="rig-paint-redo">↷ REDO</button>
+              </div>
+              <label class="rig-paint-check"><input type="checkbox" id="rig-paint-mirror" checked> MIRROR SE↔SW / NE↔NW</label>
+              <label class="rig-paint-check"><input type="checkbox" id="rig-paint-weights"> SHOW SELECTED BONE WEIGHT</label>
+              <p class="rig-v2-side-note">PENCIL edits real RGBA pixels. ASSIGN moves the pixels to a bone without recoloring. UNSELECT releases pixels to ROOT, not the eraser.</p>
+            </aside>
+            <div class="rig-paint-stage">
+              <div class="rig-paint-dir-buttons" role="group" aria-label="Paint direction">
+                <button type="button" class="chrome-button active" data-rig-paint-dir="se">SE</button>
+                <button type="button" class="chrome-button" data-rig-paint-dir="sw">SW</button>
+                <button type="button" class="chrome-button" data-rig-paint-dir="ne">NE</button>
+                <button type="button" class="chrome-button" data-rig-paint-dir="nw">NW</button>
+              </div>
+              <canvas id="rig-paint-canvas" width="64" height="112" aria-label="Editable original pixel artwork and bone ownership" tabindex="0"></canvas>
+              <p id="rig-paint-pixel-count">0 PIXELS</p>
+              <div class="rig-paint-previews">
+                <canvas id="rig-paint-preview-se" width="64" height="112" aria-label="SE edited artwork"></canvas>
+                <canvas id="rig-paint-preview-sw" width="64" height="112" aria-label="SW edited artwork"></canvas>
+                <canvas id="rig-paint-preview-ne" width="64" height="112" aria-label="NE edited artwork"></canvas>
+                <canvas id="rig-paint-preview-nw" width="64" height="112" aria-label="NW edited artwork"></canvas>
+              </div>
+            </div>
+            <aside class="rig-paint-inspector">
+              <strong>CUSTOM CHARACTER (MASTER IS LOCKED)</strong>
+              <label for="rig-paint-name">VERSION NAME</label>
+              <input id="rig-paint-name" value="CUSTOM CHARACTER 01" maxlength="80">
+              <label for="rig-paint-bone">PAINT / WEIGHT TARGET BONE</label>
+              <select id="rig-paint-bone"></select>
+              <label for="rig-paint-color">PIXEL COLOR</label>
+              <input type="color" id="rig-paint-color" value="#e4ae8e">
+              <div class="rig-paint-swatches" aria-label="Native skin and clothing color presets">
+                <button type="button" data-rig-paint-swatch="#e4ae8e" style="background:#e4ae8e" title="Skin light"></button>
+                <button type="button" data-rig-paint-swatch="#bb8466" style="background:#bb8466" title="Skin middle"></button>
+                <button type="button" data-rig-paint-swatch="#8a5e4c" style="background:#8a5e4c" title="Skin shadow"></button>
+                <button type="button" data-rig-paint-swatch="#302c34" style="background:#302c34" title="Dark shirt"></button>
+                <button type="button" data-rig-paint-swatch="#56515d" style="background:#56515d" title="Clothing gray"></button>
+                <button type="button" data-rig-paint-swatch="#f3f0e6" style="background:#f3f0e6" title="Highlight"></button>
+              </div>
+              <button type="button" class="chrome-button action-main" id="rig-paint-save">▣ SAVE CUSTOM ART + WEIGHTS</button>
+              <button type="button" class="chrome-button" id="rig-paint-export">↓ EXPORT CUSTOM ART + WEIGHTS JSON</button>
+              <button type="button" class="chrome-button" id="rig-paint-png">↓ EXPORT 4-DIR PNG</button>
+              <label for="rig-paint-import">IMPORT CUSTOM ART + WEIGHTS</label>
+              <input id="rig-paint-import" type="file" accept=".json,application/json">
+              <button type="button" class="chrome-button" id="rig-paint-reset">↺ RESET THIS VIEW TO ORIGINAL</button>
+              <p class="rig-v2-side-note">Build your own nude by painting skin pixels over clothes and repairing shape, then assign the new pixels to torso, arm and leg bones. Original artwork stays untouched.</p>
+            </aside>
+          </div>
+          <p id="rig-paint-status" aria-live="polite">ORIGINAL CLOTHED V6B MASTER · CUSTOM LAYER READY</p>
         </section>
       </section>
 
