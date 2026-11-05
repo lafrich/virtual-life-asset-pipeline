@@ -22,6 +22,12 @@ class Wardrobe(unittest.TestCase):
   self.assertEqual({x["template_base"] for x in entries},
                    {"human_male_base","human_female_base"})
   for row in entries:
+   if row["category"]=="hair":
+    self.assertIn("back_sheet",row)
+    with Image.open(out/row["back_sheet"]) as rear:
+     self.assertEqual(rear.size,(256,112))
+     self.assertTrue(all(rear.crop((d*64,0,(d+1)*64,112)).getbbox() for d in range(4)))
+   else:self.assertNotIn("back_sheet",row)
    self.assertEqual(row["directions"],["se","sw","ne","nw"])
    with Image.open(out/row["sheet"]) as sheet:
     self.assertEqual(sheet.mode,"RGBA")
