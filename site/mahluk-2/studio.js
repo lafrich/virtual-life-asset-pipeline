@@ -3,16 +3,15 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes;
 const $=id=>document.getElementById(id);
-const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r","glasses"]);
+const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1", EMOTIONS=["neutral","happy","mischievous","angry","surprised","blush","grin"];
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,Number(x)||0));
 const clone=x=>JSON.parse(JSON.stringify(x));
 const GROUPS=[
 ["ROOT / BODY",["root","pelvis","torso","neck"]],
-["HEAD / HAIR",["head","hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"]],
-["EYES / EXPRESSION",["emotion","brow_l","brow_r","eye_l","eye_r","nose","mouth","blush_l","blush_r","glasses"]],
+["HEAD / FACE & ACCESSORY",["head","emotion","glasses","hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"]],
 ["LEFT ARM",["shoulder_l","elbow_l","wrist_l"]],
 ["RIGHT ARM",["shoulder_r","elbow_r","wrist_r"]],
 ["LEFT LEG",["hip_l","knee_l","ankle_l"]],
@@ -20,6 +19,7 @@ const GROUPS=[
 ["ACCESSORIES",["phone"]]
 ];
 let manifest=null,images=new Map(),slots=[],sourceError="";
+let emotionAssetId="native:neutral",emotionKeys=[],glassesAssetId="native",userAssets=[],nativeFaces=new Map(),importedImages=new Map();
 let state=R?.referencePose?.()||null,base=R?.referencePose?.()||null,tracks=R?.makeTracks?.()||{};
 let selected="head",direction="se",type="original",outfit="outfit",clip="idle",frame=0,frames=12,fps=12,playing=false,playSince=0,zoom=3.25;
 let camera={x:0,y:0},view="iso",axis="x",transformMode="move",drag=null,identifier=null;
@@ -36,7 +36,7 @@ function slotAllowed(s){
 }
 function activeSlots(){return slots.filter(slotAllowed)}
 function faceEmotion(s){return state.faceLayers?.[s.bone]||state.emotion||"neutral"}
-function partWorld(){return R.world(state)}
+function partWorld(){return E.accessoryWorld(state,R)}
 function renderLayers(ctx,dir,ox,oy,mag,editorMode){
  const world=partWorld(),mirror=dir==="sw"||dir==="nw",di=DIR.indexOf(dir);
  const ordered=activeSlots().map((s,i)=>({s,i,z:(world[s.bone]?.z||0)+(type!=="original"&&s.expression?20:0)}))
