@@ -13,6 +13,7 @@ const UNIVERSAL_SLEEP = window.VLUniversalSleep;
 const UNIVERSAL_BODY = window.VLUniversalBodyActions;
 const UNIVERSAL_MOTIONS = window.VLUniversalMotions;
 const EXPRESSION_CONTEXT = window.VLExpressionContext;
+const CHAR_RESET = window.VLCharacterReferenceReset;
 const PALETTE = [
   "#f8f6f0","#ffffff","#111111","#003b7a","#1642b5","#457fe5","#a9c5fa",
   "#cabde8","#ffdbad","#e0d6cd","#7d5542","#d6d6d6","#8183a5","#e88291",
@@ -585,6 +586,8 @@ function rebuildCustomCharacters(){
   ...savedCustomCharacters().map(row=>{
    const base=templateFor(row.base);return base?hydrateCharacter(row,base):null;
   }).filter(Boolean)];
+ if(CHAR_RESET?.active)state.characters=CHAR_RESET.filter(state.characters);
+ if(CHAR_RESET?.active)state.selected=null;
  if(state.selected?.custom_character){
   const updated=state.characters.find(x=>x.id===oldId);
   if(updated)state.selected=updated;
@@ -653,6 +656,9 @@ function resetCustomForm(){
  window.VLHumanWardrobe?.chooseStarter?.();
 }
 async function saveCustomCharacter(){
+ if(CHAR_RESET?.active){
+  setStatus(CHAR_RESET.message+" · IMPORT RIG BARU DULU");return;
+ }
  const baseId=customBaseId(),base=templateFor(baseId);
  if(!base){setStatus("CUSTOM BASE NOT YET AVAILABLE: "+baseId);return}
  const name=$("custom-name").value.trim().replace(/\s+/g," ").slice(0,40);
@@ -809,7 +815,7 @@ function renderFileList(pickFirst = true) {
   if (!characters.length) {
     const empty = document.createElement("p");
     empty.className = "file-empty";
-    empty.textContent = "NO FILES.";
+    empty.textContent = CHAR_RESET?.active ? CHAR_RESET.message : "NO FILES.";
     fragment.append(empty);
   }
   characters.forEach((character, index) => {
@@ -1404,8 +1410,9 @@ async function init() {
     }
     const unified=withSleep.map(character=>({...character,
       motions:UNIVERSAL_MOTIONS.catalogFor(character,union)}));
-    catalogCharacters=unified.filter(c=>!["otis","legacy_otis"].includes(c.id));
-    state.characters=unified;
+    const visible=CHAR_RESET?.active?CHAR_RESET.filter(unified):unified;
+    catalogCharacters=visible.filter(c=>!["otis","legacy_otis"].includes(c.id));
+    state.characters=visible;
     rebuildCustomCharacters();
     const total = String(state.characters.length).padStart(2, "0");
     $("asset-total").textContent = total;
@@ -1414,7 +1421,19 @@ async function init() {
     renderFileList();
     if (!state.characters.length) {
       $("canvas-loading").hidden = true;
-      setStatus("NO ASSETS YET.");
+      setStatus(CHAR_RESET?.active?CHAR_RESET.message:"NO ASSETS YET.");
+      if(CHAR_RESET?.active){
+        $("canvas-loading").textContent=CHAR_RESET.message;
+        $("canvas-loading").hidden=false;
+        $("custom-preview-status").textContent=CHAR_RESET.message;
+        $("custom-base").replaceChildren();
+        const waiting=document.createElement("option");
+        waiting.value="";waiting.textContent="MENUNGGU MODEL / RIG BARU";
+        $("custom-base").append(waiting);
+        $("custom-base").disabled=true;
+        $("custom-save").disabled=true;
+        $("custom-preview").getContext("2d").clearRect(0,0,64,112);
+      }
     }
   } catch (error) {
     $("canvas-loading").hidden = true;
