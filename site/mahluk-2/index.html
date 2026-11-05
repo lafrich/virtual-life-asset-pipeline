@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1d2532">
+<title>Mahluk Hidup 2.0 — Modular Character Studio</title>
+<link rel="stylesheet" href="./studio.css?v=1">
+<script defer src="../modular-rig-v2.js?v=mh2"></script>
+<script defer src="./studio.js?v=1"></script>
+</head>
+<body>
+<div class="window">
+ <header class="titlebar"><div class="brand"><span class="appicon">✳</span><b>MAHLUK HIDUP <em>2.0</em></b> <small>2.5D CHARACTER STUDIO</small></div><div class="title-actions"><span id="syncLed" class="led"></span><span id="syncLabel">CONNECTING...</span><a href="https://lafrich.github.io/virtual-office/membangun/?app=mahluk" title="Kembali ke launcher">⌂ MEMBANGUN</a><span class="window-buttons">_ ▢ ×</span></div></header>
+ <nav class="menubar"><button id="newChar">File · New</button><button id="saveChar">▣ Save to Game</button><button id="exportJson">↓ Project JSON</button><button id="exportPng">↓ Sprite PNG</button><label class="importbtn">↑ Import JSON<input id="importJson" type="file" accept=".json,application/json"></label><span class="push"></span><span class="tiny">ORIGINAL V6B SOURCE · 64 × 112</span></nav>
+ <div class="workspace">
+  <aside class="objects panel">
+   <div class="panelhead"><strong>OBJECT MANAGER</strong><small>HIERARCHY</small></div>
+   <div class="object-scroll">
+    <div class="sectionhead">SCENE <span>◉</span></div>
+    <label class="selectline">CHARACTER
+     <select id="modelType"><option value="original">V6B ORIGINAL / CLOTHED</option><option value="male">HUMAN MALE BASE</option><option value="female">HUMAN FEMALE BASE</option></select>
+    </label>
+    <label class="selectline">OUTFIT <select id="outfit"><option value="outfit">OUTFIT ON</option><option value="base">BODY BASE</option></select></label>
+    <label class="selectline">SAVED CHARACTER <select id="library"><option value="">NEW CHARACTER</option></select></label>
+    <div class="sectionhead">MODULAR PLANES <span id="planeCount">00</span></div>
+    <div id="tree" class="tree" role="tree" aria-label="Character part layers"></div>
+   </div>
+   <div class="object-foot"><button id="hideSelected">◉ VISIBILITY</button><button id="resetSelected">↶ RESET PART</button></div>
+  </aside>
+  <main class="center">
+   <div class="viewbar"><div class="viewtitle"><strong>EDITOR VIEWPORT</strong><span id="viewHint">ISOMETRIC · X / Y / Z</span></div><div class="viewcontrols"><button id="viewIso" class="active">◇ ISO</button><button id="viewFront">▣ FRONT</button><button id="axisX" class="active axis x">X</button><button id="axisY" class="axis y">Y</button><button id="axisZ" class="axis z">Z</button><button id="viewHome" title="Reset camera">⌖</button></div></div>
+   <div class="viewstage"><canvas id="editor" width="880" height="620" aria-label="Isometric viewport. Drag gizmo axes to move part in X Y Z. Wheel to zoom."></canvas><div class="cornerinfo"><span>MAHLUK HIDUP® / 2.5D PLANES</span><span>MMB: PAN · WHEEL: ZOOM · DRAG AXIS: MOVE</span></div></div>
+   <div class="timeline">
+    <div class="timelinetop"><strong>ANIMATION / DOPE SHEET</strong><label>FRAMES <input id="frameCount" type="number" min="1" max="48" value="12"></label><label>FPS <input id="fps" type="number" min="1" max="30" value="12"></label><button id="play">▶ PLAY</button><button id="setKey">◆ KEY</button><button id="deleteKey">◇ DELETE</button></div>
+    <div class="ruler" id="ruler"></div><div class="keyrows" id="keyrows"></div>
+   </div>
+  </main>
+  <aside class="inspector panel">
+   <div class="panelhead"><strong>ATTRIBUTES</strong><small>OBJECT</small></div>
+   <div class="inspector-scroll">
+    <section class="ins-section"><div class="sectionhead">SELECTION</div><div class="selected-name" id="selectedName">HEAD</div><p class="hint" id="selectedParent">Parent: neck</p><div class="fields"><label>X <input id="posX" type="number" step=".5"></label><label>Y <input id="posY" type="number" step=".5"></label><label>Z <input id="posZ" type="number" step=".5"></label><label>ROT° <input id="angle" type="number" step="5"></label><label>SCALE <input id="scale" type="number" step=".1" min=".3" max="3"></label></div><label class="check"><input type="checkbox" id="visible" checked> VISIBLE / PLANE ACTIVE</label></section>
+    <section class="ins-section"><div class="sectionhead">FACIAL COMPONENTS</div><p class="hint">Pick eyes, brow, mouth or blush from Object Manager. Each is an independent sprite plane.</p><label class="selectline">GLOBAL EMOTION<select id="globalEmotion"><option>neutral</option><option>happy</option><option>mischievous</option><option>angry</option><option>surprised</option><option>blush</option><option>grin</option></select></label><label class="selectline">SELECTED FACE<select id="faceEmotion"><option value="inherit">INHERIT GLOBAL</option><option value="neutral">neutral</option><option value="happy">happy</option><option value="mischievous">mischievous</option><option value="angry">angry</option><option value="surprised">surprised</option><option value="blush">blush</option><option value="grin">grin</option></select></label></section>
+    <section class="ins-section"><div class="sectionhead">PUBLISH TO GAME</div><label class="selectline">NAME<input id="characterName" type="text" maxlength="40" value="My Character 2.0"></label><p class="hint">Saves a native 4-direction sprite + modular rig locally for Semesta and Bangun Ruang (same browser).</p><button id="publish" class="primary">✳ SAVE + SYNC CHARACTER</button></section>
+    <section class="ins-section"><div class="sectionhead">ACTUAL GAME OUTPUT</div><div class="gamepreview"><canvas id="game" width="64" height="112"></canvas></div><div class="directions" id="directions"><button data-dir="se" class="active">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button></div><label class="check"><input id="gridPreview" type="checkbox"> CHECKER / TRANSPARENT BG</label><p class="hint" id="gameHint">This is the exact baked game sprite, not a 3D proxy.</p></section>
+   </div>
+  </aside>
+ </div>
+ <footer class="status"><span id="status">LOADING SOURCE RIG ...</span><span id="coords">X 0 · Y 0 · Z 0</span><span class="push"></span><span>MAHLUK 2.0 / SEMESTA / BANGUN RUANG</span></footer>
+</div>
+</body>
+</html>
