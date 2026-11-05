@@ -133,9 +133,10 @@ def generate(media: Path):
         key_emotion = layer in ("face", "brows", "acc_head")
         names = set()
         for direction in DIRS:
-            image = frames[direction].get((layer, "neutral") if key_emotion else layer)
-            if image:
-                names.update(split_source(image, layer))
+            for emotion in EMOTIONS if key_emotion else ("neutral",):
+                image = frames[direction].get((layer, emotion) if key_emotion else layer)
+                if image is not None:
+                    names.update(split_source(image, layer))
         for bone in sorted(names):
             tag = f"{layer}-{bone}".replace("_", "-")
             atlas = Image.new("RGBA", (64 * (len(EMOTIONS) if key_emotion else 1),
