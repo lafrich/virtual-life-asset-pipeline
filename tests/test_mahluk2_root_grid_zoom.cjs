@@ -28,7 +28,7 @@ test("Pixel Editor exposes explicit grid modes and non-destructive viewport zoom
 test("desktop character root uses nonoverlapping scrollable layout rather than dope-sheet actions",()=>{
  assert.match(html,/id="legacyTimeline" hidden aria-hidden="true"/);
  assert.match(html,/ROOT \/ RIG &amp; PLANES/);
- assert.match(html,/ACTIONS · 1\.0/);
+ assert.match(html,/UNIVERSAL RIG · EMOTION STUDIO/);
  assert.match(html,/SAVE \+ SYNC ROOT/);
  assert.match(css,/\.timeline\[hidden\]\{display:none!important\}/);
  assert.match(css,/\.viewcontrols\{flex:1 1 100%;display:flex;flex-wrap:wrap/);
