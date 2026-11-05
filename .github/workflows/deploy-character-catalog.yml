@@ -152,6 +152,8 @@ jobs:
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/modular-rig-v2.js
           node --check site/rig-studio-v2.js
+          node --check site/rig-manual-art.js
+          node --check site/rig-pixel-workbench.js
           node --test tests/test_modular_rig_v2.cjs
           node --check site/universal-motion-runtime.js
           node --check site/human-gameplay-rig.js
@@ -251,6 +253,8 @@ jobs:
           test -s _site/media/original-rig/source-contact-sheet.png
           test -s _site/modular-rig-v2.js
           test -s _site/rig-studio-v2.js
+          test -s _site/rig-manual-art.js
+          test -s _site/rig-pixel-workbench.js
           test -s _site/rig-studio-v2.css
           test -s _site/app.js
           test -s _site/custom-character-wardrobe.js
