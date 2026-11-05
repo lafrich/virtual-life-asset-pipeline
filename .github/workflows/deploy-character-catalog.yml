@@ -151,6 +151,8 @@ jobs:
           python -m unittest discover -s tests -p test_native_rig_partition.py
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/mahluk-2/studio.js
+          node --check site/mahluk-2/emotion-planes.js
+          node --test tests/test_mahluk2_emotion_planes.cjs
           test -s site/mahluk-2/index.html
           test -s site/mahluk-2/studio.css
           node --check site/modular-rig-v2.js
@@ -256,6 +258,7 @@ jobs:
           test -s _site/media/original-rig/source-contact-sheet.png
           test -s _site/mahluk-2/index.html
           test -s _site/mahluk-2/studio.js
+          test -s _site/mahluk-2/emotion-planes.js
           test -s _site/mahluk-2/studio.css
           test -s _site/modular-rig-v2.js
           test -s _site/rig-studio-v2.js
