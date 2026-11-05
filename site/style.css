@@ -564,7 +564,7 @@ body.pixel-editor-open{overflow:hidden}
 
 /* Character reference reset: data remains archived, editing tools remain visible.
    Hide only obsolete character images and sprite demonstrations. */
-html.character-reference-reset #sprite-canvas,
+/* The new approved character renders in the main sprite canvas. */
 html.character-reference-reset #custom-preview,
 html.character-reference-reset #pose-rig,
 html.character-reference-reset #pose-preview-male,
