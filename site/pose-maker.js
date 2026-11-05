@@ -21,6 +21,16 @@ const BONES=[
  ["pelvis","hip_l"],["hip_l","knee_l"],["knee_l","ankle_l"],
  ["pelvis","hip_r"],["hip_r","knee_r"],["knee_r","ankle_r"]
 ];
+/* Four independently editable parts. Joints are shared by both Human bases.
+ * Keeping all parts in a single pose object preserves old saved keyframes. */
+const PARTS=Object.freeze({
+ body:Object.freeze({label:"BODY",color:"#3568ba",joints:Object.freeze(["pelvis","spine","chest"])}),
+ head:Object.freeze({label:"HEAD",color:"#a66e1c",joints:Object.freeze(["neck","head"])}),
+ arms:Object.freeze({label:"ARMS",color:"#9b4b88",joints:Object.freeze(["shoulder_l","elbow_l","wrist_l","shoulder_r","elbow_r","wrist_r"])}),
+ legs:Object.freeze({label:"LEGS",color:"#208879",joints:Object.freeze(["hip_l","knee_l","ankle_l","hip_r","knee_r","ankle_r"])})
+});
+const JOINT_PART=Object.freeze(Object.fromEntries(Object.entries(PARTS)
+ .flatMap(([part,definition])=>definition.joints.map(id=>[id,part]))));
 const P0=Object.freeze({
  pelvis:[32,61,0],spine:[32,48,0],chest:[32,36,0],neck:[32,28,0],head:[32,16,0],
  shoulder_l:[20,37,0],elbow_l:[17,51,0],wrist_l:[18,65,0],
@@ -87,26 +97,78 @@ function store(entries){
  return all;
 }
 function slug(s){return String(s||"idle_pose").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,55)||"idle_pose";}
+const LIMBS=Object.freeze({
+ wrist_l:["shoulder_l","elbow_l",1],
+ wrist_r:["shoulder_r","elbow_r",-1],
+ ankle_l:["hip_l","knee_l",1],
+ ankle_r:["hip_r","knee_r",-1]
+});
+const MID=Object.freeze(Object.fromEntries(Object.entries(LIMBS)
+ .map(([end,[root,middle]])=>[middle,[root,end]])));
+function length(a,b){return Math.hypot(P0[a][0]-P0[b][0],P0[a][1]-P0[b][1]);}
+function solveIK(p,endId){
+ const spec=LIMBS[endId];if(!spec)return;
+ const [rootId,midId,bend]=spec;
+ const a=p[rootId],b=p[midId],c=p[endId];
+ const l1=length(rootId,midId),l2=length(midId,endId);
+ let dx=c[0]-a[0],dy=c[1]-a[1],d=Math.hypot(dx,dy);
+ // Physical two-bone reach; no detached forearms, backward knees or
+ // random elbow flipping when the arm is almost straight.
+ if(d<.01){dx=0;dy=l1+l2;d=l1+l2;}
+ const reach=Math.min(l1+l2-.01,Math.max(Math.abs(l1-l2)+.01,d));
+ if(reach!==d){c[0]=clamp(a[0]+dx/d*reach,-16,80);c[1]=clamp(a[1]+dy/d*reach,-10,125);}
+ dx=c[0]-a[0];dy=c[1]-a[1];d=Math.max(.01,Math.hypot(dx,dy));
+ const along=(l1*l1-l2*l2+d*d)/(2*d),height=Math.sqrt(Math.max(0,l1*l1-along*along));
+ // Left side bends toward the left and right side toward the right in
+ // source character coordinates (the old signs were reversed).
+ b[0]=a[0]+dx/d*along-bend*dy/d*height;
+ b[1]=a[1]+dy/d*along+bend*dx/d*height;
+}
 function move(p,id,dx,dy){
- if(!P0[id])return;
- const members=[id,...(CHILD[id]||[])];
- for(const k of members){p[k][0]=clamp(p[k][0]+dx,-16,80);p[k][1]=clamp(p[k][1]+dy,-10,125);}
- // Dragging a hand or foot acts like a small IK chain. A bend remains between
- // the anchored shoulder/hip and the moved wrist/ankle, not a detached limb.
- const ik={wrist_l:["shoulder_l","elbow_l"],wrist_r:["shoulder_r","elbow_r"],
-   ankle_l:["hip_l","knee_l"],ankle_r:["hip_r","knee_r"]}[id];
- if(ik){
-   const a=p[ik[0]],m=p[ik[1]],end=p[id],old=P0;
-   const l1=Math.hypot(old[ik[1]][0]-old[ik[0]][0],old[ik[1]][1]-old[ik[0]][1]);
-   const l2=Math.hypot(old[id][0]-old[ik[1]][0],old[id][1]-old[ik[1]][1]);
-   let dx=end[0]-a[0],dy=end[1]-a[1],d=Math.max(.001,Math.hypot(dx,dy));
-   const max=l1+l2-.05;if(d>max){dx*=max/d;dy*=max/d;d=max;end[0]=a[0]+dx;end[1]=a[1]+dy;}
-   const along=(l1*l1-l2*l2+d*d)/(2*d);
-   const height=Math.sqrt(Math.max(0,l1*l1-along*along));
-   const side=id.endsWith("_l")?-1:1;
-   m[0]=a[0]+dx*along/d-dy*height/d*side;
-   m[1]=a[1]+dy*along/d+dx*height/d*side;
+ if(!P0[id]||!Number.isFinite(dx)||!Number.isFinite(dy))return;
+ dx=clamp(dx,-40,40);dy=clamp(dy,-40,40);
+ const middle=MID[id];
+ if(middle){
+  const anchor=p[middle[0]],l=length(middle[0],id),old=p[id];
+  let x=old[0]+dx-anchor[0],y=old[1]+dy-anchor[1];
+  const d=Math.hypot(x,y)||1;
+  x=x/d*l;y=y/d*l;
+  const nx=clamp(anchor[0]+x,-16,80),ny=clamp(anchor[1]+y,-10,125);
+  dx=nx-old[0];dy=ny-old[1];
  }
+ const members=[id,...(CHILD[id]||[])];
+ for(const k of members){
+  p[k][0]=clamp(p[k][0]+dx,-16,80);
+  p[k][1]=clamp(p[k][1]+dy,-10,125);
+ }
+ if(LIMBS[id])solveIK(p,id);
+}
+function moveDepth(p,id,target){
+ if(!P0[id])return;
+ const amount=clamp(target,-25,25)-p[id][2];
+ for(const joint of [id,...(CHILD[id]||[])])
+  p[joint][2]=clamp(p[joint][2]+amount,-25,25);
+}
+function resetPart(p,part){
+ if(!PARTS[part])return;
+ // Only reset the chosen part; other parts keep their keyed articulation.
+ // Child parts follow a changed shoulder / hip anchor without being reset.
+ const before=clone(p);
+ const parent=part==="head"||part==="arms"?"chest":part==="legs"?"pelvis":null;
+ const baseOffset=parent?[0,1,2].map(i=>p[parent][i]-P0[parent][i]):[0,0,0];
+ for(const id of PARTS[part].joints)
+  p[id]=P0[id].map((v,i)=>clamp(v+baseOffset[i],
+   i===2?-25:i===1?-10:-16,i===2?25:i===1?125:80));
+ if(part==="body"){
+  for(const child of ["head","arms","legs"]){
+   const anchor=child==="legs"?"pelvis":"chest";
+   const shift=[0,1,2].map(i=>p[anchor][i]-before[anchor][i]);
+   for(const id of PARTS[child].joints)for(let i=0;i<3;i++)
+    p[id][i]=clamp(before[id][i]+shift[i],
+      i===2?-25:i===1?-10:-16,i===2?25:i===1?125:80);
+  }
+ }
+ return p;
 }
 function project(p,yaw){
  const r=yaw*Math.PI/180,c=Math.cos(r),s=Math.sin(r);
@@ -138,7 +200,7 @@ function paintHuman(ctx,img,base,dir,pose,frame=0){
   const oldLen=Math.max(1,Math.hypot(e[0]-o[0],e[1]-o[1]));
   const newLen=Math.max(1,Math.hypot(g[0]-f[0],g[1]-f[1]));
   ctx.save();ctx.translate(Math.round(f[0]),Math.round(f[1]));
-  ctx.rotate(newAngle-origAngle);ctx.scale(1,clamp(newLen/oldLen,.65,1.35));
+  ctx.rotate(newAngle-origAngle);const ratio=clamp(newLen/oldLen,.8,1.2);ctx.scale(ratio,ratio);
   ctx.drawImage(img,sourceX+sx,sourceY+sy,sw,sh,
    Math.round(sx-pivotX),Math.round(sy-pivotY),sw,sh);ctx.restore();
  }
@@ -161,7 +223,7 @@ function paintHuman(ctx,img,base,dir,pose,frame=0){
  function head(){
   const f=xy("neck"),g=xy("head"),o=P0.neck,e=P0.head;
   const angle=Math.atan2(g[0]-f[0],f[1]-g[1])-Math.atan2(e[0]-o[0],o[1]-e[1]);
-  ctx.save();ctx.translate(Math.round(f[0]),Math.round(f[1]));ctx.rotate(-angle);
+  ctx.save();ctx.translate(Math.round(f[0]),Math.round(f[1]));ctx.rotate(angle);
   ctx.drawImage(img,sourceX+13,sourceY+0,38,36,-19,-28,38,36);ctx.restore();
  }
  if(back){arm("l");leg("l");arm("r");leg("r");torso();head();}
@@ -401,6 +463,6 @@ function mount(){
  }
  renderAll();showSaved();loadBases();root.requestAnimationFrame(tick);
 }
-return Object.freeze({KEY,BASE_IDS,BONES,neutral,normalized,interpolate,sample,
-  move,project,paintHuman,renderSheet,read,listFor,store,slug,mount});
+return Object.freeze({KEY,BASE_IDS,BONES,PARTS,JOINT_PART,neutral,normalized,interpolate,sample,
+  move,moveDepth,resetPart,project,paintHuman,renderSheet,read,listFor,store,slug,mount});
 });
