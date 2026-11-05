@@ -385,16 +385,27 @@ function loadFrame(){
   if(depth?.im&&!depth.ready&&!depth.failed)
    depth.im.addEventListener("load",()=>{
     if(ticket!==state.loadingId||state.dirty)return;
-    // Preserve saved user edits; repaint only a freshly loaded native frame.
-    if(!A.get(state.actor,state.action,state.direction,state.frame))
+    // Reconstruct the visible editor from its saved draft (not its old
+    // cached screenshot), then foreground the corrected actor-specific art.
+    const saved=A.get(state.actor,state.action,state.direction,state.frame);
+    const savedImage=saved?pic(saved):null;
+    if(savedImage?.ready){
+     pc.clearRect(0,0,64,112);
+     pc.drawImage(savedImage.im,0,0,64,112);
+     paintNativeDepth(pc,state.frame,state.direction);
+    }else if(!saved){
      originalInto(pc,state.frame,state.direction);
+    }
     render();
    },{once:true});
  }
  const override=A.get(state.actor,state.action,state.direction,state.frame);
  function finish(){
   if(ticket!==state.loadingId)return;
-  state.sourceReady=true;status(override?"EDITING SAVED ACTION FRAME":
+  // The source layer is non-destructively reapplied above local outdated
+  // full-frame PNGs: do not write localStorage until the user presses SAVE.
+  if(override)paintNativeDepth(pc,state.frame,state.direction);
+  state.sourceReady=true;status(override?"EDITING SAVED ACTION FRAME / NATIVE DEPTH":
    state.source?.authored?"EDITING NATIVE MOTION COPY":"EDITING UNRENDERED ACTION DRAFT");
   updateActionCoverage();render();
  }
