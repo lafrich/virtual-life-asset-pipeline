@@ -12,7 +12,7 @@
   active:true,
   message:"ACUAN BARU / MODULAR PIXEL RIG V2",
   approvedIds:APPROVED_IDS,
-  visible:(actor)=>!!actor&&allowed.has(typeof actor==="string"?actor:actor.id),
+  visible:(actor)=>{const id=typeof actor==="string"?actor:actor?.id;return !!id&&(allowed.has(id)||/^mh2_[a-z0-9]+$/.test(id));},
   filter:(characters)=>Array.isArray(characters)?characters.filter(actor=>
    allowed.has(actor?.id)):[],
   get hasApproved(){return allowed.size>0;}
