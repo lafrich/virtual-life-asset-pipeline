@@ -50,5 +50,37 @@
   }
   return out;
  }
- return Object.freeze({rectFromPoints,normalizeRect,contains,flip,translate});
+
+ const CLIP_FORMAT="mh2-native-rgba-selection-v1";
+ function copy(data,width,height,rect){
+  const box=normalizeRect(rect,width,height),pixels=new Uint8ClampedArray(box.w*box.h*4);
+  for(let row=0;row<box.h;row++){
+   const offset=((box.y+row)*width+box.x)*4;
+   pixels.set(data.subarray(offset,offset+box.w*4),row*box.w*4);
+  }
+  return {format:CLIP_FORMAT,...box,pixels};
+ }
+ function validStamp(stamp,width=64,height=112){
+  return !!stamp&&stamp.format===CLIP_FORMAT&&
+   Number.isInteger(stamp.w)&&stamp.w>0&&stamp.w<=width&&
+   Number.isInteger(stamp.h)&&stamp.h>0&&stamp.h<=height&&
+   Number.isInteger(stamp.x)&&Number.isInteger(stamp.y)&&
+   stamp.x>=0&&stamp.y>=0&&stamp.x+stamp.w<=width&&stamp.y+stamp.h<=height&&
+   (stamp.pixels instanceof Uint8ClampedArray||Array.isArray(stamp.pixels))&&
+   stamp.pixels.length===stamp.w*stamp.h*4;
+ }
+ function paste(data,width,height,stamp,{x=stamp.x,y=stamp.y,mirror=false,replace=false}={}){
+  if(!validStamp(stamp,width,height))throw new Error("Invalid native RGBA clipboard");
+  const output=new Uint8ClampedArray(data),left=Math.round(x),top=Math.round(y);
+  for(let row=0;row<stamp.h;row++)for(let col=0;col<stamp.w;col++){
+   const dx=left+col,dy=top+row;
+   if(dx<0||dy<0||dx>=width||dy>=height)continue;
+   const sx=mirror?stamp.w-1-col:col;
+   const src=(row*stamp.w+sx)*4,dest=(dy*width+dx)*4;
+   if(!replace&&stamp.pixels[src+3]===0)continue;
+   for(let channel=0;channel<4;channel++)output[dest+channel]=stamp.pixels[src+channel];
+  }
+  return output;
+ }
+ return Object.freeze({rectFromPoints,normalizeRect,contains,flip,translate,copy,paste,validStamp,CLIP_FORMAT});
 });
