@@ -79,7 +79,7 @@ test("art and studio contain new pixel rig controls without replacing other app 
  assert.ok(html.includes("modular-rig-v2.js"));
  assert.ok(html.includes("rig-studio-v2.js"));
  assert.ok(html.includes("rig-studio-v2.css"));
- assert.ok(html.includes("gender-gizmo-v4"));
+ assert.ok(html.includes("anatomy-first-v5"));
  assert.ok(studio.includes("R.key(tracks"));
 });
 
@@ -131,7 +131,7 @@ test("legacy saved rig state normalizes with new face and hair nodes without dis
  assert.equal(after.emotion,"mischievous");
  const exp=R.exportModel(after,R.makeTracks());
  assert.equal(exp.art_revision,R.ART_REVISION);
- assert.match(exp.art_revision,/original-gender-base-gizmo/);
+ assert.match(exp.art_revision,/anatomy-first-universal-rig/);
  assert.equal(exp.nodes.length,R.BONES.length);
 });
 test("rig studio includes hair and face controls and character expressions get unique thumbnails",()=>{
@@ -209,4 +209,28 @@ test("source generator checks 16 gender/outfit direction variants for pixel-exac
  assert.ok(py.includes('Image.Transpose.FLIP_LEFT_RIGHT'));
  assert.ok(build.indexOf('build_original_rig_layers(media)')>
    build.indexOf('results.extend(build_human_templates(ROOT,media))'));
+});
+
+test("anatomy-first renderer always draws ONE naked base, with clothing as an optional overlay",()=>{
+ const male=R.neutral(),female=R.normalize({...male,gender:"female"});
+ for(const state of [male,female]){
+  for(const clothed of [false,true]){
+   state.outfit=clothed;
+   assert.equal(R.sourceSlot({gender:state.gender,layer_type:"body"},state),true);
+   assert.equal(R.sourceSlot({gender:state.gender,layer_type:"garment"},state),clothed);
+   const opposite=state.gender==="male"?"female":"male";
+   assert.equal(R.sourceSlot({gender:opposite,layer_type:"body"},state),false);
+   assert.equal(R.sourceSlot({gender:opposite,layer_type:"garment"},state),false);
+  }
+ }
+ // Original archived mode-specific PNG records continue loading safely.
+ assert.equal(R.sourceSlot({gender:"male",mode:"base"},male),false);
+ assert.equal(R.sourceSlot({gender:"male",mode:"outfit"},male),true);
+ const py=fs.readFileSync("tools/build_original_rig_layers.py","utf8");
+ const guide=fs.readFileSync("tools/build_human_templates.py","utf8");
+ assert.ok(py.includes("variants, anatomy_sources, clothing_sources"));
+ assert.ok(py.includes("for layer_type, by_view in"));
+ assert.ok(py.includes('("body", body_parts), ("garment", garment_parts)'));
+ assert.ok(guide.includes("rig_source_sink"));
+ assert.ok(guide.includes('f"{name}-rig-source.npz"'));
 });
