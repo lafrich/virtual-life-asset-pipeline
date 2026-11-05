@@ -1430,6 +1430,9 @@ async function init() {
   draw();
   requestAnimationFrame(tick);
   try {
+    if(window.VLModularRigV2){
+      await window.VLModularRigV2.loadNativeArt();
+    }
     const response = await fetch("./catalog.json", { cache: "no-store" });
     if (!response.ok) throw new Error("HTTP " + response.status);
     const payload = await response.json();
