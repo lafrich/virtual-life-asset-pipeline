@@ -39,7 +39,7 @@ function faceEmotion(s){return state.faceLayers?.[s.bone]||state.emotion||"neutr
 function partWorld(){return R.world(state)}
 function renderLayers(ctx,dir,ox,oy,mag,editorMode){
  const world=partWorld(),mirror=dir==="sw"||dir==="nw",di=DIR.indexOf(dir);
- const ordered=activeSlots().map((s,i)=>({s,i,z:world[s.bone]?.z||0}))
+ const ordered=activeSlots().map((s,i)=>({s,i,z:(world[s.bone]?.z||0)+(type!=="original"&&s.expression?20:0)}))
    .sort((a,b)=>a.z-b.z||a.i-b.i);
  for(const {s} of ordered){
   const p=world[s.bone],bone=R.BMAP[s.bone],img=images.get(s.src);
@@ -305,7 +305,7 @@ function setupEvents(){
  $("resetSelected").onclick=()=>{state.parts[selected]={...R.neutral().parts[selected]};pick(selected);setStatus("RESET "+selected)};
  for(const [key,id] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]]){
   $(id).oninput=e=>{let value=Number(e.target.value);if(Number.isFinite(value)){
-   state.parts[selected][key]=key==="scale"?clamp(value,.3,3):key==="angle"?clamp(value,-180,180):clamp(value,-40,40);paint();
+   state.parts[selected][key]=key==="scale"?clamp(value,.3,3):key==="angle"?clamp(value,-180,180):key==="z"?clamp(value,-10,10):clamp(value,-40,40);paint();
   }};
  }
  $("visible").onchange=e=>{state.parts[selected].visible=e.target.checked;buildTree()};
@@ -349,7 +349,7 @@ function setupEvents(){
   if(drag.mode==="pan"){camera.x=drag.cam.x+dx;camera.y=drag.cam.y+dy}
   else if(drag.axis==="x")state.parts[selected].x=clamp(drag.pos.x+dx/scale,-40,40);
   else if(drag.axis==="y")state.parts[selected].y=clamp(drag.pos.y+dy/scale,-40,40);
-  else if(drag.axis==="z")state.parts[selected].z=clamp(drag.pos.z-dx/(scale*.6),-40,40);
+  else if(drag.axis==="z")state.parts[selected].z=clamp(drag.pos.z-dx/(scale*.6),-10,10);
   for(const [k,id] of [["x","posX"],["y","posY"],["z","posZ"]])$(id).value=Number(state.parts[selected][k].toFixed(1));
   paint();
  });
