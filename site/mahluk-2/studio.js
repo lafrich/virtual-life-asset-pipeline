@@ -23,7 +23,7 @@ let emotionAssetId="native:neutral",emotionKeys=[],glassesAssetId="native",userA
 let state=R?.referencePose?.()||null,base=R?.referencePose?.()||null,tracks=R?.makeTracks?.()||{};
 let selected="head",direction="se",type="original",outfit="outfit",bodyPlane="current",clip="idle",frame=0,frames=12,fps=12,playing=false,playSince=0,zoom=3.25;
 let camera={x:0,y:0},view="iso",axis="x",transformMode="move",drag=null,identifier=null;
-let inspectPlaneDepth=false,planeGap=2; // Viewer-only separation, never written to game or saved rig.
+let inspectPlaneDepth=false,planeGap=2,orbitTool=false; // Viewer-only camera state, never saved to game.
 let rigRules=R&&G?G.defaults(R):null;
 let pixelPlanes={},planeImages=new Map(),planeImageRevision=0,planeEditor=null;
 let undoStack=[],redoStack=[],restoring=false,pinch=null;
@@ -445,6 +445,8 @@ function axisButtons(){
  for(const id of ["x","y","z"])$("axis"+id.toUpperCase()).classList.toggle("active",axis===id);
  $("viewIso").classList.toggle("active",view==="iso");$("viewFront").classList.toggle("active",view==="front");
  $("togglePlaneDepth").classList.toggle("active",inspectPlaneDepth&&view==="iso");
+ $("toolOrbit").classList.toggle("active",orbitTool);
+ $("toolOrbit").setAttribute("aria-pressed",String(orbitTool));
  $("togglePlaneDepth").setAttribute("aria-pressed",String(inspectPlaneDepth&&view==="iso"));
  $("planeGap").disabled=view!=="iso"||!inspectPlaneDepth;
  $("planeGapLabel").textContent=Number(planeGap).toFixed(1);
@@ -1022,9 +1024,16 @@ function setupEvents(){
  $("setKey").onclick=setKey;$("deleteKey").onclick=removeKey;
  $("play").onclick=()=>{playing=!playing;playSince=performance.now();$("play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY"};
  $("gridPreview").onchange=e=>$("game").parentElement.classList.toggle("flat",e.target.checked);
- for(const mode of ["move","rotate","scale","anchor"])$("tool"+mode[0].toUpperCase()+mode.slice(1)).onclick=()=>{transformMode=mode;axisButtons();paint()};
+ for(const mode of ["move","rotate","scale","anchor"])$("tool"+mode[0].toUpperCase()+mode.slice(1)).onclick=()=>{
+  orbitTool=false;transformMode=mode;axisButtons();paint()
+ };
+ $("toolOrbit").onclick=()=>{
+  orbitTool=!orbitTool;view="iso";axisButtons();paint();
+  setStatus(orbitTool?"ORBIT CAMERA · DRAG IN VIEWPORT TO CHANGE ANGLE · RIG STAYS FIXED":
+   "ORBIT CAMERA OFF · RIG TRANSFORM TOOLS ACTIVE",true);
+ };
  $("viewIso").onclick=()=>{view="iso";axisButtons();paint()};
- $("viewFront").onclick=()=>{view="front";axisButtons();paint()};
+ $("viewFront").onclick=()=>{orbitTool=false;view="front";axisButtons();paint()};
  $("togglePlaneDepth").onclick=()=>{
   if(view!=="iso")view="iso";
   inspectPlaneDepth=!inspectPlaneDepth;
@@ -1068,6 +1077,11 @@ function setupEvents(){
    if(touchPoints.size>2){drag=null;e.preventDefault();return}
   }
   const touching=e.pointerType==="touch",hitPadding=touching?40:21;
+  if((orbitTool||e.altKey)&&e.button===0){
+   drag={pointer:e.pointerId,start:p,mode:"orbit",baseDir:direction};
+   try{studio.setPointerCapture(e.pointerId)}catch{}
+   e.preventDefault();return;
+  }
   const origin=projectBone(studio.width,studio.height,zoom*Math.min(2,devicePixelRatio||1),selected);
   const handle=lastHandles.find(h=>transformMode==="rotate"?
     Math.abs(Math.hypot(p.x-origin.x,p.y-origin.y)-h.radius)<hitPadding:
@@ -1101,6 +1115,12 @@ function setupEvents(){
   }
   if(!drag||drag.pointer!==e.pointerId||drag.mode==="none")return;
   const dx=p.x-drag.start.x,dy=p.y-drag.start.y,scale=zoom*Math.min(2,devicePixelRatio||1);
+  if(drag.mode==="orbit"){
+   const step=Math.round(dx/Math.max(45,55*Math.min(2,devicePixelRatio||1)));
+   const next=V.orbit(drag.baseDir,step);
+   if(next!==direction)setDirection(next);
+   e.preventDefault();return;
+  }
   if(drag.mode==="pan"){camera.x=drag.cam.x+dx;camera.y=drag.cam.y+dy}
   else if(drag.mode==="anchor"){
    G.setAnchor(rigRules,selected,
@@ -1159,6 +1179,7 @@ function setupEvents(){
   if(e.key==="["||e.key==="ArrowLeft")setDirection(V.orbit(direction,-1));
   if(e.key==="]"||e.key==="ArrowRight")setDirection(V.orbit(direction,1));
   if(e.key==="p"||e.key==="P")$("togglePlaneDepth").click();
+  if(e.key==="o"||e.key==="O")$("toolOrbit").click();
   if(e.key==="k"||e.key==="K")setKey();
   if(e.key==="Delete")removeKey();
  });
