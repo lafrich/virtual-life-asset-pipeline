@@ -73,6 +73,100 @@ function sample(keyframes,t){
  }
  return normalized(keys[keys.length-1].pose);
 }
+
+/* Per-part diamond keyframes use integer frames, like a DCC dope sheet.
+ * Child parts are saved relative to their body's anchor, so body motion
+ * carries the head/arms/legs without resetting or overwriting those tracks. */
+const PART_NAMES=Object.freeze(Object.keys(PARTS));
+const partAnchor=part=>part==="legs"?"pelvis":"chest";
+function timing(frames,fps){
+ return {frames:Math.round(clamp(frames,4,96)),fps:Math.round(clamp(fps,4,30))};
+}
+function partSnapshot(full,part){
+ const p=normalized(full),anchor=partAnchor(part);
+ const delta=part==="body"?[0,0,0]:[0,1,2].map(i=>p[anchor][i]-P0[anchor][i]);
+ return Object.fromEntries(PARTS[part].joints.map(id=>[id,p[id].map((v,i)=>v-delta[i])]));
+}
+function initialTracks(){
+ const base=neutral();
+ return Object.fromEntries(PART_NAMES.map(part=>[part,[{frame:0,pose:partSnapshot(base,part)}]]));
+}
+function sanitizeTracks(source,frames){
+ const count=timing(frames,12).frames;
+ const result={};
+ for(const part of PART_NAMES){
+  const records=Array.isArray(source?.[part])?source[part]:[];
+  const keyed=new Map();
+  for(const entry of records){
+   if(!Number.isFinite(entry?.frame))continue;
+   const frame=Math.round(clamp(entry.frame,0,count-1));
+   if(!entry.pose||typeof entry.pose!=="object")continue;
+   const full=neutral();
+   for(const id of PARTS[part].joints){
+    const v=entry.pose[id];
+    if(Array.isArray(v)&&v.length===3&&v.every(Number.isFinite))
+     full[id]=v.map((x,i)=>clamp(x,i===2?-60:i===1?-40:-50,i===2?60:i===1?160:114));
+   }
+   keyed.set(frame,{frame,pose:Object.fromEntries(PARTS[part].joints.map(id=>[id,[...full[id]]]))});
+  }
+  result[part]=[...keyed.values()].sort((a,b)=>a.frame-b.frame);
+ }
+ return result;
+}
+function legacyTracks(keys,frames){
+ const result=Object.fromEntries(PART_NAMES.map(part=>[part,[]]));
+ for(const key of keys||[]){
+  if(!Number.isFinite(key?.at))continue;
+  const frame=Math.round(clamp(key.at,0,1)*(frames-1));
+  const pose=normalized(key.pose);
+  for(const part of PART_NAMES)result[part].push({frame,pose:partSnapshot(pose,part)});
+ }
+ return sanitizeTracks(result,frames);
+}
+function tweenTrack(records,frame,frames,part){
+ if(!records?.length)return partSnapshot(neutral(),part);
+ const sorted=[...records].sort((a,b)=>a.frame-b.frame);
+ if(sorted.length===1)return sorted[0].pose;
+ const at=((frame%frames)+frames)%frames;
+ let left=sorted[sorted.length-1],right=sorted[0],span=frames-left.frame+right.frame,pos=at-left.frame;
+ for(let i=0;i<sorted.length-1;i++){
+  if(at>=sorted[i].frame&&at<sorted[i+1].frame){
+   left=sorted[i];right=sorted[i+1];span=right.frame-left.frame;pos=at-left.frame;break;
+  }
+ }
+ if(at<sorted[0].frame)pos=at+frames-left.frame;
+ const t=clamp(pos/Math.max(1,span),0,1),ease=t*t*(3-2*t);
+ return Object.fromEntries(PARTS[part].joints.map(id=>[id,[0,1,2].map(i=>
+  left.pose[id][i]*(1-ease)+right.pose[id][i]*ease)]));
+}
+function sampleTracks(tracks,frame,frames){
+ const p=neutral();
+ const body=tweenTrack(tracks?.body,frame,frames,"body");
+ for(const id of PARTS.body.joints)p[id]=[...body[id]];
+ for(const part of ["head","arms","legs"]){
+  const stored=tweenTrack(tracks?.[part],frame,frames,part),anchor=partAnchor(part);
+  const delta=[0,1,2].map(i=>p[anchor][i]-P0[anchor][i]);
+  for(const id of PARTS[part].joints)
+   p[id]=stored[id].map((v,i)=>clamp(v+delta[i],
+     i===2?-25:i===1?-10:-16,i===2?25:i===1?125:80));
+ }
+ return p;
+}
+function setTrackKey(tracks,part,frame,fullPose){
+ if(!PARTS[part])throw Error("Unknown rig part");
+ const record={frame,pose:partSnapshot(fullPose,part)};
+ const row=tracks[part]||(tracks[part]=[]);
+ const index=row.findIndex(k=>k.frame===frame);
+ if(index>=0)row[index]=record;else row.push(record);
+ row.sort((a,b)=>a.frame-b.frame);
+ return record;
+}
+function deleteTrackKey(tracks,part,frame){
+ if(!PARTS[part])throw Error("Unknown rig part");
+ const row=tracks[part]||[],index=row.findIndex(k=>k.frame===frame);
+ if(index<0)return false;
+ row.splice(index,1);return true;
+}
 function read(){
  try{
   const list=JSON.parse(root?.localStorage?.getItem(KEY)||"[]");
@@ -235,7 +329,7 @@ function renderSheet(base,img,keyframes,n,duration){
  const tile=document.createElement("canvas");tile.width=64;tile.height=112;
  const brush=tile.getContext("2d");
  for(let dir=0;dir<4;dir++)for(let frame=0;frame<n;frame++){
-  const pose=sample(keyframes,frame/n);
+  const pose=Array.isArray(keyframes)?sample(keyframes,frame/n):sampleTracks(keyframes,frame,n);
   paintHuman(brush,img,base,dir,pose,0);
   ctx.drawImage(tile,frame*64,dir*112);
  }
