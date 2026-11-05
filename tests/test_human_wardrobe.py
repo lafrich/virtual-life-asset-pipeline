@@ -1,10 +1,11 @@
 """Validate real 4-sided wardrobe artwork published by the Human source rig."""
 from __future__ import annotations
-import json,unittest
+import json,unittest,sys
 from pathlib import Path
 from PIL import Image
-from tools.build_human_wardrobe import PRESETS,STACK
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from tools.build_human_wardrobe import PRESETS,STACK
 class Wardrobe(unittest.TestCase):
  def test_recipe_names_and_source_layers(self):
   self.assertEqual(set(PRESETS),{"hair","shirt","pants","shoes"})
