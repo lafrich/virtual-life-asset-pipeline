@@ -10,3 +10,33 @@
 .plane-buttons button{flex:1;min-width:0;padding:6px 4px;font:10px Consolas,monospace}
 .tree button[data-bone="emotion"] .dot{color:#d5a1ef}
 .tree button[data-bone="glasses"] .dot{color:#f2bc75}
+
+/* General reusable rig authoring and precise pinch / mouse viewport controls. */
+.viewcontrols{flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.zoom-label{min-width:43px;display:inline-block;text-align:center;color:#b9dcff;font:10px Consolas,monospace}
+button#toolAnchor.active{background:#2b736b;border-color:#8ff7e2;color:#e2fffa}
+#editor{touch-action:none;overscroll-behavior:contain}
+.draw-order{padding:5px 4px 12px;max-height:238px;overflow:auto;border-bottom:1px solid #455369}
+.draw-row{display:flex;gap:2px;padding:2px;border-bottom:1px solid #394452;align-items:stretch;cursor:grab}
+.draw-row:active{cursor:grabbing}
+.draw-row.drag-over{outline:1px dashed #a9e6fc;background:#3d637c}
+.draw-row .draw-select{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;background:#303f4e;font:10px Consolas,monospace;padding:5px 6px}
+.draw-row .draw-select.selected{background:#2f6b9b;border-color:#7badde}
+.draw-row .draw-step{flex:none;min-width:24px;padding:5px 2px;border-color:#49596c}
+.draw-row .draw-step:disabled{opacity:.27}
+.tree button{border-radius:2px}
+.tree button.selected{background:#2f6b9b}
+.tree button[draggable=true]{cursor:grab}
+.anchor-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.anchor-fields input{width:100%}
+#saveGeneralRig{font-size:10px;background:#326f76;border-color:#83b9b6}
+#saveGeneralRig:hover{background:#44888b}
+#undo:disabled,#redo:disabled{opacity:.34}
+@media(max-width:750px){
+ .viewbar{flex-wrap:wrap}
+ .viewcontrols{justify-content:flex-start;gap:3px}
+ .viewcontrols button{padding:5px 6px}
+ .cornerinfo span:last-child{max-width:63%;text-align:right}
+ .draw-order{max-height:185px}
+ .object-scroll{overflow:auto}
+}
