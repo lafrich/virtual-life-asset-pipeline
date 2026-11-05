@@ -3,7 +3,7 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1", EMOTIONS=["neutral","happy","mischievous","angry","surprised","blush","grin"];
@@ -23,6 +23,7 @@ let emotionAssetId="native:neutral",emotionKeys=[],glassesAssetId="native",userA
 let state=R?.referencePose?.()||null,base=R?.referencePose?.()||null,tracks=R?.makeTracks?.()||{};
 let selected="head",direction="se",type="original",outfit="outfit",bodyPlane="current",clip="idle",frame=0,frames=12,fps=12,playing=false,playSince=0,zoom=3.25;
 let camera={x:0,y:0},view="iso",axis="x",transformMode="move",drag=null,identifier=null;
+let inspectPlaneDepth=false,planeGap=2; // Viewer-only separation, never written to game or saved rig.
 let rigRules=R&&G?G.defaults(R):null;
 let pixelPlanes={},planeImages=new Map(),planeImageRevision=0,planeEditor=null;
 let undoStack=[],redoStack=[],restoring=false,pinch=null;
@@ -1088,7 +1089,7 @@ function setupEvents(){
  requestAnimationFrame(tick);
 }
 async function mount(){
- if(!R||!E||!G||!B||!P){setStatus("RIG / PIXEL PLANE ENGINE NOT FOUND",false);return}
+ if(!R||!E||!G||!B||!P||!V){setStatus("RIG / FOUR-VIEW CAMERA ENGINE NOT FOUND",false);return}
  setupEvents();
  try{
   const resp=await fetch("../media/original-rig/manifest.json",{cache:"no-store"});
