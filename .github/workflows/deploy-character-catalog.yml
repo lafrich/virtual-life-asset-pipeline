@@ -26,6 +26,7 @@ on:
       - "assets/**"
       - "site/**"
       - "tests/test_pose_maker.cjs"
+      - "tests/test_modular_rig_v2.cjs"
       - "tools/build_human_wardrobe.py"
       - "tests/test_human_wardrobe.py"
       - "tests/test_human_face_neck_preservation.py"
@@ -143,6 +144,9 @@ jobs:
           node --check site/pose-weights.js
           node --check site/pose-maker.js
           node --test tests/test_pose_maker.cjs
+          node --check site/modular-rig-v2.js
+          node --check site/rig-studio-v2.js
+          node --test tests/test_modular_rig_v2.cjs
           node --check site/universal-motion-runtime.js
           node --check site/human-gameplay-rig.js
           node --test tests/test_human_gameplay_rig.cjs
@@ -234,6 +238,9 @@ jobs:
         run: |
           test -s _site/index.html
           test -s _site/style.css
+          test -s _site/modular-rig-v2.js
+          test -s _site/rig-studio-v2.js
+          test -s _site/rig-studio-v2.css
           test -s _site/app.js
           test -s _site/custom-character-wardrobe.js
           test -s _site/human-gameplay-rig.js
