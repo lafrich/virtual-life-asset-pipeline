@@ -58,19 +58,19 @@ function modularReferenceRecord(){
   };
  });
  return {
-  id:rig.ID,name:"PIXEL REFERENCE 01",type:"npc",template:false,
+  id:rig.ID,name:"ORIGINAL PIPELINE / RIG REFERENCE",type:"npc",template:false,
   source:"modular-rig-v2",asset_status:"generated_preview",sheet,
   thumbnail:portrait,poster:portrait,frame_size:[64,112],
   row_starts:{walk:0,idle:0,talk:0},idle_frames:frames,walk_frames:frames,
-  skeleton_profile:"MODULAR PIXEL V2",bone_skin_ready:true,
+  skeleton_profile:"NATIVE V6B / MODULAR",bone_skin_ready:true,
   motions:[{id:"idle",name:"MODULAR IDLE REFERENCE",category:"idle",
    source:"custom",sheet,available:true,frames,frame_ms:Array(frames).fill(150),
    loop:true,row:0}],
   expressions,palette:"dark streetwear",
-  outfit:"oversized black tee / loose charcoal pants / chunky white sneakers",
-  hairstyle:"voluminous dark-brown crown + three independent fringe pieces",
+  outfit:"original V6B charcoal tee / slate trousers / original shoes",
+  hairstyle:"native V6B wavy hair with source-pixel fringe cutouts",
   folder_url:"https://github.com/lafrich/virtual-life-asset-pipeline/blob/main/site/modular-rig-v2.js",
-  description:"DETAILED PIXEL REFERENCE / 4 directions / true modular head, hair crown + fringe, glasses, eyes, brows, cheeks, torso, loose trousers, shoes. Edit in 06 / RIG STUDIO."
+  description:"ORIGINAL SOURCE PIXEL ART / original V6B palette, no black outlines; genuine cutouts for head, hair, face, torso, arms and legs. Editable in 06 / RIG STUDIO."
  };
 }
 
