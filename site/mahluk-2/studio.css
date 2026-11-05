@@ -312,3 +312,10 @@ select:focus,input:focus-visible,button:focus-visible{outline:1px dotted #163773
 .github-master-box input[type=password]{width:100%;padding:7px;background:#141e2c;border:1px solid #5d7189;color:#e6ecf8;box-sizing:border-box}
 .github-master-box .plane-buttons{display:flex;flex-wrap:wrap;gap:4px;margin:7px 0}
 .github-master-box .plane-buttons button{flex:1;min-width:99px;font-size:10px}
+
+/* Copy selected native pixels between SE/SW/NE/NW and other plane editors. */
+.pixel-clipboard-actions{display:flex;gap:4px;flex-wrap:wrap}
+.pixel-clipboard-actions button{flex:1 1 58px;min-width:0;white-space:normal}
+#pixelClipboardInfo{min-height:29px;overflow-wrap:anywhere;color:#264d83}
+.pixel-selection-controls>.check{padding:3px 0;font:10px "Courier New",monospace}
+@media(max-width:750px){.pixel-clipboard-actions button{min-height:34px}}
