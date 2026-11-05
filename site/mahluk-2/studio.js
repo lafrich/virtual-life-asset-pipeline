@@ -276,6 +276,84 @@ function removeKey(){
  tracks[selected]=(tracks[selected]||[]).filter(k=>k.frame!==frame);
  setStatus("◇ KEY REMOVED / "+selected+" / "+(frame+1));makeTimeline();
 }
+function assetOptions(){
+ const emotion=$("emotionAsset"),glass=$("glassesAsset");
+ emotion.replaceChildren();glass.replaceChildren();
+ const opt=(list,value,label)=>{
+  const o=document.createElement("option");o.value=value;o.textContent=label;list.append(o);
+ };
+ for(const id of manifest?.emotions||EMOTIONS)opt(emotion,"native:"+id,"V6B ORIGINAL / "+id.toUpperCase());
+ opt(glass,"native","ORIGINAL GLASSES / V6B");
+ opt(glass,"none","NONE / HIDE");
+ for(const asset of userAssets){
+  if(asset.kind==="emotion")opt(emotion,asset.id,"IMPORTED / "+asset.name.toUpperCase()+" / "+asset.frames+"F");
+  if(asset.kind==="glasses")opt(glass,asset.id,"IMPORTED / "+asset.name.toUpperCase()+" / "+asset.frames+"F");
+ }
+ if(!getEmotionAsset(emotionAssetId))emotionAssetId="native:neutral";
+ if(!getGlassesAsset(glassesAssetId))glassesAssetId="native";
+ emotion.value=emotionAt();glass.value=glassesAssetId;
+ updateEmotionStatus();
+}
+function updateEmotionStatus(){
+ const asset=getEmotionAsset(emotionAt());
+ if($("emotionAsset"))$("emotionAsset").value=emotionAt();
+ if($("emotionStatus"))$("emotionStatus").textContent=(asset?.native?"ORIGINAL SOURCE / ":"IMPORTED ANIMATED PLANE / ")+
+  (asset?.frames||1)+" FRAME(S) · "+emotionKeys.length+" IMAGE SWAP KEY(S)";
+}
+function loadImportedAssets(){
+ userAssets=E.safeAssets(window.localStorage);
+ importedImages.clear();
+ for(const asset of userAssets){
+  const image=new Image();
+  image.onload=()=>{importedImages.set(asset.id,image);paint()};
+  image.onerror=()=>setStatus("FAILED TO LOAD IMPORTED PLANE "+asset.name,false);
+  image.src=asset.png;
+ }
+ assetOptions();
+}
+async function importPlanePng(file,kind){
+ if(!file)return;
+ try{
+  if(file.type!=="image/png"||file.size>850000||file.size===0)
+   throw Error("Choose a transparent PNG smaller than 850KB");
+  const url=URL.createObjectURL(file);
+  let image;
+  try{image=await new Promise((resolve,reject)=>{
+   const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(Error("Invalid PNG image"));img.src=url;
+  })}finally{URL.revokeObjectURL(url)}
+  const info=E.classifyAtlas(image.naturalWidth,image.naturalHeight);
+  const cv=document.createElement("canvas");cv.width=info.width;cv.height=info.height;
+  const cx=cv.getContext("2d");cx.drawImage(image,0,0);
+  const png=cv.toDataURL("image/png");
+  if(png.length>=1450000)throw Error("Compressed PNG is too large for local asset storage");
+  const asset={format:E.FORMAT,id:(kind==="emotion"?"emo_":"acc_")+Date.now().toString(36),
+   name:String(file.name.replace(/\.png$/i,"").replace(/[^a-z0-9 _-]/gi," ")).slice(0,48),
+   kind,frames:info.frames,png};
+  const next=[...userAssets,asset].slice(-12);
+  E.saveAssets(window.localStorage,next);
+  userAssets=next;
+  const loaded=new Image();loaded.onload=()=>{
+   importedImages.set(asset.id,loaded);
+   if(kind==="emotion"){
+    emotionAssetId=asset.id;
+    if(frame>0||emotionKeys.length)emotionKeys=E.insert(emotionKeys,frame,asset.id);
+    if(frames<asset.frames){frames=asset.frames;$("frameCount").value=frames;makeTimeline()}
+   }else glassesAssetId=asset.id;
+   assetOptions();paint();
+   setStatus("✓ IMPORTED "+kind.toUpperCase()+" PLANE: "+asset.name+" / "+asset.frames+" FRAME(S)",true);
+  };
+  loaded.src=asset.png;
+ }catch(error){setStatus("ASSET IMPORT FAILED: "+error.message,false)}
+}
+function setEmotionKey(){
+ emotionKeys=E.insert(emotionKeys,frame,emotionAssetId);
+ updateEmotionStatus();makeTimeline();paint();
+ setStatus("◆ EMOTION ASSET KEY / F"+(frame+1)+" / "+emotionAssetId,true);
+}
+function removeEmotionKey(){
+ emotionKeys=emotionKeys.filter(key=>key.frame!==frame);
+ updateEmotionStatus();makeTimeline();paint();setStatus("◇ REMOVED EMOTION ASSET KEY / F"+(frame+1));
+}
 function loadImagesFromManifest(j){
  manifest=j;slots=j.slots.filter(s=>s&&R.BMAP[s.bone]&&/^media\/original-rig\/[a-z0-9-]+\.png$/.test(s.src));
  const uniq=[...new Set(slots.map(s=>s.src))];
