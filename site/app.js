@@ -1432,6 +1432,7 @@ async function init() {
   try {
     if(window.VLModularRigV2){
       await window.VLModularRigV2.loadNativeArt();
+      if(window.VLManualRigArt)await window.VLManualRigArt.getSharedEditor(window.VLModularRigV2);
     }
     const response = await fetch("./catalog.json", { cache: "no-store" });
     if (!response.ok) throw new Error("HTTP " + response.status);
