@@ -638,6 +638,7 @@ function saveGame(){
  const record={format:"mahluk-2-character-v1",version:1,id,name,base:type,template_base:type==="female"?"human_female_base":"human_male_base",
   outfit,model:R.normalize(state),rest:R.normalize(base),tracks:clone(tracks),frames,fps,clip:clipId,
   emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys)},accessoryPlanes:{glasses:glassesAssetId},
+  rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
   sprite:clipId==="idle"?canvas.toDataURL("image/png"):old?.sprite||idle,clips,updated:Date.now()};
  const next=[...library.filter(r=>r.id!==id),record].slice(-30);
  if(!safePut(STORAGE,next))return;
@@ -656,6 +657,8 @@ function loadRecord(id){
  const r=getLibrary().find(r=>r.id===id);if(!r)return;
  identifier=r.id;type=["original","male","female"].includes(r.base)?r.base:"original";
  outfit=r.outfit==="base"?"base":"outfit";clip=r.clip||"idle";
+ // Shared master always takes precedence for new/opened 2.0 characters.
+ rigRules=G.normalize(masterDocument()?.rules||r.rigRules,R);
  emotionAssetId=getEmotionAsset(r.emotionPlane?.asset)?r.emotionPlane.asset:"native:"+(r.model?.emotion||"neutral");
  emotionKeys=Array.isArray(r.emotionPlane?.keys)?r.emotionPlane.keys.filter(k=>getEmotionAsset(k.asset)&&Number.isInteger(k.frame)).slice(0,48):[];
  glassesAssetId=getGlassesAsset(r.accessoryPlanes?.glasses)?r.accessoryPlanes.glasses:"native";
@@ -669,8 +672,10 @@ function loadRecord(id){
 }
 function newCharacter(){
  identifier=null;type="original";outfit="outfit";clip="idle";frames=12;fps=12;frame=0;
+ const general=masterDocument();rigRules=G.normalize(general?.rules,R);
  emotionAssetId="native:neutral";emotionKeys=[];glassesAssetId="native";
- state=R.referencePose();base=R.referencePose();tracks=R.makeTracks();$("characterName").value="My Character 2.0";
+ state=general?.defaultParts?R.normalize({parts:general.defaultParts}):R.referencePose();
+ base=R.normalize(state);tracks=R.makeTracks();$("characterName").value="My Character 2.0";
  updateLibrary();assetOptions();applyState();setStatus("NEW SOURCE-NATIVE CHARACTER · GAME CONTENT UNCHANGED",true);
 }
 function projectExport(){
@@ -678,6 +683,7 @@ function projectExport(){
  const needed=new Set([emotionAssetId,glassesAssetId,...emotionKeys.map(k=>k.asset)]);
  const payload={format:"mahluk-2-project-v1",name:$("characterName").value,id:identifier,base:type,outfit,clip,model:state,rest:base,tracks,frames,fps,
   emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys)},accessoryPlanes:{glasses:glassesAssetId},
+  rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
   embeddedAssets:userAssets.filter(a=>needed.has(a.id))};
  download("mahluk_2_project.json",new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}));
 }
@@ -688,6 +694,7 @@ function importProject(file){
   identifier=typeof v.id==="string"&&/^mh2_[a-z0-9]+$/.test(v.id)?v.id:null;
   type=["original","male","female"].includes(v.base)?v.base:"original";outfit=v.outfit==="base"?"base":"outfit";clip=["idle","walk","talk","sit","lie","custom"].includes(v.clip)?v.clip:"idle";
   state=R.normalize(v.model);base=R.normalize(v.rest||v.model);tracks=R.makeTracks();
+  rigRules=G.normalize(v.rigRules||masterDocument()?.rules,R);
   for(const node of R.BONES){for(const k of v.tracks?.[node.id]||[]){if(k&&k.value&&Number.isInteger(k.frame))R.key(tracks,node.id,k.frame,k.value,k.emotion,k.faceEmotion)}}
   frames=Math.round(clamp(v.frames||12,1,48));fps=Math.round(clamp(v.fps||12,1,30));
   if(Array.isArray(v.embeddedAssets)&&v.embeddedAssets.length){
