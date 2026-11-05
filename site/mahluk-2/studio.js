@@ -38,6 +38,7 @@ function activeSlots(){return slots.filter(slotAllowed)}
 function faceEmotion(s){return state.faceLayers?.[s.bone]||state.emotion||"neutral"}
 function partWorld(){return E.accessoryWorld(state,R)}
 function getEmotionAsset(id){
+ if(typeof id!=="string")return null;
  if(id.startsWith("native:")){
   const name=id.slice(7);
   return (manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
