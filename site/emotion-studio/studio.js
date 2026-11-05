@@ -28,7 +28,8 @@ async function choose(entry,{force=false}={}){
 }
 async function renderList(){
  const list=$("cards");if(!catalog)return;list.replaceChildren();
- const q=$("filter").value.trim().toLowerCase();const filtered=catalog.entries.filter(x=>x.name.toLowerCase().includes(q)||x.id.includes(q));
+ const q=$("filter").value.trim().toLowerCase();const entries=selected&&!catalog.entries.some(x=>x.id===selected.id)?[...catalog.entries,selected]:catalog.entries;
+ const filtered=entries.filter(x=>x.name.toLowerCase().includes(q)||x.id.includes(q));
  $("count").textContent=filtered.length+" ASSETS";
  for(const item of filtered){const row=document.createElement("button");row.className="emotion-card"+(selected?.id===item.id?" active":"");
   const thumb=document.createElement("canvas");thumb.width=64;thumb.height=112;
@@ -56,11 +57,11 @@ async function applyFrame(png){const im=await new Promise((resolve,reject)=>{con
  if(im.width!==64||im.height!==448)throw Error("Frame must be 64×448");
  const ctx=atlas.getContext("2d");ctx.clearRect(frame*64,0,64,448);ctx.drawImage(im,frame*64,0);mark();status("FRAME "+(frame+1)+" APPLIED · SAVE TO GITHUB TO PUBLISH")}
 function openEditor(){if(!atlas)return;const img=stageImage();
- editor.open({id:"emotion-frame-"+(frame+1),initialAtlas:img,originalAtlas:img,referenceImage:img,direction});
+ editor.open({id:"emotion-frame-"+(frame+1),initialAtlas:img,originalAtlas:img,direction});
 }
 function newEmotion(){if(dirty&&!window.confirm("Discard unsaved emotion edits?"))return;
  const id="emotion-"+Date.now().toString(36),fresh={id,name:"NEW EMOTION",base:"universal",frames:1,fps:6,template:"neutral"};
- catalog.entries.push(fresh);choose(fresh,{force:true}).then(()=>{setDirty();$("name").focus();$("name").select()})}
+ choose(fresh,{force:true}).then(()=>{setDirty();$("name").focus();$("name").select()})}
 function exportPng(){if(!atlas)return;atlas.toBlob(blob=>{if(!blob)return;const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=(selected.id||"emotion")+".png";a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)},"image/png")}
 async function importPng(file){if(!file)return;
  if(!/^image\/png$/.test(file.type)){status("SELECT A PNG FILE",true);return}
@@ -70,7 +71,7 @@ async function importPng(file){if(!file)return;
  const canvas=document.createElement("canvas");canvas.width=im.naturalWidth;canvas.height=448;canvas.getContext("2d").drawImage(im,0,0);
  const id="emotion-"+Date.now().toString(36);
  const fresh={id,name:file.name.replace(/\.png$/i,"").slice(0,80)||"Imported emotion",base:"universal",fps:6,frames:canvas.width/64,png:canvas.toDataURL("image/png")};
- catalog.entries.push(fresh);await choose(fresh,{force:true});setDirty();status("IMPORTED INTO EDITOR · SAVE TO GITHUB TO PUBLISH");
+ await choose(fresh,{force:true});setDirty();status("IMPORTED INTO EDITOR · SAVE TO GITHUB TO PUBLISH");
  }catch(e){status("IMPORT FAILED: "+e.message,true)}}
 async function connect(){const proposed=$("token").value.trim();if(!proposed){status("ENTER GITHUB FINE-GRAINED TOKEN FOR THIS REPOSITORY",true);return}
  $("connect").disabled=true;try{await U.loadCatalog(proposed);authToken=proposed;$("token").value="";$("authLabel").textContent="✓ GITHUB AUTHORIZED · THIS TAB ONLY";status("GITHUB CONNECTED / READY TO PUBLISH")}
@@ -90,8 +91,8 @@ function animationTick(t){if(playing&&selected&&atlas&&!editor?.isOpen()){
  if(!animationTick.prev||t-animationTick.prev>=1000/(selected.fps||6)){frame=(frame+1)%selected.frames;animationTick.prev=t;renderFrames();drawPreview()}
  }requestAnimationFrame(animationTick)}
 function wire(){editor=P.create({overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),reference:$("preview"),
- onApply:(id,png)=>{applyFrame(png).catch(e=>status(e.message,true));return true},
- onSaveDefault:(id,png)=>{applyFrame(png).catch(e=>status(e.message,true));return true}});
+ onApply:(id,png)=>{applyFrame(png).then(()=>editor.close()).catch(e=>status(e.message,true));return false},
+ onSaveDefault:(id,png)=>{applyFrame(png).then(()=>editor.close()).catch(e=>status(e.message,true));return false}});
  $("filter").oninput=renderList;$("reload").onclick=()=>reload();$("new").onclick=newEmotion;$("export").onclick=exportPng;
  $("import").onchange=e=>{importPng(e.target.files?.[0]);e.target.value=""};
  $("duplicateFrame").onclick=addFrame;$("deleteFrame").onclick=removeFrame;$("edit").onclick=openEditor;
