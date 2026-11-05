@@ -317,11 +317,15 @@ function stageDimensions(){
 function center(w,h,scale){
  return {x:w/2-32*scale+camera.x,y:h/2-56*scale+camera.y};
 }
-function projectBone(w,h,scale,bone){
+function projectBone(w,h,scale,bone,explode=true){
  const p=partWorld()[bone],b=R.BMAP[bone];if(!p||!b)return null;
- const c=center(w,h,scale),mirror=direction==="sw"||direction==="nw";
- return {x:c.x+((mirror?64-p.x:p.x)-(view==="iso"?.60*p.z:0))*scale,
- y:c.y+(p.y-(view==="iso"?.28*p.z:0))*scale};
+ const c=center(w,h,scale),screen=V.planePosition(p,direction,view==="front");
+ const ids=explode&&view==="iso"&&inspectPlaneDepth?
+  G.effectiveOrder(rigRules,renderableIds()):[];
+ const rank=ids.indexOf(bone),gap=rank>=0?
+  V.explosion(rank,ids.length,planeGap,direction):{x:0,y:0};
+ return {x:c.x+(screen.x+gap.x)*scale,
+ y:c.y+(screen.y+gap.y)*scale};
 }
 function line(ctx,x,y,x2,y2,color,width=1){
  ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();
@@ -380,29 +384,74 @@ function arrows(ctx,pos,scale){
  ctx.restore();
  return handles;
 }
+function drawPlaneDepthGuides(ctx,w,h,scale){
+ if(!inspectPlaneDepth||view!=="iso"||planeGap<=0)return;
+ const ids=G.effectiveOrder(rigRules,renderableIds()),world=partWorld(),c=center(w,h,scale);
+ ctx.save();ctx.setLineDash([4,4]);
+ for(let n=0;n<ids.length;n++){
+  const id=ids[n],p=world[id];
+  if(!p?.visible)continue;
+  const src=V.planePosition(p,direction,false);
+  const sep=V.explosion(n,ids.length,planeGap,direction);
+  const x1=c.x+src.x*scale,y1=c.y+src.y*scale;
+  const x2=c.x+(src.x+sep.x)*scale,y2=c.y+(src.y+sep.y)*scale;
+  if(id!==selected&&n%3!==0)continue;
+  line(ctx,x1,y1,x2,y2,id===selected?"#edca7b":"#648da8",id===selected?1.6:.7);
+  ctx.beginPath();ctx.arc(x1,y1,id===selected?3:1.8,0,2*Math.PI);
+  ctx.fillStyle=id===selected?"#f5c778":"#7c99af";ctx.fill();
+ }
+ ctx.restore();
+}
 let lastHandles=[];
 function drawEditor(){
  if(!state||!manifest)return;
  const {w,h,dpr}=stageDimensions(),ctx=studio.getContext("2d");
  ctx.clearRect(0,0,w,h);
  const mag=zoom*dpr,c=center(w,h,mag);
- drawGrid(ctx,w,h,mag);renderLayers(ctx,direction,c.x,c.y,mag,true);
+ drawGrid(ctx,w,h,mag);drawPlaneDepthGuides(ctx,w,h,mag);renderLayers(ctx,direction,c.x,c.y,mag,true);
  const target=projectBone(w,h,mag,selected);
  if(target){ctx.save();ctx.strokeStyle="#f8c576";ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.strokeRect(target.x-9,target.y-9,18,18);ctx.setLineDash([]);ctx.restore();lastHandles=arrows(ctx,target,mag)}
  else lastHandles=[];
- const p=state.parts[selected]||{};
+ const p=state.parts[selected]||{},wp=partWorld()[selected];
  $("coords").textContent="X "+(p.x||0).toFixed(1)+" · Y "+(p.y||0).toFixed(1)+" · Z "+(p.z||0).toFixed(1);
+ $("depthReadout").textContent="MASTER RIG · "+selected.toUpperCase()+
+  " · LOCAL Z "+(p.z||0).toFixed(1)+
+  " · WORLD Z "+(wp?.z||0).toFixed(1)+
+  (inspectPlaneDepth&&view==="iso"?" · EXPLODED VIEW (PREVIEW ONLY)":" · SAME RIG IN ALL 4 VIEWS");
 }
 function drawGame(){
  if(!manifest||!state)return;
- const ctx=game.getContext("2d");ctx.clearRect(0,0,64,112);renderLayers(ctx,direction,0,0,1,false);
+ const ctx=game.getContext("2d");ctx.clearRect(0,0,64,112);
+ renderLayers(ctx,direction,0,0,1,false);
+ // Each live angle receives the same shared rig state. Only the four
+ // hand-authored source art atlas slices and camera projection differ.
+ for(const [dir,id] of [["se","previewSE"],["sw","previewSW"],["ne","previewNE"],["nw","previewNW"]]){
+  const canvas=$(id),preview=canvas.getContext("2d");
+  preview.clearRect(0,0,64,112);
+  renderLayers(preview,dir,0,0,1,false);
+ }
 }
 function paint(){drawEditor();drawGame();}
 function axisButtons(){
  for(const tool of ["Move","Rotate","Scale","Anchor"])$("tool"+tool).classList.toggle("active",transformMode===tool.toLowerCase());
  for(const id of ["x","y","z"])$("axis"+id.toUpperCase()).classList.toggle("active",axis===id);
  $("viewIso").classList.toggle("active",view==="iso");$("viewFront").classList.toggle("active",view==="front");
- $("viewHint").textContent=view==="iso"?"ISOMETRIC · X / Y / Z":"FRONT · FLAT PIXELS";
+ $("togglePlaneDepth").classList.toggle("active",inspectPlaneDepth&&view==="iso");
+ $("togglePlaneDepth").setAttribute("aria-pressed",String(inspectPlaneDepth&&view==="iso"));
+ $("planeGap").disabled=view!=="iso"||!inspectPlaneDepth;
+ $("planeGapLabel").textContent=Number(planeGap).toFixed(1);
+ $("orbitDirectionLabel").textContent=direction.toUpperCase();
+ for(const el of document.querySelectorAll("[data-dir],[data-orbit-dir],[data-preview-dir]")){
+  const id=el.dataset.dir||el.dataset.orbitDir||el.dataset.previewDir;
+  el.classList.toggle("active",id===direction);
+ }
+ $("viewHint").textContent=view==="iso"?
+  "ISOMETRIC · SHARED RIG · "+direction.toUpperCase()+(inspectPlaneDepth?" · SEPARATED PLANES":""):
+  "FRONT · SHARED ROOT · "+direction.toUpperCase();
+}
+function setDirection(dir){
+ if(!DIR.includes(dir))return;
+ direction=dir;axisButtons();paint();
 }
 function pick(id){
  if(!R.BMAP[id]||G.HIDDEN.has(id))return;
