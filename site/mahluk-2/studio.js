@@ -180,7 +180,7 @@ function renderableIds(){
   rows.push({id,i:B.drawIndex(s,i,slots,bodyPlane,type),z:(scene[id]?.z||0)+(type!=="original"&&kind?20:0)});
   last=i;
  }
- for(const id of ["emotion","glasses"]){
+ for(const id of ["emotion","glasses",...Object.keys(pixelPlanes)]){
   if(!rows.some(r=>r.id===id))rows.push({id,i:++last,z:(scene[id]?.z||0)+(type!=="original"?20:0)});
  }
  rows.sort((a,b)=>a.z-b.z||a.i-b.i);
@@ -240,6 +240,15 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode){
  }
  if(!faceAdded)ordered.push({kind:"emotion",bone:"emotion",i:slots.length+1});
  if(!glassesAdded)ordered.push({kind:"glasses",bone:"glasses",i:slots.length+2});
+ // A pixel-painted plane replaces ALL native cutouts belonging to the
+ // selected bone, including erased transparency. Never double-paint both.
+ for(const [id,image] of planeImages){
+  if(!R.BMAP[id]||G.HIDDEN.has(id)||!image)continue;
+  const matching=ordered.filter(item=>item.bone===id);
+  const idx=matching.length?matching[matching.length-1].i:slots.length+3+R.BONES.findIndex(b=>b.id===id);
+  for(let k=ordered.length-1;k>=0;k--)if(ordered[k].bone===id)ordered.splice(k,1);
+  ordered.push({kind:"pixel",bone:id,i:idx});
+ }
  const ids=renderableIds();
  ordered.sort((a,b)=>{
   if(rigRules.order.length){
@@ -254,7 +263,11 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode){
   const bone=R.BMAP[item.bone],p=world[item.bone];
   if(!p?.visible||!bone)continue;
   let src;
-  if(item.kind==="emotion")src=sourceImage(getEmotionAsset(emotionAt()),dir,frame);
+  if(item.kind==="pixel"){
+   const image=planeImages.get(item.bone);
+   src=image?{image,sx:0,sy:di*112}:null;
+  }
+  else if(item.kind==="emotion")src=sourceImage(getEmotionAsset(emotionAt()),dir,frame);
   else if(item.kind==="glasses")src=sourceImage(getGlassesAsset(glassesAssetId),dir,frame);
   else {
    const image=images.get(item.s.src);
@@ -401,7 +414,7 @@ function pick(id){
  $("layerBack").disabled=at<=0;$("layerFront").disabled=at<0||at===order.length-1;
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
  if($("glassesAsset"))$("glassesAsset").value=glassesAssetId;
- paint();
+ pixelPlaneStatus();paint();
 }
 function moveLayer(id,delta){
  const current=G.effectiveOrder(rigRules,renderableIds()),at=current.indexOf(id);
