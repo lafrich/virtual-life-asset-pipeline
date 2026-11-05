@@ -35,7 +35,7 @@
   def("hip_r","pelvis",38,65,"THIGH R"),
   def("knee_r","hip_r",39,84,"KNEE R"),
   def("ankle_r","knee_r",40,99,"ANKLE / SHOE R"),
-  def("phone","wrist_l",25,28,"PHONE / PROP","prop")
+  def("phone","wrist_l",21,65,"PHONE / PROP","prop")
  ]);
  const BMAP=Object.freeze(Object.fromEntries(BONES.map(b=>[b.id,b])));
  const HIERARCHY=Object.freeze(Object.fromEntries(BONES.map(b=>[b.id,b.parent])));
@@ -195,9 +195,9 @@
    R(ctx,16,63,5,2,p.skinLight);
   });
   if(state.phone&&!back)bound(ctx,"phone",coords,()=>{
-    R(ctx,20,22,11,20,p.outline);R(ctx,21,23,9,17,p.phone);
-    R(ctx,22,25,7,12,p.screen);R(ctx,23,26,5,2,"#555057");
-    R(ctx,24,39,3,1,"#aea3a7");
+    R(ctx,17,54,11,20,p.outline);R(ctx,18,55,9,17,p.phone);
+    R(ctx,19,57,7,12,p.screen);R(ctx,20,58,5,2,"#555057");
+    R(ctx,21,71,3,1,"#aea3a7");
   });
   // Full head skin and hair are their own independent node.
   bound(ctx,"head",coords,()=>{
