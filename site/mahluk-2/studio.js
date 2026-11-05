@@ -812,25 +812,67 @@ function setupEvents(){
   const r=studio.getBoundingClientRect(),px=studio.width/r.width,py=studio.height/r.height;
   return {x:(e.clientX-r.left)*px,y:(e.clientY-r.top)*py};
  }
+ function pinchData(){
+  const p=[...touchPoints.values()];
+  if(p.length<2)return null;
+  return {distance:Math.max(1,Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)),
+   middle:{x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2}};
+ }
  studio.addEventListener("pointerdown",e=>{
   if(!state||!manifest)return;
-  const p=mouse(e),pan=e.button===1||e.altKey;
+  const p=mouse(e);
+  if(e.pointerType==="touch"){
+   touchPoints.set(e.pointerId,p);
+   try{studio.setPointerCapture(e.pointerId)}catch{}
+   if(touchPoints.size===2){
+    const d=pinchData();
+    pinch={distance:d.distance,center:d.middle,zoom,camera:{...camera}};
+    drag=null;e.preventDefault();return;
+   }
+   if(touchPoints.size>2){drag=null;e.preventDefault();return}
+  }
+  const touching=e.pointerType==="touch",hitPadding=touching?40:21;
   const origin=projectBone(studio.width,studio.height,zoom*Math.min(2,devicePixelRatio||1),selected);
-  const handle=!pan&&lastHandles.find(h=>transformMode==="rotate"?
-    Math.abs(Math.hypot(p.x-origin.x,p.y-origin.y)-h.radius)<16:
-    Math.hypot(h.end.x-p.x,h.end.y-p.y)<21);
+  const handle=lastHandles.find(h=>transformMode==="rotate"?
+    Math.abs(Math.hypot(p.x-origin.x,p.y-origin.y)-h.radius)<hitPadding:
+    Math.hypot(h.end.x-p.x,h.end.y-p.y)<hitPadding);
+  const pan=e.button===1||e.altKey||(touching&&!handle);
   if(handle&&transformMode==="move")axis=handle.id;
   axisButtons();
-  drag={pointer:e.pointerId,start:p,pos:clone(state.parts[selected]),cam:{...camera},
-   mode:pan?"pan":handle?transformMode:"none",axis,origin,
+  const mode=pan?"pan":handle?transformMode:"none";
+  if(mode!=="pan"&&mode!=="none")remember(); // One undo step per complete gesture
+  drag={pointer:e.pointerId,start:p,pos:clone(state.parts[selected]),
+   pivot:clone(rigRules.anchors[selected]),cam:{...camera},mode,axis,origin,
    startAngle:origin?Math.atan2(p.y-origin.y,p.x-origin.x):0};
-  if(drag.mode!=="none"){studio.setPointerCapture(e.pointerId);e.preventDefault()}
+  if(mode!=="none"){try{studio.setPointerCapture(e.pointerId)}catch{}e.preventDefault()}
  });
  studio.addEventListener("pointermove",e=>{
-  if(!drag||drag.pointer!==e.pointerId)return;
-  if(drag.mode==="none")return;
-  const p=mouse(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y,scale=zoom*Math.min(2,devicePixelRatio||1);
+  const p=mouse(e);
+  if(e.pointerType==="touch"&&touchPoints.has(e.pointerId)){
+   touchPoints.set(e.pointerId,p);
+   if(pinch&&touchPoints.size>=2){
+    const current=pinchData();
+    zoom=clamp(pinch.zoom*current.distance/pinch.distance,.7,12);
+    const {w,h}=stageDimensions(),ratio=zoom/pinch.zoom;
+    const centerX=w/2+pinch.camera.x,centerY=h/2+pinch.camera.y;
+    camera.x=pinch.camera.x+(pinch.center.x-centerX)*(1-ratio)+
+      current.middle.x-pinch.center.x;
+    camera.y=pinch.camera.y+(pinch.center.y-centerY)*(1-ratio)+
+      current.middle.y-pinch.center.y;
+    $("zoomLabel").textContent=Math.round(zoom/3.25*100)+"%";
+    paint();e.preventDefault();return;
+   }
+  }
+  if(!drag||drag.pointer!==e.pointerId||drag.mode==="none")return;
+  const dx=p.x-drag.start.x,dy=p.y-drag.start.y,scale=zoom*Math.min(2,devicePixelRatio||1);
   if(drag.mode==="pan"){camera.x=drag.cam.x+dx;camera.y=drag.cam.y+dy}
+  else if(drag.mode==="anchor"){
+   const mirror=direction==="sw"||direction==="nw";
+   G.setAnchor(rigRules,selected,
+    drag.pivot.x+(mirror?-dx:dx)/scale,drag.pivot.y+dy/scale,R);
+   $("anchorX").value=Number(rigRules.anchors[selected].x.toFixed(1));
+   $("anchorY").value=Number(rigRules.anchors[selected].y.toFixed(1));
+  }
   else if(drag.mode==="rotate"){
    const theta=Math.atan2(p.y-drag.origin.y,p.x-drag.origin.x);
    let delta=(theta-drag.startAngle)*180/Math.PI;
@@ -843,11 +885,24 @@ function setupEvents(){
   else if(drag.axis==="x")state.parts[selected].x=clamp(drag.pos.x+dx/scale,-40,40);
   else if(drag.axis==="y")state.parts[selected].y=clamp(drag.pos.y+dy/scale,-40,40);
   else if(drag.axis==="z")state.parts[selected].z=clamp(drag.pos.z-dx/(scale*.6),-10,10);
-  for(const [k,id] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]])$(id).value=Number(state.parts[selected][k].toFixed(1));
-  paint();
+  for(const [k,id] of [["x","posX"],["y","posY"],["z","posZ"],["angle","angle"],["scale","scale"]])
+   $(id).value=Number(state.parts[selected][k].toFixed(1));
+  paint();e.preventDefault();
  });
- for(const evt of ["pointerup","pointercancel"])studio.addEventListener(evt,e=>{if(drag?.pointer===e.pointerId){drag=null;try{studio.releasePointerCapture(e.pointerId)}catch{}}});
- studio.addEventListener("wheel",e=>{e.preventDefault();zoom=clamp(zoom+(e.deltaY<0?.3:-.3),1.5,6);paint()},{passive:false});
+ for(const eventName of ["pointerup","pointercancel","lostpointercapture"]){
+  studio.addEventListener(eventName,e=>{
+   if(e.pointerType==="touch")touchPoints.delete(e.pointerId);
+   if(touchPoints.size<2)pinch=null;
+   if(drag?.pointer===e.pointerId)drag=null;
+   if(eventName!=="lostpointercapture")
+    try{studio.releasePointerCapture(e.pointerId)}catch{}
+  });
+ }
+ studio.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const p=mouse(e);
+  zoomTo(zoom*(e.deltaY<0?1.14:1/1.14),p.x,p.y);
+ },{passive:false});
  studio.addEventListener("contextmenu",e=>e.preventDefault());
  window.addEventListener("resize",paint);
  window.addEventListener("keydown",e=>{
