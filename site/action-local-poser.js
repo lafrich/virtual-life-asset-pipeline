@@ -37,7 +37,7 @@
    target.dx=Math.round(clamp(src.dx,-48,48));
    target.dy=Math.round(clamp(src.dy,-64,64));
    target.angle=Math.round(clamp(src.angle,-180,180));
-   target.scale=Math.round(clamp(src.scale,40,200))||100;
+   target.scale=Math.round(clamp(src.scale===undefined?100:src.scale,40,200));
    target.layer=src.layer==="back"?"back":"front";
   }
   return out;
