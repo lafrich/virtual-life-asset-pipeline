@@ -154,6 +154,8 @@ jobs:
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/mahluk-2/studio.js
           node --check site/mahluk-2/emotion-planes.js
+          node --check site/mahluk-2/github-master-sync.js
+          node --test tests/test_mahluk2_github_sync.cjs
           node --check site/mahluk-2/rig-rules.js
           node --check site/mahluk-2/body-planes.js
           node --check site/mahluk-2/pixel-selection.js

@@ -192,3 +192,15 @@ mouse, without modifying the character. A continuous 3D orbit angle
 is intentionally not generated from 2D sprites; the four original
 artwork angles remain the ground truth. Press **P** for an exploded
 plane inspect view. Camera direction and spacing remain preview-only.
+
+
+## Shared GitHub master base (November 2026)
+The reusable master T-pose (rest parts), hierarchy, pivot positions, draw order,
+and 4-view PNG plane overrides live at `site/mahluk-2/master-rig.json`.
+On page load each device fetches that GitHub file. Unsynced local drafts are
+protected; legacy local changes are not automatically uploaded. Save General
+Default Rig then publish with the GitHub controls. A fine-grained token scoped
+only to this repository with Contents read/write is required for browser
+publishing. The token is held in memory only, never stored in browser storage
+or committed to GitHub. Saving while connected automatically publishes.
+Already-baked Semesta/Bangun Ruang sprites need republishing separately.

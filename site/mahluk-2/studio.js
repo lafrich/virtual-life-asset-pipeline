@@ -3,7 +3,7 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1", EMOTIONS=["neutral","happy","mischievous","angry","surprised","blush","grin"];
@@ -27,6 +27,7 @@ let inspectPlaneDepth=false,planeGap=2,orbitTool=false,selectMode=false; // View
 let rigRules=R&&G?G.defaults(R):null;
 let pixelPlanes={},planeImages=new Map(),planeImageRevision=0,planeEditor=null;
 let undoStack=[],redoStack=[],restoring=false,pinch=null;
+let githubMessage='Checking GitHub master...';
 const touchPoints=new Map(),MAX_UNDO=70;
 const studio=$("editor"),game=$("game");
 function snapshot(){
@@ -69,11 +70,55 @@ function redo(){
 }
 function masterDocument(){return G.read(window.localStorage,R)}
 function masterMessage(){
- const d=masterDocument();
- $("masterStatus").textContent=d?
-  "GENERAL DEFAULT RIG v"+d.revision+" · Saved "+new Date(d.savedAt).toLocaleString()+
-  " · Automatically used for new and reopened characters. Re-publish game sprites after changing rules.":
-  "No saved general rig. Save to make anchors, hierarchy, order and default pose reusable for all 2.0 characters.";
+ const doc=masterDocument(),published=S?.last(localStorage);
+ $("masterStatus").textContent=doc?
+  "GENERAL BASE v"+doc.revision+" · "+(published?.savedAt===doc.savedAt?"GITHUB PUBLISHED":"LOCAL ONLY / NOT PUBLISHED")+
+  " · "+new Date(doc.savedAt).toLocaleString()+" · New characters inherit this skeleton.":
+  "NO GENERAL BASE SAVED · Save the edited PC T-pose as General Default Rig.";
+ $("githubMasterStatus").textContent=githubMessage;
+}
+function githubInfo(text){githubMessage=text;if($("githubMasterStatus"))$("githubMasterStatus").textContent=text;}
+async function loadGithubMaster(initial=false){
+ try{
+  const item=await S.remote();
+  if(!item.doc){githubInfo("GitHub master not published yet. Your local edits are safe.");return false;}
+  const current=masterDocument();
+  if(initial&&!S.adopt(current,item.doc,S.last(localStorage))){
+   githubInfo("Unsynced local master preserved. Publish it from PC or choose LOAD GITHUB.");return false;
+  }
+  if(!initial&&current?.savedAt!==item.doc.savedAt&&
+    !window.confirm("Replace your open rig/pose with the GitHub master? Export first if needed."))return false;
+  if(current?.savedAt!==item.doc.savedAt&&!localStorage.getItem("mahluk-2-master-local-backup-v1"))
+   localStorage.setItem("mahluk-2-master-local-backup-v1",JSON.stringify(current));
+  localStorage.setItem(G.KEY,JSON.stringify(item.doc));S.mark(localStorage,item);
+  if(!initial){
+   remember();rigRules=G.normalize(item.doc.rules,R);setPixelPlanes(item.doc.pixelPlanes||{});
+   base=R.normalize({parts:item.doc.defaultParts});state=R.normalize(base);
+   tracks=R.makeTracks();frame=0;frames=1;buildTree();applyState();
+  }
+  githubInfo("✓ GitHub universal master v"+item.doc.revision+" loaded · 4 views");
+  masterMessage();return true;
+ }catch(err){githubInfo("GitHub load failed; local edits safe · "+err.message);return false;}
+}
+async function publishGithubMaster(){
+ const doc=masterDocument();
+ if(!S.connected()){githubInfo("Connect GitHub with a write token before publishing.");return false;}
+ if(!doc){githubInfo("Save your General Default Rig before publishing.");return false;}
+ githubInfo("Publishing master to GitHub...");
+ try{
+  const result=await S.publish(doc,localStorage);
+  localStorage.setItem(G.KEY,JSON.stringify(result.doc));S.mark(localStorage,result);
+  githubInfo("✓ UNIVERSAL MASTER PUBLISHED v"+result.doc.revision+" · PC / HP will load it");
+  masterMessage();setStatus("✓ GITHUB MASTER PUBLISHED",true);return true;
+ }catch(err){githubInfo("NOT PUBLISHED · LOCAL EDITS SAFE · "+err.message);masterMessage();return false;}
+}
+async function connectGithubMaster(){
+ const input=$("githubMasterToken");
+ try{
+  S.authorize(input.value);input.value="";
+  await S.remote(true);
+  githubInfo("GitHub connected for this tab. Click PUBLISH MASTER or save the General Default Rig.");
+ }catch(err){S.unauthorize();input.value="";githubInfo("GitHub authorization failed · "+err.message);}
 }
 function zoomTo(next,atX,atY){
  const before=zoom,after=clamp(next,.7,12);
@@ -991,8 +1036,9 @@ function saveGeneralRig(){
  commitUnkeyedPose();
  try{
   const doc=G.save(window.localStorage,R,rigRules,base.parts,pixelPlanes);
-  masterMessage();setStatus("✓ GENERAL DEFAULT RIG SAVED v"+doc.revision+
-   " · "+Object.keys(doc.pixelPlanes||{}).length+" PIXEL PLANES · RE-PUBLISH GAME SPRITES",true);
+  githubInfo("Saved locally. "+(S.connected()?"Publishing to GitHub...":"Connect GitHub and click PUBLISH MASTER to sync devices."));
+  masterMessage();setStatus("✓ GENERAL DEFAULT RIG SAVED LOCALLY v"+doc.revision,true);
+  if(S.connected())void publishGithubMaster();
   return true;
  }catch(error){setStatus("GENERAL RIG SAVE FAILED: "+error.message,false);return false}
 }
@@ -1006,9 +1052,10 @@ function saveGeneralPlanePixel(bone,png){
  const merged={...(prior?.pixelPlanes||{}),[bone]:png};
  try{
   const saved=G.save(window.localStorage,R,rules,parts,merged);
+  githubInfo("Default pixels saved locally. "+(S.connected()?"Publishing...":"Publish the master to GitHub."));
   masterMessage();
-  setStatus("✓ GENERAL PIXEL DEFAULT "+bone.toUpperCase()+
-   " · MASTER v"+saved.revision+" · "+Object.keys(saved.pixelPlanes).length+" ART PLANES",true);
+  setStatus("✓ GENERAL PIXEL DEFAULT "+bone.toUpperCase()+" · MASTER v"+saved.revision,true);
+  if(S.connected())void publishGithubMaster();
   return true;
  }catch(error){
   setStatus("GENERAL PIXEL SAVE FAILED: "+error.message,false);return false;
@@ -1039,6 +1086,9 @@ function setupEvents(){
  $("clearPixelPlane").onclick=clearPlanePixel;
  $("undo").onclick=undo;$("redo").onclick=redo;
  $("saveGeneralRig").onclick=saveGeneralRig;
+ $("githubMasterConnect").onclick=connectGithubMaster;
+ $("githubMasterPublish").onclick=publishGithubMaster;
+ $("githubMasterLoad").onclick=()=>loadGithubMaster(false);
  $("loadGeneralRig").onclick=loadGeneralRig;
  $("factoryRig").onclick=resetFactoryRig;
  $("layerFront").onclick=()=>moveLayer(selected,1);
@@ -1300,7 +1350,7 @@ function setupEvents(){
  requestAnimationFrame(tick);
 }
 async function mount(){
- if(!R||!E||!G||!B||!P||!V){setStatus("RIG / FOUR-VIEW CAMERA ENGINE NOT FOUND",false);return}
+ if(!R||!E||!G||!B||!P||!V||!S){setStatus("RIG / FOUR-VIEW / GITHUB SYNC ENGINE NOT FOUND",false);return}
  setupEvents();
  try{
   const resp=await fetch("../media/original-rig/manifest.json",{cache:"no-store"});
@@ -1315,6 +1365,7 @@ async function mount(){
    // Drafts are intentionally NOT auto-loaded as game-ready characters.
    setStatus("SOURCE READY · SELECT CHARACTER OR CREATE NEW",true);
   }
+  await loadGithubMaster(true);
   const general=masterDocument();rigRules=G.normalize(general?.rules,R);
   if(general?.defaultParts){state=R.normalize({parts:general.defaultParts});base=R.normalize(state)}
   setPixelPlanes(general?.pixelPlanes||{});

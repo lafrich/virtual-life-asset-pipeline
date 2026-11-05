@@ -305,3 +305,10 @@ select:focus,input:focus-visible,button:focus-visible{outline:1px dotted #163773
  .workspace{display:flex;flex-direction:column}
  .selected-part-chip{max-width:67%}
 }
+
+.github-master-box{margin:8px;padding:9px;background:#1b2533;border:1px solid #5c6b7d}
+.github-master-box .sectionhead{margin:-9px -9px 9px}
+.github-master-box .hint{font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+.github-master-box input[type=password]{width:100%;padding:7px;background:#141e2c;border:1px solid #5d7189;color:#e6ecf8;box-sizing:border-box}
+.github-master-box .plane-buttons{display:flex;flex-wrap:wrap;gap:4px;margin:7px 0}
+.github-master-box .plane-buttons button{flex:1;min-width:99px;font-size:10px}
