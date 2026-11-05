@@ -70,6 +70,56 @@
    return {x:dx,y:dy};
   }catch(_){return {x:0,y:0};}
  }
+ // Mahluk native Male/Female expressive sheets are full sprites. Compare
+ // them with their actor's NEUTRAL sheet and copy only changed face pixels;
+ // never replace an opaque rectangle of jaw, neck, scalp or clothing.
+ const deltaCache=new WeakMap();
+ function drawNativeHumanFace(ctx,image,neutral,src,shift){
+  if(typeof document==="undefined"||!ctx?.getImageData)return false;
+  let frames=deltaCache.get(image);
+  if(!frames){frames=new Map();deltaCache.set(image,frames);}
+  const key=(neutral.src||"neutral")+"|"+src.x+"|"+src.y;
+  let pixels=frames.get(key);
+  if(!pixels){
+   const scratch=document.createElement("canvas");
+   scratch.width=64;scratch.height=112;
+   const paint=scratch.getContext("2d",{willReadFrequently:true});
+   if(!paint)return false;
+   try{
+    paint.drawImage(image,src.x,src.y,64,112,0,0,64,112);
+    const desired=paint.getImageData(0,0,64,112).data;
+    paint.clearRect(0,0,64,112);
+    paint.drawImage(neutral,src.x,src.y,64,112,0,0,64,112);
+    const base=paint.getImageData(0,0,64,112).data;
+    pixels=[];
+    // Eyes, brows, blush and tongue must fit inside the actor's facial area.
+    // Differences beyond the face, including neck and torso, are ignored.
+    for(let y=32;y<61;y++)for(let x=22;x<48;x++){
+     const i=(y*64+x)*4;
+     if(desired[i+3]<100||base[i+3]<100)continue;
+     if(Math.abs(desired[i]-base[i])<3&&
+        Math.abs(desired[i+1]-base[i+1])<3&&
+        Math.abs(desired[i+2]-base[i+2])<3)continue;
+     pixels.push([x,y,desired[i],desired[i+1],desired[i+2]]);
+    }
+    if(frames.size>110)frames.clear();
+    frames.set(key,pixels);
+   }catch{return false;}
+  }
+  try{
+   const target=ctx.getImageData(0,0,64,112);
+   const d=target.data,dx=Math.round(shift.x),dy=Math.round(shift.y);
+   for(const [x,y,r,g,b] of pixels){
+    const px=x+dx,py=y+dy;
+    if(px<0||px>=64||py<0||py>=112)continue;
+    const i=(py*64+px)*4;
+    if(d[i+3]<100)continue;
+    d[i]=r;d[i+1]=g;d[i+2]=b;
+   }
+   ctx.putImageData(target,0,0);
+   return true;
+  }catch{return false;}
+ }
  function drawExpression(ctx,face,direction,frame,load){
   if(!ctx||!face||face.id==="neutral")return false;
   const view=DIRECTIONS.indexOf(direction);
@@ -81,6 +131,16 @@
   if(!image||entry?.ready===false)return false;
   const src=sourceRect(image,view,frame,mode);
   if(!src)return false;
+  const native=/^(media\/human-(?:male|female)-base-expression-)(?:bleh|cheeky|grimace_blush)(\.png)$/.exec(path);
+  if(mode==="sheet"&&native){
+   const neutralPath=native[1]+"neutral"+native[2];
+   const neutralEntry=load?.(neutralPath);
+   const neutral=neutralEntry?.im||neutralEntry?.pic||neutralEntry;
+   // Do not paint unsafe rectangles while the neutral image is loading.
+   if(!neutral||neutralEntry?.ready===false)return false;
+   const shift=blehHeadShift(ctx,image,src);
+   return drawNativeHumanFace(ctx,image,neutral,src,shift);
+  }
   // Full-body expression sheets are NOT overlays. Crop only original
   // face/hair rectangle, never replace arms, torso, bag or action pose.
   const crop=mode==="overlay"?{x:16,y:28,w:33,h:36}:{x:17,y:30,w:31,h:32};
