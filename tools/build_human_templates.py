@@ -841,7 +841,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             "gender":gender,"directions":list(DIRECTIONS),"layer_order":
                 native_frames[0]["depth_order"],"source_layers":keys,
             "frame_size":[64,112],"source_guide":f"{name}-guide.png",
-        },indent=2)+"\\n",encoding="utf-8")
+        },indent=2)+"\n",encoding="utf-8")
         poster=frame("se","idle",0)
         poster.save(media/f"{name}-thumb.png",optimize=True)
         poster.save(media/f"{name}-poster.png",optimize=True)
