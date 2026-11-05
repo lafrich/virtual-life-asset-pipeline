@@ -23,31 +23,31 @@
       "collision": true,
       "note": "Lampu taman Jakarta: tiang urban dua kepala, top warm light, black metal",
       "size": [
-        34,
+        36,
         152
       ],
       "pivot": [
-        16,
+        18,
         145
       ],
-      "width": 0.7513,
+      "width": 0.7955,
       "height": 3.8784,
       "variants": {
         "sw": {
           "file": "taman/lampu_taman_jakarta_sw.png",
           "size": [
-            34,
+            36,
             152
           ],
           "pivot": [
-            16,
+            18,
             145
           ]
         },
         "se": {
           "file": "taman/lampu_taman_jakarta_se.png",
           "size": [
-            34,
+            36,
             152
           ],
           "pivot": [
@@ -219,20 +219,20 @@
       "collision": true,
       "note": "Semak taman pendek, bisa disusun modular sepanjang trotoar",
       "size": [
-        44,
+        46,
         40
       ],
       "pivot": [
         18,
         30
       ],
-      "width": 0.9723,
+      "width": 1.0165,
       "height": 1.0206,
       "variants": {
         "sw": {
           "file": "taman/semak_kota_pendek_sw.png",
           "size": [
-            44,
+            46,
             40
           ],
           "pivot": [
@@ -244,11 +244,11 @@
           "file": "taman/semak_kota_pendek_se.png",
           "size": [
             52,
-            40
+            42
           ],
           "pivot": [
             26,
-            30
+            33
           ]
         }
       }
