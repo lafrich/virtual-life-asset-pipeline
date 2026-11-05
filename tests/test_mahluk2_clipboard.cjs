@@ -54,6 +54,13 @@ test("both character and emotion editors share copy/paste/flip buttons and short
   for(const id of ["pixelCopySelection","pixelPasteSelection","pixelPasteMirrored","pixelPasteReplace","pixelClipboardInfo"])
    assert.ok(html.includes('id="'+id+'"'),page+" missing "+id);
   assert.match(html,/id="pixelCanvas" tabindex="0"/);
+  const toolbar=html.match(/<div class="pixel-quick-tools"[^>]*>([\\s\\S]*?)<\\/div>/);
+  assert.ok(toolbar,page+" missing near-Select clipboard group");
+  const controls=toolbar[1];
+  assert.ok(controls.indexOf('data-pixel-tool="select"')>=0);
+  assert.ok(controls.indexOf('data-pixel-tool="select"')<controls.indexOf('id="pixelCopySelection"'));
+  assert.ok(controls.indexOf('id="pixelCopySelection"')<controls.indexOf('id="pixelPasteSelection"'));
+  assert.ok(controls.indexOf('id="pixelPasteSelection"')<controls.indexOf('id="pixelPasteMirrored"'));
  }
  assert.match(editor,/els\.copy\.onclick=copySelection/);
  assert.match(editor,/els\.pasteMirror\.onclick=\(\)=>pasteSelection\(true\)/);
