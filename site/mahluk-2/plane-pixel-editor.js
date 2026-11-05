@@ -99,6 +99,41 @@
     out.stroke();out.restore();
    }
   }
+  function setZoom(next,cx,cy){
+   const target=clamp(Math.round(Number(next)||5),2,16);
+   const wrap=els.wrap,box=wrap.getBoundingClientRect();
+   const x=Number.isFinite(cx)?cx:box.left+box.width/2;
+   const y=Number.isFinite(cy)?cy:box.top+box.height/2;
+   const before=canvas.getBoundingClientRect();
+   const fx=before.width?(x-before.left)/before.width:.5;
+   const fy=before.height?(y-before.top)/before.height:.5;
+   zoom=target;
+   canvas.style.width=(W*zoom)+"px";
+   canvas.style.height=(H*zoom)+"px";
+   els.zoom.value=String(zoom);els.zoomLabel.textContent=zoom*100+"%";
+   const after=canvas.getBoundingClientRect();
+   wrap.scrollLeft+=after.left+fx*after.width-x;
+   wrap.scrollTop+=after.top+fy*after.height-y;
+  }
+  function zoomFit(){
+   const box=els.wrap.getBoundingClientRect();
+   const best=Math.min((box.width-22)/W,(box.height-22)/H);
+   setZoom(Math.floor(clamp(best,2,16)));
+  }
+  function touchPair(){
+   const p=[...touches.values()];
+   if(p.length<2)return null;
+   return {distance:Math.max(1,Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)),
+    center:{x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2}};
+  }
+  els.zoomOut.onclick=()=>setZoom(zoom-1);
+  els.zoomIn.onclick=()=>setZoom(zoom+1);
+  els.zoomFit.onclick=zoomFit;
+  els.zoom.oninput=()=>setZoom(els.zoom.value);
+  els.wrap.addEventListener("wheel",e=>{
+   if(overlay.hidden)return;
+   e.preventDefault();setZoom(zoom+(e.deltaY<0?1:-1),e.clientX,e.clientY);
+  },{passive:false});
   function coords(e){
    const rect=canvas.getBoundingClientRect();
    return {
