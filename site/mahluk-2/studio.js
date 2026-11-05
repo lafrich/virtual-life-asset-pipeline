@@ -3,7 +3,7 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1";
@@ -250,7 +250,7 @@ function getEmotionAsset(id){
   const name=id.slice(7);
   return name==="neutral"&&(manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
  }
- return publishedAssets.find(a=>a.id===id&&(a.base===type||a.base==="universal"))||
+ return publishedAssets.find(a=>a.id===id&&a.base===type)||
   userAssets.find(a=>a.id===id&&a.kind==="emotion")||null;
 }
 function getGlassesAsset(id){
@@ -787,8 +787,8 @@ function assetOptions(){
  opt(emotion,"native:neutral","SOURCE / NEUTRAL FALLBACK");
  opt(glass,"native","ORIGINAL GLASSES / V6B");
  opt(glass,"none","NONE / HIDE");
- for(const asset of publishedAssets.filter(a=>a.base===type||a.base==="universal")){
-  opt(emotion,asset.id,(asset.base==="universal"?"UNIVERSAL GITHUB / ":"EXISTING / ")+asset.label+" / "+asset.frames+"F");
+ for(const asset of publishedAssets.filter(a=>a.base===type)){
+  opt(emotion,asset.id,"EXISTING / "+asset.label+" / "+asset.frames+"F");
  }
  for(const asset of userAssets){
   if(asset.kind==="emotion")opt(emotion,asset.id,"IMPORTED / "+asset.name.toUpperCase()+" / "+asset.frames+"F");
@@ -816,28 +816,9 @@ function updateEmotionStatus(){
   (asset?.frames||1)+" FRAME(S) · "+emotionKeys.length+" IMAGE SWAP KEY(S)";
 }
 async function loadPublishedAssets(){
- // Emotion Studio is the sole published emotion catalog for Mahluk Hidup 2.
- publishedAssets=[];
- publishedImages.clear();
- await loadUniversalAssets();
- assetOptions();
-}
-async function loadUniversalAssets(){
- // Shared catalog lives in GitHub, not on this browser. Rendered atlas uses the same 64x112 RGBA frames as Emotion Studio.
- if(!U)throw Error("Missing universal emotion renderer");
- const {catalog}=await U.loadCatalog();
- const available=[];
- for(const entry of catalog.entries){
-  try{
-   const canvas=await U.renderAtlas(entry);
-   if(canvas.width!==64*entry.frames||canvas.height!==448)continue;
-   publishedImages.set(entry.id,canvas);
-   available.push({id:entry.id,label:entry.name,base:entry.base,frames:entry.frames,
-    frame_ms:Array(entry.frames).fill(Math.round(1000/(entry.fps||6))),
-    src:"github-universal",face_only:true});
-  }catch(error){console.warn("Skipped invalid GitHub emotion",entry.id,error)}
- }
- publishedAssets=[...publishedAssets.filter(a=>a.src!=="github-universal"&&!available.some(x=>x.id===a.id)),...available];
+ // Deliberately standalone: Emotion Studio library is NOT consumed here yet.
+ // Keep the native neutral face and manual PNG import independent.
+ publishedAssets=[];publishedImages.clear();assetOptions();
 }
 function loadImportedAssets(){
  userAssets=E.safeAssets(window.localStorage);
@@ -1149,7 +1130,6 @@ function setupEvents(){
   setStatus("EMOTION PLANE ASSET / "+(asset?.native||asset?.name||"UNKNOWN"),true);
  };
  $("glassesAsset").onchange=e=>{remember();glassesAssetId=e.target.value;paint();setStatus("GLASSES PLANE / "+glassesAssetId,true)};
- $("refreshUniversalEmotions").onclick=async()=>{try{await loadUniversalAssets();assetOptions();paint();setStatus("GITHUB EMOTIONS REFRESHED · UNIVERSAL LIBRARY READY",true)}catch(error){setStatus("REFRESH FAILED: "+error.message,false)}};
  $("emotionImport").onchange=e=>{importPlanePng(e.target.files?.[0],"emotion");e.target.value=""};
  $("glassesImport").onchange=e=>{importPlanePng(e.target.files?.[0],"glasses");e.target.value=""};
  $("emotionKey").onclick=setEmotionKey;
