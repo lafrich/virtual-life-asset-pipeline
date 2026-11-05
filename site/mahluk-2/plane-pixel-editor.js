@@ -59,7 +59,7 @@
   const atlas=document.createElement("canvas");atlas.width=W;atlas.height=H*4;
   const ctx=atlas.getContext("2d",{willReadFrequently:true});
   const out=canvas.getContext("2d");
-  let bone="",tool="pencil",dir=0,active=null,history=[],redo=[],dirty=false,source=null,ref=null;
+  let bone="",tool="pencil",dir=0,active=null,history=[],redo=[],dirty=false,source=null,ref=null,refs=null;
   let zoom=5,pan=null,pinch=null;
   const touches=new Map();
   const controls=[...overlay.querySelectorAll("[data-pixel-tool]")];
@@ -186,7 +186,7 @@
   overlay.querySelectorAll("[data-pixel-swatch]").forEach(el=>el.addEventListener("click",()=>{
    els.color.value=el.dataset.pixelSwatch;selectTool("pencil");
   }));
-  els.dir.onchange=()=>{dir=DIR.indexOf(els.dir.value);draw();updateHistory()};
+  els.dir.onchange=()=>{dir=DIR.indexOf(els.dir.value);ref=refs?.[DIR[dir]]||ref;draw();updateHistory()};
   els.onion.onchange=draw;els.grid.onchange=draw;els.gridType.onchange=draw;
   els.sync.onchange=updateHistory;
   els.undo.onclick=()=>historyStep(history,redo);
@@ -285,10 +285,11 @@
     if(e.key==="0")zoomFit();else setZoom(zoom+(e.key==="-"?-1:1));
    }else if(e.key==="Escape"){e.stopPropagation();overlay.hidden=true}
   });
-  function open({id,initialAtlas,originalAtlas,referenceImage,direction="se"}){
+  function open({id,initialAtlas,originalAtlas,referenceImage,referenceImages,direction="se"}){
    if(!id)throw Error("Select an editable plane");
    bone=id;dir=Math.max(0,DIR.indexOf(direction));source=originalAtlas||null;
-   ref=referenceImage||null;history=[];redo=[];dirty=false;active=null;
+   refs=referenceImages||null;ref=refs?.[DIR[dir]]||referenceImage||null;
+   history=[];redo=[];dirty=false;active=null;
    ctx.clearRect(0,0,W,H*4);
    if(initialAtlas)ctx.drawImage(initialAtlas,0,0,W,H*4);
    else if(source)ctx.drawImage(source,0,0,W,H*4);
