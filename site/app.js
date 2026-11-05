@@ -21,7 +21,7 @@ function modularReferenceRecord(){
  let base=rig.referencePose(),tracks=rig.makeTracks(),count=24;
  try{
   const saved=JSON.parse(window.localStorage.getItem("mahluk-modular-rig-studio-v2")||"null");
-  if(saved?.format==="mahluk-rig-studio-v2"){
+  if(saved?.format==="mahluk-rig-studio-v2"&&saved.artRevision===rig.ART_REVISION){
    base=rig.normalize(saved.base);
    tracks=saved.tracks&&typeof saved.tracks==="object"?saved.tracks:tracks;
    count=Math.max(4,Math.min(96,Number(saved.count)||24));
