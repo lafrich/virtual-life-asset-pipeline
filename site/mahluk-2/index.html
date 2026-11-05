@@ -8,7 +8,8 @@
 <script defer src="../modular-rig-v2.js?v=mh2"></script>
 <script defer src="./emotion-planes.js?v=1"></script>
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
-<script defer src="./studio.js?v=general-rig-anchor-undo-pinch-v1"></script>
+<script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
+<script defer src="./studio.js?v=nude-body-plane-v1"></script>
 </head>
 <body>
 <div class="window">
@@ -23,6 +24,14 @@
      <select id="modelType"><option value="original">V6B ORIGINAL / CLOTHED</option><option value="male">HUMAN MALE BASE</option><option value="female">HUMAN FEMALE BASE</option></select>
     </label>
     <label class="selectline">OUTFIT <select id="outfit"><option value="outfit">OUTFIT ON</option><option value="base">BODY BASE</option></select></label>
+    <label class="selectline">BODY PLANE TEXTURE
+      <select id="bodyPlane" aria-label="Replace only the body cutout texture with an existing nude Male or Female atlas">
+       <option value="current">CURRENT / KEEP BODY</option>
+       <option value="male">NUDE / HUMAN MALE</option>
+       <option value="female">NUDE / HUMAN FEMALE</option>
+      </select>
+    </label>
+    <p class="hint" id="bodyPlaneHint">Swap body texture only. Head, hair, Emotion, Glasses, animation, anchors and hierarchy are unchanged.</p>
     <label class="selectline">SAVED CHARACTER <select id="library"><option value="">NEW CHARACTER</option></select></label>
     <div class="sectionhead">MODULAR PLANES <span id="planeCount">00</span></div>
     <p class="hint">HEAD → EMOTION PLANE + GLASSES PLANE. Eyes, brow, mouth and blush live inside one imported animation asset, not face bones.</p>
