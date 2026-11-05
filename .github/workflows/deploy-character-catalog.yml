@@ -246,6 +246,8 @@ jobs:
           test -s _site/style.css
           test -s _site/media/original-rig/manifest.json
           test -s _site/media/original-rig/gender-bases.png
+          test -s _site/media/original-rig/rotation-qa.png
+          python -c 'import json,pathlib; s=pathlib.Path("_site"); m=json.loads((s/"media/original-rig/manifest.json").read_text()); parts=m["slots"]; assert m["anatomy_layers_shared_across_outfits"]; assert m["outfit_layer_mode"]=="additive_native_garments"; assert all(len([p for p in parts if p.get("gender")==g and p.get("layer_type")==t])>=(8 if t=="body" else 3) for g in ("male","female") for t in ("body","garment")); assert (s/m["rotation_qa"]).is_file(); print("Verified independently layered human anatomy and removable garments for both genders")'
           test -s _site/media/original-rig/source-contact-sheet.png
           test -s _site/modular-rig-v2.js
           test -s _site/rig-studio-v2.js
