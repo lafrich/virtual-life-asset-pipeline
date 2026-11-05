@@ -711,6 +711,28 @@ function importProject(file){
   $("characterName").value=String(v.name||"Imported 2.0").slice(0,40);frame=0;assetOptions();applyState();setStatus("IMPORTED PROJECT / NOT YET PUBLISHED",true);
  }).catch(e=>setStatus("IMPORT FAILED: "+e.message,false));
 }
+function saveGeneralRig(){
+ if(!manifest)return;
+ commitUnkeyedPose();
+ try{
+  const doc=G.save(window.localStorage,R,rigRules,base.parts);
+  masterMessage();setStatus("✓ GENERAL DEFAULT RIG SAVED v"+doc.revision+
+   " · APPLIES TO NEW/REOPENED CHARACTERS · RE-PUBLISH BAKED GAME SPRITES",true);
+ }catch(error){setStatus("GENERAL RIG SAVE FAILED: "+error.message,false)}
+}
+function loadGeneralRig(){
+ const saved=masterDocument();
+ if(!saved){setStatus("NO GENERAL DEFAULT RIG SAVED");return}
+ remember();
+ rigRules=G.normalize(saved.rules,R);
+ // Loading hierarchy does not discard the character's keyed animation.
+ buildTree();masterMessage();
+ setStatus("LOADED GENERAL RIG v"+saved.revision+" / HIERARCHY + ANCHORS + LAYER ORDER",true);
+}
+function resetFactoryRig(){
+ remember();rigRules=G.defaults(R);buildTree();
+ setStatus("FACTORY RIG RULES LOADED IN EDITOR · SAVED MASTER REMAINS UNCHANGED");
+}
 function setupEvents(){
  $("modelType").onchange=e=>{type=e.target.value;
   if(!getEmotionAsset(emotionAssetId)){emotionAssetId="native:neutral";emotionKeys=[]}
