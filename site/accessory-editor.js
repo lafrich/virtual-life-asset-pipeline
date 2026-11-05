@@ -353,7 +353,10 @@ async function restoreLayers(frames,category){
 function allStorageItems(){
  const v=keysafeRead(STORE,[]);return Array.isArray(v)?v.filter(x=>x&&KINDS.includes(x.category)&&typeof x.id==="string"&&x.frames):[];
 }
-function storageItems(){return allStorageItems().filter(x=>(x.template_base||"astrofrich_base")===base&&allowedKinds.includes(x.category));}
+function storageItems(){
+ if(window.VLCharacterReferenceReset?.active)return [];
+ return allStorageItems().filter(x=>(x.template_base||"astrofrich_base")===base&&allowedKinds.includes(x.category));
+ }
 function renderStorage(){
  const list=$("acc-list"),items=storageItems();list.replaceChildren();
  const empty=document.createElement("option");empty.value="";empty.textContent="— NEW ACCESSORY —";list.append(empty);
@@ -479,6 +482,14 @@ function init(){
  guide.onload=()=>{if(guide.naturalWidth!==256||guide.naturalHeight!==112){status("GUIDE DIMENSIONS MISMATCH");return;}
   guideState.loaded=true;state.loaded=true;status("BASE GUIDE READY · "+base.toUpperCase()+" / SE SW NE NW");draw();};
  guide.onerror=()=>status("COULD NOT LOAD THEODORE GUIDE / CHECK SITE BUILD");
+ if(window.VLCharacterReferenceReset?.active){
+  guideState.loaded=true;state.loaded=true;
+  $("acc-base-label").textContent="MENUNGGU MODEL / RIG BARU";
+  $("acc-guide-description").textContent=window.VLCharacterReferenceReset.message;
+  $("acc-save").disabled=true;$("acc-equip").disabled=true;
+  renderStorage();updateControls();fitZoom();draw();
+  status(window.VLCharacterReferenceReset.message);return;
+ }
  const guideUrl=human?"./media/human-"+(base.includes("female")?"female":"male")+"-base-guide.png":
   "./media/theodore-accessory-fitting-guide.png";
  const fresh=params.get("build")||"";
