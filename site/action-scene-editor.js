@@ -893,6 +893,11 @@ async function init(){
   hydrateCustom();refreshLocal();facesDB=FACE?.validate(expr)?expr:null;
   populateActors();
   ready=true;setupEvents();
+  if(window.VLCharacterReferenceReset?.active){
+   $("act-saved-list")?.replaceChildren();
+   status(window.VLCharacterReferenceReset.message);
+   return;
+  }
   const params=new URLSearchParams(location.search);
   const preset=params.get("scene");
   const saved=preset?A.get(preset):null;
