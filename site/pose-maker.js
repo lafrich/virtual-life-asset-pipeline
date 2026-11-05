@@ -286,6 +286,10 @@ function paintHuman(ctx,img,base,dir,pose,frame=0){
  const col=frame%Math.max(1,Number(base.idle_frames)||4);
  const sourceX=col*64,sourceY=row*112;
  const a=normalized(pose);
+ if(root?.VLPoseWeights?.paint){
+  root.VLPoseWeights.paint(ctx,img,base,dir,a,P0,frame);
+  return;
+ }
  // View-specific depth offset gives front/back drawings distinct perspective.
  const view=[.22,-.22,.22,-.22][dir],back=dir>=2;
  function xy(id){const v=a[id];return [v[0]+v[2]*view,v[1]-v[2]*.12];}
@@ -376,6 +380,7 @@ function mount(){
  let source={},images={},savedId="",drag=null;
  const allJoints=Object.keys(P0);
  const inform=t=>{$("pose-feedback").textContent=t;};
+ root.VLPoseWeights?.mount({source,images,onChange:preview});
  const stop=()=>{
   playing=false;lastTick=0;accum=0;
   $("pose-play").textContent="▶ PLAY";
@@ -603,7 +608,7 @@ function mount(){
     source[id]=found;
     images[id]=await loadImage(found.sheet+(found.sheet.startsWith("data:")?"":(found.sheet.includes("?")?"&":"?")+"poser="+encodeURIComponent(payload.build_version||"1")));
    }
-   preview();inform("Human Base Male + Female ready. Select Body / Head / Arms / Legs.");
+   root.VLPoseWeights?.refresh();preview();inform("Human Base loaded. Editable pixel masks ready.");
   }catch(e){inform("Human Base loading error: "+e.message);}
  }
  function showSaved(){
@@ -648,6 +653,7 @@ function mount(){
    return {format:"virtual-life-human-pose-v2",id,name,base_id,frames,fps,duration_ms,
     directions:[...DIR],frame_size:[64,112],pivot:[32,100],
     source:"pose-maker",row:0,tracks:sanitizeTracks(tracks,total),
+    pixel_weight_masks:root.VLPoseWeights?.serialize(base_id,images[base_id],source[base_id]),
     sheet:canvas.toDataURL("image/png"),created_at:new Date().toISOString()};
   });
  }
