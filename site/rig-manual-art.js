@@ -92,18 +92,19 @@
    this.cache.clear();this.saveLocal();this.changed();return true;
   }
   changed(dir){
-   if(dir)for(const key of [...this.cache.keys()])if(key.startsWith(dir+":"))this.cache.delete(key);
-   else{} // Explicit cache invalidation happens only for matching direction.
-   if(!dir)this.cache.clear();
+   if(dir){
+    for(const key of [...this.cache.keys()])
+     if(key.startsWith(dir+":"))this.cache.delete(key);
+   }else this.cache.clear();
    this.onChange?.();
   }
-  setPixel(dir,x,y,color,bone){
+  setPixel(dir,x,y,color,bone,redraw=true){
    if(!DIR.includes(dir)||!bounds(x,y))return false;
    const col=rgbaColor(color);if(!col)return false;
    const p=index(x,y),entries=new Map(this.state.pixels[dir].map(x=>[x[0],x]));
    entries.set(p,[p,...col]);this.state.pixels[dir]=[...entries.values()];
    if(bone&&this.bones.includes(bone)&&col[3]>0)this.setWeight(dir,x,y,bone,false);
-   this.changed(dir);return true;
+   if(redraw)this.changed(dir);return true;
   }
   setWeight(dir,x,y,bone,redraw=true){
    if(!DIR.includes(dir)||!bounds(x,y)||!this.bones.includes(bone))return false;
@@ -119,10 +120,11 @@
     if(!bounds(xx,yy)||(xx-x)**2+(yy-y)**2>r*r)continue;
     if(tool==="paint"||tool==="erase")
      count+=this.setPixel(dir,xx,yy,tool==="erase"?[0,0,0,0]:color,
-       tool==="paint"?bone:null)?1:0;
-    else if(tool==="weight")count+=this.setWeight(dir,xx,yy,bone)?1:0;
-    else if(tool==="unweight")count+=this.setWeight(dir,xx,yy,"root")?1:0;
+       tool==="paint"?bone:null,false)?1:0;
+    else if(tool==="weight")count+=this.setWeight(dir,xx,yy,bone,false)?1:0;
+    else if(tool==="unweight")count+=this.setWeight(dir,xx,yy,"root",false)?1:0;
    }
+   if(count)this.changed(dir);
    return count;
   }
   async init(){
@@ -200,5 +202,13 @@
    this.cache.set(key,parts);return parts;
   }
  }
- return Object.freeze({W,H,DIR,STORE,FORMAT,blankState,normalizeState,Editor});
+ let sharedPromise=null;
+ function getSharedEditor(rig){
+  if(!sharedPromise){
+   sharedPromise=(async()=>{const editor=new Editor(rig);await editor.init();return editor;})()
+    .catch(e=>{sharedPromise=null;throw e;});
+  }
+  return sharedPromise;
+ }
+ return Object.freeze({W,H,DIR,STORE,FORMAT,blankState,normalizeState,Editor,getSharedEditor});
 });
