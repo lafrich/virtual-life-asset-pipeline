@@ -368,98 +368,228 @@ function zipFiles(entries){
 function mount(){
  const tab=document.getElementById("switch-poser"),panel=document.getElementById("pose-workspace");
  if(!tab||!panel)return;
- const $=id=>document.getElementById(id);
- const rig=$("pose-rig");
- let keys=[{at:0,pose:neutral()},{at:.5,pose:neutral()},{at:1,pose:neutral()}];
- let active=0,chosen="wrist_r",yaw=32,playing=false,playTime=0,lastTick=0;
- let source={},images={},savedId="";
- const inform=(t)=>{$("pose-feedback").textContent=t;};
- const pose=()=>keys[active].pose;
+ const $=id=>document.getElementById(id),rig=$("pose-rig");
+ let tracks=initialTracks(),total=24,fps=12,currentFrame=0,part="body",chosen="pelvis";
+ let draft=sampleTracks(tracks,0,total),yaw=32,isolate=false,playing=false,lastTick=0,accum=0,dirty=false;
+ let source={},images={},savedId="",drag=null;
  const allJoints=Object.keys(P0);
- let lastSvgNodes={};
+ const inform=t=>{$("pose-feedback").textContent=t;};
+ const stop=()=>{
+  playing=false;lastTick=0;accum=0;
+  $("pose-play").textContent="▶ PLAY";
+ };
  function renderRig(){
-  const p=pose(),projected=Object.fromEntries(allJoints.map(id=>[id,project(p[id],yaw)]));
+  const projected=Object.fromEntries(allJoints.map(id=>[id,project(draft[id],yaw)]));
   const bg='<defs><pattern id="poser-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#a8b5c3" stroke-width=".6"/></pattern></defs>'+
-    '<rect width="320" height="410" fill="#e8edf3"/><rect width="320" height="410" fill="url(#poser-grid)"/>'+
-    '<ellipse cx="160" cy="375" rx="65" ry="12" fill="#334155" opacity=".12"/>';
-  const parts=BONES.map(([start,end])=>{
-    const a=projected[start],b=projected[end];
-    return '<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="#273853" stroke-width="7" stroke-linecap="round"/>'+
-     '<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="#75a9e0" stroke-width="3" stroke-linecap="round"/>';
+   '<rect width="320" height="410" fill="#e8edf3"/><rect width="320" height="410" fill="url(#poser-grid)"/>'+
+   '<ellipse cx="160" cy="375" rx="65" ry="12" fill="#334155" opacity=".12"/>';
+  const edges=BONES.map(([start,end])=>{
+   const segment=JOINT_PART[end],active=segment===part;
+   if(isolate&&!active)return "";
+   const a=projected[start],b=projected[end],color=PARTS[segment].color;
+   return '<g class="pose-segment'+(active?" is-active":" is-muted")+'">'+
+     '<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="#344254" stroke-width="9" stroke-linecap="round"/>'+
+     '<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="'+color+'" stroke-width="5" stroke-linecap="round"/></g>';
   }).join("");
   const dots=allJoints.map(id=>{
-   const pt=projected[id],on=id===chosen;
-   return '<circle data-joint="'+id+'" cx="'+pt.x+'" cy="'+pt.y+'" r="'+(on?10:7)+'" fill="'+(on?"#f9b63a":"#eff5fd")+
-    '" stroke="'+(on?"#633d00":"#1858a4")+'" stroke-width="2.5" />';}).join("");
-  rig.innerHTML=bg+parts+dots;
+   const active=JOINT_PART[id]===part,on=id===chosen;
+   if(isolate&&!active)return "";
+   const pt=projected[id],color=PARTS[JOINT_PART[id]].color;
+   const label=active?'<text class="pose-joint-label" x="'+(pt.x+10)+'" y="'+(pt.y-9)+'">'+
+     id.toUpperCase().replaceAll("_"," ")+'</text>':"";
+   return '<g class="pose-handle'+(active?" is-active":" is-muted")+'">'+
+    '<circle '+(active?'data-joint="'+id+'" ':'')+'cx="'+pt.x+'" cy="'+pt.y+
+    '" r="'+(on?11:active?8:4)+'" fill="'+(on?"#ffd166":active?"#fff":"#aeb9c5")+
+    '" stroke="'+(on?"#6c4704":color)+'" stroke-width="'+(on?3:2)+'" />'+label+'</g>';
+  }).join("");
+  rig.innerHTML=bg+edges+dots+
+   '<text class="pose-part-stage-label" x="13" y="27" fill="'+PARTS[part].color+'">'+PARTS[part].label+' / EDIT</text>';
   $("pose-joint-name").textContent=chosen.toUpperCase().replaceAll("_"," ");
-  $("pose-depth").value=String(p[chosen][2]);
-  $("pose-depth-value").textContent=String(Math.round(p[chosen][2]));
- }
- function showTimeline(){
-  const wrap=$("pose-keys");wrap.replaceChildren();
-  keys.forEach((key,i)=>{
-   const b=document.createElement("button");b.type="button";
-   b.className="pose-key"+(i===active?" active":"");
-   b.textContent="F"+(i+1)+" · "+Math.round(key.at*100)+"%";
-   b.onclick=()=>{active=i;playing=false;renderAll();};wrap.append(b);
-  });
-  $("pose-time").value=String(Math.round(keys[active].at*100));
-  $("pose-time").disabled=active===0||active===keys.length-1;
+  $("pose-depth").value=String(draft[chosen][2]);
+  $("pose-depth-value").textContent=String(Math.round(draft[chosen][2]));
+  $("pose-joint-select").value=chosen;
  }
  function preview(){
-  const p=playing?sample(keys,playTime):pose();
   for(const [gender,baseId] of [["male",BASE_IDS[0]],["female",BASE_IDS[1]]]){
-    const canvas=$("pose-preview-"+gender),ctx=canvas.getContext("2d");
-    ctx.clearRect(0,0,64,112);
-    if(images[baseId]&&source[baseId])
-      paintHuman(ctx,images[baseId],source[baseId],Number($("pose-facing").value),p);
+   const canvas=$("pose-preview-"+gender),ctx=canvas.getContext("2d");
+   ctx.clearRect(0,0,64,112);
+   if(images[baseId]&&source[baseId])
+    paintHuman(ctx,images[baseId],source[baseId],Number($("pose-facing").value),draft);
   }
  }
- function renderAll(){renderRig();showTimeline();preview();}
- function setJoint(id){if(!P0[id])return;chosen=id;renderRig();}
+ function updatePlayhead(){
+  $("pose-current-frame").textContent=String(currentFrame+1).padStart(2,"0");
+  $("pose-frame-total").textContent=String(total);
+  $("pose-playhead-label").textContent="F "+String(currentFrame+1).padStart(2,"0");
+  $("pose-time").max=String(total-1);
+  $("pose-time").value=String(currentFrame);
+  $("pose-duration-label").textContent=(total/fps).toFixed(2)+"S";
+  panel.querySelectorAll("[data-pose-frame]").forEach(node=>{
+   const on=Number(node.dataset.poseFrame)===currentFrame;
+   node.classList.toggle("is-playhead",on);
+   if(node.dataset.poseRuler!==undefined)node.setAttribute("aria-pressed",String(on));
+  });
+ }
+ function renderTimeline(){
+  const ruler=$("pose-ruler"),rows=$("pose-keys");
+  ruler.replaceChildren();rows.replaceChildren();
+  ruler.style.gridTemplateColumns="repeat("+total+",26px)";
+  for(let f=0;f<total;f++){
+   const b=document.createElement("button");b.type="button";
+   b.className="pose-frame-cell";b.dataset.poseFrame=f;b.dataset.poseRuler="true";
+   b.textContent=f===0||f===total-1||f%5===4?String(f+1):"·";
+   b.title="Go to frame "+(f+1);b.setAttribute("aria-label","Frame "+(f+1));
+   b.onclick=()=>gotoFrame(f);ruler.append(b);
+  }
+  for(const trackPart of PART_NAMES){
+   const line=document.createElement("div");line.className="pose-track-row"+(part===trackPart?" active":"");
+   const label=document.createElement("button");label.type="button";label.className="pose-track-label";
+   label.textContent=PARTS[trackPart].label;
+   label.style.setProperty("--track-color",PARTS[trackPart].color);
+   label.onclick=()=>selectPart(trackPart);line.append(label);
+   const cells=document.createElement("div");cells.className="pose-track-cells";
+   cells.style.gridTemplateColumns="repeat("+total+",26px)";
+   for(let f=0;f<total;f++){
+    const keyed=(tracks[trackPart]||[]).some(k=>k.frame===f);
+    const cell=document.createElement("button");cell.type="button";
+    cell.dataset.poseFrame=f;cell.dataset.posePartKey=trackPart;
+    cell.className="pose-diamond-cell"+(keyed?" is-keyed":"");
+    cell.innerHTML='<span class="pose-diamond">'+(keyed?"◆":"◇")+'</span>';
+    cell.title=(keyed?"Delete ":"Add ")+PARTS[trackPart].label+" key at frame "+(f+1);
+    cell.setAttribute("aria-label",cell.title);
+    cell.onclick=()=>{
+     const current=f===currentFrame;
+     if(!current)gotoFrame(f);
+     selectPart(trackPart);
+     if(keyed){
+      deleteTrackKey(tracks,trackPart,f);
+      draft=sampleTracks(tracks,currentFrame,total);
+      dirty=false;inform("◇ DELETED / "+PARTS[trackPart].label+" at F"+(f+1));
+     }else{
+      setTrackKey(tracks,trackPart,f,draft);
+      dirty=false;inform("◆ SET / "+PARTS[trackPart].label+" at F"+(f+1));
+     }
+     renderRig();preview();renderTimeline();
+    };
+    cells.append(cell);
+   }
+   line.append(cells);rows.append(line);
+  }
+  updatePlayhead();
+ }
+ function gotoFrame(next,keepPlaying=false){
+  currentFrame=Math.round(clamp(next,0,total-1));
+  if(!keepPlaying)stop();
+  draft=sampleTracks(tracks,currentFrame,total);
+  dirty=false;
+  renderRig();preview();updatePlayhead();
+ }
+ function selectPart(next){
+  if(!PARTS[next])return;
+  part=next;chosen=PARTS[part].joints[0];stop();
+  const selector=$("pose-joint-select");selector.replaceChildren();
+  for(const id of PARTS[part].joints){
+   const opt=document.createElement("option");opt.value=id;
+   opt.textContent=id.toUpperCase().replaceAll("_"," ");selector.append(opt);
+  }
+  document.querySelectorAll("[data-pose-part]").forEach(b=>{
+   const selected=b.dataset.posePart===part;
+   b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected));
+  });
+  $("pose-part-guide").textContent={
+   body:"PELVIS CONTROLS ROOT / SPINE AND CHEST MOVE UPPER BODY.",
+   head:"NECK + HEAD ONLY. SHOULDERS AND BODY STAY IN POSITION.",
+   arms:"LEFT / RIGHT ARMS. DRAG WRISTS FOR 2-BONE IK.",
+   legs:"LEFT / RIGHT LEGS. DRAG ANKLES FOR 2-BONE IK."
+  }[part];
+  panel.querySelectorAll(".pose-track-row").forEach((row,i)=>
+   row.classList.toggle("active",PART_NAMES[i]===part));
+  renderRig();
+ }
+ function selectJoint(id){
+  if(!P0[id]||JOINT_PART[id]!==part)return;
+  chosen=id;renderRig();
+ }
+ function commitPart(){
+  if(playing)stop();
+  setTrackKey(tracks,part,currentFrame,draft);
+  dirty=false;renderTimeline();
+  inform("◆ "+PARTS[part].label+" KEYFRAME SAVED / FRAME "+(currentFrame+1));
+ }
+ function removePart(){
+  stop();
+  if(deleteTrackKey(tracks,part,currentFrame)){
+   draft=sampleTracks(tracks,currentFrame,total);
+   dirty=false;renderRig();preview();renderTimeline();
+   inform("◇ KEYFRAME REMOVED / "+PARTS[part].label+" / F"+(currentFrame+1));
+  }else inform("No "+PARTS[part].label+" keyframe at F"+(currentFrame+1));
+ }
  rig.addEventListener("pointerdown",e=>{
-  const target=e.target.closest("[data-joint]");if(!target)return;
-  setJoint(target.dataset.joint);playing=false;
+  const target=e.target.closest("[data-joint]");
+  if(!target||JOINT_PART[target.dataset.joint]!==part)return;
+  selectJoint(target.dataset.joint);stop();
   rig.setPointerCapture(e.pointerId);
-  lastSvgNodes={x:e.clientX,y:e.clientY,id:chosen};
+  drag={x:e.clientX,y:e.clientY,id:chosen};
  });
  rig.addEventListener("pointermove",e=>{
-  if(!rig.hasPointerCapture(e.pointerId)||!lastSvgNodes.id)return;
+  if(!drag||!rig.hasPointerCapture(e.pointerId))return;
   const rect=rig.getBoundingClientRect(),scaleX=320/rect.width,scaleY=410/rect.height;
-  const dx=(e.clientX-lastSvgNodes.x)*scaleX/(3.5*(Math.abs(Math.cos(yaw*Math.PI/180))<.28?.28:Math.cos(yaw*Math.PI/180)));
-  const dy=(e.clientY-lastSvgNodes.y)*scaleY/3.5;
-  lastSvgNodes.x=e.clientX;lastSvgNodes.y=e.clientY;
-  move(pose(),chosen,dx,dy);renderRig();preview();
+  const cosine=Math.cos(yaw*Math.PI/180),den=Math.abs(cosine)<.28?(cosine<0?-.28:.28):cosine;
+  const dx=(e.clientX-drag.x)*scaleX/(3.5*den),dy=(e.clientY-drag.y)*scaleY/3.5;
+  drag.x=e.clientX;drag.y=e.clientY;
+  move(draft,chosen,dx,dy);dirty=true;renderRig();preview();
  });
- const endDrag=e=>{if(rig.hasPointerCapture(e.pointerId))rig.releasePointerCapture(e.pointerId);lastSvgNodes={};};
+ const endDrag=e=>{
+  if(rig.hasPointerCapture(e.pointerId))rig.releasePointerCapture(e.pointerId);
+  if(drag){drag=null;if(dirty)inform("POSE MODIFIED / CLICK ◆ SET KEY TO SAVE "+PARTS[part].label);}
+ };
  rig.addEventListener("pointerup",endDrag);rig.addEventListener("pointercancel",endDrag);
- $("pose-depth").addEventListener("input",e=>{pose()[chosen][2]=Number(e.target.value);renderRig();preview();});
+ $("pose-joint-select").addEventListener("change",e=>selectJoint(e.target.value));
+ $("pose-depth").addEventListener("input",e=>{
+  moveDepth(draft,chosen,Number(e.target.value));dirty=true;renderRig();preview();
+ });
+ document.querySelectorAll("[data-pose-part]").forEach(b=>b.addEventListener("click",()=>selectPart(b.dataset.posePart)));
+ $("pose-isolate").addEventListener("change",e=>{isolate=e.target.checked;renderRig();});
+ $("pose-reset-part").addEventListener("click",()=>{
+  stop();resetPart(draft,part);dirty=true;renderRig();preview();
+  inform(PARTS[part].label+" RESET / click ◆ SET KEY to record");
+ });
+ $("pose-reset").addEventListener("click",()=>{
+  stop();draft=neutral();dirty=true;renderRig();preview();
+  inform("WHOLE POSE RESET / set diamonds for each part to record");
+ });
  document.querySelectorAll("[data-pose-camera]").forEach(b=>b.addEventListener("click",()=>{
-   yaw=Number(b.dataset.poseCamera);document.querySelectorAll("[data-pose-camera]").forEach(x=>x.classList.toggle("active",x===b));
-   renderRig();
+  const index=[32,-32,148,212].indexOf(Number(b.dataset.poseCamera));
+  yaw=Number(b.dataset.poseCamera);$("pose-facing").value=String(Math.max(0,index));
+  document.querySelectorAll("[data-pose-camera]").forEach(x=>x.classList.toggle("active",x===b));
+  renderRig();preview();
  }));
- $("pose-facing").addEventListener("change",preview);
- $("pose-reset").addEventListener("click",()=>{keys[active].pose=neutral();playing=false;renderAll();inform("Current keyframe reset.");});
- $("pose-key-add").addEventListener("click",()=>{
-  if(keys.length>=12)return inform("Maximum 12 keyframes.");
-  const t=keys.length<2?.5:Math.min(.95,keys[active].at+.08);
-  const item={at:t,pose:clone(pose())};keys.push(item);keys.sort((a,b)=>a.at-b.at);
-  active=keys.indexOf(item);renderAll();
+ $("pose-facing").addEventListener("change",e=>{
+  yaw=[32,-32,148,212][Number(e.target.value)]||32;
+  document.querySelectorAll("[data-pose-camera]").forEach(b=>
+   b.classList.toggle("active",Number(b.dataset.poseCamera)===yaw));
+  renderRig();preview();
  });
- $("pose-key-delete").addEventListener("click",()=>{
-  if(keys.length<=2)return inform("Keep at least 2 keyframes.");
-  keys.splice(active,1);active=Math.min(active,keys.length-1);
-  if(keys[0].at!==0)keys[0].at=0;
-  keys[keys.length-1].at=1;renderAll();
+ $("pose-key-add").addEventListener("click",commitPart);
+ $("pose-key-delete").addEventListener("click",removePart);
+ $("pose-time").addEventListener("input",e=>gotoFrame(Number(e.target.value)));
+ $("pose-frame-count").addEventListener("change",e=>{
+  total=timing(e.target.value,fps).frames;e.target.value=String(total);
+  tracks=sanitizeTracks(tracks,total);currentFrame=Math.min(currentFrame,total-1);
+  stop();draft=sampleTracks(tracks,currentFrame,total);dirty=false;
+  renderRig();preview();renderTimeline();
  });
- $("pose-time").addEventListener("input",e=>{
-  const v=Number(e.target.value)/100;
-  if(active===0||active===keys.length-1)return;
-  keys[active].at=clamp(v,keys[active-1].at+.01,keys[active+1].at-.01);
-  showTimeline();
+ $("pose-fps").addEventListener("change",e=>{
+  fps=timing(total,e.target.value).fps;e.target.value=String(fps);
+  updatePlayhead();
  });
- $("pose-play").addEventListener("click",()=>{playing=!playing;lastTick=0;$("pose-play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY";});
+ $("pose-play").addEventListener("click",()=>{
+  playing=!playing;lastTick=0;accum=0;
+  if(playing&&dirty){
+   draft=sampleTracks(tracks,currentFrame,total);dirty=false;
+  }
+  $("pose-play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY";
+ });
  async function loadBases(){
   try{
    const res=await fetch("./catalog.json",{cache:"no-store"});
@@ -469,10 +599,9 @@ function mount(){
     const found=payload.characters?.find(x=>x.id===id);
     if(!found?.sheet)throw Error(id+" missing its own atlas");
     source[id]=found;
-    const path=found.sheet;
-    images[id]=await loadImage(path+(path.startsWith("data:")?"":(path.includes("?")?"&":"?")+"poser="+encodeURIComponent(payload.build_version||"1")));
+    images[id]=await loadImage(found.sheet+(found.sheet.startsWith("data:")?"":(found.sheet.includes("?")?"&":"?")+"poser="+encodeURIComponent(payload.build_version||"1")));
    }
-   preview();inform("Human Male + Female original atlases ready. Drag any joint.");
+   preview();inform("Human Base Male + Female ready. Select Body / Head / Arms / Legs.");
   }catch(e){inform("Human Base loading error: "+e.message);}
  }
  function showSaved(){
@@ -482,54 +611,54 @@ function mount(){
   if(!records.length){place.textContent="NO CUSTOM MOTION YET";return;}
   records.slice().reverse().forEach(record=>{
    const line=document.createElement("div");line.className="pose-saved-row";
-   const select=document.createElement("button");select.type="button";select.textContent=record.name;
+   const button=document.createElement("button");button.type="button";button.textContent=record.name;
    const detail=document.createElement("small");detail.textContent="MALE + FEMALE / "+record.frames+" FR";
-   select.append(detail);
-   select.onclick=()=>{
-    const loaded=Array.isArray(record.keyframes)?record.keyframes:null;
-    if(!loaded||loaded.length<2)return inform("Saved sprite exists, but its editable rig is missing.");
-    keys=loaded.map(x=>({at:clamp(x.at,0,1),pose:normalized(x.pose)})).sort((a,b)=>a.at-b.at);
-    active=0;savedId=record.id;$("pose-motion-name").value=record.name;
-    $("pose-frame-count").value=String(record.frames);
-    $("pose-duration").value=String(record.duration_ms);
-    playing=false;renderAll();inform("Opened "+record.name+" for editing.");
+   button.append(detail);
+   button.onclick=()=>{
+    total=timing(record.frames,record.fps||12).frames;
+    fps=timing(total,record.fps||Math.max(4,Math.round(total/(record.duration_ms/1000)||12))).fps;
+    tracks=record.tracks?sanitizeTracks(record.tracks,total):
+     legacyTracks(Array.isArray(record.keyframes)?record.keyframes:[],total);
+    currentFrame=0;savedId=record.id;draft=sampleTracks(tracks,0,total);
+    dirty=false;stop();
+    $("pose-motion-name").value=record.name;
+    $("pose-frame-count").value=String(total);$("pose-fps").value=String(fps);
+    selectPart("body");renderTimeline();preview();
+    inform("OPENED "+record.name.toUpperCase()+" / 4 INDEPENDENT KEYFRAME TRACKS");
    };
-   line.append(select);place.append(line);
+   line.append(button);place.append(line);
   });
  }
  function download(name,content,type){
   const blob=content instanceof Blob?content:new Blob([content],{type});
-  const url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download=name;document.body.append(a);a.click();a.remove();
+  const url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.href=url;link.download=name;document.body.append(link);link.click();link.remove();
   setTimeout(()=>URL.revokeObjectURL(url),5000);
  }
  async function exportSet(){
-  if(!source[BASE_IDS[0]]||!source[BASE_IDS[1]])throw Error("Both base sprites must load first.");
-  const frames=Number($("pose-frame-count").value),duration_ms=Number($("pose-duration").value);
-  const name=$("pose-motion-name").value.trim()||"New Idle";
-  const id=savedId||("poser_"+slug(name));
-  if(!validId(id))throw Error("Motion name is invalid.");
-  const byBase=BASE_IDS.map(base_id=>{
-   const c=renderSheet(source[base_id],images[base_id],keys,frames,duration_ms);
-   return {format:"virtual-life-human-pose-v1",id,name,base_id,
-    frames,duration_ms,directions:[...DIR],frame_size:[64,112],
-    pivot:[32,100],source:"pose-maker",row:0,
-    keyframes:keys.map(x=>({at:x.at,pose:normalized(x.pose)})),
-    sheet:c.toDataURL("image/png"),created_at:new Date().toISOString()};
+  if(!source[BASE_IDS[0]]||!source[BASE_IDS[1]])throw Error("Both Human Base sprite atlases must load first");
+  if(dirty)throw Error("Unsaved pose — click ◆ SET KEY for the active body part first");
+  const frames=total,duration_ms=Math.round(total/fps*1000);
+  const name=$("pose-motion-name").value.trim()||"New Idle",id=savedId||("poser_"+slug(name));
+  if(!validId(id))throw Error("Invalid motion name");
+  return BASE_IDS.map(base_id=>{
+   const canvas=renderSheet(source[base_id],images[base_id],tracks,frames,duration_ms);
+   return {format:"virtual-life-human-pose-v2",id,name,base_id,frames,fps,duration_ms,
+    directions:[...DIR],frame_size:[64,112],pivot:[32,100],
+    source:"pose-maker",row:0,tracks:sanitizeTracks(tracks,total),
+    sheet:canvas.toDataURL("image/png"),created_at:new Date().toISOString()};
   });
-  return byBase;
  }
  $("pose-save").addEventListener("click",async()=>{
   try{
    const records=await exportSet();store(records);savedId=records[0].id;
-   showSaved();inform("SAVED / Male + Female Motion · local browser database");
+   showSaved();inform("SAVED / " +total+" FR / "+fps+" FPS / MALE + FEMALE MOTION");
    document.dispatchEvent(new CustomEvent("mahluk:pose-saved",{detail:{id:savedId}}));
   }catch(e){inform("SAVE FAILED: "+e.message);}
  });
  $("pose-export").addEventListener("click",async()=>{
   try{
-   const records=await exportSet();
-   const name=records[0].id,files=[],meta=[];
+   const records=await exportSet(),name=records[0].id,files=[],meta=[];
    for(const rec of records){
     const bytes=new Uint8Array(await (await fetch(rec.sheet)).arrayBuffer());
     const relative="assets/animation_library/human_pose_maker/"+rec.base_id+"/"+name+".png";
@@ -537,26 +666,34 @@ function mount(){
     const {sheet,...values}=rec;meta.push({...values,atlas:relative});
    }
    files.push({name:"assets/animation_library/human_pose_maker/"+name+".json",
-    bytes:new TextEncoder().encode(JSON.stringify({format:"virtual-life-human-pose-v1",motions:meta},null,2))});
+    bytes:new TextEncoder().encode(JSON.stringify({format:"virtual-life-human-pose-v2",motions:meta},null,2))});
    download(name+"_human_motions.zip",zipFiles(files),"application/zip");
-   inform("EXPORTED ZIP / 2 native-base PNG atlases + editable rig JSON.");
+   inform("EXPORTED / 4-DIR PNG FOR BOTH BASES + EDITABLE DIAMOND TIMELINE JSON");
   }catch(e){inform("EXPORT FAILED: "+e.message);}
  });
  $("pose-new").addEventListener("click",()=>{
-  keys=[{at:0,pose:neutral()},{at:.5,pose:neutral()},{at:1,pose:neutral()}];
-  savedId="";active=0;playing=false;$("pose-motion-name").value="New Idle";
-  renderAll();inform("New motion draft. Existing saved motions untouched.");
+  tracks=initialTracks();total=24;fps=12;currentFrame=0;savedId="";dirty=false;stop();
+  $("pose-motion-name").value="New Idle";$("pose-frame-count").value="24";$("pose-fps").value="12";
+  draft=sampleTracks(tracks,0,total);selectPart("body");renderTimeline();preview();
+  inform("NEW MOTION / 24 FR / 12 FPS / SEPARATE BODY, HEAD, ARMS, LEGS");
  });
- // The pose timeline is played only while its editor is visible.
  function tick(now){
   if(playing&&!panel.hidden){
-    if(lastTick){playTime=(playTime+(now-lastTick)/Math.max(300,Number($("pose-duration").value)||1000))%1;}
-    lastTick=now;preview();
+   if(lastTick)accum+=Math.min(250,now-lastTick);
+   lastTick=now;
+   if(accum>=1000/fps){
+    const advance=Math.floor(accum/(1000/fps));
+    accum=accum%(1000/fps);
+    gotoFrame((currentFrame+advance)%total,true);
+   }
   }else lastTick=0;
   root.requestAnimationFrame(tick);
  }
- renderAll();showSaved();loadBases();root.requestAnimationFrame(tick);
+ selectPart("body");renderTimeline();preview();showSaved();loadBases();
+ root.requestAnimationFrame(tick);
 }
+
 return Object.freeze({KEY,BASE_IDS,BONES,PARTS,JOINT_PART,neutral,normalized,interpolate,sample,
-  move,moveDepth,resetPart,project,paintHuman,renderSheet,read,listFor,store,slug,mount});
+  timing,partSnapshot,initialTracks,sanitizeTracks,legacyTracks,sampleTracks,
+  setTrackKey,deleteTrackKey,move,moveDepth,resetPart,project,paintHuman,renderSheet,read,listFor,store,slug,mount});
 });
