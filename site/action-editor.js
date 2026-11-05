@@ -23,6 +23,14 @@ const T=window.VLActionTemplates||{
 const DIR=["se","sw","ne","nw"],BUILD_KEY="virtual-life-bangun-ruang-v1";
 const SLEEP=window.VLUniversalSleep,BODY=window.VLUniversalBodyActions;
 const BASE=new URL("/virtual-life-asset-pipeline/",location.origin);
+let nativeCatalogVersion="unversioned";
+// Cache-bust published native PNGs after every catalog build. Saved local
+// pixel drawings are data URLs and remain untouched.
+const nativeAssetURL=path=>{
+ const next=new URL(path,BASE);
+ next.searchParams.set("catalog",nativeCatalogVersion);
+ return next.href;
+};
 const deepLink=new URLSearchParams(location.search);
 let deepFloor=Math.max(1,Math.min(12,Number(deepLink.get("floor"))||1));
 let deepFixture=deepLink.get("fixture")||"";
@@ -152,7 +160,7 @@ function actionSource(){
  // Use this actor's original horizontal LIE rig, not rotated idle artwork.
  if(SLEEP?.isSleep(state.action)){
   const pose=SLEEP.resolve(ch,state.action);
-  return pose?{sheet:url(pose.sheet),row:pose.row,frames:pose.frames,
+  return pose?{sheet:nativeAssetURL(pose.sheet),row:pose.row,frames:pose.frames,
    sourceFrames:pose.frames,authored:true,universal:true,mode:"lie",
    note:"UNIVERSAL V6B / TRUE BED LIE / "+state.action.toUpperCase()}:null;
  }
@@ -182,7 +190,7 @@ function actionSource(){
  const separate=isSheet(motion?.sheet);
  const sheet=separate?motion.sheet:ch.sheet;
  const frames=Math.max(1,Math.min(12,Number(motion?.frames)||4));
- return {sheet:url(sheet),row:separate?0:Number(motion?.row)||0,
+ return {sheet:nativeAssetURL(sheet),row:separate?0:Number(motion?.row)||0,
   frames:state.action==="bathtub_bathe"?6:frames,sourceFrames:frames,
   depthFront:isSheet(motion?.depth_front)?motion.depth_front:null,
   authored:state.action==="bathtub_bathe"?motion?.id==="bathtub_bathe":authored,
@@ -326,13 +334,25 @@ function sourceRect(index,dir){
  if(f*64+64>im.naturalWidth||(row+1)*112>im.naturalHeight)return null;
  return [im,f*64,row*112,64,112];
 }
+function paintNativeDepth(ctx,index,dir){
+ const kind=state.source?.mode;
+ const allowed=kind==="lie_idle"?["se","sw"]:
+  kind==="knee_chest_idle"?["ne","nw"]:[];
+ if(!allowed.includes(dir)||!state.source?.depthFront)return false;
+ const src=sourceRect(index,dir),depth=pic(nativeAssetURL(state.source.depthFront));
+ if(!src||!depth?.ready)return false;
+ const atlas=depth.im;
+ if(src[1]+64>atlas.naturalWidth||src[2]+112>atlas.naturalHeight)return false;
+ ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(atlas,src[1],src[2],64,112,0,0,64,112);
+ return true;
+}
 function originalInto(ctx,index,dir){
  ctx.clearRect(0,0,64,112);
  const src=sourceRect(index,dir);
  if(src){
   ctx.drawImage(...src,0,0,64,112);
-  const depth=state.source?.depthFront?pic(url(state.source.depthFront)):null;
-  if(depth?.ready)ctx.drawImage(depth.im,src[1],src[2],64,112,0,0,64,112);
+  paintNativeDepth(ctx,index,dir);
   return true;
  }
  return false;
@@ -357,6 +377,20 @@ function loadFrame(){
  $("frame-label").textContent=(state.frame+1)+" / "+count;
  $("edit-label").textContent=state.direction.toUpperCase()+" / F"+(state.frame+1);
  $("motion-source").textContent=state.source?.note||"CHARACTER SPRITES UNAVAILABLE";
+ const foregroundReady=state.source?.depthFront&&
+  ((state.source.mode==="lie_idle"&&["se","sw"].includes(state.direction))||
+   (state.source.mode==="knee_chest_idle"&&["ne","nw"].includes(state.direction)));
+ if(foregroundReady){
+  const depth=pic(nativeAssetURL(state.source.depthFront));
+  if(depth?.im&&!depth.ready&&!depth.failed)
+   depth.im.addEventListener("load",()=>{
+    if(ticket!==state.loadingId||state.dirty)return;
+    // Preserve saved user edits; repaint only a freshly loaded native frame.
+    if(!A.get(state.actor,state.action,state.direction,state.frame))
+     originalInto(pc,state.frame,state.direction);
+    render();
+   },{once:true});
+ }
  const override=A.get(state.actor,state.action,state.direction,state.frame);
  function finish(){
   if(ticket!==state.loadingId)return;
@@ -435,15 +469,18 @@ function render(){
   const src=(state.source?.authored||state.source?.referencePose)?sourceRect(frame,dir):null;
   if(src){
    sourceCtx.drawImage(...src,0,0,64,112);
-   const depth=state.source?.depthFront?pic(url(state.source.depthFront)):null;
-   if(depth?.ready)sourceCtx.drawImage(depth.im,src[1],src[2],64,112,0,0,64,112);
+   paintNativeDepth(sourceCtx,frame,dir);
   }else {
    sourceCtx.fillStyle="#577c9c";sourceCtx.fillRect(22,45,20,40);
    sourceCtx.fillStyle="#d8b49b";sourceCtx.fillRect(23,23,18,23);
   }
  }
+ // The native foreground belongs on top of even old saved local frames.
+ // It is composited only for these two orientations, and never baked into
+ // pixel-editor user data. This is the missing Action Editor render path.
+ paintNativeDepth(sourceCtx,frame,dir);
  const face=selectedExpression();
- if(face)P.drawExpression(sourceCtx,face,dir,frame,path=>pic(url(path)));
+ if(face)P.drawExpression(sourceCtx,face,dir,frame,path=>pic(nativeAssetURL(path)));
  // Simulation-only universal bath appearance. The editable source frame
  // remains untouched; dressing and undressing belong to the action state.
  const hygiene=BODY?.resolve(actor(),state.action);
@@ -585,6 +622,8 @@ async function loadCatalog(){
   if(!actionRes.ok)throw Error("Player action database HTTP "+actionRes.status);
   if(!bindingsRes.ok)throw Error("Bangun Ruang action bindings HTTP "+bindingsRes.status);
   const [cat,definitions,bindings]=await Promise.all([res.json(),actionRes.json(),bindingsRes.json()]);
+  nativeCatalogVersion=/^[a-f0-9]{7,40}$/i.test(cat.build_version||"")?
+   cat.build_version:"unversioned";
   const known=new Map((definitions.actions||[]).map(row=>[row.id,row]));
   const registered=[...(bindings.bindings||[]),...(bindings.variants||[])];
   for(const binding of registered){
