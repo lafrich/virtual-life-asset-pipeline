@@ -6,6 +6,7 @@ on:
     paths:
       - "assets/street_buildings/_work/indonesia_200_specs.json"
       - "assets/street_buildings/_work/indonesia_200_renderer.py"
+      - "assets/street_buildings/_work/indonesia_200_vehicle_hifi_v7.py"
       - "assets/street_buildings/_work/indonesia_200_attribute_detail_v6.py"
       - "assets/street_buildings/_work/indonesia_200_details.py"
       - "assets/street_buildings/_work/indonesia_200_quality.py"
