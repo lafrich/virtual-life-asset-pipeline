@@ -29,13 +29,14 @@ jobs:
           from PIL import Image
           import json,os
           m=json.load(open('assets/kebon_sirih/manifest.json'))
-          assert len(m['tiles'])==11,len(m['tiles'])
+          assert len(m['tiles'])==13,len(m['tiles'])
           for k,spec in m['tiles'].items():
             p='assets/kebon_sirih/'+spec['file']
             assert os.path.isfile(p),p
             with Image.open(p) as im:
               assert im.size==(64,64) and im.mode=='RGBA',(k,im.size,im.mode)
               assert im.getpixel((0,0))[3]==255,k
+          assert {'drain','river','road_asphalt','grass','water'}.issubset(m['tiles'])
           print('Validated',len(m['tiles']),'source-generated city terrain PNGs')
           PY
       - name: Publish PNG tiles and manifest
