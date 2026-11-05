@@ -19,7 +19,7 @@ const GROUPS=[
 ["ACCESSORIES",["phone"]]
 ];
 let manifest=null,images=new Map(),slots=[],sourceError="";
-let emotionAssetId="native:neutral",emotionKeys=[],glassesAssetId="native",userAssets=[],nativeFaces=new Map(),importedImages=new Map();
+let emotionAssetId="native:neutral",emotionKeys=[],glassesAssetId="native",userAssets=[],publishedAssets=[],nativeFaces=new Map(),importedImages=new Map(),publishedImages=new Map();
 let state=R?.referencePose?.()||null,base=R?.referencePose?.()||null,tracks=R?.makeTracks?.()||{};
 let selected="head",direction="se",type="original",outfit="outfit",clip="idle",frame=0,frames=12,fps=12,playing=false,playSince=0,zoom=3.25;
 let camera={x:0,y:0},view="iso",axis="x",transformMode="move",drag=null,identifier=null;
@@ -43,7 +43,8 @@ function getEmotionAsset(id){
   const name=id.slice(7);
   return (manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
  }
- return userAssets.find(a=>a.id===id&&a.kind==="emotion")||null;
+ return publishedAssets.find(a=>a.id===id&&a.base===type)||
+  userAssets.find(a=>a.id===id&&a.kind==="emotion")||null;
 }
 function getGlassesAsset(id){
  if(id==="none"||id==="native")return {id,frames:1};
@@ -66,7 +67,7 @@ function sourceImage(asset,dir,f){
   return img?{image:img,sx:0,sy:DIR.indexOf(dir)*112}:null;
  }
  if(asset.id==="none")return null;
- const img=importedImages.get(asset.id);
+ const img=(asset.src?publishedImages:importedImages).get(asset.id);
  return img?{image:img,sx:(f%asset.frames)*64,sy:DIR.indexOf(dir)*112}:null;
 }
 function renderLayers(ctx,dir,ox,oy,mag,editorMode){
@@ -291,6 +292,9 @@ function assetOptions(){
  for(const id of manifest?.emotions||EMOTIONS)opt(emotion,"native:"+id,"V6B ORIGINAL / "+id.toUpperCase());
  opt(glass,"native","ORIGINAL GLASSES / V6B");
  opt(glass,"none","NONE / HIDE");
+ for(const asset of publishedAssets.filter(a=>a.base===type)){
+  opt(emotion,asset.id,"EXISTING / "+asset.label+" / "+asset.frames+"F");
+ }
  for(const asset of userAssets){
   if(asset.kind==="emotion")opt(emotion,asset.id,"IMPORTED / "+asset.name.toUpperCase()+" / "+asset.frames+"F");
   if(asset.kind==="glasses")opt(glass,asset.id,"IMPORTED / "+asset.name.toUpperCase()+" / "+asset.frames+"F");
@@ -305,6 +309,33 @@ function updateEmotionStatus(){
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
  if($("emotionStatus"))$("emotionStatus").textContent=(asset?.native?"ORIGINAL SOURCE / ":"IMPORTED ANIMATED PLANE / ")+
   (asset?.frames||1)+" FRAME(S) · "+emotionKeys.length+" IMAGE SWAP KEY(S)";
+}
+async function loadPublishedAssets(){
+ const response=await fetch("../emotion-plane-library.json",{cache:"no-store"});
+ if(!response.ok)throw Error("Existing emotion gallery unavailable: HTTP "+response.status);
+ const catalog=await response.json();
+ if(catalog.format!=="mahluk-2-published-emotion-planes-v1"||!Array.isArray(catalog.entries))
+  throw Error("Unrecognized published Emotion Plane manifest");
+ const rows=catalog.entries.filter(x=>
+  x&&["male","female"].includes(x.base)&&
+  typeof x.id==="string"&&x.id.startsWith("human-"+x.base+"-")&&
+  typeof x.src==="string"&&x.src.startsWith("media/mahluk2-emotions/")&&
+  !x.src.includes("..")&&x.src.endsWith(".png")&&
+  Number.isInteger(x.frames)&&x.frames>0&&x.frames<=48);
+ const ready=[];
+ await Promise.all(rows.map(async asset=>{
+  const pic=await new Promise((resolve,reject)=>{
+   const img=new Image();
+   img.onload=()=>resolve(img);
+   img.onerror=()=>reject(Error("Missing published expression plane "+asset.id));
+   img.src="../"+asset.src;
+  });
+  if(pic.naturalWidth!==64*asset.frames||pic.naturalHeight!==448)
+   throw Error("Published emotion dimensions invalid: "+asset.id);
+  publishedImages.set(asset.id,pic);ready.push(asset);
+ }));
+ publishedAssets=ready;
+ assetOptions();
 }
 function loadImportedAssets(){
  userAssets=E.safeAssets(window.localStorage);
@@ -478,7 +509,9 @@ function importProject(file){
  }).catch(e=>setStatus("IMPORT FAILED: "+e.message,false));
 }
 function setupEvents(){
- $("modelType").onchange=e=>{type=e.target.value;buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
+ $("modelType").onchange=e=>{type=e.target.value;
+  if(!getEmotionAsset(emotionAssetId)){emotionAssetId="native:neutral";emotionKeys=[]}
+  assetOptions();buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
  $("outfit").onchange=e=>{outfit=e.target.value;buildTree();paint()};
  $("library").onchange=e=>{if(e.target.value)loadRecord(e.target.value);else newCharacter()};
  $("newChar").onclick=newCharacter;
@@ -592,6 +625,7 @@ async function mount(){
   if(m.format!=="mahluk-original-source-rig-v1")throw Error("Invalid authored V6B manifest");
   await loadImagesFromManifest(m);
   loadImportedAssets();
+  try{await loadPublishedAssets()}catch(error){setStatus("ORIGINAL EMOTIONS READY · EXISTING HUMAN ANIMATION LIBRARY NOT YET AVAILABLE: "+error.message,true)}
   const draft=safeGet(DRAFT,null);
   if(draft?.format==="mahluk-2-project-v1"){
    // Drafts are intentionally NOT auto-loaded as game-ready characters.
