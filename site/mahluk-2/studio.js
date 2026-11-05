@@ -148,9 +148,9 @@ function nativePlaneAtlas(id){
  }
  return c;
 }
-function fullCharacterReference(){
+function fullCharacterReference(dir=direction){
  const ref=document.createElement("canvas");ref.width=64;ref.height=112;
- renderLayers(ref.getContext("2d"),direction,0,0,1,false);
+ renderLayers(ref.getContext("2d"),dir,0,0,1,false);
  return ref;
 }
 function openPlaneEditor(){
@@ -159,8 +159,9 @@ function openPlaneEditor(){
   setStatus("SELECT A DRAWABLE PLANE, LIKE WRIST L / WRIST R / HEAD, NOT A RIG CONTROL",false);return;
  }
  const source=nativePlaneAtlas(selected),src=planeImages.get(selected);
+ const refs=Object.fromEntries(DIR.map(dir=>[dir,fullCharacterReference(dir)]));
  planeEditor.open({id:selected,originalAtlas:source,initialAtlas:src||source,
-  referenceImage:fullCharacterReference(),direction});
+  referenceImages:refs,referenceImage:refs[direction],direction});
 }
 function clearPlanePixel(){
  if(!pixelPlanes[selected])return;
