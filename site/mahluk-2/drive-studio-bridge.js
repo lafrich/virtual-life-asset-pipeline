@@ -42,6 +42,7 @@ async function connect(){
   // User event must directly trigger requestAccessToken to allow Google popup.
   await D.connect();
   updateButtons();
+  window.dispatchEvent(new CustomEvent("mahluk2:drive-connected"));
   await refresh();
  }catch(e){message("DRIVE CONNECT FAILED · "+e.message,true)}
  finally{working=false;$("driveConnect").disabled=false;updateButtons()}
