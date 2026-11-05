@@ -52,6 +52,7 @@
  const BMAP=Object.freeze(Object.fromEntries(BONES.map(b=>[b.id,b])));
  const HIERARCHY=Object.freeze(Object.fromEntries(BONES.map(b=>[b.id,b.parent])));
  const EMOTIONS=Object.freeze(["neutral","happy","mischievous","angry","surprised","blush","grin"]);
+ const FACE_BONES=Object.freeze(["brow_l","brow_r","eye_l","eye_r","nose","mouth","blush_l","blush_r","glasses"]);
  const PALETTE=Object.freeze({
   outline:"#201a1a",outlineDark:"#151112",hair:"#352a27",
   hairShadow:"#211b1c",hairMid:"#44342e",hairLight:"#5b463d",hairGlint:"#70564a",
@@ -71,9 +72,9 @@
  function neutral(){
   return {format:"mahluk-modular-rig-v2",version:2,character_id:ID,
    frame:[W,H],pivot:[32,100],fps:FPS,frames:FRAMES,direction:"se",
-   emotion:"neutral",name:"PIXEL REFERENCE / 01",phone:true,
+   emotion:"neutral",faceLayers:{},name:"PIXEL REFERENCE / 01",phone:true,
    gender:"male",outfit:true,visual:"original_clothed",
-   parts:Object.fromEntries(BONES.map(b=>[b.id,{x:0,y:0,angle:0,scale:1,visible:true}]))};
+   parts:Object.fromEntries(BONES.map(b=>[b.id,{x:0,y:0,z:0,angle:0,scale:1,visible:true}]))};
  }
  function referencePose(){
   const m=neutral();
@@ -88,6 +89,9 @@
   const state=neutral();
   if(source&&typeof source==="object"){
    if(EMOTIONS.includes(source.emotion))state.emotion=source.emotion;
+   for(const id of FACE_BONES){
+    if(EMOTIONS.includes(source.faceLayers?.[id]))state.faceLayers[id]=source.faceLayers[id];
+   }
    if(typeof source.name==="string")state.name=source.name.slice(0,72);
    if(typeof source.phone==="boolean")state.phone=source.phone;
    if(source.gender==="male"||source.gender==="female")state.gender=source.gender;
@@ -99,6 +103,7 @@
    for(const id of Object.keys(state.parts)){
     const p=source.parts?.[id];if(!p)continue;
     state.parts[id]={x:clamp(p.x,-40,40),y:clamp(p.y,-48,48),
+      z:clamp(p.z??0,-10,10),
       angle:clamp(p.angle,-180,180),scale:clamp(p.scale??1,.4,2),
       visible:p.visible!==false};
    }
@@ -117,6 +122,7 @@
    out[bone.id]={
     x:(parent?.x??0)+(lx*cs-ly*sn)*ps,
     y:(parent?.y??0)+(lx*sn+ly*cs)*ps,
+    z:(parent?.z??0)+p.z,
     angle:(parent?.angle||0)+p.angle,
     scale:ps*p.scale,visible:(parent?.visible??true)&&p.visible,
     parent:bone.parent
@@ -512,28 +518,35 @@
   else ctx.drawImage(image,0,dir*H,W,H,0,0,W,H);
   ctx.restore();
  }
+ // A plane is one transparent, source-authored cutout anchored to its own
+ // bone. Sort by explicit relative Z; equal Z preserves native V6B paint order.
+ function depthOrder(parts,coords){
+  return parts.map((part,order)=>({part,order,z:coords[part.bone]?.z??0}))
+   .sort((a,b)=>a.z-b.z||a.order-b.order).map(row=>row.part);
+ }
  function drawNative(ctx,state,view,coords){
   const dir=originalArt.directions.indexOf(view);
   if(dir<0)return;
-  const expressionIndex=Math.max(0,originalArt.emotions.indexOf(state.emotion));
   if(state.visual!=="gender"&&manualLayerProvider){
-   const manual=manualLayerProvider(view,state.emotion);
+   const manual=manualLayerProvider(view,state.emotion,state.faceLayers);
    if(manual){
-    for(const part of manual){
+    for(const part of depthOrder(manual,coords)){
      if(part.bone==="phone"&&!state.phone)continue;
      drawRigLayer(ctx,part.image,part.bone,view,coords,dir);
     }
     return;
    }
   }
-  // Original V6B CLOTHED artwork is the approved, protected master.
-  // Gender-specific auto-nude parts are legacy data and are never used in
-  // this mode; the manual artwork editor creates user-owned copies instead.
-  for(const part of originalArt.slots){
-   if(state.visual==="gender"){
-    if(!part.gender||!sourceSlot(part,state))continue;
-   }else if(part.gender)continue;
+  // Keep the original clothed V6B layer order at Z=0. Male/Female base
+  // source sheets remain separate and no pixels are invented or redrawn.
+  const parts=originalArt.slots.filter(part=>{
+   if(state.visual==="gender")return !!part.gender&&sourceSlot(part,state);
+   return !part.gender;
+  });
+  for(const part of depthOrder(parts,coords)){
    if(part.bone==="phone"&&!state.phone)continue;
+   const emotion=state.faceLayers[part.bone]||state.emotion;
+   const expressionIndex=Math.max(0,originalArt.emotions.indexOf(emotion));
    drawRigLayer(ctx,part.image,part.bone,view,coords,dir,expressionIndex,part.expression);
   }
  }
@@ -573,6 +586,11 @@
    const keys=(tracks?.[bone.id]||[]).slice().sort((a,b)=>a.frame-b.frame);
    if(!keys.length)continue;
    const at=((frame%count)+count)%count;
+   if(FACE_BONES.includes(bone.id)){
+    const latest=[...keys].reverse().find(k=>k.frame<=at)||keys[keys.length-1];
+    if(latest.faceEmotion==="inherit")delete out.faceLayers[bone.id];
+    else if(EMOTIONS.includes(latest.faceEmotion))out.faceLayers[bone.id]=latest.faceEmotion;
+   }
    const exact=keys.find(k=>k.frame===at);
    if(exact){out.parts[bone.id]={...out.parts[bone.id],...exact.value};continue;}
    let left=keys[keys.length-1],right=keys[0];
@@ -581,6 +599,7 @@
    const dist=(at-left.frame+count)%count,u=Math.min(1,dist/span),t=u*u*(3-2*u);
    const v={...out.parts[bone.id]};
    for(const k of ["x","y","angle","scale"])v[k]=Number(left.value[k]??v[k])+(Number(right.value[k]??v[k])-Number(left.value[k]??v[k]))*t;
+   v.z=t<.5?(left.value.z??v.z):(right.value.z??v.z);
    v.visible=(t<.5?left.value.visible:right.value.visible)!==false;
    out.parts[bone.id]=v;
   }
@@ -593,11 +612,12 @@
   }
   return out;
  }
- function key(tracks,id,frame,value,emotion){
+ function key(tracks,id,frame,value,emotion,faceEmotion){
   if(!BMAP[id])throw Error("Unknown rig bone "+id);
   const row=tracks[id]||(tracks[id]=[]);
   const record={frame:Math.floor(clamp(frame,0,95)),value:{...value}};
   if(id==="emotion"&&EMOTIONS.includes(emotion))record.emotion=emotion;
+  if(FACE_BONES.includes(id))record.faceEmotion=EMOTIONS.includes(faceEmotion)?faceEmotion:"inherit";
   const old=row.findIndex(k=>k.frame===record.frame);
   if(old>=0)row[old]=record;else row.push(record);
   row.sort((a,b)=>a.frame-b.frame);
@@ -607,8 +627,12 @@
  function exportModel(state,tracks){
   const s=normalize(state);
   return {format:"mahluk-modular-rig-v2",version:2,character_id:ID,
-   direction_order:[...DIR],frame_size:[W,H],pivot:[32,100],nodes:BONES.map(b=>({
-    id:b.id,parent:b.parent,pivot:[b.x,b.y],kind:b.kind
+   direction_order:[...DIR],frame_size:[W,H],pivot:[32,100],
+   plane_mode:"2.5d-transparent-cutout",native_plane_source:ORIGINAL_SOURCE,
+   plane_depth_axis:"z",plane_position_axes:["x","y","z"],
+   planes:BONES.map(b=>({id:b.id,parent:b.parent,pivot:[b.x,b.y],
+    local_depth:s.parts[b.id].z,expression_layer:FACE_BONES.includes(b.id)})),
+   nodes:BONES.map(b=>({id:b.id,parent:b.parent,pivot:[b.x,b.y],kind:b.kind
    })),palette:{...PALETTE},model:s,tracks:clone(tracks||makeTracks()),emotion_parent:"head",
    facial_children:["brow_l","brow_r","eye_l","eye_r","nose","mouth",
     "blush_l","blush_r","glasses"],
@@ -620,6 +644,6 @@
    proportions:{head:PROPORTIONS.head,shirt:PROPORTIONS.shirt,
     pants:PROPORTIONS.pants,shoes:PROPORTIONS.shoes}};
  }
- return Object.freeze({ID,W,H,DIR,ART_REVISION,BONES,BMAP,HIERARCHY,EMOTIONS,PALETTE,
+ return Object.freeze({ID,W,H,DIR,ART_REVISION,BONES,BMAP,HIERARCHY,EMOTIONS,FACE_BONES,PALETTE,
   PROPORTIONS,ORIGINAL_SOURCE,mirrorBone,sourceSlot,setManualLayerProvider,loadNativeArt,get hasNativeArt(){return !!originalArt;},neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
 });
