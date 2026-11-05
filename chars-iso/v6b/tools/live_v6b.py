@@ -1337,7 +1337,8 @@ def lie_rigid_head_pixels(head, neck_x, neck_y, shoulder_x, shoulder_y, view):
     return result
 
 
-def lie_preserve_head(imgs, view, shift=None, neck_pivot=None, frame_lift=None):
+def lie_preserve_head(imgs, view, shift=None, neck_pivot=None, frame_lift=None,
+                      foreground_head=False):
     """Isometric bed sleep: lie body, but preserve the HEAD at native 1:1 pixels.
 
     The old lie_flat rotates the entire upright character into the ground plane,
@@ -1395,6 +1396,14 @@ def lie_preserve_head(imgs, view, shift=None, neck_pivot=None, frame_lift=None):
             pixels = lie_rigid_head_pixels(
                 image, neck_x, neck_y, shoulder_x, shoulder_y, view)
             moved = Image.fromarray(pixels, 'RGBA')
+            if foreground_head and key in ('body', 'hair_back'):
+                # Only the requested front-facing lie_idle pose receives an
+                # independent foreground skull. Keep the upright native
+                # material and all other character actions untouched.
+                overlay = ('pose_head_front' if key == 'body'
+                           else 'pose_head_rear_hair')
+                reclined[overlay] = moved
+                continue
             if key in reclined:
                 merged = reclined[key].copy()
                 merged.alpha_composite(moved)

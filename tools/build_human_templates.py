@@ -135,6 +135,73 @@ def animate_human_micro_motion(sprite:Image.Image,torso:Image.Image,
     return Image.fromarray(img,"RGBA")
 
 
+# Native pose depth: these are intentionally localized overrides rather
+# than global ordering changes. Existing sprites and other movements remain
+# drawn in their original layer order.
+NATIVE_DEPTH_ORDER=(
+    "hair_back","body","arm_far","shoes","pants","shoes_over",
+    "rips","shirt","arm_near","body_front","face","hair_front","brows"
+)
+LIE_IDLE_FRONT_DEPTH_ORDER=(
+    "hair_back","body","arm_far","shoes","pants","shoes_over",
+    "rips","shirt","arm_near","body_front",
+    "pose_head_rear_hair","pose_head_front",
+    "face","hair_front","brows"
+)
+KNEE_CHEST_REAR_DEPTH_ORDER=(
+    "hair_back","body","shoes","pants","shoes_over","rips",
+    "pose_upper_body_front","arm_far","shirt","arm_near",
+    "body_front","face","hair_front","brows"
+)
+
+
+def depth_order(kind:str,direction:str)->tuple[str,...]:
+    if kind=="lie_idle" and direction in ("se","sw"):
+        return LIE_IDLE_FRONT_DEPTH_ORDER
+    if kind=="knee_chest_idle" and direction in ("ne","nw"):
+        return KNEE_CHEST_REAR_DEPTH_ORDER
+    return NATIVE_DEPTH_ORDER
+
+
+def split_knee_chest_rear_upper(layers:dict,direction:str)->dict:
+    """Raise the original rear-facing upper BODY in front of folded knees.
+
+    This changes only the alpha order, not a single pixel's shape, scale,
+    joint, skin tone or face. Feet and hips stay behind the torso. Other
+    directions and actions never call this.
+    """
+    if direction not in ("ne","nw") or "body" not in layers:
+        return layers
+    body=np.asarray(layers["body"].convert("RGBA")).copy()
+    if "pants" in layers:
+        pant=np.asarray(layers["pants"].convert("RGBA"))[...,3]
+        ys=np.flatnonzero((pant>0).any(axis=1))
+        knee_top=int(ys.min()) if len(ys) else 80
+    else:
+        knee_top=80
+    # Allow shoulders and chest to overlap the bent knees, never lift the
+    # actor's original lower hip, shins or feet onto the foreground.
+    divide=max(80,min(90,knee_top+9))
+    upper=body.copy()
+    lower=body.copy()
+    upper[divide:]=0
+    lower[:divide]=0
+    adjusted=dict(layers)
+    adjusted["body"]=Image.fromarray(lower,"RGBA")
+    adjusted["pose_upper_body_front"]=Image.fromarray(upper,"RGBA")
+    return adjusted
+
+
+def compose_pose_layers(layers:dict,kind:str,direction:str)->Image.Image:
+    result=Image.new("RGBA",FRAME)
+    if kind in ("lie","lie_idle","bathtub_bathe") and "shadow" in layers:
+        result.alpha_composite(layers["shadow"].convert("RGBA"))
+    for key in depth_order(kind,direction):
+        if key in layers:
+            result.alpha_composite(layers[key].convert("RGBA"))
+    return result
+
+
 POSTURE_KINDS=("squat_idle","squat_down","squat_up","knee_chest_idle","bent_over_idle")
 POSTURE_FRAME_MS={
     "squat_idle":[280,320,300,320],
@@ -507,20 +574,19 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             # Skin conversion only changed RGB values; it did not change alpha.
             if lying:
                 flattened=base6.lv.lie_preserve_head(
-                    {k:v.convert("RGBA") for k,v in layers.items()},source_dir)
+                    {k:v.convert("RGBA") for k,v in layers.items()},source_dir,
+                    foreground_head=(kind=="lie_idle" and direction in ("se","sw")))
                 mirror=direction in ("sw","nw")
                 layers={k:(v.transpose(Image.Transpose.FLIP_LEFT_RIGHT) if mirror else v)
                         for k,v in flattened.items()}
+            if kind=="knee_chest_idle" and direction in ("ne","nw"):
+                layers=split_knee_chest_rear_upper(layers,direction)
             if material_sink is not None:
                 # Rig-accurate shirt/trouser stencils travel with the FULL
                 # posed silhouette. No standing garment pasted on a squat/lie.
                 for slot in ("shirt","pants"):
                     material_sink[slot]=layers.get(slot,Image.new("RGBA",FRAME)).copy()
-            result=Image.new("RGBA",FRAME)
-            if lying and "shadow" in layers:result.alpha_composite(layers["shadow"])
-            for key in ("hair_back","body","arm_far","shoes","pants","shoes_over",
-                        "rips","shirt","arm_near","body_front","face","hair_front","brows"):
-                if key in layers:result.alpha_composite(layers[key].convert("RGBA"))
+            result=compose_pose_layers(layers,kind,direction)
             if kind=="bathe":
                 # Native four-frame shower/wash motion. The *near arm* is
                 # redrawn around its own shoulder joint in four distinct
