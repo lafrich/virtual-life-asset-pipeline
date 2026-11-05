@@ -131,104 +131,229 @@ def split_source(image: Image.Image, source_key: str):
 
 
 def native_gender_models(media: Path):
-    """Generate true outfit-free Male/Female bodies + matching clothed sprites.
+    """Return dressed/undressed pixels AND the true per-material source mattes.
 
-    The nude source is the already validated native human template guide:
-    no clothing or hair is baked in. The clothed reference uses the SAME
-    male/female body type and native V6B renderer, only with garment layers.
-    Both variants share one rig hierarchy and retain unmodified RGBA pixels.
+    Both modes use the same V6B bones. The base guide is the *actual* nude
+    human template, with its existing shading preserved. We do not invent
+    body pieces by slicing the flattened guide into rectangles.
     """
     extra = ROOT / "assets" / "npc_preview_v2"
     if str(extra) not in sys.path:
         sys.path.insert(0, str(extra))
     import base6
     import make_npcs_v2 as characters
-    variants = {}
+
+    variants, mattes = {}, {}
     for gender, code in (("male", "m"), ("female", "f")):
         guide_path = media / f"human-{gender}-base-guide.png"
         if not guide_path.is_file():
-            raise FileNotFoundError(f"Native unclothed {gender} base not built: {guide_path}")
+            raise FileNotFoundError(f"Missing original nude {gender} guide: {guide_path}")
         guide = Image.open(guide_path).convert("RGBA")
         if guide.size != (256, 112):
-            raise AssertionError(f"{gender} nude human guide must contain four native 64x112 views")
+            raise AssertionError(f"{gender}: nude guide should be 256x112")
         cfg = {"body": code, "skin": "light", "hair": "short", "hc": "black",
                "top": "tee_long", "tc": "paper", "pants": "trousers",
                "pc": "paper", "shoes": "shoes", "sc": "paper"}
-        for direction_index, direction in enumerate(DIRS):
+        # Only author SE and NE. Their mates mirror both finished art and the
+        # SAME SOURCE PART MATTES; no side-dependent after-the-fact cutting.
+        for direction in ("se", "ne"):
+            direction_index = DIRS.index(direction)
             nude = guide.crop((direction_index * 64, 0, (direction_index + 1) * 64, 112))
-            clothed, parts, palette = base6.render(cfg, f=0, d=direction,
-                                                    expr="neutral", anim="idle")
-            characters.bald(parts, palette)
-            # Recompose the *real* native torso/arm/leg materials (no proxy
-            # costume pasted over a different humanoid).
+            _, native, palette = base6.render(cfg, f=0, d=direction,
+                                               expr="neutral", anim="idle")
+            characters.bald(native, palette)
+            native = {name: part.convert("RGBA") for name, part in native.items()}
             dressed = Image.new("RGBA", SIZE)
-            for part in parts.values():
-                dressed.alpha_composite(part.convert("RGBA"))
+            for part in native.values():
+                dressed.alpha_composite(part)
+            mattes[(gender, direction)] = native
             variants[(gender, "base", direction)] = nude
             variants[(gender, "outfit", direction)] = dressed
-        # Force exact direction pairs, including anatomy and 1px highlights:
-        # SE<->SW and NE<->NW, never mixing front SW with rear NE.
-        for mode in ("base", "outfit"):
-            for source, target in (("se", "sw"), ("ne", "nw")):
-                variants[(gender, mode, target)] = variants[(gender, mode, source)].transpose(
-                    Image.Transpose.FLIP_LEFT_RIGHT)
-    return variants
+        for source, mirrored in (("se", "sw"), ("ne", "nw")):
+            mattes[(gender, mirrored)] = {
+                name: part.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+                for name, part in mattes[(gender, source)].items()
+            }
+            for mode in ("base", "outfit"):
+                variants[(gender, mode, mirrored)] = variants[
+                    (gender, mode, source)
+                ].transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    return variants, mattes
 
 
-def split_body_pixels(sprite: Image.Image, direction: str):
-    """One owner per source pixel; local/body side mirrors with the view.
+def _limb_split(mask: np.ndarray, source: str):
+    """Divide ONLY the continuous original arm matte at true arm-axis joints.
 
-    SW is the mirror of SE and NW the mirror of NE. A screen-right leg in
-    SW/NW is anatomical LEFT, not anatomical RIGHT. The body midline is
-    derived from the real opaque shin rows, not hard-coded x=33.
+    The division follows the full arm silhouette. Never classify torso
+    pixels merely because they sit outside a hard-coded x boundary.
+    """
+    ys, _ = np.nonzero(mask)
+    if not len(ys):
+        return (0, 0)
+    top = int(ys.min())
+    bottom = int(ys.max()) + 1
+    span = max(3, bottom - top)
+    # Shoulder cover / upper arm, forearm and articulated wrist are three
+    # consecutive intact regions of the source arm layer.
+    return top + max(2, round(span * 0.43)), top + max(3, round(span * 0.78))
+
+
+def _leg_boundary(layers: dict) -> float:
+    """Estimate hip centre from native trouser/shoe silhouettes only."""
+    pants = layers.get("pants")
+    if pants is None:
+        return 32.0
+    mask = np.asarray(pants.convert("RGBA"))[..., 3] > 0
+    widths = []
+    for y in range(82, 98):
+        xs = np.flatnonzero(mask[y])
+        if len(xs) >= 6:
+            widths.append((float(xs[0]) + float(xs[-1])) / 2)
+    return float(np.median(widths)) if widths else 32.0
+
+
+def classify_native_layer(key: str, x: int, y: int, boundary: float,
+                          direction: str, splits: dict):
+    """Deterministic bone ownership from the layer that actually painted it."""
+    mirrored = direction in ("sw", "nw")
+    left = (x < boundary) != mirrored
+    side = "l" if left else "r"
+    if key in ("arm_near", "arm_far"):
+        # Far and near are independent native arm layers, NOT screen regions.
+        anatomical = "l" if key == "arm_near" else "r"
+        elbow, wrist = splits[key]
+        return ("shoulder_" if y < elbow else
+                "elbow_" if y < wrist else "wrist_") + anatomical
+    if key == "body_front":
+        return "wrist_l"
+    if key in ("pants", "rips"):
+        if y < 79:
+            return "pelvis"
+        if y < 89:
+            return "hip_" + side
+        return "knee_" + side
+    if key in ("shoes", "shoes_over"):
+        return "ankle_" + side
+    if key in ("shirt", "shirt_graphic", "outer", "acc"):
+        return "torso"
+    if key == "body":
+        # The exact native head/neck/torso source mask, not a blended 3-part
+        # crop of the entire character. Head-child emotions remain independent.
+        return "head" if y < 54 else "neck" if y < 59 else "torso"
+    if key == "face":
+        if y < 49:
+            return "eye_" + side
+        return "nose" if y < 52 and 31 <= x <= 37 else "mouth"
+    if key == "brows":
+        return "brow_" + side
+    if key == "glasses":
+        return "glasses"
+    if key == "hair_back":
+        return "hair_back"
+    if key == "hair_front":
+        return "fringe_l" if x < boundary - 5 else (
+            "fringe_r" if x > boundary + 5 else "fringe_mid")
+    if key == "held":
+        return "phone"
+    return "torso"
+
+
+def native_owner_map(layers: dict, direction: str):
+    """Last visible original layer owns the source pixel (native z-order).
+
+    This is intentionally a source-layer provenance map. When the nude guide
+    re-shades every garment to skin, its original shoulder, belly and leg
+    alpha silhouettes still correspond to these same native layer mattes.
+    """
+    boundary = _leg_boundary(layers)
+    arm_splits = {}
+    for part in ("arm_near", "arm_far"):
+        image = layers.get(part)
+        matte = (np.asarray(image.convert("RGBA"))[..., 3] > 0
+                 if image is not None else np.zeros((112, 64), bool))
+        arm_splits[part] = _limb_split(matte, part)
+    owner = np.full((112, 64), "", dtype="<U20")
+    for source, image in layers.items():
+        if source in ("shadow", "fx"):
+            continue
+        opaque = np.asarray(image.convert("RGBA"))[..., 3] > 0
+        ys, xs = np.nonzero(opaque)
+        for y, x in zip(ys, xs):
+            owner[y, x] = classify_native_layer(source, int(x), int(y),
+                                                boundary, direction, arm_splits)
+    return owner
+
+
+def _complete_ownership(owner: np.ndarray, visible: np.ndarray):
+    """Recover only genuinely unmatched native pixels, never split by x/y.
+
+    They attach to the nearest already assigned source pixel. In practice the
+    guide retains the native silhouette, so this is only an edge-case guard.
+    """
+    from collections import deque
+
+    valid = visible & (owner != "")
+    if not np.any(valid):
+        raise AssertionError("Native human source mattes contain no visible body bones")
+    pending = visible & ~valid
+    if not np.any(pending):
+        return owner
+    # Multi-source 8-connected expansion, bounded to the actual visible body.
+    queue = deque((int(y), int(x)) for y, x in zip(*np.nonzero(valid)))
+    visited = valid.copy()
+    while queue:
+        y, x = queue.popleft()
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1),
+                       (-1, -1), (-1, 1), (1, -1), (1, 1)):
+            py, px = y + dy, x + dx
+            if not (0 <= py < 112 and 0 <= px < 64):
+                continue
+            if not visible[py, px] or visited[py, px]:
+                continue
+            visited[py, px] = True
+            owner[py, px] = owner[y, x]
+            queue.append((py, px))
+    # Any disconnected source island missing from a native layer is nearest
+    # seeded pixel in image space, never an arbitrary hand/torso rectangular cut.
+    remaining = visible & (owner == "")
+    if np.any(remaining):
+        seed_y, seed_x = np.nonzero(owner != "")
+        for y, x in zip(*np.nonzero(remaining)):
+            k = np.argmin((seed_y - y)**2 + (seed_x - x)**2)
+            owner[y, x] = owner[seed_y[k], seed_x[k]]
+    return owner
+
+
+def split_body_pixels(sprite: Image.Image, direction: str,
+                      native_layers: dict):
+    """Split the original human sprite by native BODY / ARM / PANTS / FOOT mattes.
+
+    Each pixel is stored exactly once. Skin, highlights and anatomical detail
+    are read from the original guide unchanged, and never pixel recoloured.
     """
     rgba = np.asarray(sprite.convert("RGBA"))
     visible = rgba[..., 3] > 0
-    row_centres = []
-    for y in range(84, min(103, rgba.shape[0])):
-        xs = np.flatnonzero(visible[y, 16:50])
-        if len(xs) >= 6:
-            row_centres.append(float(16 + (xs[0] + xs[-1]) / 2))
-    cx = float(np.median(row_centres)) if row_centres else 32.0
-    reverse = direction in ("sw", "nw")
-    groups = {}
-    ys, xs = np.nonzero(visible)
-    for y0, x0 in zip(ys, xs):
-        x, y = int(x0), int(y0)
-        side = "l" if (x < cx) != reverse else "r"
-        if y < 54:
-            if 40 <= y < 49 and 21 <= x <= 44:
-                if y < 44:
-                    bone = "brow_" + side
-                elif y < 48:
-                    bone = "eye_" + side
-                else:
-                    bone = "mouth"
-            else:
-                bone = "head"
-        elif y < 59:
-            bone = "neck" if 26 <= x <= 39 else ("shoulder_" + side)
-        elif y < 76:
-            if x < 22 or x > 42:
-                bone = ("shoulder_" if y < 66 else "elbow_") + side
-            else:
-                bone = "torso"
-        elif y < 81:
-            bone = "pelvis" if 22 <= x <= 42 else "wrist_" + side
-        elif y < 90:
-            bone = "hip_" + side
-        elif y < 101:
-            bone = "knee_" + side
-        else:
-            bone = "ankle_" + side
-        if bone not in groups:
-            groups[bone] = np.zeros((112, 64, 4), dtype=np.uint8)
-        groups[bone][y, x] = rgba[y, x]
-    return {bone: Image.fromarray(pixels, "RGBA") for bone, pixels in groups.items()}
+    owner = native_owner_map(native_layers, direction)
+    owner[~visible] = ""
+    owner = _complete_ownership(owner, visible)
+    if np.any(visible & (owner == "")):
+        raise AssertionError("Undressed reference lost source-pixel ownership")
+    parts = {}
+    for bone in np.unique(owner[visible]):
+        data = np.zeros((112, 64, 4), dtype=np.uint8)
+        select = visible & (owner == bone)
+        data[select] = rgba[select]
+        if np.any(select):
+            parts[str(bone)] = Image.fromarray(data, "RGBA")
+    if "torso" not in parts or "head" not in parts:
+        raise AssertionError("Missing native head/torso after rig cutout")
+    if not any(part.startswith("shoulder_") for part in parts):
+        raise AssertionError("Native arm mattes were not processed")
+    return parts
 
 
 def publish_gender_bases(media: Path, dest: Path):
-    variants = native_gender_models(media)
+    variants, mattes = native_gender_models(media)
     slots = []
     for gender in ("male", "female"):
         for mode in ("base", "outfit"):
@@ -242,7 +367,8 @@ def publish_gender_bases(media: Path, dest: Path):
     for gender_index, gender in enumerate(("male", "female")):
         for mode_index, mode in enumerate(("base", "outfit")):
             parts_by_view = {direction: split_body_pixels(
-                variants[(gender, mode, direction)], direction) for direction in DIRS}
+                variants[(gender, mode, direction)], direction,
+                mattes[(gender, direction)]) for direction in DIRS}
             names = set().union(*(pieces.keys() for pieces in parts_by_view.values()))
             for bone in sorted(names):
                 atlas = Image.new("RGBA", (64, 448))
