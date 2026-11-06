@@ -524,6 +524,10 @@ def shade_human_anatomy(sprite:Image.Image,gender:str,direction:str,
     return Image.fromarray(pixels,"RGBA")
 
 def build_human_templates(root:Path,media:Path)->list[dict]:
+    # Available both when imported as tools.build_human_templates and when
+    # build_character_catalog.py is executed directly from tools/ in CI.
+    repository_path=str(Path(__file__).resolve().parents[1])
+    if repository_path not in sys.path:sys.path.insert(0,repository_path)
     for folder in (root/"assets/npc_preview_v2",root/"assets/npc_gfunk",root/"chars-iso/v6b/tools"):
         if str(folder) not in sys.path:sys.path.insert(0,str(folder))
     import base6
