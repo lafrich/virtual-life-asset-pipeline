@@ -21,6 +21,8 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 @media(max-width:870px){main{grid-template-columns:1fr 1fr}.viewport{min-height:400px}}@media(max-width:620px){main{display:flex;flex-direction:column}canvas#stage{width:256px;height:448px}body{padding:3px}}
 </style>
 <link rel="stylesheet" href="./emotion-studio/shared-pixel-ui.css"><script defer src="./emotion-studio/shared-pixel-selection.js"></script><script defer src="./emotion-studio/shared-pixel-editor.js"></script><script defer src="./emotion-studio/emotion-library.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script defer src="../virtual-office/emotion-studio/drive-sync.js"></script>
 </head><body><div class="app">
 <header><div><h1>MAHLUK HIDUP · V6B STUDIO</h1><small>BODY + MOTION + EMOSI.EXE · 64×112 PX</small></div><a style="color:white" href="./index.html">LEGACY STUDIO</a></header>
 <nav><button class="active" data-tab="characters">01 · CHARACTER</button><button data-tab="pixels">02 · PIXEL EDIT</button><button data-tab="actions">03 · ACTIONS</button><button data-tab="emotions">04 · EMOSI.EXE</button></nav>
@@ -40,7 +42,8 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <div class="control"><label>BODY BOUNCE · PIXELS</label><input id="bob" type="range" min="0" max="6" value="1"></div>
 <p class="note" id="motion-original-note"></p><button id="save-action">SAVE AS CUSTOM ACTION</button></div>
 <div id="emotions" hidden><h2>MANUAL FACE ATLAS</h2><p class="note">Reads the original Emosi.exe PNG frames as a single overlay; no eyes/mouth splitting.</p>
-<p class="note" id="emotion-source-note">Sync sources: GitHub published + local browser. Google Drive is not connected.</p><div class="control"><label>FACE ASSET</label><select id="emotion"><option value="">NO FACE</option></select></div>
+<p class="note" id="emotion-source-note">EMOSI.EXE: loading local data; connect Google Drive for cloud emotions.</p>
+<div class="buttons"><button id="connect-emotion-drive">☁ CONNECT GOOGLE DRIVE</button><button id="refresh-emotion-drive">↻ REFRESH DRIVE</button></div><p class="note" id="emotion-drive-status">Drive sign-in is session-only. No GitHub token required. Uses the same Google OAuth client as EMOSI.EXE.</p><div class="control"><label>FACE ASSET</label><select id="emotion"><option value="">NO FACE</option></select></div>
 <div class="control"><label>HEAD OFFSET X</label><input id="face-x" type="number" value="0"></div>
 <div class="control"><label>HEAD OFFSET Y</label><input id="face-y" type="number" value="0"></div><button id="reload-emotions">SYNC FROM EMOSI.EXE</button></div>
 </section>
@@ -223,10 +226,55 @@ $("export-sheet").onclick=()=>{const out=document.createElement("canvas");out.wi
 $("emotion").onchange=()=>setEmotion($("emotion").value);
 for(const [id,index] of [["face-x",0],["face-y",1]])$(id).oninput=()=>{model.faceOffset[index]=Math.max(-64,Math.min(64,Number($(id).value)||0));draw()};
 async function readLocalEmotions(){const FALLBACK="emotion-studio-local-fallback-v1",result=[];try{const fallback=JSON.parse(localStorage.getItem(FALLBACK)||"[]");if(Array.isArray(fallback))result.push(...fallback)}catch{}if(typeof indexedDB==="undefined")return result;return new Promise(resolve=>{let req;try{req=indexedDB.open("emotion-studio-local-v1",1)}catch{return resolve(result)}req.onerror=()=>resolve(result);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains("emotion-assets"))req.result.createObjectStore("emotion-assets",{keyPath:"id"})};req.onsuccess=()=>{const db=req.result;try{const tx=db.transaction("emotion-assets","readonly"),get=tx.objectStore("emotion-assets").getAll();get.onsuccess=()=>{db.close();resolve([...result,...(Array.isArray(get.result)?get.result:[])])};get.onerror=()=>{db.close();resolve(result)}}catch{db.close();resolve(result)}}})}
-async function loadEmotions(){const U=window.MH2UniversalEmotions;if(!U){status("EMOSI LIBRARY NOT READY");return}const [published,local]=await Promise.allSettled([U.loadCatalog(),readLocalEmotions()]);const entries=new Map();if(published.status==="fulfilled")for(const e of published.value.catalog.entries)if(U.validEntry(e))entries.set(e.id,{...e,origin:"github"});let localCount=0;if(local.status==="fulfilled")for(const e of local.value)if(U.validEntry(e)){entries.set(e.id,{...e,origin:"local"});localCount++}
-const select=$("emotion");emotions.clear();select.replaceChildren();const empty=document.createElement("option");empty.value="";empty.textContent="NO FACE";select.append(empty);for(const e of entries.values()){if(!(e.base==="universal"||e.base==="original"&&model.body_type==="ichsan"||e.base===model.body_type))continue;emotions.set(e.id,e);const o=document.createElement("option");o.value=e.id;o.textContent=e.name+" · "+(e.origin==="local"?"THIS DEVICE":"GITHUB");select.append(o)}if(!emotions.has(model.emotion))model.emotion="";select.value=model.emotion;await setEmotion(model.emotion);
-const sourceMsg=published.status==="fulfilled"?"GITHUB "+published.value.catalog.entries.length:"GITHUB UNAVAILABLE";status("EMOSI SYNC · "+sourceMsg+" · LOCAL "+localCount+" · VISIBLE "+emotions.size);const note=$("emotion-source-note");if(note)note.textContent="Source: "+sourceMsg+"; "+localCount+" local assets. Google Drive is NOT connected. To sync across devices, publish from Emosi.exe to GitHub."}
-$("reload-emotions").onclick=loadEmotions;
+const emosiDrive=()=>window.EmotionDrive;
+let driveEmotions=new Map(),driveConnected=false;
+async function syncEmotionDrive(){
+ const D=emosiDrive();if(!D?.connected()){status("EMOSI DRIVE NOT CONNECTED · CLICK CONNECT GOOGLE DRIVE");return}
+ $("refresh-emotion-drive").disabled=true;
+ try{
+  const result=await D.loadAll();
+  driveEmotions=new Map(result.entries.filter(window.MH2UniversalEmotions.validEntry).map(e=>[e.id,{...e,origin:"drive"}]));
+  $("emotion-drive-status").textContent="✓ DRIVE CONNECTED · "+driveEmotions.size+" projects loaded from Membangun / Emotion Studio"+(result.errors.length?" · "+result.errors.length+" file errors":"");
+  await loadEmotions();status("EMOSI DRIVE SYNCED · "+driveEmotions.size+" CLOUD EMOTIONS");
+ }catch(error){$("emotion-drive-status").textContent="DRIVE SYNC FAILED: "+error.message;status("EMOSI DRIVE ERROR: "+error.message)}
+ finally{$("refresh-emotion-drive").disabled=false}
+}
+async function connectEmotionDrive(){
+ const D=emosiDrive();if(!D){status("EMOSI DRIVE MODULE NOT LOADED · CHECK VIRTUAL-OFFICE PAGES");return}
+ $("connect-emotion-drive").disabled=true;
+ try{
+  if(!D.connected())await D.connect();
+  driveConnected=true;
+  $("emotion-drive-status").textContent="✓ GOOGLE AUTHENTICATED · loading saved emotions...";
+  await syncEmotionDrive();
+ }catch(error){$("emotion-drive-status").textContent="GOOGLE CONNECT FAILED: "+error.message;status("EMOSI GOOGLE LOGIN ERROR: "+error.message)}
+ finally{$("connect-emotion-drive").disabled=false}
+}
+async function loadEmotions(){
+ const U=window.MH2UniversalEmotions;if(!U){status("EMOSI LIBRARY NOT READY");return}
+ const [published,local]=await Promise.allSettled([U.loadCatalog(),readLocalEmotions()]);
+ const entries=new Map();
+ if(published.status==="fulfilled")for(const e of published.value.catalog.entries)if(U.validEntry(e))entries.set(e.id,{...e,origin:"github"});
+ let localCount=0;
+ if(local.status==="fulfilled")for(const e of local.value)if(U.validEntry(e)){entries.set(e.id,{...e,origin:"local"});localCount++}
+ // Drive is authoritative for cross-device changes. Local-only edits remain available.
+ for(const [id,e] of driveEmotions)entries.set(id,e);
+ const select=$("emotion");emotions.clear();select.replaceChildren();
+ const empty=document.createElement("option");empty.value="";empty.textContent="NO FACE";select.append(empty);
+ for(const e of entries.values()){
+  if(!(e.base==="universal"||e.base==="original"&&model.body_type==="ichsan"||e.base===model.body_type))continue;
+  emotions.set(e.id,e);const o=document.createElement("option");o.value=e.id;
+  o.textContent=e.name+" · "+(e.origin==="drive"?"GOOGLE DRIVE":e.origin==="local"?"THIS DEVICE":"STARTER");select.append(o)
+ }
+ if(!emotions.has(model.emotion))model.emotion="";
+ select.value=model.emotion;await setEmotion(model.emotion);
+ const note=$("emotion-source-note");
+ if(note)note.textContent="Source: "+driveEmotions.size+" Drive projects · "+localCount+" local emotions · "+(published.status==="fulfilled"?published.value.catalog.entries.length:0)+" starter templates. No GitHub token.";
+ status("EMOSI SOURCES LOADED · "+emotions.size+" compatible faces · GOOGLE DRIVE "+(emosiDrive()?.connected()?"CONNECTED":"SIGN-IN NEEDED"));
+}
+$("reload-emotions").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else await loadEmotions()};
+$("connect-emotion-drive").onclick=connectEmotionDrive;
+$("refresh-emotion-drive").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else status("CONNECT GOOGLE DRIVE FIRST")};
 const pixelOverlay=$("pixelOverlay"),pixelCanvas=$("pixelCanvas"),pixelEditor=window.MH2PlanePixelEditor?.create({overlay:pixelOverlay,canvas:pixelCanvas,reference:$("stage"),onApply:(_id,png,atlas)=>{storeEditedFrame(atlas);return true},onSaveDefault:(_id,png,atlas)=>{storeEditedFrame(atlas);return true}});
 function storeEditedFrame(atlas){if(!atlas)return;const name=model.current,f=frame;model.frameEdits||={};for(let d=0;d<4;d++){const slice=document.createElement("canvas");slice.width=64;slice.height=112;slice.getContext("2d").drawImage(atlas,0,d*112,64,112,0,0,64,112);const key=name+"|"+f+"|"+DIR[d],url=slice.toDataURL("image/png");model.frameEdits[key]=url;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}draw();status("NATIVE PIXEL EDITS APPLIED · "+name.toUpperCase()+" FRAME "+(f+1)+" · 4 VIEWS")}
 $("open-pixel").onclick=()=>{if(!pixelEditor)return status("NATIVE EDITOR UNAVAILABLE");const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;const ac=atlas.getContext("2d");for(let d=0;d<4;d++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");const key=model.current+"|"+frame+"|"+DIR[d],img=frameOverrideImages.get(key);if(img?.complete&&img.naturalWidth)tc.drawImage(img,0,0);else renderBody(tc,DIR[d],model.current,frame);ac.drawImage(tile,0,d*112)}pixelEditor.open({id:model.current+"-frame-"+(frame+1),initialAtlas:atlas,originalAtlas:atlas,direction:$("direction").value})};
