@@ -387,13 +387,15 @@
   }
   els.close.onclick=close;
   els.apply.onclick=()=>{
-   if(onApply(bone,atlas.toDataURL("image/png"))!==false){
+   // Pass the exact live 64x448 canvas too: character preview and Save Root
+   // can use all four directions immediately, even before image decode.
+   if(onApply(bone,atlas.toDataURL("image/png"),atlas)!==false){
     dirty=false;updateHistory();overlay.hidden=true;
    }
   };
   els.save.onclick=()=>{
    const png=atlas.toDataURL("image/png");
-   if(onSaveDefault(bone,png)!==false){
+   if(onSaveDefault(bone,png,atlas)!==false){
     dirty=false;updateHistory();overlay.hidden=true;
    }
   };
@@ -523,7 +525,7 @@
     if(e.key==="0")zoomFit();else setZoom(zoom+(e.key==="-"?-1:1));
    }else if(e.key==="Escape"){
     e.stopPropagation();
-    if(selection){selection=null;draw();updateSelection()}else overlay.hidden=true;
+    if(selection){selection=null;draw();updateSelection()}else close();
    }
   });
   function open({id,initialAtlas,originalAtlas,referenceImage,referenceImages,direction="se"}){
