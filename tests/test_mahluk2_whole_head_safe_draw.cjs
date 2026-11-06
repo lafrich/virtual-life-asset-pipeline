@@ -22,7 +22,7 @@ test('Fringe, separate hair and held prop disappear from Mahluk 2 editable scene
  assert.match(studio,/src=\{image:wholeHeadAtlas\(\),sx:0,sy:di\*112\}/);
  assert.doesNotMatch(studio,/\["ACCESSORIES",\["phone"\]\]/);
  assert.doesNotMatch(studio,/\["HEAD \/ FACE & ACCESSORY",\["head","emotion","glasses","hair_back"/);
- assert.match(html,/one unified 4-view pixel plane/);
+ assert.match(html,/one bald HEAD, no baked eyes\/mouth/);
 });
 test('Full head composites native hair and fringe in source layer order with exact 64×448 RGBA',()=>{
  const calls=[];
@@ -99,7 +99,7 @@ test('Always reopen exact saved 4-view PNG, not stale async decoded image or mas
  assert.match(studio,/const png=pixelPlanes\[id\]/);
  assert.match(studio,/if\(revision!==planeImageRevision\|\|pixelPlanes\[id\]!==png\)/);
  assert.match(studio,/general=masterDocument\(\),own=G\.sanitizePixelPlanes\(r\.pixelPlanes\|\|\{\},R\)/);
- assert.match(studio,/setPixelPlanes\(r\.driveFileId\?own:\{\.\.\.\(general\?\.pixelPlanes\|\|\{\}\),\.\.\.own\}\)/);
+ assert.match(studio,/setPixelPlanes\(r\.driveFileId\|\|facelessBase\?own:\{\.\.\.\(general\?\.pixelPlanes\|\|\{\}\),\.\.\.own\}\)/);
  assert.match(studio,/headMerged,\n  sprite:rootSheet/);
  assert.match(studio,/onApply:\(bone,png,liveAtlas\)=>setPlanePixel\(bone,png,liveAtlas\)/);
  assert.match(studio,/copy\.getContext\('2d'\)\.drawImage\(liveAtlas,0,0\)/);
