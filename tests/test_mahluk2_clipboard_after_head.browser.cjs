@@ -171,6 +171,30 @@ async function main(){
   copiedAtlas=await exportAtlas();
   assert.deepEqual(pix(copiedAtlas,2,4,9),hex('#e91be3'),
    'Cross-session Paste failed for NE');
+
+  // Simulate browser storage being full: an old saved clipboard must not
+  // override a newer in-memory Copy when the storage write fails.
+  await page.locator('#pixelDirection').selectOption('se');
+  await page.locator('[data-pixel-tool="pencil"]').click();
+  await drawAt(8,12,'#ae32df');
+  await page.locator('[data-pixel-tool="select"]').click();
+  await pixelDrag(8,12,9,13);
+  await page.evaluate(()=>{
+   const original=Storage.prototype.setItem;
+   window.__restorePasteStorage=()=>{Storage.prototype.setItem=original};
+   Storage.prototype.setItem=function(key,value){
+    if(key==='mh2-rgba-clipboard-v1')throw Error('QuotaExceededError');
+    return original.call(this,key,value);
+   };
+  });
+  await page.locator('#pixelCopySelection').click();
+  await page.evaluate(()=>window.__restorePasteStorage());
+  await page.locator('#pixelDirection').selectOption('ne');
+  await page.locator('#pixelPasteSelection').click();
+  copiedAtlas=await exportAtlas();
+  assert.deepEqual(pix(copiedAtlas,2,8,12),hex('#ae32df'),
+   'Paste used old localStorage clipboard instead of latest Copy after quota error');
+
   await page.locator('#pixelApply').click();
   await page.waitForFunction(()=>document.getElementById('pixelOverlay').hidden,null,{timeout:15000});
   // Immediate Save Root must use the live canvas, not stale async PNG decode.
