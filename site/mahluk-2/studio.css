@@ -370,3 +370,19 @@ select:focus,input:focus-visible,button:focus-visible{outline:1px dotted #163773
 #emotionPreviewSection #emotionStatus{border-top:1px solid #b7c9dc;padding-top:8px}
 @media(min-width:1100px){.workspace{grid-template-columns:228px minmax(0,1fr) 320px}}
 @media(max-width:750px){#emotionPreviewSection .emotion-preview-layout{flex-direction:row;align-items:flex-start;flex-wrap:wrap}#emotionPreviewSection .emotion-preview-screen{flex:1 1 150px;width:auto;max-width:220px}#emotionPreviewSection .emotion-preview-controls{flex:1 1 175px;min-width:160px}}
+
+
+/* Faceless V6B starter character installer — fits XP-styled object manager. */
+.faceless-base-panel{display:flex;flex-direction:column;gap:6px;padding:8px 6px;
+ background:#dce9fa;border-bottom:1px solid #94aecb;color:#264b72}
+.faceless-base-panel p{margin:0;font:700 10px/1.5 Consolas,monospace;letter-spacing:.01em}
+.faceless-base-panel small{font:10px/1.45 Consolas,monospace;color:#496984;
+ overflow-wrap:anywhere}
+.faceless-base-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+.faceless-base-panel button{min-height:34px;padding:7px 5px;border:1px solid #7aa6d4;
+ background:#f8fcff;color:#23568d;font:700 10px Consolas,monospace;white-space:normal;
+ overflow-wrap:anywhere}
+.faceless-base-panel button:hover{background:#c7e4ff}
+.faceless-base-panel #installFacelessBoth{background:#a9d1fc;border-color:#487dad;
+ color:#163b69;font-weight:800}
+@media(max-width:750px){.faceless-base-panel{padding:10px}.faceless-base-panel button{min-height:42px}}
