@@ -11,13 +11,13 @@
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
 <script defer src="./github-master-sync.js?v=github-v1"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script defer src="./drive-sync.js?v=auto-cloud-library-20261106"></script>
+<script defer src="./drive-sync.js?v=auto-cloud-workspace-20261106"></script>
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
 <script defer src="./view-projection.js?v=orbit-master-sync-v2"></script>
 <script defer src="./pixel-selection.js?v=pixel-copy-toolbar-v2"></script>
 <script defer src="./plane-pixel-editor.js?v=pixel-copy-toolbar-v2"></script>
-<script defer src="./studio.js?v=auto-cloud-library-20261106"></script>
-<script defer src="./drive-studio-bridge.js?v=auto-cloud-library-20261106"></script>
+<script defer src="./studio.js?v=auto-cloud-workspace-20261106"></script>
+<script defer src="./drive-studio-bridge.js?v=auto-cloud-workspace-20261106"></script>
 </head>
 <body>
 <div class="window">
@@ -128,6 +128,7 @@
       <div class="plane-buttons"><button id="driveSaveAllAssets" type="button">☁ SAVE ALL CHARACTER ASSET LIBRARY</button><button id="driveRestoreAllAssets" type="button">↓ RESTORE CHARACTER LIBRARY</button></div>
       <p class="hint">Backup includes all existing native character source references, 4-direction source manifest, custom character RGBA sprite roots, master rig, and imported face/accessory PNG atlases. Native published sprites remain sourced from the pipeline; custom PNGs are copied in full.</p>
       <p id="driveStatus" class="hint" aria-live="polite">NOT CONNECTED · Google OAuth is needed for cross-device saves.</p>
+      <p class="hint">AUTO SYNC: Connect Google once in each browser session. Library and in-progress workspace (pose, pixel, keyframes) load automatically. Edits save to Drive after a short pause without publishing an unfinished character. Save Root still explicitly publishes a game-ready character. On version conflicts, local and Drive copies are preserved.</p>
       <p class="hint">Google Drive location: Membangun / Mahluk Hidup 2. Uses drive.file access; no Client Secret, no GitHub token. Emotion Studio and Semesta remain separate.</p>
     </section>
     <section class="ins-section"><div class="sectionhead">ROOT CHARACTER / PUBLISH</div><label class="selectline">NAME<input id="characterName" type="text" maxlength="40" value="My Character 2.0"></label><p class="hint">Shared anatomy, plane artwork, anchors and hierarchy. Actions remain in Mahluk Hidup 1.0.</p><button id="publish" class="primary">✳ SAVE + SYNC ROOT</button></section>
