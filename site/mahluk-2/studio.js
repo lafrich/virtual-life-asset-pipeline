@@ -341,7 +341,9 @@ function getGlassesAsset(id){
 }
 function emotionAt(f=frame){
  const proposed=E.sample(emotionKeys,f,emotionAssetId);
- return getEmotionAsset(proposed)?proposed:emotionAssetId;
+ // Missing records stay referenced by ID; show neutral until imported.
+ return getEmotionAsset(proposed)?proposed:
+  getEmotionAsset(emotionAssetId)?emotionAssetId:'native:neutral';
 }
 function faceSource(direction,emotion){
  const key=direction+":"+emotion;
@@ -874,28 +876,36 @@ function removeKey(){
  setStatus("◇ KEY REMOVED / "+selected+" / "+(frame+1));makeTimeline();
 }
 function assetOptions(){
- const emotion=$("emotionAsset"),glass=$("glassesAsset");
+ const emotion=$('emotionAsset'),glass=$('glassesAsset');
  emotion.replaceChildren();glass.replaceChildren();
  const opt=(list,value,label)=>{
-  const o=document.createElement("option");o.value=value;o.textContent=label;list.append(o);
+  const o=document.createElement('option');o.value=value;o.textContent=label;list.append(o);
  };
- opt(emotion,"native:neutral","SOURCE / NEUTRAL FALLBACK");
- opt(glass,"native","ORIGINAL GLASSES / V6B");
- opt(glass,"none","NONE / HIDE");
+ opt(emotion,'native:neutral','SOURCE / NEUTRAL FALLBACK');
+ opt(glass,'native','ORIGINAL GLASSES / V6B');
+ opt(glass,'none','NONE / HIDE');
+ const q=String($('emotionSearch')?.value||'').trim().toLowerCase();
  for(const asset of emotionDatabase.values()){
-  if(asset.base!=="universal"&&asset.base!==type)continue;
-  opt(emotion,asset.id,(asset.origin==="drive"?"☁ DRIVE / ":"DATABASE / ")+asset.name.toUpperCase()+" / "+asset.frames+"F");
+  if(asset.base!=='universal'&&asset.base!==type)continue;
+  if(q&&asset.id!==emotionAssetId&&!((asset.name+' '+asset.id).toLowerCase().includes(q)))continue;
+  const prefix=asset.origin==='drive'?'☁ DRIVE / ':
+   asset.origin==='local'?'⌂ EMOSI.EXE / ':'DATABASE / ';
+  opt(emotion,asset.id,prefix+asset.name.toUpperCase()+' / '+asset.frames+'F');
  }
  for(const asset of publishedAssets.filter(a=>a.base===type)){
-  opt(emotion,asset.id,"EXISTING / "+asset.label+" / "+asset.frames+"F");
+  if(!q||asset.id===emotionAssetId||(asset.name||asset.label||'').toLowerCase().includes(q))
+   opt(emotion,asset.id,'EXISTING / '+asset.label+' / '+asset.frames+'F');
  }
  for(const asset of userAssets){
-  if(asset.kind==="emotion")opt(emotion,asset.id,"IMPORTED / "+asset.name.toUpperCase()+" / "+asset.frames+"F");
-  if(asset.kind==="glasses")opt(glass,asset.id,"IMPORTED / "+asset.name.toUpperCase()+" / "+asset.frames+"F");
+  if(asset.kind==='emotion'&&(!q||asset.id===emotionAssetId||asset.name.toLowerCase().includes(q)))
+   opt(emotion,asset.id,'IMPORTED / '+asset.name.toUpperCase()+' / '+asset.frames+'F');
+  if(asset.kind==='glasses')
+   opt(glass,asset.id,'IMPORTED / '+asset.name.toUpperCase()+' / '+asset.frames+'F');
  }
- if(!getEmotionAsset(emotionAssetId))emotionAssetId="native:neutral";
- if(!getGlassesAsset(glassesAssetId))glassesAssetId="native";
- emotion.value=emotionAt();glass.value=glassesAssetId;
+ if(emotionAssetId!=='native:neutral'&&![...emotion.options].some(o=>o.value===emotionAssetId))
+  opt(emotion,emotionAssetId,'⚠ NOT LOADED / '+emotionAssetId+' · REFRESH OR CONNECT DRIVE');
+ if(!getGlassesAsset(glassesAssetId))glassesAssetId='native';
+ emotion.value=emotionAssetId;glass.value=glassesAssetId;
  updateEmotionStatus();
 }
 function matchAssetAnimation(asset){
@@ -914,8 +924,11 @@ function matchAssetAnimation(asset){
 function updateEmotionStatus(){
  const asset=getEmotionAsset(emotionAt());
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
- if($("emotionStatus"))$("emotionStatus").textContent=(asset?.native?"ORIGINAL SOURCE / ":asset?.database?"EMOTION STUDIO DATABASE / ":"IMPORTED PLANE / ")+
-  (asset?.frames||1)+" FRAME(S) · "+(asset?.fps||6)+" FPS · HEAD PLANE / READ ONLY";
+ if($('emotionStatus'))$('emotionStatus').textContent=
+  (!getEmotionAsset(emotionAssetId)&&emotionAssetId!=='native:neutral'?
+   '⚠ MISSING '+emotionAssetId+' · CONNECT DRIVE OR REFRESH · NEUTRAL FALLBACK / ':
+   asset?.native?'ORIGINAL SOURCE / ':asset?.database?'EMOSI.EXE DATABASE / ':'IMPORTED PLANE / ')+
+  (asset?.frames||1)+' FRAME(S) · '+(asset?.fps||6)+' FPS · FACE PREVIEW ONLY';
  updateEmotionPreviewUI();
 }
 async function installEmotionEntries(entries,origin="starter"){
@@ -936,6 +949,29 @@ async function installEmotionEntries(entries,origin="starter"){
  }
  assetOptions();paint();
  return {added,failed};
+}
+async function loadLocalEmotions(){
+ if(!EP)return {added:0,failed:0};
+ try{
+  const local=await EP.loadLocal();
+  const result=await installEmotionEntries(local.entries,'local');
+  emotionPreviewSource=local.source;
+  $('emotionDatabaseStatus').textContent='✓ '+result.added+' EMOSI.EXE LOCAL EMOTIONS · '+
+   result.failed+' SKIPPED · '+emotionDatabase.size+' AVAILABLE (WITH STARTERS)'+
+   (local.warning?' · '+local.warning:'');
+  return result;
+ }catch(error){
+  $('emotionDatabaseStatus').textContent='EMOSI.EXE LOCAL LIBRARY ERROR: '+error.message;
+  console.warn('Emosi.exe local load',error);
+  return {added:0,failed:0};
+ }
+}
+async function refreshEmotionLibrary(){
+ if(emotionDatabaseLoading)return;
+ $('emotionDatabaseStatus').textContent='REFRESHING EMOSI.EXE DATABASE...';
+ const local=await loadLocalEmotions();
+ if(D?.connected())await loadDriveEmotions();
+ else setStatus('✓ '+local.added+' EMOSI.EXE LOCAL ENTRIES · CONNECT DRIVE FOR OTHER DEVICES',true);
 }
 async function loadPublishedAssets(){
  if(!U){setStatus("EMOTION DATABASE RENDERER UNAVAILABLE · NEUTRAL FALLBACK",false);return}
@@ -1496,7 +1532,7 @@ function setupEvents(){
  requestAnimationFrame(tick);
 }
 async function mount(){
- if(!R||!E||!G||!B||!P||!V||!S||!U){setStatus("RIG / FOUR-VIEW / GITHUB SYNC ENGINE NOT FOUND",false);return}
+ if(!R||!E||!G||!B||!P||!V||!S||!U||!EP){setStatus('RIG / EMOSI PREVIEW / FOUR-VIEW ENGINE NOT FOUND',false);return}
  setupEvents();
  try{
   const resp=await fetch("../media/original-rig/manifest.json",{cache:"no-store"});
@@ -1505,7 +1541,8 @@ async function mount(){
   if(m.format!=="mahluk-original-source-rig-v1")throw Error("Invalid authored V6B manifest");
   await loadImagesFromManifest(m);
   loadImportedAssets();
-  try{await loadPublishedAssets()}catch(error){setStatus("UNIVERSAL EMOTION STUDIO UNAVAILABLE · NEUTRAL FALLBACK ACTIVE: "+error.message,false)}
+  try{await loadPublishedAssets()}catch(error){setStatus('EMOSI STARTERS UNAVAILABLE · NEUTRAL ACTIVE: '+error.message,false)}
+  await loadLocalEmotions();
   const draft=safeGet(DRAFT,null);
   if(draft?.format==="mahluk-2-project-v1"){
    // Drafts are intentionally NOT auto-loaded as game-ready characters.
