@@ -5,7 +5,7 @@
 (function(window){"use strict";
 const D=window.MH2DriveSync,A=window.MH2DriveAdapter;
 const $=id=>document.getElementById(id);
-let loaded=new Map(),masterFile=null,working=false,autoSyncing=false;
+let loaded=new Map(),masterFile=null,working=false,autoSyncing=false,assetSaveTimer=null;
 const SYNC_KEY="mh2-drive-sync-metadata-v2";
 function syncState(){try{return JSON.parse(localStorage.getItem(SYNC_KEY)||"{}")}catch{return {}}}
 function writeSyncState(data){try{localStorage.setItem(SYNC_KEY,JSON.stringify(data))}catch(e){console.warn("MH2 cloud tracking unavailable",e)}}
@@ -41,10 +41,6 @@ async function refresh(){
  masterFile=result.master||null;
  A.updateCloudRecords(result.records);
  if(!autoSyncing)await autoReconcile(result);
- message("✓ CLOUD CHARACTER LIBRARY · "+loaded.size+" ROOT(S) · "+
-  (masterFile?"MASTER AVAILABLE":"NO MASTER SAVED")+
-  (result.errors.length?" · "+result.errors.length+" FAILED":"")+
-  " · LOCAL EDITS AUTO-SYNC ON SAVE");
  return result;
 }
 async function autoReconcile(result){
@@ -62,6 +58,8 @@ async function autoReconcile(result){
     const equal=digest(own)===digest(cloud);
     if(equal){markSynced(cloud.id,cloud,own);continue}
     if(prior&&prior.hash===digest(own)&&prior.modifiedTime!==cloud.driveModifiedTime){
+     // Keep any in-progress edit open; never change its backing record behind the editor.
+     if(A.activeIdentifier?.()===cloud.id){conflicts++;continue}
      A.importCloudRoot(cloud,{overwrite:true});markSynced(cloud.id,cloud,cloud);imported++;continue;
     }
     if(prior&&prior.modifiedTime===cloud.driveModifiedTime&&prior.hash!==digest(own)){
@@ -188,8 +186,7 @@ async function saveEntireCharacterLibrary(){
   message("BACKING UP "+roots.length+" SAVED ROOTS + NATIVE CHARACTER SOURCE MANIFEST...");
   // The index includes all built-in actors + native rig reference, custom imported
   // accessories/emotions and all authored character IDs.
-  const prior=await D.loadLibrary();
-  const indexFile=await D.saveLibrary(snapshot,prior?.file?.modifiedTime||null);
+  const indexFile=await D.saveLibrary(snapshot,cloudLibraryFile?.modifiedTime||null);
   cloudLibraryFile=indexFile;saved++;
   if(D.validMaster(A.localMaster())){
    if(await uploadMaster(A.localMaster()))saved++;else failed.push("Master Rig");
@@ -225,6 +222,25 @@ async function restoreEntireCharacterLibrary(){
  finally{working=false;$("driveRestoreAllAssets").disabled=false}
 }
 
+
+function scheduleAssetLibraryAutoSave(){
+ if(assetSaveTimer)clearTimeout(assetSaveTimer);
+ if(!D.connected())return;
+ assetSaveTimer=setTimeout(async()=>{
+  assetSaveTimer=null;
+  try{
+   if(!A.ready())return;
+   message("AUTO-SAVING IMPORTED CHARACTER ACCESSORIES TO DRIVE...");
+   const snapshot=A.librarySnapshot();
+   const result=await D.saveLibrary(snapshot,cloudLibraryFile?.modifiedTime||null);
+   cloudLibraryFile=result;
+   message("✓ ALL CHARACTER ASSETS AUTO-SAVED TO GOOGLE DRIVE");
+  }catch(error){
+   message("CHARACTER ASSET LIBRARY LOCAL BACKUP SAFE · CLOUD SYNC ERROR: "+error.message,true);
+  }
+ },2600);
+}
+
 async function loadMaster(){
  if(!D?.connected()){message("CONNECT GOOGLE DRIVE FIRST",true);return}
  try{
@@ -258,6 +274,9 @@ function init(){
  });
  window.addEventListener("mahluk2:master-saved-for-cloud",event=>{
   if(D.connected())void uploadMaster(event.detail?.doc);
+ });
+ window.addEventListener("mahluk2:asset-library-edited",()=>{
+  if(D.connected())scheduleAssetLibraryAutoSave();
  });
  updateButtons();
 }
