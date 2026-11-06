@@ -1316,19 +1316,80 @@ function setupEvents(){
   }};
  }
  $("visible").onchange=e=>{remember();state.parts[selected].visible=e.target.checked;buildTree()};
- $("emotionAsset").onchange=e=>{
+ $('emotionAsset').onchange=e=>{
   if(!getEmotionAsset(e.target.value))return;
   remember();
-  if(frame>0&&!emotionKeys.length)emotionKeys=E.insert(emotionKeys,0,emotionAssetId);
+  // Read-only idle assignment: no pixel edits, emotion keys or body FPS changes.
   emotionAssetId=e.target.value;
-  if(frame>0||emotionKeys.length)emotionKeys=E.insert(emotionKeys,frame,emotionAssetId);
+  emotionKeys=[];emotionPreviewFrame=0;emotionPreviewElapsed=0;emotionPreviewPlaying=true;
   const asset=getEmotionAsset(emotionAssetId);
-  matchAssetAnimation(asset)
-  updateEmotionStatus();makeTimeline();paint();
-  setStatus("EMOTION PLANE ASSET / "+(asset?.native||asset?.name||"UNKNOWN"),true);
+  updateEmotionStatus();paint();scheduleWorkspaceDraftSave();
+  setStatus('✓ EMOSI.EXE IDLE PREVIEW / '+(asset?.native||asset?.name||'UNKNOWN')+
+   ' · '+(asset?.frames||1)+'F · '+(asset?.fps||6)+' FPS · RIG UNCHANGED',true);
  };
  $("glassesAsset").onchange=e=>{remember();glassesAssetId=e.target.value;paint();setStatus("GLASSES PLANE / "+glassesAssetId,true)};
- $("emotionRefresh").onclick=loadDriveEmotions;
+ $('emotionRefresh').onclick=()=>void refreshEmotionLibrary();
+ $('emotionSearch').oninput=assetOptions;
+ for(const tab of document.querySelectorAll('[data-inspector-toggle]'))
+  tab.onclick=()=>setEmotionPreviewTab(tab.dataset.inspectorToggle);
+ for(const button of document.querySelectorAll('[data-emo-dir]'))
+  button.onclick=()=>setDirection(button.dataset.emoDir);
+ $('emotionPreviewPlay').onclick=()=>{
+  emotionPreviewPlaying=!emotionPreviewPlaying;
+  emotionPreviewElapsed=0;updateEmotionPreviewUI();paint();
+ };
+ $('emotionPreviewLoop').onchange=e=>{emotionPreviewLoop=Boolean(e.target.checked)};
+ $('emotionPreviewScrub').oninput=e=>{
+  emotionPreviewPlaying=false;emotionPreviewElapsed=0;
+  emotionPreviewFrame=Math.round(clamp(Number(e.target.value),0,47));paint();
+ };
+ for(const [id,field] of [['emotionOffsetX','x'],['emotionOffsetY','y'],['emotionScale','scale']]){
+  $(id).addEventListener('focus',remember);
+  $(id).oninput=e=>{
+   if(e.target.value===''||!Number.isFinite(Number(e.target.value)))return;
+   emotionPlacement=EP.patchPlacement(emotionPlacement,direction,
+    {[field]:Number(e.target.value)},$('emotionPlacementAll').checked);
+   paint();
+  };
+  $(id).addEventListener('change',scheduleWorkspaceDraftSave);
+ }
+ $('emotionPlacementReset').onclick=()=>{
+  remember();
+  emotionPlacement=EP.patchPlacement(emotionPlacement,direction,{x:0,y:0,scale:1},
+   $('emotionPlacementAll').checked);
+  paint();scheduleWorkspaceDraftSave();
+  setStatus('✓ EMOTION FACE PLACEMENT RESET · RIG UNCHANGED',true);
+ };
+ $('emotionPlacementSave').onclick=()=>{
+  scheduleWorkspaceDraftSave();flushWorkspaceDraft();
+  setStatus('✓ EMOSI ASSIGNMENT SAVED TO EDITOR WORKSPACE · SAVE ROOT TO PUBLISH CHARACTER',true);
+ };
+ let faceDrag=null;
+ emotionPreviewCanvas.addEventListener('pointerdown',e=>{
+  if(e.button!==0||!getEmotionAsset(emotionAt()))return;
+  remember();e.preventDefault();
+  faceDrag={id:e.pointerId,x:e.clientX,y:e.clientY,initial:EP.placement(emotionPlacement)};
+  try{emotionPreviewCanvas.setPointerCapture(e.pointerId)}catch{}
+ });
+ emotionPreviewCanvas.addEventListener('pointermove',e=>{
+  if(!faceDrag||faceDrag.id!==e.pointerId)return;
+  e.preventDefault();
+  const rect=emotionPreviewCanvas.getBoundingClientRect();
+  const dx=(e.clientX-faceDrag.x)*64/rect.width;
+  const dy=(e.clientY-faceDrag.y)*112/rect.height;
+  const base=faceDrag.initial[direction];
+  emotionPlacement=EP.patchPlacement(faceDrag.initial,direction,{
+   x:Math.round((base.x+dx)*2)/2,
+   y:Math.round((base.y+dy)*2)/2,
+  },$('emotionPlacementAll').checked);
+  paint();
+ });
+ for(const evt of ['pointerup','pointercancel','lostpointercapture'])
+  emotionPreviewCanvas.addEventListener(evt,e=>{
+   if(!faceDrag||e.pointerId!==faceDrag.id)return;
+   faceDrag=null;scheduleWorkspaceDraftSave();
+   if(evt!=='lostpointercapture')try{emotionPreviewCanvas.releasePointerCapture(e.pointerId)}catch{}
+  });
  window.addEventListener("mahluk2:drive-connected",()=>void loadDriveEmotions());
  $("glassesImport").onchange=e=>{importPlanePng(e.target.files?.[0],"glasses");e.target.value=""};
  for(const field of ["characterName","frameCount","fps","clip"]){
@@ -1526,6 +1587,20 @@ function setupEvents(){
     Array.isArray(asset.frame_ms)?Number(asset.frame_ms[frame]):NaN;
    const period=Number.isFinite(nativeMs)&&nativeMs>0?nativeMs:1000/fps;
    if(elapsed>=period){elapsed%=period;showTimeline((frame+1)%frames)}
+  }
+  const delta=Math.max(0,Math.min(80,now-last));
+  const face=getEmotionAsset(emotionAt());
+  if(emotionPreviewPlaying&&face&&face.frames>1&&!planeEditor?.isOpen()){
+   emotionPreviewElapsed+=delta;
+   const period=1000/clamp(face.fps||6,1,30);
+   if(emotionPreviewElapsed>=period){
+    const advance=Math.floor(emotionPreviewElapsed/period);
+    emotionPreviewElapsed%=period;
+    if(!emotionPreviewLoop&&emotionPreviewFrame+advance>=face.frames){
+     emotionPreviewFrame=face.frames-1;emotionPreviewPlaying=false;
+    }else emotionPreviewFrame=(emotionPreviewFrame+advance)%face.frames;
+    paint();
+   }
   }
   last=now;requestAnimationFrame(tick);
  }
