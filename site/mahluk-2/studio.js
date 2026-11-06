@@ -322,6 +322,20 @@ function nativePlaneAtlas(id){
  }
  return c;
 }
+function editorPlaneAtlas(source,painted){
+ if(!painted)return source;
+ // Match the live four-view character renderer. An older saved atlas may
+ // include only SE/SW and blank NE/NW. Opening its Pixel Editor must show
+ // native rear reference pixels, not a broken/empty canvas.
+ const atlas=document.createElement('canvas');atlas.width=64;atlas.height=448;
+ const ctx=atlas.getContext('2d');ctx.imageSmoothingEnabled=false;
+ for(let dir=0;dir<4;dir++){
+  const art=WH.viewHasPixels(painted,dir,()=>document.createElement('canvas'))?
+   painted:source;
+  ctx.drawImage(art,0,dir*112,64,112,0,dir*112,64,112);
+ }
+ return atlas;
+}
 function fullCharacterReference(dir=direction){
  const ref=document.createElement("canvas");ref.width=64;ref.height=112;
  renderLayers(ref.getContext("2d"),dir,0,0,1,false);
@@ -343,7 +357,7 @@ async function openPlaneEditor(){
   await ensurePixelImages(parts);
   if(selected!==id)return;
   const source=nativePlaneAtlas(id);
-  const current=id==='head'?source:(planeImages.get(id)||source);
+  const current=id==='head'?source:editorPlaneAtlas(source,planeImages.get(id));
   const refs=Object.fromEntries(DIR.map(dir=>[dir,fullCharacterReference(dir)]));
   planeEditor.open({id,originalAtlas:source,initialAtlas:current,
    referenceImages:refs,referenceImage:refs[direction],direction});
