@@ -197,5 +197,35 @@ async function loadLibrary(){
  if(!validLibrary(snapshot))throw Error("Invalid Mahluk 2 Asset Library on Drive");
  return {file,snapshot};
 }
-return Object.freeze({CLIENT_DEFAULT,SCOPE,ROOT,CHILD,connected,getClient,configure,connect,disconnect,ensureLibrary,list,saveCharacter,saveMaster,loadCharacter,loadMaster,loadAll,loadEmotionDatabase,ensureAssetLibrary,saveLibrary,loadLibrary,validLibrary,validCharacter,validMaster});
+
+/* Editor workspace draft — separate from published character root and master rig.
+ * This preserves pose, keyframes, pixel planes, selected layers and apparel
+ * across PCs without resetting clips or publishing unfinished art to Semesta.
+ */
+const DRAFT_FORMAT="mahluk-2-workspace-draft-v1",DRAFT_FILE="working-draft.json";
+function validWorkspaceDraft(doc){
+ return doc?.format===DRAFT_FORMAT&&doc.workspace?.state&&doc.workspace?.base&&
+ doc.workspace?.tracks&&doc.workspace?.rigRules&&doc.workspace?.pixelPlanes&&
+ typeof doc.workspace.characterName==="string"&&
+ JSON.stringify(doc).length<6500000;
+}
+async function loadWorkspaceDraft(){
+ const parent=await ensureAssetLibrary();
+ const file=(await search(parent,"name = '"+DRAFT_FILE+"'"))[0]||null;
+ if(!file)return null;
+ const doc=await download(file);
+ if(!validWorkspaceDraft(doc))throw Error("Invalid Mahluk 2 workspace draft on Drive");
+ return {file,doc};
+}
+async function saveWorkspaceDraft(doc,expectedModifiedTime=null){
+ if(!validWorkspaceDraft(doc))throw Error("Invalid Mahluk 2 workspace draft");
+ const parent=await ensureAssetLibrary();
+ const old=(await search(parent,"name = '"+DRAFT_FILE+"'"))[0]||null;
+ if(old&&(!expectedModifiedTime||old.modifiedTime!==expectedModifiedTime))
+  throw Error("CONFLICT: Drive workspace changed. Reload and compare before overwriting.");
+ return upload({name:DRAFT_FILE,mimeType:"application/json",parents:[parent],
+  appProperties:{application:"mahluk-hidup-2",kind:"workspace-draft"}},
+  JSON.stringify(doc),old);
+}
+return Object.freeze({CLIENT_DEFAULT,SCOPE,ROOT,CHILD,connected,getClient,configure,connect,disconnect,ensureLibrary,list,saveCharacter,saveMaster,loadCharacter,loadMaster,loadAll,loadEmotionDatabase,ensureAssetLibrary,saveLibrary,loadLibrary,validLibrary,validWorkspaceDraft,loadWorkspaceDraft,saveWorkspaceDraft,validCharacter,validMaster});
 });
