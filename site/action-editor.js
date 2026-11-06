@@ -166,8 +166,45 @@ function pic(path){
 function actor(){
  return state.catalog.find(x=>x.id===state.actor);
 }
+function syncMahluk2ActorRoots(){
+ // Consume the SAME published root storage as Semesta and Bangun Ruang.
+ // No character sprites are overwritten; Action Editor authors separate
+ // per-actor action frames under their existing canonical actor IDs.
+ const roots=safeJSON('mahluk-2-library-v1',[]);
+ state.catalog=state.catalog.filter(r=>!r.v2);
+ if(Array.isArray(roots))for(const row of roots.slice(-40)){
+  if(row?.format!=='mahluk-2-character-v1'||
+   !/^mh2_[a-z0-9]+$/.test(row.id||'')||
+   typeof row.sprite!=='string'||!/^data:image\/png;base64,[a-zA-Z0-9+/=]+$/.test(row.sprite)||
+   row.sprite.length>1250000)continue;
+  state.catalog.push({
+   id:row.id,name:String(row.name||row.id).slice(0,90),
+   v2:true,v2Sprite:row.sprite,v2Clips:row.clips||{},
+   facelessBase:row.facelessBase||null,
+   template_base:row.template_base,
+   emotionPlane:row.emotionPlane||null,
+   motions:[{id:'idle',available:true,frames:1,row:0}],
+   expressions:[],sheet:'media/human-male-base-sheet.png'
+  });
+ }
+ updateActors();
+}
 function actionSource(){
  const ch=actor(),motions=(ch?.motions||[]).filter(m=>m?.available===true);
+ if(ch?.v2){
+  const published=ch.v2Clips?.[state.action];
+  const art=published?.sheet||ch.v2Sprite;
+  // A new action starts with 12 editable reference poses, NOT a claim of
+  // 12 genuinely authored animation frames. Publishing action frames is
+  // independent from the editable original Mahluk 2 body root.
+  const sourceFrames=published?.frames||1;
+  return {sheet:art,row:0,frames:published?.frames||12,
+   sourceFrames,authored:!!published,
+   referencePose:!published,mode:state.action,
+   note:published?'MAHLUK 2 V6B / AUTHORED '+state.action.toUpperCase():
+    'MAHLUK 2 V6B / EDITABLE '+state.action.toUpperCase()+
+    ' REFERENCE · NOT YET GAMEPLAY ANIMATION'};
+ }
  // Use this actor's original horizontal LIE rig, not rotated idle artwork.
  if(SLEEP?.isSleep(state.action)){
   const pose=SLEEP.resolve(ch,state.action);
@@ -258,7 +295,7 @@ function selectedExpression(){
 }
 function updateActors(){
  const sel=$("actor"),previous=state.actor;sel.replaceChildren();
- for(const ch of state.catalog.filter(x=>escapeId(x.id)&&isSheet(x.sheet)))
+ for(const ch of state.catalog.filter(x=>escapeId(x.id)&&(x.v2||isSheet(x.sheet))))
   sel.append(opt(ch.id,ch.name||ch.id));
  if(state.catalog.some(x=>x.id===previous))sel.value=previous;
  else if(state.catalog.some(x=>x.id==="ichsan"))sel.value="ichsan";
@@ -382,7 +419,7 @@ function editedFrame(index,dir){
 }
 function loadFrame(){
  localPose?.close();
- if(window.VLCharacterReferenceReset?.active){
+ if(window.VLCharacterReferenceReset?.active&&!actor()?.v2){
   ++state.loadingId;state.undo=[];state.sourceReady=false;state.dirty=false;
   pc.clearRect(0,0,64,112);
   $("edit-label").textContent="AWAIT NEW RIG";
@@ -704,6 +741,7 @@ async function loadCatalog(){
    if(escapeId(row?.id)&&parent&&!state.catalog.some(x=>x.id===row.id))
     state.catalog.push({...parent,id:row.id,name:row.name||row.id});
   }
+  syncMahluk2ActorRoots();
   const params=new URLSearchParams(location.search);
   const requested=params.get("actor");
   if(escapeId(requested)&&state.catalog.some(x=>x.id===requested))state.actor=requested;
@@ -836,11 +874,16 @@ function tick(t){
  requestAnimationFrame(tick);
 }
 window.addEventListener("storage",e=>{
+ if(e.key==='mahluk-2-library-v1'&&state.catalog.length){
+  const prev=state.actor;syncMahluk2ActorRoots();
+  if(state.actor!==prev||!state.dirty){state.source=actionSource();loadFrame()}
+ }
  if(e.key===BUILD_KEY){readBuildings(state.buildId);status("BANGUN RUANG SCENE SYNCED");}
  if(e.key===A.key){A.invalidate();T.invalidate();state.offset=A.offset(state.actor,state.action);syncOffset();loadFrame();updateTemplateStatus();}
  if(e.key===T.key){T.invalidate();updateTemplateStatus();}
 });
 window.addEventListener("focus",()=>{
+ if(state.catalog.length){syncMahluk2ActorRoots();if(!state.dirty)state.source=actionSource()}
  readBuildings(state.buildId);A.invalidate();T.invalidate();state.offset=A.offset(state.actor,state.action);syncOffset();updateTemplateStatus();render();
 });
 requestAnimationFrame(tick);
