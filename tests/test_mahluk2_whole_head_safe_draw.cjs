@@ -51,7 +51,7 @@ test('Flattened saved head is never covered by stale fringe artwork',()=>{
   allowed:()=>true,getNative:s=>s.bone,
   getOverride:id=>id==='head'?'saved-merged-head':null,
   flattened:true,
-  createCanvas:()=>({getContext:()=>({drawImage:(...args)=>calls.push(args)})})
+  createCanvas:()=>({getContext:()=>({drawImage:(...args)=>calls.push(args),clearRect:()=>{}})})
  });
  assert.equal(calls.filter(call=>call[0]==='saved-merged-head').length,4);
  assert.deepEqual(calls.slice(-4).map(call=>call[0]),Array(4).fill('saved-merged-head'));
