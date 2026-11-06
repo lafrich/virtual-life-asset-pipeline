@@ -1,0 +1,53 @@
+name: Mahluk 2 — Safe 4 View Drawing and Whole Head
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/mahluk-2/plane-pixel-editor.js'
+      - 'site/mahluk-2/whole-head.js'
+      - 'site/mahluk-2/studio.js'
+      - 'site/mahluk-2/index.html'
+      - 'site/mahluk-2/rig-rules.js'
+      - 'tests/test_mahluk2_whole_head_safe_draw.cjs'
+      - 'tests/test_mahluk2_whole_head_safe_draw.browser.cjs'
+      - 'tests/test_mahluk2_orbit_depth.cjs'
+      - '.github/workflows/test-mahluk2-whole-head.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Native pixel safety, original rig and head merging
+        run: |
+          node --check site/mahluk-2/studio.js
+          node --check site/mahluk-2/whole-head.js
+          node --check site/mahluk-2/plane-pixel-editor.js
+          node --test tests/test_mahluk2_whole_head_safe_draw.cjs
+          node --test tests/test_mahluk2_pixel_editor.cjs
+          node --test tests/test_mahluk2_orbit_depth.cjs
+          node --test tests/test_mahluk2_rig_rules.cjs
+          node --test tests/test_mahluk2_clipboard.cjs
+          node --test tests/test_mahluk2_root_grid_zoom.cjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: virtual-life-asset-pipeline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright and PNG decoder
+        run: npm install --no-save playwright@1.56.1 pngjs@7.0.0
+      - name: Start Mahluk 2 static server
+        run: python3 -m http.server 8099 --bind 127.0.0.1 >/tmp/mahluk-head-http.log 2>&1 &
+      - name: SE/SW/NE/NW painting, apply/reopen/root-save, master precedence and whole-head pixels
+        run: node virtual-life-asset-pipeline/tests/test_mahluk2_whole_head_safe_draw.browser.cjs
