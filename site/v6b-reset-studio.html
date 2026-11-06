@@ -318,10 +318,10 @@ $("import-motion").onclick=()=>$("motion-file").click();
 $("motion-file").onchange=async e=>{try{const file=e.target.files?.[0];if(!file)return;const m=JSON.parse(await file.text());if(!validMotion(m))throw Error("Motion package incompatible: requires v6b 64×112, pivot 32/100, four views, 6 frames and supported action");model.actions[m.id]={...m.parameters,fps:m.fps,action:m.action,source:m.source||"v6b-imported",based_on:m.action};model.current=m.id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED EXTERNAL V6B MOTION: "+m.id)}catch(err){status("MOTION IMPORT FAILED: "+err.message)}e.target.value=""};
 function valid(m){return m?.format==="mahluk-v6b-character-v1"&&["male","female"].includes(m.body_type)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&m.pixels&&DIR.every(d=>Array.isArray(m.pixels[d]))&&m.actions&&typeof m.actions==="object";}
 $("save-local").onclick=()=>{try{localStorage.setItem(KEY,JSON.stringify(model));status("CHARACTER SAVED TO THIS BROWSER · EXPORT JSON TO MOVE DEVICES")}catch(e){status("SAVE FAILED: "+e.message)}};
-$("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));if(!valid(m))throw Error("No compatible saved character");model=m;restoreFrameOverrides();renderMotions();applyUI();setEmotion(m.emotion);draw();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
+$("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));if(!valid(m))throw Error("No compatible saved character");model=m;restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();setEmotion(m.emotion);draw();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
 $("export-json").onclick=exportJSON;
 $("import-json").onclick=()=>$("import-file").click();
-$("import-file").onchange=async e=>{try{const m=JSON.parse(await e.target.files[0].text());if(!valid(m))throw Error("V6B contract mismatch");model=m;restoreFrameOverrides();renderMotions();applyUI();await setEmotion(m.emotion);draw();status("V6B CHARACTER IMPORTED")}catch(err){status("IMPORT FAILED: "+err.message)}e.target.value=""};
+$("import-file").onchange=async e=>{try{const m=JSON.parse(await e.target.files[0].text());if(!valid(m))throw Error("V6B contract mismatch");model=m;restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();await setEmotion(m.emotion);draw();status("V6B CHARACTER IMPORTED")}catch(err){status("IMPORT FAILED: "+err.message)}e.target.value=""};
 $("export-sheet").onclick=()=>{const out=document.createElement("canvas");out.width=64*frameCount();out.height=112*4;const ctx=out.getContext("2d");for(let d=0;d<4;d++)for(let f=0;f<frameCount();f++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;drawTo(tile.getContext("2d"),DIR[d],model.current,f);ctx.drawImage(tile,f*64,d*112)}out.toBlob(blob=>blob&&download(model.current+"_v6b_four_view.png",blob),"image/png");status("EXPORTED "+frameCount()+" FRAMES × 4 DIRECTIONS · V6B NATIVE SIZE")};
 $("emotion").onchange=()=>setEmotion($("emotion").value);
 for(const [id,index] of [["face-x",0],["face-y",1]])$(id).oninput=()=>{model.faceOffset[index]=Math.max(-64,Math.min(64,Number($(id).value)||0));draw()};
@@ -374,9 +374,44 @@ async function loadEmotions(){
 $("reload-emotions").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else await loadEmotions()};
 $("connect-emotion-drive").onclick=connectEmotionDrive;
 $("refresh-emotion-drive").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else status("CONNECT GOOGLE DRIVE FIRST")};
-const pixelOverlay=$("pixelOverlay"),pixelCanvas=$("pixelCanvas"),pixelEditor=window.MH2PlanePixelEditor?.create({overlay:pixelOverlay,canvas:pixelCanvas,reference:$("stage"),onApply:(_id,png,atlas)=>{storeEditedFrame(atlas);return true},onSaveDefault:(_id,png,atlas)=>{storeEditedFrame(atlas);return true}});
+const pixelOverlay=$("pixelOverlay"),pixelCanvas=$("pixelCanvas");
+function applyPixelEditor(atlas){if(editMode==="part")storeEditedPart(atlas);else storeEditedFrame(atlas);return true}
+const pixelEditor=window.MH2PlanePixelEditor?.create({overlay:pixelOverlay,canvas:pixelCanvas,
+ reference:$("stage"),onApply:(_id,png,atlas)=>applyPixelEditor(atlas),
+ onSaveDefault:(_id,png,atlas)=>applyPixelEditor(atlas)});
+function restorePartEdits(){
+ partEditImages.clear();
+ for(const [bone,data] of Object.entries(model.partEdits||{})){
+  if(typeof data!=="string"||!data.startsWith("data:image/png;base64,"))continue;
+  const img=new Image();img.onload=()=>{patchCache.clear();draw()};img.src=data;partEditImages.set(bone,img);
+ }
+}
+function storeEditedPart(atlas){
+ if(!atlas||!activePart)return;model.partEdits||={};
+ const data=atlas.toDataURL("image/png");model.partEdits[activePart]=data;
+ const image=new Image();image.onload=()=>{patchCache.clear();draw()};
+ image.src=data;partEditImages.set(activePart,image);
+ status("SAVED NATIVE "+model.body_type.toUpperCase()+" BODY PART "+activePart.toUpperCase()+" · V6B MOTION PREVIEW UPDATED");
+}
+$("open-part").onclick=()=>{
+ if(!pixelEditor)return status("PIXEL EDITOR MODULE UNAVAILABLE");
+ if(!nativeReady)return status("WAIT FOR ORIGINAL V6B SOURCES TO LOAD");
+ const bone=$("part-select").value;
+ const original=sourcePartImages.get(model.body_type+"|"+bone);
+ if(!imageReady(original))return status("SOURCE BONE LOADING: "+bone);
+ activePart=bone;editMode="part";
+ const edited=partEditImages.get(bone),src=imageReady(edited)?edited:original;
+ pixelEditor.open({id:model.body_type+"-"+bone,initialAtlas:src,originalAtlas:original,
+  direction:$("direction").value});
+};
+$("restore-part").onclick=()=>{
+ const bone=$("part-select").value;if(!bone)return;
+ delete model.partEdits?.[bone];partEditImages.delete(bone);patchCache.clear();draw();
+ status("RESTORED ORIGINAL "+bone.toUpperCase()+" · OTHER BODY PARTS PRESERVED");
+};
+
 function storeEditedFrame(atlas){if(!atlas)return;const name=model.current,f=frame;model.frameEdits||={};for(let d=0;d<4;d++){const slice=document.createElement("canvas");slice.width=64;slice.height=112;slice.getContext("2d").drawImage(atlas,0,d*112,64,112,0,0,64,112);const key=name+"|"+f+"|"+DIR[d],url=slice.toDataURL("image/png");model.frameEdits[key]=url;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}draw();status("NATIVE PIXEL EDITS APPLIED · "+name.toUpperCase()+" FRAME "+(f+1)+" · 4 VIEWS")}
-$("open-pixel").onclick=()=>{if(!pixelEditor)return status("NATIVE EDITOR UNAVAILABLE");const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;const ac=atlas.getContext("2d");for(let d=0;d<4;d++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");const key=model.current+"|"+frame+"|"+DIR[d],img=frameOverrideImages.get(key);if(img?.complete&&img.naturalWidth)tc.drawImage(img,0,0);else renderBody(tc,DIR[d],model.current,frame);ac.drawImage(tile,0,d*112)}pixelEditor.open({id:model.current+"-frame-"+(frame+1),initialAtlas:atlas,originalAtlas:atlas,direction:$("direction").value})};
+$("open-pixel").onclick=()=>{if(!pixelEditor)return status("NATIVE EDITOR UNAVAILABLE");if(!nativeReady)return status("NATIVE V6B NOT LOADED YET");editMode="frame";const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;const ac=atlas.getContext("2d");for(let d=0;d<4;d++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");const key=model.current+"|"+frame+"|"+DIR[d],img=frameOverrideImages.get(key);if(img?.complete&&img.naturalWidth)tc.drawImage(img,0,0);else renderBody(tc,DIR[d],model.current,frame);ac.drawImage(tile,0,d*112)}pixelEditor.open({id:model.current+"-frame-"+(frame+1),initialAtlas:atlas,originalAtlas:atlas,direction:$("direction").value})};
 renderMotions();applyUI();draw();loadEmotions();loadNative().catch(e=>{nativeReady=false;status("NATIVE V6B LOAD FAILED: "+e.message)});
 })();
 </script></body></html>
