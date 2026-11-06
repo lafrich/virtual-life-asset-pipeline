@@ -78,6 +78,7 @@ const PNG_DATA=atlasPNG();
     r.onerror=()=>reject(r.error);
    });
   },encoded);
+  const bodyFramesBefore=await page.locator('#frameCount').inputValue();
   // Switch to Emosi preview without entering any pixel editor.
   await page.locator('#inspectorEmotionTab').click();
   await page.locator('#emotionRefresh').click();
@@ -123,7 +124,7 @@ const PNG_DATA=atlasPNG();
   assert.equal(draft?.workspace?.emotionAssetId,'db:emotion-sample-live');
   assert.equal(draft.workspace.emotionPlacement.sw.x,3);
   assert.equal(draft.workspace.emotionPlacement.se.x,0);
-  assert.equal(draft.workspace.frames,1,'Body animation frames must stay independent');
+  assert.equal(String(draft.workspace.frames),bodyFramesBefore,'Selecting emotion must not alter body timeline');
   await page.locator('#saveChar').click();
   const records=await page.evaluate(()=>JSON.parse(localStorage.getItem('mahluk-2-library-v1')));
   assert.equal(records.at(-1)?.emotionPlane?.asset,'db:emotion-sample-live');
