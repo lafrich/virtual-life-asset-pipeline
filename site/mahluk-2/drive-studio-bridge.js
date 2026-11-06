@@ -12,7 +12,7 @@ function message(msg,error=false){
 }
 function updateButtons(){
  const on=!!D?.connected();
- for(const id of ["driveLoadLibrary","driveSaveRoot","driveLoadMaster","driveSaveMaster","driveDisconnect"]){
+ for(const id of ["driveLoadLibrary","driveSaveRoot","driveLoadMaster","driveSaveMaster","driveSaveAllAssets","driveRestoreAllAssets","driveDisconnect"]){
   if($(id))$(id).disabled=!on;
  }
  if($("driveConnect"))$("driveConnect").textContent=on?"✓ DRIVE CONNECTED / RECONNECT":"☁ CONNECT GOOGLE DRIVE";
@@ -85,6 +85,58 @@ async function saveMaster(){
  if(!doc){message("SAVE AS GENERAL DEFAULT RIG LOCALLY FIRST",true);return}
  await uploadMaster(doc);
 }
+
+let cloudLibraryFile=null;
+async function saveEntireCharacterLibrary(){
+ if(!D?.connected()){message("CONNECT GOOGLE DRIVE FIRST",true);return}
+ if(working)return;
+ working=true;
+ $("driveSaveAllAssets").disabled=true;$("driveRestoreAllAssets").disabled=true;
+ let saved=0,failed=[];
+ try{
+  if(!A.ready())throw Error("Character source catalog is still loading");
+  const roots=A.localSavedRoots();
+  const snapshot=A.librarySnapshot();
+  message("BACKING UP "+roots.length+" SAVED ROOTS + NATIVE CHARACTER SOURCE MANIFEST...");
+  // The index includes all built-in actors + native rig reference, custom imported
+  // accessories/emotions and all authored character IDs.
+  const prior=await D.loadLibrary();
+  const indexFile=await D.saveLibrary(snapshot,prior?.file?.modifiedTime||null);
+  cloudLibraryFile=indexFile;saved++;
+  if(D.validMaster(A.localMaster())){
+   if(await uploadMaster(A.localMaster()))saved++;else failed.push("Master Rig");
+  }
+  for(let i=0;i<roots.length;i++){
+   const record=roots[i];
+   if(await uploadRoot(record))saved++;else failed.push(record.name||record.id);
+   message("ASSET LIBRARY "+(i+1)+"/"+roots.length+" SAVED ROOTS · "+saved+" CLOUD FILES");
+  }
+  message("✓ ALL CHARACTER LIBRARY · NATIVE SOURCE INDEX + "+
+   snapshot.customAssets.length+" IMPORTED FACE/ACCESSORY ASSETS + "+
+   roots.length+" CUSTOM ROOTS · "+saved+" FILES SAVED"+
+   (failed.length?" · FAILED: "+failed.slice(0,3).join(", "):""),!!failed.length);
+ }catch(e){message("SAVE ALL CHARACTER ASSETS FAILED: "+e.message,true)}
+ finally{working=false;$("driveSaveAllAssets").disabled=false;$("driveRestoreAllAssets").disabled=false}
+}
+async function restoreEntireCharacterLibrary(){
+ if(!D?.connected()){message("CONNECT GOOGLE DRIVE FIRST",true);return}
+ if(working)return;
+ working=true;$("driveRestoreAllAssets").disabled=true;
+ try{
+  const archive=await D.loadLibrary();
+  if(!archive){message("NO CHARACTER ASSET LIBRARY BACKUP YET · SAVE ALL ASSETS ON PC FIRST",true);return}
+  if(!window.confirm("Restore character accessory/face assets saved in Google Drive? "+
+   "Your original native characters already load from the published catalog; existing local custom assets are preserved."))return;
+  const result=A.restoreLibraryAssets(archive.snapshot);
+  cloudLibraryFile=archive.file;
+  await refresh();
+  message("✓ CHARACTER LIBRARY OPENED · "+loaded.size+" DRIVE ROOTS · "+
+   result.added+" IMPORTED PIXEL ASSETS ADDED · "+result.skipped+" ALREADY PRESENT · "+
+   "NATIVE CHARACTER SOURCE CATALOG AVAILABLE · LOAD MASTER SEPARATELY IF NEEDED");
+ }catch(error){message("RESTORE CHARACTER LIBRARY FAILED: "+error.message,true)}
+ finally{working=false;$("driveRestoreAllAssets").disabled=false}
+}
+
 async function loadMaster(){
  if(!D?.connected()){message("CONNECT GOOGLE DRIVE FIRST",true);return}
  try{
@@ -99,7 +151,7 @@ async function loadMaster(){
  }catch(error){message("LOAD MASTER FAILED · "+error.message,true)}
 }
 function disconnect(){
- D?.disconnect();loaded.clear();masterFile=null;A?.updateCloudRecords([]);
+ D?.disconnect();loaded.clear();masterFile=null;cloudLibraryFile=null;A?.updateCloudRecords([]);
  updateButtons();message("DRIVE DISCONNECTED · LOCAL ROOTS AND MASTER UNCHANGED");
 }
 function init(){
@@ -111,6 +163,8 @@ function init(){
  $("driveSaveRoot").onclick=saveRoot;
  $("driveSaveMaster").onclick=saveMaster;
  $("driveLoadMaster").onclick=loadMaster;
+ $("driveSaveAllAssets").onclick=saveEntireCharacterLibrary;
+ $("driveRestoreAllAssets").onclick=restoreEntireCharacterLibrary;
  window.addEventListener("mahluk2:root-saved-for-cloud",event=>{
   if(D.connected())void uploadRoot(event.detail?.record);
  });
