@@ -12,28 +12,65 @@
  const PARTS=Object.freeze(['hair_back','head','hair_cap','fringe_l','fringe_mid','fringe_r']);
  const OMIT=Object.freeze(['hair_back','hair_cap','fringe_l','fringe_mid','fringe_r','phone']);
  const EXCLUDED=new Set(OMIT),FUSED=new Set(PARTS);
- function composite({slots,allowed,getNative,getOverride,flattened=false,createCanvas}){
-  const atlas=createCanvas();atlas.width=64;atlas.height=448;
-  const ctx=atlas.getContext('2d');ctx.imageSmoothingEnabled=false;
-  // A newly saved merged HEAD override is already the exact combined
-  // artwork. Never re-apply old fringe cutouts over the artist's erasures.
-  const headOverride=getOverride('head');
-  if(flattened&&headOverride){
-   ctx.drawImage(headOverride,0,0,64,448);
-   return atlas;
+ const DIR=['se','sw','ne','nw'],W=64,H=112;
+ const inkCache=new WeakMap();
+ function viewHasPixels(image,view,createCanvas){
+  if(!image||!Number.isInteger(view)||view<0||view>3)return false;
+  let flags=inkCache.get(image);
+  if(!flags){
+   flags=[true,true,true,true]; // Fail open to preserve user's art.
+   try{
+    const cv=createCanvas();cv.width=W;cv.height=H*4;
+    const ctx=cv.getContext('2d',{willReadFrequently:true});
+    ctx.clearRect(0,0,W,H*4);
+    ctx.drawImage(image,0,0,W,H*4);
+    const rgba=ctx.getImageData(0,0,W,H*4).data;
+    flags=[false,false,false,false];
+    for(let i=0;i<rgba.length;i+=4){
+     if(rgba[i+3]>=1)flags[Math.floor(i/4/(W*H))]=true;
+    }
+   }catch{
+    // If a browser cannot read pixel data, never discard an override.
+   }
+   inkCache.set(image,flags);
   }
-  // Legacy HEAD paint (before unified mode) is one layer, not a
-  // complete merged silhouette. Composite legacy hair and fringe above it.
+  return flags[view];
+ }
+ function drawAtlasView(ctx,image,view){
+  ctx.drawImage(image,0,view*H,W,H,0,view*H,W,H);
+ }
+ function composite({slots,allowed,getNative,getOverride,flattened=false,createCanvas}){
+  const atlas=createCanvas();atlas.width=W;atlas.height=H*4;
+  const ctx=atlas.getContext('2d');ctx.imageSmoothingEnabled=false;
+  const headOverride=getOverride('head');
+  // Composite the historical head + hair pieces for each view separately.
+  // Legacy editors may have stored a 64x448 override with only SE/SW
+  // filled, leaving NE/NW completely blank. Empty *unpainted* directions
+  // must fall back to their true source PNG, not erase their native head.
   for(const id of PARTS){
    const override=getOverride(id);
-   if(override){ctx.drawImage(override,0,0,64,448);continue}
-   for(const slot of slots||[]){
-    if(slot.bone!==id||!allowed(slot))continue;
-    const image=getNative(slot);
-    if(image)ctx.drawImage(image,0,0,64,448);
+   for(let dir=0;dir<4;dir++){
+    if(override&&viewHasPixels(override,dir,createCanvas)){
+     if(!flattened)drawAtlasView(ctx,override,dir);
+    }else{
+     for(const slot of slots||[]){
+      if(slot.bone!==id||!allowed(slot))continue;
+      const source=getNative(slot);
+      if(source)drawAtlasView(ctx,source,dir);
+     }
+    }
+   }
+  }
+  if(flattened&&headOverride){
+   // A newly saved merged HEAD is authoritative only for view slices that
+   // contain art. Do not overlay old fringe across the user's saved face.
+   for(let dir=0;dir<4;dir++){
+    if(!viewHasPixels(headOverride,dir,createCanvas))continue;
+    ctx.clearRect(0,dir*H,W,H);
+    drawAtlasView(ctx,headOverride,dir);
    }
   }
   return atlas;
  }
- return Object.freeze({PARTS,OMIT,EXCLUDED,FUSED,composite});
+ return Object.freeze({PARTS,OMIT,EXCLUDED,FUSED,DIR,viewHasPixels,composite});
 });
