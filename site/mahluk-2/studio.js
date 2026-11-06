@@ -924,6 +924,7 @@ async function importPlanePng(file,kind){
   const next=[...userAssets,asset].slice(-12);
   E.saveAssets(window.localStorage,next);
   userAssets=next;
+  window.dispatchEvent(new CustomEvent("mahluk2:asset-library-edited",{detail:{kind:"imported-png"}}));
   const loaded=new Image();loaded.onload=()=>{
    remember();importedImages.set(asset.id,loaded);
    if(kind==="emotion"){
@@ -1433,6 +1434,7 @@ async function mount(){
 // Explicitly scoped bridge for Google Drive. Never writes to Semesta or Emotion Studio.
 window.MH2DriveAdapter=Object.freeze({
  ready:()=>!!manifest,
+ activeIdentifier:()=>identifier,
  localRecords:()=>getLibrary(),
  localSavedRoots:()=>getLocalLibrary(),
  importCloudRoot(record,{overwrite=false}={}){
