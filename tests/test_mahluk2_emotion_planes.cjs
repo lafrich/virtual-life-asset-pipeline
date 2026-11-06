@@ -77,3 +77,31 @@ test("Mahluk 2 backs up full native character catalog, custom four-view roots an
  assert.doesNotThrow(()=>new(require("node:vm").Script)(cloud));
  assert.doesNotThrow(()=>new(require("node:vm").Script)(bridge));
 });
+
+
+test("Mahluk 2 automatically restores and saves separate editable Drive workspace without publishing root",()=>{
+ const html=fs.readFileSync("site/mahluk-2/index.html","utf8");
+ const studio=fs.readFileSync("site/mahluk-2/studio.js","utf8");
+ const bridge=fs.readFileSync("site/mahluk-2/drive-studio-bridge.js","utf8");
+ const drive=fs.readFileSync("site/mahluk-2/drive-sync.js","utf8");
+ for(const x of ["function workspaceDraftDocument(","function flushWorkspaceDraft(",
+  "function scheduleWorkspaceDraftSave(","importCloudMasterQuiet(","restoreWorkspaceDraft(doc)"])
+  assert.ok(studio.includes(x),x);
+ for(const x of ["async function autoReconcile(","async function reconcileWorkspaceDraft(",
+  "async function uploadWorkspaceDraft(","mahluk2:workspace-draft-edited",
+  "syncState()","CONFLICT: remote character changed"])
+  assert.ok(bridge.includes(x),x);
+ for(const x of ["async function loadWorkspaceDraft(","async function saveWorkspaceDraft(",
+  "function validWorkspaceDraft(","mahluk-2-workspace-draft-v1"])
+  assert.ok(drive.includes(x),x);
+ assert.match(studio,/scheduleWorkspaceDraftSave\(\)/);
+ assert.match(studio,/localStorage\.setItem\(DRAFT,JSON\.stringify\(doc\)\)/);
+ assert.match(html,/AUTO SYNC: Connect Google/);
+ // Separate from game-ready published root: no auto-PUBLISH call inside draft upload.
+ const section=bridge.slice(bridge.indexOf("async function uploadWorkspaceDraft("),bridge.indexOf("async function reconcileWorkspaceDraft("));
+ assert.ok(!section.includes("saveRoot("));
+ assert.ok(!section.includes("publishGithub"));
+ assert.doesNotThrow(()=>new(require("node:vm").Script)(studio));
+ assert.doesNotThrow(()=>new(require("node:vm").Script)(bridge));
+ assert.doesNotThrow(()=>new(require("node:vm").Script)(drive));
+});
