@@ -45,6 +45,7 @@ function workspaceDraftDocument(){
 }
 function flushWorkspaceDraft(){
  if(!manifest)return null;
+ if(workspaceSaveTimer){clearTimeout(workspaceSaveTimer);workspaceSaveTimer=null}
  const doc=workspaceDraftDocument();
  try{localStorage.setItem(DRAFT,JSON.stringify(doc))}
  catch(e){setStatus("WORKSPACE BACKUP FAILED: "+e.message,false);return null}
