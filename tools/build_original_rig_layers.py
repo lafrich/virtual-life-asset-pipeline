@@ -667,6 +667,7 @@ def generate(media: Path, with_gender: bool = True):
         "format": "mahluk-original-source-rig-v1",
         "art_style": "original_v6b",
         "generator": "chars-iso/v6b/tools/live_v6b.py",
+        "asset_revision": "2026-11-06-four-view-anatomical-hands-v2",
         "reference": "new editable reference using original source art; archived character listings remain hidden",
         "directions": list(DIRS), "emotions": list(EMOTIONS),
         "frame_size": list(SIZE), "pivot": [32, 100], "slots": slots + gender_slots,
