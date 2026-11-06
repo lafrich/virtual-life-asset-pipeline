@@ -107,7 +107,7 @@
    const saved=JSON.parse(store?.getItem(KEY)||"null");
    return saved?.format===FORMAT?{rules:normalize(saved.rules,rig),
     defaultParts:sanitizeParts(saved.defaultParts,rig),
-    pixelPlanes:sanitizePixelPlanes(saved.pixelPlanes,rig),
+    pixelPlanes:sanitizePixelPlanes(saved.pixelPlanes,rig),headMerged:saved.headMerged===true,
     savedAt:saved.savedAt||null,revision:saved.revision||1}:null;
   }catch{return null}
  }
@@ -127,10 +127,11 @@
   }
   return out;
  }
- function save(store,rig,rules,parts,pixelPlanes){
+ function save(store,rig,rules,parts,pixelPlanes,headMerged){
   const prior=read(store,rig),doc={format:FORMAT,version:1,
    rules:normalize(rules,rig),defaultParts:sanitizeParts(parts,rig),
    pixelPlanes:sanitizePixelPlanes(pixelPlanes===undefined?prior?.pixelPlanes:pixelPlanes,rig),
+   headMerged:headMerged===undefined?(prior?.headMerged===true):headMerged===true,
    revision:(prior?.revision||0)+1,savedAt:new Date().toISOString()};
   store.setItem(KEY,JSON.stringify(doc));return doc;
  }
