@@ -14,30 +14,35 @@
  const EXCLUDED=new Set(OMIT),FUSED=new Set(PARTS);
  const DIR=['se','sw','ne','nw'],W=64,H=112;
  const inkCache=new WeakMap();
- function viewHasPixels(image,view,createCanvas){
-  if(!image||!Number.isInteger(view)||view<0||view>3)return false;
-  // Browser inputs are HTMLImageElement/Canvas; old Node tests use string
-  // sentinel sources. Never put primitive values into a WeakMap.
-  if(typeof image!=='object'&&typeof image!=='function')return true;
-  let flags=inkCache.get(image);
-  if(!flags){
-   flags=[true,true,true,true]; // Fail open to preserve user's art.
+ function viewCoverage(image,view,createCanvas){
+  if(!image||!Number.isInteger(view)||view<0||view>3)return 0;
+  // Browser inputs are HTMLImageElement/Canvas; old Node fixtures use
+  // primitive sentinel sources. Unknown alpha must NOT trigger repair.
+  if(typeof image!=='object'&&typeof image!=='function')
+   return Number.MAX_SAFE_INTEGER;
+  let counts=inkCache.get(image);
+  if(!counts){
+   counts=[Number.MAX_SAFE_INTEGER,Number.MAX_SAFE_INTEGER,
+    Number.MAX_SAFE_INTEGER,Number.MAX_SAFE_INTEGER];
    try{
     const cv=createCanvas();cv.width=W;cv.height=H*4;
     const ctx=cv.getContext('2d',{willReadFrequently:true});
     ctx.clearRect(0,0,W,H*4);
     ctx.drawImage(image,0,0,W,H*4);
     const rgba=ctx.getImageData(0,0,W,H*4).data;
-    flags=[false,false,false,false];
+    counts=[0,0,0,0];
     for(let i=0;i<rgba.length;i+=4){
-     if(rgba[i+3]>=1)flags[Math.floor(i/4/(W*H))]=true;
+     if(rgba[i+3]>=1)counts[Math.floor(i/4/(W*H))]++;
     }
    }catch{
-    // If a browser cannot read pixel data, never discard an override.
+    // If readback is blocked, leave the saved asset unmodified.
    }
-   inkCache.set(image,flags);
+   inkCache.set(image,counts);
   }
-  return flags[view];
+  return counts[view];
+ }
+ function viewHasPixels(image,view,createCanvas){
+  return viewCoverage(image,view,createCanvas)>0;
  }
  function drawAtlasView(ctx,image,view){
   ctx.drawImage(image,0,view*H,W,H,0,view*H,W,H);
@@ -75,5 +80,5 @@
   }
   return atlas;
  }
- return Object.freeze({PARTS,OMIT,EXCLUDED,FUSED,DIR,viewHasPixels,composite});
+ return Object.freeze({PARTS,OMIT,EXCLUDED,FUSED,DIR,viewCoverage,viewHasPixels,composite});
 });
