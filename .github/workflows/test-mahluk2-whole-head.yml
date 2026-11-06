@@ -11,6 +11,7 @@ on:
       - 'tests/test_mahluk2_whole_head_safe_draw.cjs'
       - 'tests/test_mahluk2_whole_head_safe_draw.browser.cjs'
       - 'tests/test_mahluk2_clipboard_after_head.browser.cjs'
+      - 'tests/test_mahluk2_missing_rear_view.browser.cjs'
       - 'tests/test_mahluk2_orbit_depth.cjs'
       - 'tests/test_mahluk2_pixel_editor.cjs'
       - 'tests/test_mahluk2_emotion_planes.cjs'
@@ -60,3 +61,5 @@ jobs:
         run: node virtual-life-asset-pipeline/tests/test_mahluk2_whole_head_safe_draw.browser.cjs
       - name: Real Chrome Copy/Paste across HEAD views after reopen
         run: node virtual-life-asset-pipeline/tests/test_mahluk2_clipboard_after_head.browser.cjs
+      - name: Real Chrome user regression — restore missing rear torso, arms and head without touching custom art
+        run: node virtual-life-asset-pipeline/tests/test_mahluk2_missing_rear_view.browser.cjs
