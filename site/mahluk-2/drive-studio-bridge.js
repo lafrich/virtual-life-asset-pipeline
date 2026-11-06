@@ -5,7 +5,7 @@
 (function(window){"use strict";
 const D=window.MH2DriveSync,A=window.MH2DriveAdapter;
 const $=id=>document.getElementById(id);
-let loaded=new Map(),masterFile=null,working=false,autoSyncing=false,assetSaveTimer=null;
+let loaded=new Map(),masterFile=null,working=false,autoSyncing=false,assetSaveTimer=null,workspaceFile=null;
 const SYNC_KEY="mh2-drive-sync-metadata-v2";
 function syncState(){try{return JSON.parse(localStorage.getItem(SYNC_KEY)||"{}")}catch{return {}}}
 function writeSyncState(data){try{localStorage.setItem(SYNC_KEY,JSON.stringify(data))}catch(e){console.warn("MH2 cloud tracking unavailable",e)}}
@@ -43,11 +43,59 @@ async function refresh(){
  if(!autoSyncing)await autoReconcile(result);
  return result;
 }
+
+async function uploadWorkspaceDraft(doc){
+ if(!D?.connected()||!D.validWorkspaceDraft(doc))return false;
+ try{
+  const prior=syncState()["#workspace"];
+  if(workspaceFile&&(!prior||prior.id!==workspaceFile.id||
+     prior.modifiedTime!==workspaceFile.modifiedTime))
+   throw Error("CONFLICT: workspace has an unresolved cloud version");
+  const saved=await D.saveWorkspaceDraft(doc,workspaceFile?.modifiedTime||null);
+  workspaceFile=saved;markSynced("#workspace",saved,doc.workspace);
+  A.markWorkspaceSynced?.(doc);
+  message("✓ EDITOR WORKSPACE AUTO-SAVED TO DRIVE · POSES / PIXEL PLANES / KEYFRAMES");
+  return true;
+ }catch(error){message("WORKSPACE LOCAL BACKUP KEPT · DRIVE ERROR: "+error.message,true);return false}
+}
+async function reconcileWorkspaceDraft(){
+ const own=A.localWorkspaceDraft?.();
+ const remote=await D.loadWorkspaceDraft();
+ workspaceFile=remote?.file||null;
+ const prior=syncState()["#workspace"];
+ if(!remote){
+  if(own&&D.validWorkspaceDraft(own))return await uploadWorkspaceDraft(own)?"uploaded":"failed";
+  return "empty";
+ }
+ if(!own||!D.validWorkspaceDraft(own)){
+  if(A.workspaceHasUnsavedEdits?.())return "conflict";
+  A.restoreWorkspaceDraft(remote.doc);
+  markSynced("#workspace",remote.file,remote.doc.workspace);
+  return "downloaded";
+ }
+ if(digest(own.workspace)===digest(remote.doc.workspace)){
+  markSynced("#workspace",remote.file,own.workspace);
+  A.markWorkspaceSynced?.(own);
+  return "matched";
+ }
+ if(prior&&prior.hash===digest(own.workspace)&&prior.modifiedTime!==remote.file.modifiedTime){
+  if(A.workspaceHasUnsavedEdits?.())return "conflict";
+  A.restoreWorkspaceDraft(remote.doc);
+  markSynced("#workspace",remote.file,remote.doc.workspace);
+  return "downloaded";
+ }
+ if(prior&&prior.modifiedTime===remote.file.modifiedTime&&prior.hash!==digest(own.workspace)){
+  return await uploadWorkspaceDraft(own)?"uploaded":"failed";
+ }
+ return "conflict";
+}
+
 async function autoReconcile(result){
  if(autoSyncing)return;
  autoSyncing=true;
  let imported=0,uploaded=0,conflicts=0,failed=0;
  try{
+  if(A.workspaceHasUnsavedEdits?.())A.flushWorkspaceDraft?.();
   const local=new Map(A.localSavedRoots().map(x=>[x.id,x])),meta=syncState();
   for(const cloud of result.records){
    const own=local.get(cloud.id),prior=meta[cloud.id];
@@ -105,6 +153,13 @@ async function autoReconcile(result){
     if(await uploadMaster(own))uploaded++;else failed++;
    }
   }catch(error){failed++;console.warn("MH2 Master Rig auto-load",error)}
+  try{
+   const outcome=await reconcileWorkspaceDraft();
+   if(outcome==="downloaded")imported++;
+   else if(outcome==="uploaded")uploaded++;
+   else if(outcome==="conflict")conflicts++;
+   else if(outcome==="failed")failed++;
+  }catch(error){failed++;console.warn("MH2 workspace auto-sync",error)}
   message("✓ AUTO SYNC · "+imported+" DOWNLOADED · "+uploaded+" UPLOADED · "+
    conflicts+" CONFLICT(S) · "+failed+" ERRORS"+(conflicts?" · COMPARE LOCAL/DRIVE BEFORE OVERWRITING":""),
    !!(conflicts||failed));
@@ -255,7 +310,7 @@ async function loadMaster(){
  }catch(error){message("LOAD MASTER FAILED · "+error.message,true)}
 }
 function disconnect(){
- D?.disconnect();loaded.clear();masterFile=null;cloudLibraryFile=null;A?.updateCloudRecords([]);
+ D?.disconnect();loaded.clear();masterFile=null;cloudLibraryFile=null;workspaceFile=null;A?.updateCloudRecords([]);
  updateButtons();message("DRIVE DISCONNECTED · LOCAL ROOTS AND MASTER UNCHANGED");
 }
 function init(){
@@ -277,6 +332,9 @@ function init(){
  });
  window.addEventListener("mahluk2:asset-library-edited",()=>{
   if(D.connected())scheduleAssetLibraryAutoSave();
+ });
+ window.addEventListener("mahluk2:workspace-draft-edited",event=>{
+  if(D.connected())void uploadWorkspaceDraft(event.detail?.doc);
  });
  updateButtons();
 }
