@@ -4,9 +4,10 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1d2532">
 <title>Mahluk Hidup 2.0 — Character Root Studio</title>
-<link rel="stylesheet" href="./studio.css?v=emosi-face-preview-20261106">
+<link rel="stylesheet" href="./studio.css?v=unified-head-safe-pixels-20261106">
 <script defer src="../modular-rig-v2.js?v=mh2"></script>
 <script defer src="./emotion-planes.js?v=1"></script>
+<script defer src="./whole-head.js?v=unified-head-v1"></script>
 <script defer src="./emotion-preview.js?v=emosi-face-preview-v1"></script>
 <script defer src="../emotion-studio/emotion-library.js?v=face-preview-20261106"></script>
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
@@ -16,8 +17,8 @@
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
 <script defer src="./view-projection.js?v=orbit-master-sync-v2"></script>
 <script defer src="./pixel-selection.js?v=pixel-copy-toolbar-v2"></script>
-<script defer src="./plane-pixel-editor.js?v=pixel-copy-toolbar-v2"></script>
-<script defer src="./studio.js?v=emosi-face-preview-20261106"></script>
+<script defer src="./plane-pixel-editor.js?v=4view-isolation-20261106"></script>
+<script defer src="./studio.js?v=unified-head-safe-pixels-20261106"></script>
 <script defer src="./drive-studio-bridge.js?v=auto-cloud-workspace-20261106"></script>
 </head>
 <body>
@@ -43,7 +44,7 @@
     <p class="hint" id="bodyPlaneHint">Swap body texture only. Head, hair, Emotion, Glasses, animation, anchors and hierarchy are unchanged.</p>
     <label class="selectline">SAVED CHARACTER <select id="library"><option value="">NEW CHARACTER</option></select></label>
     <div class="sectionhead">MODULAR PLANES <span id="planeCount">00</span></div>
-    <p class="hint">HEAD → EMOTION PLANE + GLASSES PLANE. Eyes, brow, mouth and blush live inside one imported animation asset, not face bones.</p>
+    <p class="hint">HEAD = one unified 4-view pixel plane (hair, cap and fringe together). EMOSI and glasses remain independent. Legacy head parts and held prop are hidden, not deleted from saved projects.</p>
     <div id="tree" class="tree" role="tree" aria-label="Editable character bone hierarchy"></div>
     <div class="sectionhead">DRAW ORDER · FRONT ON TOP <span>↕</span></div>
     <p class="hint">Drag rows, or use ↑/↓ to move planes in front or behind. This affects the real game sprite too.</p>
@@ -229,9 +230,9 @@
      <button data-pixel-swatch="#5b718d" style="--swatch:#5b718d" title="Blue"></button>
      <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
     </div>
-    <label class="check"><input type="checkbox" id="pixelSync" checked> SYNC BRUSH · ALL 4 VIEWS</label>
+    <label class="check"><input type="checkbox" id="pixelSync"> SYNC BRUSH · ALL 4 VIEWS (OPTIONAL)</label>
     <button id="pixelSyncExisting" type="button" title="Transfer this view\u0027s existing pixel changes to other camera directions while preserving each native silhouette">↻ SYNC CURRENT EDITS TO 4 VIEWS</button>
-    <p class="hint">Brush / eraser edits map to all camera directions while retaining each native silhouette. Disable for angle-specific details.</p>
+    <p class="hint">DEFAULT: EACH VIEW IS INDEPENDENT. SE/SW/NE/NW cannot overwrite each other while SYNC is off. Turn on only to intentionally paint/erase all 4 angles.</p>
     <div class="pixel-reference-controls">
      <div class="sectionhead">VIEW OVERLAY / REDRAW GUIDE</div>
      <label>REFERENCE PLANE
@@ -272,15 +273,15 @@
      <span id="pixelZoomLabel">500%</span>
     </div>
     <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
-    <p class="hint">Edits work at native 64 × 112, across four directions. Pencil/eraser can be dragged with mouse or touch. Source planes and rig transforms remain separate.</p>
+    <p class="hint">Your strokes remain in one 64 × 448 atlas while changing SE/SW/NE/NW. Apply saves all four angles together; closing without Apply discards only the unsaved session.</p>
     <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
     <button id="pixelExport">↓ EXPORT 4-DIR PNG</button>
    </aside>
   </div>
   <footer class="pixel-dialog-foot">
    <span id="pixelStatus">SOURCE READY</span>
-   <button id="pixelApply">APPLY TO THIS CHARACTER</button>
-   <button id="pixelSaveDefault" class="primary">▣ SAVE AS GENERAL DEFAULT</button>
+   <button id="pixelApply">✓ APPLY ALL 4 VIEWS TO CHARACTER</button>
+   <button id="pixelSaveDefault" class="primary">▣ APPLY + SAVE 4-VIEW DEFAULT</button>
   </footer>
  </section>
 </div>
