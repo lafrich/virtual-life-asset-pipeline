@@ -51,13 +51,13 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <div class="viewport"><canvas id="stage" width="64" height="112"></canvas></div>
 <p class="note">V6B frame: 64×112 · pivot (32,100) · SE / SW / NE / NW. Pixel correction is stored separately for every direction.</p></section>
 <section class="panel"><h2>INSTALL / EXPORT</h2><div class="control"><label>INSTALLED ACTION</label><select id="motion"></select></div>
-<button id="install-stock">+ INSTALL SELECTED STOCK</button><p class="note">All stock movements are procedural transforms. Installing saves motion settings, not a flattened PNG.</p><hr>
+<button id="install-stock">+ INSTALL SELECTED STOCK</button><p class="note">Ichsan uses original v6b sprite frames. Procedural bases use generated movement; imported motion packages remain separately editable.</p><hr>
 <div class="buttons"><button id="save-local">SAVE CHARACTER</button><button id="load-local">LOAD SAVED</button></div><hr>
 <div class="buttons"><button id="export-json">EXPORT V6B JSON</button><button id="import-json">IMPORT V6B JSON</button></div>
 <input id="import-file" type="file" accept=".json,application/json" hidden><hr>
 <div class="buttons"><button id="import-motion">INSTALL V6B MOTION JSON</button><button id="export-motion">EXPORT MOTION JSON</button></div><input id="motion-file" type="file" accept=".json,application/json" hidden><hr><button id="export-sheet">EXPORT ACTION SHEET PNG</button>
 <p class="note">Exports frames in four direction rows, using the same 64×112 tile size. JSON contains editable motion curves/settings and pixel corrections.</p>
-<hr><a href="./emotion-studio/index.html">OPEN EMOSI.EXE</a><p class="note">Existing emotion files, legacy characters, and old animations are not deleted.</p>
+<hr><a href="../virtual-office/emotion-studio/" target="_blank" rel="noopener">OPEN EMOSI.EXE · GOOGLE DRIVE VERSION</a><p class="note">Saved Drive emotions live in Membangun / Emotion Studio. Existing emotion files, characters, and animations are not deleted.</p>
 </section></main><div id="status" role="status">READY · V6B BODY CONTRACT</div></div>
 <div id="pixelOverlay" class="pixel-overlay" hidden>
  <section class="pixel-dialog" role="dialog" aria-modal="true" aria-labelledby="pixelTitle">
