@@ -162,5 +162,40 @@ async function loadEmotionDatabase(){
  }
  return {entries,errors,folderId:folders[0].id};
 }
-return Object.freeze({CLIENT_DEFAULT,SCOPE,ROOT,CHILD,connected,getClient,configure,connect,disconnect,ensureLibrary,list,saveCharacter,saveMaster,loadCharacter,loadMaster,loadAll,loadEmotionDatabase,validCharacter,validMaster});
+
+/* Back up every existing Character Library record and its native source manifest.
+ * Original published pixels continue to resolve to their first-party pipeline
+ * source; user-authored PNG data is stored in full inside custom records. */
+async function ensureAssetLibrary(){
+ const parent=await ensureLibrary();
+ return folder(parent,"Asset Library");
+}
+function validLibrary(snapshot){
+ return snapshot&&snapshot.format==="mahluk-2-asset-library-v1"&&
+ snapshot.id==="mahluk-2-all-v1"&&Array.isArray(snapshot.characters)&&
+ Array.isArray(snapshot.published)&&Array.isArray(snapshot.customAssets)&&
+ snapshot.characters.length<=300&&snapshot.published.length<=5000&&snapshot.customAssets.length<=100&&
+ (snapshot.manifest===null||typeof snapshot.manifest==="object");
+}
+async function saveLibrary(snapshot,expectedModifiedTime=null){
+ if(!validLibrary(snapshot))throw Error("Character asset library snapshot incomplete or invalid");
+ const parent=await ensureAssetLibrary();
+ const existing=(await search(parent,"name = 'mahluk-2-asset-library.json'"))[0]||null;
+ if(existing&&(!expectedModifiedTime||existing.modifiedTime!==expectedModifiedTime))
+  throw Error("Drive library exists or was updated. LOAD LIBRARY first to avoid overwriting.");
+ const contents=JSON.stringify({...snapshot,savedAt:new Date().toISOString()});
+ const file=await upload({name:"mahluk-2-asset-library.json",mimeType:"application/json",
+  parents:[parent],appProperties:{application:"mahluk-hidup-2",kind:"asset-library"}},
+  contents,existing);
+ return file;
+}
+async function loadLibrary(){
+ const parent=await ensureAssetLibrary();
+ const file=(await search(parent,"name = 'mahluk-2-asset-library.json'"))[0]||null;
+ if(!file)return null;
+ const snapshot=await download(file);
+ if(!validLibrary(snapshot))throw Error("Invalid Mahluk 2 Asset Library on Drive");
+ return {file,snapshot};
+}
+return Object.freeze({CLIENT_DEFAULT,SCOPE,ROOT,CHILD,connected,getClient,configure,connect,disconnect,ensureLibrary,list,saveCharacter,saveMaster,loadCharacter,loadMaster,loadAll,loadEmotionDatabase,ensureAssetLibrary,saveLibrary,loadLibrary,validLibrary,validCharacter,validMaster});
 });
