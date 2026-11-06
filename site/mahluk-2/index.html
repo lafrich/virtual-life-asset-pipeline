@@ -15,10 +15,11 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script defer src="./drive-sync.js?v=auto-cloud-workspace-20261106"></script>
 <script defer src="./body-planes.js?v=nude-body-plane-v1"></script>
+<script defer src="./faceless-bases.js?v=faceless-v6b-v1"></script>
 <script defer src="./view-projection.js?v=orbit-master-sync-v2"></script>
 <script defer src="./pixel-selection.js?v=pixel-copy-toolbar-v2"></script>
 <script defer src="./plane-pixel-editor.js?v=clipboard-paste-safe-20261106"></script>
-<script defer src="./studio.js?v=rear-view-recovery-v3-20261106"></script>
+<script defer src="./studio.js?v=faceless-bases-install-v1-20261107"></script>
 <script defer src="./drive-studio-bridge.js?v=auto-cloud-workspace-20261106"></script>
 </head>
 <body>
@@ -29,6 +30,16 @@
   <aside class="objects panel">
    <div class="panelhead"><strong>OBJECT MANAGER</strong><small>HIERARCHY</small></div>
    <div class="object-scroll">
+    <div class="sectionhead">CLEAN V6B STARTER BASES <span>2</span></div>
+    <div class="faceless-base-panel">
+     <p>NUDE / BALD / NO FACE · 4 DIRECTIONS · EDIT EVERY BODY PART · EMOSI.EXE FACE SLOT</p>
+     <div class="faceless-base-grid">
+      <button id="newMaleFaceless" type="button" title="Load a new male no-face nude V6B rig without changing saved characters">＋ MALE NO FACE</button>
+      <button id="newFemaleFaceless" type="button" title="Load a new female no-face nude V6B rig without changing saved characters">＋ FEMALE NO FACE</button>
+     </div>
+     <button id="installFacelessBoth" type="button" title="Publish both base roots to the shared character storage, without overwriting existing characters">▣ INSTALL BOTH TO CHARACTER STORAGE</button>
+     <small id="basePresetStatus" role="status">Create one to edit its parts or install both into shared storage.</small>
+    </div>
     <div class="sectionhead">SCENE <span>◉</span></div>
     <label class="selectline">CHARACTER
      <select id="modelType"><option value="original">V6B ORIGINAL / CLOTHED</option><option value="male">HUMAN MALE BASE</option><option value="female">HUMAN FEMALE BASE</option></select>
@@ -44,7 +55,7 @@
     <p class="hint" id="bodyPlaneHint">Swap body texture only. Head, hair, Emotion, Glasses, animation, anchors and hierarchy are unchanged.</p>
     <label class="selectline">SAVED CHARACTER <select id="library"><option value="">NEW CHARACTER</option></select></label>
     <div class="sectionhead">MODULAR PLANES <span id="planeCount">00</span></div>
-    <p class="hint">HEAD = one unified 4-view pixel plane (hair, cap and fringe together). EMOSI and glasses remain independent. Legacy head parts and held prop are hidden, not deleted from saved projects.</p>
+    <p class="hint">Clean male/female bases: one bald HEAD, no baked eyes/mouth, nude native body, separate editable bone planes. Select EMOSI / PREVIEW to install facial expressions. Older characters keep their original artwork.</p>
     <div id="tree" class="tree" role="tree" aria-label="Editable character bone hierarchy"></div>
     <div class="sectionhead">DRAW ORDER · FRONT ON TOP <span>↕</span></div>
     <p class="hint">Drag rows, or use ↑/↓ to move planes in front or behind. This affects the real game sprite too.</p>
