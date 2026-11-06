@@ -44,3 +44,17 @@ test("Existing authored V6B generator publishes animated anatomy atlases for all
  const app=fs.readFileSync(path.resolve(__dirname,"../site/app.js"),"utf8");
  assert.match(app,/character\.id!=="ichsan"/);
 });
+
+test("Edit Selected Body Part waits for native source and reports errors inline",()=>{
+ const html=fs.readFileSync(path.resolve(__dirname,"../site/v6b-reset-studio.html"),"utf8");
+ const script=html.slice(html.lastIndexOf("<script>")+8,html.lastIndexOf("</script>"));
+ assert.ok(html.includes('id="part-open-feedback"'));
+ assert.match(script,/\$\("open-part"\)\.onclick=async\(\)=>/);
+ assert.match(script,/await loadPartSource\(bone\)/);
+ assert.match(script,/ensurePixelEditor\(\)/);
+ assert.match(script,/frameEditor\.open/);
+ assert.match(script,/Pixel editor did not open/);
+ assert.match(script,/partFeedback\("CANNOT OPEN/);
+ assert.match(script,/button\.disabled=false/);
+ assert.doesNotThrow(()=>new Function(script));
+});
