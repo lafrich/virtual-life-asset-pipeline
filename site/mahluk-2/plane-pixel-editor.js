@@ -82,13 +82,24 @@
   const CLIP_KEY="mh2-rgba-clipboard-v1";
   let clipboard=null;
   function currentClipboard(){
+   let saved=null;
    try{
-    const saved=JSON.parse(window.localStorage.getItem(CLIP_KEY));
-    if(S.validStamp(saved,W,H))
-     return {...saved,pixels:new Uint8ClampedArray(saved.pixels)};
+    const raw=JSON.parse(window.localStorage.getItem(CLIP_KEY));
+    if(S.validStamp(raw,W,H))
+     saved={...raw,pixels:new Uint8ClampedArray(raw.pixels)};
    }catch{}
-   return clipboard&&S.validStamp(clipboard,W,H)?clipboard:null;
+   // An old storage value cannot override a newly copied selection.
+   const memory=S.validStamp(clipboard,W,H)?clipboard:null;
+   if(memory&&(!saved||(Number(memory.copiedAt)||0)>=(Number(saved.copiedAt)||0)))
+    return memory;
+   return saved;
   }
+  window.addEventListener("storage",e=>{
+   if(e.key===CLIP_KEY){
+    clipboard=null;
+    if(!overlay.hidden)updateClipboardInfo();
+   }
+  });
   function updateClipboardInfo(){
    const saved=currentClipboard();
    const available=!!saved;
