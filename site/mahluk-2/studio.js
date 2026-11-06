@@ -1031,7 +1031,8 @@ function saveGame(){
   rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
   pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),
   sprite:rootSheet,clips,updated:Date.now()};
- const next=[...library.filter(r=>r.id!==id),record].slice(-30);
+ const next=[...library.filter(r=>r.id!==id),record];
+ if(next.length>40){setStatus("CHARACTER LIBRARY FULL (40) · EXPORT/ARCHIVE OLDER ROOTS BEFORE SAVING",false);return}
  if(!safePut(STORAGE,next))return;
  identifier=id;updateLibrary();
  document.dispatchEvent(new CustomEvent("mahluk2:published",{detail:{id}}));
