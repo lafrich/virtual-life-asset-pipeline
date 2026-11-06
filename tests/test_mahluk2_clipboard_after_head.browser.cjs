@@ -136,10 +136,20 @@ async function main(){
   await page.locator('#pixelDirection').selectOption('sw');
   assert.equal(await page.locator('#pixelPasteSelection').isDisabled(),false,
    'Paste disabled after changing source direction');
+  // A destination pixel already exists underneath the incoming paste.
+  await page.locator('[data-pixel-tool="pencil"]').click();
+  await drawAt(4,9,'#126cf0');
   await page.locator('#pixelPasteSelection').click();
   let copiedAtlas=await exportAtlas();
   assert.deepEqual(pix(copiedAtlas,1,4,9),hex('#e91be3'),
    'Real Paste click did not copy colored pixel into SW');
+  // Drag the pasted color elsewhere. The underlying blue pixel MUST return.
+  await pixelDrag(4,9,14,14);
+  copiedAtlas=await exportAtlas();
+  assert.deepEqual(pix(copiedAtlas,1,4,9),hex('#126cf0'),
+   'Moving pasted pixels erased existing art underneath them');
+  assert.deepEqual(pix(copiedAtlas,1,14,14),hex('#e91be3'),
+   'Dragged paste does not appear at its new location');
   assert.deepEqual(pix(copiedAtlas,0,4,9),hex('#e91be3'),
    'Real Paste changed original SE unexpectedly');
   assert.equal(pix(copiedAtlas,2,4,9)[3],0,
