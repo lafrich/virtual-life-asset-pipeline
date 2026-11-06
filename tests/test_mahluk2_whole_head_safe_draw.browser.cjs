@@ -6,9 +6,9 @@ const assert=require('node:assert/strict');
 const URL='http://127.0.0.1:8099/virtual-life-asset-pipeline/site/mahluk-2/';
 const DIR=['se','sw','ne','nw'];
 const COLORS=['#f11a22','#0cce66','#346afb','#d4a31c'];
-const PARTS=['torso','hair_back','head','hair_cap','fringe_l','fringe_mid','fringe_r','phone'];
+const PARTS=['hair_back','torso','head','hair_cap','fringe_l','fringe_mid','fringe_r','phone'];
 const sourceRects={
- torso:[22,65,20,31],hair_back:[18,23,30,17],head:[22,28,23,29],
+ torso:[22,45,20,51],hair_back:[18,23,30,17],head:[22,28,23,29],
  hair_cap:[19,17,29,10],fringe_l:[20,25,7,5],
  fringe_mid:[29,24,7,8],fringe_r:[39,24,7,6],phone:[2,45,14,6]
 };
@@ -62,6 +62,12 @@ async function main(){
   }
   const headCount=await page.locator('#tree [data-bone="head"]').count();
   assert.equal(headCount,1,'Full HEAD must be a single editable hierarchy item');
+  // hair_back appears before torso in the source painter order. The merged
+  // HEAD must still render at HEAD depth, not disappear behind the torso.
+  const frontFace=await page.locator('#game').evaluate(c=>
+   [...c.getContext('2d').getImageData(30,45,1,1).data]);
+  assert.deepEqual(frontFace,[242,178,140,255],
+   'Full HEAD is incorrectly painted behind the torso');
   await page.locator('#tree [data-bone="head"]').click();
   await page.locator('#openPlaneEditor').click();
   await page.locator('#pixelOverlay:not([hidden])').waitFor();
