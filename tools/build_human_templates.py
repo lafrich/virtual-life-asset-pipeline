@@ -781,7 +781,7 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                     if motion_parts is not None:
                         # Exact native source-layer ownership for the POSED frame.
                         # Do not approximate body parts from rectangular screen regions.
-                        from build_original_rig_layers import split_body_pixels
+                        from tools.build_original_rig_layers import split_body_pixels
                         pieces=split_body_pixels(pose,d,current_rig["layers"],
                                                  require_anatomy=False,bridge_joints=False)
                         for bone,piece in pieces.items():
