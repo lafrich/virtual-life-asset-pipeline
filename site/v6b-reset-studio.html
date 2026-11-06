@@ -20,18 +20,18 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 [hidden]{display:none!important}a{color:#2459a5}#animation-list{display:grid;gap:5px}#animation-list button{text-align:left}
 @media(max-width:870px){main{grid-template-columns:1fr 1fr}.viewport{min-height:400px}}@media(max-width:620px){main{display:flex;flex-direction:column}canvas#stage{width:256px;height:448px}body{padding:3px}}
 </style>
-<script defer src="./emotion-studio/emotion-library.js"></script>
+<link rel="stylesheet" href="./emotion-studio/shared-pixel-ui.css"><script defer src="./emotion-studio/shared-pixel-selection.js"></script><script defer src="./emotion-studio/shared-pixel-editor.js"></script><script defer src="./emotion-studio/emotion-library.js"></script>
 </head><body><div class="app">
 <header><div><h1>MAHLUK HIDUP · V6B STUDIO</h1><small>BODY + MOTION + EMOSI.EXE · 64×112 PX</small></div><a style="color:white" href="./index.html">LEGACY STUDIO</a></header>
 <nav><button class="active" data-tab="characters">01 · CHARACTER</button><button data-tab="pixels">02 · PIXEL EDIT</button><button data-tab="actions">03 · ACTIONS</button><button data-tab="emotions">04 · EMOSI.EXE</button></nav>
 <main><section class="panel">
 <h2>CHARACTER BASE</h2>
-<div class="control"><label>BODY TEMPLATE</label><select id="body"><option value="male">MALE · BALD · NUDE</option><option value="female">FEMALE · BALD · NUDE</option></select></div>
+<div class="control"><label>BODY TEMPLATE</label><select id="body"><option value="ichsan">ICHSAN · ORIGINAL V6B</option><option value="male">MALE · BALD · NUDE</option><option value="female">FEMALE · BALD · NUDE</option></select></div>
 <div class="control"><label>CHARACTER NAME</label><input id="name" value="NEW HUMAN"></div>
 <div class="control"><label>DIRECTION</label><select id="direction"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></div>
 <div class="control"><label>SKIN TONE</label><input type="color" id="skin" value="#d6a585"></div>
 <hr>
-<div id="pixels" hidden><h2>PIXEL EDITOR</h2><p class="note">Paint on current view. Changes are saved as transparent correction pixels on top of procedural body art.</p>
+<div id="pixels" hidden><h2>PIXEL EDITOR · FULL TOOLSET</h2><button id="open-pixel" style="width:100%">OPEN NATIVE PIXEL EDITOR / CURRENT FRAME</button><p class="note">Native grid, select, copy/paste, flip, picker, zoom, undo/redo.</p><p class="note">Paint on current view. Changes are saved as transparent correction pixels on top of procedural body art.</p>
 <div class="buttons"><button id="pencil" class="active">PENCIL</button><button id="eraser">ERASE</button></div><div class="control"><label>PIXEL COLOR</label><input type="color" id="paint-color" value="#bf8e70"></div><button id="clear-view">CLEAR EDITED PIXELS / VIEW</button></div>
 <div id="actions" hidden><h2>STOCK MOTIONS</h2><div id="animation-list"></div><hr>
 <div class="control"><label>FPS</label><input type="number" min="1" max="30" id="fps" value="12"></div>
@@ -56,14 +56,96 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <p class="note">Exports frames in four direction rows, using the same 64×112 tile size. JSON contains editable motion curves/settings and pixel corrections.</p>
 <hr><a href="./emotion-studio/index.html">OPEN EMOSI.EXE</a><p class="note">Existing emotion files, legacy characters, and old animations are not deleted.</p>
 </section></main><div id="status" role="status">READY · V6B BODY CONTRACT</div></div>
+<div id="pixelOverlay" class="pixel-overlay" hidden>
+ <section class="pixel-dialog" role="dialog" aria-modal="true" aria-labelledby="pixelTitle">
+  <header class="pixel-dialog-header"><strong id="pixelTitle">PIXEL EDITOR / SELECTED PLANE</strong><button id="pixelClose" title="Close editor">×</button></header>
+  <div class="pixel-toolbar">
+   <label>DIRECTION <select id="pixelDirection"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></label>
+   <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
+   <button data-pixel-tool="eraser">⌫ ERASER</button><div class="pixel-quick-tools" role="group" aria-label="Select and copy paste pixels across views"><button data-pixel-tool="select" title="Draw a rectangle around pixels to select them / S">▣ SELECT</button><button id="pixelCopySelection" class="pixel-quick-copy" type="button" title="Copy selected pixels / Ctrl+C">⧉ COPY</button><button id="pixelPasteSelection" class="pixel-quick-paste" type="button" title="Paste into this view / Ctrl+V">▣ PASTE</button><button id="pixelPasteMirrored" class="pixel-quick-mirror" type="button" title="Paste mirrored / Ctrl+Shift+V">⇆ PASTE FLIP</button></div><button data-pixel-tool="move-pixels" title="Move selected pixels / M">✣ MOVE PIXELS</button>
+   <button data-pixel-tool="fill">▤ FILL</button>
+   <button data-pixel-tool="picker">◎ PICK</button><button data-pixel-tool="hand" title="Pan canvas by dragging / H">✥ HAND</button>
+   <label>COLOR <input id="pixelColor" type="color" value="#211d22"></label>
+   <label>SIZE <select id="pixelSize"><option value="1">1 PX</option><option value="2">2 PX</option><option value="3">3 PX</option><option value="5">5 PX</option></select></label>
+  </div>
+  <div class="pixel-workarea">
+   <div class="pixel-canvas-wrap" id="pixelCanvasWrap"><canvas id="pixelCanvas" tabindex="0" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time. Scroll to zoom, pinch to zoom on touch."></canvas></div>
+   <aside class="pixel-side">
+    <div class="sectionhead">PALETTE / SWATCHES</div>
+    <div class="pixel-swatches">
+     <button data-pixel-swatch="#1b1519" style="--swatch:#1b1519" title="Dark ink"></button>
+     <button data-pixel-swatch="#443330" style="--swatch:#443330" title="Shadow"></button>
+     <button data-pixel-swatch="#b97656" style="--swatch:#b97656" title="Skin shade"></button>
+     <button data-pixel-swatch="#e9a77c" style="--swatch:#e9a77c" title="Skin"></button>
+     <button data-pixel-swatch="#ffc99b" style="--swatch:#ffc99b" title="Highlight"></button>
+     <button data-pixel-swatch="#f4ece5" style="--swatch:#f4ece5" title="White"></button>
+     <button data-pixel-swatch="#5b718d" style="--swatch:#5b718d" title="Blue"></button>
+     <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
+    </div>
+    <label class="check"><input type="checkbox" id="pixelSync" checked> SYNC BRUSH · ALL 4 VIEWS</label>
+    <button id="pixelSyncExisting" type="button" title="Transfer this view\u0027s existing pixel changes to other camera directions while preserving each native silhouette">↻ SYNC CURRENT EDITS TO 4 VIEWS</button>
+    <p class="hint">Brush / eraser edits map to all camera directions while retaining each native silhouette. Disable for angle-specific details.</p>
+    <div class="pixel-reference-controls">
+     <div class="sectionhead">VIEW OVERLAY / REDRAW GUIDE</div>
+     <label>REFERENCE PLANE
+      <select id="pixelReferenceView">
+       <option value="off">OFF / NO OVERLAY</option>
+       <option value="se">SE · FRONT RIGHT</option>
+       <option value="sw">SW · FRONT LEFT</option>
+       <option value="ne">NE · BACK RIGHT</option>
+       <option value="nw">NW · BACK LEFT</option>
+      </select>
+     </label>
+     <label class="check"><input id="pixelReferenceFlip" type="checkbox" checked> AUTO MIRROR REFERENCE</label>
+     <label>OPACITY <input id="pixelReferenceOpacity" type="range" min="5" max="85" step="5" value="40"><span id="pixelReferenceOpacityLabel">40%</span></label>
+     <label>REF OFFSET X <input id="pixelReferenceX" type="number" min="-32" max="32" value="0" step="1"></label>
+     <label>REF OFFSET Y <input id="pixelReferenceY" type="number" min="-56" max="56" value="0" step="1"></label>
+     <p class="hint">Colored ghost overlay shows the selected source view over the active drawing view. For aligning and redrawing only; it is NEVER saved in the PNG.</p>
+    </div>
+    <div class="pixel-selection-controls">
+     <div class="sectionhead">SELECTION / TRANSFORM</div>
+     <label class="check"><input id="pixelPasteReplace" type="checkbox"> REPLACE TRANSPARENT PIXELS</label>
+     <p class="hint" id="pixelClipboardInfo" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</p>
+     <div class="plane-buttons"><button id="pixelSelectAll" type="button">▣ SELECT ALL</button><button id="pixelDeselect" type="button">◇ DESELECT</button></div>
+     <div class="plane-buttons"><button id="pixelFlipH" type="button">⇆ FLIP H</button><button id="pixelFlipV" type="button">⇅ FLIP V</button></div>
+     <div class="plane-buttons"><button id="pixelDeleteSelection" type="button">⌫ DELETE PIXELS</button></div>
+     <p class="hint" id="pixelSelectionInfo">No selection. Select rectangle, then Move Pixels or Flip.</p>
+    </div>
+    <label class="check"><input type="checkbox" id="pixelOnion" checked> CHARACTER REFERENCE (ONION)</label>
+    <div class="pixel-grid-controls">
+     <label class="check"><input type="checkbox" id="pixelGrid" checked> GRID MODE</label>
+     <label>GRID SIZE <select id="pixelGridType"><option value="1">1 × 1 PX</option><option value="8">8 × 8 PX</option><option value="16">16 × 16 PX</option></select></label>
+    </div>
+    <div class="pixel-zoom-controls">
+     <span>ZOOM</span>
+     <button id="pixelZoomOut" title="Zoom out (mouse wheel or pinch)">−</button>
+     <input id="pixelZoom" type="range" min="2" max="16" step="1" value="5" aria-label="Pixel canvas zoom">
+     <button id="pixelZoomIn" title="Zoom in (mouse wheel or pinch)">＋</button>
+     <button id="pixelZoomFit" title="Fit artwork to editor">FIT</button>
+     <span id="pixelZoomLabel">500%</span>
+    </div>
+    <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
+    <p class="hint">Edits work at native 64 × 112, across four directions. Pencil/eraser can be dragged with mouse or touch. Source planes and rig transforms remain separate.</p>
+    <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
+    <button id="pixelExport">↓ EXPORT 4-DIR PNG</button>
+   </aside>
+  </div>
+  <footer class="pixel-dialog-foot">
+   <span id="pixelStatus">SOURCE READY</span>
+   <button id="pixelApply">APPLY EDITED FRAME</button>
+   <button id="pixelSaveDefault" class="primary">▣ APPLY FRAME</button>
+  </footer>
+ </section>
+</div>
+
 <script>
 (()=>{"use strict";
 const $=id=>document.getElementById(id),DIR=["se","sw","ne","nw"],FW=64,FH=112,PIVOT=[32,100];
 const ROWMAP={walk:0,idle:4,talk:8,sit:12,sit_type:16,sleep:20,tired:24,swim:28,float:32,lie:36,perch:40};
 const STOCK=["idle","walk","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"];
 const KEY="mahluk-v6b-simple-studio-v1";let editor="characters",painting=false,eraser=false,frame=0,playing=false,last=0,emotions=new Map();
-const neutral=(id)=>({id:("human_"+id+"_base"),name:"NEW "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="male"?"#d6a585":"#d9a989",pixels:{se:[],sw:[],ne:[],nw:[]},actions:{idle:{fps:12,arm:2,stride:4,bob:1}},current:"idle",emotion:"",faceOffset:[0,0]});
-let model=neutral("male");
+const neutral=(id)=>({id:id==="ichsan"?"ichsan_v6b_original":("human_"+id+"_base"),name:id==="ichsan"?"ICHSAN · V6B ORIGINAL":"NEW "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="female"?"#d9a989":"#d6a585",pixels:{se:[],sw:[],ne:[],nw:[]},frameEdits:{},actions:Object.fromEntries(STOCK.map(a=>[a,{fps:a==="walk"?12:8,arm:2,stride:4,bob:1,source:id==="ichsan"?"ichsan-v6b-original":"v6b-procedural-stock-v1",action:a}])),current:"idle",emotion:"",faceOffset:[0,0]});
+let model=neutral("ichsan");const original=new Image();original.src="./media/ichsan-sheet.png";let originalReady=false;original.onload=()=>{originalReady=true;draw();status("ICHSAN V6B · ORIGINAL ANIMATION SHEET LOADED")};original.onerror=()=>status("ORIGINAL ICHSAN SHEET UNAVAILABLE · CHECK PAGES DEPLOY");
 const status=s=>$("status").textContent=s,clone=x=>JSON.parse(JSON.stringify(x));
 const c=$("stage"),cx=c.getContext("2d",{willReadFrequently:true});cx.imageSmoothingEnabled=false;
 function applyUI(){ $("body").value=model.body_type;$("name").value=model.name;$("skin").value=model.skin;$("motion").value=model.current;$("emotion").value=model.emotion;$("face-x").value=model.faceOffset[0];$("face-y").value=model.faceOffset[1];syncMotionUI();}
@@ -97,16 +179,18 @@ function body(ctx,dir,action,f,opts={}){
  for(const px of model.pixels[dir]||[])box(ctx,px[0],px[1],1,1,px[2]);
 }
 async function emotionImage(entry){if(!entry)return null;try{const a=await window.MH2UniversalEmotions.renderAtlas(entry);return a}catch{return null}}
-const faceCache=new Map();let faceSerial=0;
+const faceCache=new Map(),frameOverrideImages=new Map();let faceSerial=0;
+function restoreFrameOverrides(){frameOverrideImages.clear();for(const [key,url] of Object.entries(model.frameEdits||{})){if(typeof url!=="string"||!url.startsWith("data:image/png"))continue;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}}
 async function setEmotion(id){model.emotion=id;const serial=++faceSerial;if(!id){draw();return}const entry=emotions.get(id);const pic=await emotionImage(entry);if(serial===faceSerial&&pic){faceCache.set(id,pic);draw()}}
-function drawTo(ctx,dir,action,f,faceFrame=f){ctx.clearRect(0,0,64,112);body(ctx,dir,action,f);
+function renderBody(ctx,dir,action,f){const directionIndex=DIR.indexOf(dir),act=(model.actions[action]?.action||model.actions[action]?.based_on||action),row=ROWMAP[act];if(model.body_type==="ichsan"&&originalReady&&Number.isInteger(row)){const srcF=act==="idle"?f%4:f%6;ctx.drawImage(original,srcF*64,(row+directionIndex)*112,64,112,0,0,64,112)}else body(ctx,dir,action,f)}
+function drawTo(ctx,dir,action,f,faceFrame=f){ctx.clearRect(0,0,64,112);const key=action+"|"+f+"|"+dir,edited=frameOverrideImages.get(key);if(edited&&edited.complete&&edited.naturalWidth)ctx.drawImage(edited,0,0);else renderBody(ctx,dir,action,f);
  const atlas=faceCache.get(model.emotion),entry=emotions.get(model.emotion);
  if(atlas&&entry&&(!/^n/.test(dir))){const i=DIR.indexOf(dir),n=entry.frames||1,ox=model.faceOffset[0],oy=model.faceOffset[1];const a=model.actions[action]||{},kind=a.action||action,t=Math.sin((f%6)*Math.PI/3),isWalk=/walk/.test(kind);const bob=isWalk?Math.abs(t)*(a.bob??1):kind==="idle"?(f%3===1?1:0):0;const poseY=/^sit/.test(kind)?13:/sleep|lie|float|swim/.test(kind)?17:0;ctx.drawImage(atlas,(faceFrame%n)*64,i*112,64,112,ox,oy+bob+poseY,64,112);}
 }
 function draw(){drawTo(cx,$("direction").value,model.current,frame);$("readout").textContent=model.current.toUpperCase()+" · "+$("direction").value.toUpperCase()+" · FRAME "+(frame+1)+" / 6 · "+(model.actions[model.current]?.fps||12)+" FPS"}
 function tab(id){editor=id;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));for(const p of ["pixels","actions","emotions"])$(p).hidden=p!==id;status("ACTIVE TAB: "+id.toUpperCase());}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
-$("body").onchange=()=>{const old=model;model=neutral($("body").value);model.name=old.name;renderMotions();applyUI();draw();status("BASE SWITCHED · MANUAL PIXELS RESET FOR NEW BODY")};
+$("body").onchange=()=>{model=neutral($("body").value);restoreFrameOverrides();renderMotions();applyUI();draw();status("SWITCHED TO "+model.body_type.toUpperCase()+" BASE · ORIGINAL ICHSAN STOCK PRESERVED")};
 $("name").oninput=()=>model.name=$("name").value;
 $("skin").oninput=()=>{model.skin=$("skin").value;draw()};
 $("direction").onchange=draw;$("motion").onchange=()=>{model.current=$("motion").value;syncMotionUI();frame=0;draw()};
@@ -130,16 +214,19 @@ $("import-motion").onclick=()=>$("motion-file").click();
 $("motion-file").onchange=async e=>{try{const file=e.target.files?.[0];if(!file)return;const m=JSON.parse(await file.text());if(!validMotion(m))throw Error("Motion package incompatible: requires v6b 64×112, pivot 32/100, four views, 6 frames and supported action");model.actions[m.id]={...m.parameters,fps:m.fps,action:m.action,source:m.source||"v6b-imported",based_on:m.action};model.current=m.id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED EXTERNAL V6B MOTION: "+m.id)}catch(err){status("MOTION IMPORT FAILED: "+err.message)}e.target.value=""};
 function valid(m){return m?.format==="mahluk-v6b-character-v1"&&["male","female"].includes(m.body_type)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&m.pixels&&DIR.every(d=>Array.isArray(m.pixels[d]))&&m.actions&&typeof m.actions==="object";}
 $("save-local").onclick=()=>{try{localStorage.setItem(KEY,JSON.stringify(model));status("CHARACTER SAVED TO THIS BROWSER · EXPORT JSON TO MOVE DEVICES")}catch(e){status("SAVE FAILED: "+e.message)}};
-$("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));if(!valid(m))throw Error("No compatible saved character");model=m;renderMotions();applyUI();setEmotion(m.emotion);draw();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
+$("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));if(!valid(m))throw Error("No compatible saved character");model=m;restoreFrameOverrides();renderMotions();applyUI();setEmotion(m.emotion);draw();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
 $("export-json").onclick=exportJSON;
 $("import-json").onclick=()=>$("import-file").click();
-$("import-file").onchange=async e=>{try{const m=JSON.parse(await e.target.files[0].text());if(!valid(m))throw Error("V6B contract mismatch");model=m;renderMotions();applyUI();await setEmotion(m.emotion);draw();status("V6B CHARACTER IMPORTED")}catch(err){status("IMPORT FAILED: "+err.message)}e.target.value=""};
+$("import-file").onchange=async e=>{try{const m=JSON.parse(await e.target.files[0].text());if(!valid(m))throw Error("V6B contract mismatch");model=m;restoreFrameOverrides();renderMotions();applyUI();await setEmotion(m.emotion);draw();status("V6B CHARACTER IMPORTED")}catch(err){status("IMPORT FAILED: "+err.message)}e.target.value=""};
 $("export-sheet").onclick=()=>{const out=document.createElement("canvas");out.width=64*6;out.height=112*4;const ctx=out.getContext("2d");for(let d=0;d<4;d++)for(let f=0;f<6;f++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;drawTo(tile.getContext("2d"),DIR[d],model.current,f);ctx.drawImage(tile,f*64,d*112)}out.toBlob(blob=>blob&&download(model.current+"_v6b_four_view.png",blob),"image/png");status("EXPORTED 6 FRAMES × 4 DIRECTIONS · V6B NATIVE SIZE")};
 $("emotion").onchange=()=>setEmotion($("emotion").value);
 for(const [id,index] of [["face-x",0],["face-y",1]])$(id).oninput=()=>{model.faceOffset[index]=Math.max(-64,Math.min(64,Number($(id).value)||0));draw()};
 async function loadEmotions(){try{const U=window.MH2UniversalEmotions;if(!U)throw Error("Emotion library not ready");const data=await U.loadCatalog(),select=$("emotion");emotions.clear();select.replaceChildren();const empty=document.createElement("option");empty.value="";empty.textContent="NO FACE";select.append(empty);
  for(const e of data.catalog.entries){emotions.set(e.id,e);const o=document.createElement("option");o.value=e.id;o.textContent=e.name+" / "+e.base;select.append(o)}select.value=model.emotion;await setEmotion(select.value);status("EMOSI.EXE SYNCED · "+emotions.size+" ATLAS ASSETS")}catch(e){status("EMOSI SYNC ERROR: "+e.message)}}
 $("reload-emotions").onclick=loadEmotions;
+const pixelOverlay=$("pixelOverlay"),pixelCanvas=$("pixelCanvas"),pixelEditor=window.MH2PlanePixelEditor?.create({overlay:pixelOverlay,canvas:pixelCanvas,reference:$("stage"),onApply:(_id,png,atlas)=>{storeEditedFrame(atlas);return true},onSaveDefault:(_id,png,atlas)=>{storeEditedFrame(atlas);return true}});
+function storeEditedFrame(atlas){if(!atlas)return;const name=model.current,f=frame;model.frameEdits||={};for(let d=0;d<4;d++){const slice=document.createElement("canvas");slice.width=64;slice.height=112;slice.getContext("2d").drawImage(atlas,0,d*112,64,112,0,0,64,112);const key=name+"|"+f+"|"+DIR[d],url=slice.toDataURL("image/png");model.frameEdits[key]=url;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}draw();status("NATIVE PIXEL EDITS APPLIED · "+name.toUpperCase()+" FRAME "+(f+1)+" · 4 VIEWS")}
+$("open-pixel").onclick=()=>{if(!pixelEditor)return status("NATIVE EDITOR UNAVAILABLE");const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;const ac=atlas.getContext("2d");for(let d=0;d<4;d++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");const key=model.current+"|"+frame+"|"+DIR[d],img=frameOverrideImages.get(key);if(img?.complete&&img.naturalWidth)tc.drawImage(img,0,0);else renderBody(tc,DIR[d],model.current,frame);ac.drawImage(tile,0,d*112)}pixelEditor.open({id:model.current+"-frame-"+(frame+1),initialAtlas:atlas,originalAtlas:atlas,direction:$("direction").value})};
 renderMotions();applyUI();draw();loadEmotions();
 })();
 </script></body></html>
