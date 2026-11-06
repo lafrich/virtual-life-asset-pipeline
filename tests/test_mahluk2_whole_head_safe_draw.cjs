@@ -103,6 +103,6 @@ test('Always reopen exact saved 4-view PNG, not stale async decoded image or mas
  assert.match(studio,/headMerged,\n  sprite:rootSheet/);
  assert.match(studio,/onApply:\(bone,png,liveAtlas\)=>setPlanePixel\(bone,png,liveAtlas\)/);
  assert.match(studio,/copy\.getContext\('2d'\)\.drawImage\(liveAtlas,0,0\)/);
- assert.match(studio,/pixelPlanes,headMerged,emotionAssetId/);
+ assert.match(studio,/pixelPlanes,headMerged,facelessBase,emotionAssetId/);
  assert.doesNotThrow(()=>new Function(studio));
 });
