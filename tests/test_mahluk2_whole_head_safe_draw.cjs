@@ -92,7 +92,7 @@ test('Always reopen exact saved 4-view PNG, not stale async decoded image or mas
  assert.match(studio,/await ensurePixelImages\(parts\)/);
  assert.match(studio,/const png=pixelPlanes\[id\]/);
  assert.match(studio,/if\(revision!==planeImageRevision\|\|pixelPlanes\[id\]!==png\)/);
- assert.match(studio,/const own=G\.sanitizePixelPlanes\(r\.pixelPlanes\|\|\{\},R\)/);
+ assert.match(studio,/general=masterDocument\(\),own=G\.sanitizePixelPlanes\(r\.pixelPlanes\|\|\{\},R\)/);
  assert.match(studio,/setPixelPlanes\(r\.driveFileId\?own:\{\.\.\.\(general\?\.pixelPlanes\|\|\{\}\),\.\.\.own\}\)/);
  assert.match(studio,/headMerged,\n  sprite:rootSheet/);
  assert.match(studio,/pixelPlanes,headMerged,emotionAssetId/);
