@@ -56,7 +56,7 @@ test("studio uses painted plane instead of double-rendering source and exports i
  assert.match(s,/if\(item.kind==="pixel"\)/);
  assert.match(s,/planeImages\.set\(id,img\)/);
  assert.match(s,/pixelPlanes:G\.sanitizePixelPlanes\(pixelPlanes,R\)/);
- assert.match(s,/G\.save\(window\.localStorage,R,rules,parts,merged\)/);
+ assert.match(s,/G\.save\(window\.localStorage,R,rules,parts,merged,bone==="head"\?true:headMerged\)/);
  assert.match(s,/setPixelPlanes\(general\?\.pixelPlanes\|\|\{\}\)/);
  assert.match(c,/#pixelCanvas\{[^}]*image-rendering:pixelated/);
 });
