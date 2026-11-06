@@ -1,0 +1,90 @@
+name: Export Mahluk Hidup 1 Emotions
+on:
+  push:
+    paths:
+      - '.github/workflows/export-mahluk1-emotions.yml'
+  workflow_dispatch:
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pillow
+      - name: Extract native emotion PNGs and frames
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os, re, json, csv, shutil
+          from pathlib import Path
+          from PIL import Image
+          root=Path('assets')
+          out=Path('mahluk-hidup-1-emotions')
+          raw=out/'original-sheets'
+          frames=out/'frame-by-frame'
+          raw.mkdir(parents=True,exist_ok=True)
+          frames.mkdir(parents=True,exist_ok=True)
+          records=[]
+          skipped=[]
+          directions=['se','sw','ne','nw']
+          def save_frame(img, dest):
+              dest.parent.mkdir(parents=True,exist_ok=True)
+              img.save(dest)
+          for p in sorted(root.rglob('*.png')):
+              if any(z in p.parts for z in ('mahluk-2','emotion-studio')): continue
+              name=p.stem.lower()
+              # Face overlays *_v6b_f*.png, expression PNGs,
+              # plus authored emotion/action sheets.
+              is_overlay=bool(re.search(r'_v6b_f\d+$',name))
+              is_emotion=bool(re.search(r'(emotion|expression|face|emote|blush|cheeky|bleh|wink|grimace|angry|happy|sad|sleepy|surprised|crying|cry)',name))
+              if not (is_overlay or is_emotion): continue
+              rel=p.relative_to(root)
+              dest=raw/rel
+              dest.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copy2(p,dest)
+              try:
+                  im=Image.open(p).convert('RGBA')
+                  w,h=im.size
+                  character=rel.parts[0]
+                  emotion=name
+                  basedir=frames/character/emotion
+                  kind='original_only'
+                  # A genuine 64x112 frame grid (4 directional rows).
+                  if w%64==0 and h%112==0 and w//64<=24 and h//112<=44:
+                      cols,rows=w//64,h//112
+                      if rows==4:
+                          kind='four_direction_frames'
+                          for y in range(rows):
+                              for x in range(cols):
+                                  tile=im.crop((x*64,y*112,(x+1)*64,(y+1)*112))
+                                  save_frame(tile,basedir/directions[y]/f'frame_{x+1:03d}.png')
+                      elif is_overlay and rows>=4:
+                          # v6b overlays are long atlases; rows are rig/action slots,
+                          # not emotion time frames. Export each non-empty native cell
+                          # as a labelled row/column, never invent an animation.
+                          kind='v6b_overlay_cells'
+                          for y in range(rows):
+                              for x in range(cols):
+                                  tile=im.crop((x*64,y*112,(x+1)*64,(y+1)*112))
+                                  if tile.getchannel('A').getbbox():
+                                      save_frame(tile,basedir/f'row_{y+1:02d}'/f'cell_{x+1:02d}.png')
+                      elif rows==1:
+                          kind='horizontal_frames'
+                          for x in range(cols):
+                              tile=im.crop((x*64,0,(x+1)*64,112))
+                              save_frame(tile,basedir/f'frame_{x+1:03d}.png')
+                  records.append({'source':str(p),'character':character,'emotion':emotion,'size':f'{w}x{h}','kind':kind})
+              except Exception as e:
+                  skipped.append({'file':str(p),'error':str(e)})
+          (out/'INDEX.json').write_text(json.dumps(records,indent=2),encoding='utf-8')
+          (out/'WARNINGS.json').write_text(json.dumps(skipped,indent=2),encoding='utf-8')
+          (out/'README.txt').write_text('MAHLUK HIDUP 1 — SOURCE EMOTION EXPORT\noriginal-sheets/ = exact original PNG files.\nframe-by-frame/ = lossless 64x112 native pixel crops where verifiable.\nFour-direction sheets have folders se/sw/ne/nw.\nOriginal-only contact sheets are not blindly chopped because their layouts may include labels/margins.\nV6B face overlays are static layer cells, not timeline animation frames.\nINDEX.json lists every extracted file and extraction mode.\n',encoding='utf-8')
+          print('Original files:',len(records),'Warnings:',len(skipped))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mahluk-hidup-1-emotions-sheets-and-frames
+          path: mahluk-hidup-1-emotions/
+          retention-days: 30
