@@ -84,7 +84,7 @@ test('Pixel editing never silently syncs other views or inherits previous ghost 
  assert.match(pix,/els\.sync\.checked=false;selection=null;moveStart=null/);
  assert.match(pix,/els\.sync\.checked=false;/);
  assert.match(pix,/els\.refView\.value="off"/);
- assert.match(pix,/onApply\(bone,atlas\.toDataURL\("image\/png"\)\)/);
+ assert.match(pix,/onApply\(bone,atlas\.toDataURL\("image\/png"\),atlas\)/);
  assert.match(pix,/if\(dirty&&!window\.confirm/);
 });
 test('Always reopen exact saved 4-view PNG, not stale async decoded image or master default',()=>{
@@ -95,6 +95,8 @@ test('Always reopen exact saved 4-view PNG, not stale async decoded image or mas
  assert.match(studio,/general=masterDocument\(\),own=G\.sanitizePixelPlanes\(r\.pixelPlanes\|\|\{\},R\)/);
  assert.match(studio,/setPixelPlanes\(r\.driveFileId\?own:\{\.\.\.\(general\?\.pixelPlanes\|\|\{\}\),\.\.\.own\}\)/);
  assert.match(studio,/headMerged,\n  sprite:rootSheet/);
+ assert.match(studio,/onApply:\(bone,png,liveAtlas\)=>setPlanePixel\(bone,png,liveAtlas\)/);
+ assert.match(studio,/copy\.getContext\('2d'\)\.drawImage\(liveAtlas,0,0\)/);
  assert.match(studio,/pixelPlanes,headMerged,emotionAssetId/);
  assert.doesNotThrow(()=>new Function(studio));
 });
