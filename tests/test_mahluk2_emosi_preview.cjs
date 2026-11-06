@@ -89,7 +89,7 @@ test('Mahluk 2 UI exposes read-only preview controls and respects root persisten
  assert.match(src,/await EP\.loadLocal\(\)/);
  assert.match(src,/emotionPreviewFrame/);
  assert.match(src,/facePlace\.scale\*mag/);
- assert.match(src,/emotionPlacement:clone\(emotionPlacement\)/);
+ assert.match(src,/emotionAssetId,emotionKeys,emotionPlacement,glassesAssetId/);
  assert.match(src,/placement:clone\(emotionPlacement\)/);
  assert.match(src,/window\.addEventListener\("mahluk2:drive-connected"/);
  assert.match(src,/getEmotionAsset\(emotionAt\(\)\)/);
