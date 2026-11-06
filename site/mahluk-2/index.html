@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="./studio.css?v=pixel-copy-toolbar-v2">
 <script defer src="../modular-rig-v2.js?v=mh2"></script>
 <script defer src="./emotion-planes.js?v=1"></script>
+<script defer src="./emotion-preview.js?v=emosi-face-preview-v1"></script>
 <script defer src="../emotion-studio/emotion-library.js?v=face-preview-20261106"></script>
 <script defer src="./rig-rules.js?v=master-rig-v1"></script>
 <script defer src="./github-master-sync.js?v=github-v1"></script>
@@ -22,7 +23,7 @@
 <body>
 <div class="window">
  <header class="titlebar"><div class="brand"><span class="appicon">✳</span><b>MAHLUK HIDUP <em>2.0</em></b> <small>ROOT / RIG &amp; PLANES</small></div><div class="title-actions"><span id="syncLed" class="led"></span><span id="syncLabel">CONNECTING...</span><a href="https://lafrich.github.io/virtual-office/membangun/?app=mahluk2" title="Kembali ke launcher">⌂ MEMBANGUN</a><span class="window-buttons">_ ▢ ×</span></div></header>
- <nav class="menubar"><button id="newChar">File · New</button><button id="undo" title="Undo / Ctrl+Z" disabled>↶ UNDO</button><button id="redo" title="Redo / Ctrl+Shift+Z" disabled>↷ REDO</button><button id="saveChar">▣ Save Root</button><button id="exportJson">↓ Project JSON</button><button id="exportPng">↓ Root PNG</button><label class="importbtn">↑ Import JSON<input id="importJson" type="file" accept=".json,application/json"></label><span class="push"></span><span class="tiny">UNIVERSAL RIG · EMOTION STUDIO</span><span class="tiny">ROOT CHARACTER ENGINE</span></nav>
+ <nav class="menubar"><button id="newChar">File · New</button><button id="undo" title="Undo / Ctrl+Z" disabled>↶ UNDO</button><button id="redo" title="Redo / Ctrl+Shift+Z" disabled>↷ REDO</button><button id="saveChar">▣ Save Root</button><button id="exportJson">↓ Project JSON</button><button id="exportPng">↓ Root PNG</button><label class="importbtn">↑ Import JSON<input id="importJson" type="file" accept=".json,application/json"></label><span class="push"></span><span class="tiny">UNIVERSAL RIG · EMOSI.EXE PREVIEW</span><span class="tiny">ROOT CHARACTER ENGINE</span></nav>
  <div class="workspace">
   <aside class="objects panel">
    <div class="panelhead"><strong>OBJECT MANAGER</strong><small>HIERARCHY</small></div>
@@ -75,8 +76,12 @@
     <div class="ruler" id="ruler"></div><div class="keyrows" id="keyrows"></div>
    </div>
   </main>
-  <aside class="inspector panel">
-   <div class="panelhead"><strong>ATTRIBUTES</strong><small>OBJECT</small></div>
+  <aside class="inspector panel" data-inspector-tab="rig">
+   <div class="panelhead"><strong>CHARACTER STUDIO</strong><small>MAHLUK 2</small></div>
+   <nav class="inspector-tabbar" aria-label="Rig and read-only emotion preview">
+    <button id="inspectorRigTab" type="button" data-inspector-toggle="rig" class="active" aria-pressed="true">✳ RIG / PARTS</button>
+    <button id="inspectorEmotionTab" type="button" data-inspector-toggle="emotion" aria-pressed="false">☺ EMOSI / PREVIEW</button>
+   </nav>
    <div class="inspector-scroll">
     <section class="ins-section"><div class="sectionhead">SELECTION</div><div class="selected-name" id="selectedName">HEAD</div><p class="hint" id="selectedParent">Parent: neck</p><div class="fields"><label>X <input id="posX" type="number" step=".5"></label><label>Y <input id="posY" type="number" step=".5"></label><label>Z <input id="posZ" type="number" step=".5"></label><label>ROT° <input id="angle" type="number" step="5"></label><label>SCALE <input id="scale" type="number" step=".1" min=".3" max="3"></label></div><label class="check"><input type="checkbox" id="visible" checked> VISIBLE / PLANE ACTIVE</label></section>
     <section class="ins-section"><div class="sectionhead">PIXEL ART / SELECTED PLANE</div>
@@ -102,13 +107,62 @@
       <p class="hint" id="githubMasterStatus" aria-live="polite">Checking published master...</p>
      </div>
     </section>
-    <section class="ins-section"><div class="sectionhead">EMOTION DATABASE / LIVE FACE PREVIEW</div><p class="hint">Choose a saved emotion from Emotion Studio and preview it on this character in all four views. To redraw facial pixels, return to Emotion Studio.</p>
-       <label class="selectline">EMOTION ASSET LIBRARY<select id="emotionAsset" aria-label="Select a single-plane facial-expression asset"><option value="native:neutral">ORIGINAL / NEUTRAL</option></select></label>
-      <div class="plane-buttons"><button id="emotionRefresh" type="button">↻ REFRESH EMOTION DATABASE</button><a class="emotion-studio-link" href="https://lafrich.github.io/virtual-office/emotion-studio/" target="_blank" rel="noopener">✎ OPEN EMOTION STUDIO</a></div>
-      <p class="hint" id="emotionDatabaseStatus" role="status">STARTER EMOTIONS LOADING · Connect Drive for your edited Emotion Studio projects.</p>
-      <p class="hint">Preview reads the same 64×112 / SE, SW, NE, NW atlas format as Emotion Studio. Press PLAY to see all animation frames. Facial pixels are read-only in Mahluk Hidup 2.</p>
-      <div class="plane-buttons"><button id="emotionKey">◆ SET EMOTION KEY</button><button id="emotionUnkey">◇ DELETE KEY</button></div>
-      <p class="hint" id="emotionStatus">Original face plane · 1 frame</p>
+    <section class="ins-section" id="emotionPreviewSection">
+      <div class="sectionhead">EMOSI.EXE / FACE PREVIEW <span class="readonly-stamp">READ ONLY</span></div>
+      <p class="hint">Pilih emosi dari EMOSI.EXE lalu lihat animasinya menempel pada karakter saat idle. Edit pixel dan frame tetap hanya di EMOSI.EXE.</p>
+      <div class="emotion-preview-source">
+       <label class="selectline">SEARCH EMOTION DATABASE
+        <input id="emotionSearch" type="search" autocomplete="off" placeholder="Cari nama ekspresi ..."></label>
+       <label class="selectline">EMOTION / IDLE FACE
+        <select id="emotionAsset" aria-label="Pilih emosi dari EMOSI.EXE">
+         <option value="native:neutral">ORIGINAL / NEUTRAL</option>
+        </select></label>
+       <div class="plane-buttons">
+        <button id="emotionRefresh" type="button">↻ LOAD EMOSI DATABASE</button>
+        <a class="emotion-studio-link" href="https://lafrich.github.io/virtual-office/emotion-studio/" target="_blank" rel="noopener">↗ OPEN EMOSI.EXE</a>
+       </div>
+       <p class="hint" id="emotionDatabaseStatus" role="status">LOADING EMOSI.EXE · Same-browser database + optional Google Drive.</p>
+      </div>
+      <div class="emotion-preview-layout">
+       <div class="emotion-preview-screen">
+        <canvas id="emotionPreviewCanvas" width="256" height="448" aria-label="Live character idle with animated facial-expression plane. Drag to reposition face." tabindex="0"></canvas>
+        <span class="emotion-preview-watermark">IDLE CHARACTER + FACE LOOP</span>
+       </div>
+       <div class="emotion-preview-controls">
+        <div class="emotion-preview-direction" role="group" aria-label="Character preview direction">
+         <button type="button" data-emo-dir="se" class="active">SE</button>
+         <button type="button" data-emo-dir="sw">SW</button>
+         <button type="button" data-emo-dir="ne">NE</button>
+         <button type="button" data-emo-dir="nw">NW</button>
+        </div>
+        <div class="emotion-preview-buttons">
+         <button type="button" id="emotionPreviewPlay">Ⅱ PAUSE</button>
+         <label><input id="emotionPreviewLoop" type="checkbox" checked> LOOP</label>
+        </div>
+        <label class="emotion-preview-scrubber">FRAME
+         <input id="emotionPreviewScrub" type="range" min="0" max="0" step="1" value="0">
+        </label>
+        <span class="emotion-preview-readout" id="emotionPreviewReadout">FRAME 1/1 · 6 FPS</span>
+        <div class="sectionhead">FACE PLACEMENT</div>
+        <label class="emotion-preview-all"><input id="emotionPlacementAll" type="checkbox" checked> APPLY PLACEMENT TO ALL 4 VIEWS</label>
+        <div class="emotion-preview-values">
+         <label>X <input id="emotionOffsetX" type="number" min="-40" max="40" step=".5" value="0"></label>
+         <label>Y <input id="emotionOffsetY" type="number" min="-56" max="56" step=".5" value="0"></label>
+         <label>SCALE <input id="emotionScale" type="number" min=".4" max="2.5" step=".05" value="1"></label>
+        </div>
+        <div class="plane-buttons">
+         <button id="emotionPlacementReset" type="button">↶ RESET PLACEMENT</button>
+         <button id="emotionPlacementSave" type="button">▣ SAVE ASSIGNMENT</button>
+        </div>
+        <p class="hint">Drag karakter di preview untuk menggeser wajah, atau atur X/Y/Scale. Placement disimpan ke karakter; atlas emosi asli tidak diedit.</p>
+       </div>
+      </div>
+      <p class="hint" id="emotionStatus" aria-live="polite">NEUTRAL · READY TO PREVIEW</p>
+      <p class="hint">Same browser: EMOSI.EXE entries load from local IndexedDB. Different device: save to Google Drive in EMOSI.EXE and connect Drive here. Save Root persists the assigned emotion and placement.</p>
+      <div hidden aria-hidden="true">
+       <button id="emotionKey" type="button">SET EMOTION KEY</button>
+       <button id="emotionUnkey" type="button">DELETE EMOTION KEY</button>
+      </div>
     </section>
     <section class="ins-section"><div class="sectionhead">ACCESSORIES / SEPARATE PLANES</div>
       <p class="hint">Glasses is its own transparent plane attached to the head. Changing the emotion does not move or replace the glasses.</p>
