@@ -3,7 +3,7 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions,D=window.MH2DriveSync,EP=window.MH2EmotionPreview,WH=window.MH2WholeHead;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions,D=window.MH2DriveSync,EP=window.MH2EmotionPreview,WH=window.MH2WholeHead,FB=window.MH2FacelessBases;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const ARM_BONES=new Set(["shoulder_l","elbow_l","wrist_l","shoulder_r","elbow_r","wrist_r"]);
@@ -26,7 +26,7 @@ let camera={x:0,y:0},view="iso",axis="x",transformMode="move",drag=null,identifi
 let inspectPlaneDepth=false,planeGap=2,orbitTool=false,selectMode=false; // Viewer-only camera and direct-selection state.
 let rigRules=R&&G?G.defaults(R):null;
 let pixelPlanes={},planeImages=new Map(),planeImageRevision=0,planeEditor=null;
-let headMerged=false,wholeHeadCache=null;
+let headMerged=false,wholeHeadCache=null,facelessBase=null;
 function invalidateHead(){wholeHeadCache=null}
 let undoStack=[],redoStack=[],restoring=false,pinch=null;
 let githubMessage='Checking GitHub master...';
@@ -75,7 +75,7 @@ let workspaceSaveTimer=null,workspaceDirty=false;
 const touchPoints=new Map(),MAX_UNDO=70;
 const studio=$("editor"),game=$("game");
 function snapshot(){
- return clone({state,base,tracks,rigRules,pixelPlanes,headMerged,emotionAssetId,emotionKeys,emotionPlacement,glassesAssetId,
+ return clone({state,base,tracks,rigRules,pixelPlanes,headMerged,facelessBase,emotionAssetId,emotionKeys,emotionPlacement,glassesAssetId,
   selected,type,outfit,bodyPlane,clip,frames,fps,frame,identifier,characterName:$("characterName").value});
 }
 
@@ -118,6 +118,7 @@ function restore(snapshotValue){
   state=R.normalize(snapshotValue.state);base=R.normalize(snapshotValue.base);
   tracks=clone(snapshotValue.tracks);rigRules=G.normalize(snapshotValue.rigRules,R);
   headMerged=snapshotValue.headMerged===true;
+  facelessBase=FB.normalize(snapshotValue.facelessBase);
   setPixelPlanes(snapshotValue.pixelPlanes||{});
   emotionAssetId=snapshotValue.emotionAssetId||'native:neutral';
   emotionKeys=clone(snapshotValue.emotionKeys||[]);
@@ -295,7 +296,7 @@ async function ensurePixelImages(ids){
 function wholeHeadAtlas(){
  if(!wholeHeadCache)wholeHeadCache=WH.composite({
   slots,
-  allowed:s=>!E.slotKind(s)&&slotAllowed(s),
+  allowed:s=>!E.slotKind(s)&&slotAllowed(s)&&FB.headSlotAllowed(s,facelessBase),
   getNative:s=>images.get(s.src),
   getOverride:id=>planeImages.get(id)||null,
   flattened:headMerged,
@@ -354,7 +355,7 @@ async function openPlaneEditor(){
  const id=selected;
  if(id==='emotion'){setStatus('EMOSI PIXELS ARE READ ONLY HERE · USE EMOSI.EXE',true);return}
  if(!manifest||!planeEditor||!R.BMAP[id]||G.HIDDEN.has(id)||WH.EXCLUDED.has(id))return;
- if(!renderableIds().includes(id)){
+ if(!renderableIds().includes(id)&&!(facelessBase&&FB.editable(id))){
   setStatus('SELECT AN EDITABLE HEAD OR BODY PLANE',false);return;
  }
  if(planeEditor.isOpen())return;
@@ -417,6 +418,7 @@ function getEmotionAsset(id){
  if(id.startsWith("native:")){
   // Only neutral remains a local fallback. Authored emotions live in Emotion Studio.
   const name=id.slice(7);
+  if(name==='none')return {id,frames:1,native:'none'};
   return name==="neutral"&&(manifest?.emotions||[]).includes(name)?{id,frames:1,native:name}:null;
  }
  return emotionDatabase.get(id)||publishedAssets.find(a=>a.id===id&&a.base===type)||
@@ -439,7 +441,7 @@ function faceSource(direction,emotion){
 }
 function sourceImage(asset,dir,f){
  if(!asset)return null;
- if(asset.native)return {image:faceSource(dir,asset.native),sx:0,sy:0};
+ if(asset.native)return asset.native==='none'?null:{image:faceSource(dir,asset.native),sx:0,sy:0};
  if(asset.id==="native"){
   const slot=slots.find(E.glassesSlot),img=slot&&images.get(slot.src);
   return img?{image:img,sx:0,sy:DIR.indexOf(dir)*112}:null;
@@ -480,7 +482,7 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode,hitOut=null){
   }
   // Native Human anatomy contains neutral eye/mouth cutouts. Suppress
   // them: one explicit Emotion Plane owns the whole face, never the rig.
-  if(type!=="original"&&FACE.has(s.bone))continue;
+  if((type!=="original"||facelessBase)&&FACE.has(s.bone))continue;
   if(slotAllowed(s))ordered.push({kind:"body",bone:s.bone,
    i:B.drawIndex(s,i,slots,bodyPlane,type),s});
  }
@@ -1004,6 +1006,7 @@ function assetOptions(){
  const opt=(list,value,label)=>{
   const o=document.createElement('option');o.value=value;o.textContent=label;list.append(o);
  };
+ opt(emotion,'native:none','NO FACE / EMPTY');
  opt(emotion,'native:neutral','SOURCE / NEUTRAL FALLBACK');
  opt(glass,'native','ORIGINAL GLASSES / V6B');
  opt(glass,'none','NONE / HIDE');
@@ -1244,6 +1247,8 @@ function saveGame(){
   sheet:rootSheet,frames:1,frame_ms:[Math.round(1000/fps)],loop:true
  }};
  const record={format:"mahluk-2-character-v1",version:1,id,name,
+  ...(facelessBase?{facelessBase,rigSystem:'v6b',
+    presetRevision:FB.PRESET_REV}:{}),
   role:"character-root",actionEditor:"mahluk-hidup-1.0",base:type,template_base:type==="female"?"human_female_base":"human_male_base",
   outfit,bodyPlane,model:R.normalize(state),rest:R.normalize(base),tracks:clone(tracks),frames,fps,clip:clipId,
   emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys),placement:clone(emotionPlacement)},accessoryPlanes:{glasses:glassesAssetId},
@@ -1270,14 +1275,16 @@ function loadRecord(id){
  const r=getLibrary().find(r=>r.id===id);if(!r)return;
  remember();
  identifier=r.id;type=["original","male","female"].includes(r.base)?r.base:"original";
+ facelessBase=FB.normalize(r.facelessBase);
  outfit=r.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,r.bodyPlane===undefined?B.defaultForBase(type):r.bodyPlane);clip="idle";
  // Preserve saved character paintings even when a general master exists.
  // Master defaults fill missing bones; they must never overwrite local edits.
  const general=masterDocument(),own=G.sanitizePixelPlanes(r.pixelPlanes||{},R);
- rigRules=G.normalize(r.driveFileId?r.rigRules:(general?.rules||r.rigRules),R);
+ rigRules=G.normalize(facelessBase?r.rigRules:
+  r.driveFileId?r.rigRules:(general?.rules||r.rigRules),R);
  headMerged=r.headMerged===true||
-   (!Object.hasOwn(own,'head')&&general?.headMerged===true);
- setPixelPlanes(r.driveFileId?own:{...(general?.pixelPlanes||{}),...own});
+   (!facelessBase&&!Object.hasOwn(own,'head')&&general?.headMerged===true);
+ setPixelPlanes(r.driveFileId||facelessBase?own:{...(general?.pixelPlanes||{}),...own});
  emotionAssetId=typeof r.emotionPlane?.asset==='string'?r.emotionPlane.asset:'native:neutral';
  emotionKeys=Array.isArray(r.emotionPlane?.keys)?r.emotionPlane.keys.filter(k=>typeof k?.asset==='string'&&Number.isInteger(k.frame)).slice(0,48):[];
  emotionPlacement=EP.placement(r.emotionPlane?.placement);
@@ -1292,7 +1299,7 @@ function loadRecord(id){
  $("characterName").value=r.name;assetOptions();applyState();setStatus("OPENED "+r.name+" / EDIT MODULAR PLANES",true);
 }
 function newCharacter(){
- remember();identifier=null;type="original";outfit="outfit";bodyPlane="current";clip="idle";frames=1;fps=12;frame=0;
+ remember();identifier=null;facelessBase=null;type="original";outfit="outfit";bodyPlane="current";clip="idle";frames=1;fps=12;frame=0;
  const general=masterDocument();rigRules=G.normalize(general?.rules,R);
  headMerged=general?.headMerged===true;
  setPixelPlanes(general?.pixelPlanes||{});
@@ -1307,7 +1314,7 @@ function projectExport(){
  const payload={format:"mahluk-2-project-v1",name:$("characterName").value,id:identifier,base:type,outfit,bodyPlane,clip,model:state,rest:base,tracks,frames,fps,
   emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys),placement:clone(emotionPlacement)},accessoryPlanes:{glasses:glassesAssetId},
   rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
-  pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),headMerged,
+  pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),headMerged,facelessBase,
   embeddedAssets:userAssets.filter(a=>needed.has(a.id))};
  download("mahluk_2_project.json",new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}));
 }
@@ -1317,11 +1324,11 @@ function importProject(file){
   if(v.format!=="mahluk-2-project-v1")throw Error("Unknown Mahluk 2.0 project");
   remember();
   identifier=typeof v.id==="string"&&/^mh2_[a-z0-9]+$/.test(v.id)?v.id:null;
-  type=["original","male","female"].includes(v.base)?v.base:"original";outfit=v.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,v.bodyPlane===undefined?B.defaultForBase(type):v.bodyPlane);clip="idle";
+  type=["original","male","female"].includes(v.base)?v.base:"original";facelessBase=FB.normalize(v.facelessBase);outfit=v.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,v.bodyPlane===undefined?B.defaultForBase(type):v.bodyPlane);clip="idle";
   state=R.normalize(v.model);base=R.normalize(v.rest||v.model);tracks=R.makeTracks();
   rigRules=G.normalize(v.rigRules||masterDocument()?.rules,R);
   headMerged=v.headMerged===true;
-  setPixelPlanes(v.pixelPlanes||masterDocument()?.pixelPlanes||{});
+  setPixelPlanes(v.pixelPlanes||(facelessBase?{}:(masterDocument()?.pixelPlanes||{})));
   for(const node of R.BONES){for(const k of v.tracks?.[node.id]||[]){if(k&&k.value&&Number.isInteger(k.frame))R.key(tracks,node.id,k.frame,k.value,k.emotion,k.faceEmotion)}}
   frames=1;fps=Math.round(clamp(v.fps||12,1,30));
   if(Array.isArray(v.embeddedAssets)&&v.embeddedAssets.length){
@@ -1420,18 +1427,18 @@ function setupEvents(){
    paint();
   };
  }
- $("modelType").onchange=e=>{remember();type=e.target.value;
+ $("modelType").onchange=e=>{remember();facelessBase=null;type=e.target.value;
   bodyPlane=B.defaultForBase(type);invalidateHead();
   if(!getEmotionAsset(emotionAssetId)){emotionAssetId="native:neutral";emotionKeys=[]}
   assetOptions();setProjectFields();buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
- $("outfit").onchange=e=>{remember();outfit=e.target.value;invalidateHead();buildTree();paint()};
+ $("outfit").onchange=e=>{remember();facelessBase=null;outfit=e.target.value;invalidateHead();buildTree();paint()};
  $("bodyPlane").onchange=e=>{
   const next=B.matchingBase(type,e.target.value);if(next===bodyPlane){e.target.value=bodyPlane;return}
   const chosen=slots.filter(s=>s.gender===next&&s.layer_type==="body"&&B.isBodyBone(s.bone));
   if(next!=="current"&&!chosen.length){
    e.target.value=bodyPlane;setStatus("NUDE BODY SOURCE NOT AVAILABLE YET",false);return;
   }
-  remember();bodyPlane=next;invalidateHead();setProjectFields();buildTree();paint();
+  remember();facelessBase=null;bodyPlane=next;invalidateHead();setProjectFields();buildTree();paint();
   setStatus(next==="current"?
    "✓ ORIGINAL BODY RESTORED · EVERYTHING ELSE UNCHANGED":
    "✓ "+next.toUpperCase()+" NUDE BODY PLANES ACTIVE · HEAD / FACE / ACCESSORIES / RIG UNCHANGED",true);
@@ -1742,7 +1749,7 @@ function setupEvents(){
  requestAnimationFrame(tick);
 }
 async function mount(){
- if(!R||!E||!G||!B||!P||!V||!S||!U||!EP||!WH){setStatus('RIG / EMOSI PREVIEW / FOUR-VIEW ENGINE NOT FOUND',false);return}
+ if(!R||!E||!G||!B||!P||!V||!S||!U||!EP||!WH||!FB){setStatus('RIG / EMOSI PREVIEW / FOUR-VIEW ENGINE NOT FOUND',false);return}
  setupEvents();
  try{
   const resp=await fetch("../media/original-rig/manifest.json",{cache:"no-store"});
