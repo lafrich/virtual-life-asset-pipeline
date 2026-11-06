@@ -46,7 +46,7 @@ test("2.0 editor has asset pickers, independent glasses import and published gam
  for(const id of ["emotionAsset","emotionRefresh","emotionDatabaseStatus","emotionKey","emotionUnkey",
   "glassesAsset","glassesImport","game","editor"])
   assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(app,/emotionPlane:\{asset:emotionAssetId,keys:clone\(emotionKeys\)\}/);
+ assert.match(app,/emotionPlane:\{asset:emotionAssetId,keys:clone\(emotionKeys\),placement:clone\(emotionPlacement\)\}/);
  assert.match(app,/accessoryPlanes:\{glasses:glassesAssetId\}/);
  assert.match(app,/new StorageEvent\("storage"/);
  assert.ok(!html.includes('id="emotionImport"'),"Use Emotion Studio for pixel authoring, Mahluk 2 for read-only face preview");
