@@ -31,12 +31,36 @@ let githubMessage='Checking GitHub master...';
 const emotionDatabase=new Map(),emotionFrames=new Map();
 let emotionDatabaseLoading=false;
 let cloudRecords=new Map();
+let workspaceSaveTimer=null,workspaceDirty=false;
 const touchPoints=new Map(),MAX_UNDO=70;
 const studio=$("editor"),game=$("game");
 function snapshot(){
  return clone({state,base,tracks,rigRules,pixelPlanes,emotionAssetId,emotionKeys,glassesAssetId,
   selected,type,outfit,bodyPlane,clip,frames,fps,frame,identifier,characterName:$("characterName").value});
 }
+
+function workspaceDraftDocument(){
+ return {format:"mahluk-2-workspace-draft-v1",workspace:snapshot(),
+  savedAt:new Date().toISOString()};
+}
+function flushWorkspaceDraft(){
+ if(!manifest)return null;
+ const doc=workspaceDraftDocument();
+ try{localStorage.setItem(DRAFT,JSON.stringify(doc))}
+ catch(e){setStatus("WORKSPACE BACKUP FAILED: "+e.message,false);return null}
+ return doc;
+}
+function scheduleWorkspaceDraftSave(){
+ if(restoring||!manifest)return;
+ workspaceDirty=true;
+ if(workspaceSaveTimer)clearTimeout(workspaceSaveTimer);
+ workspaceSaveTimer=setTimeout(()=>{
+  workspaceSaveTimer=null;
+  const doc=flushWorkspaceDraft();
+  if(doc)window.dispatchEvent(new CustomEvent("mahluk2:workspace-draft-edited",{detail:{doc}}));
+ },3400);
+}
+
 function historyButtons(){
  $("undo").disabled=!undoStack.length;$("redo").disabled=!redoStack.length;
 }
@@ -45,7 +69,7 @@ function remember(){
  const value=snapshot(),last=undoStack[undoStack.length-1];
  if(last&&JSON.stringify(last)===JSON.stringify(value))return;
  undoStack.push(value);if(undoStack.length>MAX_UNDO)undoStack.shift();
- redoStack=[];historyButtons();
+ redoStack=[];historyButtons();scheduleWorkspaceDraftSave();
 }
 function restore(snapshotValue){
  restoring=true;playing=false;$("play").textContent="▶ PLAY";
@@ -1210,6 +1234,10 @@ function setupEvents(){
  $("emotionRefresh").onclick=loadDriveEmotions;
  window.addEventListener("mahluk2:drive-connected",()=>void loadDriveEmotions());
  $("glassesImport").onchange=e=>{importPlanePng(e.target.files?.[0],"glasses");e.target.value=""};
+ for(const field of ["characterName","frameCount","fps","clip"]){
+  $(field)?.addEventListener("change",scheduleWorkspaceDraftSave);
+ }
+ studio?.addEventListener("pointerup",scheduleWorkspaceDraftSave);
  $("emotionKey").onclick=setEmotionKey;
  $("emotionUnkey").onclick=removeEmotionKey;
  $("frameCount").onchange=e=>{remember();frames=Math.round(clamp(e.target.value,1,48));frame=0;makeTimeline();paint()};
@@ -1427,7 +1455,12 @@ async function mount(){
   if(general?.defaultParts){state=R.normalize({parts:general.defaultParts});base=R.normalize(state)}
   setPixelPlanes(general?.pixelPlanes||{});
   updateLibrary();applyState();masterMessage();historyButtons();
-  setStatus("V6B PLANES + MASTER RIG RULES READY · SAVE TO SYNC",true);
+  const recovered=safeGet(DRAFT,null);
+  if(recovered?.format==="mahluk-2-workspace-draft-v1"&&D?.validWorkspaceDraft(recovered)){
+   try{restore(recovered.workspace);workspaceDirty=false;
+    setStatus("✓ LOCAL WORKSPACE AUTO-RESTORED · CONNECT GOOGLE FOR CLOUD SYNC",true)}
+   catch(error){setStatus("WORKSPACE RESTORE SKIPPED: "+error.message,false)}
+  }else setStatus("V6B PLANES + MASTER RIG RULES READY · SAVE TO SYNC",true);
  }catch(error){sourceError=String(error.message||error);setStatus("LOAD FAILED · "+sourceError,false)}
 }
 
@@ -1435,6 +1468,26 @@ async function mount(){
 window.MH2DriveAdapter=Object.freeze({
  ready:()=>!!manifest,
  activeIdentifier:()=>identifier,
+ workspaceHasUnsavedEdits:()=>workspaceDirty,
+ workspaceDraft:()=>workspaceDraftDocument(),
+ localWorkspaceDraft:()=>safeGet(DRAFT,null),
+ flushWorkspaceDraft:()=>flushWorkspaceDraft(),
+ markWorkspaceSynced(doc){
+  if(doc?.workspace&&JSON.stringify(snapshot())===JSON.stringify(doc.workspace))
+   workspaceDirty=false;
+ },
+ restoreWorkspaceDraft(doc){
+  if(!D?.validWorkspaceDraft(doc))throw Error("Incompatible Google Drive workspace draft");
+  if(workspaceDirty)throw Error("Current editor has unsaved edits. Save your workspace before restoring cloud.");
+  const previous=safeGet(DRAFT,null);
+  if(previous){
+   try{localStorage.setItem("mahluk2-workspace-before-cloud-v1",JSON.stringify(previous))}
+   catch(e){throw Error("Cannot safely back up local workspace: "+e.message)}
+  }
+  localStorage.setItem(DRAFT,JSON.stringify(doc));
+  restore(doc.workspace);workspaceDirty=false;
+  setStatus("✓ DRIVE EDITOR WORKSPACE LOADED · ALL POSES/KEYFRAMES/PIXELS PRESERVED",true);
+ },
  localRecords:()=>getLibrary(),
  localSavedRoots:()=>getLocalLibrary(),
  importCloudRoot(record,{overwrite=false}={}){
