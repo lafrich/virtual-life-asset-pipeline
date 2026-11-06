@@ -406,6 +406,10 @@ jobs:
               exit 1
             fi
           done
+      # GitHub Pages releases a canceled deployment lock asynchronously.
+      # Give the Pages API a brief settling window before submitting the next build.
+      - name: Allow canceled Pages deployments to settle
+        run: sleep 15
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
