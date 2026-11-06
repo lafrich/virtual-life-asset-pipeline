@@ -236,7 +236,29 @@ function selectCharacter(character) {
   });
 }
 
+async function refreshEmosiFaces() {
+  const bridge=window.VLMahlukEmosiBridge;
+  if(!bridge)return;
+  const status=$("emosi-sync-status");
+  if(status)status.textContent="MEMBACA DATABASE EMOSI.EXE ...";
+  try {
+    const result=await bridge.refresh();
+    if(state.selected){
+      const previous=state.expression?.id;
+      buildFaces(state.selected);
+      if(state.mode==="face"&&previous?.startsWith("emosi_")){
+        const face=state.selected.expressions.find(e=>e.id===previous);
+        if(face)selectFace(face);
+      }
+    }
+    if(status)status.textContent="EMOSI.EXE SYNC · "+result.count+" EKSPRESI"+
+      (result.published?" · PUBLISHED + LOCAL":" · LOCAL");
+  } catch(error) {
+    if(status)status.textContent="EMOSI SYNC GAGAL · "+error.message;
+  }
+}
 function buildFaces(character) {
+  window.VLMahlukEmosiBridge?.apply(character);
   const container = $("face-grid");
   container.replaceChildren();
   const faces = Array.isArray(character.expressions) ? character.expressions : [];
@@ -402,7 +424,7 @@ function selectFace(face) {
   if($("motion-auto-face"))$("motion-auto-face").checked=false;
   // Expression pixels only exist on the front SE/SW source views. Show a
   // visible face immediately instead of staying on an automatic/rear view.
-  if (face.sheet && (state.direction === "auto" || Number(state.direction) >= 2)) {
+  if ((face.sheet || face.source==="emosi") && (state.direction === "auto" || Number(state.direction) >= 2)) {
     state.direction = "0";
     syncDirectionButtons();
   }
@@ -1065,6 +1087,18 @@ function draw() {
   }
   if (state.image?.complete && state.image.naturalWidth) {
     if (state.mode === "face") {
+      // EMOSI.EXE owns transparent face-only RGBA frames, not full-body sheets.
+      if(state.expression?.source==="emosi"){
+        const idleRow=(state.selected.row_starts?.idle??4)+d;
+        const baseFrame=state.frame%Math.max(1,state.selected.idle_frames||4);
+        drawHumanBaseFrame(state.image,baseFrame*64,idleRow*112,x,y,64*z,112*z);
+        if(state.faceOverlay?.naturalWidth){
+          const f=state.frame%Math.max(1,state.expression.frames||1);
+          ctx.drawImage(state.faceOverlay,f*64,d*112,64,112,x,y,64*z,112*z);
+        }
+        drawEquippedAccessory(x,y,z,d);
+        return;
+      }
       // Actual character's own 4-frame idle / blink and expression overlays,
       // not the original Ichsan character or a photograph/video filter.
       const row = (state.selected.row_starts?.idle ?? 4) + d;
@@ -1112,7 +1146,12 @@ function draw() {
           x,y+breath,64*z,112*z);
         // Expression blend is pixel-aligned on the selected actor's native
         // 44-row sheet; never apply original-row deltas onto unrelated custom rigs.
-        if (!sleepPose && !synced && !custom && state.expression && state.faceOverlay?.naturalWidth) {
+        if (!sleepPose && !synced && !custom && state.expression?.source==="emosi" &&
+            ["walk","idle"].includes(motion?.id) && state.faceOverlay?.naturalWidth) {
+          const faceFrame=state.frame%Math.max(1,state.expression.frames||1);
+          ctx.drawImage(state.faceOverlay,faceFrame*64,d*112,64,112,x,y,64*z,112*z);
+        }
+        if (!sleepPose && !synced && !custom && state.expression?.source!=="emosi" && state.expression && state.faceOverlay?.naturalWidth) {
           ctx.drawImage(state.faceOverlay,state.frame*64,row*112,64,112,x,y,64*z,112*z);
           if (state.expression.id !== "blink" && state.lastBlink === 1 &&
               state.blinkOverlay?.naturalWidth) {
@@ -1213,7 +1252,7 @@ function exportActionSheet() {
     if (!synced && action.source === "native" && state.expression && state.faceOverlay?.naturalWidth) {
       context.drawImage(state.faceOverlay,frame*64,(action.row+dir)*112,64,112,
         frame*64,dir*112,64,112);
-      if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
+      if (!emosiFace && state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
         context.drawImage(state.blinkOverlay,frame*64,(action.row+dir)*112,64,112,
           frame*64,dir*112,64,112);
     }
@@ -1225,7 +1264,8 @@ function exportActionSheet() {
 function exportFaceSheet() {
   if (!state.selected || !state.expression || !state.image?.naturalWidth) return;
   const customFace = Boolean(state.expression.sheet);
-  const frames = customFace ? state.expression.frames : state.selected.idle_frames || 4;
+  const emosiFace=state.expression.source==="emosi";
+  const frames = customFace||emosiFace ? state.expression.frames : state.selected.idle_frames || 4;
   if (customFace && !state.faceImage?.naturalWidth) {
     return setStatus("FACE SPRITES NOT YET LOADED.");
   }
@@ -1237,12 +1277,13 @@ function exportFaceSheet() {
   for (let dir = 0; dir < 4; dir++) {
     for (let frame = 0; frame < frames; frame++) {
       const row = customFace ? dir : (state.selected.row_starts?.idle ?? 4) + dir;
-      const sourceX = frame * 64, sourceY = row * 112;
+      const sourceX = (customFace?frame:frame%Math.max(1,state.selected.idle_frames||4))*64, sourceY = row * 112;
       const x = frame * 64, y = dir * 112;
       context.drawImage(customFace ? state.faceImage : state.image,
         sourceX,sourceY,64,112,x,y,64,112);
       if (!customFace && state.faceOverlay?.naturalWidth)
-        context.drawImage(state.faceOverlay,sourceX,sourceY,64,112,x,y,64,112);
+        context.drawImage(state.faceOverlay,emosiFace?frame*64:sourceX,
+          emosiFace?dir*112:sourceY,64,112,x,y,64,112);
       // Showcase the blink on frame 2 of the native idle breathing cycle.
       if (state.expression.id !== "blink" && frame === 2 && state.blinkOverlay?.naturalWidth)
         context.drawImage(state.blinkOverlay,sourceX,sourceY,64,112,x,y,64,112);
@@ -1497,6 +1538,7 @@ async function init() {
     $("status-asset-count").textContent = total;
     resetCustomForm();
     renderFileList();
+    void refreshEmosiFaces();
     if (!state.characters.length) {
       $("canvas-loading").hidden = true;
       setStatus(CHAR_RESET?.active?CHAR_RESET.message:"NO ASSETS YET.");
@@ -1549,4 +1591,8 @@ document.addEventListener("mahluk:pose-saved",()=>{
     buildMotions(state.selected);
   }
 });
+$("sync-emosi")?.addEventListener("click",()=>void refreshEmosiFaces());
+window.addEventListener("focus",()=>void refreshEmosiFaces());
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)void refreshEmosiFaces()});
+window.addEventListener("storage",event=>{if(event.key==="emotion-studio-local-fallback-v1")void refreshEmosiFaces()});
 init();

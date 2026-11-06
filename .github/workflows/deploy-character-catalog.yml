@@ -26,7 +26,6 @@ on:
       - ".github/workflows/validate-original-rig.yml"
       - "assets/**"
       - "site/**"
-      - "tests/test_mahluk2_*.cjs"
       - "tests/test_pose_maker.cjs"
       - "tests/test_modular_rig_v2.cjs"
       - "tests/test_native_rig_partition.py"
@@ -138,6 +137,8 @@ jobs:
           node --check site/action-scene-editor.js
           node tests/test_action_scene_bridge.cjs
           node tests/test_action_pose_depth.cjs
+          node --check site/emosi-bridge.js
+          node --test tests/test_mahluk1_emotion_sync.cjs
           node --check site/app.js
           node --check site/custom-character-wardrobe.js
           node tests/test_custom_character_creator.cjs
@@ -151,31 +152,12 @@ jobs:
           python -m py_compile tools/build_original_rig_layers.py
           python -m unittest discover -s tests -p test_native_rig_partition.py
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
-          node --check site/mahluk-2/studio.js
           node --check site/emotion-studio/emotion-library.js
           node --check site/emotion-studio/studio.js
           node --test tests/test_emotion_studio.cjs
           test -s site/emotion-studio/index.html
           test -s site/emotion-studio/studio.css
           python -m json.tool site/emotion-studio/catalog.json > /dev/null
-          node --check site/mahluk-2/emotion-planes.js
-          node --check site/mahluk-2/github-master-sync.js
-          node --test tests/test_mahluk2_github_sync.cjs
-          node --check site/mahluk-2/rig-rules.js
-          node --check site/mahluk-2/body-planes.js
-          node --check site/mahluk-2/pixel-selection.js
-          node --check site/mahluk-2/plane-pixel-editor.js
-          node --test tests/test_mahluk2_pixel_select_overlay.cjs
-          node --test tests/test_mahluk2_clipboard.cjs
-          node --check site/mahluk-2/view-projection.js
-          node --test tests/test_mahluk2_orbit_depth.cjs
-          node --test tests/test_mahluk2_root_grid_zoom.cjs
-          node --test tests/test_mahluk2_pixel_editor.cjs
-          node --test tests/test_mahluk2_nude_body_planes.cjs
-          node --test tests/test_mahluk2_emotion_planes.cjs
-          node --test tests/test_mahluk2_rig_rules.cjs
-          test -s site/mahluk-2/index.html
-          test -s site/mahluk-2/studio.css
           node --check site/modular-rig-v2.js
           node --check site/rig-studio-v2.js
           node --check site/rig-manual-art.js
@@ -269,6 +251,7 @@ jobs:
           python -c 'from PIL import Image; from pathlib import Path; p=Path("_site/assets/street_vehicles"); assert Image.open(p/"cars/bus_transjakarta_se.png").mode=="RGBA"; assert Image.open(p/"riders/gojek_se.png").mode=="RGBA"; print("Street vehicle originals published for Semesta")'
       - name: Check built site files
         run: |
+          test -s _site/emosi-bridge.js
           test -s _site/index.html
           test -s _site/style.css
           test -s _site/media/original-rig/manifest.json
@@ -276,22 +259,13 @@ jobs:
           test -s _site/media/original-rig/rotation-qa.png
           python -c 'import json,pathlib; s=pathlib.Path("_site"); m=json.loads((s/"media/original-rig/manifest.json").read_text()); parts=m["slots"]; assert m["anatomy_layers_shared_across_outfits"]; assert m["outfit_layer_mode"]=="additive_native_garments"; assert all(len([p for p in parts if p.get("gender")==g and p.get("layer_type")==t])>=(8 if t=="body" else 3) for g in ("male","female") for t in ("body","garment")); assert (s/m["rotation_qa"]).is_file(); print("Verified independently layered human anatomy and removable garments for both genders")'
           test -s _site/media/original-rig/source-contact-sheet.png
-          test -s _site/mahluk-2/index.html
           test -s _site/emotion-studio/index.html
           test -s _site/emotion-studio/catalog.json
           test -s _site/emotion-studio/studio.js
           test -s _site/emotion-studio/emotion-library.js
-          test -s _site/mahluk-2/studio.js
-          test -s _site/mahluk-2/emotion-planes.js
-          test -s _site/mahluk-2/rig-rules.js
-          test -s _site/mahluk-2/body-planes.js
-          test -s _site/mahluk-2/pixel-selection.js
-          test -s _site/mahluk-2/plane-pixel-editor.js
-          test -s _site/mahluk-2/view-projection.js
           test -s _site/emotion-studio/catalog.json
           node --check _site/emotion-studio/emotion-library.js
           python -c 'import json; from pathlib import Path; d=json.loads(Path("_site/emotion-studio/catalog.json").read_text()); assert d["format"]=="mahluk-2-universal-emotions-v1"; assert len(d["entries"])>=10; print("Verified universal Emotion Studio source")'
-          test -s _site/mahluk-2/studio.css
           test -s _site/modular-rig-v2.js
           test -s _site/rig-studio-v2.js
           test -s _site/rig-manual-art.js

@@ -14,7 +14,7 @@ test("GitHub has a single universal catalog with several editable templates",()=
  assert.ok(d.entries.every(x=>x.frames>0&&x.frames<=48));
  assert.ok(!read("site/emotion-studio/studio.js").includes("localStorage"),"Emotion Studio must not save to local browser storage");
 });
-test("Emotion Studio reuses the existing Mahluk 2 pixel editor and publishes GitHub updates",()=>{
+test("Emotion Studio uses standalone shared pixel editor and publishes GitHub updates",()=>{
  const html=read("site/emotion-studio/index.html"),js=read("site/emotion-studio/studio.js");
  for(const id of ["cards","timeline","name","base","fps","token","connect","save","pixelOverlay","pixelCanvas","pixelApply","pixelSaveDefault","preview"])assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/mahluk-2\/plane-pixel-editor\.js/);
@@ -25,22 +25,11 @@ test("Emotion Studio reuses the existing Mahluk 2 pixel editor and publishes Git
  assert.match(js,/function applyFrame\(/);
  assert.match(js,/beforeunload/);
 });
-test("Mahluk 2 previews published and Drive emotions without allowing face-pixel editing",()=>{
- const html=read("site/mahluk-2/index.html"),js=read("site/mahluk-2/studio.js");
- const drive=read("site/mahluk-2/drive-sync.js");
- assert.match(html,/\.\.\/emotion-studio\/emotion-library\.js/);
- assert.match(html,/id="emotionAsset"/);
- assert.match(html,/id="emotionRefresh"/);
- assert.match(html,/id="emotionDatabaseStatus"/);
- assert.ok(!html.includes('id="emotionImport"'),"No duplicate Emotion Pixel Editor/PNG import inside Mahluk 2");
- assert.match(js,/async function installEmotionEntries\(/);
- assert.match(js,/async function loadDriveEmotions\(/);
- assert.match(js,/await U\.renderAtlas\(entry\)/);
- assert.match(js,/if\(selected==="emotion"\)/);
- assert.match(js,/EMOSI PIXELS ARE READ ONLY HERE/);
- assert.match(drive,/loadEmotionDatabase/);
- assert.match(drive,/Emotion Studio/);
- assert.ok(!js.includes("loadUniversalAssets()"),"Only read-only preview data is connected, not cross-app writes");
+test("Mahluk Hidup 1 reads published and local Emosi faces non-destructively",()=>{
+ const bridge=read("site/emosi-bridge.js");
+ assert.match(bridge,/emotion-studio-local-v1/);
+ assert.match(bridge,/U\\.loadCatalog/);
+ assert.match(bridge,/source:"emosi"/);
 });
 test("GitHub integration uses authenticated content API without persisting credentials",()=>{
  const js=read("site/emotion-studio/emotion-library.js");
