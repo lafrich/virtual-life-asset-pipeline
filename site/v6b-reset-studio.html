@@ -20,20 +20,26 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 [hidden]{display:none!important}a{color:#2459a5}#animation-list{display:grid;gap:5px}#animation-list button{text-align:left}
 @media(max-width:870px){main{grid-template-columns:1fr 1fr}.viewport{min-height:400px}}@media(max-width:620px){main{display:flex;flex-direction:column}canvas#stage{width:256px;height:448px}body{padding:3px}}
 </style>
-<link rel="stylesheet" href="./emotion-studio/shared-pixel-ui.css"><script defer src="./emotion-studio/shared-pixel-selection.js"></script><script defer src="./emotion-studio/shared-pixel-editor.js"></script><script defer src="./emotion-studio/emotion-library.js"></script>
+<link rel="stylesheet" href="./emotion-studio/shared-pixel-ui.css"><script defer src="./emotion-studio/shared-pixel-selection.js"></script><script defer src="./emotion-studio/shared-pixel-editor.js"></script><script defer src="./emotion-studio/emotion-library.js"></script><script defer src="./v6b-part-transfer.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script defer src="../virtual-office/emotion-studio/drive-sync.js"></script>
 </head><body><div class="app">
 <header><div><h1>MAHLUK HIDUP · V6B STUDIO</h1><small>BODY + MOTION + EMOSI.EXE · 64×112 PX</small></div><a style="color:white" href="./index.html">LEGACY STUDIO</a></header>
-<nav><button class="active" data-tab="characters">01 · CHARACTER</button><button data-tab="pixels">02 · PIXEL EDIT</button><button data-tab="actions">03 · ACTIONS</button><button data-tab="emotions">04 · EMOSI.EXE</button></nav>
+<nav><button class="active" data-tab="characters">01 · CHARACTERS</button><button data-tab="parts">02 · BODY PARTS</button><button data-tab="pixels">03 · FRAMES</button><button data-tab="actions">04 · ACTIONS</button><button data-tab="emotions">05 · EMOSI.EXE</button></nav>
 <main><section class="panel">
 <h2>CHARACTER BASE</h2>
-<div class="control"><label>BODY TEMPLATE</label><select id="body"><option value="ichsan">ICHSAN · ORIGINAL V6B</option><option value="male">MALE · BALD · NUDE</option><option value="female">FEMALE · BALD · NUDE</option></select></div>
+<div class="control"><label>BODY TEMPLATE</label><select id="body"><option value="male">HUMAN MALE · NUDE V6B SOURCE</option><option value="female">HUMAN FEMALE · NUDE V6B SOURCE</option></select></div>
 <div class="control"><label>CHARACTER NAME</label><input id="name" value="NEW HUMAN"></div>
 <div class="control"><label>DIRECTION</label><select id="direction"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></div>
-<div class="control"><label>SKIN TONE</label><input type="color" id="skin" value="#d6a585"></div>
+<p class="note">Original authored human v6b assets. Edit anatomy and skin pixels with BODY PARTS. Ichsan is archived as a character sample, not a template.</p><div class="control"><label>REFERENCE SKIN TONE</label><input type="color" id="skin" value="#d6a585" disabled></div>
 <hr>
-<div id="pixels" hidden><h2>PIXEL EDITOR · FULL TOOLSET</h2><button id="open-pixel" style="width:100%">OPEN NATIVE PIXEL EDITOR / CURRENT FRAME</button><p class="note">Native grid, select, copy/paste, flip, picker, zoom, undo/redo.</p><p class="note">Paint on current view. Changes are saved as transparent correction pixels on top of procedural body art.</p>
+<div id="parts" hidden><h2>ORIGINAL V6B ANATOMY</h2>
+ <p class="note">Source parts from the existing Male/Female nude rig (not cropped from Ichsan). Select a bone to edit its exact four-direction RGBA source with the full Emosi.exe-quality editor.</p>
+ <div class="control"><label>BODY PART / BONE</label><select id="part-select"><option value="">LOADING SOURCE PARTS...</option></select></div>
+ <button id="open-part" style="width:100%">✎ EDIT SELECTED BODY PART</button>
+ <button id="restore-part" style="width:100%">↶ RESET SELECTED PART TO ORIGINAL</button>
+ <p class="note" id="parts-info">The source part patch follows the native bone in idle, walk and authored V6B actions; use FRAME OVERRIDE for exact pose corrections.</p></div>
+<div id="pixels" hidden><h2>FRAME OVERRIDE · FULL PIXEL EDITOR</h2><button id="open-pixel" style="width:100%">OPEN NATIVE PIXEL EDITOR / CURRENT FRAME</button><p class="note">Native grid, select, copy/paste, flip, picker, zoom, undo/redo.</p><p class="note">Override only the chosen animation frame. Native body parts, motions and other frames stay intact.</p>
 <div class="buttons"><button id="pencil" class="active">PENCIL</button><button id="eraser">ERASE</button></div><div class="control"><label>PIXEL COLOR</label><input type="color" id="paint-color" value="#bf8e70"></div><button id="clear-view">CLEAR EDITED PIXELS / VIEW</button></div>
 <div id="actions" hidden><h2>STOCK MOTIONS</h2><div id="animation-list"></div><hr>
 <div class="control"><label>FPS</label><input type="number" min="1" max="30" id="fps" value="12"></div>
@@ -51,13 +57,13 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <div class="viewport"><canvas id="stage" width="64" height="112"></canvas></div>
 <p class="note">V6B frame: 64×112 · pivot (32,100) · SE / SW / NE / NW. Pixel correction is stored separately for every direction.</p></section>
 <section class="panel"><h2>INSTALL / EXPORT</h2><div class="control"><label>INSTALLED ACTION</label><select id="motion"></select></div>
-<button id="install-stock">+ INSTALL SELECTED STOCK</button><p class="note">Ichsan uses original v6b sprite frames. Procedural bases use generated movement; imported motion packages remain separately editable.</p><hr>
+<button id="install-stock">+ INSTALL SELECTED STOCK</button><p class="note">Male/Female actions use their OWN authored V6B sprites (not a procedural wobble). Import a V6B atlas PNG for an additional motion; edit frames after installation.</p><hr>
 <div class="buttons"><button id="save-local">SAVE CHARACTER</button><button id="load-local">LOAD SAVED</button></div><hr>
 <div class="buttons"><button id="export-json">EXPORT V6B JSON</button><button id="import-json">IMPORT V6B JSON</button></div>
 <input id="import-file" type="file" accept=".json,application/json" hidden><hr>
-<div class="buttons"><button id="import-motion">INSTALL V6B MOTION JSON</button><button id="export-motion">EXPORT MOTION JSON</button></div><input id="motion-file" type="file" accept=".json,application/json" hidden><hr><button id="export-sheet">EXPORT ACTION SHEET PNG</button>
-<p class="note">Exports frames in four direction rows, using the same 64×112 tile size. JSON contains editable motion curves/settings and pixel corrections.</p>
-<hr><a href="../virtual-office/emotion-studio/" target="_blank" rel="noopener">OPEN EMOSI.EXE · GOOGLE DRIVE VERSION</a><p class="note">Saved Drive emotions live in Membangun / Emotion Studio. Existing emotion files, characters, and animations are not deleted.</p>
+<div class="buttons"><button id="import-motion">INSTALL V6B MOTION JSON</button><button id="export-motion">EXPORT MOTION JSON</button></div><button id="import-atlas" style="width:100%">＋ INSTALL V6B ACTION ATLAS PNG</button><input id="atlas-file" type="file" accept=".png,image/png" hidden><input id="motion-file" type="file" accept=".json,application/json" hidden><hr><button id="export-sheet">EXPORT ACTION SHEET PNG</button>
+<p class="note">Exports source character JSON with body-part edits, frame overrides and custom animation atlases. V6B action PNG: 64×N width, 448 height (SE/SW/NE/NW). Pivot 32,100.</p>
+<hr><a href="../virtual-office/emotion-studio/" target="_blank" rel="noopener">OPEN EMOSI.EXE · GOOGLE DRIVE VERSION</a><p class="note">Emotions come from the canonical Emosi.exe Google Drive database. Existing assets and saved characters are not deleted.</p>
 </section></main><div id="status" role="status">READY · V6B BODY CONTRACT</div></div>
 <div id="pixelOverlay" class="pixel-overlay" hidden>
  <section class="pixel-dialog" role="dialog" aria-modal="true" aria-labelledby="pixelTitle">
@@ -147,12 +153,16 @@ const $=id=>document.getElementById(id),DIR=["se","sw","ne","nw"],FW=64,FH=112,P
 const ROWMAP={walk:0,idle:4,talk:8,sit:12,sit_type:16,sleep:20,tired:24,swim:28,float:32,lie:36,perch:40};
 const STOCK=["idle","walk","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"];
 const KEY="mahluk-v6b-simple-studio-v1";let editor="characters",painting=false,eraser=false,frame=0,playing=false,last=0,emotions=new Map();
-const neutral=(id)=>({id:id==="ichsan"?"ichsan_v6b_original":("human_"+id+"_base"),name:id==="ichsan"?"ICHSAN · V6B ORIGINAL":"NEW "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="female"?"#d9a989":"#d6a585",pixels:{se:[],sw:[],ne:[],nw:[]},frameEdits:{},actions:Object.fromEntries(STOCK.map(a=>[a,{fps:a==="walk"?12:8,arm:2,stride:4,bob:1,source:id==="ichsan"?"ichsan-v6b-original":"v6b-procedural-stock-v1",action:a}])),current:"idle",emotion:"",faceOffset:[0,0]});
-let model=neutral("ichsan");const original=new Image();original.src="./media/ichsan-sheet.png";let originalReady=false;original.onload=()=>{originalReady=true;draw();status("ICHSAN V6B · ORIGINAL ANIMATION SHEET LOADED")};original.onerror=()=>status("ORIGINAL ICHSAN SHEET UNAVAILABLE · CHECK PAGES DEPLOY");
+const neutral=(id)=>({id:"human_"+id+"_base",name:"NEW HUMAN "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="female"?"#d9a989":"#d6a585",pixels:{se:[],sw:[],ne:[],nw:[]},partEdits:{},frameEdits:{},customSheets:{},actions:{idle:{fps:4,frames:4,source:"v6b-native",action:"idle"},walk:{fps:7,frames:6,source:"v6b-native",action:"walk"}},current:"idle",emotion:"",faceOffset:[0,0]});
+let model=neutral("male"),editMode="frame",activePart="";
+let nativeCatalog=null,sourceManifest=null,nativeReady=false;
+const sourcePartImages=new Map(),motionPartImages=new Map(),frameOverrideImages=new Map(),partEditImages=new Map(),sheetImages=new Map(),patchCache=new Map(),sourcePartRows=new Map(),motionPartsByGender=new Map();
+const sheetLoad=(url,cache=sheetImages)=>{if(!url)return null;if(cache.has(url))return cache.get(url);const im=new Image();im.onload=()=>{patchCache.clear();draw()};im.onerror=()=>{status("NATIVE ASSET MISSING: "+url)};im.src=url;cache.set(url,im);return im};
+const imageReady=im=>im&&im.complete&&im.naturalWidth>0;
 const status=s=>$("status").textContent=s,clone=x=>JSON.parse(JSON.stringify(x));
 const c=$("stage"),cx=c.getContext("2d",{willReadFrequently:true});cx.imageSmoothingEnabled=false;
 function applyUI(){ $("body").value=model.body_type;$("name").value=model.name;$("skin").value=model.skin;$("motion").value=model.current;$("emotion").value=model.emotion;$("face-x").value=model.faceOffset[0];$("face-y").value=model.faceOffset[1];syncMotionUI();}
-function syncMotionUI(){const m=model.actions[model.current]||{fps:12,arm:2,stride:4,bob:1};for(const k of ["fps","arm","stride","bob"])$(k).value=m[k]??0;const native=model.body_type==="ichsan";for(const k of ["arm","stride","bob"])$(k).disabled=native;const note=$("motion-original-note");if(note)note.textContent=native?"Original Ichsan V6B uses authored pixel frames. Modify them in PIXEL EDIT; FPS remains editable. Movement sliders are disabled because they cannot alter a flattened sprite correctly.":"Procedural base motion: arm, stride and bounce settings are editable."}
+function syncMotionUI(){const m=model.actions[model.current]||{fps:8,arm:0,stride:0,bob:0};for(const k of ["fps","arm","stride","bob"])$(k).value=m[k]??0;for(const k of ["arm","stride","bob"])$(k).disabled=true;const note=$("motion-original-note");if(note)note.textContent="AUTHOR-ANIMATED V6B · edits use BODY PARTS or FRAME OVERRIDE. The motion is not procedural; FPS controls playback.";}
 function renderMotions(){const m=$("motion");m.replaceChildren();for(const id of Object.keys(model.actions)){const o=document.createElement("option");o.value=id;o.textContent=id.toUpperCase();m.append(o)}m.value=model.current;const l=$("animation-list");l.replaceChildren();for(const id of STOCK){const b=document.createElement("button");b.textContent=(model.actions[id]?"✓ ":"+ ")+id.toUpperCase();b.onclick=()=>install(id);l.append(b)}}
 function install(id){if(!model.actions[id])model.actions[id]={fps:12,arm:2,stride:4,bob:1,source:"v6b-procedural-stock-v1",action:id};model.current=id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED "+id.toUpperCase()+" · V6B COMPATIBLE");}
 function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));}
@@ -182,7 +192,7 @@ function body(ctx,dir,action,f,opts={}){
  for(const px of model.pixels[dir]||[])box(ctx,px[0],px[1],1,1,px[2]);
 }
 async function emotionImage(entry){if(!entry)return null;try{const a=await window.MH2UniversalEmotions.renderAtlas(entry);return a}catch{return null}}
-const faceCache=new Map(),frameOverrideImages=new Map();let faceSerial=0;
+const faceCache=new Map();let faceSerial=0;
 function restoreFrameOverrides(){frameOverrideImages.clear();for(const [key,url] of Object.entries(model.frameEdits||{})){if(typeof url!=="string"||!url.startsWith("data:image/png"))continue;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}}
 async function setEmotion(id){model.emotion=id;const serial=++faceSerial;if(!id){draw();return}const entry=emotions.get(id);const pic=await emotionImage(entry);if(serial===faceSerial&&pic){faceCache.set(id,pic);draw()}}
 function renderBody(ctx,dir,action,f){const directionIndex=DIR.indexOf(dir),act=(model.actions[action]?.action||model.actions[action]?.based_on||action),row=ROWMAP[act];if(model.body_type==="ichsan"&&originalReady&&Number.isInteger(row)){const srcF=act==="idle"?f%4:f%6;ctx.drawImage(original,srcF*64,(row+directionIndex)*112,64,112,0,0,64,112)}else body(ctx,dir,action,f)}
@@ -190,11 +200,11 @@ function drawTo(ctx,dir,action,f,faceFrame=f){ctx.clearRect(0,0,64,112);const ke
  const atlas=faceCache.get(model.emotion),entry=emotions.get(model.emotion);
  if(atlas&&entry&&(!/^n/.test(dir))){const i=DIR.indexOf(dir),n=entry.frames||1,ox=model.faceOffset[0],oy=model.faceOffset[1];const a=model.actions[action]||{},kind=a.action||action,t=Math.sin((f%6)*Math.PI/3),isWalk=/walk/.test(kind);const bob=isWalk?Math.abs(t)*(a.bob??1):kind==="idle"?(f%3===1?1:0):0;const poseY=/^sit/.test(kind)?13:/sleep|lie|float|swim/.test(kind)?17:0;ctx.drawImage(atlas,(faceFrame%n)*64,i*112,64,112,ox,oy+bob+poseY,64,112);}
 }
-function frameCount(){return model.body_type==="ichsan"&&(model.actions[model.current]?.action||model.current)==="idle"?4:6}
+function frameCount(){return Math.max(1,Number(model.actions[model.current]?.frames)||((model.actions[model.current]?.action||model.current)==="idle"?4:6))}
 function draw(){frame=frame%frameCount();$("frame-index").max=String(frameCount()-1);drawTo(cx,$("direction").value,model.current,frame);$("frame-index").value=frame;$("readout").textContent=model.current.toUpperCase()+" · "+$("direction").value.toUpperCase()+" · FRAME "+(frame+1)+" / "+frameCount()+" · "+(model.actions[model.current]?.fps||12)+" FPS"}
-function tab(id){editor=id;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));for(const p of ["pixels","actions","emotions"])$(p).hidden=p!==id;status("ACTIVE TAB: "+id.toUpperCase());}
+function tab(id){editor=id;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));for(const p of ["parts","pixels","actions","emotions"])$(p).hidden=p!==id;status("ACTIVE TAB: "+id.toUpperCase());}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
-$("body").onchange=()=>{model=neutral($("body").value);restoreFrameOverrides();renderMotions();applyUI();loadEmotions();draw();status("SWITCHED TO "+model.body_type.toUpperCase()+" BASE · ORIGINAL ICHSAN STOCK PRESERVED")};
+$("body").onchange=()=>{model=neutral($("body").value);restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();loadEmotions();draw();status("LOADED ORIGINAL "+model.body_type.toUpperCase()+" NUDE V6B SOURCE")};
 $("name").oninput=()=>model.name=$("name").value;
 $("skin").oninput=()=>{model.skin=$("skin").value;draw()};
 $("direction").onchange=draw;$("motion").onchange=()=>{model.current=$("motion").value;syncMotionUI();frame=0;draw()};
@@ -216,7 +226,7 @@ function validMotion(m){return m&&m.format==="mahluk-v6b-motion-v1"&&typeof m.id
 $("export-motion").onclick=()=>download(model.current+"_motion.json",new Blob([JSON.stringify(packageMotion(),null,2)],{type:"application/json"}));
 $("import-motion").onclick=()=>$("motion-file").click();
 $("motion-file").onchange=async e=>{try{const file=e.target.files?.[0];if(!file)return;const m=JSON.parse(await file.text());if(!validMotion(m))throw Error("Motion package incompatible: requires v6b 64×112, pivot 32/100, four views, 6 frames and supported action");model.actions[m.id]={...m.parameters,fps:m.fps,action:m.action,source:m.source||"v6b-imported",based_on:m.action};model.current=m.id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED EXTERNAL V6B MOTION: "+m.id)}catch(err){status("MOTION IMPORT FAILED: "+err.message)}e.target.value=""};
-function valid(m){return m?.format==="mahluk-v6b-character-v1"&&["ichsan","male","female"].includes(m.body_type)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&m.pixels&&DIR.every(d=>Array.isArray(m.pixels[d]))&&m.actions&&typeof m.actions==="object";}
+function valid(m){return m?.format==="mahluk-v6b-character-v1"&&["male","female"].includes(m.body_type)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&m.pixels&&DIR.every(d=>Array.isArray(m.pixels[d]))&&m.actions&&typeof m.actions==="object";}
 $("save-local").onclick=()=>{try{localStorage.setItem(KEY,JSON.stringify(model));status("CHARACTER SAVED TO THIS BROWSER · EXPORT JSON TO MOVE DEVICES")}catch(e){status("SAVE FAILED: "+e.message)}};
 $("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));if(!valid(m))throw Error("No compatible saved character");model=m;restoreFrameOverrides();renderMotions();applyUI();setEmotion(m.emotion);draw();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
 $("export-json").onclick=exportJSON;
