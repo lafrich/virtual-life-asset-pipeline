@@ -37,7 +37,7 @@ test("Mahluk 2 previews published and Drive emotions without allowing face-pixel
  assert.match(js,/async function loadDriveEmotions\(/);
  assert.match(js,/await U\.renderAtlas\(entry\)/);
  assert.match(js,/if\(selected==="emotion"\)/);
- assert.match(js,/EMOTION IS READ-ONLY HERE/);
+ assert.match(js,/EMOSI PIXELS ARE READ ONLY HERE/);
  assert.match(drive,/loadEmotionDatabase/);
  assert.match(drive,/Emotion Studio/);
  assert.ok(!js.includes("loadUniversalAssets()"),"Only read-only preview data is connected, not cross-app writes");
