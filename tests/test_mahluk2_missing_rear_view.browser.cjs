@@ -55,7 +55,8 @@ async function capture(page,direction){
   const errors=[];page.on('pageerror',err=>errors.push(err.stack||err.message));
   const manifest={format:'mahluk-original-source-rig-v1',art_style:'original_v6b',
    emotions:['neutral'],directions:DIR,slots:Object.keys(BOUNDS).map(bone=>({
-    bone,src:'media/original-rig/'+bone.replaceAll('_','-')+'.png',source:'body'
+    bone,src:'media/original-rig/'+bone.replaceAll('_','-')+'.png',
+    source:'body',gender:'female',layer_type:'body'
    }))};
   await page.route('**/media/original-rig/manifest.json*',r=>
    r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(manifest)}));
@@ -79,6 +80,9 @@ async function capture(page,direction){
   await page.waitForFunction(()=>
    document.getElementById('status')?.textContent.includes('READY')&&
    document.querySelector('#previewSE canvas')===null,null,{timeout:40000});
+  // User screenshot is HUMAN FEMALE BASE with the nude BODY PLANE.
+  await page.locator('#modelType').selectOption('female');
+  assert.equal(await page.locator('#bodyPlane').inputValue(),'female');
   await page.waitForFunction(()=>{
    const c=document.getElementById('previewSW');
    return c?.getContext('2d').getImageData(31,65,1,1).data[1]===209;
@@ -131,7 +135,7 @@ async function capture(page,direction){
   }
   if(errors.length)throw Error(errors.join('\n'));
   console.log(JSON.stringify({result:'PASS',
-   originalCustomRGBA:'unchanged',frontViews:['SE','SW'],
+   originalCustomRGBA:'unchanged',base:'female',frontViews:['SE','SW'],
    recoveredNativeViews:['NE','NW'],heads:'complete',arms:'both sides',
    saveRoot:'preserved',reload:'preserved',sourceSurgery:'none'}));
  }finally{await browser.close();}
