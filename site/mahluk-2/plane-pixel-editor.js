@@ -329,10 +329,23 @@
   }
   function moveSelectionFrom(sourcePixels,rect,dx,dy){
    const x=clamp(dx,-W,W),y=clamp(dy,-H,H);
-   replaceFrame(S.translate(sourcePixels,W,H,rect,x,y));
-   selection={x:clamp(rect.x+x,0,W-1),y:clamp(rect.y+y,0,H-1),
-    w:Math.min(rect.w,W-clamp(rect.x+x,0,W-1)),
-    h:Math.min(rect.h,H-clamp(rect.y+y,0,H-1))};
+   if(moveStart?.floating){
+    const floating=moveStart.floating;
+    const nextX=clamp(floating.x+x,0,W-1);
+    const nextY=clamp(floating.y+y,0,H-1);
+    replaceFrame(S.paste(floating.base,W,H,floating.stamp,{
+     x:nextX,y:nextY,mirror:floating.mirror,replace:floating.replace
+    }));
+    floatingPaste={...floating,x:nextX,y:nextY};
+    selection={x:nextX,y:nextY,
+     w:Math.min(floating.stamp.w,W-nextX),
+     h:Math.min(floating.stamp.h,H-nextY)};
+   }else{
+    replaceFrame(S.translate(sourcePixels,W,H,rect,x,y));
+    selection={x:clamp(rect.x+x,0,W-1),y:clamp(rect.y+y,0,H-1),
+     w:Math.min(rect.w,W-clamp(rect.x+x,0,W-1)),
+     h:Math.min(rect.h,H-clamp(rect.y+y,0,H-1))};
+   }
    draw();updateSelection();
   }
   els.selectAll.onclick=()=>{selection={x:0,y:0,w:W,h:H};selectTool("select");draw();updateSelection()};
