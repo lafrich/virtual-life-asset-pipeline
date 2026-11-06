@@ -7,7 +7,7 @@
  if(typeof module==="object"&&module.exports)module.exports=api;
  if(root)root.MH2PlanePixelEditor=api;
 })(typeof window!=="undefined"?window:null,function(){"use strict";
- const W=64,H=112,DIR=["se","sw","ne","nw"],MAX_HISTORY=24,S=typeof window!=="undefined"?window.MH2PixelSelection:require("./pixel-selection.js");
+ const W=64,H=112,DIR=["se","sw","ne","nw"],MAX_HISTORY=24,S=typeof window!=="undefined"?window.MH2PixelSelection:require("./shared-pixel-selection.js");
  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
  function mirroredX(x,from,to){
   const flip=i=>i===1||i===3; // SW/NW are mirrored camera silhouettes.

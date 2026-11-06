@@ -17,7 +17,7 @@ test("GitHub has a single universal catalog with several editable templates",()=
 test("Emotion Studio uses standalone shared pixel editor and publishes GitHub updates",()=>{
  const html=read("site/emotion-studio/index.html"),js=read("site/emotion-studio/studio.js");
  for(const id of ["cards","timeline","name","base","fps","token","connect","save","pixelOverlay","pixelCanvas","pixelApply","pixelSaveDefault","preview"])assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/mahluk-2\/plane-pixel-editor\.js/);
+ assert.match(html,/shared-pixel-editor\.js/);
  assert.match(js,/P\.create\(/);
  assert.match(js,/U\.saveEntry\(entry,authToken\)/);
  assert.match(js,/function addFrame\(/);
@@ -28,7 +28,7 @@ test("Emotion Studio uses standalone shared pixel editor and publishes GitHub up
 test("Mahluk Hidup 1 reads published and local Emosi faces non-destructively",()=>{
  const bridge=read("site/emosi-bridge.js");
  assert.match(bridge,/emotion-studio-local-v1/);
- assert.match(bridge,/U\\.loadCatalog/);
+ assert.match(bridge,/U\.loadCatalog/);
  assert.match(bridge,/source:"emosi"/);
 });
 test("GitHub integration uses authenticated content API without persisting credentials",()=>{
