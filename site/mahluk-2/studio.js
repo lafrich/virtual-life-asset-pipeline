@@ -163,7 +163,7 @@ async function loadGithubMaster(initial=false){
    localStorage.setItem("mahluk-2-master-local-backup-v1",JSON.stringify(current));
   localStorage.setItem(G.KEY,JSON.stringify(item.doc));S.mark(localStorage,item);
   if(!initial){
-   remember();rigRules=G.normalize(item.doc.rules,R);setPixelPlanes(item.doc.pixelPlanes||{});
+   remember();rigRules=G.normalize(item.doc.rules,R);headMerged=item.doc.headMerged===true;setPixelPlanes(item.doc.pixelPlanes||{});
    base=R.normalize({parts:item.doc.defaultParts});state=R.normalize(base);
    tracks=R.makeTracks();frame=0;frames=1;buildTree();applyState();
   }
@@ -316,6 +316,8 @@ function clearPlanePixel(){
  if(selected==="emotion"){setStatus("EMOTION PIXELS ARE OWNED BY EMOTION STUDIO",true);return}
  if(!pixelPlanes[selected])return;
  remember();delete pixelPlanes[selected];planeImages.delete(selected);
+ if(selected==='head')headMerged=false;
+ if(WH.FUSED.has(selected))invalidateHead();
  buildTree();pixelPlaneStatus();paint();
  setStatus("SOURCE PIXELS RESTORED FOR "+selected.toUpperCase()+" · SAVE GENERAL DEFAULT TO UPDATE MASTER",true);
 }
@@ -728,7 +730,7 @@ function setDirection(dir){
  direction=dir;axisButtons();paint();
 }
 function pick(id){
- if(!R.BMAP[id]||G.HIDDEN.has(id))return;
+ if(!R.BMAP[id]||G.HIDDEN.has(id)||WH.EXCLUDED.has(id))return;
  selected=id;
  for(const element of document.querySelectorAll("[data-bone]"))
   element.classList.toggle("selected",element.dataset.bone===id);
@@ -743,7 +745,7 @@ function pick(id){
  }else{
   select.disabled=false;
   for(const b of R.BONES){
-   if(G.HIDDEN.has(b.id)||!G.canParent(rigRules,id,b.id,R))continue;
+   if(G.HIDDEN.has(b.id)||WH.EXCLUDED.has(b.id)||!G.canParent(rigRules,id,b.id,R))continue;
    const opt=document.createElement("option");opt.value=b.id;opt.textContent=b.label;select.append(opt);
   }
   select.value=parent||"root";
@@ -808,7 +810,7 @@ function buildDrawOrder(){
 function buildTree(){
  const holder=$("tree");holder.replaceChildren();
  const drawable=new Set(renderableIds());
- const valid=R.BONES.filter(b=>!G.HIDDEN.has(b.id));
+ const valid=R.BONES.filter(b=>!G.HIDDEN.has(b.id)&&!WH.EXCLUDED.has(b.id));
  const ids=new Set(valid.map(b=>b.id)),children=new Map();
  for(const b of valid){
   const parent=ids.has(rigRules.parents[b.id])?rigRules.parents[b.id]:null;
@@ -1155,7 +1157,7 @@ function saveGame(){
   outfit,bodyPlane,model:R.normalize(state),rest:R.normalize(base),tracks:clone(tracks),frames,fps,clip:clipId,
   emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys),placement:clone(emotionPlacement)},accessoryPlanes:{glasses:glassesAssetId},
   rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
-  pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),
+  pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),headMerged,
   sprite:rootSheet,clips,updated:Date.now()};
  const next=[...library.filter(r=>r.id!==id),record];
  if(next.length>40){setStatus("CHARACTER LIBRARY FULL (40) · EXPORT/ARCHIVE OLDER ROOTS BEFORE SAVING",false);return}
@@ -1178,9 +1180,13 @@ function loadRecord(id){
  remember();
  identifier=r.id;type=["original","male","female"].includes(r.base)?r.base:"original";
  outfit=r.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,r.bodyPlane===undefined?B.defaultForBase(type):r.bodyPlane);clip="idle";
- // Shared master always takes precedence for new/opened 2.0 characters.
- rigRules=G.normalize(r.driveFileId?r.rigRules:(masterDocument()?.rules||r.rigRules),R);
- setPixelPlanes(r.driveFileId?r.pixelPlanes:(masterDocument()?.pixelPlanes||r.pixelPlanes||{}));
+ // Preserve saved character paintings even when a general master exists.
+ // Master defaults fill missing bones; they must never overwrite local edits.
+ const general=masterDocument(),own=G.sanitizePixelPlanes(r.pixelPlanes||{},R);
+ rigRules=G.normalize(r.driveFileId?r.rigRules:(general?.rules||r.rigRules),R);
+ headMerged=r.headMerged===true||
+   (!Object.hasOwn(own,'head')&&general?.headMerged===true);
+ setPixelPlanes(r.driveFileId?own:{...(general?.pixelPlanes||{}),...own});
  emotionAssetId=typeof r.emotionPlane?.asset==='string'?r.emotionPlane.asset:'native:neutral';
  emotionKeys=Array.isArray(r.emotionPlane?.keys)?r.emotionPlane.keys.filter(k=>typeof k?.asset==='string'&&Number.isInteger(k.frame)).slice(0,48):[];
  emotionPlacement=EP.placement(r.emotionPlane?.placement);
@@ -1197,6 +1203,7 @@ function loadRecord(id){
 function newCharacter(){
  remember();identifier=null;type="original";outfit="outfit";bodyPlane="current";clip="idle";frames=1;fps=12;frame=0;
  const general=masterDocument();rigRules=G.normalize(general?.rules,R);
+ headMerged=general?.headMerged===true;
  setPixelPlanes(general?.pixelPlanes||{});
  emotionAssetId="native:neutral";emotionKeys=[];emotionPlacement=EP.placement();emotionPreviewFrame=0;emotionPreviewElapsed=0;glassesAssetId="native";
  state=general?.defaultParts?R.normalize({parts:general.defaultParts}):R.referencePose();
@@ -1209,7 +1216,7 @@ function projectExport(){
  const payload={format:"mahluk-2-project-v1",name:$("characterName").value,id:identifier,base:type,outfit,bodyPlane,clip,model:state,rest:base,tracks,frames,fps,
   emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys),placement:clone(emotionPlacement)},accessoryPlanes:{glasses:glassesAssetId},
   rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
-  pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),
+  pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),headMerged,
   embeddedAssets:userAssets.filter(a=>needed.has(a.id))};
  download("mahluk_2_project.json",new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}));
 }
@@ -1222,6 +1229,7 @@ function importProject(file){
   type=["original","male","female"].includes(v.base)?v.base:"original";outfit=v.outfit==="base"?"base":"outfit";bodyPlane=B.matchingBase(type,v.bodyPlane===undefined?B.defaultForBase(type):v.bodyPlane);clip="idle";
   state=R.normalize(v.model);base=R.normalize(v.rest||v.model);tracks=R.makeTracks();
   rigRules=G.normalize(v.rigRules||masterDocument()?.rules,R);
+  headMerged=v.headMerged===true;
   setPixelPlanes(v.pixelPlanes||masterDocument()?.pixelPlanes||{});
   for(const node of R.BONES){for(const k of v.tracks?.[node.id]||[]){if(k&&k.value&&Number.isInteger(k.frame))R.key(tracks,node.id,k.frame,k.value,k.emotion,k.faceEmotion)}}
   frames=1;fps=Math.round(clamp(v.fps||12,1,30));
@@ -1245,7 +1253,7 @@ function saveGeneralRig(){
  if(!manifest)return;
  commitUnkeyedPose();
  try{
-  const doc=G.save(window.localStorage,R,rigRules,base.parts,pixelPlanes);
+  const doc=G.save(window.localStorage,R,rigRules,base.parts,pixelPlanes,headMerged);
   githubInfo("Saved locally. "+(S.connected()?"Publishing to GitHub...":"Connect GitHub and click PUBLISH MASTER to sync devices."));
   masterMessage();setStatus("✓ GENERAL DEFAULT RIG SAVED LOCALLY v"+doc.revision,true);
   if(S.connected())void publishGithubMaster();
@@ -1262,7 +1270,7 @@ function saveGeneralPlanePixel(bone,png){
  const parts=prior?.defaultParts||base.parts;
  const merged={...(prior?.pixelPlanes||{}),[bone]:png};
  try{
-  const saved=G.save(window.localStorage,R,rules,parts,merged);
+  const saved=G.save(window.localStorage,R,rules,parts,merged,bone==="head"?true:headMerged);
   githubInfo("Default pixels saved locally. "+(S.connected()?"Publishing...":"Publish the master to GitHub."));
   masterMessage();
   setStatus("✓ GENERAL PIXEL DEFAULT "+bone.toUpperCase()+" · MASTER v"+saved.revision,true);
@@ -1278,6 +1286,7 @@ function loadGeneralRig(){
  if(!saved){setStatus("NO GENERAL DEFAULT RIG SAVED");return}
  remember();
  rigRules=G.normalize(saved.rules,R);
+ headMerged=saved.headMerged===true;
  setPixelPlanes(saved.pixelPlanes||{});
  // Loading hierarchy does not discard the character's keyed animation.
  buildTree();masterMessage();
@@ -1660,6 +1669,7 @@ async function mount(){
   }
   await loadGithubMaster(true);
   const general=masterDocument();rigRules=G.normalize(general?.rules,R);
+  headMerged=general?.headMerged===true;
   if(general?.defaultParts){state=R.normalize({parts:general.defaultParts});base=R.normalize(state)}
   setPixelPlanes(general?.pixelPlanes||{});
   updateLibrary();applyState();masterMessage();historyButtons();
@@ -1772,7 +1782,7 @@ window.MH2DriveAdapter=Object.freeze({
   if(current){try{localStorage.setItem("mahluk2-before-drive-master-v1",JSON.stringify(current))}catch{}}
   remember();
   localStorage.setItem(G.KEY,JSON.stringify(doc));
-  rigRules=G.normalize(doc.rules,R);setPixelPlanes(doc.pixelPlanes||{});
+  rigRules=G.normalize(doc.rules,R);headMerged=doc.headMerged===true;setPixelPlanes(doc.pixelPlanes||{});
   base=R.normalize({parts:doc.defaultParts});state=R.normalize(base);
   tracks=R.makeTracks();frames=1;frame=0;identifier=null;
   buildTree();updateLibrary();applyState();masterMessage();
