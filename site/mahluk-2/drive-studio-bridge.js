@@ -5,7 +5,21 @@
 (function(window){"use strict";
 const D=window.MH2DriveSync,A=window.MH2DriveAdapter;
 const $=id=>document.getElementById(id);
-let loaded=new Map(),masterFile=null,working=false;
+let loaded=new Map(),masterFile=null,working=false,autoSyncing=false;
+const SYNC_KEY="mh2-drive-sync-metadata-v2";
+function syncState(){try{return JSON.parse(localStorage.getItem(SYNC_KEY)||"{}")}catch{return {}}}
+function writeSyncState(data){try{localStorage.setItem(SYNC_KEY,JSON.stringify(data))}catch(e){console.warn("MH2 cloud tracking unavailable",e)}}
+function digest(record){
+ const value=JSON.stringify(record,(k,v)=>
+  ["driveModifiedTime","driveFileId","updatedAt","savedAt","createdAt","cloudSyncHash"].includes(k)?undefined:v);
+ let hash=2166136261;for(let i=0;i<value.length;i++)hash=Math.imul(hash^value.charCodeAt(i),16777619);
+ return String(hash>>>0)+":"+value.length;
+}
+function markSynced(id,remote,record){
+ const data=syncState();data[id]={id:remote.id,modifiedTime:remote.modifiedTime,hash:digest(record)};
+ writeSyncState(data);
+}
+
 function message(msg,error=false){
  const el=$("driveStatus");if(el){el.textContent=msg;el.style.color=error?"#ffb4b4":"#9fe2bc"}
  A?.setStatus?.(msg,!error);
@@ -21,15 +35,82 @@ function updateButtons(){
 }
 async function refresh(){
  if(!D?.connected())throw Error("Connect Google Drive first");
- message("LOADING GOOGLE DRIVE ROOTS + MASTER ...");
+ message("AUTO-LOADING DRIVE CHARACTERS + MASTER + ASSET LIBRARY ...");
  const result=await D.loadAll();
- loaded=new Map(result.records.map(x=>[x.id,x]));
+ loaded=new Map(result.records.map(r=>[r.id,r]));
  masterFile=result.master||null;
  A.updateCloudRecords(result.records);
- message("✓ GOOGLE DRIVE READY · "+loaded.size+" ROOT(S) · "+
-  (masterFile?"MASTER RIG AVAILABLE":"NO MASTER SAVED")+
-  (result.errors.length?" · "+result.errors.length+" invalid file(s) skipped":""));
+ if(!autoSyncing)await autoReconcile(result);
+ message("✓ CLOUD CHARACTER LIBRARY · "+loaded.size+" ROOT(S) · "+
+  (masterFile?"MASTER AVAILABLE":"NO MASTER SAVED")+
+  (result.errors.length?" · "+result.errors.length+" FAILED":"")+
+  " · LOCAL EDITS AUTO-SYNC ON SAVE");
  return result;
+}
+async function autoReconcile(result){
+ if(autoSyncing)return;
+ autoSyncing=true;
+ let imported=0,uploaded=0,conflicts=0,failed=0;
+ try{
+  const local=new Map(A.localSavedRoots().map(x=>[x.id,x])),meta=syncState();
+  for(const cloud of result.records){
+   const own=local.get(cloud.id),prior=meta[cloud.id];
+   try{
+    if(!own){
+     A.importCloudRoot(cloud);markSynced(cloud.id,cloud,cloud);imported++;continue;
+    }
+    const equal=digest(own)===digest(cloud);
+    if(equal){markSynced(cloud.id,cloud,own);continue}
+    if(prior&&prior.hash===digest(own)&&prior.modifiedTime!==cloud.driveModifiedTime){
+     A.importCloudRoot(cloud,{overwrite:true});markSynced(cloud.id,cloud,cloud);imported++;continue;
+    }
+    if(prior&&prior.modifiedTime===cloud.driveModifiedTime&&prior.hash!==digest(own)){
+     if(await uploadRoot(own))uploaded++;else failed++;
+     continue;
+    }
+    conflicts++;
+   }catch(e){failed++;console.warn("MH2 character auto-load failure",cloud.id,e)}
+  }
+  for(const record of local.values()){
+   if(loaded.has(record.id))continue;
+   if(await uploadRoot(record))uploaded++;else failed++;
+  }
+  // Open/import the user's full native + custom asset library automatically.
+  try{
+   const archive=await D.loadLibrary();
+   if(archive){
+    cloudLibraryFile=archive.file;
+    const r=A.restoreLibraryAssets(archive.snapshot);imported+=r.added;
+    const current=A.librarySnapshot();
+    if(digest(current)!==digest(archive.snapshot)){
+     const updated=await D.saveLibrary(current,archive.file.modifiedTime);
+     cloudLibraryFile=updated;uploaded++;
+    }
+   }else if(A.ready()){
+    cloudLibraryFile=await D.saveLibrary(A.librarySnapshot());uploaded++;
+   }
+  }catch(error){failed++;console.warn("MH2 full library auto sync",error)}
+  try{
+   const own=A.localMaster();
+   if(masterFile){
+    const remote=await D.loadMaster(masterFile),prior=syncState()["#master"];
+    if(!own||digest(own)===digest(remote.doc)){
+     if(!own)A.importCloudMasterQuiet(remote.doc);
+     markSynced("#master",masterFile,remote.doc);if(!own)imported++;
+    }else if(prior&&prior.hash===digest(own)&&prior.modifiedTime!==masterFile.modifiedTime){
+     A.importCloudMasterQuiet(remote.doc);
+     markSynced("#master",masterFile,remote.doc);imported++;
+    }else if(prior&&prior.modifiedTime===masterFile.modifiedTime&&prior.hash!==digest(own)){
+     if(await uploadMaster(own))uploaded++;else failed++;
+    }else conflicts++;
+   }else if(D.validMaster(own)){
+    if(await uploadMaster(own))uploaded++;else failed++;
+   }
+  }catch(error){failed++;console.warn("MH2 Master Rig auto-load",error)}
+  message("✓ AUTO SYNC · "+imported+" DOWNLOADED · "+uploaded+" UPLOADED · "+
+   conflicts+" CONFLICT(S) · "+failed+" ERRORS"+(conflicts?" · COMPARE LOCAL/DRIVE BEFORE OVERWRITING":""),
+   !!(conflicts||failed));
+ }finally{autoSyncing=false}
 }
 async function connect(){
  if(working)return;
@@ -51,10 +132,13 @@ async function uploadRoot(record){
  if(!D?.connected()||!record||!D.validCharacter(record))return false;
  try{
   message("SAVING ROOT "+record.name+" TO DRIVE ...");
-  const known=loaded.get(record.id);
+  const known=loaded.get(record.id),prior=syncState()[record.id];
+  if(known&&(!prior||prior.id!==known.driveFileId||prior.modifiedTime!==known.driveModifiedTime))
+   throw Error("CONFLICT: remote character changed or has never been reconciled. Refresh the library first.");
   const result=await D.saveCharacter(record,known?.driveModifiedTime||null);
   const cloud={...record,driveFileId:result.file.id,driveModifiedTime:result.file.modifiedTime};
   loaded.set(record.id,cloud);
+  markSynced(record.id,cloud,record);
   A.updateCloudRecords([...loaded.values()]);
   message("✓ ROOT "+record.name+" SAVED TO GOOGLE DRIVE · PC / HP");
   return true;
@@ -67,8 +151,12 @@ async function uploadMaster(doc){
  if(!D?.connected()||!D.validMaster(doc))return false;
  try{
   message("SAVING MASTER RIG + PIXEL PLANES TO DRIVE ...");
+  const prior=syncState()["#master"];
+  if(masterFile&&(!prior||prior.id!==masterFile.id||prior.modifiedTime!==masterFile.modifiedTime))
+   throw Error("CONFLICT: remote Master Rig version has not been reconciled");
   const result=await D.saveMaster(doc,masterFile?.modifiedTime||null);
   masterFile={id:result.file.id,name:"master-rig.json",modifiedTime:result.file.modifiedTime};
+  markSynced("#master",masterFile,doc);
   message("✓ MASTER RIG v"+doc.revision+" SAVED TO GOOGLE DRIVE · FOUR VIEWS");
   return true;
  }catch(error){message("LOCAL MASTER KEPT · DRIVE SAVE FAILED: "+error.message,true);return false}
