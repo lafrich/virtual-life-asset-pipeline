@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mahluk Hidup — V6B Studio</title>
+<style>
+:root{font-family:Consolas,"Courier New",monospace;color:#18263d;background:#a8bfd5}*{box-sizing:border-box}
+body{margin:0;padding:12px}.app{max-width:1180px;margin:auto;background:#e8ebed;border:2px solid #fff;box-shadow:3px 4px #516b86}
+header{background:linear-gradient(90deg,#164189,#4d89c8);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:17px;margin:0}small{font-size:11px}nav{padding:9px 12px;display:flex;gap:7px;flex-wrap:wrap;background:#dae3eb;border-bottom:1px solid #8c9eaf}
+button,select,input{font:inherit;font-size:12px;border:1px solid #6a7f94;background:#fff;padding:8px;color:#1b3550}
+button{cursor:pointer}button:hover{background:#dce9fb}button.active{background:#174e93;color:white}
+main{display:grid;grid-template-columns:235px 1fr 260px;gap:12px;padding:12px}
+.panel{background:#f5f5f1;border:1px solid #aab7c4;padding:10px;min-width:0}.panel h2{font-size:13px;margin:2px 0 12px}
+.control{display:grid;gap:5px;margin-bottom:12px}.control label{font-size:11px;font-weight:bold}
+.buttons{display:flex;gap:5px;flex-wrap:wrap}.buttons>*{flex:1}
+.viewport{display:grid;place-items:center;background:repeating-conic-gradient(#d6dee7 0 25%,#bfcddc 0 50%) 0 0/20px 20px;min-height:450px;overflow:auto}
+canvas#stage{image-rendering:pixelated;width:256px;height:448px;border:1px solid #597b9c;cursor:crosshair;touch-action:none}
+#status{font-size:11px;padding:9px 12px;background:#d8e7fa;min-height:36px;border-top:1px solid #a8b8c8}
+.note{font-size:11px;line-height:1.5;color:#52677d}input[type=range]{padding:0;width:100%}input[type=color]{height:34px;padding:2px;width:100%}
+hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
+[hidden]{display:none!important}a{color:#2459a5}#animation-list{display:grid;gap:5px}#animation-list button{text-align:left}
+@media(max-width:870px){main{grid-template-columns:1fr 1fr}.viewport{min-height:400px}}@media(max-width:620px){main{display:flex;flex-direction:column}canvas#stage{width:256px;height:448px}body{padding:3px}}
+</style>
+<script defer src="./emotion-studio/emotion-library.js"></script>
+</head><body><div class="app">
+<header><div><h1>MAHLUK HIDUP · V6B STUDIO</h1><small>BODY + MOTION + EMOSI.EXE · 64×112 PX</small></div><a style="color:white" href="./index.html">LEGACY STUDIO</a></header>
+<nav><button class="active" data-tab="characters">01 · CHARACTER</button><button data-tab="pixels">02 · PIXEL EDIT</button><button data-tab="actions">03 · ACTIONS</button><button data-tab="emotions">04 · EMOSI.EXE</button></nav>
+<main><section class="panel">
+<h2>CHARACTER BASE</h2>
+<div class="control"><label>BODY TEMPLATE</label><select id="body"><option value="male">MALE · BALD · NUDE</option><option value="female">FEMALE · BALD · NUDE</option></select></div>
+<div class="control"><label>CHARACTER NAME</label><input id="name" value="NEW HUMAN"></div>
+<div class="control"><label>DIRECTION</label><select id="direction"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></div>
+<div class="control"><label>SKIN TONE</label><input type="color" id="skin" value="#d6a585"></div>
+<hr>
+<div id="pixels" hidden><h2>PIXEL EDITOR</h2><p class="note">Paint on current view. Changes are saved as transparent correction pixels on top of procedural body art.</p>
+<div class="buttons"><button id="pencil" class="active">PENCIL</button><button id="eraser">ERASE</button></div><div class="control"><label>PIXEL COLOR</label><input type="color" id="paint-color" value="#bf8e70"></div><button id="clear-view">CLEAR EDITED PIXELS / VIEW</button></div>
+<div id="actions" hidden><h2>STOCK MOTIONS</h2><div id="animation-list"></div><hr>
+<div class="control"><label>FPS</label><input type="number" min="1" max="30" id="fps" value="12"></div>
+<div class="control"><label>ARM SWING · PIXELS</label><input id="arm" type="range" min="0" max="8" value="2"></div>
+<div class="control"><label>STRIDE · PIXELS</label><input id="stride" type="range" min="0" max="10" value="4"></div>
+<div class="control"><label>BODY BOUNCE · PIXELS</label><input id="bob" type="range" min="0" max="6" value="1"></div>
+<button id="save-action">SAVE AS CUSTOM ACTION</button></div>
+<div id="emotions" hidden><h2>MANUAL FACE ATLAS</h2><p class="note">Reads the original Emosi.exe PNG frames as a single overlay; no eyes/mouth splitting.</p>
+<div class="control"><label>FACE ASSET</label><select id="emotion"><option value="">NO FACE</option></select></div>
+<div class="control"><label>HEAD OFFSET X</label><input id="face-x" type="number" value="0"></div>
+<div class="control"><label>HEAD OFFSET Y</label><input id="face-y" type="number" value="0"></div><button id="reload-emotions">SYNC FROM EMOSI.EXE</button></div>
+</section>
+<section class="panel"><div class="buttons"><button id="play">▶ PLAY</button><button id="reset-frame">RESET FRAME</button></div><p id="readout" class="note"></p>
+<div class="viewport"><canvas id="stage" width="64" height="112"></canvas></div>
+<p class="note">V6B frame: 64×112 · pivot (32,100) · SE / SW / NE / NW. Pixel correction is stored separately for every direction.</p></section>
+<section class="panel"><h2>INSTALL / EXPORT</h2><div class="control"><label>INSTALLED ACTION</label><select id="motion"></select></div>
+<button id="install-stock">+ INSTALL SELECTED STOCK</button><p class="note">All stock movements are procedural transforms. Installing saves motion settings, not a flattened PNG.</p><hr>
+<div class="buttons"><button id="save-local">SAVE CHARACTER</button><button id="load-local">LOAD SAVED</button></div><hr>
+<div class="buttons"><button id="export-json">EXPORT V6B JSON</button><button id="import-json">IMPORT V6B JSON</button></div>
+<input id="import-file" type="file" accept=".json,application/json" hidden><hr>
+<button id="export-sheet">EXPORT ACTION SHEET PNG</button>
+<p class="note">Exports frames in four direction rows, using the same 64×112 tile size. JSON contains editable motion curves/settings and pixel corrections.</p>
+<hr><a href="./emotion-studio/index.html">OPEN EMOSI.EXE</a><p class="note">Existing emotion files, legacy characters, and old animations are not deleted.</p>
+</section></main><div id="status" role="status">READY · V6B BODY CONTRACT</div></div>
+<script>
+(()=>{"use strict";
+const $=id=>document.getElementById(id),DIR=["se","sw","ne","nw"],FW=64,FH=112,PIVOT=[32,100];
+const ROWMAP={walk:0,idle:4,talk:8,sit:12,sit_type:16,sleep:20,tired:24,swim:28,float:32,lie:36,perch:40};
+const STOCK=["idle","walk","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"];
+const KEY="mahluk-v6b-simple-studio-v1";let editor="characters",painting=false,eraser=false,frame=0,playing=false,last=0,emotions=new Map();
+const neutral=(id)=>({id:("human_"+id+"_base"),name:"NEW "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="male"?"#d6a585":"#d9a989",pixels:{se:[],sw:[],ne:[],nw:[]},actions:{idle:{fps:12,arm:2,stride:4,bob:1}},current:"idle",emotion:"",faceOffset:[0,0]});
+let model=neutral("male");
+const status=s=>$("status").textContent=s,clone=x=>JSON.parse(JSON.stringify(x));
+const c=$("stage"),cx=c.getContext("2d",{willReadFrequently:true});cx.imageSmoothingEnabled=false;
+function applyUI(){ $("body").value=model.body_type;$("name").value=model.name;$("skin").value=model.skin;$("motion").value=model.current;$("emotion").value=model.emotion;$("face-x").value=model.faceOffset[0];$("face-y").value=model.faceOffset[1];syncMotionUI();}
+function syncMotionUI(){const m=model.actions[model.current]||{fps:12,arm:2,stride:4,bob:1};for(const k of ["fps","arm","stride","bob"])$(k).value=m[k]??0;}
+function renderMotions(){const m=$("motion");m.replaceChildren();for(const id of Object.keys(model.actions)){const o=document.createElement("option");o.value=id;o.textContent=id.toUpperCase();m.append(o)}m.value=model.current;const l=$("animation-list");l.replaceChildren();for(const id of STOCK){const b=document.createElement("button");b.textContent=(model.actions[id]?"✓ ":"+ ")+id.toUpperCase();b.onclick=()=>install(id);l.append(b)}}
+function install(id){if(!model.actions[id])model.actions[id]={fps:12,arm:2,stride:4,bob:1,source:"v6b-procedural-stock-v1",action:id};model.current=id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED "+id.toUpperCase()+" · V6B COMPATIBLE");}
+function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));}
+function shade(hex,k){let rgb=parseInt(hex.slice(1),16);return "#"+[rgb>>16,(rgb>>8)&255,rgb&255].map(v=>Math.max(0,Math.min(255,Math.round(v*k))).toString(16).padStart(2,"0")).join("");}
+function body(ctx,dir,action,f,opts={}){
+ ctx.imageSmoothingEnabled=false;const skin=model.skin,light=shade(skin,1.12),dark=shade(skin,.82),edge=shade(skin,.63);
+ const a=model.actions[action]||{},n=6,p=f%n,t=Math.sin(p*Math.PI/3);
+ const walk=/walk/.test(action),arms=walk?t*(a.arm??2):0,legs=walk?t*(a.stride??4):0,bob=walk?Math.abs(t)*(a.bob??1):action==="idle"?(f%3===1?1:0):0;
+ const sits=/^sit/.test(action),lies=/sleep|lie|float|swim/.test(action),back=/^n/.test(dir),mirror=/w$/.test(dir);
+ const scaleY=lies?.67:sits?.82:1;
+ ctx.save();if(mirror){ctx.translate(64,0);ctx.scale(-1,1)}
+ ctx.translate(0,bob+(lies?17:sits?13:0));ctx.translate(32,74);ctx.scale(1,scaleY);ctx.translate(-32,-74);
+ // Transparent bald anatomy base, deliberately without face, underwear or outfit.
+ box(ctx,23,16,20,23,edge);box(ctx,25,15,16,21,skin);box(ctx,27,16,10,3,light);
+ box(ctx,29,37,8,7,skin);
+ box(ctx,23,43,20,29,edge);box(ctx,24,43,18,25,skin);
+ box(ctx,26,44,12,13,light);box(ctx,26,61,14,13,dark);
+ if(model.body_type==="female"){box(ctx,22,46,22,10,skin);box(ctx,25,68,17,9,skin)}else{box(ctx,25,48,16,9,skin);box(ctx,25,68,17,7,dark)}
+ // Far arm behind torso visually via shallow shading.
+ box(ctx,19,46+arms,5,25,dark);box(ctx,20,65+arms,5,6,skin);
+ box(ctx,42,46-arms,5,26,skin);box(ctx,42,67-arms,5,6,light);
+ box(ctx,26,75+legs,7,21,dark);box(ctx,36,75-legs,7,21,skin);
+ box(ctx,26,95+legs,8,4,edge);box(ctx,36,95-legs,8,4,edge);
+ if(back){box(ctx,27,44,13,2,dark);box(ctx,29,66,7,5,dark)}
+ ctx.restore();
+ // per-view manual correction painted on 64x112 native grid
+ for(const px of model.pixels[dir]||[])box(ctx,px[0],px[1],1,1,px[2]);
+}
+async function emotionImage(entry){if(!entry)return null;try{const a=await window.MH2UniversalEmotions.renderAtlas(entry);return a}catch{return null}}
+const faceCache=new Map();let faceSerial=0;
+async function setEmotion(id){model.emotion=id;const serial=++faceSerial;if(!id){draw();return}const entry=emotions.get(id);const pic=await emotionImage(entry);if(serial===faceSerial&&pic){faceCache.set(id,pic);draw()}}
+function drawTo(ctx,dir,action,f,faceFrame=f){ctx.clearRect(0,0,64,112);body(ctx,dir,action,f);
+ const atlas=faceCache.get(model.emotion),entry=emotions.get(model.emotion);
+ if(atlas&&entry&&(!/^n/.test(dir))){const i=DIR.indexOf(dir),n=entry.frames||1,ox=model.faceOffset[0],oy=model.faceOffset[1];ctx.drawImage(atlas,(faceFrame%n)*64,i*112,64,112,ox,oy,64,112);}
+}
+function draw(){drawTo(cx,$("direction").value,model.current,frame);$("readout").textContent=model.current.toUpperCase()+" · "+$("direction").value.toUpperCase()+" · FRAME "+(frame+1)+" / 6 · "+(model.actions[model.current]?.fps||12)+" FPS"}
+function tab(id){editor=id;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));for(const p of ["pixels","actions","emotions"])$(p).hidden=p!==id;status("ACTIVE TAB: "+id.toUpperCase());}
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+$("body").onchange=()=>{const old=model;model=neutral($("body").value);model.name=old.name;renderMotions();applyUI();draw();status("BASE SWITCHED · MANUAL PIXELS RESET FOR NEW BODY")};
+$("name").oninput=()=>model.name=$("name").value;
+$("skin").oninput=()=>{model.skin=$("skin").value;draw()};
+$("direction").onchange=draw;$("motion").onchange=()=>{model.current=$("motion").value;syncMotionUI();frame=0;draw()};
+for(const k of ["fps","arm","stride","bob"])$(k).oninput=()=>{model.actions[model.current][k]=Number($(k).value);draw()};
+$("install-stock").onclick=()=>install(model.current);
+$("save-action").onclick=()=>{const name=prompt("Custom action name",model.current+"_custom");if(!name)return;const id=name.toLowerCase().replace(/[^a-z0-9_-]/g,"_").slice(0,50);model.actions[id]={...clone(model.actions[model.current]),source:"custom",based_on:model.current};model.current=id;renderMotions();syncMotionUI();draw();status("CUSTOM ACTION SAVED: "+id)};
+$("pencil").onclick=()=>{eraser=false;$("pencil").classList.add("active");$("eraser").classList.remove("active")};
+$("eraser").onclick=()=>{eraser=true;$("eraser").classList.add("active");$("pencil").classList.remove("active")};
+function paint(e){if(editor!=="pixels")return;const r=c.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)*64/r.width),y=Math.floor((e.clientY-r.top)*112/r.height);if(x<0||x>=64||y<0||y>=112)return;const dir=$("direction").value,p=model.pixels[dir],i=p.findIndex(q=>q[0]===x&&q[1]===y);if(i>=0)p.splice(i,1);if(!eraser)p.push([x,y,$("paint-color").value]);draw();}
+c.addEventListener("pointerdown",e=>{painting=true;c.setPointerCapture(e.pointerId);paint(e)});c.addEventListener("pointermove",e=>{if(painting)paint(e)});c.addEventListener("pointerup",()=>painting=false);c.addEventListener("pointercancel",()=>painting=false);
+$("clear-view").onclick=()=>{model.pixels[$("direction").value]=[];draw();status("VIEW PIXEL CORRECTIONS CLEARED")};
+$("play").onclick=()=>{playing=!playing;$("play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY"};
+$("reset-frame").onclick=()=>{frame=0;draw()};
+function tick(now){if(playing&&now-last>=1000/(model.actions[model.current]?.fps||12)){frame=(frame+1)%6;last=now;draw()}requestAnimationFrame(tick)}requestAnimationFrame(tick);
+function download(filename,blob){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
+function exportJSON(){download((model.id||"character")+".json",new Blob([JSON.stringify(model,null,2)],{type:"application/json"}))}
+function valid(m){return m?.format==="mahluk-v6b-character-v1"&&["male","female"].includes(m.body_type)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&m.pixels&&DIR.every(d=>Array.isArray(m.pixels[d]))&&m.actions&&typeof m.actions==="object";}
+$("save-local").onclick=()=>{try{localStorage.setItem(KEY,JSON.stringify(model));status("CHARACTER SAVED TO THIS BROWSER · EXPORT JSON TO MOVE DEVICES")}catch(e){status("SAVE FAILED: "+e.message)}};
+$("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));if(!valid(m))throw Error("No compatible saved character");model=m;renderMotions();applyUI();setEmotion(m.emotion);draw();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
+$("export-json").onclick=exportJSON;
+$("import-json").onclick=()=>$("import-file").click();
+$("import-file").onchange=async e=>{try{const m=JSON.parse(await e.target.files[0].text());if(!valid(m))throw Error("V6B contract mismatch");model=m;renderMotions();applyUI();await setEmotion(m.emotion);draw();status("V6B CHARACTER IMPORTED")}catch(err){status("IMPORT FAILED: "+err.message)}e.target.value=""};
+$("export-sheet").onclick=()=>{const out=document.createElement("canvas");out.width=64*6;out.height=112*4;const ctx=out.getContext("2d");for(let d=0;d<4;d++)for(let f=0;f<6;f++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;drawTo(tile.getContext("2d"),DIR[d],model.current,f);ctx.drawImage(tile,f*64,d*112)}out.toBlob(blob=>blob&&download(model.current+"_v6b_four_view.png",blob),"image/png");status("EXPORTED 6 FRAMES × 4 DIRECTIONS · V6B NATIVE SIZE")};
+$("emotion").onchange=()=>setEmotion($("emotion").value);
+for(const [id,index] of [["face-x",0],["face-y",1]])$(id).oninput=()=>{model.faceOffset[index]=Math.max(-64,Math.min(64,Number($(id).value)||0));draw()};
+async function loadEmotions(){try{const U=window.MH2UniversalEmotions;if(!U)throw Error("Emotion library not ready");const data=await U.loadCatalog(),select=$("emotion");emotions.clear();select.replaceChildren();const empty=document.createElement("option");empty.value="";empty.textContent="NO FACE";select.append(empty);
+ for(const e of data.catalog.entries){emotions.set(e.id,e);const o=document.createElement("option");o.value=e.id;o.textContent=e.name+" / "+e.base;select.append(o)}select.value=model.emotion;await setEmotion(select.value);status("EMOSI.EXE SYNCED · "+emotions.size+" ATLAS ASSETS")}catch(e){status("EMOSI SYNC ERROR: "+e.message)}}
+$("reload-emotions").onclick=loadEmotions;
+renderMotions();applyUI();draw();loadEmotions();
+})();
+</script></body></html>
