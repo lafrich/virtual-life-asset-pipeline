@@ -110,6 +110,16 @@ async function main(){
   }
   await page.locator('#pixelApply').click();
   await page.waitForFunction(()=>document.getElementById('pixelOverlay').hidden,null,{timeout:15000});
+  // Immediate Save Root must use the live canvas, not stale async PNG decode.
+  await page.locator('#saveChar').click();
+  const immediatelySaved=await page.evaluate(()=>
+   JSON.parse(localStorage.getItem('mahluk-2-library-v1'))?.at(-1));
+  assert.ok(immediatelySaved?.sprite?.startsWith('data:image/png;base64,'),
+   'Save Root failed immediately after four-view Apply');
+  const baked=PNG.sync.read(Buffer.from(immediatelySaved.sprite.split(',')[1],'base64'));
+  for(let d=0;d<4;d++)
+   assert.deepEqual(pix(baked,d,...coords[d]),hex(COLORS[d]),
+    'Immediate Save Root baked an outdated pixel plane in '+DIR[d]);
   // Immediately reopen before asynchronous Image.onload cache completion.
   await page.locator('#openPlaneEditor').click();
   await page.locator('#pixelOverlay:not([hidden])').waitFor({timeout:15000});
