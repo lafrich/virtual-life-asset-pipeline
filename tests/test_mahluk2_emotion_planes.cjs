@@ -10,7 +10,7 @@ test("Emotion Plane is one source asset, separate from head and accessories",()=
  assert.equal(E.slotKind({source:"acc_head",expression:true,bone:"glasses"}),"glasses");
  assert.equal(E.slotKind({source:"hair_front",bone:"fringe_l"}),null);
  const js=fs.readFileSync("site/mahluk-2/studio.js","utf8");
- assert.match(js,/\["HEAD \/ FACE & ACCESSORY",\["head","emotion","glasses"/);
+ assert.match(js,/\["FULL HEAD \/ FACE",\["head","emotion","glasses"/);
  assert.doesNotMatch(js,/\["EYES \/ EXPRESSION"/);
  assert.match(js,/faceSource\(dir,asset.native\)/);
 });
