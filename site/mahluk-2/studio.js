@@ -1435,6 +1435,30 @@ window.MH2DriveAdapter=Object.freeze({
  ready:()=>!!manifest,
  localRecords:()=>getLibrary(),
  localSavedRoots:()=>getLocalLibrary(),
+ importCloudRoot(record,{overwrite=false}={}){
+  if(!D?.validCharacter(record))throw Error("Invalid Google Drive character root");
+  const local=getLocalLibrary(),old=local.find(x=>x.id===record.id);
+  if(old&&!overwrite)return false;
+  if(old){
+   // Keep the previous record before a verified one-sided cloud update.
+   localStorage.setItem("mh2-backup-before-cloud:"+old.id,JSON.stringify(old));
+  }
+  const next=[{...record},...local.filter(x=>x.id!==record.id)];
+  if(next.length>40)throw Error("Local character library is full (40 records)");
+  if(!safePut(STORAGE,next))throw Error("Character library browser storage is full");
+  updateLibrary();
+  return true;
+ },
+ importCloudMasterQuiet(doc){
+  if(!D?.validMaster(doc))throw Error("Invalid Google Drive master rig");
+  const old=masterDocument();
+  if(old&&JSON.stringify(old)!==JSON.stringify(doc))
+   localStorage.setItem("mh2-backup-master-before-cloud-v1",JSON.stringify(old));
+  // Update the default for future characters, without replacing the rig being edited.
+  localStorage.setItem(G.KEY,JSON.stringify(doc));
+  masterMessage();
+  return true;
+ },
  librarySnapshot(){
   if(!manifest)throw Error("Character source manifest not loaded yet");
   const custom=E.safeAssets(window.localStorage);
