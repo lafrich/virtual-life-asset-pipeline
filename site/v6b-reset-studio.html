@@ -62,7 +62,7 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <div class="buttons"><button id="export-json">EXPORT V6B JSON</button><button id="import-json">IMPORT V6B JSON</button></div>
 <input id="import-file" type="file" accept=".json,application/json" hidden><hr>
 <div class="buttons"><button id="import-motion">INSTALL V6B MOTION JSON</button><button id="export-motion">EXPORT MOTION JSON</button></div><button id="import-atlas" style="width:100%">＋ INSTALL V6B ACTION ATLAS PNG</button><input id="atlas-file" type="file" accept=".png,image/png" hidden><input id="motion-file" type="file" accept=".json,application/json" hidden><hr><button id="export-sheet">EXPORT ACTION SHEET PNG</button>
-<p class="note">Exports source character JSON with body-part edits, frame overrides and custom animation atlases. V6B action PNG: 64×N width, 448 height (SE/SW/NE/NW). Pivot 32,100.</p>
+<p class="note">INSTALL ACTION PNG imports real 4-view v6b sprites (64×N by 448), not just metadata. Character JSON includes body-part edits, per-frame overrides, installed PNGs and pivot 32,100. JSON motion variants alone retain their native base action.</p>
 <hr><a href="../virtual-office/emotion-studio/" target="_blank" rel="noopener">OPEN EMOSI.EXE · GOOGLE DRIVE VERSION</a><p class="note">Emotions come from the canonical Emosi.exe Google Drive database. Existing assets and saved characters are not deleted.</p>
 </section></main><div id="status" role="status">READY · V6B BODY CONTRACT</div></div>
 <div id="pixelOverlay" class="pixel-overlay" hidden>
@@ -169,7 +169,7 @@ function setNativeActions(){
  const native={};for(const m of actor.motions||[])if(m.available&&m.sheet||m.available&&m.source==="native")
   native[m.id]={fps:Math.max(1,Math.round(1000/(m.frame_ms?.[0]||170))),
    frames:m.frames||4,action:m.id,source:"v6b-native"};
- const custom=Object.fromEntries(Object.entries(model.actions||{}).filter(([id,a])=>!!model.customSheets?.[id]||a.source==="v6b-atlas-imported"));
+ const custom=Object.fromEntries(Object.entries(model.actions||{}).filter(([id,a])=>!!model.customSheets?.[id]||a.source==="v6b-atlas-imported"||a.source==="v6b-native-variant"));
  model.actions={...native,...custom};
  if(!model.actions[model.current])model.current=model.actions.idle?"idle":Object.keys(model.actions)[0]||"idle";
 }
@@ -300,7 +300,7 @@ $("skin").oninput=()=>{model.skin=$("skin").value;draw()};
 $("direction").onchange=draw;$("motion").onchange=()=>{model.current=$("motion").value;syncMotionUI();frame=0;draw()};
 for(const k of ["fps","arm","stride","bob"])$(k).oninput=()=>{model.actions[model.current][k]=Number($(k).value);draw()};
 $("install-stock").onclick=()=>install(model.current);
-$("save-action").onclick=()=>{const name=prompt("Custom action name",model.current+"_custom");if(!name)return;const id=name.toLowerCase().replace(/[^a-z0-9_-]/g,"_").slice(0,50);model.actions[id]={...clone(model.actions[model.current]),source:"custom",based_on:model.current};model.current=id;renderMotions();syncMotionUI();draw();status("CUSTOM ACTION SAVED: "+id)};
+$("save-action").onclick=()=>{const name=prompt("Custom action name",model.current+"_custom");if(!name)return;const id=name.toLowerCase().replace(/[^a-z0-9_-]/g,"_").slice(0,50);model.actions[id]={...clone(model.actions[model.current]),source:"v6b-native-variant",action:model.actions[model.current]?.action||model.current,based_on:model.current};model.current=id;renderMotions();syncMotionUI();draw();status("CUSTOM ACTION SAVED: "+id)};
 $("pencil").onclick=()=>{eraser=false;$("pencil").classList.add("active");$("eraser").classList.remove("active")};
 $("eraser").onclick=()=>{eraser=true;$("eraser").classList.add("active");$("pencil").classList.remove("active")};
 function paint(e){if(editor!=="pixels")return;const r=c.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)*64/r.width),y=Math.floor((e.clientY-r.top)*112/r.height);if(x<0||x>=64||y<0||y>=112)return;const dir=$("direction").value,p=model.pixels[dir],i=p.findIndex(q=>q[0]===x&&q[1]===y);if(i>=0)p.splice(i,1);if(!eraser)p.push([x,y,$("paint-color").value]);draw();}
@@ -312,10 +312,33 @@ function tick(now){if(playing&&now-last>=1000/(model.actions[model.current]?.fps
 function download(filename,blob){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
 function exportJSON(){download((model.id||"character")+".json",new Blob([JSON.stringify(model,null,2)],{type:"application/json"}))}
 function packageMotion(){const a=model.actions[model.current];return {format:"mahluk-v6b-motion-v1",id:model.current,action:a.action||a.based_on||model.current,frame:[64,112],pivot:[32,100],directions:DIR,frames:frameCount(),fps:a.fps||12,parameters:{arm:a.arm??2,stride:a.stride??4,bob:a.bob??1},source:a.source||"custom"}}
-function validMotion(m){return m&&m.format==="mahluk-v6b-motion-v1"&&typeof m.id==="string"&&/^[a-z0-9_-]{1,60}$/.test(m.id)&&typeof m.action==="string"&&STOCK.includes(m.action)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&[4,6].includes(m.frames)&&Number.isFinite(m.fps)&&m.fps>=1&&m.fps<=30&&m.parameters&&["arm","stride","bob"].every(k=>Number.isFinite(m.parameters[k])&&m.parameters[k]>=0&&m.parameters[k]<=16)}
+function validMotion(m){return m&&m.format==="mahluk-v6b-motion-v1"&&typeof m.id==="string"&&/^[a-z0-9_-]{1,60}$/.test(m.id)&&typeof m.action==="string"&&!!nativeActor()?.motions?.some(a=>a.id===m.action&&a.available&&a.frames===m.frames)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&Number.isFinite(m.fps)&&m.fps>=1&&m.fps<=30&&m.parameters&&["arm","stride","bob"].every(k=>Number.isFinite(m.parameters[k])&&m.parameters[k]>=0&&m.parameters[k]<=16)}
 $("export-motion").onclick=()=>download(model.current+"_motion.json",new Blob([JSON.stringify(packageMotion(),null,2)],{type:"application/json"}));
+$("import-atlas").onclick=()=>$("atlas-file").click();
+$("atlas-file").onchange=async e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ try{
+  const url=URL.createObjectURL(file);
+  const img=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error("PNG decode failed"));im.src=url});
+  const frames=img.naturalWidth/64;
+  if(!Number.isInteger(frames)||frames<1||frames>48||img.naturalHeight!==448)throw Error("PNG must be N × 64 pixels wide and 448 high, four direction rows");
+  const chosen=prompt("Install action ID (unique; lowercase)",file.name.replace(/\.png$/i,"").toLowerCase().replace(/[^a-z0-9_-]/g,"_"));
+  if(!chosen)return;
+  const id=chosen.trim();
+  if(!/^[a-z0-9_-]{1,60}$/.test(id))throw Error("Action ID can contain only a-z, 0-9, _ and -");
+  if(model.actions[id]&&!confirm("Replace existing installed action "+id+"?"))return;
+  const copy=document.createElement("canvas");copy.width=img.naturalWidth;copy.height=448;copy.getContext("2d").drawImage(img,0,0);
+  const data=copy.toDataURL("image/png");
+  URL.revokeObjectURL(url);
+  model.customSheets||={};model.customSheets[id]=data;
+  model.actions[id]={source:"v6b-atlas-imported",action:id,frames,fps:12};
+  model.current=id;frame=0;renderMotions();syncMotionUI();draw();
+  status("INSTALLED V6B ACTION ATLAS "+id.toUpperCase()+" · "+frames+" FRAMES · SE/SW/NE/NW");
+ }catch(error){status("ATLAS IMPORT FAILED: "+error.message)}
+ finally{e.target.value=""}
+};
 $("import-motion").onclick=()=>$("motion-file").click();
-$("motion-file").onchange=async e=>{try{const file=e.target.files?.[0];if(!file)return;const m=JSON.parse(await file.text());if(!validMotion(m))throw Error("Motion package incompatible: requires v6b 64×112, pivot 32/100, four views, 6 frames and supported action");model.actions[m.id]={...m.parameters,fps:m.fps,action:m.action,source:m.source||"v6b-imported",based_on:m.action};model.current=m.id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED EXTERNAL V6B MOTION: "+m.id)}catch(err){status("MOTION IMPORT FAILED: "+err.message)}e.target.value=""};
+$("motion-file").onchange=async e=>{try{const file=e.target.files?.[0];if(!file)return;const m=JSON.parse(await file.text());if(!validMotion(m))throw Error("Motion package incompatible: requires v6b 64×112, pivot 32/100, four views, 6 frames and supported action");model.actions[m.id]={...m.parameters,frames:m.frames,fps:m.fps,action:m.action,source:"v6b-native-variant",based_on:m.action};model.current=m.id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED EXTERNAL V6B MOTION: "+m.id)}catch(err){status("MOTION IMPORT FAILED: "+err.message)}e.target.value=""};
 function valid(m){return m?.format==="mahluk-v6b-character-v1"&&["male","female"].includes(m.body_type)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&m.pixels&&DIR.every(d=>Array.isArray(m.pixels[d]))&&m.actions&&typeof m.actions==="object";}
 $("save-local").onclick=()=>{try{localStorage.setItem(KEY,JSON.stringify(model));status("CHARACTER SAVED TO THIS BROWSER · EXPORT JSON TO MOVE DEVICES")}catch(e){status("SAVE FAILED: "+e.message)}};
 $("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));if(!valid(m))throw Error("No compatible saved character");model=m;restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();setEmotion(m.emotion);draw();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
