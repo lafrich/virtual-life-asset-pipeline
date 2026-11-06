@@ -163,8 +163,55 @@ const status=s=>$("status").textContent=s,clone=x=>JSON.parse(JSON.stringify(x))
 const c=$("stage"),cx=c.getContext("2d",{willReadFrequently:true});cx.imageSmoothingEnabled=false;
 function applyUI(){ $("body").value=model.body_type;$("name").value=model.name;$("skin").value=model.skin;$("motion").value=model.current;$("emotion").value=model.emotion;$("face-x").value=model.faceOffset[0];$("face-y").value=model.faceOffset[1];syncMotionUI();}
 function syncMotionUI(){const m=model.actions[model.current]||{fps:8,arm:0,stride:0,bob:0};for(const k of ["fps","arm","stride","bob"])$(k).value=m[k]??0;for(const k of ["arm","stride","bob"])$(k).disabled=true;const note=$("motion-original-note");if(note)note.textContent="AUTHOR-ANIMATED V6B · edits use BODY PARTS or FRAME OVERRIDE. The motion is not procedural; FPS controls playback.";}
-function renderMotions(){const m=$("motion");m.replaceChildren();for(const id of Object.keys(model.actions)){const o=document.createElement("option");o.value=id;o.textContent=id.toUpperCase();m.append(o)}m.value=model.current;const l=$("animation-list");l.replaceChildren();for(const id of STOCK){const b=document.createElement("button");b.textContent=(model.actions[id]?"✓ ":"+ ")+id.toUpperCase();b.onclick=()=>install(id);l.append(b)}}
-function install(id){if(!model.actions[id])model.actions[id]={fps:12,arm:2,stride:4,bob:1,source:"v6b-procedural-stock-v1",action:id};model.current=id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED "+id.toUpperCase()+" · V6B COMPATIBLE");}
+function nativeActor(){return nativeCatalog?.characters?.find(a=>a.id==="human_"+model.body_type+"_base")}
+function setNativeActions(){
+ const actor=nativeActor();if(!actor)return;
+ const native={};for(const m of actor.motions||[])if(m.available&&m.sheet||m.available&&m.source==="native")
+  native[m.id]={fps:Math.max(1,Math.round(1000/(m.frame_ms?.[0]||170))),
+   frames:m.frames||4,action:m.id,source:"v6b-native"};
+ const custom=Object.fromEntries(Object.entries(model.actions||{}).filter(([id,a])=>!!model.customSheets?.[id]||a.source==="v6b-atlas-imported"));
+ model.actions={...native,...custom};
+ if(!model.actions[model.current])model.current=model.actions.idle?"idle":Object.keys(model.actions)[0]||"idle";
+}
+function renderMotions(){
+ const m=$("motion");m.replaceChildren();
+ for(const id of Object.keys(model.actions||{})){const o=document.createElement("option");o.value=id;o.textContent=id.replaceAll("_"," ").toUpperCase();m.append(o)}
+ m.value=model.current;const l=$("animation-list");l.replaceChildren();
+ const actor=nativeActor();
+ for(const action of (actor?.motions||[]).filter(a=>a.available)){
+  const b=document.createElement("button");b.textContent=(model.actions[action.id]?"✓ ":"+ ")+action.id.replaceAll("_"," ").toUpperCase();
+  b.onclick=()=>install(action.id);l.append(b);
+ }
+}
+function install(id){
+ const a=nativeActor()?.motions?.find(x=>x.id===id&&x.available);
+ if(!a){status("NO AUTHORED V6B MOTION FOR "+id);return}
+ model.actions[id]={fps:Math.max(1,Math.round(1000/(a.frame_ms?.[0]||170))),frames:a.frames||4,source:"v6b-native",action:id};
+ model.current=id;renderMotions();syncMotionUI();frame=0;draw();status("ORIGINAL "+model.body_type.toUpperCase()+" V6B MOTION INSTALLED: "+id);
+}
+function renderPartList(){
+ const select=$("part-select"),remember=select.value;select.replaceChildren();
+ const parts=(sourceManifest?.slots||[]).filter(x=>x.gender===model.body_type&&x.layer_type==="body"&&!/^(eye_|brow_|mouth$|nose$|glasses$|fringe_)/.test(x.bone));
+ const order=["head","neck","torso","pelvis","shoulder_l","shoulder_r","elbow_l","elbow_r","wrist_l","wrist_r","hip_l","hip_r","knee_l","knee_r","ankle_l","ankle_r"];
+ parts.sort((a,b)=>{const x=order.indexOf(a.bone),y=order.indexOf(b.bone);return (x<0?99:x)-(y<0?99:y)||a.bone.localeCompare(b.bone)});
+ for(const p of parts){const o=document.createElement("option");o.value=p.bone;o.textContent=p.bone.replaceAll("_"," ").toUpperCase();select.append(o);sourcePartImages.set(model.body_type+"|"+p.bone,sheetLoad("./"+p.src));}
+ if(parts.length)select.value=parts.some(x=>x.bone===remember)?remember:parts[0].bone;
+ $("parts-info").textContent=parts.length?parts.length+" NATIVE ANATOMY PARTS · 4 DIRECTIONS · Emosi.exe pixel tools · V6B pivot (32,100)":"Original body-part manifest unavailable. Check Pages build.";
+}
+async function loadNative(){
+ const get=async url=>{const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw Error(url+" HTTP "+r.status);return r.json()};
+ const [catalog,manifest,male,female]=await Promise.all([
+  get("./catalog.json"),get("./media/original-rig/manifest.json"),
+  get("./media/human-male-base-motion-parts.json"),
+  get("./media/human-female-base-motion-parts.json")]);
+ if(manifest.format!=="mahluk-original-source-rig-v1")throw Error("Wrong native source manifest");
+ for(const doc of [male,female])if(doc.format!=="mahluk-v6b-motion-parts-v1"||JSON.stringify(doc.frame)!=="[64,112]"||JSON.stringify(doc.pivot)!=="[32,100]")throw Error("V6B action part contract mismatch");
+ nativeCatalog=catalog;sourceManifest=manifest;
+ motionPartsByGender.set("male",male);motionPartsByGender.set("female",female);
+ for(const gender of ["male","female"]){const actor=catalog.characters?.find(a=>a.id==="human_"+gender+"_base");if(!actor||!actor.motions?.some(a=>a.id==="idle"&&a.available)||!actor.motions?.some(a=>a.id==="walk"&&a.available))throw Error("Missing "+gender+" native V6B character");}
+ nativeReady=true;setNativeActions();renderPartList();renderMotions();syncMotionUI();draw();
+ status("NATIVE MALE/FEMALE V6B READY · FRAME-PRECISE BODY PARTS LOADED");
+}
 function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));}
 function shade(hex,k){let rgb=parseInt(hex.slice(1),16);return "#"+[rgb>>16,(rgb>>8)&255,rgb&255].map(v=>Math.max(0,Math.min(255,Math.round(v*k))).toString(16).padStart(2,"0")).join("");}
 function body(ctx,dir,action,f,opts={}){
@@ -195,10 +242,53 @@ async function emotionImage(entry){if(!entry)return null;try{const a=await windo
 const faceCache=new Map();let faceSerial=0;
 function restoreFrameOverrides(){frameOverrideImages.clear();for(const [key,url] of Object.entries(model.frameEdits||{})){if(typeof url!=="string"||!url.startsWith("data:image/png"))continue;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}}
 async function setEmotion(id){model.emotion=id;const serial=++faceSerial;if(!id){draw();return}const entry=emotions.get(id);const pic=await emotionImage(entry);if(serial===faceSerial&&pic){faceCache.set(id,pic);draw()}}
-function renderBody(ctx,dir,action,f){const directionIndex=DIR.indexOf(dir),act=(model.actions[action]?.action||model.actions[action]?.based_on||action),row=ROWMAP[act];if(model.body_type==="ichsan"&&originalReady&&Number.isInteger(row)){const srcF=act==="idle"?f%4:f%6;ctx.drawImage(original,srcF*64,(row+directionIndex)*112,64,112,0,0,64,112)}else body(ctx,dir,action,f)}
+function pixelData(img,sx,sy){
+ const c=document.createElement("canvas");c.width=64;c.height=112;
+ const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(img,sx,sy,64,112,0,0,64,112);
+ return ctx.getImageData(0,0,64,112);
+}
+function partPatch(ctx,act,dir,f){
+ const edits=Object.keys(model.partEdits||{});if(!edits.length||!window.V6BPartTransfer)return;
+ const di=DIR.indexOf(dir),motion=motionPartsByGender.get(model.body_type)?.motions?.[act];
+ if(!motion)return;
+ for(const bone of edits){
+  const base=sourcePartImages.get(model.body_type+"|"+bone);
+  const edited=partEditImages.get(bone);
+  const path=motion.parts?.[bone];
+  const motionImg=path?sheetLoad("./"+path,motionPartImages):null;
+  if(!imageReady(base)||!imageReady(edited)||!imageReady(motionImg))continue;
+  const original=pixelData(base,0,di*112),changed=pixelData(edited,0,di*112);
+  const posed=pixelData(motionImg,f*64,di*112);
+  const result=window.V6BPartTransfer.transfer(original,changed,posed);
+  if(!result.changed)continue;
+  // Replace only this exact native bone matte. Rest of the native pose remains.
+  ctx.save();ctx.globalCompositeOperation="destination-out";
+  ctx.drawImage(motionImg,f*64,di*112,64,112,0,0,64,112);ctx.restore();
+  const tile=document.createElement("canvas");tile.width=64;tile.height=112;
+  const tc=tile.getContext("2d");const data=tc.createImageData(64,112);
+  data.data.set(result.data);tc.putImageData(data,0,0);ctx.drawImage(tile,0,0);
+ }
+}
+function renderBody(ctx,dir,action,f){
+ const actor=nativeActor();if(!actor||!nativeReady)return;
+ const di=DIR.indexOf(dir),cfg=model.actions[action]||{},act=cfg.action||cfg.based_on||action;
+ const custom=model.customSheets?.[action];
+ if(custom){
+  const im=sheetLoad(custom);
+  if(imageReady(im))ctx.drawImage(im,(f%frameCount())*64,di*112,64,112,0,0,64,112);
+  return;
+ }
+ const motion=actor.motions?.find(a=>a.id===act&&a.available);
+ if(!motion){status("ACTION NOT AUTHORED FOR THIS HUMAN BASE: "+act);return}
+ const src=motion.sheet||actor.sheet,im=sheetLoad("./"+src);
+ if(!imageReady(im))return;
+ const startRow=motion.source==="native"?motion.row||0:0;
+ ctx.drawImage(im,(f%(motion.frames||4))*64,(startRow+di)*112,64,112,0,0,64,112);
+ partPatch(ctx,act,dir,f%(motion.frames||4));
+}
 function drawTo(ctx,dir,action,f,faceFrame=f){ctx.clearRect(0,0,64,112);const key=action+"|"+f+"|"+dir,edited=frameOverrideImages.get(key);if(edited&&edited.complete&&edited.naturalWidth)ctx.drawImage(edited,0,0);else renderBody(ctx,dir,action,f);
  const atlas=faceCache.get(model.emotion),entry=emotions.get(model.emotion);
- if(atlas&&entry&&(!/^n/.test(dir))){const i=DIR.indexOf(dir),n=entry.frames||1,ox=model.faceOffset[0],oy=model.faceOffset[1];const a=model.actions[action]||{},kind=a.action||action,t=Math.sin((f%6)*Math.PI/3),isWalk=/walk/.test(kind);const bob=isWalk?Math.abs(t)*(a.bob??1):kind==="idle"?(f%3===1?1:0):0;const poseY=/^sit/.test(kind)?13:/sleep|lie|float|swim/.test(kind)?17:0;ctx.drawImage(atlas,(faceFrame%n)*64,i*112,64,112,ox,oy+bob+poseY,64,112);}
+ if(atlas&&entry&&(!/^n/.test(dir))){const i=DIR.indexOf(dir),n=entry.frames||1,ox=model.faceOffset[0],oy=model.faceOffset[1];ctx.drawImage(atlas,(faceFrame%n)*64,i*112,64,112,ox,oy,64,112);}
 }
 function frameCount(){return Math.max(1,Number(model.actions[model.current]?.frames)||((model.actions[model.current]?.action||model.current)==="idle"?4:6))}
 function draw(){frame=frame%frameCount();$("frame-index").max=String(frameCount()-1);drawTo(cx,$("direction").value,model.current,frame);$("frame-index").value=frame;$("readout").textContent=model.current.toUpperCase()+" · "+$("direction").value.toUpperCase()+" · FRAME "+(frame+1)+" / "+frameCount()+" · "+(model.actions[model.current]?.fps||12)+" FPS"}
@@ -287,6 +377,6 @@ $("refresh-emotion-drive").onclick=async()=>{if(emosiDrive()?.connected())await 
 const pixelOverlay=$("pixelOverlay"),pixelCanvas=$("pixelCanvas"),pixelEditor=window.MH2PlanePixelEditor?.create({overlay:pixelOverlay,canvas:pixelCanvas,reference:$("stage"),onApply:(_id,png,atlas)=>{storeEditedFrame(atlas);return true},onSaveDefault:(_id,png,atlas)=>{storeEditedFrame(atlas);return true}});
 function storeEditedFrame(atlas){if(!atlas)return;const name=model.current,f=frame;model.frameEdits||={};for(let d=0;d<4;d++){const slice=document.createElement("canvas");slice.width=64;slice.height=112;slice.getContext("2d").drawImage(atlas,0,d*112,64,112,0,0,64,112);const key=name+"|"+f+"|"+DIR[d],url=slice.toDataURL("image/png");model.frameEdits[key]=url;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}draw();status("NATIVE PIXEL EDITS APPLIED · "+name.toUpperCase()+" FRAME "+(f+1)+" · 4 VIEWS")}
 $("open-pixel").onclick=()=>{if(!pixelEditor)return status("NATIVE EDITOR UNAVAILABLE");const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;const ac=atlas.getContext("2d");for(let d=0;d<4;d++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");const key=model.current+"|"+frame+"|"+DIR[d],img=frameOverrideImages.get(key);if(img?.complete&&img.naturalWidth)tc.drawImage(img,0,0);else renderBody(tc,DIR[d],model.current,frame);ac.drawImage(tile,0,d*112)}pixelEditor.open({id:model.current+"-frame-"+(frame+1),initialAtlas:atlas,originalAtlas:atlas,direction:$("direction").value})};
-renderMotions();applyUI();draw();loadEmotions();
+renderMotions();applyUI();draw();loadEmotions();loadNative().catch(e=>{nativeReady=false;status("NATIVE V6B LOAD FAILED: "+e.message)});
 })();
 </script></body></html>
