@@ -34,14 +34,24 @@ ORDER = tuple(x for x in v6b.ORDER if x not in ("shadow", "fx"))
 BASE = (ROOT / "chars-iso" / "v6b" / "live" / "chars" / "ichsan.json")
 
 
-def mask(part: str, x: int, y: int):
+def mask(part: str, x: int, y: int, direction: str = "se"):
+    """Assign stable anatomical bones, even when source art faces backwards.
+
+    V6B draw_arms(view="ne") mirrors near/far arm pixels before NW is
+    mirrored again. Their *screen positions* change, but an anatomical
+    wrist_l should not suddenly become wrist_r. Preserve source pixels,
+    only correct the label of the arm plane in the 4-view atlas.
+    """
+    rear = direction in ("ne", "nw")
+    near_side, far_side = ("r", "l") if rear else ("l", "r")
     """Semantics are editable; pixel values and generator edges never change."""
     if part == "hair_back":
         return "hair_back"
     if part == "body":
         return "head" if y < 55 else ("neck" if y < 60 else "torso")
     if part == "arm_far":
-        return "shoulder_r" if y < 69 else ("elbow_r" if y < 80 else "wrist_r")
+        return ("shoulder_" if y < 69 else
+                "elbow_" if y < 80 else "wrist_") + far_side
     if part in ("shoes", "shoes_over"):
         return "ankle_l" if x < 33 else "ankle_r"
     if part in ("pants", "rips"):
@@ -53,7 +63,8 @@ def mask(part: str, x: int, y: int):
     if part in ("shirt", "shirt_graphic", "outer", "acc"):
         return "torso"
     if part in ("arm_near", "body_front"):
-        return "shoulder_l" if y < 69 else ("elbow_l" if y < 81 else "wrist_l")
+        return ("shoulder_" if y < 69 else
+                "elbow_" if y < 81 else "wrist_") + near_side
     if part == "held":
         return "phone"
     if part == "hair_front":
@@ -117,13 +128,13 @@ def original_frames():
     return frames
 
 
-def split_source(image: Image.Image, source_key: str):
+def split_source(image: Image.Image, source_key: str, direction: str = "se"):
     """An opaque source pixel is assigned to one, and only one, part."""
     data = np.asarray(image.convert("RGBA"))
     ys, xs = np.nonzero(data[:, :, 3] > 0)
     segments = {}
     for y, x in zip(ys, xs):
-        bone = mask(source_key, int(x), int(y))
+        bone = mask(source_key, int(x), int(y), direction)
         if bone not in segments:
             segments[bone] = np.zeros((112, 64, 4), np.uint8)
         segments[bone][y, x] = data[y, x]
@@ -246,7 +257,11 @@ def classify_native_layer(key: str, x: int, y: int, boundary: float,
     side = "l" if left else "r"
     if key in ("arm_near", "arm_far"):
         # Far and near are independent native arm layers, NOT screen regions.
-        anatomical = "l" if key == "arm_near" else "r"
+        # The authored NE/NW sprites have reversed near/far camera sides.
+        # Keep the actual limb identity stable for all four character views.
+        rear = direction in ("ne", "nw")
+        anatomical = ("r" if rear else "l") if key == "arm_near" else (
+            "l" if rear else "r")
         elbow, wrist = splits[key]
         return ("shoulder_" if y < elbow else
                 "elbow_" if y < wrist else "wrist_") + anatomical
@@ -588,7 +603,7 @@ def generate(media: Path, with_gender: bool = True):
             for emotion in EMOTIONS if key_emotion else ("neutral",):
                 image = frames[direction].get((layer, emotion) if key_emotion else layer)
                 if image is not None:
-                    names.update(split_source(image, layer))
+                    names.update(split_source(image, layer, direction))
         for bone in sorted(names):
             tag = f"{layer}-{bone}".replace("_", "-")
             atlas = Image.new("RGBA", (64 * (len(EMOTIONS) if key_emotion else 1),
@@ -598,7 +613,7 @@ def generate(media: Path, with_gender: bool = True):
                     image = frames[direction].get((layer, emotion) if key_emotion else layer)
                     if image is None:
                         continue
-                    tile = split_source(image, layer).get(bone)
+                    tile = split_source(image, layer, direction).get(bone)
                     if tile is not None:
                         atlas.alpha_composite(tile, (emotion_index * 64, direction_index * 112))
             if not atlas.getbbox():
