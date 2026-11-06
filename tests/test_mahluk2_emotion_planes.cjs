@@ -53,3 +53,27 @@ test("2.0 editor has asset pickers, independent glasses import and published gam
  assert.match(app,/loadDriveEmotions/);
  assert.match(app,/installEmotionEntries/);
 });
+
+test("Mahluk 2 backs up full native character catalog, custom four-view roots and imported PNG assets to Drive",()=>{
+ const html=fs.readFileSync("site/mahluk-2/index.html","utf8");
+ const studio=fs.readFileSync("site/mahluk-2/studio.js","utf8");
+ const bridge=fs.readFileSync("site/mahluk-2/drive-studio-bridge.js","utf8");
+ const cloud=fs.readFileSync("site/mahluk-2/drive-sync.js","utf8");
+ for(const id of ["driveSaveAllAssets","driveRestoreAllAssets","driveConnect","driveLoadLibrary"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(studio,/librarySnapshot\(\)/);
+ assert.match(studio,/localSavedRoots:/);
+ assert.match(studio,/restoreLibraryAssets\(snapshot\)/);
+ assert.match(studio,/manifest:clone\(manifest\)/);
+ assert.match(studio,/customAssets:clone\(custom\)/);
+ assert.match(bridge,/saveEntireCharacterLibrary\(/);
+ assert.match(bridge,/restoreEntireCharacterLibrary\(/);
+ assert.match(bridge,/await D\.saveLibrary\(/);
+ assert.match(bridge,/for\(let i=0;i<roots\.length;i\+\+\)/);
+ assert.match(cloud,/mahluk-2-asset-library-v1/);
+ assert.match(cloud,/async function ensureAssetLibrary\(/);
+ assert.match(cloud,/async function loadLibrary\(/);
+ assert.match(cloud,/async function saveLibrary\(/);
+ assert.doesNotThrow(()=>new(require("node:vm").Script)(cloud));
+ assert.doesNotThrow(()=>new(require("node:vm").Script)(bridge));
+});
