@@ -251,8 +251,7 @@ async function refreshEmosiFaces() {
         if(face)selectFace(face);
       }
     }
-    if(status)status.textContent="EMOSI.EXE SYNC · "+result.count+" EKSPRESI"+
-      (result.published?" · PUBLISHED + LOCAL":" · LOCAL");
+    if(status)status.textContent="EMOSI.EXE · "+result.count+" EKSPRESI · "+result.local+" LOCAL · "+result.drive+" GOOGLE DRIVE"+(result.connected?" · CONNECTED":" · CONNECT TO LOAD CLOUD")+(result.error?" · "+result.error:"");
   } catch(error) {
     if(status)status.textContent="EMOSI SYNC GAGAL · "+error.message;
   }
@@ -1592,6 +1591,15 @@ document.addEventListener("mahluk:pose-saved",()=>{
   }
 });
 $("sync-emosi")?.addEventListener("click",()=>void refreshEmosiFaces());
+$("connect-emosi-drive")?.addEventListener("click",async()=>{
+  const button=$("connect-emosi-drive"),status=$("emosi-sync-status");
+  if(!window.VLMahlukEmosiBridge)return;
+  button.disabled=true;
+  if(status)status.textContent="CONNECTING EMOSI.EXE GOOGLE DRIVE ...";
+  try{await window.VLMahlukEmosiBridge.connectDrive();await refreshEmosiFaces()}
+  catch(error){if(status)status.textContent="DRIVE CONNECTION FAILED: "+error.message}
+  finally{button.disabled=false}
+});
 window.addEventListener("focus",()=>void refreshEmosiFaces());
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)void refreshEmosiFaces()});
 window.addEventListener("storage",event=>{if(event.key==="emotion-studio-local-fallback-v1")void refreshEmosiFaces()});
