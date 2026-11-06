@@ -92,12 +92,16 @@ const PNG_DATA=atlasPNG();
   // Distinct emulator animation clock, FPS readout and isolated body count.
   await page.locator('#emotionPreviewPlay').click();
   assert.match(await page.locator('#emotionPreviewPlay').textContent(),/PLAY/);
-  await page.locator('#emotionPreviewScrub').fill('0');
+  await page.locator('#emotionPreviewScrub').evaluate(el=>{
+   el.value='0';el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
   const before=await page.locator('#emotionPreviewCanvas').evaluate(c=>{
    const img=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
    return [...img].reduce((acc,n,i)=>acc+(i%4?0:n),0);
   });
-  await page.locator('#emotionPreviewScrub').fill('1');
+  await page.locator('#emotionPreviewScrub').evaluate(el=>{
+   el.value='1';el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
   const after=await page.locator('#emotionPreviewCanvas').evaluate(c=>{
    const img=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
    return [...img].reduce((acc,n,i)=>acc+(i%4?0:n),0);
