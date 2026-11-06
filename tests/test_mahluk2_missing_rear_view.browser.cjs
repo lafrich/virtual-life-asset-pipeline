@@ -1,6 +1,7 @@
 'use strict';
 const {chromium}=require('playwright');
 const {PNG}=require('pngjs');
+const fs=require('node:fs');
 const assert=require('node:assert/strict');
 
 const URL='http://127.0.0.1:8099/virtual-life-asset-pipeline/site/mahluk-2/';
@@ -51,7 +52,7 @@ async function capture(page,direction){
 (async()=>{
  const browser=await chromium.launch({headless:true,channel:'chrome',args:['--no-sandbox']});
  try{
-  const page=await browser.newPage({viewport:{width:1490,height:950}});
+  const page=await browser.newPage({viewport:{width:1490,height:950},acceptDownloads:true});
   const errors=[];page.on('pageerror',err=>errors.push(err.stack||err.message));
   const manifest={format:'mahluk-original-source-rig-v1',art_style:'original_v6b',
    emotions:['neutral'],directions:DIR,slots:Object.keys(BOUNDS).map(bone=>({
@@ -112,6 +113,25 @@ async function capture(page,direction){
    assert.deepEqual(pixelFrom(image,r,58),SOURCE.shoulder_r,
     'REAR '+direction.toUpperCase()+' missing anatomical RIGHT shoulder');
   }
+  // Reopen the REAL torso Pixel Editor. Its rear atlas must match the
+  // recovered live preview, not show the old blank saved NE/NW slices.
+  await page.locator('#tree [data-bone="torso"]').click();
+  await page.locator('#openPlaneEditor').click();
+  await page.locator('#pixelOverlay:not([hidden])').waitFor({timeout:15000});
+  const [torsoFile]=await Promise.all([
+   page.waitForEvent('download',{timeout:12000}),
+   page.locator('#pixelExport').click()
+  ]);
+  const editorAtlas=PNG.sync.read(fs.readFileSync(await torsoFile.path()));
+  assert.equal(editorAtlas.width,64);
+  assert.equal(editorAtlas.height,448);
+  const at=(dir,x,y)=>[...editorAtlas.data.subarray(((dir*112+y)*64+x)*4,((dir*112+y)*64+x)*4+4)];
+  assert.deepEqual(at(1,31,65),PAINTED.torso,
+   'Pixel Editor must preserve SW authored torso');
+  for(const dir of [0,2,3])
+   assert.deepEqual(at(dir,31,65),SOURCE.torso,
+    'Pixel Editor must restore unpainted '+DIR[dir].toUpperCase()+' torso source');
+  await page.locator('#pixelClose').click();
   // Save Root / reload still must keep all original partial custom data.
   await page.locator('#saveChar').click();
   const record=await page.evaluate(()=>
