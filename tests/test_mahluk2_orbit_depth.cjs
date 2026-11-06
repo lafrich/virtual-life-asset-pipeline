@@ -63,7 +63,8 @@ test("Pixel editor syncs small brush strokes across views by mirroring source po
  assert.equal(P.mirroredX(56,3,0),7);
  assert.equal(P.mirroredX(20,1,3),20);
  const html=fs.readFileSync("site/mahluk-2/index.html","utf8");
- assert.match(html,/id="pixelSync" checked/);
+ assert.match(html,/id="pixelSync"> SYNC BRUSH/);
+ assert.doesNotMatch(html,/id="pixelSync" checked/);
  assert.match(html,/id="pixelSyncExisting"/);
  const editor=fs.readFileSync("site/mahluk-2/plane-pixel-editor.js","utf8");
  assert.match(editor,/els\.syncExisting\.onclick=/);
