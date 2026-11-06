@@ -155,6 +155,8 @@ jobs:
           node --check site/emotion-studio/emotion-library.js
           node --check site/emotion-studio/shared-pixel-editor.js
           node --test tests/test_emotion_studio.cjs
+          node --test tests/test_v6b_part_transfer.cjs
+          node --check site/v6b-part-transfer.js
           test -s site/emotion-studio/index.html
           test -s site/emotion-studio/shared-pixel-ui.css
           python -m json.tool site/emotion-studio/catalog.json > /dev/null
@@ -255,6 +257,10 @@ jobs:
           test -s _site/index.html
           test -s _site/style.css
           test -s _site/media/original-rig/manifest.json
+          test -s _site/media/human-male-base-motion-parts.json
+          test -s _site/media/human-female-base-motion-parts.json
+          test -s _site/v6b-part-transfer.js
+          test -s _site/v6b-reset-studio.html
           test -s _site/media/original-rig/gender-bases.png
           test -s _site/media/original-rig/rotation-qa.png
           python -c 'import json,pathlib; s=pathlib.Path("_site"); m=json.loads((s/"media/original-rig/manifest.json").read_text()); parts=m["slots"]; assert m["anatomy_layers_shared_across_outfits"]; assert m["outfit_layer_mode"]=="additive_native_garments"; assert all(len([p for p in parts if p.get("gender")==g and p.get("layer_type")==t])>=(8 if t=="body" else 3) for g in ("male","female") for t in ("body","garment")); assert (s/m["rotation_qa"]).is_file(); print("Verified independently layered human anatomy and removable garments for both genders")'
