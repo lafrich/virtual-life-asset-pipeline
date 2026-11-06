@@ -2,10 +2,10 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs");
 const R=require("../site/modular-rig-v2.js");
 
-test("new v2 reference is approved while archived V6B actors remain hidden",()=>{
+test("Mahluk Hidup 1 restores original V6B catalog without deleting modular rig tools",()=>{
  const source=fs.readFileSync("site/character-reference-reset.js","utf8");
- assert.match(source,/human_pixel_reference_v2/);
- assert.match(source,/active:true/);
+ assert.match(source,/mahluk-hidup-v1/);
+ assert.match(source,/active:false/);
  assert.equal(R.ID,"human_pixel_reference_v2");
  assert.deepEqual(R.DIR,["se","sw","ne","nw"]);
  assert.equal(R.W,64);assert.equal(R.H,112);
