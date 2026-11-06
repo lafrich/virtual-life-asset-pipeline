@@ -302,8 +302,15 @@
    const destY=selection?selection.y:stamp.y;
    const dx=clamp(destX,0,W-1),dy=clamp(destY,0,H-1);
    saveHistory();
-   replaceFrame(S.paste(frameImage().data,W,H,stamp,{
+   // Keep the underlying destination as a frozen base. Dragging the pasted
+   // selection should never erase or move the original target pixels.
+   const base=frameImage().data.slice();
+   floatingPaste={
+    base,stamp:{...stamp,pixels:new Uint8ClampedArray(stamp.pixels)},
     x:dx,y:dy,mirror,replace:els.pasteReplace.checked
+   };
+   replaceFrame(S.paste(base,W,H,floatingPaste.stamp,{
+    x:dx,y:dy,mirror,replace:floatingPaste.replace
    }));
    selection={x:dx,y:dy,w:Math.min(stamp.w,W-dx),h:Math.min(stamp.h,H-dy)};
    selectTool("move-pixels");
