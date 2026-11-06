@@ -952,6 +952,10 @@ function setProjectFields(){
     opt.value!=="current"&&opt.value!==type;
  }
  $("bodyPlane").value=bodyPlane;
+ $('basePresetStatus').textContent=facelessBase?
+  '✓ '+FB.preset(facelessBase).name+
+  ' · V6B ANIMATION BONES · NO NATIVE FACE · EMOSI.EXE IS FACE SOURCE':
+  'LEGACY / OTHER CHARACTER · NO CHANGES TO ITS SAVED ART';
  $("bodyPlaneHint").textContent=(type==="male"||type==="female")?
   "AUTO "+type.toUpperCase()+" / matching nude anatomy. Select CURRENT to keep clothing. Rig and head remain unchanged.":
   "Original base / choose a nude anatomy source, or keep the original body.";
@@ -1237,7 +1241,8 @@ function saveGame(){
  if(!manifest){setStatus("SOURCE NOT LOADED / CANNOT PUBLISH",false);return;}
  commitUnkeyedPose();
  const library=getLocalLibrary(),name=$("characterName").value.trim()||"My Character 2.0";
- const id=identifier||"mh2_"+Date.now().toString(36);
+ const id=identifier||('mh2_'+Date.now().toString(36)+
+  Math.random().toString(36).slice(2,6));
  const old=getLibrary().find(r=>r.id===id);
  // 2.0 publishes the character ROOT only; action clips belong to 1.0.
  const clipId="idle",rootFrames=1;
@@ -1307,6 +1312,61 @@ function newCharacter(){
  state=general?.defaultParts?R.normalize({parts:general.defaultParts}):R.referencePose();
  base=R.normalize(state);tracks=R.makeTracks();$("characterName").value="My Character 2.0";
  updateLibrary();assetOptions();applyState();setStatus("NEW SOURCE-NATIVE CHARACTER · GAME CONTENT UNCHANGED",true);
+}
+
+function newFacelessBase(gender,{install=false}={}){
+ if(!manifest){setStatus('V6B SOURCE NOT LOADED · CANNOT CREATE BASE',false);return false}
+ const template=FB.preset(gender);
+ const available=slots.filter(row=>row.gender===gender&&row.layer_type==='body');
+ if(!available.some(s=>s.bone==='head')||
+    !available.some(s=>s.bone==='torso')||
+    !available.some(s=>s.bone?.startsWith('shoulder_'))){
+  setStatus('MISSING '+gender.toUpperCase()+' V6B NUDE HEAD / TORSO / ARM SOURCE',false);
+  return false;
+ }
+ remember();
+ // A canonical clean reference, never a copy of the old shared master
+ // (which may already contain painted faces, props or shifted limbs).
+ identifier=null;facelessBase=gender;
+ type=gender;bodyPlane=gender;outfit='base';
+ rigRules=G.defaults(R);headMerged=false;setPixelPlanes({});
+ state=R.referencePose();
+ state.gender=gender;state.visual='gender';state.outfit=false;state.phone=false;
+ state.faceLayers={};state.emotion='neutral';
+ base=R.normalize(state);tracks=R.makeTracks();
+ clip='idle';frames=1;fps=12;frame=0;selected='head';
+ direction='se';playing=false;
+ emotionAssetId='native:none';emotionKeys=[];
+ emotionPlacement=EP.placement();emotionPreviewFrame=0;emotionPreviewElapsed=0;
+ glassesAssetId='none';
+ $('characterName').value=template.name;
+ updateLibrary();assetOptions();applyState();
+ setStatus('✓ '+template.name+' · NUDE V6B · HEAD EMPTY · 4 VIEWS / '+FB.BONE_IDS.length+
+  ' EDITABLE PARTS · EMOSI.EXE READY',true);
+ if(install)saveGame();
+ return true;
+}
+function installFacelessPair(){
+ // Idempotent installation. Existing editable male/female presets and their
+ // custom pixel modifications are never replaced by pressing Install Both.
+ const installed=new Set(getLocalLibrary().filter(r=>
+  r?.presetRevision===FB.PRESET_REV&&FB.normalize(r.facelessBase))
+  .map(r=>r.facelessBase));
+ const missing=FB.GENDERS.filter(g=>!installed.has(g));
+ if(!missing.length){
+  setStatus('✓ MALE + FEMALE ALREADY IN CHARACTER STORAGE · SELECT FROM SAVED CHARACTERS TO EDIT',true);
+  return;
+ }
+ let count=0;
+ for(const gender of missing){
+  if(!newFacelessBase(gender,{install:true}))break;
+  if(!getLocalLibrary().some(r=>r.id===identifier&&r.facelessBase===gender))break;
+  count++;
+ }
+ setStatus(count===missing.length?
+  '✓ MALE + FEMALE NO FACE NUDE BASES READY · ANIMATION STORAGE / SEMESTA / BANGUN RUANG / JIWA':
+  'INSTALLED '+count+'/'+missing.length+' BASES · CHECK STORAGE / SOURCE STATUS',
+  count===missing.length);
 }
 function projectExport(){
  commitUnkeyedPose();
@@ -1445,6 +1505,9 @@ function setupEvents(){
  };
  $("library").onchange=e=>{if(e.target.value)loadRecord(e.target.value);else newCharacter()};
  $("newChar").onclick=newCharacter;
+ $('newMaleFaceless').onclick=()=>newFacelessBase('male');
+ $('newFemaleFaceless').onclick=()=>newFacelessBase('female');
+ $('installFacelessBoth').onclick=installFacelessPair;
  $("saveChar").onclick=$("publish").onclick=saveGame;
  $("exportJson").onclick=projectExport;
  $("exportPng").onclick=()=>{commitUnkeyedPose();return bake(1,"idle").toBlob(b=>b&&download("mahluk_2_root_4dir.png",b),"image/png")};
