@@ -44,7 +44,7 @@ test("2.0 UI exposes body plane selector and keeps snapshots, JSON and game spri
  const html=fs.readFileSync("site/mahluk-2/index.html","utf8");
  assert.match(html,/id="bodyPlane"/);
  assert.match(html,/body-planes.js/);
- assert.match(app,/remember\(\);bodyPlane=next;setProjectFields\(\);buildTree\(\);paint\(\)/);
+ assert.match(app,/remember\(\);bodyPlane=next;invalidateHead\(\);setProjectFields\(\);buildTree\(\);paint\(\)/);
  assert.match(app,/selected,type,outfit,bodyPlane,clip/);
  assert.match(app,/outfit,bodyPlane,model:R.normalize/);
  assert.match(app,/const payload=.*?outfit,bodyPlane,clip/);
