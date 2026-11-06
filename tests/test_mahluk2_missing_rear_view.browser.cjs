@@ -119,7 +119,7 @@ async function capture(page,direction){
   assert.equal(record.pixelPlanes.head,overrides.head,'Saved head art was modified');
   await page.locator('#newChar').click();
   await page.locator('#library').selectOption(record.id);
-  await page.waitForFunction(()=>document.getElementById('characterName').value!=='My Character 2.0');
+  await page.waitForFunction(id=>document.getElementById('library').value===id,record.id);
   await page.waitForFunction(()=>{
    const c=document.getElementById('previewNE');
    return c?.getContext('2d').getImageData(31,65,1,1).data[3]===255;
