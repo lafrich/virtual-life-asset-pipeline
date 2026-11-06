@@ -1,0 +1,47 @@
+name: Mahluk 2 — Emosi.exe Live Readonly Preview
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/mahluk-2/index.html'
+      - 'site/mahluk-2/studio.js'
+      - 'site/mahluk-2/studio.css'
+      - 'site/mahluk-2/emotion-preview.js'
+      - 'tests/test_mahluk2_emosi_preview.cjs'
+      - 'tests/test_mahluk2_emosi_preview.browser.cjs'
+      - '.github/workflows/test-mahluk2-emosi-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate syntax and face placement data
+        run: |
+          node --check site/mahluk-2/emotion-preview.js
+          node --check site/mahluk-2/studio.js
+          node --check tests/test_mahluk2_emosi_preview.browser.cjs
+          node --test tests/test_mahluk2_emosi_preview.cjs
+          node --test tests/test_mahluk2_emotion_planes.cjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: virtual-life-asset-pipeline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright and PNG inspector
+        run: npm install --no-save playwright@1.56.1 pngjs@7.0.0
+      - name: Serve local Mahluk 2 under original asset path
+        run: python3 -m http.server 8099 --bind 127.0.0.1 >/tmp/mahluk-emosi-preview-http.log 2>&1 &
+      - name: Test Emosi.exe shared-origin library and rendered face
+        run: node virtual-life-asset-pipeline/tests/test_mahluk2_emosi_preview.browser.cjs
