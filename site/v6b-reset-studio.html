@@ -42,7 +42,7 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <div class="control"><label>BODY BOUNCE · PIXELS</label><input id="bob" type="range" min="0" max="6" value="1"></div>
 <p class="note" id="motion-original-note"></p><button id="save-action">SAVE AS CUSTOM ACTION</button></div>
 <div id="emotions" hidden><h2>MANUAL FACE ATLAS</h2><p class="note">Reads the original Emosi.exe PNG frames as a single overlay; no eyes/mouth splitting.</p>
-<p class="note" id="emotion-source-note">EMOSI.EXE: loading local data; connect Google Drive for cloud emotions.</p>
+<p class="note" id="emotion-source-note">EMOSI.EXE DATABASE · locally saved expressions and Google Drive only; no old Emotion Studio catalog.</p>
 <div class="buttons"><button id="connect-emotion-drive">☁ CONNECT GOOGLE DRIVE</button><button id="refresh-emotion-drive">↻ REFRESH DRIVE</button></div><p class="note" id="emotion-drive-status">Drive sign-in is session-only. No GitHub token required. Uses the same Google OAuth client as EMOSI.EXE.</p><div class="control"><label>FACE ASSET</label><select id="emotion"><option value="">NO FACE</option></select></div>
 <div class="control"><label>HEAD OFFSET X</label><input id="face-x" type="number" value="0"></div>
 <div class="control"><label>HEAD OFFSET Y</label><input id="face-y" type="number" value="0"></div><button id="reload-emotions">SYNC FROM EMOSI.EXE</button></div>
@@ -251,26 +251,25 @@ async function connectEmotionDrive(){
  finally{$("connect-emotion-drive").disabled=false}
 }
 async function loadEmotions(){
- const U=window.MH2UniversalEmotions;if(!U){status("EMOSI LIBRARY NOT READY");return}
- const [published,local]=await Promise.allSettled([U.loadCatalog(),readLocalEmotions()]);
- const entries=new Map();
- if(published.status==="fulfilled")for(const e of published.value.catalog.entries)if(U.validEntry(e))entries.set(e.id,{...e,origin:"github"});
- let localCount=0;
- if(local.status==="fulfilled")for(const e of local.value)if(U.validEntry(e)){entries.set(e.id,{...e,origin:"local"});localCount++}
- // Drive is authoritative for cross-device changes. Local-only edits remain available.
+ const U=window.MH2UniversalEmotions;if(!U){status("EMOSI NATIVE ATLAS READER UNAVAILABLE");return}
+ const local=await readLocalEmotions().catch(()=>[]);
+ const entries=new Map();let localCount=0;
+ // Exact same IndexedDB database as the live EMOSI.EXE, not old GitHub Emotion Studio.
+ for(const e of local)if(U.validEntry(e)){entries.set(e.id,{...e,origin:"local"});localCount++}
+ // Cloud project data from the live EMOSI.EXE Google Drive folder wins on matching IDs.
  for(const [id,e] of driveEmotions)entries.set(id,e);
  const select=$("emotion");emotions.clear();select.replaceChildren();
  const empty=document.createElement("option");empty.value="";empty.textContent="NO FACE";select.append(empty);
  for(const e of entries.values()){
   if(!(e.base==="universal"||e.base==="original"&&model.body_type==="ichsan"||e.base===model.body_type))continue;
   emotions.set(e.id,e);const o=document.createElement("option");o.value=e.id;
-  o.textContent=e.name+" · "+(e.origin==="drive"?"GOOGLE DRIVE":e.origin==="local"?"THIS DEVICE":"STARTER");select.append(o)
+  o.textContent=e.name+" · "+(e.origin==="drive"?"EMOSI DRIVE":"EMOSI LOCAL");select.append(o);
  }
  if(!emotions.has(model.emotion))model.emotion="";
  select.value=model.emotion;await setEmotion(model.emotion);
  const note=$("emotion-source-note");
- if(note)note.textContent="Source: "+driveEmotions.size+" Drive projects · "+localCount+" local emotions · "+(published.status==="fulfilled"?published.value.catalog.entries.length:0)+" starter templates. No GitHub token.";
- status("EMOSI SOURCES LOADED · "+emotions.size+" compatible faces · GOOGLE DRIVE "+(emosiDrive()?.connected()?"CONNECTED":"SIGN-IN NEEDED"));
+ if(note)note.textContent="EMOSI.EXE ONLY · "+driveEmotions.size+" Google Drive projects · "+localCount+" locally saved. No old Emotion Studio catalog or GitHub token.";
+ status("EMOSI.EXE · "+emotions.size+" compatible saved expressions · DRIVE "+(emosiDrive()?.connected()?"CONNECTED":"CONNECT TO LOAD CLOUD"));
 }
 $("reload-emotions").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else await loadEmotions()};
 $("connect-emotion-drive").onclick=connectEmotionDrive;
