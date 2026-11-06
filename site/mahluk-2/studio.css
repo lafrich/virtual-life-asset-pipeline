@@ -329,3 +329,44 @@ select:focus,input:focus-visible,button:focus-visible{outline:1px dotted #163773
 .pixel-toolbar #pixelPasteSelection,.pixel-toolbar #pixelPasteMirrored{background:#e2ebf8;color:#173b64}
 @media(max-width:750px){.pixel-quick-tools{flex:1 1 100%;min-width:0}
  .pixel-toolbar .pixel-quick-tools button{flex:1 1 calc(50% - 5px);min-height:34px}}
+
+
+/* Emosi.exe read-only animated-face tab; existing rig editor stays untouched. */
+.inspector-tabbar{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:5px;background:#34465b;border-bottom:1px solid #6c829b;flex:0 0 auto}
+.inspector-tabbar button{min-width:0;padding:9px 4px;font:700 10px Consolas,monospace;color:#c8dbef;background:#3f5570;border:1px solid #677f9b;white-space:normal}
+.inspector-tabbar button.active{background:#dbeafb;color:#194c88;border-color:#96c3ee;box-shadow:inset 0 3px #327cc3}
+.inspector[data-inspector-tab="emotion"]>.inspector-scroll>section:not(#emotionPreviewSection){display:none!important}
+.inspector[data-inspector-tab="rig"]>.inspector-scroll>#emotionPreviewSection{display:none!important}
+#emotionPreviewSection{padding:0 0 18px;background:#e2eaf5;color:#223a56}
+#emotionPreviewSection>.hint{margin:9px 10px;padding:0;font:10px/1.5 Consolas,monospace;color:#53647c}
+#emotionPreviewSection>.sectionhead{padding:8px 10px;background:#c0d7ef;color:#144e88}
+#emotionPreviewSection .readonly-stamp{font:700 9px Consolas,monospace;color:#236da8}
+#emotionPreviewSection .emotion-preview-source{background:#e5eef9;border-bottom:1px solid #a3bad6;padding:5px 4px 10px}
+#emotionPreviewSection .emotion-preview-source .selectline{margin:7px}
+#emotionPreviewSection .emotion-preview-source input[type=search],#emotionPreviewSection .emotion-preview-source select{background:#fff;color:#243d59;border:1px solid #9db4cd;padding:8px;width:100%;min-height:36px}
+#emotionPreviewSection .plane-buttons{display:flex;gap:5px;margin:6px 8px;flex-wrap:wrap}
+#emotionPreviewSection .plane-buttons>*{flex:1 1 100px;min-width:0;font:700 10px Consolas,monospace;white-space:normal;padding:7px 3px;text-align:center}
+#emotionPreviewSection .emotion-studio-link{display:grid;place-items:center;background:#d2e8ff;color:#22548c;border:1px solid #8cafd8;text-decoration:none;border-radius:3px}
+#emotionPreviewSection .emotion-preview-layout{display:flex;flex-direction:column;gap:8px;padding:8px}
+#emotionPreviewSection .emotion-preview-screen{position:relative;max-width:250px;width:100%;margin:0 auto;display:grid;place-items:center;background:repeating-conic-gradient(#b9c7d7 0 25%,#dbe6f2 0 50%) 0 0/22px 22px;border:2px inset #8ba9c8;overflow:hidden;touch-action:none}
+#emotionPreviewCanvas{width:100%;aspect-ratio:64/112;height:auto;display:block;image-rendering:pixelated;cursor:grab;touch-action:none}
+#emotionPreviewCanvas:active{cursor:grabbing}
+#emotionPreviewSection .emotion-preview-watermark{position:absolute;bottom:4px;left:0;right:0;text-align:center;color:#244a77;text-shadow:0 1px 1px #fff9;font:700 9px Consolas,monospace;pointer-events:none}
+#emotionPreviewSection .emotion-preview-controls{display:flex;flex-direction:column;gap:7px}
+#emotionPreviewSection .emotion-preview-direction{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+#emotionPreviewSection .emotion-preview-direction button{padding:9px 2px;font:700 11px Consolas,monospace;background:#f8fbff;color:#1d528b;border:1px solid #a3bbd2}
+#emotionPreviewSection .emotion-preview-direction button.active{background:#2b6bae;color:white;border-color:#174a82}
+#emotionPreviewSection .emotion-preview-buttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#emotionPreviewSection .emotion-preview-buttons button{padding:9px;font:700 11px Consolas,monospace;background:#adceef;color:#174574;border:1px solid #729ec9}
+#emotionPreviewSection .emotion-preview-buttons label,#emotionPreviewSection .emotion-preview-all{display:flex;gap:5px;align-items:center;padding:4px 2px;font:700 10px Consolas,monospace;color:#244a73}
+#emotionPreviewSection .emotion-preview-scrubber{display:flex;flex-direction:column;gap:3px;font:700 10px Consolas,monospace;color:#244c7c}
+#emotionPreviewSection .emotion-preview-scrubber input{width:100%;accent-color:#2878bc}
+#emotionPreviewSection .emotion-preview-readout{font:700 10px Consolas,monospace;color:#235287;text-align:center}
+#emotionPreviewSection .emotion-preview-controls .sectionhead{padding:7px 5px;background:#cedff2;color:#1c5487;margin-top:6px}
+#emotionPreviewSection .emotion-preview-values{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+#emotionPreviewSection .emotion-preview-values label{display:flex;flex-direction:column;gap:4px;font:700 9px Consolas,monospace;color:#275181}
+#emotionPreviewSection .emotion-preview-values input{width:100%;min-width:0;padding:7px 2px;text-align:center;background:#fff;color:#25445e;border:1px solid #a1b8d5}
+#emotionPreviewSection #emotionPlacementSave{background:#afd6ff;border-color:#6e9cce;color:#114d8e}
+#emotionPreviewSection #emotionStatus{border-top:1px solid #b7c9dc;padding-top:8px}
+@media(min-width:1100px){.workspace{grid-template-columns:228px minmax(0,1fr) 320px}}
+@media(max-width:750px){#emotionPreviewSection .emotion-preview-layout{flex-direction:row;align-items:flex-start;flex-wrap:wrap}#emotionPreviewSection .emotion-preview-screen{flex:1 1 150px;width:auto;max-width:220px}#emotionPreviewSection .emotion-preview-controls{flex:1 1 175px;min-width:160px}}
