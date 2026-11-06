@@ -3,7 +3,7 @@
    All art comes from the published V6B split atlas, never a redrawn mannequin. */
 (function(window){
 "use strict";
-const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions,D=window.MH2DriveSync;
+const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions,D=window.MH2DriveSync,EP=window.MH2EmotionPreview;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1";
@@ -30,12 +30,50 @@ let undoStack=[],redoStack=[],restoring=false,pinch=null;
 let githubMessage='Checking GitHub master...';
 const emotionDatabase=new Map(),emotionFrames=new Map();
 let emotionDatabaseLoading=false;
+let emotionPlacement=EP?EP.placement():null;
+let emotionPreviewFrame=0,emotionPreviewPlaying=true,emotionPreviewLoop=true,emotionPreviewElapsed=0,emotionPreviewDragging=null;
+const emotionPreviewCanvas=$('emotionPreviewCanvas');
+let emotionPreviewSource='starter';
+function activeEmotionPlacement(dir=direction){return emotionPlacement?.[dir]||{x:0,y:0,scale:1};}
+function setEmotionPreviewTab(tab){
+ const inspector=document.querySelector('.inspector');
+ inspector.dataset.inspectorTab=tab==='emotion'?'emotion':'rig';
+ for(const button of inspector.querySelectorAll('[data-inspector-toggle]')){
+  const active=button.dataset.inspectorToggle===inspector.dataset.inspectorTab;
+  button.classList.toggle('active',active);
+  button.setAttribute('aria-pressed',String(active));
+ }
+ if(inspector.dataset.inspectorTab==='emotion')paint();
+}
+function updateEmotionPlacementFields(){
+ const place=activeEmotionPlacement();
+ if(!$('emotionOffsetX'))return;
+ $('emotionOffsetX').value=Number(place.x.toFixed(1));
+ $('emotionOffsetY').value=Number(place.y.toFixed(1));
+ $('emotionScale').value=Number(place.scale.toFixed(2));
+ for(const item of document.querySelectorAll('[data-emo-dir]'))
+  item.classList.toggle('active',item.dataset.emoDir===direction);
+}
+function updateEmotionPreviewUI(){
+ const asset=getEmotionAsset(emotionAt()),count=Math.max(1,asset?.frames||1);
+ const rate=Math.round(clamp(asset?.fps||6,1,30));
+ emotionPreviewFrame=Math.min(emotionPreviewFrame,count-1);
+ if($('emotionPreviewScrub')){
+  $('emotionPreviewScrub').max=String(count-1);
+  $('emotionPreviewScrub').value=String(emotionPreviewFrame);
+  $('emotionPreviewReadout').textContent='FRAME '+(emotionPreviewFrame+1)+'/'+count+
+   ' · '+rate+' FPS · '+direction.toUpperCase();
+  $('emotionPreviewPlay').textContent=emotionPreviewPlaying?'Ⅱ PAUSE':'▶ PLAY';
+ }
+ updateEmotionPlacementFields();
+}
+
 let cloudRecords=new Map();
 let workspaceSaveTimer=null,workspaceDirty=false;
 const touchPoints=new Map(),MAX_UNDO=70;
 const studio=$("editor"),game=$("game");
 function snapshot(){
- return clone({state,base,tracks,rigRules,pixelPlanes,emotionAssetId,emotionKeys,glassesAssetId,
+ return clone({state,base,tracks,rigRules,pixelPlanes,emotionAssetId,emotionKeys,emotionPlacement,glassesAssetId,
   selected,type,outfit,bodyPlane,clip,frames,fps,frame,identifier,characterName:$("characterName").value});
 }
 
@@ -78,7 +116,10 @@ function restore(snapshotValue){
   state=R.normalize(snapshotValue.state);base=R.normalize(snapshotValue.base);
   tracks=clone(snapshotValue.tracks);rigRules=G.normalize(snapshotValue.rigRules,R);
   setPixelPlanes(snapshotValue.pixelPlanes||{});
-  emotionAssetId=snapshotValue.emotionAssetId;emotionKeys=clone(snapshotValue.emotionKeys);
+  emotionAssetId=snapshotValue.emotionAssetId||'native:neutral';
+  emotionKeys=clone(snapshotValue.emotionKeys||[]);
+  emotionPlacement=EP.placement(snapshotValue.emotionPlacement);
+  emotionPreviewFrame=0;emotionPreviewElapsed=0;
   glassesAssetId=snapshotValue.glassesAssetId;
   selected=snapshotValue.selected;type=snapshotValue.type;outfit=snapshotValue.outfit;
   bodyPlane=B.normalize(snapshotValue.bodyPlane);
@@ -375,7 +416,7 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode,hitOut=null){
    const image=planeImages.get(item.bone);
    src=image?{image,sx:0,sy:di*112}:null;
   }
-  else if(item.kind==="emotion")src=sourceImage(getEmotionAsset(emotionAt()),dir,frame);
+  else if(item.kind==="emotion")src=sourceImage(getEmotionAsset(emotionAt()),dir,emotionPreviewFrame);
   else if(item.kind==="glasses")src=sourceImage(getGlassesAsset(glassesAssetId),dir,frame);
   else {
    const image=images.get(item.s.src);
@@ -387,10 +428,12 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode,hitOut=null){
   const pivot=rigRules.anchors[item.bone]||{x:bone.x,y:bone.y};
   const ax=mirror?64-pivot.x:pivot.x;
   const screen=V.planePosition(p,dir,view==="front"&&editorMode);
+  const facePlace=item.kind==='emotion'?activeEmotionPlacement(dir):{x:0,y:0,scale:1};
   const rank=rankIds?rankIds.indexOf(item.bone):-1;
   const exploded=rank>=0?V.explosion(rank,rankIds.length,planeGap,dir):{x:0,y:0};
-  const tx=ox+(screen.x+exploded.x)*mag,ty=oy+(screen.y+exploded.y)*mag;
-  const rad=(mirror?-1:1)*p.angle*Math.PI/180,planeScale=p.scale*mag;
+  const tx=ox+(screen.x+exploded.x+facePlace.x)*mag;
+  const ty=oy+(screen.y+exploded.y+facePlace.y)*mag;
+  const rad=(mirror?-1:1)*p.angle*Math.PI/180,planeScale=p.scale*facePlace.scale*mag;
   ctx.save();ctx.imageSmoothingEnabled=false;
   ctx.translate(tx,ty);
   ctx.rotate(rad);
@@ -611,7 +654,18 @@ function drawGame(){
   renderLayers(preview,dir,0,0,1,false);
  }
 }
-function paint(){drawEditor();drawGame();}
+function drawEmotionLivePreview(){
+ if(!emotionPreviewCanvas||!manifest||!state)return;
+ const tile=document.createElement('canvas');tile.width=64;tile.height=112;
+ const ctx=tile.getContext('2d',{alpha:true});ctx.imageSmoothingEnabled=false;
+ renderLayers(ctx,direction,0,0,1,false);
+ const out=emotionPreviewCanvas.getContext('2d');
+ out.imageSmoothingEnabled=false;
+ out.clearRect(0,0,emotionPreviewCanvas.width,emotionPreviewCanvas.height);
+ out.drawImage(tile,0,0,64,112,0,0,emotionPreviewCanvas.width,emotionPreviewCanvas.height);
+ updateEmotionPreviewUI();
+}
+function paint(){drawEditor();drawGame();drawEmotionLivePreview();}
 function axisButtons(){
  $("toolSelect").classList.toggle("active",selectMode);
  for(const tool of ["Move","Rotate","Scale","Anchor"])$("tool"+tool).classList.toggle("active",!selectMode&&transformMode===tool.toLowerCase());
@@ -861,7 +915,8 @@ function updateEmotionStatus(){
  const asset=getEmotionAsset(emotionAt());
  if($("emotionAsset"))$("emotionAsset").value=emotionAt();
  if($("emotionStatus"))$("emotionStatus").textContent=(asset?.native?"ORIGINAL SOURCE / ":asset?.database?"EMOTION STUDIO DATABASE / ":"IMPORTED PLANE / ")+
-  (asset?.frames||1)+" FRAME(S) · "+emotionKeys.length+" IMAGE SWAP KEY(S)";
+  (asset?.frames||1)+" FRAME(S) · "+(asset?.fps||6)+" FPS · HEAD PLANE / READ ONLY";
+ updateEmotionPreviewUI();
 }
 async function installEmotionEntries(entries,origin="starter"){
  if(!U)throw Error("Emotion renderer is missing");
@@ -989,17 +1044,17 @@ function bake(framesToExport,clipName){
  const n=Math.round(clamp(framesToExport,1,48));
  const canvas=document.createElement("canvas");canvas.width=64*n;canvas.height=448;
  const ctx=canvas.getContext("2d");
- const originalDirection=direction,originalState=state,originalFrame=frame;
+ const originalDirection=direction,originalState=state,originalFrame=frame,originalEmotionPreviewFrame=emotionPreviewFrame;
  for(let d=0;d<4;d++){
   direction=DIR[d];
   for(let f=0;f<n;f++){
-   frame=f;state=n===1?originalState:R.sampleTrack(tracks,f,n,base);
+   frame=f;emotionPreviewFrame=f;state=n===1?originalState:R.sampleTrack(tracks,f,n,base);
    const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");
    renderLayers(tc,direction,0,0,1,false);
    ctx.drawImage(tile,64*f,112*d);
   }
  }
- direction=originalDirection;state=originalState;frame=originalFrame;
+ direction=originalDirection;state=originalState;frame=originalFrame;emotionPreviewFrame=originalEmotionPreviewFrame;
  return canvas;
 }
 function commitUnkeyedPose(){
@@ -1027,7 +1082,7 @@ function saveGame(){
  const record={format:"mahluk-2-character-v1",version:1,id,name,
   role:"character-root",actionEditor:"mahluk-hidup-1.0",base:type,template_base:type==="female"?"human_female_base":"human_male_base",
   outfit,bodyPlane,model:R.normalize(state),rest:R.normalize(base),tracks:clone(tracks),frames,fps,clip:clipId,
-  emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys)},accessoryPlanes:{glasses:glassesAssetId},
+  emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys),placement:clone(emotionPlacement)},accessoryPlanes:{glasses:glassesAssetId},
   rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
   pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),
   sprite:rootSheet,clips,updated:Date.now()};
@@ -1055,8 +1110,10 @@ function loadRecord(id){
  // Shared master always takes precedence for new/opened 2.0 characters.
  rigRules=G.normalize(r.driveFileId?r.rigRules:(masterDocument()?.rules||r.rigRules),R);
  setPixelPlanes(r.driveFileId?r.pixelPlanes:(masterDocument()?.pixelPlanes||r.pixelPlanes||{}));
- emotionAssetId=getEmotionAsset(r.emotionPlane?.asset)?r.emotionPlane.asset:"native:"+(r.model?.emotion||"neutral");
- emotionKeys=Array.isArray(r.emotionPlane?.keys)?r.emotionPlane.keys.filter(k=>getEmotionAsset(k.asset)&&Number.isInteger(k.frame)).slice(0,48):[];
+ emotionAssetId=typeof r.emotionPlane?.asset==='string'?r.emotionPlane.asset:'native:neutral';
+ emotionKeys=Array.isArray(r.emotionPlane?.keys)?r.emotionPlane.keys.filter(k=>typeof k?.asset==='string'&&Number.isInteger(k.frame)).slice(0,48):[];
+ emotionPlacement=EP.placement(r.emotionPlane?.placement);
+ emotionPreviewFrame=0;emotionPreviewElapsed=0;
  glassesAssetId=getGlassesAsset(r.accessoryPlanes?.glasses)?r.accessoryPlanes.glasses:"native";
  base=R.normalize(r.rest||r.model);state=R.normalize(r.model);
  tracks=R.makeTracks();
@@ -1070,7 +1127,7 @@ function newCharacter(){
  remember();identifier=null;type="original";outfit="outfit";bodyPlane="current";clip="idle";frames=1;fps=12;frame=0;
  const general=masterDocument();rigRules=G.normalize(general?.rules,R);
  setPixelPlanes(general?.pixelPlanes||{});
- emotionAssetId="native:neutral";emotionKeys=[];glassesAssetId="native";
+ emotionAssetId="native:neutral";emotionKeys=[];emotionPlacement=EP.placement();emotionPreviewFrame=0;emotionPreviewElapsed=0;glassesAssetId="native";
  state=general?.defaultParts?R.normalize({parts:general.defaultParts}):R.referencePose();
  base=R.normalize(state);tracks=R.makeTracks();$("characterName").value="My Character 2.0";
  updateLibrary();assetOptions();applyState();setStatus("NEW SOURCE-NATIVE CHARACTER · GAME CONTENT UNCHANGED",true);
@@ -1079,7 +1136,7 @@ function projectExport(){
  commitUnkeyedPose();
  const needed=new Set([emotionAssetId,glassesAssetId,...emotionKeys.map(k=>k.asset)]);
  const payload={format:"mahluk-2-project-v1",name:$("characterName").value,id:identifier,base:type,outfit,bodyPlane,clip,model:state,rest:base,tracks,frames,fps,
-  emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys)},accessoryPlanes:{glasses:glassesAssetId},
+  emotionPlane:{asset:emotionAssetId,keys:clone(emotionKeys),placement:clone(emotionPlacement)},accessoryPlanes:{glasses:glassesAssetId},
   rigRules:G.normalize(rigRules,R),generalRigRevision:masterDocument()?.revision||0,
   pixelPlanes:G.sanitizePixelPlanes(pixelPlanes,R),
   embeddedAssets:userAssets.filter(a=>needed.has(a.id))};
@@ -1105,8 +1162,10 @@ function importProject(file){
    E.saveAssets(window.localStorage,[...existing.filter(a=>!imported.some(b=>b.id===a.id)),...imported].slice(-12));
   }
   loadImportedAssets();
-  emotionAssetId=getEmotionAsset(v.emotionPlane?.asset)?v.emotionPlane.asset:"native:"+(v.model?.emotion||"neutral");
-  emotionKeys=Array.isArray(v.emotionPlane?.keys)?v.emotionPlane.keys.filter(k=>getEmotionAsset(k.asset)&&Number.isInteger(k.frame)).slice(0,48):[];
+  emotionAssetId=typeof v.emotionPlane?.asset==='string'?v.emotionPlane.asset:'native:neutral';
+  emotionKeys=Array.isArray(v.emotionPlane?.keys)?v.emotionPlane.keys.filter(k=>typeof k?.asset==='string'&&Number.isInteger(k.frame)).slice(0,48):[];
+  emotionPlacement=EP.placement(v.emotionPlane?.placement);
+  emotionPreviewFrame=0;emotionPreviewElapsed=0;
   glassesAssetId=getGlassesAsset(v.accessoryPlanes?.glasses)?v.accessoryPlanes.glasses:"native";
   $("characterName").value=String(v.name||"Imported 2.0").slice(0,40);frame=0;assetOptions();applyState();setStatus("IMPORTED PROJECT / NOT YET PUBLISHED",true);
  }).catch(e=>setStatus("IMPORT FAILED: "+e.message,false));
