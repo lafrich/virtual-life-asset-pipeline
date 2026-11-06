@@ -104,7 +104,7 @@ async function saveCharacter(record,expectedModifiedTime=null){
 async function saveMaster(doc,expectedModifiedTime=null){
  if(!validMaster(doc))throw Error("No valid Master Rig saved. Save General Default first.");
  const folderId=await ensureLibrary(),files=await search(folderId,"name = 'master-rig.json'"),old=files[0]||null;
- if(old&&expectedModifiedTime&&old.modifiedTime!==expectedModifiedTime)
+ if(old&&(!expectedModifiedTime||old.modifiedTime!==expectedModifiedTime))
   throw Error("Master Rig changed on another device; reload Drive first.");
  const file=await upload({name:"master-rig.json",mimeType:"application/json",parents:[folderId],
   appProperties:{application:"mahluk-hidup-2",kind:"general-master"}},
