@@ -1,8 +1,6 @@
-/* Emotion Studio / universal four-view emotion planes. Shared by Emotion Studio and Mahluk Hidup 2. */
+/* EMOSI.EXE compatibility: native 64x112 manual face atlas validator and renderer only. No standalone UI or GitHub credential flow. */
 (function(root,factory){"use strict";const api=factory();if(typeof module==="object"&&module.exports)module.exports=api;if(root)root.MH2UniversalEmotions=api;})(typeof window!=="undefined"?window:null,function(){"use strict";
-const FORMAT="mahluk-2-universal-emotions-v1",OWNER="lafrich",REPO="virtual-life-asset-pipeline",BRANCH="main";
-const PATH="site/emotion-studio/catalog.json";
-const API="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;
+const FORMAT="mahluk-2-universal-emotions-v1";
 const DIR=["se","sw","ne","nw"];
 const TEMPLATES=["neutral","happy","angry","sad","surprised","shy","cheeky","bleh","wink","sleepy","cry","grimace"];
 function validEntry(a){return !!a&&/^[-a-z0-9_]{1,64}$/.test(a.id)&&typeof a.name==="string"&&a.name.length<=90&&["universal","male","female","original"].includes(a.base)&&Number.isInteger(a.frames)&&a.frames>=1&&a.frames<=48&&(TEMPLATES.includes(a.template)||typeof a.png==="string"&&/^data:image\/png;base64,[a-z\d+/=]+$/i.test(a.png)&&a.png.length<3000000);}
@@ -34,21 +32,5 @@ async function renderAtlas(entry){if(!validEntry(entry))throw Error("Invalid emo
  if(img.naturalWidth!==64*entry.frames||img.naturalHeight!==448)throw Error("PNG must be "+(64*entry.frames)+"×448");
  const c=document.createElement("canvas");c.width=img.naturalWidth;c.height=448;c.getContext("2d").drawImage(img,0,0);return c;
 }
-function decode64(s){const bin=atob(s.replace(/\s/g,""));const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes)}
-function encode64(s){const bytes=new TextEncoder().encode(s);let r="";for(let i=0;i<bytes.length;i+=8192)r+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(r)}
-async function loadCatalog(token=""){const headers={"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"};if(token)headers.Authorization="Bearer "+token;
- let response;
- try{response=await fetch(API+"?t="+Date.now(),{headers,cache:"no-store"});if(!response.ok)throw Error("GitHub HTTP "+response.status);const file=await response.json();return {catalog:validateCatalog(JSON.parse(decode64(file.content))),sha:file.sha,from:"github"}}
- catch(error){if(token)throw error;response=await fetch("https://lafrich.github.io/virtual-life-asset-pipeline/emotion-studio/catalog.json?t="+Date.now(),{cache:"no-store"});if(!response.ok)throw error;return {catalog:validateCatalog(await response.json()),sha:null,from:"pages"}}
-}
-async function saveEntry(entry,token){if(!token)throw Error("Connect GitHub with a fine-grained token (Contents: Read and write).");if(!validEntry(entry))throw Error("Invalid emotion asset");
- const latest=await loadCatalog(token);if(!latest.sha)throw Error("Cannot determine GitHub version");
- const entries=latest.catalog.entries.filter(a=>a.id!==entry.id);entries.push(entry);
- if(entries.length>250)throw Error("Maximum 250 emotion assets");
- const catalog=validateCatalog({...latest.catalog,updated:new Date().toISOString(),entries});
- const response=await fetch(API,{method:"PUT",headers:{"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"},body:JSON.stringify({message:"Emotion Studio: publish "+entry.id,content:encode64(JSON.stringify(catalog,null,2)+"\n"),sha:latest.sha,branch:BRANCH})});
- if(!response.ok){const info=await response.json().catch(()=>({}));throw Error("GitHub save failed ("+response.status+"): "+String(info.message||"check permissions/conflicts"));}
- return {catalog,commit:(await response.json()).commit?.sha||""};
-}
-return Object.freeze({FORMAT,PATH,API,DIR,TEMPLATES,validEntry,validateCatalog,renderTemplate,renderAtlas,loadCatalog,saveEntry});
+return Object.freeze({FORMAT,DIR,TEMPLATES,validEntry,validateCatalog,renderTemplate,renderAtlas});
 });
