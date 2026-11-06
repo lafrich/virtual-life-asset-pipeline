@@ -1,6 +1,7 @@
-/* Mahluk Hidup 1 ↔ EMOSI.EXE: read-only facial atlas bridge.
- * Uses the existing published catalog and same-origin local Emosi database.
- * Does not modify V6B character anatomy, saved characters or source sprites.
+/* Mahluk Hidup 1 ↔ canonical EMOSI.EXE (virtual-office).
+ * Reads native Emosi local IndexedDB and the same Google Drive projects.
+ * The legacy GitHub Emotion Studio catalog and token workflow are retired.
+ * Does not change V6B anatomy, characters or source sprites.
  */
 (function(root,factory){
   const api=factory();
