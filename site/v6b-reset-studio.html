@@ -13,7 +13,7 @@ main{display:grid;grid-template-columns:235px 1fr 260px;gap:12px;padding:12px}
 .control{display:grid;gap:5px;margin-bottom:12px}.control label{font-size:11px;font-weight:bold}
 .buttons{display:flex;gap:5px;flex-wrap:wrap}.buttons>*{flex:1}
 .viewport{display:grid;place-items:center;background:repeating-conic-gradient(#d6dee7 0 25%,#bfcddc 0 50%) 0 0/20px 20px;min-height:450px;overflow:auto}
-canvas#stage{image-rendering:pixelated;width:256px;height:448px;border:1px solid #597b9c;cursor:crosshair;touch-action:none}
+canvas#stage{image-rendering:pixelated;width:256px;height:448px;border:1px solid #597b9c;cursor:default;touch-action:pan-y}
 #status{font-size:11px;padding:9px 12px;background:#d8e7fa;min-height:36px;border-top:1px solid #a8b8c8}
 .note{font-size:11px;line-height:1.5;color:#52677d}input[type=range]{padding:0;width:100%}input[type=color]{height:34px;padding:2px;width:100%}
 hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
@@ -29,7 +29,7 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <main><section class="panel">
 <h2>CHARACTER BASE</h2>
 <div class="control"><label>BODY TEMPLATE</label><select id="body"><option value="male">HUMAN MALE · NUDE V6B SOURCE</option><option value="female">HUMAN FEMALE · NUDE V6B SOURCE</option></select></div>
-<div class="control"><label>CHARACTER NAME</label><input id="name" value="NEW HUMAN"></div>
+<div class="control"><label>CHARACTER NAME</label><input id="name" value="NEW HUMAN"></div><button id="duplicate-character" style="width:100%">＋ DUPLICATE AS NEW CHARACTER</button>
 <div class="control"><label>DIRECTION</label><select id="direction"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></div>
 <p class="note">Original authored human v6b assets. Edit anatomy and skin pixels with BODY PARTS. Ichsan is archived as a character sample, not a template.</p><div class="control"><label>REFERENCE SKIN TONE</label><input type="color" id="skin" value="#d6a585" disabled></div>
 <hr>
@@ -40,7 +40,7 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
  <button id="restore-part" style="width:100%">↶ RESET SELECTED PART TO ORIGINAL</button>
  <p class="note" id="parts-info">The source part patch follows the native bone in idle, walk and authored V6B actions; use FRAME OVERRIDE for exact pose corrections.</p></div>
 <div id="pixels" hidden><h2>FRAME OVERRIDE · FULL PIXEL EDITOR</h2><button id="open-pixel" style="width:100%">OPEN NATIVE PIXEL EDITOR / CURRENT FRAME</button><p class="note">Native grid, select, copy/paste, flip, picker, zoom, undo/redo.</p><p class="note">Override only the chosen animation frame. Native body parts, motions and other frames stay intact.</p>
-<div class="buttons"><button id="pencil" class="active">PENCIL</button><button id="eraser">ERASE</button></div><div class="control"><label>PIXEL COLOR</label><input type="color" id="paint-color" value="#bf8e70"></div><button id="clear-view">CLEAR EDITED PIXELS / VIEW</button></div>
+<button id="clear-view" style="width:100%">↶ RESET THIS FRAME OVERRIDE / ALL VIEWS</button></div>
 <div id="actions" hidden><h2>STOCK MOTIONS</h2><div id="animation-list"></div><hr>
 <div class="control"><label>FPS</label><input type="number" min="1" max="30" id="fps" value="12"></div>
 <div class="control"><label>ARM SWING · PIXELS</label><input id="arm" type="range" min="0" max="8" value="2"></div>
@@ -152,8 +152,8 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 const $=id=>document.getElementById(id),DIR=["se","sw","ne","nw"],FW=64,FH=112,PIVOT=[32,100];
 const ROWMAP={walk:0,idle:4,talk:8,sit:12,sit_type:16,sleep:20,tired:24,swim:28,float:32,lie:36,perch:40};
 const STOCK=["idle","walk","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"];
-const KEY="mahluk-v6b-simple-studio-v1";let editor="characters",painting=false,eraser=false,frame=0,playing=false,last=0,emotions=new Map();
-const neutral=(id)=>({id:"human_"+id+"_base",name:"NEW HUMAN "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="female"?"#d9a989":"#d6a585",pixels:{se:[],sw:[],ne:[],nw:[]},partEdits:{},frameEdits:{},customSheets:{},actions:{idle:{fps:4,frames:4,source:"v6b-native",action:"idle"},walk:{fps:7,frames:6,source:"v6b-native",action:"walk"}},current:"idle",emotion:"",faceOffset:[0,0]});
+const KEY="mahluk-v6b-simple-studio-v1";let editor="characters",frame=0,playing=false,last=0,emotions=new Map();
+const neutral=(id)=>({id:"draft_human_"+id,baseId:"human_"+id+"_base",name:"NEW HUMAN "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="female"?"#d9a989":"#d6a585",partEdits:{},frameEdits:{},customSheets:{},actions:{idle:{fps:4,frames:4,source:"v6b-native",action:"idle"},walk:{fps:7,frames:6,source:"v6b-native",action:"walk"}},current:"idle",emotion:"",faceOffset:[0,0]});
 let model=neutral("male"),editMode="frame",activePart="";
 let nativeCatalog=null,sourceManifest=null,nativeReady=false;
 const sourcePartImages=new Map(),motionPartImages=new Map(),frameOverrideImages=new Map(),partEditImages=new Map(),sheetImages=new Map(),patchCache=new Map(),sourcePartRows=new Map(),motionPartsByGender=new Map();
@@ -296,16 +296,21 @@ function tab(id){editor=id;document.querySelectorAll("[data-tab]").forEach(b=>b.
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
 $("body").onchange=()=>{model=neutral($("body").value);restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();loadEmotions();draw();status("LOADED ORIGINAL "+model.body_type.toUpperCase()+" NUDE V6B SOURCE")};
 $("name").oninput=()=>model.name=$("name").value;
+$("duplicate-character").onclick=()=>{
+ const id="custom_human_"+model.body_type+"_"+Date.now().toString(36);
+ model=clone(model);model.id=id;model.baseId="human_"+model.body_type+"_base";
+ model.name=model.name.replace(/^NEW /,"")+" COPY";applyUI();draw();
+ status("CREATED "+id.toUpperCase()+" · ORIGINAL MALE/FEMALE SOURCE LEFT UNCHANGED");
+};
 $("skin").oninput=()=>{model.skin=$("skin").value;draw()};
 $("direction").onchange=draw;$("motion").onchange=()=>{model.current=$("motion").value;syncMotionUI();frame=0;draw()};
 for(const k of ["fps","arm","stride","bob"])$(k).oninput=()=>{model.actions[model.current][k]=Number($(k).value);draw()};
 $("install-stock").onclick=()=>install(model.current);
 $("save-action").onclick=()=>{const name=prompt("Custom action name",model.current+"_custom");if(!name)return;const id=name.toLowerCase().replace(/[^a-z0-9_-]/g,"_").slice(0,50);model.actions[id]={...clone(model.actions[model.current]),source:"v6b-native-variant",action:model.actions[model.current]?.action||model.current,based_on:model.current};model.current=id;renderMotions();syncMotionUI();draw();status("CUSTOM ACTION SAVED: "+id)};
-$("pencil").onclick=()=>{eraser=false;$("pencil").classList.add("active");$("eraser").classList.remove("active")};
-$("eraser").onclick=()=>{eraser=true;$("eraser").classList.add("active");$("pencil").classList.remove("active")};
-function paint(e){if(editor!=="pixels")return;const r=c.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)*64/r.width),y=Math.floor((e.clientY-r.top)*112/r.height);if(x<0||x>=64||y<0||y>=112)return;const dir=$("direction").value,p=model.pixels[dir],i=p.findIndex(q=>q[0]===x&&q[1]===y);if(i>=0)p.splice(i,1);if(!eraser)p.push([x,y,$("paint-color").value]);draw();}
-c.addEventListener("pointerdown",e=>{painting=true;c.setPointerCapture(e.pointerId);paint(e)});c.addEventListener("pointermove",e=>{if(painting)paint(e)});c.addEventListener("pointerup",()=>painting=false);c.addEventListener("pointercancel",()=>painting=false);
-$("clear-view").onclick=()=>{model.pixels[$("direction").value]=[];draw();status("VIEW PIXEL CORRECTIONS CLEARED")};
+$("clear-view").onclick=()=>{
+ for(const dir of DIR){const key=model.current+"|"+frame+"|"+dir;delete model.frameEdits?.[key];frameOverrideImages.delete(key)}
+ draw();status("FRAME OVERRIDE CLEARED · ORIGINAL V6B ACTION RESTORED");
+};
 $("play").onclick=()=>{playing=!playing;$("play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY"};
 $("reset-frame").onclick=()=>{frame=0;draw()};$("frame-index").oninput=()=>{playing=false;$("play").textContent="▶ PLAY";frame=Number($("frame-index").value);draw()};
 function tick(now){if(playing&&now-last>=1000/(model.actions[model.current]?.fps||12)){frame=(frame+1)%frameCount();last=now;draw()}requestAnimationFrame(tick)}requestAnimationFrame(tick);
