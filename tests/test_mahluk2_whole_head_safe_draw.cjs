@@ -38,8 +38,11 @@ test('Full head composites native hair and fringe in source layer order with exa
  });
  assert.equal(merged.width,64);assert.equal(merged.height,448);
  assert.equal(ctx.imageSmoothingEnabled,false);
- assert.deepEqual(calls.map(x=>x.source),WH.PARTS.map(x=>x+'.png'));
- for(const c of calls)assert.deepEqual([c.x,c.y,c.w,c.h],[0,0,64,448]);
+ assert.deepEqual(calls.map(x=>x.source),WH.PARTS.flatMap(x=>Array(4).fill(x+'.png')));
+ for(let i=0;i<calls.length;i++){
+  const c=calls[i];
+  assert.deepEqual([c.x,c.y,c.w,c.h],[0,(i%4)*112,64,112]);
+ }
 });
 test('Flattened saved head is never covered by stale fringe artwork',()=>{
  const calls=[];
@@ -50,8 +53,11 @@ test('Flattened saved head is never covered by stale fringe artwork',()=>{
   flattened:true,
   createCanvas:()=>({getContext:()=>({drawImage:(...args)=>calls.push(args)})})
  });
- assert.equal(calls.length,1);
- assert.equal(calls[0][0],'saved-merged-head');
+ assert.equal(calls.filter(call=>call[0]==='saved-merged-head').length,4);
+ assert.deepEqual(calls.slice(-4).map(call=>call[0]),Array(4).fill('saved-merged-head'));
+ // Native fringe can safely fill a blank direction, but never draw over
+ // any saved merged HEAD view after its final pixel pass.
+ assert.ok(calls.slice(0,-4).some(call=>call[0]==='fringe_l'));
 });
 test('Legacy split head artwork is composed without deleting its saved hair pixels',()=>{
  const calls=[];
@@ -62,9 +68,9 @@ test('Legacy split head artwork is composed without deleting its saved hair pixe
   flattened:false,
   createCanvas:()=>({getContext:()=>({drawImage:(img)=>calls.push(img)})})
  });
- assert.equal(calls[1],'legacy-head-override');
- assert.equal(calls[3],'legacy-painted-fringe');
- assert.equal(calls.length,WH.PARTS.length);
+ assert.deepEqual(calls.slice(4,8),Array(4).fill('legacy-head-override'));
+ assert.deepEqual(calls.slice(12,16),Array(4).fill('legacy-painted-fringe'));
+ assert.equal(calls.length,WH.PARTS.length*4);
 });
 test('Head merge metadata round-trips through existing rig master format and old records remain valid',()=>{
  const storage=new Map();
