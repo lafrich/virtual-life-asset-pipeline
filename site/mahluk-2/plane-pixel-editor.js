@@ -349,7 +349,7 @@
    draw();updateSelection();
   }
   els.selectAll.onclick=()=>{selection={x:0,y:0,w:W,h:H};selectTool("select");draw();updateSelection()};
-  els.deselect.onclick=()=>{selection=null;draw();updateSelection()};
+  els.deselect.onclick=()=>{floatingPaste=null;selection=null;draw();updateSelection()};
   els.flipH.onclick=()=>flipSelection("horizontal");
   els.flipV.onclick=()=>flipSelection("vertical");
   els.delSelection.onclick=()=>{
@@ -477,7 +477,8 @@
      els.status.textContent="DRAG FROM INSIDE SELECTED PIXELS";return;
     }
     saveHistory();
-    moveStart={rect:{...selection},pixels:frameImage().data.slice(),from:point};
+    moveStart={rect:{...selection},pixels:frameImage().data.slice(),from:point,
+     floating:floatingPaste?{...floatingPaste}:null};
     active={id:e.pointerId,at:point,mode:"move-pixels",painted:true};
     capture(e);return;
    }
