@@ -7,7 +7,7 @@ const fs=require("node:fs"),assert=require("node:assert/strict");
 const source=fs.readFileSync("site/action-editor.js","utf8");
 const html=fs.readFileSync("site/action-editor.html","utf8");
 new Function(source);
-assert.match(html,/action-editor\.js\?v=action-local-poser-v1/);
+assert.match(html,/<script\s+defer\s+src="\.\/action-editor\.js\?v=[^"]+"\s*><\/script>/);
 assert.match(source,/function paintNativeDepth\(ctx,index,dir\)/);
 const start=source.indexOf("function paintNativeDepth(ctx,index,dir){");
 const end=source.indexOf("\nfunction originalInto(",start);
