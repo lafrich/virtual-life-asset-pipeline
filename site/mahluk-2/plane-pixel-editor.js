@@ -292,12 +292,18 @@
     ...clipboard,pixels:Array.from(clipboard.pixels)
    }))}catch{/* Copy still works in this editor when browser storage is unavailable. */}
    updateClipboardInfo();
-   els.status.textContent="COPIED "+clipboard.w+"×"+clipboard.h+" PIXELS · "+
-    bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · SWITCH VIEW THEN PASTE";
+   const hasVisible=clipboard.pixels.some((value,index)=>index%4===3&&value>0);
+   els.status.textContent=hasVisible?
+    "COPIED "+clipboard.w+"×"+clipboard.h+" PIXELS · "+
+     bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · SWITCH VIEW THEN PASTE":
+    "COPIED AN EMPTY REGION · NO VISIBLE PIXELS · SELECT YOUR DRAWING THEN COPY";
   }
   function pasteSelection(mirror=false){
    const stamp=currentClipboard();
    if(!stamp){els.status.textContent="NO COPIED PIXELS · SELECT + COPY FIRST";return;}
+   if(!els.pasteReplace.checked&&!stamp.pixels.some((v,i)=>i%4===3&&v>0)){
+    els.status.textContent="PASTE HAS NO VISIBLE PIXELS · CHECK SOURCE SELECTION";return;
+   }
    const destX=selection?selection.x:(mirror?W-stamp.x-stamp.w:stamp.x);
    const destY=selection?selection.y:stamp.y;
    const dx=clamp(destX,0,W-1),dy=clamp(destY,0,H-1);
