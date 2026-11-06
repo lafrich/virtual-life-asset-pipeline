@@ -50,8 +50,8 @@
   for(const id of PARTS){
    const override=getOverride(id);
    for(let dir=0;dir<4;dir++){
-    if(override&&viewHasPixels(override,dir,createCanvas)){
-     if(!flattened)drawAtlasView(ctx,override,dir);
+    if(!flattened&&override&&viewHasPixels(override,dir,createCanvas)){
+     drawAtlasView(ctx,override,dir);
     }else{
      for(const slot of slots||[]){
       if(slot.bone!==id||!allowed(slot))continue;
