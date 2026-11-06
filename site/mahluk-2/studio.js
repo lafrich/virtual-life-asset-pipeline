@@ -432,12 +432,18 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode,hitOut=null){
  const exploding=Boolean(editorMode&&view==="iso"&&inspectPlaneDepth&&planeGap>0);
  const rankIds=exploding?visualPlaneOrder(dir):null;
  const ordered=[];let faceAdded=false,glassesAdded=false,headAdded=false;
+ // Place the combined artwork at the original HEAD depth. The old
+ // hair_back cutout may appear earlier than the torso in the manifest;
+ // using its painter index would put the ENTIRE head behind the body.
+ const headLayerIndex=slots.findIndex(s=>s.bone==='head'&&!E.slotKind(s)&&slotAllowed(s));
  for(let i=0;i<slots.length;i++){
   const s=slots[i],kind=E.slotKind(s);
   // Legacy hair and fringe live in one full HEAD atlas.
   // Held props are no longer part of this character-root editor.
   if(WH.FUSED.has(s.bone)){
-   if(!headAdded){ordered.push({kind:'whole-head',bone:'head',i});headAdded=true}
+   if(!headAdded&&(i===headLayerIndex||headLayerIndex<0)){
+    ordered.push({kind:'whole-head',bone:'head',i});headAdded=true;
+   }
    continue;
   }
   if(WH.EXCLUDED.has(s.bone))continue;
