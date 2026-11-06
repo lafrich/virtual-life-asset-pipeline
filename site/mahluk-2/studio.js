@@ -263,6 +263,26 @@ function setPlanePixel(id,png){
  setStatus("✓ PIXEL EDIT APPLIED TO "+id.toUpperCase()+" · SAVE AS GENERAL DEFAULT TO REUSE",true);
  return true;
 }
+async function ensurePixelImages(ids){
+ const revision=planeImageRevision;
+ for(const id of ids){
+  const png=pixelPlanes[id];
+  if(!png)continue;
+  const cached=planeImages.get(id);
+  if(cached&&cached.src===png&&cached.naturalWidth===64&&cached.naturalHeight===448)continue;
+  const img=new Image();
+  await new Promise((resolve,reject)=>{
+   img.onload=resolve;img.onerror=()=>reject(Error('Unable to decode saved 4-view pixels for '+id));
+   img.src=png;
+  });
+  if(img.naturalWidth!==64||img.naturalHeight!==448)
+   throw Error('Saved atlas for '+id+' is not 64x448');
+  if(revision!==planeImageRevision||pixelPlanes[id]!==png)
+   throw Error('Pixel artwork changed while opening editor · try again');
+  planeImages.set(id,img);
+  if(WH.FUSED.has(id))invalidateHead();
+ }
+}
 function wholeHeadAtlas(){
  if(!wholeHeadCache)wholeHeadCache=WH.composite({
   slots,
@@ -299,18 +319,27 @@ function fullCharacterReference(dir=direction){
  renderLayers(ref.getContext("2d"),dir,0,0,1,false);
  return ref;
 }
-function openPlaneEditor(){
- if(selected==="emotion"){
-  setStatus("EMOTION IS READ-ONLY HERE · OPEN EMOTION STUDIO TO EDIT FACE PIXELS",true);return;
+async function openPlaneEditor(){
+ const id=selected;
+ if(id==='emotion'){setStatus('EMOSI PIXELS ARE READ ONLY HERE · USE EMOSI.EXE',true);return}
+ if(!manifest||!planeEditor||!R.BMAP[id]||G.HIDDEN.has(id)||WH.EXCLUDED.has(id))return;
+ if(!renderableIds().includes(id)){
+  setStatus('SELECT AN EDITABLE HEAD OR BODY PLANE',false);return;
  }
- if(!manifest||!planeEditor||!R.BMAP[selected]||G.HIDDEN.has(selected))return;
- if(!renderableIds().includes(selected)){
-  setStatus("SELECT A DRAWABLE PLANE, LIKE WRIST L / WRIST R / HEAD, NOT A RIG CONTROL",false);return;
- }
- const source=nativePlaneAtlas(selected),src=planeImages.get(selected);
- const refs=Object.fromEntries(DIR.map(dir=>[dir,fullCharacterReference(dir)]));
- planeEditor.open({id:selected,originalAtlas:source,initialAtlas:src||source,
-  referenceImages:refs,referenceImage:refs[direction],direction});
+ if(planeEditor.isOpen())return;
+ try{
+  // The persisted PNG is authoritative, not planeImages (asynchronous decode).
+  // Loading the editor too quickly after Apply must never reset three views
+  // from an outdated image or the raw native source atlas.
+  const parts=id==='head'?WH.PARTS:[id];
+  await ensurePixelImages(parts);
+  if(selected!==id)return;
+  const source=nativePlaneAtlas(id);
+  const current=id==='head'?source:(planeImages.get(id)||source);
+  const refs=Object.fromEntries(DIR.map(dir=>[dir,fullCharacterReference(dir)]));
+  planeEditor.open({id,originalAtlas:source,initialAtlas:current,
+   referenceImages:refs,referenceImage:refs[direction],direction});
+ }catch(error){setStatus('PIXEL EDITOR OPEN BLOCKED: '+error.message,false)}
 }
 function clearPlanePixel(){
  if(selected==="emotion"){setStatus("EMOTION PIXELS ARE OWNED BY EMOTION STUDIO",true);return}
@@ -1103,6 +1132,7 @@ function removeEmotionKey(){
 }
 function loadImagesFromManifest(j){
  manifest=j;slots=j.slots.filter(s=>s&&R.BMAP[s.bone]&&/^media\/original-rig\/[a-z0-9-]+\.png$/.test(s.src));
+ invalidateHead();
  const uniq=[...new Set(slots.map(s=>s.src))];
  return Promise.all(uniq.map(src=>new Promise((resolve,reject)=>{
   const img=new Image();img.onload=()=>{images.set(src,img);resolve()};
@@ -1330,17 +1360,17 @@ function setupEvents(){
   };
  }
  $("modelType").onchange=e=>{remember();type=e.target.value;
-  bodyPlane=B.defaultForBase(type);
+  bodyPlane=B.defaultForBase(type);invalidateHead();
   if(!getEmotionAsset(emotionAssetId)){emotionAssetId="native:neutral";emotionKeys=[]}
   assetOptions();setProjectFields();buildTree();paint();setStatus("SWITCHED SOURCE / "+type.toUpperCase(),true)};
- $("outfit").onchange=e=>{remember();outfit=e.target.value;buildTree();paint()};
+ $("outfit").onchange=e=>{remember();outfit=e.target.value;invalidateHead();buildTree();paint()};
  $("bodyPlane").onchange=e=>{
   const next=B.matchingBase(type,e.target.value);if(next===bodyPlane){e.target.value=bodyPlane;return}
   const chosen=slots.filter(s=>s.gender===next&&s.layer_type==="body"&&B.isBodyBone(s.bone));
   if(next!=="current"&&!chosen.length){
    e.target.value=bodyPlane;setStatus("NUDE BODY SOURCE NOT AVAILABLE YET",false);return;
   }
-  remember();bodyPlane=next;setProjectFields();buildTree();paint();
+  remember();bodyPlane=next;invalidateHead();setProjectFields();buildTree();paint();
   setStatus(next==="current"?
    "✓ ORIGINAL BODY RESTORED · EVERYTHING ELSE UNCHANGED":
    "✓ "+next.toUpperCase()+" NUDE BODY PLANES ACTIVE · HEAD / FACE / ACCESSORIES / RIG UNCHANGED",true);
@@ -1651,7 +1681,7 @@ function setupEvents(){
  requestAnimationFrame(tick);
 }
 async function mount(){
- if(!R||!E||!G||!B||!P||!V||!S||!U||!EP){setStatus('RIG / EMOSI PREVIEW / FOUR-VIEW ENGINE NOT FOUND',false);return}
+ if(!R||!E||!G||!B||!P||!V||!S||!U||!EP||!WH){setStatus('RIG / EMOSI PREVIEW / FOUR-VIEW ENGINE NOT FOUND',false);return}
  setupEvents();
  try{
   const resp=await fetch("../media/original-rig/manifest.json",{cache:"no-store"});
