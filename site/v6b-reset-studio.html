@@ -38,7 +38,7 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <div class="control"><label>ARM SWING · PIXELS</label><input id="arm" type="range" min="0" max="8" value="2"></div>
 <div class="control"><label>STRIDE · PIXELS</label><input id="stride" type="range" min="0" max="10" value="4"></div>
 <div class="control"><label>BODY BOUNCE · PIXELS</label><input id="bob" type="range" min="0" max="6" value="1"></div>
-<button id="save-action">SAVE AS CUSTOM ACTION</button></div>
+<p class="note" id="motion-original-note"></p><button id="save-action">SAVE AS CUSTOM ACTION</button></div>
 <div id="emotions" hidden><h2>MANUAL FACE ATLAS</h2><p class="note">Reads the original Emosi.exe PNG frames as a single overlay; no eyes/mouth splitting.</p>
 <p class="note" id="emotion-source-note">Sync sources: GitHub published + local browser. Google Drive is not connected.</p><div class="control"><label>FACE ASSET</label><select id="emotion"><option value="">NO FACE</option></select></div>
 <div class="control"><label>HEAD OFFSET X</label><input id="face-x" type="number" value="0"></div>
@@ -149,7 +149,7 @@ let model=neutral("ichsan");const original=new Image();original.src="./media/ich
 const status=s=>$("status").textContent=s,clone=x=>JSON.parse(JSON.stringify(x));
 const c=$("stage"),cx=c.getContext("2d",{willReadFrequently:true});cx.imageSmoothingEnabled=false;
 function applyUI(){ $("body").value=model.body_type;$("name").value=model.name;$("skin").value=model.skin;$("motion").value=model.current;$("emotion").value=model.emotion;$("face-x").value=model.faceOffset[0];$("face-y").value=model.faceOffset[1];syncMotionUI();}
-function syncMotionUI(){const m=model.actions[model.current]||{fps:12,arm:2,stride:4,bob:1};for(const k of ["fps","arm","stride","bob"])$(k).value=m[k]??0;}
+function syncMotionUI(){const m=model.actions[model.current]||{fps:12,arm:2,stride:4,bob:1};for(const k of ["fps","arm","stride","bob"])$(k).value=m[k]??0;const native=model.body_type==="ichsan";for(const k of ["arm","stride","bob"])$(k).disabled=native;const note=$("motion-original-note");if(note)note.textContent=native?"Original Ichsan V6B uses authored pixel frames. Modify them in PIXEL EDIT; FPS remains editable. Movement sliders are disabled because they cannot alter a flattened sprite correctly.":"Procedural base motion: arm, stride and bounce settings are editable."}
 function renderMotions(){const m=$("motion");m.replaceChildren();for(const id of Object.keys(model.actions)){const o=document.createElement("option");o.value=id;o.textContent=id.toUpperCase();m.append(o)}m.value=model.current;const l=$("animation-list");l.replaceChildren();for(const id of STOCK){const b=document.createElement("button");b.textContent=(model.actions[id]?"✓ ":"+ ")+id.toUpperCase();b.onclick=()=>install(id);l.append(b)}}
 function install(id){if(!model.actions[id])model.actions[id]={fps:12,arm:2,stride:4,bob:1,source:"v6b-procedural-stock-v1",action:id};model.current=id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED "+id.toUpperCase()+" · V6B COMPATIBLE");}
 function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));}
@@ -187,10 +187,11 @@ function drawTo(ctx,dir,action,f,faceFrame=f){ctx.clearRect(0,0,64,112);const ke
  const atlas=faceCache.get(model.emotion),entry=emotions.get(model.emotion);
  if(atlas&&entry&&(!/^n/.test(dir))){const i=DIR.indexOf(dir),n=entry.frames||1,ox=model.faceOffset[0],oy=model.faceOffset[1];const a=model.actions[action]||{},kind=a.action||action,t=Math.sin((f%6)*Math.PI/3),isWalk=/walk/.test(kind);const bob=isWalk?Math.abs(t)*(a.bob??1):kind==="idle"?(f%3===1?1:0):0;const poseY=/^sit/.test(kind)?13:/sleep|lie|float|swim/.test(kind)?17:0;ctx.drawImage(atlas,(faceFrame%n)*64,i*112,64,112,ox,oy+bob+poseY,64,112);}
 }
-function draw(){drawTo(cx,$("direction").value,model.current,frame);$("frame-index").value=frame;$("readout").textContent=model.current.toUpperCase()+" · "+$("direction").value.toUpperCase()+" · FRAME "+(frame+1)+" / 6 · "+(model.actions[model.current]?.fps||12)+" FPS"}
+function frameCount(){return model.body_type==="ichsan"&&(model.actions[model.current]?.action||model.current)==="idle"?4:6}
+function draw(){frame=frame%frameCount();$("frame-index").max=String(frameCount()-1);drawTo(cx,$("direction").value,model.current,frame);$("frame-index").value=frame;$("readout").textContent=model.current.toUpperCase()+" · "+$("direction").value.toUpperCase()+" · FRAME "+(frame+1)+" / "+frameCount()+" · "+(model.actions[model.current]?.fps||12)+" FPS"}
 function tab(id){editor=id;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));for(const p of ["pixels","actions","emotions"])$(p).hidden=p!==id;status("ACTIVE TAB: "+id.toUpperCase());}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
-$("body").onchange=()=>{model=neutral($("body").value);restoreFrameOverrides();renderMotions();applyUI();draw();status("SWITCHED TO "+model.body_type.toUpperCase()+" BASE · ORIGINAL ICHSAN STOCK PRESERVED")};
+$("body").onchange=()=>{model=neutral($("body").value);restoreFrameOverrides();renderMotions();applyUI();loadEmotions();draw();status("SWITCHED TO "+model.body_type.toUpperCase()+" BASE · ORIGINAL ICHSAN STOCK PRESERVED")};
 $("name").oninput=()=>model.name=$("name").value;
 $("skin").oninput=()=>{model.skin=$("skin").value;draw()};
 $("direction").onchange=draw;$("motion").onchange=()=>{model.current=$("motion").value;syncMotionUI();frame=0;draw()};
@@ -204,10 +205,10 @@ c.addEventListener("pointerdown",e=>{painting=true;c.setPointerCapture(e.pointer
 $("clear-view").onclick=()=>{model.pixels[$("direction").value]=[];draw();status("VIEW PIXEL CORRECTIONS CLEARED")};
 $("play").onclick=()=>{playing=!playing;$("play").textContent=playing?"Ⅱ PAUSE":"▶ PLAY"};
 $("reset-frame").onclick=()=>{frame=0;draw()};$("frame-index").oninput=()=>{playing=false;$("play").textContent="▶ PLAY";frame=Number($("frame-index").value);draw()};
-function tick(now){if(playing&&now-last>=1000/(model.actions[model.current]?.fps||12)){frame=(frame+1)%6;last=now;draw()}requestAnimationFrame(tick)}requestAnimationFrame(tick);
+function tick(now){if(playing&&now-last>=1000/(model.actions[model.current]?.fps||12)){frame=(frame+1)%frameCount();last=now;draw()}requestAnimationFrame(tick)}requestAnimationFrame(tick);
 function download(filename,blob){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
 function exportJSON(){download((model.id||"character")+".json",new Blob([JSON.stringify(model,null,2)],{type:"application/json"}))}
-function packageMotion(){const a=model.actions[model.current];return {format:"mahluk-v6b-motion-v1",id:model.current,action:a.action||a.based_on||model.current,frame:[64,112],pivot:[32,100],directions:DIR,frames:6,fps:a.fps||12,parameters:{arm:a.arm??2,stride:a.stride??4,bob:a.bob??1},source:a.source||"custom"}}
+function packageMotion(){const a=model.actions[model.current];return {format:"mahluk-v6b-motion-v1",id:model.current,action:a.action||a.based_on||model.current,frame:[64,112],pivot:[32,100],directions:DIR,frames:frameCount(),fps:a.fps||12,parameters:{arm:a.arm??2,stride:a.stride??4,bob:a.bob??1},source:a.source||"custom"}}
 function validMotion(m){return m&&m.format==="mahluk-v6b-motion-v1"&&typeof m.id==="string"&&/^[a-z0-9_-]{1,60}$/.test(m.id)&&typeof m.action==="string"&&STOCK.includes(m.action)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&m.frames===6&&Number.isFinite(m.fps)&&m.fps>=1&&m.fps<=30&&m.parameters&&["arm","stride","bob"].every(k=>Number.isFinite(m.parameters[k])&&m.parameters[k]>=0&&m.parameters[k]<=16)}
 $("export-motion").onclick=()=>download(model.current+"_motion.json",new Blob([JSON.stringify(packageMotion(),null,2)],{type:"application/json"}));
 $("import-motion").onclick=()=>$("motion-file").click();
@@ -218,7 +219,7 @@ $("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));i
 $("export-json").onclick=exportJSON;
 $("import-json").onclick=()=>$("import-file").click();
 $("import-file").onchange=async e=>{try{const m=JSON.parse(await e.target.files[0].text());if(!valid(m))throw Error("V6B contract mismatch");model=m;restoreFrameOverrides();renderMotions();applyUI();await setEmotion(m.emotion);draw();status("V6B CHARACTER IMPORTED")}catch(err){status("IMPORT FAILED: "+err.message)}e.target.value=""};
-$("export-sheet").onclick=()=>{const out=document.createElement("canvas");out.width=64*6;out.height=112*4;const ctx=out.getContext("2d");for(let d=0;d<4;d++)for(let f=0;f<6;f++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;drawTo(tile.getContext("2d"),DIR[d],model.current,f);ctx.drawImage(tile,f*64,d*112)}out.toBlob(blob=>blob&&download(model.current+"_v6b_four_view.png",blob),"image/png");status("EXPORTED 6 FRAMES × 4 DIRECTIONS · V6B NATIVE SIZE")};
+$("export-sheet").onclick=()=>{const out=document.createElement("canvas");out.width=64*frameCount();out.height=112*4;const ctx=out.getContext("2d");for(let d=0;d<4;d++)for(let f=0;f<frameCount();f++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;drawTo(tile.getContext("2d"),DIR[d],model.current,f);ctx.drawImage(tile,f*64,d*112)}out.toBlob(blob=>blob&&download(model.current+"_v6b_four_view.png",blob),"image/png");status("EXPORTED "+frameCount()+" FRAMES × 4 DIRECTIONS · V6B NATIVE SIZE")};
 $("emotion").onchange=()=>setEmotion($("emotion").value);
 for(const [id,index] of [["face-x",0],["face-y",1]])$(id).oninput=()=>{model.faceOffset[index]=Math.max(-64,Math.min(64,Number($(id).value)||0));draw()};
 async function readLocalEmotions(){const FALLBACK="emotion-studio-local-fallback-v1",result=[];try{const fallback=JSON.parse(localStorage.getItem(FALLBACK)||"[]");if(Array.isArray(fallback))result.push(...fallback)}catch{}if(typeof indexedDB==="undefined")return result;return new Promise(resolve=>{let req;try{req=indexedDB.open("emotion-studio-local-v1",1)}catch{return resolve(result)}req.onerror=()=>resolve(result);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains("emotion-assets"))req.result.createObjectStore("emotion-assets",{keyPath:"id"})};req.onsuccess=()=>{const db=req.result;try{const tx=db.transaction("emotion-assets","readonly"),get=tx.objectStore("emotion-assets").getAll();get.onsuccess=()=>{db.close();resolve([...result,...(Array.isArray(get.result)?get.result:[])])};get.onerror=()=>{db.close();resolve(result)}}catch{db.close();resolve(result)}}})}
