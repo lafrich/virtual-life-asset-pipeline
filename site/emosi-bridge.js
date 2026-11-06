@@ -55,20 +55,34 @@ async function toFace(entry,U){
     portrait:thumb.toDataURL("image/png"),
     frames:entry.frames,frame_ms:Array(entry.frames).fill(duration)};
 }
+async function connectDrive(){
+  const D=typeof window!=="undefined"?window.EmotionDrive:null;
+  if(!D)throw Error("Emosi.exe Google Drive module not available");
+  if(!D.connected())await D.connect();
+  return true;
+}
 async function refresh(){
   const U=typeof window!=="undefined"?window.MH2UniversalEmotions:null;
-  if(!U)throw Error("Emosi catalog library not loaded");
-  const [published,local]=await Promise.allSettled([U.loadCatalog(),localDatabase()]);
+  if(!U)throw Error("Emosi.exe RGBA atlas reader not loaded");
+  // Only read the real EMOSI.EXE local database and its Drive folder.
+  // The obsolete GitHub Emotion Studio catalog is intentionally never loaded.
+  const local=await localDatabase().catch(()=>[]);
   const entries=new Map();
-  if(published.status==="fulfilled")for(const e of published.value.catalog.entries)entries.set(e.id,e);
-  if(local.status==="fulfilled")for(const e of local.value)if(U.validEntry(e))entries.set(e.id,e);
-  if(!entries.size&&published.status==="rejected")
-    lastError=String(published.reason?.message||published.reason);
-  else lastError="";
+  for(const e of local)if(U.validEntry(e))entries.set(e.id,e);
+  let driveCount=0,driveError="";
+  const D=typeof window!=="undefined"?window.EmotionDrive:null;
+  if(D?.connected()){
+    try{
+      const response=await D.loadAll();
+      driveCount=response.entries.length;
+      for(const e of response.entries)if(U.validEntry(e))entries.set(e.id,e);
+      if(response.errors?.length)driveError=response.errors.length+" Drive project(s) unreadable";
+    }catch(error){driveError=error.message||String(error)}
+  }
   const loaded=await Promise.all([...entries.values()].slice(0,250).map(e=>toFace(e,U).catch(()=>null)));
-  faces=loaded.filter(Boolean);lastCount=faces.length;
-  return {count:lastCount,local:local.status==="fulfilled"?local.value.length:0,
-    published:published.status==="fulfilled",error:lastError};
+  faces=loaded.filter(Boolean);lastCount=faces.length;lastError=driveError;
+  return {count:lastCount,local:local.length,drive:driveCount,
+    connected:!!D?.connected(),published:false,error:lastError};
 }
 function apply(actor){
   if(!actor)return actor;
@@ -77,6 +91,6 @@ function apply(actor){
   actor.expressions=[...native,...faces.filter(f=>compatible(f.base,actor))];
   return actor;
 }
-return Object.freeze({refresh,apply,compatible,get count(){return lastCount},
+return Object.freeze({refresh,connectDrive,apply,compatible,get count(){return lastCount},
   get error(){return lastError}});
 });
