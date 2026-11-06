@@ -1526,7 +1526,7 @@ async function init() {
     }
     const unified=withSleep.map(character=>({...character,
       motions:UNIVERSAL_MOTIONS.catalogFor(character,union)}));
-    const visible=CHAR_RESET?.active?CHAR_RESET.filter(unified):unified;
+    const visible=(CHAR_RESET?.active?CHAR_RESET.filter(unified):unified).filter(character=>character.id!=="ichsan"); // Keep the original Ichsan source in Git, but hide the inconsistent preview from the character browser.
     const approvedReference=modularReferenceRecord();
     if(approvedReference)visible.unshift(approvedReference);
     catalogCharacters=visible.filter(c=>!["otis","legacy_otis"].includes(c.id));
