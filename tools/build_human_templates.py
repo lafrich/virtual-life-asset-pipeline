@@ -762,20 +762,32 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             return result
         def make_sheet(kind,count,expression=None,blink=False,sequence=None,
                        save_outfit_masks=False,save_face_parts=False,
-                       save_depth_front=False):
+                       save_depth_front=False,save_motion_parts=False):
             img=Image.new("RGBA",(count*64,4*112))
             stencils={slot:Image.new("RGBA",img.size) for slot in ("shirt","pants")} if save_outfit_masks else None
             emotion_parts={part:Image.new("RGBA",img.size) for part in FACE_PARTS} if save_face_parts else None
             foreground=Image.new("RGBA",img.size) if save_depth_front else None
+            motion_parts={} if save_motion_parts else None
             for y,d in enumerate(DIRECTIONS):
                 for x in range(count):
                     current_materials={} if save_outfit_masks else None
                     current_parts={} if save_face_parts else None
                     current_depth={} if save_depth_front else None
+                    current_rig={} if save_motion_parts else None
                     pose=frame(d,kind,x,
                         sequence[x%len(sequence)] if sequence else expression,
                         material_sink=current_materials,emotion_sink=current_parts,
-                        depth_sink=current_depth)
+                        depth_sink=current_depth,rig_source_sink=current_rig)
+                    if motion_parts is not None:
+                        # Exact native source-layer ownership for the POSED frame.
+                        # Do not approximate body parts from rectangular screen regions.
+                        from build_original_rig_layers import split_body_pixels
+                        pieces=split_body_pixels(pose,d,current_rig["layers"],
+                                                 require_anatomy=False,bridge_joints=False)
+                        for bone,piece in pieces.items():
+                            if bone not in motion_parts:
+                                motion_parts[bone]=Image.new("RGBA",img.size)
+                            motion_parts[bone].alpha_composite(piece,(x*64,y*112))
                     if foreground is not None:
                         foreground.alpha_composite(current_depth["front"],(x*64,y*112))
                     if emotion_parts is not None:
@@ -793,6 +805,18 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                         closed=frame(d,kind,x,"blink")
                         pose.paste(closed.crop(eyes),eyes[:2])
                     img.alpha_composite(pose,(x*64,y*112))
+            if motion_parts is not None:
+                # Preserve all directions and frame-specific bone placement.
+                # Edits to the universal nude source can now be projected onto
+                # the original authored motion rather than replacing the motion.
+                for bone,piece in motion_parts.items():
+                    piece.save(media/f"{name}-motion-part-{kind}-{bone}.png",
+                               optimize=True)
+                motion_part_manifest[kind]={
+                    "frames":count,
+                    "parts":{bone:f"media/{name}-motion-part-{kind}-{bone}.png"
+                             for bone in sorted(motion_parts)}
+                }
             if foreground is not None:
                 foreground.save(media/f"{name}-action-{kind}-depth-front.png",
                                 optimize=True)
@@ -805,9 +829,11 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                     atlas.save(media/f"{name}-face-bleh-{part}-{kind}.png",
                                optimize=True)
             return img
+        motion_part_manifest={}
         sheet=Image.new("RGBA",(384,44*112))
         for kind,row in (("walk",0),("idle",4)):
-            source=make_sheet(kind,MOTIONS[kind],save_outfit_masks=True)
+            source=make_sheet(kind,MOTIONS[kind],save_outfit_masks=True,
+                              save_motion_parts=True)
             for d in range(4):
                 crop=source.crop((0,d*112,source.width,(d+1)*112))
                 sheet.alpha_composite(crop,(0,(row+d)*112))
@@ -863,7 +889,8 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
             else:
                 fn=f"{name}-action-{kind}.png"
                 make_sheet(kind,count,save_outfit_masks=True,
-                           save_depth_front=kind in ("lie_idle","knee_chest_idle")).save(media/fn,optimize=True)
+                           save_depth_front=kind in ("lie_idle","knee_chest_idle"),
+                           save_motion_parts=True).save(media/fn,optimize=True)
                 motions.append({"id":kind,"name":kind.replace("_"," ").upper(),
                     "category":"posture" if kind in POSTURE_FRAME_MS else "action",
                     "source":"custom","sheet":"media/"+fn,"row":0,"available":True,
@@ -879,6 +906,12 @@ def build_human_templates(root:Path,media:Path)->list[dict]:
                     "outfit_masks":{slot:f"media/{name}-outfit-{kind}-{slot}.png"
                                     for slot in ("shirt","pants")},
                     "reason":""})
+        (media/f"{name}-motion-parts.json").write_text(json.dumps({
+            "format":"mahluk-v6b-motion-parts-v1",
+            "frame":[64,112],"pivot":[32,100],
+            "directions":list(DIRECTIONS),"base":f"human_{gender}_base",
+            "motions":motion_part_manifest
+        },indent=2)+"\n",encoding="utf-8")
         expressions=[]
         for expr in EXPRS:
             fn=f"{name}-expression-{expr}.png"
