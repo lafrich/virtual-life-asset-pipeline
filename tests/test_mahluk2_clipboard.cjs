@@ -67,7 +67,9 @@ test("both character and emotion editors share copy/paste/flip buttons and short
  assert.match(editor,/els\.pasteMirror\.onclick=\(\)=>pasteSelection\(true\)/);
  assert.match(editor,/currentClipboard\(\)/);
  assert.match(editor,/S\.copy\(frameImage\(\)\.data,W,H,selection\)/);
- assert.match(editor,/S\.paste\(frameImage\(\)\.data,W,H,stamp/);
+ assert.match(editor,/S\.paste\(base,W,H,floatingPaste\.stamp/);
+ assert.match(editor,/if\(moveStart\?\.floating\)/);
+ assert.match(editor,/replaceFrame\(S\.paste\(floating\.base,W,H,floating\.stamp/);
  assert.match(editor,/window\.localStorage\.setItem\(CLIP_KEY/);
  assert.match(editor,/canvas\.focus\(\{preventScroll:true\}\)/);
 });
