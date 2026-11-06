@@ -16,6 +16,9 @@
  const inkCache=new WeakMap();
  function viewHasPixels(image,view,createCanvas){
   if(!image||!Number.isInteger(view)||view<0||view>3)return false;
+  // Browser inputs are HTMLImageElement/Canvas; old Node tests use string
+  // sentinel sources. Never put primitive values into a WeakMap.
+  if(typeof image!=='object'&&typeof image!=='function')return true;
   let flags=inkCache.get(image);
   if(!flags){
    flags=[true,true,true,true]; // Fail open to preserve user's art.
