@@ -1151,7 +1151,11 @@ function loadImagesFromManifest(j){
  return Promise.all(uniq.map(src=>new Promise((resolve,reject)=>{
   const img=new Image();img.onload=()=>{images.set(src,img);resolve()};
   img.onerror=()=>reject(Error("Missing published source "+src));
-  img.src="../"+src;
+  // Manifest is fetched with no-store. Its generated asset revision
+  // invalidates older cached 64x448 hand atlas PNGs after a rig update.
+  const revision=typeof j.asset_revision==='string'?
+   j.asset_revision.slice(0,96):'';
+  img.src="../"+src+(revision?"?v="+encodeURIComponent(revision):"");
  })));
 }
 function download(filename,blob){
