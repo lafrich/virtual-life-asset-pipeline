@@ -241,13 +241,21 @@ function setPixelPlanes(values){
  }
  pixelPlaneStatus();
 }
-function setPlanePixel(id,png){
+function setPlanePixel(id,png,liveAtlas=null){
  const valid=G.sanitizePixelPlanes({[id]:png},R);
  if(!valid[id]){setStatus("PIXEL PLANE TOO LARGE OR INVALID",false);return false}
  remember();
  if(id==='head')headMerged=true;
  pixelPlanes[id]=png;planeImages.delete(id);
  if(WH.FUSED.has(id))invalidateHead();
+ if(liveAtlas?.width===64&&liveAtlas?.height===448){
+  // Cache an exact snapshot synchronously. Clicking Save Root immediately
+  // after Apply must bake the new art, not the previous cached PNG.
+  const copy=document.createElement('canvas');
+  copy.width=64;copy.height=448;copy.getContext('2d').drawImage(liveAtlas,0,0);
+  planeImages.set(id,copy);
+  if(WH.FUSED.has(id))invalidateHead();
+ }
  const img=new Image(),revision=planeImageRevision;
  img.onload=()=>{
   if(revision!==planeImageRevision||pixelPlanes[id]!==png)return;
@@ -1291,8 +1299,8 @@ function saveGeneralRig(){
   return true;
  }catch(error){setStatus("GENERAL RIG SAVE FAILED: "+error.message,false);return false}
 }
-function saveGeneralPlanePixel(bone,png){
- if(!setPlanePixel(bone,png))return false;
+function saveGeneralPlanePixel(bone,png,liveAtlas){
+ if(!setPlanePixel(bone,png,liveAtlas))return false;
  const prior=masterDocument();
  // Publishing an edited hand should not silently replace the master head,
  // anchors, rest pose, hierarchy or other plane artwork.
@@ -1329,7 +1337,7 @@ function resetFactoryRig(){
 function setupEvents(){
  planeEditor=P.create({
   overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
-  onApply:(bone,png)=>setPlanePixel(bone,png),
+  onApply:(bone,png,liveAtlas)=>setPlanePixel(bone,png,liveAtlas),
   onSaveDefault:saveGeneralPlanePixel
  });
  $("editPixelPlane").onclick=openPlaneEditor;
