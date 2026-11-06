@@ -75,7 +75,7 @@
   const ctx=atlas.getContext("2d",{willReadFrequently:true});
   const out=canvas.getContext("2d");
   let bone="",tool="pencil",dir=0,active=null,history=[],redo=[],dirty=false,source=null,ref=null,refs=null;
-  let zoom=5,pan=null,pinch=null,selection=null,moveStart=null;
+  let zoom=5,pan=null,pinch=null,selection=null,moveStart=null,floatingPaste=null;
   const touches=new Map();
   // Shared by the Mahluk 2 and Emotion Studio editors on the same GitHub Pages
   // origin. Clipboard is not part of character/master-rig saves or GitHub.
@@ -122,6 +122,7 @@
   function historyStep(from,to){
    if(!from.length)return;
    to.push(ctx.getImageData(0,0,W,H*4));
+   floatingPaste=null;moveStart=null;
    ctx.putImageData(from.pop(),0,0);dirty=true;draw();updateHistory();
   }
   function draw(){
@@ -260,6 +261,7 @@
    selectTool("pencil");
   }
   function selectTool(name){
+   if(name!=="move-pixels")floatingPaste=null;
    tool=name;controls.forEach(b=>b.classList.toggle("active",b.dataset.pixelTool===name));
   }
   controls.forEach(b=>b.addEventListener("click",()=>selectTool(b.dataset.pixelTool)));
@@ -274,7 +276,7 @@
   function copySelection(){
    if(!bone)return;
    clipboard={...S.copy(frameImage().data,W,H,selection),
-    bone,direction:DIR[dir]};
+    bone,direction:DIR[dir],copiedAt:Date.now()};
    try{window.localStorage.setItem(CLIP_KEY,JSON.stringify({
     ...clipboard,pixels:Array.from(clipboard.pixels)
    }))}catch{/* Copy still works in this editor when browser storage is unavailable. */}
@@ -327,7 +329,7 @@
    // Drawn RGBA always lives in one 64x448 atlas. Switching an angle must
    // never propagate strokes or erase any previously painted direction.
    dir=DIR.indexOf(els.dir.value);ref=refs?.[DIR[dir]]||ref;
-   els.sync.checked=false;selection=null;moveStart=null;
+   floatingPaste=null;els.sync.checked=false;selection=null;moveStart=null;
    draw();updateHistory();
   };
   const updateRef=()=>{
@@ -535,7 +537,7 @@
    // Sync and reference ghosts are opt-in, never inherited from prior edits.
    els.sync.checked=false;
    refs=referenceImages||null;ref=refs?.[DIR[dir]]||referenceImage||null;
-   history=[];redo=[];dirty=false;active=null;selection=null;moveStart=null;
+   history=[];redo=[];dirty=false;active=null;selection=null;moveStart=null;floatingPaste=null;
    els.refView.value="off";
    els.refOpacity.value="40";els.refOpacityLabel.textContent="40%";
    els.refFlip.checked=true;els.refX.value="0";els.refY.value="0";
