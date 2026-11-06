@@ -6,6 +6,7 @@
 const R=window.VLModularRigV2,E=window.MH2EmotionPlanes,G=window.MH2RigRules,B=window.MH2BodyPlanes,P=window.MH2PlanePixelEditor,V=window.MH2ViewProjection,S=window.MH2MasterGithub,U=window.MH2UniversalEmotions,D=window.MH2DriveSync,EP=window.MH2EmotionPreview,WH=window.MH2WholeHead;
 const $=id=>document.getElementById(id);
 const DIR=["se","sw","ne","nw"], FACE=new Set(["eye_l","eye_r","brow_l","brow_r","nose","mouth","blush_l","blush_r"]);
+const ARM_BONES=new Set(["shoulder_l","elbow_l","wrist_l","shoulder_r","elbow_r","wrist_r"]);
 const STORAGE="mahluk-2-library-v1", DRAFT="mahluk-2-draft-v1";
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,Number(x)||0));
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -490,7 +491,22 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode,hitOut=null){
   if(!WH.viewHasPixels(image,di,()=>document.createElement('canvas')))continue;
   const matching=ordered.filter(item=>item.bone===id);
   const idx=matching.length?matching[matching.length-1].i:slots.length+3+R.BONES.findIndex(b=>b.id===id);
-  for(let k=ordered.length-1;k>=0;k--)if(ordered[k].bone===id)ordered.splice(k,1);
+  // Previous 4-view editors also saved partly painted rear arm slices:
+  // a tiny detached palm could replace an entire upper/forearm native
+  // layer. For severely incomplete idle arm art, keep native anatomy below
+  // that custom ink. The user's actual PNG is NEVER altered.
+  const createViewCanvas=()=>document.createElement('canvas');
+  const paintedCoverage=WH.viewCoverage(image,di,createViewCanvas);
+  const nativeCoverage=matching.reduce((sum,item)=>{
+   if(item.kind!=='body')return sum;
+   return sum+WH.viewCoverage(images.get(item.s.src),di,createViewCanvas);
+  },0);
+  const spareRearArm=(dir==='ne'||dir==='nw')&&ARM_BONES.has(id)&&
+   nativeCoverage>0&&paintedCoverage>0&&
+   paintedCoverage<nativeCoverage*.35;
+  if(!spareRearArm){
+   for(let k=ordered.length-1;k>=0;k--)if(ordered[k].bone===id)ordered.splice(k,1);
+  }
   ordered.push({kind:"pixel",bone:id,i:idx});
  }
  const ids=renderableIds();
