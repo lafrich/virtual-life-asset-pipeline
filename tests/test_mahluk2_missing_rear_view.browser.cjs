@@ -24,7 +24,7 @@ const PAINTED={
  shoulder_l:[157,31,224,255],
  shoulder_r:[17,88,235,255],
 };
-const DRAWN={head:[0],torso:[1],shoulder_l:[0],shoulder_r:[1]};
+const DRAWN={head:[0],torso:[1],shoulder_l:[0,3],shoulder_r:[1]};
 function generate(bone,painted=false){
  const png=new PNG({width:64,height:448,colorType:6});
  for(let d=0;d<4;d++){
@@ -32,6 +32,9 @@ function generate(bone,painted=false){
   const [x1,y1,x2,y2]=BOUNDS[bone][d];
   const rgba=painted?PAINTED[bone]:SOURCE[bone];
   for(let y=y1;y<=y2;y++)for(let x=x1;x<=x2;x++){
+   // Simulate the screenshot's tiny isolated rear wrist: old saved art
+   // accidentally replaced a complete NW arm with a two-pixel fragment.
+   if(painted&&bone==='shoulder_l'&&d===3&&!(y===58&&x===x1))continue;
    const i=((d*112+y)*64+x)*4;
    png.data.set(rgba,i);
   }
@@ -113,6 +116,11 @@ async function capture(page,direction){
    assert.deepEqual(pixelFrom(image,r,58),SOURCE.shoulder_r,
     'REAR '+direction.toUpperCase()+' missing anatomical RIGHT shoulder');
   }
+  const backLeft=await capture(page,'nw');
+  assert.deepEqual(pixelFrom(backLeft,39,58),PAINTED.shoulder_l,
+   'Sparse NW custom shoulder pixel must be preserved above native arm');
+  assert.deepEqual(pixelFrom(backLeft,45,58),SOURCE.shoulder_l,
+   'Sparse NW arm must recover its complete native silhouette');
   // Reopen the REAL torso Pixel Editor. Its rear atlas must match the
   // recovered live preview, not show the old blank saved NE/NW slices.
   await page.locator('#tree [data-bone="torso"]').click();
@@ -131,6 +139,18 @@ async function capture(page,direction){
   for(const dir of [0,2,3])
    assert.deepEqual(at(dir,31,65),SOURCE.torso,
     'Pixel Editor must restore unpainted '+DIR[dir].toUpperCase()+' torso source');
+  await page.locator('#pixelClose').click();
+  await page.locator('#tree [data-bone="shoulder_l"]').click();
+  await page.locator('#openPlaneEditor').click();
+  await page.locator('#pixelOverlay:not([hidden])').waitFor({timeout:15000});
+  const [armFile]=await Promise.all([
+   page.waitForEvent('download',{timeout:12000}),
+   page.locator('#pixelExport').click()
+  ]);
+  const armAtlas=PNG.sync.read(fs.readFileSync(await armFile.path()));
+  const armPixel=(dir,x,y)=>[...armAtlas.data.subarray(((dir*112+y)*64+x)*4,((dir*112+y)*64+x)*4+4)];
+  assert.deepEqual(armPixel(3,39,58),PAINTED.shoulder_l);
+  assert.deepEqual(armPixel(3,45,58),SOURCE.shoulder_l);
   await page.locator('#pixelClose').click();
   // Save Root / reload still must keep all original partial custom data.
   await page.locator('#saveChar').click();
@@ -156,7 +176,7 @@ async function capture(page,direction){
   if(errors.length)throw Error(errors.join('\n'));
   console.log(JSON.stringify({result:'PASS',
    originalCustomRGBA:'unchanged',base:'female',frontViews:['SE','SW'],
-   recoveredNativeViews:['NE','NW'],heads:'complete',arms:'both sides',
+   recoveredNativeViews:['NE','NW'],heads:'complete',arms:'both sides',sparseRearLimb:'native restored underneath custom',
    saveRoot:'preserved',reload:'preserved',sourceSurgery:'none'}));
  }finally{await browser.close();}
 })().catch(error=>{console.error(error.stack||error);process.exitCode=1});
