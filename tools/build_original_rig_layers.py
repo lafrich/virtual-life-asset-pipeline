@@ -266,7 +266,7 @@ def classify_native_layer(key: str, x: int, y: int, boundary: float,
         return ("shoulder_" if y < elbow else
                 "elbow_" if y < wrist else "wrist_") + anatomical
     if key == "body_front":
-        return "wrist_l"
+        return "wrist_r" if direction in ("ne", "nw") else "wrist_l"
     if key in ("pants", "rips"):
         if y < 79:
             return "pelvis"
