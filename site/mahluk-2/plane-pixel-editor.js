@@ -324,8 +324,11 @@
    ctx.clearRect(box.x,dir*H+box.y,box.w,box.h);draw();updateHistory();
   };
   els.dir.onchange=()=>{
+   // Drawn RGBA always lives in one 64x448 atlas. Switching an angle must
+   // never propagate strokes or erase any previously painted direction.
    dir=DIR.indexOf(els.dir.value);ref=refs?.[DIR[dir]]||ref;
-   selection=null;moveStart=null;draw();updateHistory();
+   els.sync.checked=false;selection=null;moveStart=null;
+   draw();updateHistory();
   };
   const updateRef=()=>{
    els.refOpacityLabel.textContent=els.refOpacity.value+"%";draw();
@@ -333,7 +336,11 @@
   for(const el of [els.refView,els.refFlip,els.refOpacity,els.refX,els.refY])
    el.addEventListener(el===els.refOpacity?"input":"change",updateRef);
   els.onion.onchange=draw;els.grid.onchange=draw;els.gridType.onchange=draw;
-  els.sync.onchange=updateHistory;
+  els.sync.onchange=()=>{
+   updateHistory();
+   if(els.sync.checked)
+    els.status.textContent='⚠ SYNC ON · BRUSH/ERASER WILL ALSO CHANGE OTHER VIEWS';
+  };
   els.syncExisting.onclick=()=>{
    if(!source)return;
    const native=document.createElement("canvas");native.width=W;native.height=H*4;
@@ -374,7 +381,11 @@
   };
   els.undo.onclick=()=>historyStep(history,redo);
   els.redo.onclick=()=>historyStep(redo,history);
-  els.close.onclick=()=>{overlay.hidden=true};
+  function close(){
+   if(dirty&&!window.confirm('Unsaved pixel art exists on this and other views. Close without APPLY?'))return false;
+   overlay.hidden=true;return true;
+  }
+  els.close.onclick=close;
   els.apply.onclick=()=>{
    if(onApply(bone,atlas.toDataURL("image/png"))!==false){
     dirty=false;updateHistory();overlay.hidden=true;
@@ -518,20 +529,29 @@
   function open({id,initialAtlas,originalAtlas,referenceImage,referenceImages,direction="se"}){
    if(!id)throw Error("Select an editable plane");
    bone=id;dir=Math.max(0,DIR.indexOf(direction));source=originalAtlas||null;
+   // A different camera angle is a different layer of the same atlas.
+   // Sync and reference ghosts are opt-in, never inherited from prior edits.
+   els.sync.checked=false;
    refs=referenceImages||null;ref=refs?.[DIR[dir]]||referenceImage||null;
    history=[];redo=[];dirty=false;active=null;selection=null;moveStart=null;
-   els.refView.value=dir===0?"off":"se";
+   els.refView.value="off";
    els.refOpacity.value="40";els.refOpacityLabel.textContent="40%";
    els.refFlip.checked=true;els.refX.value="0";els.refY.value="0";
    ctx.clearRect(0,0,W,H*4);
-   if(initialAtlas)ctx.drawImage(initialAtlas,0,0,W,H*4);
-   else if(source)ctx.drawImage(source,0,0,W,H*4);
+   // Use the complete persisted atlas, never a single 64x112 directional
+   // view enlarged into 64x448 (that would erase three other views).
+   if(initialAtlas){
+    if(initialAtlas.naturalWidth!==undefined&&
+      (initialAtlas.naturalWidth!==W||initialAtlas.naturalHeight!==H*4))
+     throw Error('Saved pixel atlas must be 64x448');
+    ctx.drawImage(initialAtlas,0,0,W,H*4);
+   }else if(source)ctx.drawImage(source,0,0,W,H*4);
    els.heading.textContent="PIXEL EDITOR / "+id.replaceAll("_"," ").toUpperCase();
    els.dir.value=DIR[dir];selectTool("pencil");overlay.hidden=false;
    draw();zoomFit();updateHistory();
    canvas.focus({preventScroll:true});
   }
-  return {open,isOpen:()=>!overlay.hidden,close:()=>{overlay.hidden=true}};
+  return {open,isOpen:()=>!overlay.hidden,close};
  }
  return Object.freeze({W,H,DIR,rasterLine,flood,rgba,mirroredX,create});
 });
