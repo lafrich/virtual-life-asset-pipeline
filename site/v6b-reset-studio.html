@@ -234,7 +234,7 @@ async function syncEmotionDrive(){
  try{
   const result=await D.loadAll();
   driveEmotions=new Map(result.entries.filter(window.MH2UniversalEmotions.validEntry).map(e=>[e.id,{...e,origin:"drive"}]));
-  $("emotion-drive-status").textContent="✓ DRIVE CONNECTED · "+driveEmotions.size+" projects loaded from Membangun / Emotion Studio"+(result.errors.length?" · "+result.errors.length+" file errors":"");
+  $("emotion-drive-status").textContent="✓ DRIVE CONNECTED · "+driveEmotions.size+" saved EMOSI.EXE projects from Google Drive"+(result.errors.length?" · "+result.errors.length+" file errors":"");
   await loadEmotions();status("EMOSI DRIVE SYNCED · "+driveEmotions.size+" CLOUD EMOTIONS");
  }catch(error){$("emotion-drive-status").textContent="DRIVE SYNC FAILED: "+error.message;status("EMOSI DRIVE ERROR: "+error.message)}
  finally{$("refresh-emotion-drive").disabled=false}
