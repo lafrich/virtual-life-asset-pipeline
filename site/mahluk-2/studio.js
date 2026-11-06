@@ -469,6 +469,11 @@ function renderLayers(ctx,dir,ox,oy,mag,editorMode,hitOut=null){
  for(const [id,image] of planeImages){
   if(WH.FUSED.has(id)||WH.EXCLUDED.has(id))continue;
   if(!R.BMAP[id]||G.HIDDEN.has(id)||!image)continue;
+  // Legacy 64x448 user overrides may contain only the painted views.
+  // A fully transparent direction is not enough evidence to erase its
+  // source bone: preserve its native sprite for SE/SW/NE/NW independently.
+  // To deliberately hide a whole bone use the rig's Visible toggle.
+  if(!WH.viewHasPixels(image,di,()=>document.createElement('canvas')))continue;
   const matching=ordered.filter(item=>item.bone===id);
   const idx=matching.length?matching[matching.length-1].i:slots.length+3+R.BONES.findIndex(b=>b.id===id);
   for(let k=ordered.length-1;k>=0;k--)if(ordered[k].bone===id)ordered.splice(k,1);
