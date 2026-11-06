@@ -36,7 +36,8 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <div id="parts" hidden><h2>ORIGINAL V6B ANATOMY</h2>
  <p class="note">Source parts from the existing Male/Female nude rig (not cropped from Ichsan). Select a bone to edit its exact four-direction RGBA source with the full Emosi.exe-quality editor.</p>
  <div class="control"><label>BODY PART / BONE</label><select id="part-select"><option value="">LOADING SOURCE PARTS...</option></select></div>
- <button id="open-part" style="width:100%">✎ EDIT SELECTED BODY PART</button>
+ <button id="open-part" type="button" style="width:100%">✎ EDIT SELECTED BODY PART</button>
+ <p class="note" id="part-open-feedback" role="status" aria-live="polite">Select a part, then open the pixel editor.</p>
  <button id="restore-part" style="width:100%">↶ RESET SELECTED PART TO ORIGINAL</button>
  <p class="note" id="parts-info">The source part patch follows the native bone in idle, walk and authored V6B actions; use FRAME OVERRIDE for exact pose corrections.</p></div>
 <div id="pixels" hidden><h2>FRAME OVERRIDE · FULL PIXEL EDITOR</h2><button id="open-pixel" style="width:100%">OPEN NATIVE PIXEL EDITOR / CURRENT FRAME</button><p class="note">Native grid, select, copy/paste, flip, picker, zoom, undo/redo.</p><p class="note">Override only the chosen animation frame. Native body parts, motions and other frames stay intact.</p>
@@ -210,7 +211,7 @@ async function loadNative(){
  motionPartsByGender.set("male",male);motionPartsByGender.set("female",female);
  for(const gender of ["male","female"]){const actor=catalog.characters?.find(a=>a.id==="human_"+gender+"_base");if(!actor||!actor.motions?.some(a=>a.id==="idle"&&a.available)||!actor.motions?.some(a=>a.id==="walk"&&a.available))throw Error("Missing "+gender+" native V6B character");}
  nativeReady=true;setNativeActions();renderPartList();renderMotions();syncMotionUI();draw();
- status("NATIVE MALE/FEMALE V6B READY · FRAME-PRECISE BODY PARTS LOADED");
+ status("NATIVE MALE/FEMALE V6B READY · FRAME-PRECISE BODY PARTS LOADED");const ready=$("part-open-feedback");if(ready)ready.textContent="READY · Select a native body part and open full pixel editor";
 }
 function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));}
 function shade(hex,k){let rgb=parseInt(hex.slice(1),16);return "#"+[rgb>>16,(rgb>>8)&255,rgb&255].map(v=>Math.max(0,Math.min(255,Math.round(v*k))).toString(16).padStart(2,"0")).join("");}
@@ -404,9 +405,48 @@ $("connect-emotion-drive").onclick=connectEmotionDrive;
 $("refresh-emotion-drive").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else status("CONNECT GOOGLE DRIVE FIRST")};
 const pixelOverlay=$("pixelOverlay"),pixelCanvas=$("pixelCanvas");
 function applyPixelEditor(atlas){if(editMode==="part")storeEditedPart(atlas);else storeEditedFrame(atlas);return true}
-const pixelEditor=window.MH2PlanePixelEditor?.create({overlay:pixelOverlay,canvas:pixelCanvas,
- reference:$("stage"),onApply:(_id,png,atlas)=>applyPixelEditor(atlas),
- onSaveDefault:(_id,png,atlas)=>applyPixelEditor(atlas)});
+let pixelEditor=null;
+function ensurePixelEditor(){
+ if(pixelEditor)return pixelEditor;
+ try{
+  if(!window.MH2PlanePixelEditor?.create)throw Error("Pixel editor module not loaded; refresh the page");
+  if(!window.MH2PixelSelection?.validStamp)throw Error("Pixel selection module not loaded; refresh the page");
+  pixelEditor=window.MH2PlanePixelEditor.create({overlay:pixelOverlay,canvas:pixelCanvas,
+   reference:$("stage"),onApply:(_id,png,atlas)=>applyPixelEditor(atlas),
+   onSaveDefault:(_id,png,atlas)=>applyPixelEditor(atlas)});
+  return pixelEditor;
+ }catch(error){
+  const label=$("part-open-feedback");if(label)label.textContent="EDITOR INIT ERROR: "+error.message;
+  status("PIXEL EDITOR INIT FAILED: "+error.message);
+  return null;
+ }
+}
+function partFeedback(message,isError=false){
+ const label=$("part-open-feedback");
+ if(label){label.textContent=message;label.style.color=isError?"#a12b32":"#24568a"}
+ status(message);
+}
+async function loadPartSource(bone){
+ const target=(sourceManifest?.slots||[]).find(x=>x.gender===model.body_type&&x.layer_type==="body"&&x.bone===bone);
+ if(!target?.src)throw Error("No authored source file for body part "+bone);
+ const key=model.body_type+"|"+bone;
+ let img=sourcePartImages.get(key);
+ if(!img){img=sheetLoad("./"+target.src);sourcePartImages.set(key,img)}
+ if(imageReady(img))return img;
+ if(!img)throw Error("Missing source image "+target.src);
+ await new Promise((resolve,reject)=>{
+  if(imageReady(img))return resolve();
+  if(img.complete&&img.naturalWidth===0)return reject(Error("Source PNG failed to load: "+target.src));
+  const onload=()=>{cleanup();resolve()};
+  const onerror=()=>{cleanup();reject(Error("Source PNG unavailable: "+target.src))};
+  const cleanup=()=>{img.removeEventListener("load",onload);img.removeEventListener("error",onerror)};
+  img.addEventListener("load",onload,{once:true});img.addEventListener("error",onerror,{once:true});
+ });
+ if(!imageReady(img))throw Error("Source PNG not decoded: "+target.src);
+ if(img.naturalWidth!==64||img.naturalHeight!==448)
+  throw Error("Invalid body-part atlas geometry "+img.naturalWidth+"x"+img.naturalHeight+" (expected 64x448)");
+ return img;
+}
 function restorePartEdits(){
  partEditImages.clear();
  for(const [bone,data] of Object.entries(model.partEdits||{})){
@@ -421,16 +461,27 @@ function storeEditedPart(atlas){
  image.src=data;partEditImages.set(activePart,image);
  status("SAVED NATIVE "+model.body_type.toUpperCase()+" BODY PART "+activePart.toUpperCase()+" · V6B MOTION PREVIEW UPDATED");
 }
-$("open-part").onclick=()=>{
- if(!pixelEditor)return status("PIXEL EDITOR MODULE UNAVAILABLE");
- if(!nativeReady)return status("WAIT FOR ORIGINAL V6B SOURCES TO LOAD");
- const bone=$("part-select").value;
- const original=sourcePartImages.get(model.body_type+"|"+bone);
- if(!imageReady(original))return status("SOURCE BONE LOADING: "+bone);
- activePart=bone;editMode="part";
- const edited=partEditImages.get(bone),src=imageReady(edited)?edited:original;
- pixelEditor.open({id:model.body_type+"-"+bone,initialAtlas:src,originalAtlas:original,
-  direction:$("direction").value});
+$("open-part").onclick=async()=>{
+ const button=$("open-part"),bone=$("part-select").value;
+ if(button.disabled)return;
+ button.disabled=true;button.textContent="LOADING BODY PART...";
+ try{
+  if(!nativeReady){
+   partFeedback("LOADING V6B SOURCE DATA...");await loadNative();
+  }
+  if(!bone)throw Error("No body part selected. Check native V6B source manifest.");
+  const original=await loadPartSource(bone);
+  const editorInstance=ensurePixelEditor();if(!editorInstance)throw Error("Full pixel editor could not initialize");
+  activePart=bone;editMode="part";
+  const edited=partEditImages.get(bone),image=imageReady(edited)?edited:original;
+  editorInstance.open({id:model.body_type+"-"+bone,initialAtlas:image,originalAtlas:original,direction:$("direction").value});
+  if(pixelOverlay.hidden)throw Error("Pixel editor did not open");
+  partFeedback("PIXEL EDITOR OPENED · "+bone.toUpperCase()+" · original native V6B atlas");
+ }catch(error){
+  partFeedback("CANNOT OPEN "+(bone||"BODY PART").toUpperCase()+": "+error.message,true);
+ }finally{
+  button.disabled=false;button.textContent="✎ EDIT SELECTED BODY PART";
+ }
 };
 $("restore-part").onclick=()=>{
  const bone=$("part-select").value;if(!bone)return;
@@ -439,7 +490,7 @@ $("restore-part").onclick=()=>{
 };
 
 function storeEditedFrame(atlas){if(!atlas)return;const name=model.current,f=frame;model.frameEdits||={};for(let d=0;d<4;d++){const slice=document.createElement("canvas");slice.width=64;slice.height=112;slice.getContext("2d").drawImage(atlas,0,d*112,64,112,0,0,64,112);const key=name+"|"+f+"|"+DIR[d],url=slice.toDataURL("image/png");model.frameEdits[key]=url;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}draw();status("NATIVE PIXEL EDITS APPLIED · "+name.toUpperCase()+" FRAME "+(f+1)+" · 4 VIEWS")}
-$("open-pixel").onclick=()=>{if(!pixelEditor)return status("NATIVE EDITOR UNAVAILABLE");if(!nativeReady)return status("NATIVE V6B NOT LOADED YET");editMode="frame";const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;const ac=atlas.getContext("2d");for(let d=0;d<4;d++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");const key=model.current+"|"+frame+"|"+DIR[d],img=frameOverrideImages.get(key);if(img?.complete&&img.naturalWidth)tc.drawImage(img,0,0);else renderBody(tc,DIR[d],model.current,frame);ac.drawImage(tile,0,d*112)}pixelEditor.open({id:model.current+"-frame-"+(frame+1),initialAtlas:atlas,originalAtlas:atlas,direction:$("direction").value})};
-renderMotions();applyUI();draw();loadEmotions();loadNative().catch(e=>{nativeReady=false;status("NATIVE V6B LOAD FAILED: "+e.message)});
+$("open-pixel").onclick=()=>{const frameEditor=ensurePixelEditor();if(!frameEditor)return status("NATIVE EDITOR UNAVAILABLE");if(!nativeReady)return status("NATIVE V6B NOT LOADED YET");editMode="frame";const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;const ac=atlas.getContext("2d");for(let d=0;d<4;d++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");const key=model.current+"|"+frame+"|"+DIR[d],img=frameOverrideImages.get(key);if(img?.complete&&img.naturalWidth)tc.drawImage(img,0,0);else renderBody(tc,DIR[d],model.current,frame);ac.drawImage(tile,0,d*112)}try{frameEditor.open({id:model.current+"-frame-"+(frame+1),initialAtlas:atlas,originalAtlas:atlas,direction:$("direction").value})}catch(e){status("FRAME EDITOR FAILED: "+e.message)}};
+renderMotions();applyUI();draw();loadEmotions();loadNative().catch(e=>{nativeReady=false;partFeedback("NATIVE V6B LOAD FAILED: "+e.message,true)});
 })();
 </script></body></html>
