@@ -1434,6 +1434,44 @@ async function mount(){
 window.MH2DriveAdapter=Object.freeze({
  ready:()=>!!manifest,
  localRecords:()=>getLibrary(),
+ localSavedRoots:()=>getLocalLibrary(),
+ librarySnapshot(){
+  if(!manifest)throw Error("Character source manifest not loaded yet");
+  const custom=E.safeAssets(window.localStorage);
+  const saved=getLocalLibrary();
+  return {
+   format:"mahluk-2-asset-library-v1",id:"mahluk-2-all-v1",
+   name:"Mahluk Hidup 2 / Character Asset Library",
+   // Source manifest lists all actual published native cutout and actor sprites.
+   // Never copy protected game files; its source URLs can be loaded on any device.
+   manifest:clone(manifest),
+   sourceBase:"/virtual-life-asset-pipeline/media/original-rig/",
+   published:clone(publishedAssets),
+   customAssets:clone(custom),
+   characters:saved.map(x=>({id:x.id,name:x.name,base:x.base,format:x.format,
+    fourViews:true,cloudFile:x.id+".character.json"})),
+   nativeReferences:{rigSource:"original-rig/manifest.json",
+    labels:manifest.characters||manifest.character_types||manifest.types||[],
+    emotionCatalog:"/virtual-life-asset-pipeline/emotion-studio/catalog.json"},
+   savedAt:new Date().toISOString()
+  };
+ },
+ restoreLibraryAssets(snapshot){
+  if(snapshot?.format!=="mahluk-2-asset-library-v1"||
+      !Array.isArray(snapshot.customAssets))throw Error("Invalid remote Mahluk 2 library snapshot");
+  const current=E.safeAssets(window.localStorage),byId=new Map(current.map(x=>[x.id,x]));
+  let added=0,skipped=0;
+  for(const a of snapshot.customAssets){
+   if(!a||a.format!==E.FORMAT||typeof a.png!=="string"||
+      !/^data:image\/png;base64,/.test(a.png)||a.png.length>=1500000){skipped++;continue}
+   if(byId.has(a.id)){skipped++;continue}
+   byId.set(a.id,a);added++;
+  }
+  if(byId.size>12)throw Error("There are more than 12 local imported face/accessory assets. Export or remove older items before restoring.");
+  E.saveAssets(window.localStorage,[...byId.values()]);
+  loadImportedAssets();assetOptions();paint();
+  return {added,skipped,published:manifest?Object.keys(manifest).length:0};
+ },
  localMaster:()=>masterDocument(),
  saveRoot:()=>saveGame(),
  saveGeneralRig:()=>saveGeneralRig(),
