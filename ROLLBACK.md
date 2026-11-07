@@ -4,7 +4,31 @@ Repo: `lafrich/virtual-life-asset-pipeline`
 Branch: `main`  
 Live: https://lafrich.github.io/virtual-life-asset-pipeline/
 
-## This deploy (remove unused V6B Character Studio pages and stale preview/)
+## This deploy (Emosi pixel editor reused as-is for Mahluk)
+
+- Previous `origin/main` (safe restore point): `e67f8f53848040db572e01c4f2e5426781ae155f`
+- Feature commit: `b964b665c7c534953bd94def079a3c1c0f87c45f`
+
+Restore this deploy (fast-forward only — do not force-push):
+
+```bash
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+git revert --no-edit b964b665c7c534953bd94def079a3c1c0f87c45f
+git push origin main
+```
+
+If this ROLLBACK notes commit is also on `main`, revert it first (newest first), then the feature commit. That restores the previous Otis-chrome pixel editor shell while keeping Emosi's dialog out of Mahluk. It does not revert the unused V6B studio cleanup (`ce096dd442177fda5376bc2194e01a3a660244eb`) or the earlier v6p editor package (`5ec339f7102e504efe34ac316723a3089e567ac9`). Real-color mapping, accessories, gallery, clip timeline, and Drive save remain available through the adapter; stock 44-row sheets stay untouched.
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+
+- https://lafrich.github.io/virtual-life-asset-pipeline/v6p-studio.html
+- https://lafrich.github.io/virtual-life-asset-pipeline/pixel-editor.html?source=v6p&project=clip_pushup
+- Side-by-side with https://lafrich.github.io/virtual-office/emotion-studio/ (open PIXEL EDITOR) — same toolbar including PASTE FLIP
+
+## Previous deploy (remove unused V6B Character Studio pages and stale preview/)
+
 
 - Previous `origin/main` (safe restore point): `84457b213de9f0fa99a9d44606c5f3990669eb84`
 - Feature commit: `ce096dd442177fda5376bc2194e01a3a660244eb`
