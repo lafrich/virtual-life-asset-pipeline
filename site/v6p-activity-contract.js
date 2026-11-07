@@ -27,7 +27,8 @@ const PILOT_PARTS=Object.freeze([
  "shoes/nude","shoes/nude_f",
  "pants/nude","pants/nude_f"
 ]);
-// Only authored clips may be played by the compositor or game.\nconst SEMESTA_ACT_CLIPS=Object.freeze(["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]);
+// Only authored clips may be played by the compositor or game.
+const SEMESTA_ACT_CLIPS=Object.freeze(["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]);
 const BACKLOG=Object.freeze([
  "crawl — planned floor locomotion clip; not authored",
  "crawl_idle — planned floor idle; not authored",
