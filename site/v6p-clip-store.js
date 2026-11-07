@@ -3,6 +3,11 @@
 (function(root,factory){"use strict";const api=factory(root);if(typeof module==="object"&&module.exports)module.exports=api;if(root)root.V6PClipStore=api;})(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){"use strict";
 const KEY="vl-v6p-act-clips-v1";
 const FORMAT="v6p-act-clips-store-v1";
+// Canonical preallocated activities are listed in Mahluk alongside Idle/Walk.
+// Reserved slots are visible for planning but never playable until authored.
+const BUILTIN_IDS=["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"];
+function builtinBand(id){return id.startsWith("clip_")?id.slice(5):id;}
+function isBuiltin(id){return BUILTIN_IDS.includes(builtinBand(id));}
 function contract(){return (root&&root.V6PActivityContract)||(typeof require==="function"?require("./v6p-activity-contract.js"):null);}
 function storage(){try{return root&&root.localStorage;}catch{return null;}}
 function empty(){return {format:FORMAT,clips:{}};}
@@ -23,14 +28,16 @@ function write(store){
 function now(){return new Date().toISOString();}
 function recordFromStore(id,row){
  const A=contract();
- const fallback=id==="clip_pushup"?A.pushupManifest():A.emptyManifest({id,name:id});
+ const band=builtinBand(id);
+  const builtin=isBuiltin(id);
+  const fallback=builtin?A.emptyManifest({id,name:band.replaceAll("_"," "),band,requiredParts:A.PILOT_PARTS.slice()}):A.emptyManifest({id,name:id});
  const manifest=row&&row.manifest?{...fallback,...row.manifest,frames:(row.manifest.frames||fallback.frames).map(f=>({key:f.key,ms:f.ms}))}:fallback;
  return {
-  id,type:"clip",origin:row&&row.origin||(id==="clip_pushup"?"pilot":"user"),
+  id,type:"clip",origin:row&&row.origin||(builtin?"pilot":"user"),
   name:manifest.name,
   manifest,
   layers:row&&row.layers&&typeof row.layers==="object"?row.layers:{},
-  saveStatus:row&&row.saveStatus||(id==="clip_pushup"?"stock":"local"),
+  saveStatus:row&&row.saveStatus||(builtin?(A.isPlayable(band)?"stock":"review"):"local"),
   driveFile:row&&row.driveFile||null,
   updatedAt:row&&row.updatedAt||"",
   thumbDataUrl:row&&row.thumbDataUrl||"",
@@ -38,18 +45,17 @@ function recordFromStore(id,row){
  };
 }
 function normalizeId(id){
- if(id==="clip_pushup"||id==="pushup")return "clip_pushup";
- return id;
+ return BUILTIN_IDS.includes(id)?"clip_"+id:id;
 }
 function get(id){
  id=normalizeId(id);
  const row=read().clips[id];
- if(!row&&id!=="clip_pushup")return null;
+ if(!row&&!isBuiltin(id))return null;
  return recordFromStore(id,row);
 }
 function list(){
  const store=read();
- const ids=new Set(["clip_pushup",...Object.keys(store.clips)]);
+ const ids=new Set([...BUILTIN_IDS.map(id=>"clip_"+id),...Object.keys(store.clips)]);
  return [...ids].map(id=>recordFromStore(id,store.clips[id]));
 }
 function create(opts){
@@ -69,8 +75,8 @@ function updateManifest(id,patch){
  const store=read();
  const row=store.clips[id]||{layers:{},origin:rec.origin};
  row.manifest=manifest;row.updatedAt=now();
- if(rec.origin==="pilot"&&id==="clip_pushup")row.origin="pilot";
- if(row.saveStatus!=="drive")row.saveStatus=id==="clip_pushup"&&!Object.keys(row.layers||{}).length?"stock":"local";
+ if(rec.origin==="pilot")row.origin="pilot";
+ if(row.saveStatus!=="drive")row.saveStatus=isBuiltin(id)&&!Object.keys(row.layers||{}).length?"stock":"local";
  store.clips[id]=row;write(store);
  return get(id);
 }
@@ -101,9 +107,9 @@ function layerUrl(id,part){
  id=normalizeId(id);
  const rec=get(id);
  if(rec&&rec.layers&&rec.layers[part])return rec.layers[part];
- if(id==="clip_pushup"&&contract().PILOT_PARTS.indexOf(part)>=0)
-  return contract().mediaUrl(part);
- if(id==="clip_pushup"&&part==="base/fx") return contract().mediaUrl(part);
+ if(isBuiltin(id) && contract().isPlayable(builtinBand(id)) &&
+    (contract().PILOT_PARTS.indexOf(part)>=0 || part==="base/fx"))
+   return contract().mediaUrl(part);
  return null;
 }
 function hasLayer(id,part){return !!layerUrl(id,part);}
@@ -118,7 +124,7 @@ function markDrive(id,info){
 }
 function remove(id){
  id=normalizeId(id);
- if(id==="clip_pushup")throw Error("Cannot delete the pushup pilot clip");
+ if(isBuiltin(id))throw Error("Cannot delete a built-in activity");
  const store=read();delete store.clips[id];write(store);
 }
 function compatibility(rec){
@@ -126,9 +132,11 @@ function compatibility(rec){
  if(!man)return "Custom clip";
  const n=(man.frames||[]).length;
  const ms=(man.frames||[]).map(f=>f.ms).join(",");
- const extra=man.band==="pushup"?
-  "Pilot pushup · authored on activity sheets 384×2688 · stock 44-row sheets untouched":
-  "User clip · activity sheet 384×2688 · painted frames only · no auto-strip";
+ const extra=isBuiltin(man.id)?(
+    contract().isPlayable(man.band)?
+      "Built-in native Mahluk activity · V6P keyed part sheets":
+      "Reserved activity · REVIEW ONLY · not playable yet"
+  ):"User clip · activity sheet 384×2688 · painted frames only · no auto-strip";
  return n+" frame(s) · "+(man.loop?"loop":"once")+" · ms ["+ms+"] · "+extra;
 }
 function galleryEntry(rec){
@@ -146,7 +154,7 @@ function galleryEntry(rec){
 }
 function galleryEntries(){return list().map(galleryEntry);}
 return Object.freeze({
- KEY,FORMAT,get,list,create,updateManifest,setLayer,replaceLayers,layerUrl,hasLayer,markDrive,remove,
+ KEY,FORMAT,BUILTIN_IDS,get,list,create,updateManifest,setLayer,replaceLayers,layerUrl,hasLayer,markDrive,remove,
  compatibility,galleryEntry,galleryEntries
 });
 });
