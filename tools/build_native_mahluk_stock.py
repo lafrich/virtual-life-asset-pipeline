@@ -59,6 +59,8 @@ def warp(src, action, frame, direction):
             horizontal=(0,-1,0,1)[frame%4]
         sx=xx-np.rint(horizontal*hips).astype(int)
         sy=yy-np.rint(lift).astype(int)
+    sx=np.rint(sx).astype(np.int32)
+    sy=np.rint(sy).astype(np.int32)
     valid=(sx>=0)&(sx<FW)&(sy>=0)&(sy<FH)
     out=np.zeros_like(src)
     out[valid]=src[sy[valid],sx[valid]]
