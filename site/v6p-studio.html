@@ -52,6 +52,15 @@ body.mahluk-embedded .banner{display:none}
 body.mahluk-embedded .wrap{max-width:none;padding:8px;gap:8px}
 body.mahluk-embedded #tab-gallery{max-width:none}
 body.mahluk-embedded{background:#bdcbd8}
+
+#character-flow{max-width:1280px;margin:10px auto 0;background:#e9edf4;border:2px solid #fff;box-shadow:0 0 0 2px #536b8a;padding:9px 12px}
+#character-flow .row{align-items:end}#character-flow label{flex:1;min-width:160px}
+#workflow-status{font-size:11px;color:#375678;margin:5px 0}
+#all-views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:100%}
+#all-views figure{margin:0;text-align:center;padding:5px 2px;background:#d6dfe9;border:1px solid #9fb0c3}
+#all-views canvas{width:100%;max-width:96px;image-rendering:pixelated;background:repeating-conic-gradient(#edf2f4 0 25%,#c3d2e1 0 50%) 0 0/12px 12px}
+#all-views figcaption{font-size:10px;font-weight:bold}
+@media(max-width:860px){#character-flow{margin:8px;padding:8px}#character-flow .row{align-items:stretch}}
 </style>
 </head>
 <body><script>if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('mahluk-embedded');</script>
@@ -63,11 +72,24 @@ body.mahluk-embedded{background:#bdcbd8}
   </div>
 </div>
 <div id="tab-appearance">
+<section id="character-flow" aria-label="Character database workflow">
+ <strong>CHARACTER DATABASE · ADD / MODIFY / SAVE</strong>
+ <div class="row">
+  <label>START FROM<select id="workflow-source"><option value="base:male">MALE BASE · no hair / nude</option><option value="base:female">FEMALE BASE · no hair / nude</option></select></label>
+  <button type="button" id="workflow-new">＋ ADD NEW CHARACTER</button>
+  <button type="button" id="workflow-clone">⧉ DUPLICATE SELECTED</button>
+ </div>
+ <div class="row">
+  <label>MY CHARACTERS<select id="workflow-list"><option value="">Choose saved character…</option></select></label>
+  <button type="button" id="workflow-open">OPEN CHARACTER</button>
+ </div>
+ <p id="workflow-status">Male and female base are always available. Character drafts are separate; original part sheets stay unchanged.</p>
+</section>
 <div class="wrap">
   <section class="card" aria-label="Appearance">
     <strong>APPEARANCE</strong>
     <p class="note">Same v6p layers as the archived Character Creator. Hair is unchanged. Nude (skin) is a new clothing option, not a missing layer. Setelah mengedit PNG di <code>media/v6p/</code>, klik <strong>Muat ulang aset</strong> lalu <strong>Save to characters</strong>. <a href="./EDIT_GUIDE.md">EDIT_GUIDE.md</a></p>
-    <label for="body">BODY</label>
+    <label for="body">BASE BODY / FEMALE OR MALE</label>
     <select id="body"></select>
     <label for="hair">HAIR</label>
     <select id="hair"></select>
@@ -139,11 +161,20 @@ body.mahluk-embedded{background:#bdcbd8}
     <label for="char-name">NAME</label>
     <input id="char-name" type="text" value="V6P Preview" maxlength="60">
     <div class="row">
-      <button type="button" id="refresh-assets">Muat ulang aset</button>
-      <button type="button" id="save">Save to characters</button>
+      <button type="button" id="refresh-assets">↻ REFRESH PIXELS</button>
+      <button type="button" id="save">▣ SAVE CHARACTER DATABASE</button>
       <button type="button" id="save-drive">Save ke Drive</button>
       <button type="button" id="reload">Reload last</button>
     </div>
+    <label for="qa-animation">ALL ANGLES · ANIMATION QA</label>
+    <select id="qa-animation" aria-label="Check all animation angles"></select>
+    <div id="all-views">
+     <figure><canvas width="64" height="112" data-qa-dir="se"></canvas><figcaption>SE · FRONT</figcaption></figure>
+     <figure><canvas width="64" height="112" data-qa-dir="sw"></canvas><figcaption>SW · FRONT</figcaption></figure>
+     <figure><canvas width="64" height="112" data-qa-dir="ne"></canvas><figcaption>NE · BACK</figcaption></figure>
+     <figure><canvas width="64" height="112" data-qa-dir="nw"></canvas><figcaption>NW · BACK</figcaption></figure>
+    </div>
+    <p class="note">Klik angle untuk mengedit frame di Pixel Editor. AUTO-FIT POSES tersedia untuk layer karakter.</p>
     <div id="status">Loading compositor…</div>
     <p id="drive-status" class="note">Drive: belum disimpan.</p>
   </section>
@@ -193,6 +224,7 @@ body.mahluk-embedded{background:#bdcbd8}
 <script src="./vlhub-characters-publish.js?v=v6p-preview"></script>
 <script src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
 <script src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
+<script src="./v6p-character-store.js?v=char-flow-1"></script>
 <script src="./v6p-project-catalog.js?v=v6p-copy-paste-20261107"></script>
 <script src="./v6p-activity-contract.js?v=v6p-act-v2-20261107"></script>
 <script src="./v6p-clip-store.js?v=v6p-act-v2-20261107"></script>
@@ -222,6 +254,7 @@ const state={
   faces:[],
   sheet:null,
   lastId:"",
+  characterId:"",
   ready:false
 };
 const FIELDS=["body","hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"];
@@ -256,6 +289,7 @@ function readForm(){
   FIELDS.forEach(k=>ch[k]=$(k).value);
   ch.gender=ch.body;
   ch.face="blank";
+  ch.characterId=state.characterId;
   const acc=$("studio-accessory")&&$("studio-accessory").value;
   ch.accessories=acc&&acc!=="none"?[acc]:[];
   state.ch=V.norm(ch);
@@ -421,7 +455,7 @@ async function save(){
   const tooBig=Object.values(clips).some(c=>c.sheet.length>1250000)||sprite.length>1250000;
   if(tooBig){ setStatus("Export exceeded Semesta 1.25MB clip limit",true); return; }
   const result=window.VLHubCharactersPublish.publish({
-    id:state.lastId||undefined,
+    id:state.characterId||state.lastId||undefined,
     name:$("char-name").value||"V6P Preview",
     gender:state.ch.body,
     sprite,clips,
@@ -433,6 +467,7 @@ async function save(){
   });
   if(!result.ok){ setStatus("Save failed: "+result.error,true); return; }
   state.lastId=result.id;
+  if(state.characterId&&window.V6PCharacterStore) window.V6PCharacterStore.update(state.characterId,{name:result.record.name,appearance:state.ch,faceId:state.faceId,status:"saved"});
   try{ localStorage.setItem(LAST_KEY,result.id); }catch(_e){}
   setStatus("Saved "+result.id+" · characters topic"+(result.unsupportedBySemestaClips&&result.unsupportedBySemestaClips.length?" · extra "+result.unsupportedBySemestaClips.join(","):""));
   syncDbg();
@@ -490,6 +525,7 @@ function openPixelEditor(kind){
   const u=new URL("./pixel-editor.html",location.href);
   u.searchParams.set("source","v6p");
   u.searchParams.set("part",part);
+  if(state.characterId)u.searchParams.set("character",state.characterId);
   u.searchParams.set("action",state.action||"idle");
   u.searchParams.set("dir",state.dir||"se");
   u.searchParams.set("frame",String(state.frame||0));
@@ -572,8 +608,31 @@ async function boot(){
   if(window.V6PAssetGallery) window.V6PAssetGallery.mount();
   syncDbg();
 }
-boot().catch(e=>setStatus(String(e),true));
+window.V6PCharacterHost=Object.freeze({
+ get(){return {id:state.characterId,ch:{...state.ch},faceId:state.faceId,name:$("char-name").value,action:state.action,dir:state.dir,frame:state.frame}},
+ async open(record){
+  state.characterId=record?.id||"";state.lastId=record?.status==="saved"?record.id:"";
+  state.ch=V.norm({...record?.appearance,characterId:state.characterId});state.faceId=record?.faceId||"";
+  $("char-name").value=record?.name||"New Character";writeForm();renderFaces();persistLastCh();await refreshAssets();
+ },
+ async useBase(gender){
+  state.characterId="";state.lastId="";
+  state.ch=V.norm({...window.V6PCharacterStore.starter(gender),characterId:""});
+  state.faceId="";$("char-name").value=gender==="female"?"Female Base":"Male Base";
+  writeForm();renderFaces();await refreshAssets();
+ },
+ async qa(action){
+  if(!state.sheet)return;const selected=V.ROWS[action]!=null?action:"idle";
+  for(const cv of document.querySelectorAll("[data-qa-dir]")){
+   const c=cv.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);
+   c.drawImage(V.extractFrame(state.sheet,selected,cv.dataset.qaDir,state.frame%V.FRAMES[selected]),0,0);
+  }
+ },
+ edit(kind,dir,action){state.dir=dir;state.action=action;state.frame=0;openPixelEditor(kind)}
+});
+boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
+<script src="./v6p-character-workflow.js?v=char-flow-1"></script>
 </body>
 </html>
