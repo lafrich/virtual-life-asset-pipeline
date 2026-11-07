@@ -32,13 +32,15 @@ const {chromium}=require('playwright');
     const id=w.V6PCharacterHost.get().id,S=w.V6PCharacterStore,P=w.V6PPixelSource;
     const img=await P.loadSheetFromUrl(S.getPart(id,'top/custom_f'));
     const d=P.extract(img,'idle','se',0).data;
-    let pos=null;
-    for(let y=39;y<81&&!pos;y++)for(let x=14;x<51;x++){
-      const i=(y*64+x)*4;
-      if(d[i+3]===255){pos={x,y,before:[...d.slice(i,i+4)]};break;}
+    const rear=P.extract(img,'idle','ne',0).data;
+    function opaqueAt(d){
+      for(let y=39;y<81;y++)for(let x=14;x<51;x++){
+        const i=(y*64+x)*4;
+        if(d[i+3]===255)return {x,y,before:[...d.slice(i,i+4)]};
+      }
+      throw Error('Native Tee target pixel not found');
     }
-    if(!pos)throw Error('Native Tee target pixel not found');
-    return {id,pos};
+    return {id,pos:opaqueAt(d),rearPos:opaqueAt(rear)};
   });
   await char.locator('#edit-top').click();
   await page.locator('#character-pixel-overlay:not([hidden])').waitFor({timeout:65000});
@@ -57,6 +59,11 @@ const {chromium}=require('playwright');
   await pixel.locator('#pixelDirection').selectOption('ne');
   assert.ok((await pixel.locator('#source-state').textContent()).includes('top/custom_f'),
     'NE incorrectly opened tiny occluded top_back source');
+  await pixel.locator('#pixelColor').fill('#2fa4e8');
+  await cv.click({position:{
+    x:Math.round((original.rearPos.x+.5)*box.width/64),
+    y:Math.round((original.rearPos.y+.5)*box.height/112)
+  }});
   await pixel.locator('#pixelDirection').selectOption('nw');
   assert.ok((await pixel.locator('#source-state').textContent()).includes('top/custom_f'),
     'NW incorrectly opened tiny occluded top_back source');
@@ -71,10 +78,12 @@ const {chromium}=require('playwright');
    const S=w.V6PCharacterStore,P=w.V6PPixelSource;
    const sheet=await P.loadSheetFromUrl(S.getPart(id,'top/custom_f'));
    const d=P.extract(sheet,'idle','se',0).data,i=(pos.y*64+pos.x)*4;
-   return {appearance:S.get(id)?.appearance?.top,px:[...d.slice(i,i+4)]};
+   const n=P.extract(sheet,'idle','ne',0).data,j=(rearPos.y*64+rearPos.x)*4;
+   return {appearance:S.get(id)?.appearance?.top,px:[...d.slice(i,i+4)],rear:[...n.slice(j,j+4)]};
   },original);
   assert.equal(after.appearance,'custom');
-  assert.deepEqual(after.px,[239,39,169,255],'Drawn top pixel did not persist on Back');
+  assert.deepEqual(after.px,[239,39,169,255],'Drawn front Tee pixel did not persist on Back');
+  assert.deepEqual(after.rear,[47,164,232,255],'Drawn NE Tee pixel did not persist on visible main layer');
   console.log('PASS Custom Wear edit + Back:',JSON.stringify(after));
   // Reload mimics mobile iframe/page going to background and back.
   await page.evaluate(()=>document.getElementById('character-frame').contentWindow.location.reload());
