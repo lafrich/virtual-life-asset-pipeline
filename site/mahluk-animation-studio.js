@@ -7,7 +7,7 @@ if(!V||!Store||!A)return;
 const KEY="vl-mahluk-animation-anchor-poses-v1",PARTS=["leg_l","leg_r","torso","arm_l","arm_r","head"],DIRS=["se","sw","ne","nw"];
 const ANCHORS={head:[32,35],torso:[32,60],arm_l:[20,54],arm_r:[44,54],leg_l:[25,84],leg_r:[39,84]};
 const cv=$("stage"),screen=cv.getContext("2d"),state={id:"",name:"",gender:"male",template:"idle",frames:[{key:"f0",ms:140},{key:"f1",ms:140}],loop:true,
- dir:"se",frame:0,part:"head",tracks:{},sheet:null,playing:false,timer:0,images:new Map(),drag:null,revision:0};
+ dir:"se",frame:0,part:"head",tracks:{},sheet:null,playing:false,timer:0,images:new Map(),drag:null,revision:0,previewFrame:0,screen:"home"};
 screen.imageSmoothingEnabled=false;
 function say(msg,err=false){$("status").textContent=msg;$("status").style.background=err?"#f8d7d5":"#dce9f8"}
 function deep(v){return JSON.parse(JSON.stringify(v))}
@@ -71,8 +71,27 @@ function render(){
  screen.beginPath();screen.arc(x,y,5,0,Math.PI*2);screen.fill();screen.stroke();
  screen.beginPath();screen.moveTo(x-12,y);screen.lineTo(x+12,y);screen.moveTo(x,y-12);screen.lineTo(x,y+12);screen.stroke();
  $("animation-title").textContent=(state.name||"NEW ANIMATION")+" · "+state.dir.toUpperCase()+" F"+(state.frame+1);
+ if(document.activeElement!==$("animation-name-edit"))$("animation-name-edit").value=state.name;
  $("ms").value=state.frames[state.frame]?.ms||140;$("loop").checked=state.loop;
- updateProperty();paintStrip();
+ updateProperty();paintStrip();if(!state.playing)drawGif();
+}
+function drawGif(){
+ const dest=$("gif-preview");if(!dest)return;
+ const c=dest.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);
+ if(!state.sheet)return;
+ c.drawImage(bake(state.dir,state.previewFrame%Math.max(1,state.frames.length)),0,0);
+ $("gif-preview-note").textContent="PREVIEW · "+state.dir.toUpperCase()+" · "+(state.previewFrame%state.frames.length+1)+"/"+state.frames.length+
+  " · "+(state.loop?"LOOP":"ONCE");
+}
+function show(screen){
+ stop();state.screen=screen;
+ $("animation-home").hidden=screen!=="home";$("animation-setup").hidden=screen!=="setup";
+ $("animation-workspace").hidden=screen!=="editor";
+ if(screen==="home")listClips();else if(screen==="editor")render();
+}
+function home(message){
+ if(message)$("animation-home-note").textContent=message;
+ show("home");
 }
 function paintStrip(){
  const host=$("frame-strip");host.replaceChildren();
@@ -86,8 +105,10 @@ function listClips(){
  const rows=Store.list();const drafts=db();
  for(const clip of rows){
   const b=document.createElement("button");b.classList.toggle("active",state.id===clip.id);
-  b.textContent=(clip.id==="clip_pushup"?"[STOCK] ":"")+clip.name+" · "+clip.manifest.frames.length+" F"+(drafts[clip.id]?" · ANCHOR":" · PIXEL");
-  b.onclick=()=>open(clip.id);holder.append(b);
+  const title=document.createElement("strong"),info=document.createElement("small");
+  title.textContent=clip.name;info.textContent=clip.manifest.frames.length+" FRAMES · "+(drafts[clip.id]?"EDITABLE ANCHOR":"PIXEL CLIP")+
+   (clip.id==="clip_pushup"?" · STOCK":"");
+  b.append(title,info);b.onclick=()=>void open(clip.id);holder.append(b);
  }
  if(!rows.length)holder.textContent="No animations yet";
 }
@@ -96,31 +117,42 @@ function setMeta(rec){
  state.frames=deep(rec.frames);state.loop=rec.loop!==false;state.tracks=deep(rec.tracks||{});
  state.frame=0;state.dir="se";state.part="head";
  $("gender").value=state.gender;$("template").value=state.template;
+ $("animation-name-edit").value=state.name;
 }
 async function open(id){
  stop();const clip=Store.get(id),meta=db()[id];
  if(!clip)return say("Missing animation "+id,true);
- if(!meta){say(clip.name+" is an existing pixel sheet, not an anchor-editable clip. Use PIXEL EDITOR or copy a template to make a new anchor animation.",true);state.id=id;listClips();return}
- setMeta(meta);listClips();await loadSource();say("LOADED "+meta.name+" · editable all 4 views / "+state.frames.length+" frames");
+ if(!meta){
+  state.id=id;state.name=clip.name;
+  say(clip.name+" uses a pixel clip sheet. Select PIXEL EDITOR; existing stock frames are never overwritten here.");
+  show("editor");return;
+ }
+ setMeta(meta);show("editor");await loadSource();
+ say("LOADED "+meta.name+" · editable all 4 directions / "+state.frames.length+" frames");
 }
 async function create(from){
- stop();const name=root.prompt("Animation name",from?(state.name+" Copy"):"New Animation");
- if(!name)return;
+ stop();
+ const name=String(from?(state.name+" Copy"):$("setup-name").value).trim().slice(0,80);
+ if(!name)throw Error("Enter an activity name before editing");
  const gender=from?state.gender:$("gender").value,template=from?state.template:$("template").value;
- const initial=from?state.frames:Array.from({length:Math.min(6,V.FRAMES[template]||4)},(_,i)=>({key:"f"+i,ms:140}));
+ if(!["male","female"].includes(gender)||!["idle","sit","lie","sleep"].includes(template))
+  throw Error("Select a supported Male/Female base and starting pose");
+ const initial=from?deep(state.frames):Array.from({length:Math.min(6,V.FRAMES[template]||4)},(_,i)=>({key:"f"+i,ms:140}));
  const clip=Store.create({name,frames:initial,requiredParts:["base/body"]});
  const row={id:clip.id,name,gender,template,frames:deep(initial),loop:from?state.loop:true,tracks:from?deep(state.tracks):{}};
  const data=db();data[row.id]=row;localStorage.setItem(KEY,JSON.stringify(data));
- await open(row.id);say("NEW "+name+" · reference template "+template.toUpperCase()+" · move/rotate anchors and save.");
+ await open(row.id);say("NEW "+name+" · "+template.toUpperCase()+" · edit frames and preview before saving.");
 }
 function stop(){state.playing=false;clearTimeout(state.timer);$("play").textContent="▶ PLAY"}
-function tick(){if(!state.playing)return;const ms=state.frames[state.frame].ms;
+function tick(){if(!state.playing)return;const ms=state.frames[state.previewFrame]?.ms||140;
  state.timer=setTimeout(()=>{if(!state.playing)return;
-  if(state.frame===state.frames.length-1&&!state.loop){stop();return}
-  state.frame=(state.frame+1)%state.frames.length;render();tick()
+  if(state.previewFrame===state.frames.length-1&&!state.loop){stop();drawGif();return}
+  state.previewFrame=(state.previewFrame+1)%state.frames.length;drawGif();tick()
  },ms);
 }
-function toggle(){if(state.playing){stop();return}if(!db()[state.id])return say("Open an editable animation first",true);state.playing=true;$("play").textContent="❚❚ PAUSE";tick()}
+function toggle(){if(state.playing){stop();return}
+ if(!db()[state.id])return say("Open an editable animation first",true);
+ state.previewFrame=0;state.playing=true;$("play").textContent="❚❚ PAUSE";drawGif();tick()}
 function changeFrame(n){stop();state.frame=Math.max(0,Math.min(state.frames.length-1,n));render()}
 function addFrame(duplicate){
  if(!db()[state.id])return say("New animation first",true);
@@ -130,8 +162,10 @@ function addFrame(duplicate){
  for(const d of DIRS){if(!state.tracks[d])state.tracks[d]=[];const copy=duplicate?deep(pose(d,state.frame)):freshPose();state.tracks[d].splice(idx,0,copy)}
  state.frame=idx;render();
 }
-async function save(){
+async function save(withDrive=false){
  if(!db()[state.id])return say("New animation first",true);
+ state.name=$("animation-name-edit").value.trim().slice(0,80);
+ if(!state.name)throw Error("Enter an activity name");
  if(!state.sheet)await loadSource();if(!state.sheet)throw Error("Base pixels missing");
  const atlas=canvas(384,2688),a=atlas.getContext("2d");a.imageSmoothingEnabled=false;
  for(let d=0;d<4;d++)for(let f=0;f<state.frames.length;f++)
@@ -142,7 +176,15 @@ async function save(){
   frames:deep(state.frames),loop:state.loop,tracks:deep(state.tracks),updated:new Date().toISOString()};
  localStorage.setItem(KEY,JSON.stringify(all));
  try{root.VLHub?.publish("animations",{source:"mahluk-animation-studio",id:state.id,status:"draft"})}catch{}
- listClips();say("SAVED DATABASE · "+state.name+" · "+state.frames.length+" frames × 4 views · PNG activity sheet + anchor edit state. Draft until linked to game.");
+ let message="SAVED LOCAL · "+state.name+" · "+state.frames.length+" frames × 4 directions";
+ if(withDrive){
+  try{
+   if(root.parent===root||!root.parent?.VLMahlukWorkspace?.syncDrive)throw Error("Open from MAHLUK.EXE and connect Drive");
+   const result=await root.parent.VLMahlukWorkspace.syncDrive();
+   message+=" · DRIVE VERIFIED · "+(result.name||"Mahluk backup");
+  }catch(e){message+=" · DRIVE NOT SYNCED: "+e.message}
+ }else message+=" · Use SAVE & SYNC to back up to Drive";
+ home(message);
 }
 function editPixels(){
  if(!state.id)return say("Create animation first",true);
@@ -168,9 +210,18 @@ $("template").onchange=()=>{if(!db()[state.id])return;state.template=$("template
 $("view").onchange=()=>{stop();state.dir=$("view").value;render()};
 $("ms").onchange=()=>{state.frames[state.frame].ms=Math.max(40,Math.min(800,Number($("ms").value)||140));render()};
 $("loop").onchange=()=>{state.loop=$("loop").checked};
-$("new").onclick=()=>create(false).catch(e=>say(e.message,true));
+$("animation-start-new").onclick=()=>{$("setup-name").value="";$("template").value="idle";show("setup")};
+$("animation-start-pose").onclick=()=>{$("setup-name").value="";show("setup")};
+$("animation-start-gallery").onclick=()=>home();
+$("setup-back").onclick=()=>home();
+$("setup-create").onclick=()=>create(false).catch(e=>{$("animation-home-note").textContent=e.message;
+ root.alert(e.message)});
+$("animation-editor-back").onclick=()=>home("Unsaved pose changes remain local until SAVE.");
+$("new").onclick=()=>{$("setup-name").value="";show("setup")};
 $("copy").onclick=()=>create(true).catch(e=>say(e.message,true));
-$("save").onclick=()=>save().catch(e=>say(e.message,true));
+$("animation-name-edit").oninput=()=>{state.name=$("animation-name-edit").value;$("animation-title").textContent=state.name||"NEW ANIMATION"};
+$("save").onclick=()=>save(false).catch(e=>say(e.message,true));
+$("animation-save-sync").onclick=()=>save(true).catch(e=>say(e.message,true));
 $("play").onclick=toggle;$("prev").onclick=()=>changeFrame(state.frame-1);$("next").onclick=()=>changeFrame(state.frame+1);
 $("add-frame").onclick=()=>addFrame(false);$("duplicate").onclick=()=>addFrame(true);
 $("remove-frame").onclick=()=>{if(state.frames.length<2)return say("At least one frame is required",true);
@@ -193,5 +244,5 @@ cv.addEventListener("pointermove",e=>{
 });
 cv.addEventListener("pointerup",()=>{state.drag=null});cv.addEventListener("pointercancel",()=>{state.drag=null});
 window.addEventListener("pagehide",stop);
-listClips();updateProperty();loadSource().catch(e=>say(e.message,true));
+show("home");updateProperty();loadSource().catch(e=>say(e.message,true));
 })(window);
