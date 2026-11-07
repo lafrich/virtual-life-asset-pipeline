@@ -199,13 +199,9 @@ function bindMotion(){
   open("./pixel-editor.html?source=v6p&project="+encodeURIComponent(value.slice(5)));return;
  }
  if(value.startsWith("grok:")){
-  const action=state.catalog.find(x=>x.id===value.slice(5));
-  if(!action||!root.V6PGrokMotionCopy){status("Grok importer not loaded",true);return}
-  status("Creating safe local copy for Pixel Editor…");
-  root.V6PGrokMotionCopy.makeCopy(action,action.sheets?.ichsan?"ichsan":"npc").then(id=>{
-   const url="./pixel-editor.html?source=v6p&project="+encodeURIComponent(id);
-   open(url);
-  }).catch(e=>status(e.message,true));
+  status("Grok is a motion reference, not this actor's sprite. Opening Animation Editor for a proper Male/Female base draft.");
+  if(root.parent&&root.parent!==root&&root.parent.VLMahlukWorkspace)root.parent.VLMahlukWorkspace.show("animation");
+  else location.href="./mahluk-animation-studio.html";
  }
 }
 async function loadMotions(){
@@ -263,6 +259,7 @@ function wire(){
  $("actor").onchange=()=>{stop();state.frame=0;render()};
  $("refresh-actors").onclick=()=>{refreshActors();render()};
  $("dir").onchange=()=>{stop();render()};
+ for(const id of ["object","offset-x","offset-y"]) $(id).addEventListener("input",render);
  for(const phase of ["enter","loop","exit"]){
   $("phase-"+phase).onchange=()=>{stop();state.frame=0;render()};
  }
