@@ -66,7 +66,7 @@ jobs:
           node --check site/emotion-studio/shared-pixel-editor.js
       - name: Check preserved existing editors and new app shell
         run: |
-          node --test tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs tests/test_mahluk_character_wizard.cjs tests/test_mahluk_back_layer_gallery.cjs
+          node --test tests/test_custom_wear_mapping.cjs tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs tests/test_mahluk_character_wizard.cjs tests/test_mahluk_back_layer_gallery.cjs
           node tests/test_pixel_editor.cjs
           node tests/test_emotion_studio.cjs
       - uses: actions/setup-python@v5
