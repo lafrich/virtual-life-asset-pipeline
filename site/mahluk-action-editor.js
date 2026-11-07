@@ -20,6 +20,7 @@ function load(){
 }
 function persist(){
  localStorage.setItem(KEY,JSON.stringify({format:FORMAT,savedAt:new Date().toISOString(),items:state.rows}));
+ try{root.VLHub?.publish("actions",{count:state.rows.length,status:"draft_unapproved"})}catch{}
  root.dispatchEvent(new CustomEvent("mahluk:action-saved",{detail:{count:state.rows.length}}));
 }
 function blank(){
