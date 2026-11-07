@@ -41,7 +41,7 @@
   const code=/^#[\da-f]{6}$/i.test(hex)?hex:"#18151b";
   return [parseInt(code.slice(1,3),16),parseInt(code.slice(3,5),16),parseInt(code.slice(5,7),16),255];
  }
- function create({overlay,canvas,reference,onApply,onSaveDefault,onRestore}){
+ function create({overlay,canvas,reference,onApply,onSaveDefault,onRestore,onDirectionChange}){
   const els={
    heading:overlay.querySelector("#pixelTitle"),dir:overlay.querySelector("#pixelDirection"),
    color:overlay.querySelector("#pixelColor"),size:overlay.querySelector("#pixelSize"),
@@ -383,13 +383,22 @@
    saveHistory();const box=S.normalizeRect(selection,W,H);
    ctx.clearRect(box.x,dir*H+box.y,box.w,box.h);draw();updateHistory();
   };
-  els.dir.onchange=()=>{
-   dir=DIR.indexOf(els.dir.value);ref=refs?.[DIR[dir]]||ref;
+  function switchDirection(view){
+   const next=DIR.indexOf(view);
+   if(next<0)return false;
+   dir=next;
+   els.dir.value=DIR[dir];
+   // Never reuse the old angle's reference when the new angle has none.
+   ref=refs?refs[DIR[dir]]||null:null;
    selection=null;moveStart=null;floatingPaste=null;
    // Changing angles always re-enters isolated view mode.
    els.sync.checked=false;
-   els.copyTarget.value=DIR[dir^1];draw();updateHistory();
-  };
+   els.copyTarget.value=DIR[dir^1];
+   draw();updateHistory();
+   if(typeof onDirectionChange==="function")onDirectionChange(DIR[dir]);
+   return true;
+  }
+  els.dir.onchange=()=>switchDirection(els.dir.value);
   const updateRef=()=>{
    els.refOpacityLabel.textContent=els.refOpacity.value+"%";draw();
   };
@@ -603,7 +612,7 @@
    draw();zoomFit();updateHistory();
    canvas.focus({preventScroll:true});
   }
-  return {open,redraw:draw,isOpen:()=>!overlay.hidden,close:()=>{overlay.hidden=true},getAtlas:()=>atlas,getDir:()=>DIR[dir],isDirty:()=>dirty};
+  return {open,redraw:draw,setDirection:switchDirection,isOpen:()=>!overlay.hidden,close:()=>{overlay.hidden=true},getAtlas:()=>atlas,getDir:()=>DIR[dir],isDirty:()=>dirty};
  }
  return Object.freeze({W,H,DIR,rasterLine,flood,rgba,mirroredX,create});
 });
