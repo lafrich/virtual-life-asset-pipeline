@@ -85,7 +85,7 @@ function realCharacters(){
 function refreshActors(){
  const select=$("actor"),current=select.value;select.replaceChildren();
  const add=(id,name)=>{const option=document.createElement("option");option.value=id;option.textContent=name;select.append(option)};
- add("base:male","MALE BASE · NUDE / NO HAIR");add("base:female","FEMALE BASE · NUDE / NO HAIR");
+ add("base:male","MALE BASE · STANDARD OUTFIT / NO HAIR");add("base:female","FEMALE BASE · STANDARD OUTFIT / NO HAIR");
  const seen=new Set(["base:male","base:female"]);
  for(const row of root.V6PCharacterStore?.list()||[]){if(!seen.has(row.id)){add(row.id,row.name+" · DRAFT");seen.add(row.id)}}
  for(const row of realCharacters()){if(!seen.has(row.id)){add(row.id,row.name+" · SAVED");seen.add(row.id)}}
@@ -96,7 +96,7 @@ function actor(){
  if(local)return {id,name:local.name,gender:local.gender,ch:{...local.appearance,characterId:id},clips:pub?.clips||{}};
  if(pub)return {id,name:pub.name,gender:pub.base||"male",ch:pub.v6p?{...pub.v6p,characterId:id}:null,clips:pub.clips||{}};
  const female=id==="base:female";return {id,name:female?"Female Base":"Male Base",gender:female?"female":"male",
-  ch:{...root.V6PCompositor?.previewAppearance(female?"female":"male"),hair:"none",top:"nude",pants:"nude",shoes:"nude",face:"blank"},
+  ch:{...root.V6PCompositor?.previewAppearance(female?"female":"male"),hair:"none",top:"tee",pants:"trousers",shoes:"shoes",face:"blank"},
   clips:{}};
 }
 function publishedClip(entry,cid){
