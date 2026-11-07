@@ -61,7 +61,8 @@ test('action real character input has no phantom Noor',()=>{
  assert.match(js,/function refreshActors\(/);
  assert.match(js,/mahluk-2-library-v1/);
  assert.match(js,/function drawObject\(/);
- assert.match(js,/const native=publishedClip\(entry,a\.id\)/);
+ assert.doesNotMatch(js,/const native=publishedClip\(entry,a\.id\)/,'rejected Grok references must not survive');
+ assert.match(js,/Store\?\.list\(\)/,'Action must offer approved native stock animations');
  assert.ok(h.includes('id="refresh-actors"'));
 });
 test('unified backup retains actual published character & editable animation records',()=>{
