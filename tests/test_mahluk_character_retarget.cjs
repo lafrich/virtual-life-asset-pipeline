@@ -8,7 +8,7 @@ function paintBox(arr,{x0,x1,y0,y1},rgb=[200,0,0],alpha=255){
 function readColor(data,x,y){return [...data.slice((y*64+x)*4,(y*64+x)*4+4)]}
 function store(){const data=new Map();return {getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k)}}
 function umd(file,window){const ctx={module:{exports:{}},window,Array,Uint8ClampedArray,Map,Set,Number,Object,Math,Date,JSON,Error,String};vm.runInNewContext(read(file),ctx,{filename:file});return ctx.module.exports;}
-test('master style is transferred to every shifted native pose without a skeleton',()=>{
+test('native palette is applied to shifted stock pose without moving its silhouette',()=>{
  const R=umd('site/v6p-character-retarget.js',{localStorage:store()});
  const source=rgba(),drawn=rgba(),target=rgba();
  paintBox(source,{x0:22,x1:41,y0:35,y1:72},[180,80,20]);
@@ -17,9 +17,9 @@ test('master style is transferred to every shifted native pose without a skeleto
  const out=R.transferFrame(source,drawn,target);
  assert.deepEqual(readColor(out,35,50),[14,170,242,255]);
  assert.deepEqual(readColor(out,15,20),[0,0,0,0]);
- assert.deepEqual(readColor(target,35,50),[180,80,20,255],'retarget must not mutate stock target source');
+ assert.deepEqual(readColor(target,35,50),[180,80,20,255],'native source is immutable');
 });
-test('per-frame detail edit is transported instead of simply changing the palette globally',()=>{
+test('small isolated detail is NOT guessed onto a different native pose',()=>{
  const R=umd('site/v6p-character-retarget.js',{localStorage:store()});
  const source=rgba(),drawn=rgba(),target=rgba();
  const box={x0:23,x1:42,y0:40,y1:74};
@@ -29,9 +29,9 @@ test('per-frame detail edit is transported instead of simply changing the palett
  const out=R.transferFrame(source,drawn,target);
  let detailed=0,native=0;
  for(let i=0;i<out.length;i+=4)if(out[i+3]){if(out[i]===10&&out[i+1]===240)detailed++;if(out[i]===180&&out[i+1]===80)native++}
- assert.ok(detailed>0,'detail should follow the target pose');assert.ok(native>0,'rest of native target should remain unchanged');
+ assert.equal(detailed,0,'unrigged detail must never drift to a different limb');assert.ok(native>0,'stock pose remains native');
 });
-test('new four-view hair/garment remains visible when old stock animation layer is blank',()=>{
+test('blank native animation layer is not polluted with guessed clothing pixels',()=>{
  const R=umd('site/v6p-character-retarget.js',{localStorage:store()});
  const empty=rgba(),painted=rgba(),person=rgba(),moved=rgba();
  paintBox(painted,{x0:25,x1:39,y0:21,y1:37},[60,20,140]);
@@ -39,8 +39,23 @@ test('new four-view hair/garment remains visible when old stock animation layer 
  paintBox(moved,{x0:24,x1:52,y0:15,y1:107},[120,80,40]);
  const out=R.transferFrame(empty,painted,empty,person,moved);
  let count=0;for(let i=3;i<out.length;i+=4)if(out[i])count++;
- assert.ok(count>0,'new hair should transfer using body pose anchor instead of vanish');
+ assert.equal(count,0,'no geometric guess should create a phantom back layer');
  assert.deepEqual(readColor(empty,30,30),[0,0,0,0],'native source remains immutable');
+});
+test('native palette changes only existing target pixels and reports nonportable art',()=>{
+ const R=umd('site/v6p-character-retarget.js',{localStorage:store()});
+ const source=rgba(),drawn=rgba(),posed=rgba();
+ paintBox(source,{x0:20,x1:40,y0:20,y1:60},[100,50,25]);
+ paintBox(drawn,{x0:20,x1:40,y0:20,y1:60},[30,160,230]);
+ paintBox(drawn,{x0:10,x1:14,y0:22,y1:27},[250,0,240]);
+ paintBox(posed,{x0:27,x1:47,y0:25,y1:65},[100,50,25]);
+ const originalAlpha=Array.from(posed).filter((_,i)=>i%4===3);
+ const out=R.transferFrame(source,drawn,posed);
+ assert.deepEqual(Array.from(out).filter((_,i)=>i%4===3),originalAlpha);
+ assert.deepEqual(readColor(out,30,33),[30,160,230,255]);
+ assert.deepEqual(readColor(out,12,24),[0,0,0,0]);
+ const diff=R.masterDiff(source,drawn);
+ assert.equal(diff.geometry,20,'added silhouette pixels need pose-specific corrections');
 });
 test('cloning a character retains four masters and per-pose fixes without global leakage',()=>{
  const ls=store(),w={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/nude',normalizePart:x=>x,DIRS:['se','sw','ne','nw'],ACTIONS:['idle','walk'],FRAMES:{idle:4,walk:6}}};
@@ -78,6 +93,9 @@ test('generator uses canonical native poses, retains fresh corrections and archi
  assert.match(s,/if\(fresh&&existing\)/);
  assert.match(s,/S\.archiveStaleCorrections\(id,part,stale\)/);
  assert.match(s,/put\(output,C,action,dir,n,painted\)/);
+  assert.match(s,/paintNativePose\(original,source\.palette\)/);
+  assert.doesNotMatch(s,/transferFrame\(source\.original,source\.painted/);
+  assert.match(s,/S\.shouldKeepCorrection\(id,part,"idle",dir,0\)/);
  assert.match(s,/S\.setGenerated\(id,part/);
  assert.match(s,/S\.master\(id,part,dir\)/);
 });
