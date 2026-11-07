@@ -86,7 +86,7 @@ function listClips(){
  const rows=Store.list();const drafts=db();
  for(const clip of rows){
   const b=document.createElement("button");b.classList.toggle("active",state.id===clip.id);
-  b.textContent=(clip.id==="clip_pushup"?"[STOCK] ":"")+clip.name+" · "+clip.manifest.frames.length+" F"+(drafts[clip.id]?" · ANCHOR":" · PIXEL");
+  b.textContent=(clip.origin==="pilot"?(A.isPlayable(clip.manifest.band)?"[STOCK] ":"[STOCK DRAFT] "):"")+clip.name+" · "+clip.manifest.frames.length+" F"+(drafts[clip.id]?" · ANCHOR":" · PIXEL");
   b.onclick=()=>open(clip.id);holder.append(b);
  }
  if(!rows.length)holder.textContent="No animations yet";
@@ -100,7 +100,7 @@ function setMeta(rec){
 async function open(id){
  stop();const clip=Store.get(id),meta=db()[id];
  if(!clip)return say("Missing animation "+id,true);
- if(!meta){say(clip.name+" is an existing pixel sheet, not an anchor-editable clip. Use PIXEL EDITOR or copy a template to make a new anchor animation.",true);state.id=id;listClips();return}
+ if(!meta){say(clip.manifest&&clip.manifest.band&&!A.isPlayable(clip.manifest.band)?clip.name+" is listed in stock database but needs approved native authored frames before playing.":clip.name+" is an existing pixel sheet, not an anchor-editable clip. Use PIXEL EDITOR or copy a template to make a new anchor animation.",true);state.id=id;listClips();return}
  setMeta(meta);listClips();await loadSource();say("LOADED "+meta.name+" · editable all 4 views / "+state.frames.length+" frames");
 }
 async function create(from){
