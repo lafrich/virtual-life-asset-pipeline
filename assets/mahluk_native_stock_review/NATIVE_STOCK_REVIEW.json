@@ -1,0 +1,259 @@
+{
+  "format": "v6p-native-activity-review-v1",
+  "source": "site/media/v6p (native keyed Idle/Walk/Lie sprite modules) + existing authored Pushup",
+  "cell": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "sheet": [
+    384,
+    2688
+  ],
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "status": "review_only_NOT_live_or_approved",
+  "source_templates": {
+    "yoga_sphinx_idle": "authored pushup",
+    "yoga_puppy_idle": "authored pushup",
+    "hip_shake": "native idle",
+    "yoga_happy_baby_idle": "native lie"
+  },
+  "clips": {
+    "yoga_sphinx_idle": {
+      "band": 8,
+      "frames": 4,
+      "frame_ms": 500,
+      "loop": true,
+      "status": "preview_anatomy_not_approved"
+    },
+    "yoga_puppy_idle": {
+      "band": 12,
+      "frames": 4,
+      "frame_ms": 500,
+      "loop": true,
+      "status": "preview_anatomy_not_approved"
+    },
+    "hip_shake": {
+      "band": 16,
+      "frames": 6,
+      "frame_ms": 120,
+      "loop": true,
+      "status": "preview_anatomy_not_approved"
+    },
+    "yoga_happy_baby_idle": {
+      "band": 20,
+      "frames": 4,
+      "frame_ms": 450,
+      "loop": true,
+      "status": "preview_anatomy_not_approved"
+    }
+  },
+  "parts": {
+    "base/body": {
+      "source": "site/media/v6p/base/body.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "base/body_f": {
+      "source": "site/media/v6p/base/body_f.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "face/m_blank": {
+      "source": "site/media/v6p/face/m_blank.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "face/f_blank": {
+      "source": "site/media/v6p/face/f_blank.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "top/nude": {
+      "source": "site/media/v6p/top/nude.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "top/nude_f": {
+      "source": "site/media/v6p/top/nude_f.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "top/nude_back": {
+      "source": "site/media/v6p/top/nude_back.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "top/nude_back_f": {
+      "source": "site/media/v6p/top/nude_back_f.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "hair/mid_curtain_back": {
+      "source": "site/media/v6p/hair/mid_curtain_back.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "hair/mid_curtain_front": {
+      "source": "site/media/v6p/hair/mid_curtain_front.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "hair/long_back": {
+      "source": "site/media/v6p/hair/long_back.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "hair/long_front": {
+      "source": "site/media/v6p/hair/long_front.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "shoes/nude": {
+      "source": "site/media/v6p/shoes/nude.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "shoes/nude_f": {
+      "source": "site/media/v6p/shoes/nude_f.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "base/shadow": {
+      "source": "site/media/v6p/base/shadow.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "pants/nude": {
+      "source": "site/media/v6p/pants/nude.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "pants/nude_f": {
+      "source": "site/media/v6p/pants/nude_f.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    },
+    "base/fx": {
+      "source": "site/media/v6p/base/fx.png",
+      "preserved_rows": [
+        0,
+        7
+      ],
+      "new_bands": [
+        8,
+        23
+      ]
+    }
+  }
+}
