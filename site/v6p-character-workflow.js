@@ -15,11 +15,11 @@ function published(){try{const v=JSON.parse(localStorage.getItem("mahluk-2-libra
 function add(sel,value,name,disabled=false){const o=document.createElement("option");o.value=value;o.textContent=name;o.disabled=disabled;sel.append(o)}
 function refresh(){
  const choice=source.value,current=list.value;source.replaceChildren();list.replaceChildren();
- add(source,"base:male","MALE BASE · nude / no hair");
- add(source,"base:female","FEMALE BASE · nude / no hair");
+ add(source,"base:male","MALE BASE · standard outfit / no hair");
+ add(source,"base:female","FEMALE BASE · standard outfit / no hair");
  add(list,"","Choose an existing character…");
- add(list,"base:male","[TEMPLATE] Male Base — Nude");
- add(list,"base:female","[TEMPLATE] Female Base — Nude");
+ add(list,"base:male","[TEMPLATE] Male Base");
+ add(list,"base:female","[TEMPLATE] Female Base");
  const seen=new Set();
  for(const row of S.list()){
   add(source,"draft:"+row.id,row.name+" · "+row.status);
