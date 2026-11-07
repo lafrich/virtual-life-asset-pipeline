@@ -294,6 +294,10 @@ function readForm(){
   ch.accessories=acc&&acc!=="none"?[acc]:[];
   state.ch=V.norm(ch);
   persistLastCh();
+  if(state.characterId&&window.V6PCharacterStore?.get(state.characterId)){
+    try{window.V6PCharacterStore.update(state.characterId,{appearance:state.ch,faceId:state.faceId});}
+    catch(e){setStatus("Character draft not saved: "+e.message,true);}
+  }
 }
 function writeForm(){
   FIELDS.forEach(k=>{ if($(k)) $(k).value=state.ch[k]; });
@@ -354,6 +358,7 @@ async function rebuild(){
   const acc=(state.ch.accessories&&state.ch.accessories[0])||"none";
   setStatus("Ready · "+state.ch.body+" · "+state.ch.top+"/"+state.ch.pants+"/"+state.ch.shoes+" · acc "+acc+" · face "+faceLabel+" · "+state.action+" "+state.dir);
   syncDbg();
+  if(window.V6PCharacterHost?.qa) await window.V6PCharacterHost.qa($("qa-animation")?.value||"idle");
 }
 function syncDbg(){
   window.__v6pStudio={
