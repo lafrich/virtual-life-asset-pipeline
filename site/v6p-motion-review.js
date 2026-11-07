@@ -106,6 +106,16 @@ function mount(){
  $("motion-prev").onclick=()=>{stop();state.frame=Math.max(0,state.frame-1);render()};
  $("motion-next").onclick=()=>{stop();state.frame=Math.min((state.selected?.frames||1)-1,state.frame+1);render()};
  $("motion-play").onclick=play;
+ $("motion-copy").onclick=async()=>{
+  if(!state.selected||!selectedSheet())return;
+  const button=$("motion-copy");button.disabled=true;
+  try{status("Copying native four-view sprite to Pixel Editor…");
+    const id=await root.V6PGrokMotionCopy.makeCopy(state.selected,state.actor);
+    const url="./pixel-editor.html?source=v6p&project="+encodeURIComponent(id);
+    if(root.parent&&root.parent!==root&&root.parent.VLMahlukWorkspace){root.parent.VLMahlukWorkspace.openEditor(url)}
+    else location.href=url;
+  }catch(e){status(e.message,true)}finally{button.disabled=false}
+ };
  $("motion-download").onclick=()=>{
   const sheet=selectedSheet();if(!sheet)return;
   const a=document.createElement("a");a.href=sheet.url;a.download=state.actor+"_"+state.selected.id+"_sheet.png";
@@ -114,5 +124,9 @@ function mount(){
  document.addEventListener("visibilitychange",()=>{if(document.hidden)stop()});
  void load();
 }
+root.addEventListener("message",e=>{
+ if(e.origin!==location.origin||e.data?.type!=="mahluk:select-motion"||typeof e.data.id!=="string")return;
+ if(state.library)choose(e.data.id);
+});
 root.V6PMotionReview=Object.freeze({mount,stop,refresh:load});
 })(window);
