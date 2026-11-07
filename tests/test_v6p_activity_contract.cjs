@@ -17,7 +17,7 @@ assert.strictEqual(A.BANDS.pushup.emosi,false);
 assert.deepStrictEqual(A.BANDS.pushup.keys,["plank_high","lowering_1","lowering_2","bottom","rising_1","rising_2"]);
 assert.strictEqual(A.BANDS.yoga_sphinx_idle.start,8);
 assert.strictEqual(A.BANDS.yoga_sphinx_idle.ms,500);
-assert.strictEqual(A.BANDS.yoga_sphinx_idle.emosi,true);
+assert.strictEqual(A.BANDS.yoga_sphinx_idle.emosi,false);
 assert.strictEqual(A.BANDS.yoga_puppy_idle.start,12);
 assert.strictEqual(A.BANDS.hip_shake.start,16);
 assert.strictEqual(A.BANDS.hip_shake.frames,6);
