@@ -59,13 +59,27 @@ function mapCoord(x,y,from,to){
  return {x:Math.max(0,Math.min(FW-1,Math.floor(from.x+u*from.w))),
          y:Math.max(0,Math.min(FH-1,Math.floor(from.y+v*from.h)))};
 }
-function transferFrame(original,painted,posed){
+function transferFrame(original,painted,posed,sourcePoseRef=null,targetPoseRef=null){
  if(original.length!==FW*FH*4||painted.length!==original.length||posed.length!==original.length)
   throw Error("Expected three native RGBA 64x112 frames");
  if(equals(original,painted))return new Uint8ClampedArray(posed);
  const result=new Uint8ClampedArray(posed);
  const sourceBounds=bounds(original)||bounds(painted),targetBounds=bounds(posed);
- if(!sourceBounds||!targetBounds)return result;
+ if(!sourceBounds)return result;
+ // Transparent stock (e.g. short hair back) must still inherit motion
+ // from a reference body atlas rather than disappear in every target pose.
+ if(!targetBounds){
+  const from=bounds(sourcePoseRef||original)||sourceBounds,to=bounds(targetPoseRef||posed)||sourceBounds;
+  for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){
+   const i=(y*FW+x)*4;if(painted[i+3]<8)continue;
+   const u=(x-from.x+.5)/Math.max(1,from.w),v=(y-from.y+.5)/Math.max(1,from.h);
+   const dx=Math.round(to.x+u*to.w-.5),dy=Math.round(to.y+v*to.h-.5);
+   if(dx<0||dx>=FW||dy<0||dy>=FH)continue;
+   const j=(dy*FW+dx)*4;
+   result[j]=painted[i];result[j+1]=painted[i+1];result[j+2]=painted[i+2];result[j+3]=painted[i+3];
+  }
+  return result;
+ }
  const srcRegions=regionBounds(original,sourceBounds),dstRegions=regionBounds(posed,targetBounds);
  const upright=(targetBounds.h>targetBounds.w*.9&&sourceBounds.h>sourceBounds.w*.9);
  const palette=remapColors(original,painted);
@@ -130,6 +144,8 @@ async function generatePart(id,part,opts){
  const row=S.get(id);if(!row)throw Error("Open a real saved character draft first");
  C.normalizePart(part);
  const base=await P.loadSheet(part),existing=row.parts?.[part]?await P.loadSheetFromUrl(row.parts[part]):null;
+ const bodyPart=row.appearance?.body==="female"?"base/body_f":"base/body";
+ const bodySheet=part===bodyPart?base:await P.loadSheet(bodyPart);
  const output=document.createElement("canvas");output.width=C.W;output.height=C.H;
  const g=output.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;g.drawImage(existing||base,0,0);
  const sources={},masters=[],warning=[];
@@ -140,13 +156,13 @@ async function generatePart(id,part,opts){
   if(m){painted=await frameFromUrl(m);masters.push(dir)}
   else if(existing)painted=frame(existing,C,"idle",dir,0).data;
   else painted=original;
-  sources[dir]={original,painted};
+  sources[dir]={original,painted,body:frame(bodySheet,C,"idle",dir,0).data};
  }
  let generated=0,protectedFrames=0,unchanged=0;
  for(const action of C.ACTIONS)for(const dir of DIRS)for(let n=0;n<C.FRAMES[action];n++){
   if(S.isCorrection(id,part,action,dir,n)){protectedFrames++;continue}
   const original=frame(base,C,action,dir,n).data;
-  const source=sources[dir],painted=transferFrame(source.original,source.painted,original);
+  const source=sources[dir],painted=transferFrame(source.original,source.painted,original,source.body,frame(bodySheet,C,action,dir,n).data);
   if(equals(original,painted))unchanged++;else generated++;
   put(output,C,action,dir,n,painted);
  }
