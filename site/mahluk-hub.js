@@ -140,6 +140,12 @@ function bind(){
   };
  }
 }
-window.VLMahlukWorkspace=Object.freeze({show,openEditor,closeCharacterPixel,newClip,refreshCharacter,note});
+async function syncDrive(){
+ const drive=window.VLMahlukHubDrive;
+ if(!drive?.connected())throw Error("Connect Google Drive from the Mahluk toolbar first");
+ const result=await drive.backup();note("Drive verified · "+result.name);
+ return result;
+}
+window.VLMahlukWorkspace=Object.freeze({show,openEditor,closeCharacterPixel,newClip,refreshCharacter,note,syncDrive});
 bind();show(new URLSearchParams(location.search).get("tab")||"character");
 })();
