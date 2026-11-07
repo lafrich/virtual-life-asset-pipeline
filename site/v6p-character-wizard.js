@@ -257,10 +257,12 @@ async function regenerate(){
   const done=await R.generateCharacter(info.id,{progress:p=>result("Applying "+(p.index+1)+" / "+p.total+" · "+p.part)});
   await H.open(S.get(info.id));motionChoices();state.frame=0;await preview();renderLive();
   const corrected=done.corrected||0,repair=done.repairedBackMasters||0;
+  const archived=done.archivedStaleCorrections||0;
+  const archiveNote=archived?(archived+" old pose fixes backed up before rebuilding. "):"";
   const recoverNote=repair?("Repaired "+repair+" legacy rear-view sprite masters into their correct back layers. "):"";
   result(done.parts.length?
-   recoverNote+"Animation frames generated from your selected parts. "+corrected+" corrected frames kept. Check walking, sitting and sleeping poses.":
-   recoverNote+"Library clothes already have native animation sprites. Check each motion and direction.");
+   recoverNote+archiveNote+"Animation frames rebuilt from original assets and your 4-angle drawings. "+corrected+" newer manual corrections kept. Check walking, sitting and sleeping poses.":
+   recoverNote+archiveNote+"Original outfit animations loaded (including Nude). Check each motion and direction.");
   state.pendingPreview=false;
   return true;
  }catch(error){result("Generation failed: "+error.message,true);notice(error.message,true);return false}
