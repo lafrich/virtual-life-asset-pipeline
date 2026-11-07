@@ -5,6 +5,7 @@ on:
       - feature/mahluk-unified-workspace-20261107
       - feature/character-animation-action-workflow-20261107
       - fix/character-draw-four-apply-animation-20261107
+      - feature/mahluk-character-wizard-navigation-20261107
     paths:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
@@ -23,6 +24,7 @@ on:
       - "tests/test_mahluk_unified_workspace.cjs"
       - "tests/test_mahluk_character_animation_flow.cjs"
       - "tests/test_mahluk_character_retarget.cjs"
+      - "tests/test_mahluk_character_wizard.cjs"
       - ".github/workflows/mahluk-unified-regression.yml"
   workflow_dispatch:
 permissions:
@@ -43,6 +45,7 @@ jobs:
           node --check site/mahluk-animation-studio.js
           node --check site/v6p-character-store.js
           node --check site/v6p-character-workflow.js
+          node --check site/v6p-character-wizard.js
           node --check site/v6p-character-retarget.js
           node --check site/v6p-compositor.js
           node --check site/v6p-motion-review.js
@@ -51,7 +54,7 @@ jobs:
           node --check site/pixel-editor.js
       - name: Check preserved existing editors and new app shell
         run: |
-          node --test tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs
+          node --test tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs tests/test_mahluk_character_wizard.cjs
           node tests/test_pixel_editor.cjs
           node tests/test_emotion_studio.cjs
       - uses: actions/setup-python@v5
