@@ -389,12 +389,13 @@
    dir=next;
    els.dir.value=DIR[dir];
    // Never reuse the old angle's reference when the new angle has none.
-   ref=refs?refs[DIR[dir]]||null:null;
+   ref=refs?refs[DIR[dir]]||null:ref;
    selection=null;moveStart=null;floatingPaste=null;
    // Changing angles always re-enters isolated view mode.
    els.sync.checked=false;
    els.copyTarget.value=DIR[dir^1];
    draw();updateHistory();
+   if(els.status)els.status.textContent="LOADED "+DIR[dir].toUpperCase()+" VIEW · NATIVE PIXELS · OTHER ANGLES PROTECTED";
    if(typeof onDirectionChange==="function")onDirectionChange(DIR[dir]);
    return true;
   }
