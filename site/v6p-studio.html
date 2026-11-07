@@ -83,12 +83,12 @@ body.mahluk-embedded{background:#bdcbd8}
   <label>MY CHARACTERS<select id="workflow-list"><option value="">Choose saved character…</option></select></label>
   <button type="button" id="workflow-open">OPEN CHARACTER</button>
  </div>
- <p id="workflow-status">Male and female base are always available. Character drafts are separate; original part sheets stay unchanged.</p>
+ <p id="workflow-status">01 CREATE → 02 DRAW 4 VIEWS → 03 GENERATE → 04 REVIEW FRAMES → 05 SAVE. Stock data stays untouched.</p>
 </section>
 <div class="wrap">
   <section class="card" aria-label="Appearance">
     <strong>APPEARANCE</strong>
-    <p class="note">Same v6p layers as the archived Character Creator. Hair is unchanged. Nude (skin) is a new clothing option, not a missing layer. Setelah mengedit PNG di <code>media/v6p/</code>, klik <strong>Muat ulang aset</strong> lalu <strong>Save to characters</strong>. <a href="./EDIT_GUIDE.md">EDIT_GUIDE.md</a></p>
+    <p class="note">Choose database parts or draw each part in 4 views (SE, SW, NE, NW) on IDLE frame 1. Generate all animation frames, review, correct problem poses, then save. Character-specific pixels never overwrite stock parts.</p>
     <label for="body">BASE BODY / FEMALE OR MALE</label>
     <div class="row"><select id="body"></select><button type="button" id="edit-body">✎ PIXEL</button></div>
     <label for="hair">HAIR</label>
@@ -166,15 +166,27 @@ body.mahluk-embedded{background:#bdcbd8}
       <button type="button" id="save-drive">Save ke Drive</button>
       <button type="button" id="reload">Reload last</button>
     </div>
+    <div class="row" style="margin:7px 0">
+      <button type="button" id="generate-character" style="background:#b6d9ff;border:1px solid #376cae;font-weight:bold">⚙ GENERATE ALL ANIMATIONS</button>
+      <button type="button" id="qa-refresh" title="Refresh after Pixel Editor">↻ REFRESH</button>
+    </div>
+    <p id="generate-result" class="note">Draw your four source views. Generate to propagate to the 11 built-in animations and compatible anchor-motion clips.</p>
     <label for="qa-animation">ALL ANGLES · ANIMATION QA</label>
     <select id="qa-animation" aria-label="Check all animation angles"></select>
+    <div class="row">
+      <button type="button" id="qa-prev">◀ FRAME</button>
+      <input type="range" id="qa-frame" min="0" max="0" value="0" aria-label="Animation frame" style="flex:3;min-width:90px">
+      <span id="qa-frame-label">FRAME 1 / 1</span>
+      <button type="button" id="qa-next">FRAME ▶</button>
+      <button type="button" id="qa-play">▶ PLAY</button>
+    </div>
     <div id="all-views">
      <figure><canvas width="64" height="112" data-qa-dir="se"></canvas><figcaption>SE · FRONT</figcaption></figure>
      <figure><canvas width="64" height="112" data-qa-dir="sw"></canvas><figcaption>SW · FRONT</figcaption></figure>
      <figure><canvas width="64" height="112" data-qa-dir="ne"></canvas><figcaption>NE · BACK</figcaption></figure>
      <figure><canvas width="64" height="112" data-qa-dir="nw"></canvas><figcaption>NW · BACK</figcaption></figure>
     </div>
-    <p class="note">Klik angle untuk mengedit frame di Pixel Editor. AUTO-FIT POSES tersedia untuk layer karakter.</p>
+    <p class="note">Click an angle to correct that exact native animation frame in the Pixel Editor. Custom anchor-motion frames can be adjusted from Animation Studio.</p>
     <div id="status">Loading compositor…</div>
     <p id="drive-status" class="note">Drive: belum disimpan.</p>
   </section>
@@ -223,6 +235,7 @@ body.mahluk-embedded{background:#bdcbd8}
 <script src="./emosi-bridge.js?v=preview-stock-20261107"></script>
 <script src="./vlhub-characters-publish.js?v=v6p-preview"></script>
 <script src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
+<script src="./v6p-pixel-source.js?v=v6p-retarget-1"></script>
 <script src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
 <script src="./v6p-character-store.js?v=char-flow-1"></script>
 <script src="./v6p-project-catalog.js?v=v6p-copy-paste-20261107"></script>
@@ -231,6 +244,7 @@ body.mahluk-embedded{background:#bdcbd8}
 <script src="./v6p-asset-gallery.js?v=v6p-act-v2-20261107"></script>
 <script src="./drive-sync.js?v=v6p-pixel-20261107"></script>
 <script src="./v6p-compositor.js?v=v6p-act-v2-20261107"></script>
+<script src="./v6p-character-retarget.js?v=v6p-retarget-1"></script>
 <script>
 (function(){
 "use strict";
