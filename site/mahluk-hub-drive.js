@@ -11,6 +11,8 @@ const KIND="mahluk-hidup-unified-backup-v1";
 const FILENAME="mahluk-hidup-workspace-v1.json";
 const KEYS=[
  "vl-v6p-part-overrides-v1","vl-v6p-project-catalog-v1","vl-v6p-act-clips-v1",
+ "vl-v6p-character-workflow-v1","vl-mahluk-animation-anchor-poses-v1",
+ "mahluk-2-library-v1","virtual-life-character-storage-v1",
  "mahluk-action-situations-v1","emotion-studio-local-fallback-v1",
  "emosi-convo-projects-v1","emosi-convo-mouth-guide-v1"
 ];
