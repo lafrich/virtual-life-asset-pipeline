@@ -4,7 +4,31 @@ Repo: `lafrich/virtual-life-asset-pipeline`
 Branch: `main`  
 Live: https://lafrich.github.io/virtual-life-asset-pipeline/
 
-## This deploy (v6p compositor + grass_v2)
+## This deploy (Emosi topmost + v6p pixel-editor Drive save)
+
+- Previous `origin/main` (safe restore point): `3f7904b6cce5abdec60523deca4c536415650300`
+- Feature commit: `d88c7570ea985078e667f536de18823409570dc7`
+
+Restore this deploy (fast-forward only — do not force-push):
+
+```bash
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+git revert --no-edit d88c7570ea985078e667f536de18823409570dc7
+git push origin main
+```
+
+If this ROLLBACK notes commit is also on `main`, revert it first (newest first), then the feature commit. That removes the Emosi topmost stamp order, the v6p pixel-editor source picker / local overrides, Save ke Drive, `DRIVE_SYNC_CONTRACT.md`, and `tools/sync-v6p-from-drive.mjs`. It does not revert the earlier v6p compositor preview (`5f84e510523b4d9ff80b1717d51dfa0102310647`).
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+
+- https://lafrich.github.io/virtual-life-asset-pipeline/site/v6p-studio.html
+- https://lafrich.github.io/virtual-life-asset-pipeline/site/pixel-editor.html
+- `DRIVE_SYNC_CONTRACT.md` and `tools/sync-v6p-from-drive.mjs` present on `main` for the "Mahluk Hidup: sync pixel edits from Drive" routine
+
+## Previous deploy (v6p compositor + grass_v2)
+
 
 - Previous `origin/main` (safe restore point): `5542e43c69f30a6693de4cdf1a08679a0feb5e6d`
 - Feature commit: `5f84e510523b4d9ff80b1717d51dfa0102310647`
