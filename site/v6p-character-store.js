@@ -20,7 +20,14 @@ function create({name,gender="male",from=""}={}){
  const source=from?get(from):null;if(from&&!source)throw Error("Missing clone source");
  const id=freshId(),row={id,name:text(name)||"New Character",gender:source?.gender||gender,
   appearance:source?{...source.appearance,accessories:[...(source.appearance?.accessories||[])]}:starter(gender),
-  faceId:source?.faceId||"",parts:source?{...source.parts}:{},masters:source?JSON.parse(JSON.stringify(source.masters||{})):{},corrections:source?JSON.parse(JSON.stringify(source.corrections||{})):{},generated:source?JSON.parse(JSON.stringify(source.generated||{})):{},derived:source?{...source.derived}:{},
+  faceId:source?.faceId||"",parts:source?{...source.parts}:{},masters:source?JSON.parse(JSON.stringify(source.masters||{})):{},corrections:source?JSON.parse(JSON.stringify(source.corrections||{})):{},generated:source?JSON.parse(JSON.stringify(source.generated||{})):{},
+  revision:source?.revision||0,
+  masterVersion:source?JSON.parse(JSON.stringify(source.masterVersion||{})):{},
+  correctionVersion:source?JSON.parse(JSON.stringify(source.correctionVersion||{})):{},
+  masterUpdatedAt:source?JSON.parse(JSON.stringify(source.masterUpdatedAt||{})):{},
+  correctionUpdatedAt:source?JSON.parse(JSON.stringify(source.correctionUpdatedAt||{})):{},
+  correctionArchive:source?JSON.parse(JSON.stringify(source.correctionArchive||{})):{},
+  derived:source?{...source.derived}:{},
   origin:source?.id||"base",status:"draft",updated:new Date().toISOString()};
  const all=read();all.push(row);write(all);select(id);return row;
 }
@@ -43,7 +50,7 @@ function setPart(id,part,dataUrl){
 }
 function resetPart(id,part){
  return writeRow(id,row=>{
-  for(const field of ["parts","masters","corrections","generated"]){
+  for(const field of ["parts","masters","masterVersion","masterUpdatedAt","corrections","correctionVersion","correctionUpdatedAt","generated","correctionArchive"]){
    const next={...(row[field]||{})};delete next[part];row[field]=next;
   }
   row.status="draft";
@@ -61,21 +68,79 @@ function master(id,part,dir){
 function setMaster(id,part,dir,png){
  if(!C()?.isPart(part)||!C().DIRS.includes(dir))throw Error("Invalid part or direction");
  if(typeof png!=="string"||!png.startsWith("data:image/png;base64,")||png.length>350000)throw Error("Master must be a 64x112 PNG");
- return writeRow(id,row=>{row.masters={...(row.masters||{})};
+ return writeRow(id,row=>{
+  const previous=row.masters?.[part]?.[dir];
+  row.masters={...(row.masters||{})};
   row.masters[part]={...(row.masters[part]||{}),[dir]:png};
+  // An identical Save must not invalidate a later hand-corrected animation.
+  if(previous!==png){
+   row.revision=(row.revision||0)+1;
+   row.masterVersion={...(row.masterVersion||{})};
+   row.masterVersion[part]={...(row.masterVersion[part]||{}),[dir]:row.revision};
+   row.masterUpdatedAt={...(row.masterUpdatedAt||{})};
+   row.masterUpdatedAt[part]={...(row.masterUpdatedAt[part]||{}),[dir]:now()};
+  }
   row.status="draft";
  });
 }
 function markCorrection(id,part,action,dir,frame){
  if(!C()?.isPart(part)||!C().ACTIONS.includes(action)||!C().DIRS.includes(dir)||!Number.isInteger(frame)||frame<0||frame>=C().FRAMES[action])throw Error("Invalid corrected frame");
  return writeRow(id,row=>{row.corrections={...(row.corrections||{})};
-  row.corrections[part]={...(row.corrections[part]||{}),[action+"|"+dir+"|"+frame]:true};
+  const key=action+"|"+dir+"|"+frame;
+  row.corrections[part]={...(row.corrections[part]||{}),[key]:true};
+  row.revision=(row.revision||0)+1;
+  row.correctionVersion={...(row.correctionVersion||{})};
+  row.correctionVersion[part]={...(row.correctionVersion[part]||{}),[key]:row.revision};
+  row.correctionUpdatedAt={...(row.correctionUpdatedAt||{})};
+  row.correctionUpdatedAt[part]={...(row.correctionUpdatedAt[part]||{}),[key]:now()};
   row.status="draft";
  });
 }
 function isCorrection(id,part,action,dir,frame){return !!get(id)?.corrections?.[part]?.[action+"|"+dir+"|"+frame]}
+/* Corrections that predate a changed master must not override that master.
+   Legacy boolean-only locks have no causal timestamp, so archive before rebuild. */
+function shouldKeepCorrection(id,part,action,dir,frame){
+ const row=get(id),key=action+"|"+dir+"|"+frame;
+ if(!row?.corrections?.[part]?.[key])return false;
+ const cv=row.correctionVersion?.[part]?.[key];
+ const mv=row.masterVersion?.[part]?.[dir];
+ if(Number.isInteger(cv))return !Number.isInteger(mv)||cv>=mv;
+ const saved=row.correctionUpdatedAt?.[part]?.[key];
+ if(!saved)return false; // unversioned legacy correction, not safe to preserve as active
+ const master=row.masterUpdatedAt?.[part]?.[dir];
+ return !master||Date.parse(saved)>=Date.parse(master);
+}
+function archiveStaleCorrections(id,part,frames){
+ if(!Array.isArray(frames)||!frames.length)return 0;
+ // If local quota is exceeded, fail without overwriting the source layer.
+ return writeRow(id,row=>{
+  const archive={...(row.correctionArchive||{})};
+  archive[part]={...(archive[part]||{})};
+  const archivedAt=now();
+  for(const entry of frames){
+   const key=entry.key;
+   const previous=archive[part][key];
+   const saved={
+    png:entry.png,archivedAt,reason:"stale-v6p-source-rebuild",
+    originalCorrectionAt:row.correctionUpdatedAt?.[part]?.[key]||null
+   };
+   // Keep every successive manually corrected version, not only the first
+   // obsolete frame with this key. Quota failures abort the rebuild safely.
+   archive[part][key]=previous?(Array.isArray(previous)?[...previous,saved]:[previous,saved]):saved;
+   // Old flags can be removed after the previous frame is backed up.
+   if(row.corrections?.[part])delete row.corrections[part][key];
+   if(row.correctionUpdatedAt?.[part])delete row.correctionUpdatedAt[part][key];
+   if(row.correctionVersion?.[part])delete row.correctionVersion[part][key];
+  }
+  row.correctionArchive=archive;
+ }).correctionArchive?.[part]?frames.length:0;
+}
 function clearCorrection(id,part,action,dir,frame){
- return writeRow(id,row=>{const c={...(row.corrections||{})};c[part]={...(c[part]||{})};delete c[part][action+"|"+dir+"|"+frame];row.corrections=c;});
+ return writeRow(id,row=>{const c={...(row.corrections||{})};c[part]={...(c[part]||{})};delete c[part][action+"|"+dir+"|"+frame];row.corrections=c;
+  const dates={...(row.correctionUpdatedAt||{})};dates[part]={...(dates[part]||{})};
+  delete dates[part][action+"|"+dir+"|"+frame];row.correctionUpdatedAt=dates;
+  const versions={...(row.correctionVersion||{})};versions[part]={...(versions[part]||{})};
+  delete versions[part][action+"|"+dir+"|"+frame];row.correctionVersion=versions;});
 }
 /* Fix legacy edits where back-facing top masters were mistakenly saved on
    top/front before the distinct *_back source layer was wired into the UI.
@@ -119,5 +184,5 @@ function setGenerated(id,part,png,detail){
  });
 }
 function markDerived(id,part,views){const all=read(),i=all.findIndex(x=>x.id===id);if(i<0)throw Error("Unknown character");all[i].derived={...(all[i].derived||{}),[part]:views};write(all)}
-return Object.freeze({KEY,SELECTED,FORMAT,starter,list,get,create,update,getPart,setPart,resetPart,master,setMaster,markCorrection,isCorrection,clearCorrection,setGenerated,repairTopBackMasters,markDerived,selected,select});
+return Object.freeze({KEY,SELECTED,FORMAT,starter,list,get,create,update,getPart,setPart,resetPart,master,setMaster,markCorrection,isCorrection,shouldKeepCorrection,archiveStaleCorrections,clearCorrection,setGenerated,repairTopBackMasters,markDerived,selected,select});
 });

@@ -147,7 +147,10 @@ async function generatePart(id,part,opts){
  const bodyPart=row.appearance?.body==="female"?"base/body_f":"base/body";
  const bodySheet=part===bodyPart?base:await P.loadSheet(bodyPart);
  const output=document.createElement("canvas");output.width=C.W;output.height=C.H;
- const g=output.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;g.drawImage(existing||base,0,0);
+ const g=output.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;
+ // Each generation starts from the canonical native motion sheet. Never reuse
+ // previously warped animation frames as a source, especially for nude outfits.
+ g.drawImage(base,0,0);
  const sources={},masters=[],warning=[];
  for(const dir of DIRS){
   const original=frame(base,C,"idle",dir,0).data;
@@ -162,8 +165,34 @@ async function generatePart(id,part,opts){
   sources[dir]={original,painted,body:frame(bodySheet,C,"idle",dir,0).data};
  }
  let generated=0,protectedFrames=0,unchanged=0;
+ const stale=[];
  for(const action of C.ACTIONS)for(const dir of DIRS)for(let n=0;n<C.FRAMES[action];n++){
-  if(S.isCorrection(id,part,action,dir,n)){protectedFrames++;continue}
+  const key=action+"|"+dir+"|"+n;
+  const corrected=!!row.corrections?.[part]?.[key];
+  const correctedAt=row.correctionUpdatedAt?.[part]?.[key];
+  const masterAt=row.masterUpdatedAt?.[part]?.[dir];
+  const correctionVersion=row.correctionVersion?.[part]?.[key];
+  const masterVersion=row.masterVersion?.[part]?.[dir];
+  const fresh=corrected&&(Number.isInteger(correctionVersion)?
+   (!Number.isInteger(masterVersion)||correctionVersion>=masterVersion):
+   (!!correctedAt&&(!masterAt||Date.parse(correctedAt)>=Date.parse(masterAt))));
+  if(fresh&&existing){
+   // Hand-corrected frame written after its current source master: preserve it.
+   put(output,C,action,dir,n,frame(existing,C,action,dir,n).data);
+   protectedFrames++;continue;
+  }
+  if(corrected){
+   // Legacy locks or locks predating a new master contain stale pose pixels.
+   // Keep their old pixels in a per-frame archive BEFORE replacing any sheet.
+   const old=existing?frame(existing,C,action,dir,n).data:null;
+   let png=null;
+   if(old){
+    const archived=sourceCanvas();
+    archived.getContext("2d").putImageData(new ImageData(new Uint8ClampedArray(old),FW,FH),0,0);
+    png=archived.toDataURL("image/png");
+   }
+   stale.push({key,png});
+  }
   const original=frame(base,C,action,dir,n).data;
   const source=sources[dir],painted=transferFrame(source.original,source.painted,original,source.body,frame(bodySheet,C,action,dir,n).data);
   if(equals(original,painted))unchanged++;else generated++;
@@ -174,8 +203,16 @@ async function generatePart(id,part,opts){
   put(output,C,"idle",dir,0,sources[dir].painted);
  if(masters.length<4)warning.push((4-masters.length)+" direction(s) using existing/stock source sprites");
  warning.push("Pose shape transfer approximate: inspect especially sit, sleep, lie, float and swim");
- S.setGenerated(id,part,output.toDataURL("image/png"),{generated,protectedFrames,unchanged,masters,warning});
- return {part,generated,protectedFrames,unchanged,masters,warning};
+ if(stale.length){
+  // If archiving fails (e.g. browser storage full), abort without overwriting
+  // the previous character data; never silently destroy manual corrections.
+  S.archiveStaleCorrections(id,part,stale);
+  warning.push(stale.length+" obsolete frame correction(s) archived and rebuilt from source");
+ }
+ S.setGenerated(id,part,output.toDataURL("image/png"),{
+  generated,protectedFrames,unchanged,masters,staleArchived:stale.length,warning
+ });
+ return {part,generated,protectedFrames,unchanged,staleArchived:stale.length,masters,warning};
 }
 async function generateCharacter(id,opts={}){
  const S=root?.V6PCharacterStore,C=root?.V6PPartCatalog;
@@ -193,6 +230,7 @@ async function generateCharacter(id,opts={}){
  root.V6PCompositor?.clearCache?.();
  return {parts:results,frames:results.reduce((n,p)=>n+p.generated,0),
  corrected:results.reduce((n,p)=>n+p.protectedFrames,0),
+ archivedStaleCorrections:results.reduce((n,p)=>n+(p.staleArchived||0),0),
  repairedBackMasters:repair.moved,remainingLegacyCorrections:repair.remainingCorrections};
 }
 const ANCHOR_KEY="vl-mahluk-animation-anchor-poses-v1";
