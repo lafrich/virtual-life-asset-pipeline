@@ -88,7 +88,27 @@ jobs:
               obj['bands'][action]['note']='Real V6P keyed part-sheet review frames; not visually approved; game playback disabled'
           for part in obj['parts'].values():
               part['other_bands']='review_artwork_not_approved'
+          import hashlib
+          hashfile=root/'HASH_MANIFEST.json'
+          hashes=json.loads(hashfile.read_text())
+          from PIL import Image
+          import numpy as np
+          for file in root.rglob('*.png'):
+              rel=file.relative_to(root).as_posix()
+              if rel not in hashes['outputs']:continue
+              digest=hashlib.sha256(file.read_bytes()).hexdigest()
+              im=Image.open(file).convert('RGBA')
+              v=np.asarray(im)
+              out=hashes['outputs'][rel]
+              out['sha256']=digest;out['bytes']=file.stat().st_size
+              out['size']=list(im.size);out['mode']='RGBA'
+              if im.size==[384,2688] or im.size==(384,2688):
+                  out['reserved_opaque_pixels']=int(np.count_nonzero(v[8*112:,:,3]))
+                  colors=np.unique(v[v[:,:,3]>0],axis=0)
+                  out['unique_opaque_colors']=colors.tolist()
+              if rel in obj['parts']:obj['parts'][rel]['sha256']=digest
           meta.write_text(json.dumps(obj,indent=2,ensure_ascii=False)+'\\n')
+          hashfile.write_text(json.dumps(hashes,indent=2,ensure_ascii=False)+'\\n')
           print('STAGED native keyed activity layers:',count)
           PY
           git config user.name 'github-actions[bot]'
@@ -97,6 +117,7 @@ jobs:
           git add -f assets/mahluk_native_stock_review/review_contact_sheet.png
           git add -f site/media/v6p-act
           git add site/media/v6p-act/READINESS.json
+          git add site/media/v6p-act/HASH_MANIFEST.json
           if ! git diff --cached --quiet; then
             git commit -m 'review: native character stock contact sheet [skip ci]'
             git push origin HEAD:preview/mahluk-native-stock-2026-11-08
