@@ -7,7 +7,7 @@ body.mahluk-emosi-page.emotion-window {
   margin: 0 !important;
   padding: 0 !important;
   width: 100% !important;
-  max-width: none !important;
+  max-width: 100% !important;
   height: 100dvh !important;
   min-height: 0 !important;
   max-height: 100dvh !important;
@@ -227,17 +227,24 @@ body.mahluk-emosi-page #pixelOverlay.pixel-overlay {
   overflow: hidden !important;
   background: transparent !important;
   z-index: 1 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 body.mahluk-emosi-page #pixelOverlay[hidden] { display: flex !important; }
 
 body.mahluk-emosi-page .pixel-dialog,
 body.mahluk-emosi-page.emotion-window .pixel-dialog {
   width: min(1100px, 100%) !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
   height: 100% !important;
   max-height: 100% !important;
   min-height: 0 !important;
   flex: 1 1 auto !important;
   overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
 @media (max-width: 750px) {
@@ -252,12 +259,17 @@ body.mahluk-emosi-page.emotion-window .pixel-dialog {
     margin: 0 !important;
   }
   body.mahluk-emosi-page #pixelOverlay { padding: 2px !important; }
+
   body.mahluk-emosi-page .pixel-dialog,
   body.mahluk-emosi-page.emotion-window .pixel-dialog {
     width: 100% !important;
     height: 100% !important;
     max-height: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-shadow: none !important;
   }
+
   .mahluk-menubar { flex-wrap: wrap; }
   .mahluk-menubar strong { max-width: 42vw; font-size: 11px; }
   body.mahluk-emosi-page #editor-status.status {
@@ -273,4 +285,65 @@ body.mahluk-emosi-page.emotion-window .pixel-dialog {
   }
   body.mahluk-emosi-page .mahluk-clip-row .clip-strip { max-width: min(48vw, 180px); }
   .mahluk-timeline input { width: 80px !important; }
+}
+
+
+/* Phone: wrap the Emosi toolbar like live Emosi, do not scroll tools offscreen.
+   Extracted emotion-window CSS forces nowrap + overflow-x:auto; override that here. */
+body.mahluk-emosi-page .pixel-toolbar,
+body.mahluk-emosi-page.emotion-window .pixel-toolbar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  overflow: visible !important;
+  overflow-x: hidden !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+body.mahluk-emosi-page .pixel-toolbar > *,
+body.mahluk-emosi-page.emotion-window .pixel-toolbar > * {
+  flex: 0 1 auto !important;
+  white-space: nowrap;
+  max-width: 100%;
+}
+body.mahluk-emosi-page .pixel-dialog-header {
+  min-width: 0;
+  gap: 8px;
+}
+body.mahluk-emosi-page .pixel-dialog-header strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.mahluk-emosi-page .pixel-dialog-header button {
+  flex: none;
+}
+body.mahluk-emosi-page .pixel-workarea,
+body.mahluk-emosi-page .pixel-canvas-wrap,
+body.mahluk-emosi-page .pixel-side,
+body.mahluk-emosi-page .pixel-dialog-foot {
+  min-width: 0;
+  max-width: 100%;
+}
+body.mahluk-emosi-page .mahluk-chrome,
+body.mahluk-emosi-page #clip-actions,
+body.mahluk-emosi-page .mahluk-menubar {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 750px) {
+  html:has(body.mahluk-emosi-page),
+  body.mahluk-emosi-page,
+  body.mahluk-emosi-page.emotion-window {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  body.mahluk-emosi-page #pixelOverlay,
+  body.mahluk-emosi-page #pixelOverlay.pixel-overlay {
+    padding: 0 !important;
+  }
 }
