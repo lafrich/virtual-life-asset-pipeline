@@ -629,6 +629,7 @@ async function save(){
    (result.unsupportedBySemestaClips?.length?" · "+result.unsupportedBySemestaClips.length+" require separate Semesta runtime support":"")+
    (adapted.warnings.length?" · "+adapted.warnings.join("; "):""));
   syncDbg();
+  return result.record;
 }
 function reload(){
   let id=state.lastId;
@@ -782,6 +783,11 @@ async function boot(){
 }
 window.V6PCharacterHost=Object.freeze({
  get(){return {id:state.characterId,ch:{...state.ch},faceId:state.faceId,name:$("char-name").value,action:state.action,dir:state.dir,frame:state.frame}},
+ frame(action="idle",dir="se",n=0){
+  if(!state.sheet||V.ROWS[action]==null)return null;
+  return V.extractFrame(state.sheet,action,dir,Math.max(0,Math.min(V.FRAMES[action]-1,n)));
+ },
+ async publish(){return await save()},
  async open(record){
   state.characterId=record?.id||"";state.lastId=record?.status==="saved"?record.id:"";
   state.ch=V.norm({...record?.appearance,characterId:state.characterId});state.faceId=record?.faceId||"";
