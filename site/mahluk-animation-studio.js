@@ -135,7 +135,7 @@ async function create(from){
  const name=String(from?(state.name+" Copy"):$("setup-name").value).trim().slice(0,80);
  if(!name)throw Error("Enter an activity name before editing");
  const gender=from?state.gender:$("gender").value,template=from?state.template:$("template").value;
- if(!["male","female"].includes(gender)||!["idle","sit","lie","sleep"].includes(template))
+ if(!["male","female"].includes(gender)||!(from?V.ROWS[template]!=null:["idle","sit","lie","sleep"].includes(template)))
   throw Error("Select a supported Male/Female base and starting pose");
  const initial=from?deep(state.frames):Array.from({length:Math.min(6,V.FRAMES[template]||4)},(_,i)=>({key:"f"+i,ms:140}));
  const clip=Store.create({name,frames:initial,requiredParts:["base/body"]});
