@@ -1,12 +1,13 @@
 'use strict';
-/* Browser-backed Custom Wear regression: sheet cloning, exact frame edits,
-   four-direction source separation, native pose regeneration and Wizard UX. */
+/* Contract test: draw four garment directions once. The native Tee animation
+   must inherit that color AND a non-uniform motif in every occupied pose.
+   No animation-frame redraw is permitted in the test. */
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1280,height:900}});
- const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  try{
   await page.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/v6p-studio.html?embedded=1',
    {waitUntil:'domcontentloaded',timeout:45000});
@@ -15,10 +16,7 @@ const {chromium}=require('playwright');
   await page.locator('#workflow-source').selectOption('base:female');
   await page.locator('#wizard-next').click();
   await page.locator('#wizard-customize:not([hidden])').waitFor({timeout:65000});
-  assert.equal(await page.locator('#top').inputValue(),'tee');
-  assert.equal(await page.locator('#top option[value=nude]').count(),0);
-  assert.equal(await page.locator('#pants option[value=nude]').count(),0);
-  assert.equal(await page.locator('#shoes option[value=nude]').count(),0);
+  for(const kind of ['top','pants','shoes'])assert.equal(await page.locator('#'+kind+' option[value=nude]').count(),0);
   await page.locator('#wizard-part-nav [data-part=top]').click();
   await page.locator('#top').selectOption('custom');
   await page.locator('#custom-top-panel:not([hidden])').waitFor({timeout:65000});
@@ -26,49 +24,110 @@ const {chromium}=require('playwright');
    const id=window.V6PCharacterHost.get().id,S=window.V6PCharacterStore;
    return !!(id&&S.getPart(id,'top/custom_f')&&S.getPart(id,'top/custom_back_f'));
   },{timeout:65000});
-  const evidence=await page.evaluate(async()=>{
+
+  const result=await page.evaluate(async()=>{
    const S=window.V6PCharacterStore,P=window.V6PPixelSource,C=window.V6PPartCatalog,
     W=window.V6PCustomWear,R=window.V6PCharacterRetarget,V=window.V6PCompositor;
-   const id=window.V6PCharacterHost.get().id;
-   const before=S.getPart(id,'top/custom_back_f');
-   const edited=await P.loadSheetFromUrl(before);
-   const o=C.cellOrigin('walk','nw',2);
-   const x=o.x+15,y=o.y+37;
-   edited.getContext('2d').fillStyle='#e02ec4';edited.getContext('2d').fillRect(x,y,2,2);
-   const png=edited.toDataURL('image/png');
-   S.setPart(id,'top/custom_back_f',png);
-   const result=await R.generateCharacter(id);
-   const after=S.getPart(id,'top/custom_back_f');
-   const actual=await P.loadSheetFromUrl(after);
-   const px=[...actual.getContext('2d').getImageData(x,y,1,1).data];
-   const composed=await V.sheet({...S.get(id).appearance,characterId:id});
-   return {id,top:C.isPart('top/custom_f'),back:C.isPart('top/custom_back_f'),
-    legacy:C.isPart('top/nude_f'),wholeSheet:actual.width===C.W&&actual.height===C.H,
-    separate:S.getPart(id,'top/custom_f')!==after,
-    exact:after===png,color:px.join(','),generated:result.frames,
-    composed:!!composed,templates:W.TEMPLATES.top.length,template:W.selectedTemplate(S.get(id),'top')};
+   const id=window.V6PCharacterHost.get().id,appearance=S.get(id).appearance;
+   const rgb=(d,i)=>[d[i],d[i+1],d[i+2]].join(',');
+   const green='19,207,65',pink='230,44,187';
+   const sourceStats=[];
+   // Only IDLE F0 is painted. All other native frames remain untouched.
+   for(const dir of C.DIRS){
+    const part=(dir==='ne'||dir==='nw')?'top/custom_back_f':'top/custom_f';
+    const sheet=await P.loadSheetFromUrl(S.getPart(id,part));
+    const idle=P.extract(sheet,'idle',dir,0),d=idle.data;
+    const counts=new Map();
+    let opaque=0,sx=0,sy=0;
+    for(let y=0;y<112;y++)for(let x=0;x<64;x++){
+     const i=(y*64+x)*4;if(d[i+3]<128)continue;
+     opaque++;sx+=x;sy+=y;
+     const color=rgb(d,i);counts.set(color,(counts.get(color)||0)+1);
+    }
+    const top=[...counts].sort((a,b)=>b[1]-a[1])[0];
+    if(!top||top[1]<5)throw Error('Native '+dir+' top is too small to recolor: '+opaque);
+    const nativeColor=top[0];
+    for(let i=0;i<d.length;i+=4)if(d[i+3]>=128&&rgb(d,i)===nativeColor){
+     d[i]=19;d[i+1]=207;d[i+2]=65;
+    }
+    const avgX=sx/opaque,avgY=sy/opaque;
+    // A visible 3-6 pixel logo anchored to the source garment mask, not background.
+    const candidates=[];
+    for(let y=0;y<112;y++)for(let x=0;x<64;x++){
+     const i=(y*64+x)*4;if(d[i+3]<128)continue;
+     candidates.push({x,y,dist:(x-avgX)**2+(y-avgY)**2});
+    }
+    candidates.sort((a,b)=>a.dist-b.dist);
+    const marks=candidates.slice(0,Math.min(5,candidates.length));
+    for(const p of marks){
+     const i=(p.y*64+p.x)*4;d[i]=230;d[i+1]=44;d[i+2]=187;
+    }
+    P.stamp(sheet,'idle',dir,0,idle);
+    S.setPart(id,part,sheet.toDataURL('image/png'));
+    sourceStats.push({dir,part,opaque,changedPalette:top[1],motifPixels:marks.length});
+   }
+   const generated=await R.generateCharacter(id);
+   V.clearCache();
+   const checks=[],countsByAction={},failures=[];
+   for(const dir of C.DIRS){
+    const part=(dir==='ne'||dir==='nw')?'top/custom_back_f':'top/custom_f';
+    const originalPart=part.replace('/custom','/tee');
+    const sheet=await P.loadSheetFromUrl(S.getPart(id,part));
+    const stock=await P.loadSheet(originalPart);
+    for(const action of ['idle','walk','talk','sit','sit_type','sleep','tired','swim','float','lie','perch']){
+     for(let n=0;n<C.FRAMES[action];n++){
+      const made=P.extract(sheet,action,dir,n).data;
+      const native=P.extract(stock,action,dir,n).data;
+      let sourceOpaque=0,painted=0,logo=0,alphaDiff=0;
+      for(let i=0;i<made.length;i+=4){
+       if(native[i+3]>=128)sourceOpaque++;
+       if(native[i+3]!==made[i+3])alphaDiff++;
+       if(rgb(made,i)===green&&made[i+3]>=128)painted++;
+       if(rgb(made,i)===pink&&made[i+3]>=128)logo++;
+      }
+      if(!sourceOpaque)continue;
+      const note={action,dir,frame:n,opaque:sourceOpaque,painted,logo,alphaDiff};
+      checks.push(note);
+      if(!countsByAction[action])countsByAction[action]={frames:0,withLogo:0};
+      countsByAction[action].frames++;
+      if(logo)countsByAction[action].withLogo++;
+      if(!logo||alphaDiff)failures.push(note);
+     }
+    }
+   }
+   // Verify output actually composes to the character sprite used by Save.
+   const full=await V.sheet({...S.get(id).appearance,characterId:id});
+   let compositeLogoFrames=0;
+   if(full)for(const dir of C.DIRS)for(let n=0;n<6;n++){
+    const frame=V.extractFrame(full,'walk',dir,n);
+    const d=frame.getContext('2d').getImageData(0,0,64,112).data;
+    if(d.some((x,i)=>i%4===0&&x===230&&d[i+1]===44&&d[i+2]===187&&d[i+3]===255))
+     compositeLogoFrames++;
+   }
+   return {sourceStats,generated:generated.customWear,checks:checks.length,
+    countsByAction,failures:failures.slice(0,15),failureCount:failures.length,compositeLogoFrames,
+    fourSources:C.DIRS.every(dir=>sourceStats.some(x=>x.dir===dir&&x.motifPixels>=1))};
   });
-  assert.equal(evidence.top,true);assert.equal(evidence.back,true);
-  assert.equal(evidence.legacy,false);assert.equal(evidence.wholeSheet,true);
-  assert.equal(evidence.separate,true);assert.equal(evidence.exact,true);
-  assert.equal(evidence.color,'224,46,196,255');
-  assert.equal(evidence.composed,true);assert.equal(evidence.generated,0);
-  assert.ok(evidence.templates>=4);
+  console.log('CUSTOM WEAR EVIDENCE',JSON.stringify(result));
+  assert.equal(result.fourSources,true,'Four direction sources not painted');
+  assert.ok(result.generated?.frames>20,'No native animation frames inherited garment artwork');
+  assert.equal(result.failureCount,0,'Motif must inherit all native occupied frames without changing alpha');
+  assert.ok(result.compositeLogoFrames>=4,'The playable composed Walk must display the garment logo');
   await page.locator('#wizard-next').click();
   await page.locator('#wizard-preview:not([hidden])').waitFor({timeout:65000});
   await page.locator('#qa-animation').selectOption('walk');
   await page.locator('#wizard-next').click();
   await page.locator('#wizard-save:not([hidden])').waitFor({timeout:65000});
-  await page.locator('#char-name').fill('Custom Wear Smoke');
+  await page.locator('#char-name').fill('Four-Direction Native Wear Test');
   await page.locator('#wizard-next').click();
   await page.locator('#wizard-save-success.visible').waitFor({timeout:65000});
   assert.deepEqual(errors,[]);
-  console.log('PASS Custom Wear exact sheet, native animations, back layer and Wizard save');
+  console.log('PASS Custom Wear: four directions propagate color + motif to native V6B animations and Save');
  }catch(err){
-  console.error('Custom Wear browser errors',errors);
-  console.error('Status',await page.locator('#status').textContent().catch(()=>'<none>'));
-  console.error('Generate',await page.locator('#generate-result').textContent().catch(()=>'<none>'));
-  await page.screenshot({path:'/tmp/mahluk-custom-wear-failed.png',fullPage:true}).catch(()=>{});
+  console.error('Custom Wear browser errors',errors.slice(-12));
+  console.error('Status',await page.locator('#status').textContent().catch(()=>'<missing>'));
+  console.error('Generation',await page.locator('#generate-result').textContent().catch(()=>'<missing>'));
+  await page.screenshot({path:'/tmp/custom-wear-native-failed.png',fullPage:true}).catch(()=>{});
   throw err;
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
