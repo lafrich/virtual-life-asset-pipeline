@@ -21,6 +21,19 @@ assert.ok(!Store.hasLayer("clip_pushup","top/tee"));
 const names=Store.list().map(x=>x.id);
 assert.ok(names.includes("clip_pushup"));
 assert.ok(!names.includes("clip_squat"));
+for(const id of ["yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]){
+  const rec=Store.get(id);
+  assert.ok(rec,"missing stock database entry: "+id);
+  assert.strictEqual(rec.id,"clip_"+id);
+  assert.strictEqual(rec.origin,"pilot");
+  assert.strictEqual(rec.saveStatus,"review");
+  assert.strictEqual(rec.manifest.band,id);
+  assert.strictEqual(rec.manifest.sheet.w,384);
+  assert.strictEqual(rec.manifest.sheet.h,2688);
+  assert.ok(names.includes(rec.id));
+  assert.ok(!Store.hasLayer(id,"base/body"),"unauthored previews must stay disabled");
+  assert.throws(()=>Store.remove(id));
+}
 const made=Store.create({name:"QA Clip",frames:[{key:"a",ms:120},{key:"b",ms:180}]});
 assert.strictEqual(made.manifest.frames[1].ms,180);
 Store.updateManifest(made.id,{frames:[{key:"a",ms:200},{key:"b",ms:180},{key:"c",ms:90}]});
