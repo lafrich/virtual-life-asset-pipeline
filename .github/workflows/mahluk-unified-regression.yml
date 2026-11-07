@@ -34,7 +34,7 @@ on:
       - "tests/smoke_mahluk_pixel_angle.cjs"
       - "tests/test_mahluk_back_layer_gallery.cjs"
       - "tests/smoke_mahluk_back_gallery.cjs"
-      - "tests/smoke_mahluk_nude_clean_rebuild.cjs"
+      - "tests/smoke_mahluk_custom_wear.cjs"
       - ".github/workflows/mahluk-unified-regression.yml"
   workflow_dispatch:
 permissions:
@@ -53,6 +53,7 @@ jobs:
           node --check site/mahluk-hub-drive.js
           node --check site/mahluk-action-editor.js
           node --check site/mahluk-animation-studio.js
+          node --check site/v6p-custom-wear.js
           node --check site/v6p-character-store.js
           node --check site/v6p-character-workflow.js
           node --check site/v6p-character-wizard.js
@@ -101,4 +102,4 @@ jobs:
           node tests/smoke_mahluk_character_wizard.cjs
           node tests/smoke_mahluk_pixel_angle.cjs
           node tests/smoke_mahluk_back_gallery.cjs
-          node tests/smoke_mahluk_nude_clean_rebuild.cjs
+          node tests/smoke_mahluk_custom_wear.cjs
