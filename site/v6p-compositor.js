@@ -1,7 +1,7 @@
 /* v6p layered compositor — port of archived Character Creator (voc6 / office.html @ 16054af).
  * Layer order, sheet size, frames, palette keys, and cmap/files() match the original.
  * Additive preview hooks only: D points at site/media/v6p/, face option "blank",
- * clothing option "nude", Emosi overlay stamped last (after hair_front/glasses and fx;
+ * Custom Wear exact-pixel layer support, Emosi overlay stamped last (after hair_front/glasses and fx;
  * not drawn on NE/NW back views), old brows omitted when the blank face is selected.
  */
 (function(root,factory){
@@ -22,11 +22,11 @@ const OPT={
   hair:['none','short','swept','mid_curtain','mid','wavy','wavy_curtain','long','long_curtain'],
   hairColor:['black','navy','brown','chestnut','blonde','red','white','pink'],
   skin:['porcelain','light','tan','medium','brown','deep'],
-  top:['tee','tee_long','tee_graphic','shirt','shirt_tie','cardigan','cardigan_dots','nude'],
+  top:['tee','tee_long','tee_graphic','shirt','shirt_tie','cardigan','cardigan_dots','custom'],
   topColor:['charcoal','white','navy','red','green','mustard','sky','pink'],
-  pants:['trousers','trousers_ripped','baggy','baggy_ripped','nude'],
+  pants:['trousers','trousers_ripped','baggy','baggy_ripped','custom'],
   pantsColor:['slate','night','denim','khaki','olive','grey'],
-  shoes:['shoes','sneakers','boots','hightops','nude'],
+  shoes:['shoes','sneakers','boots','hightops','custom'],
   shoesColor:['walnut','black','white','red','navy','tan'],
   glasses:['none','round','square'],
   facial:['none','mustache','stubble','both'],
@@ -117,6 +117,23 @@ function recolor(cv,ch){
   }
   c.putImageData(id,0,0);
 }
+/* Native parts stay palette-mapped; Custom Wear sheets stay pixel-exact. */
+function drawWearAware(c,names,images,ch){
+ let group=[];
+ const flush=()=>{
+  if(!group.length)return;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const g=cv.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=false;
+  for(const image of group)g.drawImage(image,0,0);
+  recolor(cv,ch);c.drawImage(cv,0,0);group=[];
+ };
+ names.forEach((name,i)=>{
+  if(/^(?:top|pants|shoes)\/custom(?:_back)?(?:_f)?$/.test(name)){
+   flush();c.drawImage(images[i],0,0);
+  }else group.push(images[i]);
+ });
+ flush();
+}
 function opaqueAnchor(img,sx,sy){
   if(!img) return null;
   const cv=document.createElement('canvas'); cv.width=FW; cv.height=FH;
@@ -197,24 +214,13 @@ async function compose(ch,fs,emosi){
   const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
   const c=cv.getContext('2d',{willReadFrequently:true});
   c.imageSmoothingEnabled=false;
-  hairBackImgs.forEach(i=>c.drawImage(i,0,0));
-  if(hairBackImgs.length) recolor(cv,ch);
+  drawWearAware(c,baseNames.slice(0,hairBackCount),hairBackImgs,ch);
   extras.back.forEach(i=>c.drawImage(i,0,0));
   if(otherBase.length){
-    const body=document.createElement('canvas'); body.width=W; body.height=H;
-    const b=body.getContext('2d',{willReadFrequently:true});
-    b.imageSmoothingEnabled=false;
-    otherBase.forEach(i=>b.drawImage(i,0,0));
-    recolor(body,ch);
-    c.drawImage(body,0,0);
+    drawWearAware(c,baseNames.slice(hairBackCount),otherBase,ch);
   }
   if(fronts.length){
-    const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
-    const t=tmp.getContext('2d',{willReadFrequently:true});
-    t.imageSmoothingEnabled=false;
-    fronts.forEach(i=>t.drawImage(i,0,0));
-    recolor(tmp,ch);
-    c.drawImage(tmp,0,0);
+    drawWearAware(c,frontNames,fronts,ch);
   }
   extras.front.forEach(i=>c.drawImage(i,0,0));
   c.globalCompositeOperation='destination-over'; c.drawImage(shd,0,0);
@@ -232,8 +238,8 @@ function previewAppearance(gender){
     body:gender==="female"?"female":"male",
     gender:gender==="female"?"female":"male",
     hair:"mid_curtain",hairColor:"navy",skin:"light",
-    top:"nude",topColor:"charcoal",pants:"nude",pantsColor:"slate",
-    shoes:"nude",shoesColor:"walnut",glasses:"none",facial:"none",face:"blank"
+    top:"tee",topColor:"charcoal",pants:"trousers",pantsColor:"slate",
+    shoes:"shoes",shoesColor:"walnut",glasses:"none",facial:"none",face:"blank"
   });
 }
 function activityAvailability(ch,manifest){
