@@ -74,7 +74,7 @@ test('generator uses canonical native poses, retains fresh corrections and archi
  const s=read('site/v6p-character-retarget.js');
  assert.match(s,/g\.drawImage\(base,0,0\)/);
  assert.doesNotMatch(s,/g\.drawImage\(existing\|\|base,0,0\)/);
- assert.match(s,/const fresh=corrected&&!!correctedAt/);
+ assert.match(s,/const fresh=corrected&&\(Number\.isInteger\(correctionVersion\)/);
  assert.match(s,/if\(fresh&&existing\)/);
  assert.match(s,/S\.archiveStaleCorrections\(id,part,stale\)/);
  assert.match(s,/put\(output,C,action,dir,n,painted\)/);
