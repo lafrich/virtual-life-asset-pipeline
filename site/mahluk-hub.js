@@ -43,6 +43,13 @@ function show(name){
  document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===tab)));
  document.querySelectorAll(".view").forEach(p=>p.classList.toggle("active",p.id===tab+"-view"));
  loadFrame(FRAMES[tab],URLS[tab]);
+ if(tab==="character"){
+  const pixel=$("pixel-frame");
+  try{
+   const pending=pixel?.contentWindow?.VirtualLifePixelEditor?.flush?.();
+   Promise.resolve(pending).then(refreshCharacter,refreshCharacter);
+  }catch{refreshCharacter()}
+ }
  if(tab==="animation"){
   loadFrame("pixel-frame","./pixel-editor.html?source=v6p&project=clip_pushup&embedded=1");
   setPane(mobilePane);
@@ -61,7 +68,7 @@ function openEditor(value){
  note("Editing via existing Pixel Editor · current draft and stock sources preserved");
 }
 function refreshCharacter(){
- const el=$("character-frame");try{el?.contentWindow?.postMessage({type:"mahluk:refresh-character"},"*")}catch{}
+ const el=$("character-frame");try{el?.contentWindow?.postMessage({type:"mahluk:refresh-character"},ORIGIN)}catch{}
 }
 function newClip(){
  openEditor("./pixel-editor.html?source=v6p&new=clip&name=New%20Animation");
