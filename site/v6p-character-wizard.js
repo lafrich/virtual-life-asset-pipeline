@@ -15,6 +15,63 @@ function published(){
  try{const data=JSON.parse(localStorage.getItem("mahluk-2-library-v1")||"[]");
  return Array.isArray(data)?data.filter(x=>x&&x.id&&x.v6p):[]}catch{return []}
 }
+function showHomeTab(tab){
+ const gallery=tab==="gallery";
+ $("wizard-home-start").hidden=gallery;
+ $("wizard-gallery").hidden=!gallery;
+ $("wizard-tab-gallery").setAttribute("aria-pressed",String(gallery));
+ $("wizard-tab-start").setAttribute("aria-pressed",String(!gallery));
+ if(gallery)renderGallery();
+}
+function renderGallery(){
+ const grid=$("wizard-gallery-grid"),count=$("wizard-gallery-count");
+ if(!grid)return;
+ const list=published().slice().sort((a,b)=>String(b.updated||"").localeCompare(String(a.updated||"")));
+ if(count)count.textContent="("+list.length+")";
+ grid.replaceChildren();
+ if(!list.length){
+  const empty=document.createElement("p");empty.className="wizard-gallery-empty";
+  empty.textContent="Belum ada karakter yang disimpan. Buat karakter di Create / Modify, lalu Save Character untuk menampilkannya di sini.";
+  grid.append(empty);return;
+ }
+ for(const row of list){
+  const card=document.createElement("article");card.className="wizard-gallery-card";card.setAttribute("role","listitem");
+  const title=document.createElement("h3");title.textContent=row.name||"Untitled";card.append(title);
+  const meta=document.createElement("p");
+  meta.textContent=(row.base==="female"?"Female":"Male")+" · "+Object.keys(row.clips||{}).length+" animations · saved";
+  card.append(meta);
+  const angles=document.createElement("div");angles.className="wizard-gallery-angles";
+  const canvases=[];
+  for(const dir of ["se","sw","ne","nw"]){
+   const fig=document.createElement("figure"),canvas=document.createElement("canvas"),label=document.createElement("figcaption");
+   canvas.width=64;canvas.height=112;
+   label.textContent=dir.toUpperCase();
+   fig.append(canvas,label);angles.append(fig);canvases.push(canvas);
+  }
+  card.append(angles);
+  const foot=document.createElement("p");foot.textContent="Preview only · tidak mengubah karakter";
+  card.append(foot);grid.append(card);
+  const clip=row.clips?.idle;
+  const url=clip?.sheet||row.sprite;
+  if(!url)continue;
+  const image=new Image();
+  image.onload=()=>{
+   if(!canvases[0].isConnected)return;
+   const isAtlas=!!clip?.sheet&&image.naturalHeight>=4*112&&image.naturalWidth>=64;
+   const rowWidth=64;
+   canvases.forEach((canvas,di)=>{
+    const ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=false;
+    ctx.clearRect(0,0,64,112);
+    if(isAtlas)ctx.drawImage(image,0,di*112,rowWidth,112,0,0,64,112);
+    else if(di===0)ctx.drawImage(image,0,0,image.naturalWidth,image.naturalHeight,0,0,64,112);
+   });
+  };
+  image.onerror=()=>{
+   foot.textContent="Preview tidak tersedia · data karakter tetap tersimpan";
+  };
+  image.src=url;
+ }
+}
 function opt(sel,value,label){const el=document.createElement("option");el.value=value;el.textContent=label;sel.append(el)}
 function fillLists(){
  const src=$("workflow-source"),list=$("workflow-list"),oldSource=src.value,oldList=list.value;
@@ -33,6 +90,8 @@ function fillLists(){
  }
  if([...src.options].some(x=>x.value===oldSource))src.value=oldSource;
  if([...list.options].some(x=>x.value===oldList))list.value=oldList;
+ if(!$("wizard-gallery").hidden)renderGallery();
+ else $("wizard-gallery-count").textContent="("+published().length+")";
 }
 function sourceRecord(value){
  if(value==="base:female")return {type:"base",gender:"female"};
@@ -197,10 +256,11 @@ async function regenerate(){
   result("Applying appearance to existing animation poses…");
   const done=await R.generateCharacter(info.id,{progress:p=>result("Applying "+(p.index+1)+" / "+p.total+" · "+p.part)});
   await H.open(S.get(info.id));motionChoices();state.frame=0;await preview();renderLive();
-  const corrected=done.corrected||0;
+  const corrected=done.corrected||0,repair=done.repairedBackMasters||0;
+  const recoverNote=repair?("Repaired "+repair+" legacy rear-view sprite masters into their correct back layers. "):"";
   result(done.parts.length?
-   "Animation frames generated from your selected parts. "+corrected+" corrected frames kept. Check walking, sitting and sleeping poses.":
-   "Library clothes already have native animation sprites. Check each motion and direction.");
+   recoverNote+"Animation frames generated from your selected parts. "+corrected+" corrected frames kept. Check walking, sitting and sleeping poses.":
+   recoverNote+"Library clothes already have native animation sprites. Check each motion and direction.");
   state.pendingPreview=false;
   return true;
  }catch(error){result("Generation failed: "+error.message,true);notice(error.message,true);return false}
@@ -265,6 +325,8 @@ function selectFixPart(){
  }
 }
 function bind(){
+ $("wizard-tab-gallery").onclick=()=>showHomeTab("gallery");
+ $("wizard-tab-start").onclick=()=>showHomeTab("start");
  $("wizard-start-new").onclick=()=>{state.mode="new";$("wizard-existing").hidden=true;fillLists();setStep("base")};
  $("wizard-start-modify").onclick=()=>{state.mode="modify";fillLists();$("wizard-existing").hidden=false;notice("Select a character and click Open Character.")};
  $("workflow-open").textContent="OPEN CHARACTER →";
@@ -316,6 +378,7 @@ async function restore(){
  renderLive();
 }
 arrangeLegacyControls();selectFixPart();bind();
+showHomeTab("start");
 root.addEventListener("mahluk:character-ready",()=>void restore().catch(e=>notice("Wizard load: "+e.message,true)));
 if(root.__v6pStudio?.ready)void restore().catch(e=>notice("Wizard load: "+e.message,true));
 })(window);
