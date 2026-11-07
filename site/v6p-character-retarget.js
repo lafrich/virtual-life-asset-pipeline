@@ -173,5 +173,64 @@ async function generateCharacter(id,opts={}){
  return {parts:results,frames:results.reduce((n,p)=>n+p.generated,0),
  corrected:results.reduce((n,p)=>n+p.protectedFrames,0)};
 }
-return Object.freeze({DIRS,FW,FH,bounds,remapColors,transferFrame,generatePart,generateCharacter});
+const ANCHOR_KEY="vl-mahluk-animation-anchor-poses-v1";
+const PARTS=["leg_l","leg_r","torso","arm_l","arm_r","head"];
+const DEFAULT_PIVOTS={head:[32,35],torso:[32,60],arm_l:[20,54],arm_r:[44,54],leg_l:[25,84],leg_r:[39,84]};
+function anchorDatabase(){
+ try{const obj=JSON.parse(root?.localStorage?.getItem(ANCHOR_KEY)||"{}");
+  return obj&&typeof obj==="object"&&!Array.isArray(obj)?Object.values(obj).filter(x=>x&&x.id&&Array.isArray(x.frames)&&x.frames.length>0&&x.frames.length<=6):[];
+ }catch{return []}
+}
+function nativePartAt(x,y){
+ if(y<44)return "head";if(y<80)return x<23?"arm_l":x>40?"arm_r":"torso";return x<32?"leg_l":"leg_r";
+}
+function nativeSegments(source){
+ const d=source.getContext("2d",{willReadFrequently:true}).getImageData(0,0,FW,FH);
+ const layers={},images={};
+ for(const p of PARTS){layers[p]=new Uint8ClampedArray(d.data.length);images[p]=document.createElement("canvas");images[p].width=FW;images[p].height=FH}
+ for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){
+  const i=(y*FW+x)*4,part=nativePartAt(x,y);
+  for(let k=0;k<4;k++)layers[part][i+k]=d.data[i+k];
+ }
+ for(const p of PARTS)images[p].getContext("2d").putImageData(new ImageData(layers[p],FW,FH),0,0);
+ return images;
+}
+function anchorFrame(parts,transforms){
+ const cv=sourceCanvas(),c=cv.getContext("2d");c.imageSmoothingEnabled=false;
+ for(const p of PARTS){
+  const [ax,ay]=DEFAULT_PIVOTS[p],t=transforms?.[p]||{};
+  const anchorX=Number.isFinite(t.ax)?t.ax:ax,anchorY=Number.isFinite(t.ay)?t.ay:ay;
+  const dx=Number.isFinite(t.x)?t.x:0,dy=Number.isFinite(t.y)?t.y:0;
+  const a=Number.isFinite(t.angle)?t.angle:0;
+  c.save();c.translate(anchorX+dx,anchorY+dy);c.rotate(a*Math.PI/180);
+  c.drawImage(parts[p],-anchorX,-anchorY);c.restore();
+ }
+ return cv;
+}
+function generateAnchorClip(characterSheet,entry,opts={}){
+ if(!entry||!Array.isArray(entry.frames)||entry.frames.length<1||entry.frames.length>6)throw Error("Invalid anchor clip");
+ const n=entry.frames.length,sheet=document.createElement("canvas");sheet.width=n*FW;sheet.height=DIRS.length*FH;
+ const c=sheet.getContext("2d");c.imageSmoothingEnabled=false;
+ for(let di=0;di<DIRS.length;di++){
+  const dir=DIRS[di],source=root.V6PCompositor.extractFrame(characterSheet,"idle",dir,0);
+  const parts=nativeSegments(source);
+  for(let fi=0;fi<n;fi++){
+   const frame=anchorFrame(parts,entry.tracks?.[dir]?.[fi]||{});
+   c.drawImage(frame,fi*FW,di*FH);
+  }
+ }
+ return {id:entry.id,sheet:sheet.toDataURL("image/png"),frames:n,
+  frame_ms:entry.frames.map(x=>Math.max(40,Math.min(800,Number(x.ms)||140))),
+  loop:entry.loop!==false,source:"character-retarget:anchor-v1"};
+}
+function generateAnchorClips(characterSheet){
+ const result=[],warnings=[];
+ for(const rec of anchorDatabase()){
+  try{result.push(generateAnchorClip(characterSheet,rec))}
+  catch(e){warnings.push(rec.id+": "+e.message)}
+ }
+ return {clips:result,warnings};
+}
+
+return Object.freeze({DIRS,FW,FH,bounds,remapColors,transferFrame,generatePart,generateCharacter,anchorDatabase,generateAnchorClip,generateAnchorClips});
 });
