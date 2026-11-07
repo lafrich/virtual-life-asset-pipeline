@@ -8,6 +8,7 @@ on:
       - feature/mahluk-character-wizard-navigation-20261107
       - fix/mahluk-pixel-sprite-view-switch-20261108
       - fix/character-back-layers-and-readonly-gallery-20261108
+      - fix/mahluk-nude-preview-stale-frames-20261108
     paths:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
@@ -32,6 +33,7 @@ on:
       - "tests/smoke_mahluk_pixel_angle.cjs"
       - "tests/test_mahluk_back_layer_gallery.cjs"
       - "tests/smoke_mahluk_back_gallery.cjs"
+      - "tests/smoke_mahluk_nude_clean_rebuild.cjs"
       - ".github/workflows/mahluk-unified-regression.yml"
   workflow_dispatch:
 permissions:
@@ -98,3 +100,4 @@ jobs:
           node tests/smoke_mahluk_character_wizard.cjs
           node tests/smoke_mahluk_pixel_angle.cjs
           node tests/smoke_mahluk_back_gallery.cjs
+          node tests/smoke_mahluk_nude_clean_rebuild.cjs
