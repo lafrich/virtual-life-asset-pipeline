@@ -39,7 +39,7 @@ jobs:
           from pathlib import Path
           import numpy as np
           a=Path('build/native-mahluk-stock-review')
-          parts=list(a.rglob('*.png'))
+          parts=[p for p in a.rglob('*.png') if p.name != 'review_contact_sheet.png']
           assert len(parts)>=14, f'Not enough native part sheets: {len(parts)}'
           for p in parts:
               origin=Path('site/media/v6p-act')/p.relative_to(a)
