@@ -154,7 +154,10 @@ async function generatePart(id,part,opts){
   let painted;
   const m=S.master(id,part,dir);
   if(m){painted=await frameFromUrl(m);masters.push(dir)}
-  else if(existing)painted=frame(existing,C,"idle",dir,0).data;
+  // A generated sheet is not an independent drawing source: using it again
+  // would bake a misplaced rear-facing sprite into the new result.
+  // Recover from the stock silhouette unless this direction has a real master.
+  else if(existing&&!row.generated?.[part])painted=frame(existing,C,"idle",dir,0).data;
   else painted=original;
   sources[dir]={original,painted,body:frame(bodySheet,C,"idle",dir,0).data};
  }
@@ -176,7 +179,9 @@ async function generatePart(id,part,opts){
 }
 async function generateCharacter(id,opts={}){
  const S=root?.V6PCharacterStore,C=root?.V6PPartCatalog;
- const row=S?.get(id);if(!row||!C)throw Error("Select a character in Character Database first");
+ if(!S?.get(id)||!C)throw Error("Select a character in Character Database first");
+ const repair=S.repairTopBackMasters?.(id)||{moved:0,remainingCorrections:0};
+ const row=S.get(id);
  const selected=C.PARTS.filter(part=>Object.hasOwn(row.masters||{},part)||Object.hasOwn(row.parts||{},part));
  const parts=(opts.parts||selected).filter(p=>C.isPart(p));
  if(!parts.length)return {parts:[],frames:0,corrected:0,message:"No custom sprites yet. Existing database parts already have stock animations."};
@@ -187,7 +192,8 @@ async function generateCharacter(id,opts={}){
  }
  root.V6PCompositor?.clearCache?.();
  return {parts:results,frames:results.reduce((n,p)=>n+p.generated,0),
- corrected:results.reduce((n,p)=>n+p.protectedFrames,0)};
+ corrected:results.reduce((n,p)=>n+p.protectedFrames,0),
+ repairedBackMasters:repair.moved,remainingLegacyCorrections:repair.remainingCorrections};
 }
 const ANCHOR_KEY="vl-mahluk-animation-anchor-poses-v1";
 const PARTS=["leg_l","leg_r","torso","arm_l","arm_r","head"];

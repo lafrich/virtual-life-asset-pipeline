@@ -7,6 +7,7 @@ on:
       - fix/character-draw-four-apply-animation-20261107
       - feature/mahluk-character-wizard-navigation-20261107
       - fix/mahluk-pixel-sprite-view-switch-20261108
+      - fix/character-back-layers-and-readonly-gallery-20261108
     paths:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
@@ -29,6 +30,8 @@ on:
       - "tests/test_mahluk_character_wizard.cjs"
       - "tests/smoke_mahluk_character_wizard.cjs"
       - "tests/smoke_mahluk_pixel_angle.cjs"
+      - "tests/test_mahluk_back_layer_gallery.cjs"
+      - "tests/smoke_mahluk_back_gallery.cjs"
       - ".github/workflows/mahluk-unified-regression.yml"
   workflow_dispatch:
 permissions:
@@ -59,7 +62,7 @@ jobs:
           node --check site/emotion-studio/shared-pixel-editor.js
       - name: Check preserved existing editors and new app shell
         run: |
-          node --test tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs tests/test_mahluk_character_wizard.cjs
+          node --test tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs tests/test_mahluk_character_wizard.cjs tests/test_mahluk_back_layer_gallery.cjs
           node tests/test_pixel_editor.cjs
           node tests/test_emotion_studio.cjs
       - uses: actions/setup-python@v5
@@ -94,3 +97,4 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 -d /tmp/character-wizard-root >/tmp/character-wizard-server.log 2>&1 &
           node tests/smoke_mahluk_character_wizard.cjs
           node tests/smoke_mahluk_pixel_angle.cjs
+          node tests/smoke_mahluk_back_gallery.cjs

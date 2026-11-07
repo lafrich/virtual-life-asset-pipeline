@@ -31,7 +31,7 @@ const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",par
  current:null,loading:true,drawing:false,previous:null,before:null,seq:0,
  selection:null,selectionMask:null,selectionMode:"replace",wandContiguous:true,wandTolerance:0,selectionGesture:null,moveGesture:null,cursorMode:MOBILE_TOUCH,cursor:[32,42],
  trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null,characterId:"",masterMode:false,
- clipboard:null,floatingPaste:null,project:null,actClip:null,clipLayer:null,onion:true,onionImage:null,playing:false,playTimer:0,clipUndo:[],clipRedo:[],overlayOn:true,overlayAlpha:0.42,overlayCanvas:null,directionRefs:null,showPivot:true};
+ clipboard:null,floatingPaste:null,project:null,actClip:null,clipLayer:null,onion:true,onionImage:null,playing:false,playTimer:0,clipUndo:[],clipRedo:[],overlayOn:true,overlayAlpha:0.42,overlayCanvas:null,directionRefs:null,layerSwitching:false,showPivot:true};
 let emosiEditor=null;
 function status(s,error=false){$("editor-status").textContent=s;$("editor-status").classList.toggle("error",error);}
 function activeClip(){if(state.actClip)return {id:state.actClip.id,name:state.actClip.name,frames:state.actClip.frames.length};return state.clips.find(c=>c.id===state.action);}
@@ -401,6 +401,8 @@ async function loadV6pPart(part,params){
  const C=window.V6PPartCatalog,S=window.V6PPixelSource,O=window.V6PPartOverrides;
  if(!C||!S)throw Error("v6p source helpers not loaded");
  part=C.normalizePart(part);
+ if(state.characterId)
+  part=topPartForDirection(part,(params&&params.get("dir"))||state.dir);
  state.loading=true;state.current=null;
  state.source="v6p";state.project=null;state.actClip=null;state.clipLayer=null;state.v6pPart=part;state.mode="frame";
  if($("edit-mode"))$("edit-mode").value="frame";
@@ -1341,6 +1343,10 @@ function pullEmosiIntoState(){
  const clip=activeClip(); if(!clip) return;
  for(let i=0;i<4;i++){
   const dir=DIRECTIONS[i];
+  // Top front and top_back are separate source sheets in the compositor.
+  // Never stamp a rear-facing sprite into the front garment sheet.
+  if(state.characterId&&state.v6pPart&&!state.project&&!state.actClip&&
+     topPartForDirection(state.v6pPart,dir)!==state.v6pPart)continue;
   const displayed=g.getImageData(0,i*HEIGHT,WIDTH,HEIGHT);
   const key=state.source==="v6p"?state.action+"|"+dir+"|"+state.frame:core.key(state.action,dir,state.frame);
   const stored=displayToFileFor(displayed,key);
@@ -1390,8 +1396,35 @@ async function directionReferences(){
  }catch(error){status("ANGLE REFERENCE ERROR: "+error.message,true)}
  return Object.keys(views).length?views:null;
 }
+function topPartForDirection(part,dir){
+ if(!part||!part.startsWith("top/")||!window.V6PPartCatalog)return part;
+ const suffix=part.endsWith("_f")?"_f":"";
+ const front=part.replace(/_back(?=_f$|$)/,"");
+ const bare=front.slice(0,front.length-suffix.length);
+ const back=bare+"_back"+suffix;
+ const next=(dir==="ne"||dir==="nw")?back:front;
+ return window.V6PPartCatalog.isPart(next)?next:part;
+}
 function onSpriteAngleChanged(dir){
  if(!DIRECTIONS.includes(dir))return;
+ if(state.characterId&&state.v6pPart&&!state.project&&!state.actClip){
+  const target=topPartForDirection(state.v6pPart,dir);
+  if(target!==state.v6pPart){
+   if(state.layerSwitching)return;
+   state.layerSwitching=true;
+   // Flush the previous layer before opening the correct front/back file.
+   // The modal has already switched direction, but pullEmosiIntoState filters
+   // out rows which belong to the opposite physical garment layer.
+   try{pullEmosiIntoState();persistV6pOverride()}
+   catch(error){status("SPRITE SAVE ERROR: "+error.message,true)}
+   state.loading=true;
+   status("LOADING "+(dir==="ne"||dir==="nw"?"BACK":"FRONT")+" SPRITE · "+dir.toUpperCase());
+   const params=new URLSearchParams({action:state.action,dir,frame:String(state.frame)});
+   void loadV6pPart(target,params).catch(error=>status("BACK/FRONT SPRITE LOAD FAILED: "+error.message,true))
+    .finally(()=>{state.layerSwitching=false});
+   return;
+  }
+ }
  state.dir=dir;
  if($("direction"))$("direction").value=dir;
  // The modal paints from its own four-row 64x448 atlas. Mirror the selected

@@ -140,6 +140,19 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
  .wizard-footer{padding:8px}
  .wizard-footer button{min-width:85px;padding:9px}
 }
+
+.wizard-home-tabs{display:flex;gap:5px;align-items:center;border-bottom:1px solid #a2b2c5;margin:-4px 0 22px;padding-bottom:10px;flex-wrap:wrap}
+.wizard-home-tabs button{min-height:39px;padding:9px 14px;background:#f5f7fa;border:1px solid #a6b8cc;color:#45607f}
+.wizard-home-tabs button[aria-pressed=true]{background:#cbdff7;border:1px solid #3675b7;color:#174782}
+.wizard-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;align-items:stretch}
+.wizard-gallery-card{background:#f7f9fc;border:1px solid #9aafc8;padding:12px;min-width:0}
+.wizard-gallery-card h3{margin:0 0 5px;font-size:13px;overflow-wrap:anywhere;color:#1b446d}
+.wizard-gallery-card p{font-size:11px;color:#597089;margin:6px 0}
+.wizard-gallery-angles{display:flex;gap:4px;justify-content:center}
+.wizard-gallery-angles figure{flex:1;min-width:0;margin:0;text-align:center;background:#e2eaf1;border:1px solid #bdcbd7;padding:4px 0}
+.wizard-gallery-angles canvas{image-rendering:pixelated;display:block;width:min(100%,58px);height:auto;aspect-ratio:64/112;margin:auto;background:repeating-conic-gradient(#e7ebed 0 25%,#ced8e0 0 50%) 0 0/8px 8px}
+.wizard-gallery-angles figcaption{font-size:9px;margin-top:2px;color:#425976}
+.wizard-gallery-empty{text-align:center;padding:42px 12px;color:#60748b;border:1px dashed #9ab2c8;background:#f4f7fa}
 </style>
 </head>
 <body><script>if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('mahluk-embedded');</script>
@@ -161,12 +174,23 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
   <span>›</span><span data-wizard-progress="save" class="wizard-step-label">5. SAVE</span>
  </nav>
  <section id="wizard-home" class="wizard-screen">
+  <nav class="wizard-home-tabs" aria-label="Character home pages">
+    <button type="button" id="wizard-tab-gallery" aria-pressed="false">▦ CHARACTER GALLERY <span id="wizard-gallery-count"></span></button>
+    <button type="button" id="wizard-tab-start" aria-pressed="true">＋ CREATE / MODIFY</button>
+  </nav>
+  <div id="wizard-home-start">
   <h2>Create or edit a character</h2><p class="wizard-sub">Pick a starting point. Your existing characters and sprite edits will stay in the library.</p>
   <div class="wizard-home-choices">
    <button type="button" id="wizard-start-new" class="wizard-choice"><strong>＋ Add New Character</strong><span>Start with a clean male/female base or duplicate a character.</span></button>
    <button type="button" id="wizard-start-modify" class="wizard-choice"><strong>✎ Modify Existing Character</strong><span>Open a character from your database and continue customizing it.</span></button>
   </div>
   <div id="wizard-existing" hidden><label for="workflow-list">Character Database</label><div id="wizard-existing-slot"></div><p class="wizard-sub">Select a character and open it to continue. Saved records without a local editable draft are opened as a safe editable copy.</p></div>
+  </div>
+  <section id="wizard-gallery" hidden aria-label="Read-only saved character gallery">
+    <h2>Character Gallery</h2>
+    <p class="wizard-sub">Semua karakter yang sudah di-save. Gallery hanya untuk melihat; untuk mengubah karakter, gunakan Create / Modify → Modify Existing Character.</p>
+    <div id="wizard-gallery-grid" class="wizard-gallery-grid" role="list"></div>
+  </section>
  </section>
  <section id="wizard-base" class="wizard-screen" hidden>
   <div class="wizard-fields"><h2>Choose your base</h2>
@@ -368,14 +392,14 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <script src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
 <script src="./v6p-pixel-source.js?v=v6p-retarget-1"></script>
 <script src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
-<script src="./v6p-character-store.js?v=character-master-2"></script>
+<script src="./v6p-character-store.js?v=back-master-gallery-1"></script>
 <script src="./v6p-project-catalog.js?v=v6p-copy-paste-20261107"></script>
 <script src="./v6p-activity-contract.js?v=v6p-act-v2-20261107"></script>
 <script src="./v6p-clip-store.js?v=v6p-act-v2-20261107"></script>
 <script src="./v6p-asset-gallery.js?v=v6p-act-v2-20261107"></script>
 <script src="./drive-sync.js?v=v6p-pixel-20261107"></script>
 <script src="./v6p-compositor.js?v=v6p-act-v2-20261107"></script>
-<script src="./v6p-character-retarget.js?v=v6p-retarget-1"></script>
+<script src="./v6p-character-retarget.js?v=back-master-gallery-1"></script>
 <script>
 (function(){
 "use strict";
@@ -650,7 +674,7 @@ function reload(){
 $("refresh-assets").addEventListener("click",()=>refreshAssets().catch(e=>setStatus(String(e),true)));
 $("save").addEventListener("click",()=>save().catch(e=>setStatus(String(e),true)));
 $("reload").addEventListener("click",reload);
-function editorPartFor(kind){
+function editorPartFor(kind,dir=state.dir){
   const ch=state.ch||{},C=window.V6PPartCatalog;
   const female=ch.body==="female";
   const pick=(a,b)=>C&&C.isPart(a)?a:(C&&C.isPart(b)?b:a);
@@ -658,7 +682,12 @@ function editorPartFor(kind){
   if(kind==="body") return female?"base/body_f":"base/body";
   if(kind==="hair") return ch.hair==="none"?null:"hair/"+ch.hair+"_front";
   if(kind==="hair-back")return ch.hair==="none"?null:"hair/"+ch.hair+"_back";
-  if(kind==="top") return pick("top/"+ch.top+(female?"_f":""),"top/"+ch.top);
+  if(kind==="top"){
+    const suffix=female?"_f":"";
+    const front=pick("top/"+ch.top+suffix,"top/"+ch.top);
+    const back=pick("top/"+ch.top+"_back"+suffix,"top/"+ch.top+"_back");
+    return (dir==="ne"||dir==="nw")&&C?.isPart(back)?back:front;
+  }
   if(kind==="pants") return pick("pants/"+ch.pants+(female?"_f":""),"pants/"+ch.pants);
   if(kind==="shoes") return pick("shoes/"+ch.shoes+(female?"_f":""),"shoes/"+ch.shoes);
   if(kind==="glasses") return ch.glasses&&ch.glasses!=="none"?("glasses/"+ch.glasses):null;
@@ -686,7 +715,7 @@ function openPixelEditor(kind,opts={}){
     else {u.searchParams.set("new","accessory");u.searchParams.set("name","Aksesoris baru");}
     routeToMahlukEditor(u.href);return;
   }
-  const part=editorPartFor(kind);
+  const part=editorPartFor(kind,opts.dir||state.dir);
   if(!part){setStatus("Tidak ada part v6p untuk "+kind,true);return;}
   const u=new URL("./pixel-editor.html",location.href);
   u.searchParams.set("source","v6p");
@@ -834,6 +863,6 @@ window.V6PCharacterHost=Object.freeze({
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
-<script src="./v6p-character-wizard.js?v=character-wizard-2"></script>
+<script src="./v6p-character-wizard.js?v=back-master-gallery-1"></script>
 </body>
 </html>
