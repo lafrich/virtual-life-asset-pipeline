@@ -48,6 +48,20 @@ const digest=s=>crypto.createHash('sha256').update(s).digest('hex');
    'emotion-studio-local-fallback-v1':{face:'test'}
   };
   await page.evaluate(obj=>{for(const [k,v] of Object.entries(obj))localStorage.setItem(k,JSON.stringify(v))},dummy);
+  // Seed real IndexedDB in this isolated browser origin, just like Emosi.EXE.
+  await page.evaluate(async()=>{
+   const db=await new Promise((resolve,reject)=>{
+    const r=indexedDB.open('emotion-studio-local-v1',1);
+    r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('emotion-assets'))
+     r.result.createObjectStore('emotion-assets',{keyPath:'id'})};
+    r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+   });
+   await new Promise((resolve,reject)=>{
+    const tx=db.transaction('emotion-assets','readwrite');
+    tx.objectStore('emotion-assets').put({id:'test_emotion',png:'data:image/png;base64,AAAA'});
+    tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+   });db.close();
+  });
   await page.locator('#drive-connect').click();
   await page.waitForFunction(()=>document.getElementById('drive-connect').textContent.includes('CONNECTED'));
   await page.locator('#drive-save').click();
@@ -57,14 +71,24 @@ const digest=s=>crypto.createHash('sha256').update(s).digest('hex');
   const original=JSON.parse(remote.content);
   assert.equal(original.sha256,digest(JSON.stringify(original.payload)));
   for(const [k,v] of Object.entries(dummy))assert.deepEqual(JSON.parse(original.payload.local[k]),v);
-  console.log('PASS Drive mock: connect, upload, verify checksum and preserve all workspace keys');
+  assert.deepEqual(original.payload.emotions.map(x=>x.id),['test_emotion']);
+  console.log('PASS Drive mock: connect, upload, checksum, all workspace keys and Emosi IndexedDB');
   tamper=true;
   const mismatch=await page.evaluate(async()=>{try{await VLMahlukHubDrive.backup();return 'ACCEPTED'}catch(e){return e.message}});
   assert.match(mismatch,/read-back hash mismatch/i);
   tamper=false;remote.content=JSON.stringify(original);
-  await page.evaluate(()=>{
+  await page.evaluate(async()=>{
    localStorage.setItem('vl-v6p-character-workflow-v1','{"id":"wrong-device"}');
    localStorage.setItem('vl-v6p-project-catalog-v1','{"stale":true}');
+   const db=await new Promise((resolve,reject)=>{
+    const r=indexedDB.open('emotion-studio-local-v1',1);
+    r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+   });
+   await new Promise((resolve,reject)=>{
+    const tx=db.transaction('emotion-assets','readwrite');
+    tx.objectStore('emotion-assets').put({id:'stale_emotion',png:'data:image/png;base64,AAAA'});
+    tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+   });db.close();
   });
   const download=page.waitForEvent('download',{timeout:30000});
   const info=await page.evaluate(()=>VLMahlukHubDrive.restore());
@@ -74,7 +98,19 @@ const digest=s=>crypto.createHash('sha256').update(s).digest('hex');
    [...Object.keys(dummy),'vl-v6p-project-catalog-v1']);
   for(const [k,v] of Object.entries(dummy))assert.deepEqual(JSON.parse(after[k]),v);
   assert.equal(after['vl-v6p-project-catalog-v1'],null);
-  console.log('PASS Drive mock: restore replaces all workspace keys, stale data cleared, recovery download created');
+  const emotions=await page.evaluate(async()=>{
+   const db=await new Promise((resolve,reject)=>{
+    const r=indexedDB.open('emotion-studio-local-v1',1);
+    r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+   });
+   const rows=await new Promise((resolve,reject)=>{
+    const tx=db.transaction('emotion-assets','readonly');
+    const r=tx.objectStore('emotion-assets').getAll();
+    r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+   });db.close();return rows.map(x=>x.id).sort();
+  });
+  assert.deepEqual(emotions,['test_emotion'],'Emosi IndexedDB restore left stale entries');
+  console.log('PASS Drive mock: restore replaces workspace and Emosi IndexedDB, clears stale data, downloads recovery JSON');
   const before=await page.evaluate(()=>localStorage.getItem('vl-v6p-character-workflow-v1'));
   remote.content=JSON.stringify({...original,sha256:'tampered'});
   const corrupted=await page.evaluate(async()=>{try{await VLMahlukHubDrive.restore();return 'ACCEPTED'}catch(e){return e.message}});
