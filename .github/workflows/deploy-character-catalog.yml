@@ -347,7 +347,7 @@ jobs:
           echo "Total files:"
           find _site -type f | wc -l
           echo "Largest file:"
-          find _site -type f -printf '%s %p\n' | sort -nr | head -n 1
+          find _site -type f -printf '%s %p\n' | awk '$1>max {max=$1; path=$2} END {print max, path}'
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
