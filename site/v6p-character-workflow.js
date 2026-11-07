@@ -118,7 +118,7 @@ async function generate(){
  state.busy=true;$("generate-character").disabled=true;stop();
  try{
   S.update(id,{appearance:info.ch,faceId:info.faceId,name:info.name});
-  genStatus("Preparing 4-view appearance and generating native animation frames…");
+  genStatus("Applying 4-view palette edits to original native animation frames…");
   const done=await R.generateCharacter(id,{progress:p=>genStatus("Generating "+(p.index+1)+"/"+p.total+" · "+p.part)});
   const cloned=S.get(id);
   await H.open(cloned);
@@ -126,10 +126,10 @@ async function generate(){
   const missing=done.parts.flatMap(p=>p.warning.filter(w=>w.includes("direction")));
   const custom=R.anchorDatabase().length;
   genStatus(done.parts.length?
-   "GENERATED "+done.frames+" painted frames across "+done.parts.length+" edited parts; "+
+   "UPDATED "+done.frames+" native frames across "+done.parts.length+" edited parts; "+
    done.corrected+" manual corrections preserved. "+custom+" anchor clips ready for character preview. "+
    (missing.length?missing.join(" · ")+". ":"")+
-   "Review poses (especially sit/sleep) and fix any silhouette errors before SAVE.":
+   "Native geometry is preserved. Custom silhouette/details need exact-frame corrections; check walk, sit and sleep before SAVE.":
    "Stock outfit already contains native animation frames. "+custom+" anchor-motion clips available.");
  }catch(e){genStatus("GENERATION FAILED: "+e.message)}
  finally{state.busy=false;$("generate-character").disabled=false}
