@@ -194,9 +194,9 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
  </section>
  <section id="wizard-base" class="wizard-screen" hidden>
   <div class="wizard-fields"><h2>Choose your base</h2>
-   <p class="wizard-sub">Start from scratch using a blank nude body, or use an existing character as your starting point.</p>
+   <p class="wizard-sub">Start from a Male or Female character base with standard clothes, or use an existing character.</p>
    <label for="workflow-source">START FROM</label><div id="wizard-base-slot"></div>
-   <p class="wizard-tip">Male Base and Female Base have no hair, nude top, nude pants and nude shoes. You can customize everything in the next step.</p>
+   <p class="wizard-tip">Male and Female start with basic clothes. Choose stock outfits or make Custom Wear in the next step.</p>
   </div>
  </section>
  <section id="wizard-customize" class="wizard-screen" hidden>
@@ -230,7 +230,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <section id="character-flow" aria-label="Character database workflow">
  <strong>CHARACTER DATABASE · ADD / MODIFY / SAVE</strong>
  <div class="row">
-  <label>START FROM<select id="workflow-source"><option value="base:male">MALE BASE · no hair / nude</option><option value="base:female">FEMALE BASE · no hair / nude</option></select></label>
+  <label>START FROM<select id="workflow-source"><option value="base:male">MALE BASE · standard outfit</option><option value="base:female">FEMALE BASE · standard outfit</option></select></label>
   <button type="button" id="workflow-new">＋ ADD NEW CHARACTER</button>
   <button type="button" id="workflow-clone">⧉ DUPLICATE SELECTED</button>
  </div>
@@ -243,7 +243,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <div class="wrap">
   <section class="card" aria-label="Appearance">
     <strong>APPEARANCE</strong>
-    <p class="note">Choose database parts or draw each part in 4 views (SE, SW, NE, NW) on IDLE frame 1. Generate all animation frames, review, correct problem poses, then save. Character-specific pixels never overwrite stock parts.</p>
+    <p class="note">Choose stock outfit parts or create Custom Wear. Custom Wear edits exact native frames without automatic retargeting.</p>
     <label for="body">BASE BODY / FEMALE OR MALE</label>
     <div class="row"><select id="body"></select><button type="button" id="edit-body">✎ PIXEL</button></div>
     <label for="hair">HAIR</label>
@@ -255,13 +255,20 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
     <label>OUTFIT PRESET</label>
     <div class="row">
       <button type="button" id="outfit-normal">Normal</button>
-      <button type="button" id="outfit-nude">Nude (skin)</button>
+      
     </div>
     <label for="top">TOP</label>
     <div class="row">
       <select id="top"></select>
       <button type="button" id="edit-top" data-edit-part="top">Edit di Pixel Editor</button>
     </div>
+<div id="custom-top-panel" class="note" hidden>
+<label for="custom-top-template">CUSTOM TOP · BASE TEMPLATE</label>
+<select id="custom-top-template"></select>
+<button type="button" id="reset-custom-top">CREATE / REPLACE FROM TEMPLATE</button>
+<button type="button" id="edit-top-back">✎ EDIT BACK WEAR</button>
+<p>Native animation sheet · edit any frame and angle. Pixels stay exact.</p>
+</div>
     <label for="topColor">TOP COLOR</label>
     <select id="topColor"></select>
     <label for="pants">PANTS</label>
@@ -269,6 +276,12 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
       <select id="pants"></select>
       <button type="button" id="edit-pants" data-edit-part="pants">Edit di Pixel Editor</button>
     </div>
+<div id="custom-pants-panel" class="note" hidden>
+<label for="custom-pants-template">CUSTOM PANTS · BASE TEMPLATE</label>
+<select id="custom-pants-template"></select>
+<button type="button" id="reset-custom-pants">CREATE / REPLACE FROM TEMPLATE</button>
+<p>Native animation sheet · edit any frame and angle. Pixels stay exact.</p>
+</div>
     <label for="pantsColor">PANTS COLOR</label>
     <select id="pantsColor"></select>
     <label for="shoes">SHOES</label>
@@ -276,6 +289,12 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
       <select id="shoes"></select>
       <button type="button" id="edit-shoes" data-edit-part="shoes">Edit di Pixel Editor</button>
     </div>
+<div id="custom-shoes-panel" class="note" hidden>
+<label for="custom-shoes-template">CUSTOM SHOES · BASE TEMPLATE</label>
+<select id="custom-shoes-template"></select>
+<button type="button" id="reset-custom-shoes">CREATE / REPLACE FROM TEMPLATE</button>
+<p>Native animation sheet · edit any frame and angle. Pixels stay exact.</p>
+</div>
     <label for="shoesColor">SHOES COLOR</label>
     <select id="shoesColor"></select>
     <label for="glasses">GLASSES</label>
@@ -389,17 +408,18 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <script src="./emotion-studio/emotion-library.js?v=emosi-v1-bridge"></script>
 <script src="./emosi-bridge.js?v=preview-stock-20261107"></script>
 <script src="./vlhub-characters-publish.js?v=v6p-preview"></script>
-<script src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
+<script src="./v6p-part-catalog.js?v=custom-wear-20261108"></script>
 <script src="./v6p-pixel-source.js?v=v6p-retarget-1"></script>
 <script src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
-<script src="./v6p-character-store.js?v=nude-clean-rebuild-1"></script>
+<script src="./v6p-character-store.js?v=custom-wear-20261108"></script>
 <script src="./v6p-project-catalog.js?v=v6p-copy-paste-20261107"></script>
 <script src="./v6p-activity-contract.js?v=v6p-act-v2-20261107"></script>
 <script src="./v6p-clip-store.js?v=v6p-act-v2-20261107"></script>
 <script src="./v6p-asset-gallery.js?v=v6p-act-v2-20261107"></script>
 <script src="./drive-sync.js?v=v6p-pixel-20261107"></script>
-<script src="./v6p-compositor.js?v=v6p-act-v2-20261107"></script>
-<script src="./v6p-character-retarget.js?v=native-pose-20261108"></script>
+<script src="./v6p-compositor.js?v=custom-wear-20261108"></script>
+<script src="./v6p-custom-wear.js?v=custom-wear-20261108"></script>
+<script src="./v6p-character-retarget.js?v=custom-wear-20261108"></script>
 <script>
 (function(){
 "use strict";
@@ -437,7 +457,7 @@ function fillSelect(id,values,labels){
   });
 }
 fillSelect("body",["male","female"]);
-["hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"].forEach(k=>fillSelect(k,V.OPT[k], k==="top"||k==="pants"||k==="shoes"?{nude:"nude (skin)"}:null));
+["hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"].forEach(k=>fillSelect(k,V.OPT[k],["top","pants","shoes"].includes(k)?{custom:"＋ Custom Wear"}:null));
 function fillAccessories(){
   const sel=$("studio-accessory"); if(!sel||!window.V6PProjectCatalog) return;
   const cur=sel.value || ((state.ch.accessories&&state.ch.accessories[0])||"none");
@@ -863,6 +883,6 @@ window.V6PCharacterHost=Object.freeze({
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
-<script src="./v6p-character-wizard.js?v=native-pose-20261108"></script>
+<script src="./v6p-character-wizard.js?v=custom-wear-20261108"></script>
 </body>
 </html>
