@@ -232,5 +232,5 @@ function generateAnchorClips(characterSheet){
  return {clips:result,warnings};
 }
 
-return Object.freeze({DIRS,FW,FH,bounds,remapColors,transferFrame,generatePart,generateCharacter,anchorDatabase,generateAnchorClip,generateAnchorClips});
+return Object.freeze({DIRS,FW,FH,ANCHOR_KEY,bounds,remapColors,transferFrame,generatePart,generateCharacter,anchorDatabase,generateAnchorClip,generateAnchorClips});
 });
