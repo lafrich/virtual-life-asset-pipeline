@@ -1,6 +1,6 @@
 /* True sprite-frame Animation Studio. Six articulated cutout pixel layers with
    explicit anchor transforms, baked to four-direction PNG frames; no skeletal rig.
-   Uses native V6P blank-face, hairless nude Male/Female source templates. */
+   Uses native V6P blank-face, hairless standard-outfit Male/Female source templates. */
 (function(root){"use strict";
 const $=id=>document.getElementById(id),V=root.V6PCompositor,Store=root.V6PClipStore,A=root.V6PActivityContract;
 if(!V||!Store||!A)return;
@@ -26,7 +26,7 @@ function updateProperty(){
  document.querySelectorAll("[data-part]").forEach(b=>b.classList.toggle("active",b.dataset.part===state.part));
 }
 function canvas(w,h){const out=document.createElement("canvas");out.width=w;out.height=h;return out}
-function setSource(){const ch=V.norm({...V.DEF,body:state.gender,gender:state.gender,hair:"none",hairColor:"black",top:"nude",pants:"nude",shoes:"nude",face:"blank",glasses:"none",facial:"none"});return V.sheet(ch,null,"")}
+function setSource(){const ch=V.norm({...V.DEF,body:state.gender,gender:state.gender,hair:"none",hairColor:"black",top:"tee",pants:"trousers",shoes:"shoes",face:"blank",glasses:"none",facial:"none"});return V.sheet(ch,null,"")}
 async function loadSource(){const rev=++state.revision;state.sheet=await setSource();if(rev===state.revision){state.images.clear();render()}}
 function action(){return V.ROWS[state.template]!=null?state.template:"idle"}
 function sourceCell(dir=state.dir,frame=state.frame){
