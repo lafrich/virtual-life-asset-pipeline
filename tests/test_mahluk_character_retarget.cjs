@@ -70,9 +70,13 @@ test('character editor is the main path: four master directions, generate, inspe
  assert.match(pixel,/markCorrection\(state\.characterId,state\.v6pPart,state\.action,dir,state\.frame\)/);
  assert.match(pixel,/state\.masterMode\?0/);
 });
-test('generator preserves corrected native frames during any regeneration',()=>{
+test('generator uses canonical native poses, retains fresh corrections and archives stale locks',()=>{
  const s=read('site/v6p-character-retarget.js');
- assert.match(s,/S\.isCorrection\(id,part,action,dir,n\)/);
+ assert.match(s,/g\.drawImage\(base,0,0\)/);
+ assert.doesNotMatch(s,/g\.drawImage\(existing\|\|base,0,0\)/);
+ assert.match(s,/const fresh=corrected&&!!correctedAt/);
+ assert.match(s,/if\(fresh&&existing\)/);
+ assert.match(s,/S\.archiveStaleCorrections\(id,part,stale\)/);
  assert.match(s,/put\(output,C,action,dir,n,painted\)/);
  assert.match(s,/S\.setGenerated\(id,part/);
  assert.match(s,/S\.master\(id,part,dir\)/);
