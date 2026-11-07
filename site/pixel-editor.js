@@ -31,7 +31,7 @@ const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",par
  current:null,loading:true,drawing:false,previous:null,before:null,seq:0,
  selection:null,selectionMask:null,selectionMode:"replace",wandContiguous:true,wandTolerance:0,selectionGesture:null,moveGesture:null,cursorMode:MOBILE_TOUCH,cursor:[32,42],
  trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null,characterId:"",masterMode:false,
- clipboard:null,floatingPaste:null,project:null,actClip:null,clipLayer:null,onion:true,onionImage:null,playing:false,playTimer:0,clipUndo:[],clipRedo:[],overlayOn:true,overlayAlpha:0.42,overlayCanvas:null,showPivot:true};
+ clipboard:null,floatingPaste:null,project:null,actClip:null,clipLayer:null,onion:true,onionImage:null,playing:false,playTimer:0,clipUndo:[],clipRedo:[],overlayOn:true,overlayAlpha:0.42,overlayCanvas:null,directionRefs:null,showPivot:true};
 let emosiEditor=null;
 function status(s,error=false){$("editor-status").textContent=s;$("editor-status").classList.toggle("error",error);}
 function activeClip(){if(state.actClip)return {id:state.actClip.id,name:state.actClip.name,frames:state.actClip.frames.length};return state.clips.find(c=>c.id===state.action);}
@@ -1367,6 +1367,46 @@ function pullEmosiIntoState(){
   if(dir===state.dir) state.current=displayed;
  }
 }
+async function directionReferences(){
+ if(!state.overlayOn||!window.V6PCompositor||(!state.project&&!state.actClip))return null;
+ const V=window.V6PCompositor,views={};
+ let ch=lastStudioCharacter();
+ if(!ch)return null;
+ try{
+  if(state.actClip){
+   const avail=V.activityAvailability(ch,state.actClip);
+   if(!avail.ok)ch=V.previewAppearance(ch.body==="female"?"female":"male");
+   for(const dir of DIRECTIONS){
+    const cv=await V.composeActivity(ch,state.actClip,state.frame,dir,{exclude:state.clipLayer});
+    if(cv&&!cv._disabled)views[dir]=cv;
+   }
+  }else{
+   if(state.project?.type==="accessory")
+    ch={...ch,accessories:(ch.accessories||[]).filter(id=>id!==state.project.id)};
+   const sheet=await V.sheet(ch);
+   if(sheet)for(const dir of DIRECTIONS)
+    views[dir]=V.extractFrame(sheet,state.action,dir,state.frame);
+  }
+ }catch(error){status("ANGLE REFERENCE ERROR: "+error.message,true)}
+ return Object.keys(views).length?views:null;
+}
+function onSpriteAngleChanged(dir){
+ if(!DIRECTIONS.includes(dir))return;
+ state.dir=dir;
+ if($("direction"))$("direction").value=dir;
+ // The modal paints from its own four-row 64x448 atlas. Mirror the selected
+ // row into the normal editor state, so Save/Back can never reuse the old view.
+ const atlas=emosiEditor?.getAtlas?.();
+ if(atlas){
+  const image=atlas.getContext("2d",{willReadFrequently:true})
+   .getImageData(0,DIRECTIONS.indexOf(dir)*HEIGHT,WIDTH,HEIGHT);
+  state.current=copy(image);
+ }
+ state.overlayCanvas=state.directionRefs?.[dir]||null;
+ render();
+ status("LOADED SPRITE · "+dir.toUpperCase()+" · "+state.action.toUpperCase()+
+  " / F"+(state.frame+1)+" · ANGLE INDEPENDENT");
+}
 async function syncEmosiOpen(){
  if(!emosiEditor) return;
  const clip=activeClip(); if(!clip) return;
@@ -1384,8 +1424,12 @@ async function syncEmosiOpen(){
  }
  const id=state.actClip?("clip / "+state.actClip.name+" / "+(state.clipLayer||"layer")):
   state.project?state.project.name:(state.v6pPart||state.part||"plane");
- const ref=(state.overlayOn&&state.overlayCanvas)?state.overlayCanvas:(state.onionImage||null);
- emosiEditor.open({id:String(id),initialAtlas:atlas,originalAtlas:orig,referenceImage:ref,direction:state.dir});
+ const refs=await directionReferences();
+ state.directionRefs=refs;
+ const ref=(state.overlayOn&&refs)?refs[state.dir]||null:
+  (state.overlayOn&&state.overlayCanvas?state.overlayCanvas:(state.onionImage||null));
+ emosiEditor.open({id:String(id),initialAtlas:atlas,originalAtlas:orig,
+  referenceImage:ref,referenceImages:refs,direction:state.dir});
  const ov=$("pixelOverlay"); if(ov) ov.hidden=false;
  if($("pixelDirection")) $("pixelDirection").value=state.dir;
 }
@@ -1397,7 +1441,8 @@ function bootEmosiEditor(){
   overlay,canvas,reference:null,
   onApply:(id)=>{pullEmosiIntoState();saveCurrent();persistV6pOverride();status("APPLIED "+id);return false;},
   onSaveDefault:(id)=>{pullEmosiIntoState();saveCurrent();persistV6pOverride();status("SAVED FRAME "+id);return false;},
-  onRestore:()=>{}
+  onRestore:()=>{},
+  onDirectionChange:onSpriteAngleChanged
  });
  const closeBtn=$("pixelClose");
  if(closeBtn) closeBtn.onclick=()=>{
@@ -1408,13 +1453,10 @@ function bootEmosiEditor(){
   }
   else location.href="./v6p-studio.html";
  };
- const pd=$("pixelDirection");
- if(pd) pd.addEventListener("change",()=>{
-  if(DIRECTIONS.includes(pd.value)){
-   state.dir=pd.value;
-   if($("direction")) $("direction").value=state.dir;
-  }
- });
+ // The shared Pixel Editor is the source of truth for angle changes.
+ // Its onDirectionChange callback selects the matching actual sprite row.
+ // Do not set state.dir alone: that leaves the old frame visible on return.
+
 }
 
 function initControls(){
