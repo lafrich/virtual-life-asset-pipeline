@@ -7,32 +7,33 @@ function loadUMD(file,window){
  vm.runInNewContext(read(file),context,{filename:file});
  return context.module.exports;
 }
-test('male/female hairless nude templates and per-character part isolation',()=>{
- const ls=localStorage(),window={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/nude',normalizePart:x=>x}};
+test('male/female standard outfit defaults and isolated custom-wear sheets',()=>{
+ const ls=localStorage(),window={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/custom',normalizePart:x=>x}};
  const S=loadUMD('site/v6p-character-store.js',window);
  const m=S.create({name:'Custom M',gender:'male'}),f=S.create({name:'Custom F',gender:'female'});
  assert.equal(m.appearance.hair,'none');assert.equal(f.appearance.body,'female');
- assert.equal(f.appearance.top,'nude');assert.equal(f.appearance.pants,'nude');assert.equal(f.appearance.shoes,'nude');
- S.setPart(m.id,'top/nude','data:image/png;base64,QUJD');
- assert.equal(S.getPart(m.id,'top/nude'),'data:image/png;base64,QUJD');
- assert.equal(S.getPart(f.id,'top/nude'),null,'female must not inherit male custom pixels');
+ assert.equal(f.appearance.top,'tee');assert.equal(f.appearance.pants,'trousers');assert.equal(f.appearance.shoes,'shoes');
+ S.setPart(m.id,'top/custom','data:image/png;base64,QUJD');
+ assert.equal(S.getPart(m.id,'top/custom'),'data:image/png;base64,QUJD');
+ assert.equal(S.getPart(f.id,'top/custom'),null,'female must not inherit male custom pixels');
  const copy=S.create({name:'Copy M',from:m.id});
- assert.equal(S.getPart(copy.id,'top/nude'),'data:image/png;base64,QUJD');
- S.resetPart(copy.id,'top/nude');
- assert.equal(S.getPart(copy.id,'top/nude'),null);
- assert.equal(S.getPart(m.id,'top/nude'),'data:image/png;base64,QUJD');
+ assert.equal(S.getPart(copy.id,'top/custom'),'data:image/png;base64,QUJD');
+ S.resetPart(copy.id,'top/custom');
+ assert.equal(S.getPart(copy.id,'top/custom'),null);
+ assert.equal(S.getPart(m.id,'top/custom'),'data:image/png;base64,QUJD');
  assert.equal(S.list().length,3);
 });
 test('V6P composer uses character-local layer and preserves stock fallback',()=>{
- const ls=localStorage(),window={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/nude',normalizePart:x=>x}};
+ const ls=localStorage(),window={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/custom',normalizePart:x=>x}};
  const Store=loadUMD('site/v6p-character-store.js',window);window.V6PCharacterStore=Store;
  const ch=Store.create({name:'A',gender:'female'});
- Store.setPart(ch.id,'top/nude','data:image/png;base64,QUJD');
+ Store.update(ch.id,{appearance:{top:'custom'}});
+ Store.setPart(ch.id,'top/custom_f','data:image/png;base64,QUJD');
  const V=loadUMD('site/v6p-compositor.js',window);
  const n=V.norm({...ch.appearance,characterId:ch.id});
  assert.equal(n.hair,'none');assert.equal(n.body,'female');assert.equal(n.characterId,ch.id);
- assert.ok(!V.files(n).some(part=>part.startsWith('hair/')),'nude base should not have hidden hair');
- assert.ok(V.files(n).includes('top/nude_f'));
+ assert.ok(!V.files(n).some(part=>part.startsWith('hair/')),'hairless base should not invent hair');
+ assert.ok(V.files(n).includes('top/custom_f'));
  assert.ok(V.key(n).includes(ch.id));
 });
 test('character wizard, female base, 4-view QA and pixel scope wired',()=>{
