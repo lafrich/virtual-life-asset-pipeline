@@ -30,7 +30,7 @@ const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",par
  originals:new Map(),edits:new Map(),imageRequests:new Map(),history:[],redo:[],
  current:null,loading:true,drawing:false,previous:null,before:null,seq:0,
  selection:null,selectionMask:null,selectionMode:"replace",wandContiguous:true,wandTolerance:0,selectionGesture:null,moveGesture:null,cursorMode:MOBILE_TOUCH,cursor:[32,42],
- trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null,
+ trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null,characterId:"",
  clipboard:null,floatingPaste:null,project:null,actClip:null,clipLayer:null,onion:true,onionImage:null,playing:false,playTimer:0,clipUndo:[],clipRedo:[],overlayOn:true,overlayAlpha:0.42,overlayCanvas:null,showPivot:true};
 let emosiEditor=null;
 function status(s,error=false){$("editor-status").textContent=s;$("editor-status").classList.toggle("error",error);}
@@ -171,6 +171,7 @@ function queueMasterSync(){
  .finally(()=>{state.syncing=false;});
 }
 function modeUI(){
+ if($("autofit-outfit")) $("autofit-outfit").hidden=!(state.source==="v6p"&&state.characterId&&!state.actClip&&!state.project);
  const isMaster=state.mode==="master"&&state.source!=="v6p";
  $("action").disabled=isMaster;$("frame").disabled=isMaster;
  $("prev-frame").disabled=isMaster;$("next-frame").disabled=isMaster;
@@ -203,11 +204,54 @@ function persistV6pOverride(){
    persistProjectSheet();
    return;
   }
-  if(!state.v6pPart||!window.V6PPartOverrides)return;
+  if(!state.v6pPart)return;
   const dataUrl=window.V6PPixelSource.toDataURL(state.v6pSheet);
+  if(state.characterId&&window.V6PCharacterStore){
+   window.V6PCharacterStore.setPart(state.characterId,state.v6pPart,dataUrl);
+   if($("drive-status"))$("drive-status").textContent="Saved for CHARACTER "+state.characterId+" only · backup via MAHLUK.EXE";
+   return;
+  }
+  if(!window.V6PPartOverrides)return;
   window.V6PPartOverrides.set(state.v6pPart,dataUrl,{width:384,height:4928});
   if($("drive-status"))$("drive-status").textContent="Override lokal tersimpan untuk "+state.v6pPart+" · klik Muat ulang aset di studio, atau Save ke Drive.";
  }catch(e){status("OVERRIDE SAVE FAILED: "+e.message,true);}
+}
+/* Approximate palette transfer across native pose silhouettes; this is not a rig. */
+async function autoFitCurrentDirection(){
+ if(!state.characterId||!state.v6pPart||state.actClip||state.project)return status("Auto-fit needs character-local part",true);
+ if(state.loading||!state.current)return;
+ if(!confirm("Auto-fit current part to every animation in "+state.dir.toUpperCase()+"? Local edits in other frames of this direction may change."))return;
+ saveCurrent();
+ const C=window.V6PPartCatalog,S=window.V6PPixelSource;
+ const stock=await S.loadSheet(state.v6pPart);
+ const orig=S.extract(stock,state.action,state.dir,state.frame).data;
+ const edited=S.extract(state.v6pSheet,state.action,state.dir,state.frame).data;
+ const palette=new Map();
+ for(let p=0;p<orig.length;p+=4){
+  if(!orig[p+3]||!edited[p+3])continue;
+  const from=(orig[p]<<16)|(orig[p+1]<<8)|orig[p+2],to=(edited[p]<<16)|(edited[p+1]<<8)|edited[p+2];
+  if(from===to)continue;
+  let votes=palette.get(from);if(!votes){votes=new Map();palette.set(from,votes)}
+  votes.set(to,(votes.get(to)||0)+1);
+ }
+ const changes=new Map();
+ for(const [from,votes] of palette){changes.set(from,[...votes.entries()].sort((a,b)=>b[1]-a[1])[0][0]);}
+ if(!changes.size){status("No palette correspondence found. Silhouette changes require manual pixel edits.",true);return;}
+ let count=0;
+ for(const action of C.ACTIONS)for(let frame=0;frame<C.FRAMES[action];frame++){
+  if(action===state.action&&frame===state.frame)continue;
+  const cell=S.extract(state.v6pSheet,action,state.dir,frame),pixels=cell.data;
+  for(let p=0;p<pixels.length;p+=4){
+   if(!pixels[p+3])continue;
+   const from=(pixels[p]<<16)|(pixels[p+1]<<8)|pixels[p+2],color=changes.get(from);
+   if(color==null)continue;
+   pixels[p]=(color>>16)&255;pixels[p+1]=(color>>8)&255;pixels[p+2]=color&255;
+  }
+  S.stamp(state.v6pSheet,action,state.dir,frame,cell);count++;
+ }
+ persistV6pOverride();state.originals.clear();state.edits.clear();
+ await setFrame(state.action,state.dir,state.frame);
+ status("AUTO-FIT "+count+" frames / "+state.dir.toUpperCase()+" · colors transferred, native shape retained. Check poses and correct geometry manually.");
 }
 function paintedActionsOf(sheet){
  const C=window.V6PPartCatalog; if(!C||!sheet)return [];
@@ -351,7 +395,8 @@ async function loadV6pPart(part,params){
  if($("edit-mode"))$("edit-mode").value="frame";
  if($("source-kind"))$("source-kind").value="v6p";
  fillV6pPartSelect();
- const row=O&&O.get(part);
+ const scoped=state.characterId&&window.V6PCharacterStore?.getPart(state.characterId,part);
+ const row=scoped?{dataUrl:scoped}:O&&O.get(part);
  state.v6pSheet=await S.loadSheet(part,row&&row.dataUrl);
  state.clips=C.clips();
  state.originals=new Map();state.edits=new Map();state.history=[];state.redo=[];
@@ -366,7 +411,7 @@ async function loadV6pPart(part,params){
  if($("v6p-part"))$("v6p-part").value=part;
  modeUI();historyButtons();updateCounts();
  await setFrame(state.action,state.dir,state.frame);
- $("source-state").textContent="V6P / "+part+(row?" / LOCAL OVERRIDE":" / MEDIA SHEET");
+ $("source-state").textContent="V6P / "+part+(state.characterId?" / CHAR "+state.characterId:row?" / LOCAL OVERRIDE":" / MEDIA SHEET");
  status("EDITING V6P PART / "+part+" / override "+(row?"ON":"off"));
 }
 async function downloadV6pSheet(){
@@ -378,6 +423,7 @@ async function downloadV6pSheet(){
   status("DOWNLOADED "+name);},"image/png");
 }
 async function saveV6pToDrive(){
+ if(state.characterId){status("Character-local sheet. Save in Character Studio and BACKUP from MAHLUK.EXE; cannot overwrite shared stock on Drive.",true);return;}
  const el=$("drive-status");
  try{
   if(el)el.textContent="Menyambungkan Google Drive…";
@@ -1345,6 +1391,7 @@ function bootEmosiEditor(){
 }
 
 function initControls(){
+ if($("autofit-outfit"))$("autofit-outfit").onclick=()=>autoFitCurrentDirection().catch(e=>status("AUTO-FIT ERROR: "+e.message,true));
 
  $("zoom").value=String(state.zoom);
  refreshToolState();
@@ -1525,7 +1572,8 @@ function initControls(){
    }
    if(!window.confirm("Hapus override lokal untuk "+state.v6pPart+"? File media asli tidak diubah."))return;
    clearTimeout(localTimer);
-   if(window.V6PPartOverrides)window.V6PPartOverrides.clear(state.v6pPart);
+   if(state.characterId&&window.V6PCharacterStore) window.V6PCharacterStore.resetPart(state.characterId,state.v6pPart);
+    else if(window.V6PPartOverrides)window.V6PPartOverrides.clear(state.v6pPart);
    loadV6pPart(state.v6pPart).then(()=>status("LOCAL V6P OVERRIDE DELETED / "+state.v6pPart));
    return;
   }
@@ -1558,6 +1606,7 @@ async function init(){
  }
  const params=new URLSearchParams(location.search);
  const qPart=params.get("part"),qSource=params.get("source");
+ state.characterId=/^mh2_[a-z0-9]+$/.test(params.get("character")||"")&&window.V6PCharacterStore?.get(params.get("character"))?params.get("character"):"";
  if(qSource==="v6p"||(qPart&&window.V6PPartCatalog&&window.V6PPartCatalog.isPart(qPart))||params.get("project")||params.get("new")){
   try{
    if(params.get("project")){
