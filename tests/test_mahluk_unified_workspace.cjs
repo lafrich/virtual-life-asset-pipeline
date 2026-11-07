@@ -13,7 +13,8 @@ test('one MAHLUK HIDUP.EXE landing page contains the four requested editors',()=
  assert.match(js,/\/virtual-office\/emotion-studio\//);
  assert.match(js,/v6p-studio\.html\?embedded=1/);
  assert.match(js,/mahluk-action-editor\.html\?embedded=1/);
- assert.match(js,/mahluk-motion-library\.html\?embedded=1/);
+ assert.match(js,/mahluk-animation-studio\.html\?embedded=1/);
+ assert.match(read("site/mahluk-animation-studio.html"),/ANCHOR/);
  assert.match(js,/pixel-editor\.html\?source=v6p/);
  assert.match(read('site/index.html'),/mahluk-hidup\.html/);
  assert.doesNotMatch(js,/localStorage\.clear\(/);
@@ -64,7 +65,8 @@ test('Google Drive backup keeps a recovery copy and never stores token',()=>{
 });
 test('all new browser scripts parse',()=>{
  for(const file of ['site/mahluk-hub.js','site/mahluk-hub-drive.js','site/v6p-motion-review.js',
-  'site/v6p-grok-copy.js','site/mahluk-action-editor.js','site/v6p-asset-gallery.js'])
+  'site/v6p-grok-copy.js','site/mahluk-action-editor.js','site/v6p-asset-gallery.js',
+  'site/v6p-character-store.js','site/v6p-character-workflow.js','site/mahluk-animation-studio.js'])
   assert.doesNotThrow(()=>new Function(read(file)),file);
  const html=read('site/v6p-studio.html');
  const script=html.match(/<script>\s*\(function\(\)\{([\s\S]*?)<\/script>/);
