@@ -59,19 +59,31 @@ button.active,button[aria-pressed="true"]{background:#2b5797;color:#fff;border-c
       <button type="button" id="outfit-nude">Nude (skin)</button>
     </div>
     <label for="top">TOP</label>
-    <select id="top"></select>
+    <div class="row">
+      <select id="top"></select>
+      <button type="button" id="edit-top" data-edit-part="top">Edit di Pixel Editor</button>
+    </div>
     <label for="topColor">TOP COLOR</label>
     <select id="topColor"></select>
     <label for="pants">PANTS</label>
-    <select id="pants"></select>
+    <div class="row">
+      <select id="pants"></select>
+      <button type="button" id="edit-pants" data-edit-part="pants">Edit di Pixel Editor</button>
+    </div>
     <label for="pantsColor">PANTS COLOR</label>
     <select id="pantsColor"></select>
     <label for="shoes">SHOES</label>
-    <select id="shoes"></select>
+    <div class="row">
+      <select id="shoes"></select>
+      <button type="button" id="edit-shoes" data-edit-part="shoes">Edit di Pixel Editor</button>
+    </div>
     <label for="shoesColor">SHOES COLOR</label>
     <select id="shoesColor"></select>
     <label for="glasses">GLASSES</label>
-    <select id="glasses"></select>
+    <div class="row">
+      <select id="glasses"></select>
+      <button type="button" id="edit-glasses" data-edit-part="glasses">Edit di Pixel Editor</button>
+    </div>
     <label for="facial">FACIAL</label>
     <select id="facial"></select>
   </section>
@@ -99,20 +111,27 @@ button.active,button[aria-pressed="true"]{background:#2b5797;color:#fff;border-c
     <div class="row">
       <button type="button" id="refresh-assets">Muat ulang aset</button>
       <button type="button" id="save">Save to characters</button>
+      <button type="button" id="save-drive">Save ke Drive</button>
       <button type="button" id="reload">Reload last</button>
     </div>
     <div id="status">Loading compositor…</div>
+    <p id="drive-status" class="note">Drive: belum disimpan.</p>
   </section>
   <section class="card" aria-label="Face database">
     <strong>EMOSI · FACE DATABASE</strong>
-    <p class="note">Blank face draws behind hair. An Emosi face overlays that blank sheet. Old built-in faces are not selectable.</p>
+    <p class="note">Blank face draws behind hair. An Emosi face is stamped last, in front of hair_front and glasses. Back views (NE/NW) do not draw the Emosi face. Old built-in faces are not selectable.</p>
+    <div class="row"><button type="button" id="edit-face">Edit di Pixel Editor</button></div>
     <div class="faces" id="faces"></div>
   </section>
 </div>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="./emotion-studio/emotion-library.js?v=emosi-v1-bridge"></script>
 <script src="./emosi-bridge.js?v=preview-stock-20261107"></script>
 <script src="./vlhub-characters-publish.js?v=v6p-preview"></script>
-<script src="./v6p-compositor.js?v=v6p-preview"></script>
+<script src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
+<script src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
+<script src="./drive-sync.js?v=v6p-pixel-20261107"></script>
+<script src="./v6p-compositor.js?v=emosi-topmost-pixel-20261107"></script>
 <script>
 (function(){
 "use strict";
@@ -339,6 +358,60 @@ function reload(){
 $("refresh-assets").addEventListener("click",()=>refreshAssets().catch(e=>setStatus(String(e),true)));
 $("save").addEventListener("click",()=>save().catch(e=>setStatus(String(e),true)));
 $("reload").addEventListener("click",reload);
+function editorPartFor(kind){
+  const ch=state.ch||{},C=window.V6PPartCatalog;
+  const female=ch.body==="female";
+  const pick=(a,b)=>C&&C.isPart(a)?a:(C&&C.isPart(b)?b:a);
+  if(kind==="face") return female?"face/f_blank":"face/m_blank";
+  if(kind==="top") return pick("top/"+ch.top+(female?"_f":""),"top/"+ch.top);
+  if(kind==="pants") return pick("pants/"+ch.pants+(female?"_f":""),"pants/"+ch.pants);
+  if(kind==="shoes") return pick("shoes/"+ch.shoes+(female?"_f":""),"shoes/"+ch.shoes);
+  if(kind==="glasses") return ch.glasses&&ch.glasses!=="none"?("glasses/"+ch.glasses):null;
+  return null;
+}
+function openPixelEditor(kind){
+  const part=editorPartFor(kind);
+  if(!part){setStatus("Tidak ada part v6p untuk "+kind,true);return;}
+  const u=new URL("./pixel-editor.html",location.href);
+  u.searchParams.set("source","v6p");
+  u.searchParams.set("part",part);
+  u.searchParams.set("action",state.action||"idle");
+  u.searchParams.set("dir",state.dir||"se");
+  u.searchParams.set("frame",String(state.frame||0));
+  location.href=u.href;
+}
+async function sha256Hex(buf){
+  const hash=await crypto.subtle.digest("SHA-256",buf);
+  return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function saveOverridesToDrive(){
+  const el=$("drive-status"),D=window.MembangunCloudDrive,O=window.V6PPartOverrides,C=window.V6PPartCatalog;
+  try{
+    if(!D||!O||!C)throw Error("Drive helper belum termuat");
+    const parts=O.list();
+    if(!parts.length)throw Error("Tidak ada override lokal. Edit dulu di Pixel Editor.");
+    if(el)el.textContent="Mengunggah "+parts.length+" part ke Drive…";
+    for(const part of parts){
+      const row=O.get(part); if(!row) continue;
+      const bin=atob(row.dataUrl.split(",",2)[1]);
+      const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      const sha=await sha256Hex(bytes.buffer);
+      await D.saveV6pPart({part,png:bytes,sha256:sha,width:C.W,height:C.H});
+    }
+    const msg="Tersimpan ke Drive, akan masuk game otomatis";
+    if(el)el.textContent=msg+" · "+parts.join(", ");
+    setStatus(msg);
+  }catch(e){
+    const msg=e&&e.message||String(e);
+    if(el)el.textContent="Drive gagal: "+msg;
+    setStatus("DRIVE SAVE FAILED: "+msg,true);
+  }
+}
+["top","pants","shoes","glasses"].forEach(k=>{
+  const b=$("edit-"+k); if(b) b.addEventListener("click",()=>openPixelEditor(k));
+});
+if($("edit-face")) $("edit-face").addEventListener("click",()=>openPixelEditor("face"));
+if($("save-drive")) $("save-drive").addEventListener("click",()=>saveOverridesToDrive());
 async function boot(){
   writeForm();
   try{

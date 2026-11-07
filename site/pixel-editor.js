@@ -22,7 +22,7 @@ const mini=$("small-preview"),mc=mini.getContext("2d");
 const renderCanvas=document.createElement("canvas");renderCanvas.width=WIDTH;renderCanvas.height=HEIGHT;
 const rc=renderCanvas.getContext("2d",{willReadFrequently:true});
 dc.imageSmoothingEnabled=false;mc.imageSmoothingEnabled=false;
-const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",part:"head",masterDiff:new Map(),syncPromise:Promise.resolve(),syncing:false,
+const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",part:"head",source:"otis",v6pPart:null,v6pSheet:null,masterDiff:new Map(),syncPromise:Promise.resolve(),syncing:false,
  tool:"pencil",panMode:false,color:"#61b3c4",brush:1,zoom:MOBILE_TOUCH?4:8,grid:false,
  originals:new Map(),edits:new Map(),imageRequests:new Map(),history:[],redo:[],
  current:null,loading:true,drawing:false,previous:null,before:null,seq:0,
@@ -30,13 +30,13 @@ const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",par
  trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null};
 function status(s,error=false){$("editor-status").textContent=s;$("editor-status").classList.toggle("error",error);}
 function activeClip(){return state.clips.find(c=>c.id===state.action);}
-function currentKey(){return core.key(state.action,state.dir,state.frame);}
+function currentKey(){return state.source==="v6p"?state.action+"|"+state.dir+"|"+state.frame:core.key(state.action,state.dir,state.frame);}
 function frameCount(){return activeClip()?.frames||1;}
 function copy(data){return new ImageData(new Uint8ClampedArray(data.data),WIDTH,HEIGHT);}
 function identical(a,b){if(!a||!b)return false;const x=a.data,y=b.data;if(x.length!==y.length)return false;for(let i=0;i<x.length;i++)if(x[i]!==y[i])return false;return true;}
 function snapshot(){return state.current?copy(state.current):null;}
-function editable(x,y){return parts.contains(state.part,x,y);}
-function selectedRegion(){return parts.PARTS[state.part].box;}
+function editable(x,y){return state.source==="v6p"?Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&x<WIDTH&&y>=0&&y<HEIGHT:parts.contains(state.part,x,y);}
+function selectedRegion(){return state.source==="v6p"?[0,0,WIDTH,HEIGHT]:parts.PARTS[state.part].box;}
 function masterKey(dir,part){return dir+"|"+part;}
 function imageFor(atlas){if(state.imageRequests.has(atlas))return state.imageRequests.get(atlas);
  if(typeof atlas!=="string"||!/^media\/[a-zA-Z0-9_.-]+\.png$/.test(atlas))throw Error("Unsafe atlas path");
@@ -51,6 +51,11 @@ function isReadyClip(c){return c&&c.status==="ready"&&core.ACTIONS.includes(c.id
   c.columns>=c.frames&&c.directions?.join(",")===DIRECTIONS.join(",");}
 async function originalFor(key,clip,dir,index){
  if(state.originals.has(key))return state.originals.get(key);
+ if(state.source==="v6p"){
+  if(!state.v6pSheet)throw Error("v6p sheet not loaded");
+  const data=window.V6PPixelSource.extract(state.v6pSheet,clip.id,dir,index);
+  state.originals.set(key,copy(data));return state.originals.get(key);
+ }
  const img=await imageFor(clip.atlas);
  if(img.naturalWidth!==clip.columns*WIDTH||img.naturalHeight!==clip.rows*HEIGHT)
    throw Error("Atlas dimensions do not match the original 64×112 source");
@@ -65,6 +70,10 @@ function saveCurrent(){
  const key=currentKey(),original=state.originals.get(key);
  if(original&&identical(state.current,original))state.edits.delete(key);
  else state.edits.set(key,copy(state.current));
+ if(state.source==="v6p"&&state.v6pSheet&&window.V6PPixelSource){
+  window.V6PPixelSource.stamp(state.v6pSheet,state.action,state.dir,state.frame,state.current);
+  persistV6pOverride();
+ }
  updateCounts();scheduleSave();
 }
 async function navigate(){
@@ -73,7 +82,7 @@ async function navigate(){
  updateSelectionUI();
  $("frame").max=String(clip.frames-1);$("frame").value=String(state.frame);
  $("frame-label").textContent="FRAME "+(state.frame+1)+" / "+clip.frames;
- $("canvas-title").textContent="OTIS / "+clip.id.toUpperCase()+" / "+state.dir.toUpperCase()+" / F"+state.frame;
+ $("canvas-title").textContent=(state.source==="v6p"?("V6P / "+state.v6pPart):"OTIS")+" / "+clip.id.toUpperCase()+" / "+state.dir.toUpperCase()+" / F"+state.frame;
  status("READING "+clip.id.toUpperCase()+" / "+state.dir.toUpperCase()+" / "+state.frame+"...");
  try{
   const key=currentKey(),original=await originalFor(key,clip,state.dir,state.frame);
@@ -92,6 +101,7 @@ async function setFrame(action,dir,index){
  * Frame motion is only translated by silhouette center. Rotations/occlusion
  * still require manual frame corrections; never advertise auto bone skinning. */
 function queueMasterSync(){
+ if(state.source==="v6p")return;
  if(state.mode!=="master"||!state.current)return;
  const dir=state.dir,part=state.part,master=snapshot();
  state.syncPromise=state.syncPromise.then(async()=>{
@@ -125,14 +135,102 @@ function queueMasterSync(){
  .finally(()=>{state.syncing=false;});
 }
 function modeUI(){
- const isMaster=state.mode==="master";
+ const isMaster=state.mode==="master"&&state.source!=="v6p";
  $("action").disabled=isMaster;$("frame").disabled=isMaster;
  $("prev-frame").disabled=isMaster;$("next-frame").disabled=isMaster;
- $("part-bounds").textContent=state.part.toUpperCase()+" / "+parts.PARTS[state.part].box.join(",")+" / EDIT REGION";
- $("master-status").textContent=isMaster?
-   "MASTER: DRAW ON IDLE F0; ALL ORIGINAL ACTION FRAMES IN THIS DIRECTION INHERIT PIXEL DELTAS.":
-   "FRAME: FIX SPECIFIC POSES / AUTOSAVE TO THIS BROWSER.";
+ if($("part"))$("part").disabled=state.source==="v6p";
+ if($("edit-mode"))$("edit-mode").disabled=state.source==="v6p";
+ if($("v6p-part-wrap"))$("v6p-part-wrap").hidden=state.source!=="v6p";
+ $("part-bounds").textContent=state.source==="v6p"?
+   (state.v6pPart+" / 64x112 CELL / FULL FRAME EDITABLE"):
+   (state.part.toUpperCase()+" / "+parts.PARTS[state.part].box.join(",")+" / EDIT REGION");
+ $("master-status").textContent=state.source==="v6p"?
+   "V6P: edit satu frame 64×112 dari sheet 384×4928. Override tersimpan di browser; Save ke Drive untuk permanen. Mode MASTER Otis tidak dipakai di sini.":
+   (isMaster?"MASTER: DRAW ON IDLE F0; ALL ORIGINAL ACTION FRAMES IN THIS DIRECTION INHERIT PIXEL DELTAS.":
+   "FRAME: FIX SPECIFIC POSES / AUTOSAVE TO THIS BROWSER.");
  render();
+}
+function persistV6pOverride(){
+ if(state.source!=="v6p"||!state.v6pSheet||!state.v6pPart||!window.V6PPartOverrides)return;
+ try{
+  const dataUrl=window.V6PPixelSource.toDataURL(state.v6pSheet);
+  window.V6PPartOverrides.set(state.v6pPart,dataUrl,{width:384,height:4928});
+  if($("drive-status"))$("drive-status").textContent="Override lokal tersimpan untuk "+state.v6pPart+" · klik Muat ulang aset di studio, atau Save ke Drive.";
+ }catch(e){status("OVERRIDE SAVE FAILED: "+e.message,true);}
+}
+function fillV6pActions(){
+ const sel=$("action");sel.innerHTML="";
+ for(const clip of state.clips){const o=document.createElement("option");o.value=clip.id;o.textContent=clip.name+" ("+clip.frames+" FRAMES)";sel.append(o);}
+}
+function fillV6pPartSelect(){
+ const sel=$("v6p-part");if(!sel||!window.V6PPartCatalog)return;
+ sel.innerHTML="";
+ for(const part of window.V6PPartCatalog.PARTS){const o=document.createElement("option");o.value=part;o.textContent=part;sel.append(o);}
+ if(state.v6pPart)sel.value=state.v6pPart;
+}
+async function sha256Hex(buf){
+ const hash=await crypto.subtle.digest("SHA-256",buf);
+ return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function loadV6pPart(part,params){
+ const C=window.V6PPartCatalog,S=window.V6PPixelSource,O=window.V6PPartOverrides;
+ if(!C||!S)throw Error("v6p source helpers not loaded");
+ part=C.normalizePart(part);
+ state.loading=true;state.current=null;
+ state.source="v6p";state.v6pPart=part;state.mode="frame";
+ if($("edit-mode"))$("edit-mode").value="frame";
+ if($("source-kind"))$("source-kind").value="v6p";
+ fillV6pPartSelect();
+ const row=O&&O.get(part);
+ state.v6pSheet=await S.loadSheet(part,row&&row.dataUrl);
+ state.clips=C.clips();
+ state.originals=new Map();state.edits=new Map();state.history=[];state.redo=[];
+ fillV6pActions();
+ const action=(params&&params.get("action"))||"idle";
+ state.action=C.ACTIONS.includes(action)?action:"idle";
+ const dir=(params&&params.get("dir"))||"se";
+ state.dir=C.DIRS.includes(dir)?dir:"se";
+ const frame=Number(params&&params.get("frame")||0);
+ state.frame=Number.isInteger(frame)?frame:0;
+ $("action").value=state.action;$("direction").value=state.dir;
+ if($("v6p-part"))$("v6p-part").value=part;
+ modeUI();historyButtons();updateCounts();
+ await setFrame(state.action,state.dir,state.frame);
+ $("source-state").textContent="V6P / "+part+(row?" / LOCAL OVERRIDE":" / MEDIA SHEET");
+ status("EDITING V6P PART / "+part+" / override "+(row?"ON":"off"));
+}
+async function downloadV6pSheet(){
+ if(state.source!=="v6p"||!state.v6pSheet){status("Buka sumber V6P PART dulu",true);return;}
+ if(!state.loading)saveCurrent();
+ const name=window.V6PPartCatalog.filename(state.v6pPart);
+ state.v6pSheet.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  status("DOWNLOADED "+name);},"image/png");
+}
+async function saveV6pToDrive(){
+ const el=$("drive-status");
+ try{
+  if(el)el.textContent="Menyambungkan Google Drive…";
+  if(state.source!=="v6p"||!state.v6pSheet)throw Error("Buka part v6p dulu");
+  if(!state.loading)saveCurrent();
+  persistV6pOverride();
+  if(el)el.textContent="Menyambungkan Google Drive…";
+  const C=window.V6PPartCatalog,S=window.V6PPixelSource,D=window.MembangunCloudDrive;
+  if(!D)throw Error("Drive helper belum termuat");
+  if(!S.hasAlpha(state.v6pSheet))throw Error("Sheet alpha kosong / tidak valid");
+  if(state.v6pSheet.width!==C.W||state.v6pSheet.height!==C.H)throw Error("Sheet harus 384×4928");
+  const blob=await new Promise((res,rej)=>state.v6pSheet.toBlob(b=>b?res(b):rej(Error("PNG encode failed")),"image/png"));
+  const sha=await sha256Hex(await blob.arrayBuffer());
+  const jsonText=JSON.stringify(S.patchObject(state.v6pPart,state.edits,toPNG),null,2)+"\n";
+  if(el)el.textContent="Mengunggah ke Drive…";
+  const result=await D.saveV6pPart({part:state.v6pPart,png:blob,sha256:sha,width:C.W,height:C.H,jsonText});
+  if(el)el.textContent=result.status+" · "+result.filename;
+  status(result.status);
+ }catch(e){
+  const msg=e&&e.message||String(e);
+  if(el)el.textContent="Drive gagal: "+msg;
+  status("DRIVE SAVE FAILED: "+msg,true);
+ }
 }
 function rgba(){const h=state.color.replace("#","");return [...[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)),255];}
 function paintPixel(x,y,erase=false){
@@ -456,9 +554,26 @@ function downloadCanvas(filename){renderCanvas.width=64;renderCanvas.height=112;
  a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);},"image/png");}
 let localTimer=0;
 function scheduleSave(){clearTimeout(localTimer);localTimer=setTimeout(()=>{
+ if(state.source==="v6p"){persistV6pOverride();return;}
  try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}catch(e){status("LOCAL DRAFT FULL / EXPORT PIXEL EDITS.JSON NOW",true);}
  },450);}
+async function importV6pPatch(p){
+ if(!p||p.format!=="virtual-life-v6p-part-patch-v1")throw Error("Not a v6p part patch");
+ await loadV6pPart(p.part);
+ const imported=new Map();
+ for(const item of p.frames||[]){
+  const frame=await fromPNG(item.png);
+  const key=item.action+"|"+item.direction+"|"+item.frame;
+  imported.set(key,frame);
+  if(state.v6pSheet)window.V6PPixelSource.stamp(state.v6pSheet,item.action,item.direction,item.frame,frame);
+ }
+ state.edits=imported;state.history=[];state.redo=[];historyButtons();updateCounts();
+ persistV6pOverride();
+ await navigate();
+ status("IMPORTED V6P PATCH / "+imported.size+" FRAMES / "+state.v6pPart);
+}
 async function importObject(p,fromDraft=false){
+ if(p&&p.format==="virtual-life-v6p-part-patch-v1"){await importV6pPatch(p);return;}
  core.validatePatch(p);
  const imported=new Map();
  for(const item of p.frames){
@@ -600,15 +715,38 @@ function initControls(){
    }
   }else state.current=copy(base);
   commit(before);status("RESET "+(state.mode==="master"?state.part.toUpperCase():"CURRENT FRAME"));};
- $("download-frame").onclick=()=>{if(state.current)downloadCanvas("otis_"+state.action+"_"+state.dir+"_f"+state.frame+".png");};
+ $("download-frame").onclick=()=>{if(state.current)downloadCanvas((state.source==="v6p"?state.v6pPart.replaceAll("/","_")+"_":"otis_")+state.action+"_"+state.dir+"_f"+state.frame+".png");};
+ if($("download-sheet"))$("download-sheet").onclick=()=>downloadV6pSheet();
+ if($("save-drive"))$("save-drive").onclick=()=>saveV6pToDrive();
+ if($("source-kind"))$("source-kind").onchange=async e=>{
+  if(e.target.value==="v6p"){fillV6pPartSelect();await loadV6pPart(($("v6p-part")&&$("v6p-part").value)||"top/nude");}
+  else location.href="./pixel-editor.html";
+ };
+ if($("v6p-part"))$("v6p-part").onchange=e=>loadV6pPart(e.target.value).catch(err=>status(String(err),true));
  $("export-patch").onclick=async()=>{await state.syncPromise;if(!state.loading)saveCurrent();
+  if(state.source==="v6p"){
+   persistV6pOverride();
+   const patch=window.V6PPixelSource.patchObject(state.v6pPart,state.edits,toPNG);
+   downloadText(JSON.stringify(patch,null,2)+"\n","PIXEL EDITS.JSON","application/json");
+   await downloadV6pSheet();
+   status("EXPORTED "+patch.frames.length+" FRAME EDITS + "+window.V6PPartCatalog.filename(state.v6pPart));
+   return;
+  }
   const patch=patchObject();core.validatePatch(patch);
   downloadText(JSON.stringify(patch,null,2)+"\n","otis_pixel_edits.json","application/json");status("EXPORTED "+patch.frames.length+" PIXEL FRAMES / SHARE FILE IN CHAT TO PUBLISH");};
  $("import-patch").onclick=()=>$("patch-file").click();
  $("patch-file").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;
   try{if(file.size>15000000)throw Error("Patch larger than 15 MB");const data=JSON.parse(await file.text());await importObject(data);}
   catch(error){status("IMPORT FAILED: "+error.message,true);}finally{e.target.value="";}};
- $("clear-draft").onclick=()=>{if(!window.confirm("Discard all LOCAL Otis pixel edits? Existing files already downloaded will remain."))return;
+ $("clear-draft").onclick=()=>{
+  if(state.source==="v6p"){
+   if(!window.confirm("Hapus override lokal untuk "+state.v6pPart+"? File media asli tidak diubah."))return;
+   clearTimeout(localTimer);
+   if(window.V6PPartOverrides)window.V6PPartOverrides.clear(state.v6pPart);
+   loadV6pPart(state.v6pPart).then(()=>status("LOCAL V6P OVERRIDE DELETED / "+state.v6pPart));
+   return;
+  }
+  if(!window.confirm("Discard all LOCAL Otis pixel edits? Existing files already downloaded will remain."))return;
   clearTimeout(localTimer);state.edits.clear();state.masterDiff.clear();state.history=[];state.redo=[];historyButtons();localStorage.removeItem(LOCAL);navigate();updateCounts();status("LOCAL DRAFT DELETED");};
  display.addEventListener("pointerdown",editStart);display.addEventListener("pointermove",editMove);
  display.addEventListener("pointerup",editEnd);display.addEventListener("pointercancel",editEnd);
@@ -622,11 +760,18 @@ function initControls(){
  });
 }
 async function init(){
- initControls();fitMobileZoom();render();
+ initControls();fitMobileZoom();render();fillV6pPartSelect();
  window.addEventListener("resize",()=>{fitMobileZoom();});
  if(window.VLCharacterReferenceReset?.active){
   $("source-state").textContent=window.VLCharacterReferenceReset.message;
   status(window.VLCharacterReferenceReset.message);return;
+ }
+ const params=new URLSearchParams(location.search);
+ const qPart=params.get("part"),qSource=params.get("source");
+ if(qSource==="v6p"||(qPart&&window.V6PPartCatalog&&window.V6PPartCatalog.isPart(qPart))){
+  try{await loadV6pPart(qPart||"top/nude",params);refreshToolState();fitMobileZoom();}
+  catch(e){status("V6P SOURCE FAILED: "+e.message,true);}
+  return;
  }
  try{
   const response=await fetch("./motion-packs/legacy_otis.json",{cache:"no-store"});
@@ -649,13 +794,16 @@ window.VirtualLifePixelEditor={
   cancelTemporaryMove();await state.syncPromise;
   if(!state.loading)saveCurrent();
   clearTimeout(localTimer);
+  if(state.source==="v6p"){persistV6pOverride();return;}
   try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}
   catch(error){status("LOCAL SAVE FAILED: EXPORT YOUR PATCH JSON",true);throw error;}
  }
 };
 window.addEventListener("pagehide",()=>{if(state.loading)return;
  cancelTemporaryMove();
- try{localStorage.setItem(LOCAL,JSON.stringify(patchObject()));}
- catch(error){/* user can still explicitly export a patch */}});
+ try{
+  if(state.source==="v6p")persistV6pOverride();
+  else localStorage.setItem(LOCAL,JSON.stringify(patchObject()));
+ }catch(error){/* user can still explicitly export a patch */}});
 init();
 })();

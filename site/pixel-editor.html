@@ -7,9 +7,14 @@
 <meta name="theme-color" content="#e9e7db">
 <title>Pixel Editor — Mahluk Hidup</title>
 <link rel="stylesheet" href="./pixel-editor.css?v=wand-selection-v1-20261103">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script defer src="./pixel-edit-core.js?v=wand-selection-v1-20261103"></script>
 <script defer src="./master-parts.js?v=master-parts-1"></script>
-<script defer src="./pixel-editor.js?v=wand-selection-v1-20261103"></script>
+<script defer src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
+<script defer src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
+<script defer src="./v6p-pixel-source.js?v=v6p-pixel-20261107"></script>
+<script defer src="./drive-sync.js?v=v6p-pixel-20261107"></script>
+<script defer src="./pixel-editor.js?v=v6p-pixel-20261107"></script>
 </head>
 <body>
 <main class="paint">
@@ -20,6 +25,11 @@
 <div class="workspace">
 <aside class="controls">
 <h2>CHARACTER MASTER</h2>
+<div class="control"><label for="source-kind">SUMBER</label><select id="source-kind">
+<option value="otis">OTIS / MASTER PARTS</option>
+<option value="v6p">V6P PART SHEET (media/v6p)</option>
+</select></div>
+<div class="control" id="v6p-part-wrap" hidden><label for="v6p-part">V6P PART</label><select id="v6p-part"></select></div>
 <div class="control"><label for="edit-mode">EDITING MODE</label><select id="edit-mode">
 <option value="master">MASTER / APPLY TO FRAMES</option>
 <option value="frame">FRAME / MANUAL FIX</option></select></div>
@@ -107,12 +117,15 @@
 <div class="panel-note"><strong>AUTOSAVE ON</strong> — changes are stored in this browser after each stroke. Master corrections are projected across actions; switch to FRAME to fix tricky poses. GitHub publication still requires your authorization.</div>
 <div class="button-stack">
 <button type="button" id="download-frame">↓ CURRENT FRAME.PNG</button>
+<button type="button" id="download-sheet">↓ V6P PART SHEET.PNG (384×4928)</button>
 <button type="button" id="export-patch" class="primary">↓ SAVE PIXEL EDITS.JSON</button>
 <button type="button" id="import-patch">↑ LOAD PIXEL EDITS.JSON</button>
+<button type="button" id="save-drive" class="primary">Save ke Drive</button>
+<p id="drive-status" class="panel-note">Drive: belum disimpan. Login Google diperlukan untuk unggah otomatis ke My Drive/Membangun/Mahluk Hidup/Pixel Edits/.</p>
 <input type="file" id="patch-file" accept=".json,application/json" hidden>
 <button type="button" id="clear-draft">DELETE LOCAL DRAFT</button>
 </div>
-<div class="panel-note">To publish permanently: download <strong>PIXEL EDITS.JSON</strong> and send it here. I'll commit and deploy your actual master/frame corrections. GitHub Pages cannot write to your repo without authenticated backend access.</div>
+<div class="panel-note">V6P: setelah mengedit, override tersimpan di browser (localStorage) lalu muncul di v6p-studio lewat <strong>Muat ulang aset</strong>. <strong>Save ke Drive</strong> mengunggah sheet 384×4928 secara otomatis ke <code>My Drive/Membangun/Mahluk Hidup/Pixel Edits/</code> (akan masuk game lewat job sinkron). Unduhan PNG + PIXEL EDITS.JSON tetap ada kalau mau commit manual.</div>
 <div class="meta"><strong id="modified-count">0 MODIFIED FRAMES</strong><span id="part-bounds">SELECTED PART ONLY</span><span>OTHER AREAS LOCKED WHILE DRAWING</span><span id="source-state">SOURCE NOT LOADED</span></div>
 </aside>
 </div>

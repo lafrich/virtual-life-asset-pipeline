@@ -1,8 +1,8 @@
 /* v6p layered compositor — port of archived Character Creator (voc6 / office.html @ 16054af).
  * Layer order, sheet size, frames, palette keys, and cmap/files() match the original.
  * Additive preview hooks only: D points at site/media/v6p/, face option "blank",
- * clothing option "nude", Emosi overlay after recolor and before hair_front/glasses,
- * old brows omitted when the blank face is selected.
+ * clothing option "nude", Emosi overlay stamped last (after hair_front/glasses and fx;
+ * not drawn on NE/NW back views), old brows omitted when the blank face is selected.
  */
 (function(root,factory){
  "use strict";
@@ -84,12 +84,13 @@ let LAST_MISSING=[];
 let GEN=0;
 const IM={};
 const img=src=>{
-  const key=src+'#'+GEN;
+  const override=(typeof root!=="undefined"&&root&&root.V6PPartOverrides&&root.V6PPartOverrides.urlFor(src))||null;
+  const key=(override||src)+'#'+GEN;
   return IM[key]||(IM[key]=new Promise(res=>{
     const i=new Image();
     i.onload=()=>res(i);
     i.onerror=()=>{ delete IM[key]; res(null); };
-    i.src=D+src+'.png?v='+GEN;
+    i.src=override||(D+src+'.png?v='+GEN);
   }));
 };
 function recolor(cv,ch){
@@ -125,6 +126,7 @@ function stampEmosi(c,emosi,blankImg){
   for(const [action,row0] of Object.entries(ROWS)){
     const nf=FRAMES[action]||4;
     for(let di=0;di<4;di++){
+      if(DIRS[di]==='ne'||DIRS[di]==='nw') continue;
       const idleA=idleAnchors[di];
       for(let f=0;f<nf;f++){
         const ef=f%eFrames;
@@ -161,11 +163,6 @@ async function compose(ch,fs,emosi){
   c.imageSmoothingEnabled=false;
   L.forEach(i=>c.drawImage(i,0,0));
   recolor(cv,ch);
-  if(emosi){
-    const faceName=baseNames.find(n=>n.indexOf('face/')===0);
-    const blankImg=faceName?L[baseNames.indexOf(faceName)]:null;
-    stampEmosi(c,emosi,blankImg);
-  }
   if(fronts.length){
     const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
     const t=tmp.getContext('2d',{willReadFrequently:true});
@@ -176,6 +173,11 @@ async function compose(ch,fs,emosi){
   }
   c.globalCompositeOperation='destination-over'; c.drawImage(shd,0,0);
   c.globalCompositeOperation='source-over'; c.drawImage(fx,0,0);
+  if(emosi){
+    const faceName=baseNames.find(n=>n.indexOf('face/')===0);
+    const blankImg=faceName?L[baseNames.indexOf(faceName)]:null;
+    stampEmosi(c,emosi,blankImg);
+  }
   return cv;
 }
 const key=(ch,emosiId)=>{

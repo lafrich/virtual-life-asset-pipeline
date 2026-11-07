@@ -2,14 +2,22 @@
 
 Sistem sudah tersambung: kamu hanya perlu mengedit gambar part, lalu compose + Save. Tidak perlu mengubah kode animasi atau rig.
 
-## Alur kerja
+## Alur kerja (pixel editor di browser)
 
-1. Edit file PNG di `site/media/v6p/` (pixel editor). Jangan menimpa file asli yang bukan milikmu; untuk tubuh telanjang pakai file `nude` yang sudah disiapkan.
-2. Buka studio: `v6p-studio.html`.
-3. Klik **Muat ulang aset** supaya preview membaca PNG terbaru (bukan cache lama).
-4. Periksa idle / walk / sit / sleep / lie di 4 arah, plus wajah kosong atau wajah Emosi.
-5. Klik **Save to characters**. Ini menyusun ulang sheet dari file terbaru, lalu menulis klip `idle`, `walk`, `talk`, `sit`, `lie`, dan `sleep` ke topik VLHub `characters` (`mahluk-2-library-v1`).
-6. Buka Semesta Play (origin yang sama). Karakter tersimpan dipakai langsung, termasuk animasi tidur di kasur. Kalau tab Play sudah terbuka, ia membaca ulang setelah Save.
+Untuk mengedit outfit nude (atau part v6p lain) dengan editor milikmu:
+
+1. Buka `pixel-editor.html`, atau dari `v6p-studio.html` klik **Edit di Pixel Editor** di samping Top / Pants / Shoes / Glasses / wajah kosong.
+2. Di editor, pilih sumber **V6P PART SHEET (media/v6p)**. Daftar part mencakup `top/nude`, `top/nude_back`, `pants/nude`, `shoes/nude` plus varian `_f`, `face/m_blank`, `face/f_blank`, dan semua sheet lain yang sudah ada di `site/media/v6p/`.
+3. Navigasi **ANIMATION** (baris aksi: idle, walk, talk, sit, sleep, lie, …), **DIRECTION** (SE/SW/NE/NW), dan frame. Kanvas tetap 64×112; alat yang ada (pensil, penghapus, fill, wand, seleksi, …) tetap dipakai. Mode MASTER Otis (proyeksi antar aksi lewat kotak kepala/torso/lengan) tidak dipakai untuk sheet v6p — tidak ada salin-otomatis ke semua frame baris yang sama, karena mekanisme itu milik Otis, bukan salinan sel v6p.
+4. Tiap goresan tersimpan sebagai **override lokal** (localStorage, origin yang sama dengan studio / Semesta). Ini belum menimpa file di repo.
+5. Kembali ke studio → **Muat ulang aset**. Compose memakai override itu segera.
+6. Periksa idle / walk / sit / sleep / lie di 4 arah, plus wajah kosong atau wajah Emosi.
+7. Klik **Save to characters**. Studio menyusun ulang sheet (termasuk override) lalu menulis klip `idle`, `walk`, `talk`, `sit`, `lie`, dan `sleep` ke topik VLHub `characters` (`mahluk-2-library-v1`). Semesta Play di origin yang sama menampilkan klip itu setelah Save.
+8. **Save ke Drive** (di editor atau di studio) mengunggah sheet penuh 384×4928 ke `My Drive/Membangun/Mahluk Hidup/Pixel Edits/` dengan nama `v6p--top__nude.png` (garis miring diganti `__`) dan `appProperties` `{app:'mahluk', kind:'v6pPart', part:'top/nude', width:'384', height:'4928', sha256}`. File yang sama ditimpa kalau disimpan lagi. Status sukses: **Tersimpan ke Drive, akan masuk game otomatis**. Job terjadwal menarik folder itu (lihat `DRIVE_SYNC_CONTRACT.md`).
+9. Unduhan manual tetap ada: sheet PNG 384×4928 plus **PIXEL EDITS.JSON**, kalau mau di-commit sendiri.
+10. **DELETE LOCAL DRAFT** di editor menghapus override part itu; studio setelah Muat ulang aset kembali ke PNG media asli.
+
+Alur lama (mengedit file PNG langsung di `site/media/v6p/` lalu Muat ulang aset + Save) masih berlaku untuk perubahan yang sudah masuk repo.
 
 ## File mana yang diedit
 
@@ -32,7 +40,7 @@ Semua sheet berukuran **384×4928**, tiap frame **64×112**, titik tumpu **32,10
 | Kacamata | `glasses/round.png`, `glasses/square.png` | — |
 | Bayangan / efek | `base/shadow.png`, `base/fx.png` | sama |
 
-Wajah Emosi tidak diedit di folder ini. Itu database Emosi (6 wajah authored). Di studio pilih **No face (blank)** atau salah satu Emosi; Emosi digambar di atas wajah kosong, di belakang rambut depan.
+Wajah Emosi tidak diedit di folder ini. Itu database Emosi (6 wajah authored). Di studio pilih **No face (blank)** atau salah satu Emosi; Emosi digambar paling depan (di atas rambut depan dan kacamata). Tampilan belakang (NE/NW) tidak menggambar wajah Emosi.
 
 Warna rambut, kulit, baju, celana, sepatu dipilih di studio (palette magenta v6p). File `nude` memakai kunci warna kulit supaya ikut pilihan kulit.
 
