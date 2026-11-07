@@ -253,7 +253,7 @@ async function regenerate(){
  try{
   const name=$("char-name").value||info.name||"New Character";
   S.update(info.id,{name,appearance:info.ch,faceId:info.faceId});
-  result("Applying appearance to existing animation poses…");
+  result("Applying colors to native V6B animation poses…");
   const done=await R.generateCharacter(info.id,{progress:p=>result("Applying "+(p.index+1)+" / "+p.total+" · "+p.part)});
   await H.open(S.get(info.id));motionChoices();state.frame=0;await preview();renderLive();
   const corrected=done.corrected||0,repair=done.repairedBackMasters||0;
@@ -261,7 +261,7 @@ async function regenerate(){
   const archiveNote=archived?(archived+" old pose fixes backed up before rebuilding. "):"";
   const recoverNote=repair?("Repaired "+repair+" legacy rear-view sprite masters into their correct back layers. "):"";
   result(done.parts.length?
-   recoverNote+archiveNote+"Animation frames rebuilt from original assets and your 4-angle drawings. "+corrected+" newer manual corrections kept. Check walking, sitting and sleeping poses.":
+   recoverNote+archiveNote+"Native V6B frames rebuilt without shifting pixels. Color edits follow native poses; custom silhouettes remain exact on IDLE F0 until each action is corrected manually. "+corrected+" newer manual corrections kept. Check walking, sitting and sleeping poses.":
    recoverNote+archiveNote+"Original outfit animations loaded (including Nude). Check each motion and direction.");
   state.pendingPreview=false;
   return true;
@@ -278,7 +278,7 @@ async function forward(){
  try{
   if(state.step==="base"){state.busy=true;updateNext();await createFromBase();state.busy=false;updateNext()}
   else if(state.step==="customize"){
-   // Generate automatically here: user need not understand internal retarget buttons.
+   // Generate automatically without changing Wizard steps or controls.
    if(!await regenerate())return;
    setStep("preview");
   }else if(state.step==="preview"){stopPreview();setStep("save")}
