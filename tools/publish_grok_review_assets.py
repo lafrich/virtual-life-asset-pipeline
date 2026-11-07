@@ -55,9 +55,49 @@ def main():
             for row in manifest["files"]: add(row,batch,"furniture")
         veh=json.loads(z.read(f"{PREFIX}source/B4R2c/b4/b4r2-manifest.json"))
         for row in veh: add(row,"B4R2c","vehicle")
+    # Additional original Grok archives. B4R2d supersedes the earlier B4R2c
+    # preview; live vehicle IDs and sprites in Semesta are never overwritten.
+    for batch in ("B1","B2","B3","B4R2d","C1"):
+        with zipfile.ZipFile(ROOT/"assets/grok_review_source"/(batch+".zip")) as ext:
+            if batch in ("B1","B2"):
+                m=json.loads(ext.read("VEHICLE-REDESIGN-MANIFEST.json"))
+                rows=m["batch1" if batch=="B1" else "batch2"]
+            elif batch=="B3": rows=json.loads(ext.read("b3/b3-manifest.json"))
+            elif batch=="B4R2d": rows=json.loads(ext.read("b4/b4r2-manifest.json"))
+            else: rows=[r for r in json.loads(ext.read("c1-manifest.json")) if r["mode"]=="proposal"]
+            archived=set(ext.namelist())
+            for row in rows:
+                category="cityprop" if batch=="C1" else "vehicle"
+                name=row["catalogId"] if category=="cityprop" else row["id"]
+                side=row["dir"]
+                assert SAFE.fullmatch(name) and side in DIRS
+                source=(f"out_proposal/{name}_{side}.png" if category=="cityprop" else f"files/{name}_{side}.png")
+                if source not in archived: continue
+                pixels=ext.read(source)
+                assert hashlib.sha256(pixels).hexdigest()==row["sha256"],source+" digest mismatch"
+                with Image.open(io.BytesIO(pixels)) as picture:
+                    assert picture.format=="PNG" and picture.mode=="RGBA" and list(picture.size)==row["size"] and picture.getchannel("A").getbbox(),source+" invalid image"
+                size,pivot=row["size"],row["pivot"]
+                assert len(pivot)==2 and all(0<=pivot[i]<=size[i] for i in range(2)),source+" invalid pivot"
+                fp=row["footprint"] if category=="cityprop" else None
+                if name in items and items[name]["batch"]=="B4R2c": items.pop(name)
+                item=items.setdefault(name,{
+                    "id":name,"label":name.removeprefix("id200_transport_").replace("_"," ").replace("-"," ").title(),
+                    "category":category,"batch":batch,"footprint":fp,"state":"review-preview","playable":False,"views":{}
+                })
+                assert item["batch"]==batch and item["category"]==category and item["footprint"]==fp and side not in item["views"]
+                dest=OUT/category
+                dest.mkdir(parents=True,exist_ok=True)
+                filename=f"{name}_{side}.png"
+                (dest/filename).write_bytes(pixels)
+                item["views"][side]={
+                    "size":size,"pivot":pivot,"sha256":row["sha256"],
+                    "url":f"/virtual-life-asset-pipeline/grok-assets/{category}/{filename}"
+                }
     all_items=sorted(items.values(),key=lambda x:(x["category"],x["batch"],x["id"]))
     assert sum(x["category"]=="furniture" for x in all_items)==61
-    assert sum(x["category"]=="vehicle" for x in all_items)==6
+    assert sum(x["category"]=="vehicle" for x in all_items)==20
+    assert sum(x["category"]=="cityprop" for x in all_items)==4
     assert all(set(x["views"])==DIRS for x in all_items),"Missing four-direction PNGs"
     obj={
         "schema":"semesta-grok-v6b-review-gallery-v1","sourceSha256":ARCHIVE_SHA,
