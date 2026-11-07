@@ -119,10 +119,14 @@ function archiveStaleCorrections(id,part,frames){
   const archivedAt=now();
   for(const entry of frames){
    const key=entry.key;
-   if(!archive[part][key])archive[part][key]={
+   const previous=archive[part][key];
+   const saved={
     png:entry.png,archivedAt,reason:"stale-v6p-source-rebuild",
     originalCorrectionAt:row.correctionUpdatedAt?.[part]?.[key]||null
    };
+   // Keep every successive manually corrected version, not only the first
+   // obsolete frame with this key. Quota failures abort the rebuild safely.
+   archive[part][key]=previous?(Array.isArray(previous)?[...previous,saved]:[previous,saved]):saved;
    // Old flags can be removed after the previous frame is backed up.
    if(row.corrections?.[part])delete row.corrections[part][key];
    if(row.correctionUpdatedAt?.[part])delete row.correctionUpdatedAt[part][key];
