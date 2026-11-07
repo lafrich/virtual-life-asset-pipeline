@@ -1351,6 +1351,18 @@ function pullEmosiIntoState(){
   const key=state.source==="v6p"?state.action+"|"+dir+"|"+state.frame:core.key(state.action,dir,state.frame);
   const stored=displayToFileFor(displayed,key);
   const original=state.originals.get(key);
+  // The four saved idle sprites are the user's source of truth. Capture each
+  // physical layer/direction even when it looks identical to the loaded sheet.
+  // Previously an unmodified-looking correct NE/NW sprite could be skipped,
+  // leaving Preview to rebuild from stale animation results.
+  if(state.masterMode&&state.source==="v6p"&&state.characterId&&state.v6pPart&&
+     !state.project&&!state.actClip&&window.V6PCharacterStore){
+   const master=document.createElement("canvas");master.width=WIDTH;master.height=HEIGHT;
+   master.getContext("2d").putImageData(stored,0,0);
+   const png=master.toDataURL("image/png");
+   if(window.V6PCharacterStore.master(state.characterId,state.v6pPart,dir)!==png)
+    window.V6PCharacterStore.setMaster(state.characterId,state.v6pPart,dir,png);
+  }
   if(original&&identical(stored,original))state.edits.delete(key);
   else state.edits.set(key,copy(stored));
   if(state.source==="v6p"&&state.v6pSheet&&window.V6PPixelSource){
@@ -1359,14 +1371,9 @@ function pullEmosiIntoState(){
     window.V6PPixelSource.stampAt(state.v6pSheet,o.x,o.y,stored);
    }else{
     window.V6PPixelSource.stamp(state.v6pSheet,state.action,dir,state.frame,stored);
-    if(state.characterId&&state.v6pPart&&window.V6PCharacterStore&&original&&!identical(stored,original)){
-     try{
-      if(state.masterMode){
-       const master=document.createElement("canvas");master.width=WIDTH;master.height=HEIGHT;
-       master.getContext("2d").putImageData(stored,0,0);
-       window.V6PCharacterStore.setMaster(state.characterId,state.v6pPart,dir,master.toDataURL("image/png"));
-      }else window.V6PCharacterStore.markCorrection(state.characterId,state.v6pPart,state.action,dir,state.frame);
-     }catch(error){status("FRAME SAVE ERROR "+dir+": "+error.message,true)}
+    if(state.characterId&&state.v6pPart&&window.V6PCharacterStore&&original&&!identical(stored,original)&&!state.masterMode){
+     try{window.V6PCharacterStore.markCorrection(state.characterId,state.v6pPart,state.action,dir,state.frame)}
+     catch(error){status("FRAME SAVE ERROR "+dir+": "+error.message,true)}
     }
    }
   }
