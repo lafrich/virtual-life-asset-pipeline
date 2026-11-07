@@ -2,6 +2,7 @@ name: MAHLUK HIDUP — Unified Workspace Regression
 on:
   push:
     branches:
+      - main
       - feature/mahluk-unified-workspace-20261107
       - feature/character-animation-action-workflow-20261107
       - fix/character-draw-four-apply-animation-20261107
