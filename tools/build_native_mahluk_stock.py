@@ -30,35 +30,45 @@ def source_cell(sheet, row, col=0):
     return np.asarray(sheet.crop((FW*col,FH*row,FW*(col+1),FH*(row+1))).convert("RGBA")).copy()
 
 def warp(src, action, frame, direction):
-    """Integer nearest-neighbour sampling of actual source sprite pixels.
-
-    All V6P part layers use one global coordinate field, preserving outfit,
-    skin, hair, eyes, and palette keys as raster art; NOTHING transforms at
-    runtime. The deformations below are *review poses*, not accepted anatomy.
-    """
+    """Integer native-pixel pose baking. 4 poses / 4 directions, no rig."""
     yy,xx=np.indices((FH,FW),dtype=float)
     u=xx if direction in ("se","ne") else FW-1-xx
+    if action=="yoga_happy_baby_idle":
+        # Rebuild bent raised legs from the native reclining silhouette.
+        # Hip at u=37, knee at u=46, feet return toward the torso.
+        # Two-segment projection: lying thigh -> vertical knee -> inward shin.
+        out=np.zeros_like(src)
+        ys,xs=np.nonzero(src[...,3])
+        phase=(0,-1,0,1)[frame%4]
+        for y,x in zip(ys,xs):
+            uu=x if direction in ("se","ne") else (FW-1-x)
+            if uu<=37:
+                nu=uu;ny=y+phase*(0.35 if uu>23 else 0)
+            elif uu<=46:
+                nu=uu;ny=y-(uu-37)*2.25+phase*0.3
+            else:
+                nu=46-(uu-46)*0.66;ny=y-20.25-(uu-46)*0.80+phase*0.7
+            nx=nu if direction in ("se","ne") else (FW-1-nu)
+            ix,iy=int(round(nx)),int(round(ny))
+            if 0<=ix<FW and 0<=iy<FH:
+                out[iy,ix]=src[y,x]
+        return out
     if action=="hip_shake":
-        sway=(-1,-2,-1,1,2,1)[frame]
-        waist=np.maximum(0,1-np.abs(yy-76)/24)
+        sway=(-2,-4,-2,2,4,2)[frame]
+        waist=np.maximum(0,1-np.abs(yy-76)/25)
         shoulders=np.maximum(0,1-np.abs(yy-51)/19)
-        sx=xx-np.rint(sway*waist-0.35*sway*shoulders).astype(int)
-        sy=yy.astype(int)
+        sx=xx-np.rint(sway*waist-0.45*sway*shoulders)
+        sy=yy
     else:
         head=np.clip((35-u)/21,0,1)
         hips=np.clip((u-24)/27,0,1)
         breath=(0,-1,0,1)[frame%4]
         if action=="yoga_sphinx_idle":
-            lift=(-6*head+0.9*hips)+breath*(0.7*head+0.3*hips)
-            horizontal=0
-        elif action=="yoga_puppy_idle":
-            lift=(1.5*head-12*hips)+breath*(0.4*head+0.6*hips)
-            horizontal=0
-        else: # Happy Baby: original real V6P reclining source, feet raised
-            lift=(1*head-13*hips)+breath*0.5
-            horizontal=(0,-1,0,1)[frame%4]
-        sx=xx-np.rint(horizontal*hips).astype(int)
-        sy=yy-np.rint(lift).astype(int)
+            lift=(-14*head+3.5*hips)+breath*(0.5*head+0.2*hips)
+        else: # Puppy: forehead grounded, raised hips, slow breathing
+            lift=(2.5*head-12*hips)+breath*(0.35*head+0.7*hips)
+        sx=xx
+        sy=yy-np.rint(lift)
     sx=np.rint(sx).astype(np.int32)
     sy=np.rint(sy).astype(np.int32)
     valid=(sx>=0)&(sx<FW)&(sy>=0)&(sy<FH)
@@ -102,7 +112,9 @@ def build(output, *, source=SOURCE, target=TARGET, parts=None):
                     elif action in ("yoga_sphinx_idle","yoga_puppy_idle"):
                         # Provisional grounded prone source: the ACTUAL authored
                         # pushup V6P part, never our previous composite preview.
-                        pixels=source_cell(original,4+di,f%4)
+                        # Idle yoga never cycles through push-up action phases.
+                        fixed_pose=2 if action=="yoga_sphinx_idle" else 0
+                        pixels=source_cell(original,4+di,fixed_pose)
                     elif native is not None and native.size==(384,4928):
                         # Native Idle for sway, native Lie for Happy Baby.
                         srcrow=(4 if action=="hip_shake" else 36)+di
