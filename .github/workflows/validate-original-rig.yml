@@ -5,11 +5,6 @@ on:
     branches: [main]
     paths:
       - "tools/build_original_rig_layers.py"
-      - "site/modular-rig-v2.js"
-      - "site/rig-studio-v2.js"
-      - "site/rig-manual-art.js"
-      - "site/rig-pixel-workbench.js"
-      - "tests/test_modular_rig_v2.cjs"
       - "tests/test_native_rig_partition.py"
       - ".github/workflows/validate-original-rig.yml"
   workflow_dispatch:
@@ -36,10 +31,3 @@ jobs:
           test -s "$RUNNER_TEMP/native-rig-art/original-rig/manifest.json"
           test -s "$RUNNER_TEMP/native-rig-art/original-rig/source-contact-sheet.png"
           python -c "import json,os,pathlib; p=pathlib.Path(os.environ['RUNNER_TEMP'])/'native-rig-art/original-rig/manifest.json'; m=json.loads(p.read_text()); assert m['pixels_preserved'] and len(m['slots'])>=10; assert len(m['directions'])==4 and len(m['emotions'])==7"
-      - name: Verify Rig Studio API and old editor compatibility
-        run: |
-          node --check site/modular-rig-v2.js
-          node --check site/rig-studio-v2.js
-          node --check site/rig-manual-art.js
-          node --check site/rig-pixel-workbench.js
-          node --test tests/test_modular_rig_v2.cjs

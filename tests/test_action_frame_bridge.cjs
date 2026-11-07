@@ -25,21 +25,6 @@ patch.remove("ichsan","toilet","sw",0);
 assert.equal(patch.get("ichsan","toilet","sw",0),null);
 assert.equal(patch.get("human_female_base","bathe","se",1),PNG,"separate actors remain isolated");
 assert.throws(()=>patch.setOffset("ichsan","toilet",99,0),/32/);
-const html=fs.readFileSync("site/action-editor.html","utf8");
-const ui=fs.readFileSync("site/action-editor.js","utf8");
-const gallery=fs.readFileSync("site/index.html","utf8");
-for(const type of ["wc","shower","bathtub","bed"])
- assert.ok(ui.includes(type),"Action preview must use real Bangun furniture "+type);
-for(const tool of ["actor","action","direction","building","floor","furniture",
- "simulation","pixel","frame","offset-x","offset-y","save","sync"])
- assert.ok(html.includes('id="'+tool+'"'),"Missing action editor control "+tool);
-assert.ok(html.includes("/virtual-office/world-builder/bangun-ruang/interior-isometric.js"),
- "Simulator must import the canonical Bangun Ruang renderer");
-assert.ok(ui.includes("ISO.actionAnchor(p)"),"Must use canonical WC and bed docking with safe optional fixture");
-assert.ok(ui.includes('localStorage.getItem(key)'),"Must use same-origin local Bangun Ruang browser storage");
-assert.ok(gallery.includes('id="action-studio"'));
-const studio=fs.readFileSync("site/app.js","utf8");
-assert.ok(studio.includes("openActionEditor()"));
 const canonical=JSON.parse(fs.readFileSync("assets/animation_library/actions.json","utf8")).actions;
 assert.equal(canonical.length,204);
 assert.equal(patch.registerActions(canonical.map(row=>row.id)),206);

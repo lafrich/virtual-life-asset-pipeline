@@ -26,27 +26,13 @@ test("Old standalone Emotion Studio app is retired and redirects to Emosi.exe",(
  assert.ok(!fs.existsSync(path.join(root,"site/emotion-studio/studio.js")));
  assert.ok(!fs.existsSync(path.join(root,"site/emotion-studio/studio.css")));
 });
-test("Mahluk Hidup 1 bridge loads Emosi.exe local and Drive database, never old published catalog",()=>{
- const js=read("site/emosi-bridge.js"),html=read("site/index.html"),app=read("site/app.js");
+test("Mahluk Hidup bridge loads Emosi.exe local and Drive database, never old published catalog",()=>{
+ const js=read("site/emosi-bridge.js");
+ const studio=read("site/v6p-studio.html");
  assert.match(js,/emotion-studio-local-v1/);
  assert.match(js,/D\.loadAll\(/);
  assert.doesNotMatch(js,/U\.loadCatalog\(/);
  assert.match(js,/source:"emosi"/);
- assert.match(html,/id="connect-emosi-drive"/);
- assert.match(app,/connectDrive\(/);
-});
-test("V6B Studio reads native Emosi.exe Google Drive and local records, not GitHub token",()=>{
- const html=read("site/v6b-reset-studio.html");
- assert.match(html,/driveEmotions/);
- assert.match(html,/readLocalEmotions/);
- assert.match(html,/connect-emotion-drive/);
- assert.doesNotMatch(html,/U\.loadCatalog\(/);
- assert.doesNotMatch(html,/id="token"/);
-});
-test("Shared pixel tooling survives removal of duplicate Emotion Studio UI",()=>{
- const html=read("site/v6b-reset-studio.html");
- assert.match(html,/shared-pixel-editor\.js/);
- assert.match(html,/id="pixelCopySelection"/);
- assert.match(html,/id="pixelGrid"/);
- assert.match(html,/id="pixelUndo"/);
+ assert.match(studio,/emosi-bridge\.js/);
+ assert.doesNotMatch(studio,/v6b-reset-studio\.html/);
 });

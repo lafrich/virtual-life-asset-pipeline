@@ -59,17 +59,4 @@ assert.ok(templates.remove("ichsan","clock_in"));
 assert.equal(templates.list("ichsan").length,0);
 assert.equal(frames.get("ichsan","clock_in","se",0),PNG,
  "Removing a template does not destroy original local player frame edits");
-const editor=fs.readFileSync("site/action-editor.js","utf8");
-const html=fs.readFileSync("site/action-editor.html","utf8");
-for(const control of ["save-template","object-layer","template-speed","template-name",
- "template-status","template-rotation","template-expression","template-loop"])
- assert.ok(html.includes('id="'+control+'"'),"Editor missing "+control);
-assert.ok(html.includes("action-template-bridge.js"));
-assert.ok(editor.includes("T.save(state.actor,state.action"));
-assert.ok(editor.includes('ISO.drawFurniture(sc,geo,p)'));
-assert.ok(editor.includes("const src=(state.source?.authored||state.source?.referencePose)?sourceRect(frame,dir):null"),
- "Real native poses or explicitly marked actor-native bathtub preview may be drawn");
-assert.ok(editor.includes('referencePose:state.action==="bathtub_bathe"'),
- "Only the shared bathtub action can borrow an actor-specific source pose");
-assert.ok(editor.includes('if(state.dirty){'),"Saving a reference idle frame must require painted pixels");
 console.log("PASS 4-view Semesta action templates, draft gating, frame holds, front/back object layer and non-destructive editing");

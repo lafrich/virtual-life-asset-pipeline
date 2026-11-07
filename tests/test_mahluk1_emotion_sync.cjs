@@ -9,14 +9,13 @@ test("Mahluk Hidup 1 filters Emosi faces by actor base without modifying origina
   const actor={id:"human_male_base",expressions:[{id:"neutral",label:"Native"}]};
   assert.equal(bridge.apply(actor).expressions[0].id,"neutral");
 });
-test("Mahluk Hidup 1 imports Emosi catalog and preserves native face atlas",()=>{
-  const html=fs.readFileSync("site/index.html","utf8");
-  const app=fs.readFileSync("site/app.js","utf8");
-  assert.match(html,/\.\/emosi-bridge\.js/);
-  assert.match(html,/id="sync-emosi"/);
-  assert.match(app,/state\.expression\?\.source==="emosi"/);
-  assert.match(app,/refreshEmosiFaces/);
+test("Mahluk Hidup imports Emosi catalog and preserves native face atlas",()=>{
+  const studio=fs.readFileSync("site/v6p-studio.html","utf8");
+  const src=fs.readFileSync("site/emosi-bridge.js","utf8");
+  assert.match(studio,/emosi-bridge\.js/);
+  assert.match(src,/source:"emosi"/);
   const reset=require("node:fs").readFileSync("site/character-reference-reset.js","utf8");
   assert.match(reset,/active:false/);
-  assert.doesNotMatch(html,/mahluk-2\//);
+  assert.doesNotMatch(studio,/mahluk-2\//);
+  assert.doesNotMatch(studio,/v6b-reset-studio\.html/);
 });

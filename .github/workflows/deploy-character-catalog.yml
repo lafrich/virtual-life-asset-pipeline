@@ -26,13 +26,10 @@ on:
       - ".github/workflows/validate-original-rig.yml"
       - "assets/**"
       - "site/**"
-      - "tests/test_pose_maker.cjs"
-      - "tests/test_modular_rig_v2.cjs"
       - "tests/test_native_rig_partition.py"
       - "tools/build_human_wardrobe.py"
       - "tests/test_human_wardrobe.py"
       - "tests/test_human_face_neck_preservation.py"
-      - "tests/test_face_neck_color_integration.cjs"
       - "tools/build_human_templates.py"
       - "tools/human_pose_extras.py"
       - "site/universal-body-actions.js"
@@ -43,15 +40,8 @@ on:
       - "tests/test_universal_sleep_geometry.py"
       - "tests/test_sleep_head_preservation.py"
       - "tests/test_universal_sleep_tabs.cjs"
-      - "tests/test_mahluk_actions_tab.cjs"
-      - "tests/test_mahluk_action_deeplink.cjs"
-      - "tests/test_action_editor_interactions.cjs"
-      - "tests/test_action_editor_native_depth.cjs"
       - "tests/test_universal_sleep_published.py"
       - "tests/test_player_action_database.cjs"
-      - "site/universal-motion-runtime.js"
-      - "tests/test_universal_motion_runtime.cjs"
-      - "tests/test_desktop_layout.cjs"
       - "tools/build_character_catalog.py"
       - "tools/build_original_rig_layers.py"
       - "tools/build_rig_studio.py"
@@ -59,10 +49,6 @@ on:
       - "tests/test_otis_helmet.py"
       - "tests/test_pixel_patch.py"
       - "tests/test_pixel_editor.cjs"
-      - "tests/test_accessory_editor.cjs"
-      - "tests/test_custom_character_creator.cjs"
-      - "tests/test_mahluk_actions_tab.cjs"
-      - "tests/test_desktop_layout.cjs"
       - "tools/build_accessory_guide.py"
       - "tools/build_astrofrich.py"
       - "tools/build_human_templates.py"
@@ -89,7 +75,6 @@ on:
       - "tools/build_native_character_catalog.py"
       - "tools/build_legacy_character_catalog.py"
       - "tools/build_legacy_face_previews.py"
-      - "tests/test_face_ui_interactions.cjs"
       - "tools/generate_archive_previews.py"
       - "assets/animation_library/actions.json"
       - "assets/npc_*/motions.json"
@@ -131,48 +116,22 @@ jobs:
           node --check site/warteg-kharisma-template.js
           node --check site/warteg-interior-paint.js
           node tests/test_warteg_template.cjs
-          node --check site/expression-context.js
-          node tests/test_expression_context.cjs
           node --check site/action-scene-bridge.js
-          node --check site/action-scene-editor.js
           node tests/test_action_scene_bridge.cjs
-          node tests/test_action_pose_depth.cjs
           node --check site/emosi-bridge.js
           node --test tests/test_mahluk1_emotion_sync.cjs
-          node --check site/app.js
-          node --check site/custom-character-wardrobe.js
-          node tests/test_custom_character_creator.cjs
-          node tests/test_face_neck_color_integration.cjs
           python -m py_compile tools/build_human_wardrobe.py
-          node tests/test_desktop_layout.cjs
-          node --check site/animations.js
-          node --check site/pose-weights.js
-          node --check site/pose-maker.js
-          node --test tests/test_pose_maker.cjs
           python -m py_compile tools/build_original_rig_layers.py
           python -m unittest discover -s tests -p test_native_rig_partition.py
           python tools/build_original_rig_layers.py /tmp/mahluk-native-rig-validation --source-only
           node --check site/emotion-studio/emotion-library.js
-          node --check site/emotion-studio/shared-pixel-editor.js
           node --test tests/test_emotion_studio.cjs
-          node --test tests/test_v6b_part_transfer.cjs
-          node --check site/v6b-part-transfer.js
           test -s site/emotion-studio/index.html
-          test -s site/emotion-studio/shared-pixel-ui.css
           python -m json.tool site/emotion-studio/catalog.json > /dev/null
-          node --check site/modular-rig-v2.js
-          node --check site/rig-studio-v2.js
-          node --check site/rig-manual-art.js
-          node --check site/rig-pixel-workbench.js
-          node --test tests/test_modular_rig_v2.cjs
-          node --check site/universal-motion-runtime.js
           node --check site/human-gameplay-rig.js
           node --test tests/test_human_gameplay_rig.cjs
-          node --test tests/test_universal_motion_runtime.cjs
           node --check site/pixel-edit-core.js
           node --check site/pixel-editor.js
-          node --check site/accessory-editor.js
-          node tests/test_accessory_editor.cjs
           node --check site/action-frame-bridge.js
           node --check site/action-template-bridge.js
           node --check site/action-appearance-bridge.js
@@ -181,15 +140,10 @@ jobs:
           node --check site/universal-sleep.js
           node tests/test_universal_sleep.cjs
           node tests/test_universal_sleep_tabs.cjs
-          node --check site/action-editor.js
           node tests/test_action_frame_bridge.cjs
-          node tests/test_mahluk_actions_tab.cjs
-          node tests/test_mahluk_action_deeplink.cjs
           node tests/test_player_action_database.cjs
           node tests/test_action_templates.cjs
           node tests/test_action_appearance.cjs
-          node tests/test_action_editor_interactions.cjs
-          node tests/test_action_editor_native_depth.cjs
           node --check site/master-parts.js
           node tests/test_master_parts.cjs
           node tests/test_pixel_editor.cjs
@@ -197,7 +151,6 @@ jobs:
           node --check site/shared-bone-runtime.js
           node tests/test_shared_bone_runtime.cjs
           node tests/test_rig_runtime.cjs
-          node tests/test_face_ui_interactions.cjs
           python -m py_compile tools/build_accessory_guide.py tools/build_astrofrich.py tools/build_human_templates.py tools/human_pose_extras.py
           python -m unittest discover -s tests -p "test_bleh_face_alignment.py" -v
           python -m unittest discover -s tests -p "test_cheeky_face.py" -v
@@ -255,46 +208,24 @@ jobs:
         run: |
           test -s _site/emosi-bridge.js
           test -s _site/index.html
-          test -s _site/style.css
           test -s _site/media/original-rig/manifest.json
           test -s _site/media/human-male-base-motion-parts.json
           test -s _site/media/human-female-base-motion-parts.json
-          test -s _site/v6b-part-transfer.js
-          test -s _site/v6b-reset-studio.html
           test -s _site/media/original-rig/gender-bases.png
           test -s _site/media/original-rig/rotation-qa.png
           python -c 'import json,pathlib; s=pathlib.Path("_site"); m=json.loads((s/"media/original-rig/manifest.json").read_text()); parts=m["slots"]; assert m["anatomy_layers_shared_across_outfits"]; assert m["outfit_layer_mode"]=="additive_native_garments"; assert all(len([p for p in parts if p.get("gender")==g and p.get("layer_type")==t])>=(8 if t=="body" else 3) for g in ("male","female") for t in ("body","garment")); assert (s/m["rotation_qa"]).is_file(); print("Verified independently layered human anatomy and removable garments for both genders")'
           test -s _site/media/original-rig/source-contact-sheet.png
           test -s _site/emotion-studio/index.html
           test -s _site/emotion-studio/catalog.json
-          test -s _site/emotion-studio/shared-pixel-editor.js
           test -s _site/emotion-studio/emotion-library.js
           test -s _site/emotion-studio/catalog.json
           node --check _site/emotion-studio/emotion-library.js
           python -c 'import json; from pathlib import Path; d=json.loads(Path("_site/emotion-studio/catalog.json").read_text()); assert d["format"]=="mahluk-2-universal-emotions-v1"; assert len(d["entries"])>=10; print("Verified universal Emotion Studio source")'
-          test -s _site/modular-rig-v2.js
-          test -s _site/rig-studio-v2.js
-          test -s _site/rig-manual-art.js
-          test -s _site/rig-pixel-workbench.js
-          test -s _site/rig-studio-v2.css
-          test -s _site/app.js
-          test -s _site/custom-character-wardrobe.js
           test -s _site/human-gameplay-rig.js
-          test -s _site/universal-motion-runtime.js
-          test -s _site/action-scene-editor.html
-          test -s _site/action-scene-editor.js
-          test -s _site/action-scene-editor.css
           test -s _site/action-scene-bridge.js
-          test -s _site/expression-context.js
           test -s _site/expression-contexts.json
           test -s _site/catalog.json
           test -s _site/pixel-editor.html
-          test -s _site/accessory-editor.html
-          test -s _site/accessory-editor.css
-          test -s _site/accessory-editor.js
-          test -s _site/action-editor.html
-          test -s _site/action-editor.css
-          test -s _site/action-editor.js
           test -s _site/action-frame-bridge.js
           test -s _site/action-template-bridge.js
           test -s _site/action-appearance-bridge.js
@@ -317,7 +248,6 @@ jobs:
           test -s _site/pixel-edit-core.js
           test ! -e _site/rig-studio.js
           python -c 'import json,pathlib; from PIL import Image; root=pathlib.Path("assets"); cs={c["id"]:c for c in json.load(open("_site/catalog.json"))["characters"]}; assert "legacy_otis" not in cs and "otis" not in cs, "Otis must not appear in active Character Stock"; t=cs["legacy_theodore"]; assert t["asset_status"]=="generated_preview" and t["rig_ready_count"]>=7; assert (pathlib.Path("_site")/t["sheet"]).is_file(); dirs=("se","sw","ne","nw"); assert all((root/"npc_theodore"/"frames"/f"theodore_{d}_idle_f0.png").is_file() for d in dirs), "Theodore source must retain all four original directions"; assert Image.open(root/"npc_theodore"/"frames"/"theodore_se_idle_f0.png").size==(64,112); assert (root/"npc_otis"/"frames"/"otis_se_idle_f0.png").exists(), "Archived Otis source remains preserved"; print("Otis retired from catalog; Theodore native 4-view sprites intact; Otis source archived")'
-          test -s _site/animations.js
           test -s _site/rig-runtime.js
           test -s _site/shared-bone-runtime.js
           test -s _site/category-skeletons.json
@@ -326,7 +256,6 @@ jobs:
           python -c 'import json; from pathlib import Path; p=Path("_site"); cats=json.loads((p/"category-skeletons.json").read_text()); m=json.loads((p/"shared-bone-motions.json").read_text()); cs=json.loads((p/"catalog.json").read_text())["characters"]; ids={x["id"] for x in m["clips"]}; assert set(cats["types"])=={"HUMANOID","MASCOT","ALIEN_SUIT","HELMETED"}; assert len(ids)==7; assert all(x["skeleton_profile"] in cats["types"] and set(x["bone_actions"])==ids and not x["bone_skin_ready"] for x in cs); print("Validated",len(cs),"actor skeleton assignments and",len(ids),"shared canonical actions")'
           test -s _site/rigs.json
           test -s _site/animations.json
-          test -s _site/animations.js
           python -m json.tool _site/catalog.json > /dev/null
           python -c 'import json,pathlib; s=pathlib.Path("_site"); rigs=json.loads((s/"rigs.json").read_text()); cs=json.loads((s/"catalog.json").read_text())["characters"]; assert len(rigs["types"])==4 and len(rigs["characters"])==len(cs) and len(rigs["registry"])==204; assert all(c["model_type"] in {"HUMANOID","MASCOT","ALIEN_SUIT","HELMETED"} for c in cs); assert all((s/c["motion_pack"]).is_file() for c in cs); assert all((s/x["atlas"]).is_file() for c in cs for x in json.loads((s/c["motion_pack"]).read_text())["clips"]); assert {c["model_type"] for c in cs}=={"HUMANOID","MASCOT","ALIEN_SUIT","HELMETED"}; assert sum(c["rig_ready_count"] for c in cs)>50; print("Verified",len(cs),"source-authored rig packs across",len(rigs["types"]),"model types")'
           python -c 'import json, pathlib; cs=json.load(open("_site/catalog.json"))["characters"]; assert cs; assert len(cs)>=32; assert not any(c["id"] in {"legacy_cosmo","legacy_rocketta","legacy_sol","legacy_zib","legacy_klank","legacy_nebi"} for c in cs); assert all("motions" in c for c in cs); assert all(any(m["id"]=="walk" and m["available"] for m in c["motions"]) for c in cs if c.get("asset_status")!="source_only" and c.get("origin") is None); assert all(pathlib.Path("_site",e["overlay"]).is_file() for c in cs for e in c["expressions"] if e.get("overlay")); print("Validated",len(cs),"character rigs, animated expression layers and motion bindings")'

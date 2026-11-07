@@ -3,7 +3,6 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
 const mp=require("../site/master-parts.js");
 const old=require("../site/pixel-edit-core.js");
-const page=fs.readFileSync(path.join(__dirname,"../site/index.html"),"utf8");
 const inner=fs.readFileSync(path.join(__dirname,"../site/pixel-editor.html"),"utf8");
 const ctrl=fs.readFileSync(path.join(__dirname,"../site/pixel-editor.js"),"utf8");
 assert.equal(Object.keys(mp.PARTS).length,6);
@@ -29,8 +28,6 @@ assert.equal(old.validatePatch({
  format:"virtual-life-pixel-patch-v2",version:2,actor:"legacy_otis",frame_size:[64,112],
  region:[0,0,64,112],frames:[],masters:[]
 }),true);
-assert(page.includes('id="pixel-editor-overlay"'));
-assert(page.includes('id="pixel-editor-embed"'));
 assert(inner.includes('id="edit-mode"'));
 assert(inner.includes('id="part"'));
 assert(inner.includes('src="./master-parts.js'));

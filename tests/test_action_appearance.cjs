@@ -101,14 +101,4 @@ assert.deepEqual([...applied.data.slice(neckMark,neckMark+4)],
  [...posed.data.slice(neckMark,neckMark+4)],"Neck and body must remain untouched");
 if(priorDoc===undefined)delete global.document;else global.document=priorDoc;
 
-const html=fs.readFileSync("site/action-editor.html","utf8");
-const editor=fs.readFileSync("site/action-editor.js","utf8");
-for(const id of ["template-rotation","template-expression","template-loop"]){
- assert.ok(html.includes('id="'+id+'"'),"Missing XP inspector control: "+id);
- assert.ok(editor.includes('$("'+id+'")'),"No editor handler for "+id);
-}
-assert.ok(html.includes("action-appearance-bridge.js"));
-assert.ok(editor.includes("P.drawExpression(sourceCtx,face,dir,frame"));
-assert.ok(editor.includes("P.drawRotated(sc,scratch,"));
-assert.ok(editor.includes("updateExpressionOptions(previousTemplate?.expression"));
 console.log("PASS native expression cropping, four-view face gating, four rotation baselines, metadata controls and paint preservation");

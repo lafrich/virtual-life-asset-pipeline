@@ -11,9 +11,7 @@ on:
       - "tests/test_human_morphology.py"
       - "tests/test_bleh_face_alignment.py"
       - "site/action-appearance-bridge.js"
-      - "site/action-scene-editor.js"
       - "site/action-scene-bridge.js"
-      - "site/action-scene-editor.html"
       - "tests/test_action_scene_bridge.cjs"
       - "tests/test_action_appearance.cjs"
       - "assets/npc_preview_v2/base6.py"
@@ -28,9 +26,7 @@ on:
       - "tests/test_human_morphology.py"
       - "tests/test_bleh_face_alignment.py"
       - "site/action-appearance-bridge.js"
-      - "site/action-scene-editor.js"
       - "site/action-scene-bridge.js"
-      - "site/action-scene-editor.html"
       - "tests/test_action_scene_bridge.cjs"
       - "tests/test_action_appearance.cjs"
       - "assets/npc_preview_v2/base6.py"
@@ -68,7 +64,6 @@ jobs:
           python -m unittest discover -s tests -p 'test_bleh_face_alignment.py' -v
           node tests/test_action_appearance.cjs
           node --check site/action-scene-bridge.js
-          node --check site/action-scene-editor.js
           node tests/test_action_scene_bridge.cjs
       - name: Publish QA sprite frames for visual review
         if: always()

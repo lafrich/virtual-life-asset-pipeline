@@ -4,7 +4,6 @@ on:
     branches: [main]
     paths:
       - "site/universal-body-actions.js"
-      - "site/app.js"
       - "tools/build_human_templates.py"
       - "tests/test_universal_body_actions.cjs"
       - ".github/workflows/test-hygiene-body.yml"

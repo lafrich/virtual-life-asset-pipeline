@@ -27,7 +27,7 @@ const indexHtml=fs.readFileSync(path.join(root,"site/index.html"),"utf8");
 assert.match(indexHtml,/location\.replace\(\s*["']\.\/v6p-studio\.html/);
 assert.match(indexHtml,/http-equiv="refresh"/);
 assert.match(indexHtml,/url=\.\/v6p-studio\.html/);
-assert.match(indexHtml,/<title>Mahluk Hidup — Character Studio<\/title>/);
+assert.match(indexHtml,/<title>Mahluk Hidup<\/title>/);
 assert.doesNotMatch(studio,/href="\.\/index\.html"/);
 assert.doesNotMatch(studio,/v6b-reset-studio\.html/);
 const compositor=fs.readFileSync(path.join(root,"site/v6p-compositor.js"),"utf8");

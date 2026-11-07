@@ -79,45 +79,10 @@ assert.deepEqual([...foamPixels.data.slice(4,8)],[147,213,227,255],
  "Blue water must NEVER turn into skin color");
 assert.ok(foamPixels.data[8]<214,
  "Only warm body pixels should inherit darker skin tone");
-const script=fs.readFileSync("site/app.js","utf8");
-const anim=fs.readFileSync("site/animations.js","utf8");
-const index=fs.readFileSync("site/index.html","utf8");
-assert.match(script,/UNIVERSAL_BODY\.apply/);
-assert.match(script,/body_override:"toilet_lower"/);
-assert.match(script,/body_override:"bath_full"/);
-assert.match(script,/const choices=\[/,"Character motion list must feature Bathtub for every actor");
-assert.match(script,/drawBathFoam/,"Other character bath preview must overlay foam");
-assert.ok(index.indexOf("universal-body-actions.js")<index.indexOf("app.js"));
-assert.match(anim,/bathe_male_v1/);assert.match(anim,/bathe_female_v1/);
-assert.match(anim,/bathtub_bathe_male_v1/);
-assert.match(anim,/bathtub_bathe_female_v1/);
-assert.match(anim,/APPROVED_ANIMATION_IDS/,
- "Published bathtub GIFs must be admitted by the animation browser's visible whitelist");
-const actionEditor=fs.readFileSync("site/action-editor.js","utf8");
-assert.match(actionEditor,/row\.id==="bathtub_bathe"/,
- "Action Editor must display bathtub for the selected actor, even before actor-specific rigging");
-assert.match(actionEditor,/bathtub_bathe:\["bathtub_bathe","lie"\]/,
- "Authoring preview must prefer genuine horizontal bathtub frames");
 // Body gender and skin palette are inherited from the immutable template.
 assert.equal(BODY.bodyType({id:"custom_human_f",baseId:"human_female_base"}),"female");
 assert.equal(BODY.bodyType({id:"custom_human_m",baseId:"human_male_base"}),"male");
 assert.equal(BODY.resolve({baseId:"human_female_base"},"bathe").bodyType,"female");
-
-// The human avatar must NOT discard independently painted shirt/pants/shoes.
-const editor=fs.readFileSync("site/accessory-editor.js","utf8");
-const paint=fs.readFileSync("site/accessory-editor.html","utf8");
-const home=fs.readFileSync("site/index.html","utf8");
-for(const key of ["hair","shirt","pants","shoes"]){
- assert.ok(script.includes('"'+key+'"'),"Missing equipment slot "+key);
- assert.ok(editor.includes('"'+key+'"'),"Missing painter category "+key);
-}
-assert.ok(script.includes('["helmet","bag","hair","shirt","pants","shoes"].includes(x.category)'),
- "Human assets were filtered out of the equipment storage loader");
-assert.ok(home.includes('id="custom-skin-tone"'));
-assert.ok(home.includes('id="custom-hair"'));
-assert.ok(home.includes('id="custom-draw-hair"'));
-assert.ok(paint.includes('id="acc-hair"'));
-assert.match(script,/skinTone:HUMAN_BASES.includes\(row.base\)/);
 
 // Palette matching only recolors the human base; untouched sprite art and
 // equipment (including black outlines) keep their original pixel colours.
