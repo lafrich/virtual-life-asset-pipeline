@@ -107,7 +107,7 @@ function listClips(){
   const b=document.createElement("button");b.classList.toggle("active",state.id===clip.id);
   const title=document.createElement("strong"),info=document.createElement("small");
   title.textContent=clip.name;info.textContent=clip.manifest.frames.length+" FRAMES · "+(drafts[clip.id]?"EDITABLE ANCHOR":"PIXEL CLIP")+
-   (clip.id==="clip_pushup"?" · STOCK":"");
+   (clip.origin==="pilot"?" · STOCK":"");
   b.append(title,info);b.onclick=()=>void open(clip.id);holder.append(b);
  }
  if(!rows.length)holder.textContent="No animations yet";
