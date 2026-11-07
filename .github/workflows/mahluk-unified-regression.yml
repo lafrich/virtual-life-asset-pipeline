@@ -6,6 +6,7 @@ on:
       - feature/character-animation-action-workflow-20261107
       - fix/character-draw-four-apply-animation-20261107
       - feature/mahluk-character-wizard-navigation-20261107
+      - fix/mahluk-pixel-sprite-view-switch-20261108
     paths:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
@@ -13,6 +14,7 @@ on:
       - "site/v6p-character-*.js"
       - "site/v6p-pixel-source.js"
       - "site/pixel-editor.js"
+      - "site/emotion-studio/shared-pixel-editor.js"
       - "site/v6p-compositor.js"
       - "site/v6p-grok-copy.js"
       - "site/v6p-studio.html"
@@ -26,6 +28,7 @@ on:
       - "tests/test_mahluk_character_retarget.cjs"
       - "tests/test_mahluk_character_wizard.cjs"
       - "tests/smoke_mahluk_character_wizard.cjs"
+      - "tests/smoke_mahluk_pixel_angle.cjs"
       - ".github/workflows/mahluk-unified-regression.yml"
   workflow_dispatch:
 permissions:
@@ -53,6 +56,7 @@ jobs:
           node --check site/v6p-grok-copy.js
           node --check site/v6p-asset-gallery.js
           node --check site/pixel-editor.js
+          node --check site/emotion-studio/shared-pixel-editor.js
       - name: Check preserved existing editors and new app shell
         run: |
           node --test tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs tests/test_mahluk_character_wizard.cjs
@@ -89,3 +93,4 @@ jobs:
           ln -s "$PWD/site" /tmp/character-wizard-root/virtual-life-asset-pipeline
           python3 -m http.server 4173 --bind 127.0.0.1 -d /tmp/character-wizard-root >/tmp/character-wizard-server.log 2>&1 &
           node tests/smoke_mahluk_character_wizard.cjs
+          node tests/smoke_mahluk_pixel_angle.cjs
