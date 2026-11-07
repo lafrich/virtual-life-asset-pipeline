@@ -47,8 +47,9 @@ async function run(){
    S.setGenerated(row.id,nudePart,brokenNude.toDataURL('image/png'),{generated:1,masters:[]});
    await R.generateCharacter(row.id);
    const restoredNude=await P.loadSheetFromUrl(S.getPart(row.id,nudePart));
-   const nudeMatches=[...P.extract(restoredNude,'walk','nw',1).data].every((v,i)=>
-    v===P.extract(nudeStock,'walk','nw',1).data[i]);
+   const nudeExpected=P.extract(nudeStock,'walk','nw',1).data;
+   const nudeActual=P.extract(restoredNude,'walk','nw',1).data;
+   const nudeMatches=nudeActual.every((v,i)=>v===nudeExpected[i]);
    // A real source master makes it into idle frame 0 without destructive warping.
    const idle=P.extract(stock,'idle','ne',0);
    const master=document.createElement('canvas');master.width=64;master.height=112;
