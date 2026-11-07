@@ -127,6 +127,52 @@ const {chromium}=require('playwright');
   assert.ok(result.generated?.frames>20,'No native animation frames inherited garment artwork');
   assert.equal(result.failureCount,0,'Motif must inherit all native occupied frames without changing alpha');
   assert.ok(result.compositeLogoFrames>=4,'The playable composed Walk must display the garment logo');
+  // Existing characters from the previous build may have NE/NW artwork
+  // painted into top/custom_back. They must be migrated without deleting it.
+  const migration=await page.evaluate(async()=>{
+    const S=window.V6PCharacterStore,P=window.V6PPixelSource,C=window.V6PPartCatalog,
+      CW=window.V6PCustomWear,V=window.V6PCompositor;
+    const row=S.create({name:'Legacy Rear Draft',gender:'female'});
+    S.update(row.id,{appearance:{top:'custom'}});
+    const ch={...S.get(row.id).appearance,characterId:row.id};
+    await CW.ensure(row.id,ch);
+    const under=await P.loadSheetFromUrl(S.getPart(row.id,'top/custom_back_f'));
+    const old=P.extract(under,'idle','ne',0),d=old.data;
+    const counts=new Map();
+    for(let i=0;i<d.length;i+=4)if(d[i+3]>=128){
+      const color=(d[i]<<16)|(d[i+1]<<8)|d[i+2];
+      counts.set(color,(counts.get(color)||0)+1);
+    }
+    const source=[...counts].sort((a,b)=>b[1]-a[1])[0];
+    if(!source||source[1]<5)throw Error('Native legacy underlayer not available');
+    for(let i=0;i<d.length;i+=4)if(d[i+3]>=128&&
+      ((d[i]<<16)|(d[i+1]<<8)|d[i+2])===source[0]){
+      d[i]=12;d[i+1]=217;d[i+2]=85;
+    }
+    P.stamp(under,'idle','ne',0,old);
+    const legacy=under.toDataURL('image/png');
+    S.setPart(row.id,'top/custom_back_f',legacy);
+    S.update(row.id,{customWear:{topRearMainV2F:'legacy-art-needs-migration'}});
+    const earlier=await P.loadSheetFromUrl(S.getPart(row.id,'top/custom_f'));
+    const pre=P.extract(earlier,'idle','ne',0).data;
+    const migrated=await CW.ensure(row.id,ch);
+    const next=await P.loadSheetFromUrl(S.getPart(row.id,'top/custom_f'));
+    const post=P.extract(next,'idle','ne',0).data;
+    let alphaDiff=0,green=0,changed=0;
+    for(let i=0;i<post.length;i+=4){
+      if(pre[i+3]!==post[i+3])alphaDiff++;
+      if(post[i]===12&&post[i+1]===217&&post[i+2]===85&&post[i+3]>=128)green++;
+      if(pre[i]!==post[i]||pre[i+1]!==post[i+1]||pre[i+2]!==post[i+2])changed++;
+    }
+    return {alphaDiff,green,changed,migrated:migrated.some(x=>x.rearMigrated>0),
+      preservedUnder:S.getPart(row.id,'top/custom_back_f')===legacy};
+  });
+  console.log('LEGACY REAR MIGRATION',JSON.stringify(migration));
+  assert.equal(migration.alphaDiff,0,'Legacy import cannot alter native garment silhouettes');
+  assert.ok(migration.green>0&&migration.changed>0,'Legacy NE artwork was not copied into visible Tee');
+  assert.equal(migration.preservedUnder,true,'Original legacy underlayer artwork was overwritten');
+  assert.equal(migration.migrated,true);
+
   await page.locator('#wizard-next').click();
   await page.locator('#wizard-preview:not([hidden])').waitFor({timeout:65000});
   await page.locator('#qa-animation').selectOption('walk');
