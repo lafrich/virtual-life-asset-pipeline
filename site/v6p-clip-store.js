@@ -17,6 +17,17 @@ function read(){
  try{
   const obj=JSON.parse(raw);
   if(!obj||obj.format!==FORMAT||!obj.clips||typeof obj.clips!=="object")return empty();
+  let removed=false;
+  // Only rejected Grok REVIEW imports are retired; never touch approved
+  // built-in V6P clips or user-created animations.
+  for(const [id,row] of Object.entries(obj.clips)){
+   if(id.startsWith("clp_grok_")||row?.manifest?.source==="grok-stock-animation-v1"){
+    delete obj.clips[id];removed=true;
+   }
+  }
+  if(removed){
+   try{storage()?.setItem(KEY,JSON.stringify({format:FORMAT,clips:obj.clips}))}catch{}
+  }
   return {format:FORMAT,clips:obj.clips};
  }catch{return empty();}
 }

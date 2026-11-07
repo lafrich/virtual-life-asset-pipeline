@@ -6,13 +6,26 @@ const KEY="mahluk-action-situations-v1",FORMAT="mahluk-situation-database-v1";
 const DIRS=["se","sw","ne","nw"],PHASES=["enter","loop","exit"],$=id=>document.getElementById(id);
 const V=root.V6PCompositor,Store=root.V6PClipStore;
 const state={rows:[],selected:null,cast:[],active:"",phase:"loop",frame:0,playing:false,timer:null,
- catalog:[],cache:new Map(),sheets:new Map(),token:0,drag:null,screen:"home",message:""};
+ cache:new Map(),sheets:new Map(),token:0,drag:null,screen:"home",message:""};
 function safeId(s){return /^[a-z][a-z0-9_]{1,47}$/.test(s||"")}
 function status(s,err=false){$("status").textContent=s;$("status").classList.toggle("err",err)}
 function load(){
- try{const data=JSON.parse(localStorage.getItem(KEY)||"null");
-  if(data?.format===FORMAT&&Array.isArray(data.items))return data.items.filter(x=>x&&safeId(x.id)).slice(0,150)}
- catch{}return [];
+ try{
+  const data=JSON.parse(localStorage.getItem(KEY)||"null");
+  if(data?.format!==FORMAT||!Array.isArray(data.items))return [];
+  const rows=data.items.filter(x=>x&&safeId(x.id)).slice(0,150);
+  // Retire ONLY unapproved Grok motion bindings; preserve the scene and other animations.
+  let changed=false;
+  for(const row of rows){
+   const actors=[row,...(Array.isArray(row.actors)?row.actors:[])];
+   for(const actor of actors)for(const phase of PHASES)
+    if(typeof actor[phase]==="string"&&actor[phase].startsWith("grok:")){
+     actor[phase]="";changed=true;
+    }
+  }
+  if(changed)localStorage.setItem(KEY,JSON.stringify({format:FORMAT,savedAt:new Date().toISOString(),items:rows}));
+  return rows;
+ }catch{return []}
 }
 function persist(){
  localStorage.setItem(KEY,JSON.stringify({format:FORMAT,savedAt:new Date().toISOString(),items:state.rows}));
@@ -98,13 +111,6 @@ function refFor(entry,value){
   if(entry.ch&&V&&V.ROWS[id]!=null)return {frames:V.FRAMES[id],frameMs:Array(V.FRAMES[id]).fill(id==="idle"?220:140),
    layout:"base",loop:true,action:{id},ch:entry.ch};
   return null;
- }
- if(value?.startsWith("grok:")){
-  const a=state.catalog.find(x=>x.id===value.slice(5));if(!a)return null;
-  const native=publishedClip(entry,a.id);if(native)return native;
-  if(entry.ch&&V?.ROWS[a.id]!=null)return {frames:V.FRAMES[a.id],frameMs:Array(V.FRAMES[a.id]).fill(140),
-   layout:"base",loop:true,action:a, ch:entry.ch};
-  return null; // Never substitute unrelated actor pixels.
  }
  if(value?.startsWith("clip:")){
   const id=value.slice(5),published=publishedClip(entry,id);if(published)return published;
@@ -262,18 +268,12 @@ function refreshOptions(){
  const options=[{value:"",label:"— NONE —"}];
  for(const id of ["idle","walk","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"])
   options.push({value:"native:"+id,label:"NATIVE / "+id.toUpperCase()});
- for(const a of state.catalog)options.push({value:"grok:"+a.id,label:"GROK / "+a.label+" · REVIEW"});
  for(const c of Store?.list()||[])options.push({value:"clip:"+c.id,label:(c.origin==="pilot"?"STOCK / ":"USER / ")+c.name.toUpperCase()+" · "+c.manifest.frames.length+" FR"});
  for(const phase of PHASES){
   const select=$("phase-"+phase);select.replaceChildren();
   for(const item of options){const o=document.createElement("option");o.value=item.value;o.textContent=item.label;select.append(o)}
  }
  syncControls();
-}
-async function loadMotions(){
- try{const r=await fetch("./grok-motion-preview/catalog.json",{cache:"no-store"}),data=await r.json();
-  if(r.ok&&data.schema==="mahluk-grok-motion-preview-v1"&&Array.isArray(data.actions))state.catalog=data.actions}
- catch{}refreshOptions();
 }
 function exportData(){
  const txt=JSON.stringify({format:FORMAT,items:state.rows},null,2),url=URL.createObjectURL(new Blob([txt],{type:"application/json"}));
@@ -337,7 +337,7 @@ function wire(){
  });
  for(const t of ["pointerup","pointercancel"])$("action-canvas").addEventListener(t,()=>{state.drag=null});
  document.addEventListener("visibilitychange",()=>{if(document.hidden)stop()});
- home();void loadMotions();
+ home();
 }
 root.VLMahlukActionEditor=Object.freeze({load,persist,KEY,FORMAT});
 wire();

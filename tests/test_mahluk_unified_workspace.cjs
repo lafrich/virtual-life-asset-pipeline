@@ -31,18 +31,20 @@ test('original editor mechanics are left in place and route into the shell',()=>
   assert.ok(pixjs.includes(fn),fn+' must survive refactor');
  assert.ok(read('site/emosi-bridge.js').includes('VLMahlukEmosiBridge'));
 });
-test('Grok motions are review-only and never silently overwrite stock gameplay',()=>{
- const shell=read('site/mahluk-motion-library.html'),copy=read('site/v6p-grok-copy.js'),
-       review=read('site/v6p-motion-review.js');
- assert.match(shell,/motion-canvas/);
- assert.match(shell,/motion-frame/);
- assert.match(review,/pending_owner_review/);
- assert.match(copy,/pending_owner_review/);
- assert.match(copy,/gameplayApproved:false/);
- assert.match(copy,/action\.frames>A\.COLS/);
- assert.match(copy,/Store\.create/);
- assert.doesNotMatch(copy,/localStorage\.clear\(/);
- assert.doesNotMatch(copy,/approved_native_actions/);
+test('unapproved Grok motions are not shipped; approved native stock gallery remains',()=>{
+ const action=read('site/mahluk-action-editor.js');
+ const animation=read('site/mahluk-animation-studio.js');
+ const html=read('site/mahluk-animation-studio.html');
+ const pipeline=read('.github/workflows/deploy-character-catalog.yml');
+ for(const p of ['site/mahluk-motion-library.html','site/v6p-motion-review.js',
+  'site/v6p-grok-copy.js','tools/publish_grok_motion_review.py'])
+  assert.ok(!fs.existsSync(path.join(root,p)),p+' must be removed');
+ assert.doesNotMatch(action,/grok-motion-preview/);
+ assert.doesNotMatch(action,/GROK \/ /);
+ assert.doesNotMatch(pipeline,/publish_grok_motion_review/);
+ assert.match(animation,/V\.composeActivity/);
+ assert.match(html,/id="animation-stock-preview"/);
+ assert.match(html,/id="stock-canvas"/);
 });
 test('action drafts bind existing animation IDs but do not publish to Jiwa',()=>{
  const html=read('site/mahluk-action-editor.html'),js=read('site/mahluk-action-editor.js');
@@ -50,7 +52,7 @@ test('action drafts bind existing animation IDs but do not publish to Jiwa',()=>
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(js,/mahluk-action-situations-v1/);
  assert.match(js,/draft_unapproved/);
- assert.match(js,/GROK.*REVIEW/);
+ assert.doesNotMatch(js,/GROK.*REVIEW/);
  assert.doesNotMatch(js,/VLMahlukHubBridge\.publish\(/);
 });
 test('Google Drive backup keeps a recovery copy and never stores token',()=>{
@@ -64,8 +66,8 @@ test('Google Drive backup keeps a recovery copy and never stores token',()=>{
  assert.match(js,/drive\.file/);
 });
 test('all new browser scripts parse',()=>{
- for(const file of ['site/mahluk-hub.js','site/mahluk-hub-drive.js','site/v6p-motion-review.js',
-  'site/v6p-grok-copy.js','site/mahluk-action-editor.js','site/v6p-asset-gallery.js',
+ for(const file of ['site/mahluk-hub.js','site/mahluk-hub-drive.js',
+  'site/mahluk-action-editor.js','site/v6p-asset-gallery.js',
   'site/v6p-character-store.js','site/v6p-character-workflow.js','site/mahluk-animation-studio.js'])
   assert.doesNotThrow(()=>new Function(read(file)),file);
  const html=read('site/v6p-studio.html');
