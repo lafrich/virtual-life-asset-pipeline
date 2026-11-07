@@ -59,68 +59,68 @@
       "start": 8,
       "frames": 4,
       "ms_per_frame": 500,
-      "status": "reserved_transparent",
+      "status": "review_artwork",
       "emosi": true,
-      "note": "front upright; not authored yet"
+      "note": "Real V6P keyed part-sheet review frames; not visually approved; game playback disabled"
     },
     "yoga_puppy_idle": {
       "start": 12,
       "frames": 4,
       "ms_per_frame": 500,
-      "status": "reserved_transparent",
+      "status": "review_artwork",
       "emosi": false,
-      "note": "knees down, hips raised, chest/forehead on the floor; not authored yet"
+      "note": "Real V6P keyed part-sheet review frames; not visually approved; game playback disabled"
     },
     "hip_shake": {
       "start": 16,
       "frames": 6,
       "ms_per_frame": 120,
-      "status": "reserved_transparent",
+      "status": "review_artwork",
       "emosi": true,
-      "note": "not authored yet"
+      "note": "Real V6P keyed part-sheet review frames; not visually approved; game playback disabled"
     },
     "yoga_happy_baby_idle": {
       "start": 20,
       "frames": 4,
       "ms_per_frame": 450,
-      "status": "reserved_transparent",
+      "status": "review_artwork",
       "emosi": false,
-      "note": "supine, holding feet, knees to armpits, gentle rock; not authored yet"
+      "note": "Real V6P keyed part-sheet review frames; not visually approved; game playback disabled"
     }
   },
   "parts": {
     "base/body.png": {
       "path": "/workspace/v6p-act-incoming/base/body.png",
-      "sha256": "1c72d52738d964b1888f56ad2146b4f0614a4eb5bdfa6a551d56c946d0de277b",
+      "sha256": "804c48dcdadb56db85023961ddbc74caa162fc0325d08fd17ef4e4261d826145",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "base/body_f.png": {
       "path": "/workspace/v6p-act-incoming/base/body_f.png",
-      "sha256": "dd3145c2c51f4a3d37e58ea504d279324833cdf8d029b103eebfc4495c7a663d",
+      "sha256": "0cdd384599e8444b76f7b81702550a3fd5fd1713b5a05378148ee735506529f3",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "face/m_blank.png": {
       "path": "/workspace/v6p-act-incoming/face/m_blank.png",
-      "sha256": "247b75cc4234a63dcb80d6c3b51acec4798acbc39bd7bd36327e6eef60ac02ca",
+      "sha256": "2e0d9de88fec61500471edccea60f4592c4ce5ae3f02f5393e8168dec67de2b3",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent",
+      "other_bands": "review_artwork_not_approved",
       "dirs_painted": [
         "se",
         "sw"
@@ -133,14 +133,14 @@
     },
     "face/f_blank.png": {
       "path": "/workspace/v6p-act-incoming/face/f_blank.png",
-      "sha256": "33c5ee0f5479121ce2e7369816a4f63ce1bc93db7cf2b276dd9a7b4c12848fe0",
+      "sha256": "bd7619e4d2bed3618a146349c22de5c1e15077fa04cc95059bdacd193de26ee6",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent",
+      "other_bands": "review_artwork_not_approved",
       "dirs_painted": [
         "se",
         "sw"
@@ -153,167 +153,167 @@
     },
     "top/nude.png": {
       "path": "/workspace/v6p-act-incoming/top/nude.png",
-      "sha256": "4facb35c29108a01cb28ebf6200faaba94108fa9590544c69e65d197c6a05102",
+      "sha256": "152fec7fbe021dd36e768d2ddf4a7000106b48dcfc7bd34a88530bd72fd9244b",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "top/nude_f.png": {
       "path": "/workspace/v6p-act-incoming/top/nude_f.png",
-      "sha256": "5c2e83ea98cf89a61d1e7b196d831a9cf53f348532fecbe5a96bfcf9b3f19149",
+      "sha256": "a53555c24bbc4d191b3807e9dccfa06394dd5e1f57693ffc22f23bc0f9d82a1c",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "top/nude_back.png": {
       "path": "/workspace/v6p-act-incoming/top/nude_back.png",
-      "sha256": "092cf837e06dc4fd2c63c70045fb2a1b95ce03608b67a4d3cecf9fb1eb58f9c3",
+      "sha256": "53212051e773042b479be4a4a7aae0aefda12eaca2842d2ff5cb067ff0b1c337",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "top/nude_back_f.png": {
       "path": "/workspace/v6p-act-incoming/top/nude_back_f.png",
-      "sha256": "39bd34116a5abb19f5cce1d72f09516d5199bc1a7a89d6da1234170c83a5bce2",
+      "sha256": "30eb7d320d75f8e8f9f8ab260db3e7f19fab93763f07026c890307105fec8358",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "hair/mid_curtain_back.png": {
       "path": "/workspace/v6p-act-incoming/hair/mid_curtain_back.png",
-      "sha256": "208e38e1bebde5382f777deac28f7618ad0075ee1b45dbd855a050d43e807f05",
+      "sha256": "9a11771b3301479a8900b83638ccfd50aa743aea80cacd2ce911c7b7f098f607",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "hair/mid_curtain_front.png": {
       "path": "/workspace/v6p-act-incoming/hair/mid_curtain_front.png",
-      "sha256": "e9dbad470e17ab62c2f7cee76c1a7e01dad22e61647d11e7822bdb08de8ab87b",
+      "sha256": "105a0af72ec22fedfa6bc907a95478b95f500b72cb1d9be41aec7e8aeb4088ea",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "hair/long_back.png": {
       "path": "/workspace/v6p-act-incoming/hair/long_back.png",
-      "sha256": "eef17132ab46718d4162980651bddfabdc37a961060791280234f4de999f0841",
+      "sha256": "5a14a036a747f6edf680ae1912b201946746d57787e5f9d17a639a6687b9095f",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "hair/long_front.png": {
       "path": "/workspace/v6p-act-incoming/hair/long_front.png",
-      "sha256": "8cd1596ae15a1c2685ca6e2e3da7f0ff7f1762839ed05bba6617cf6b3047b5e0",
+      "sha256": "fb607e0cf717267b25f698add885905fbca13bca122a089f52d4c0fc4eed12cb",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "shoes/nude.png": {
       "path": "/workspace/v6p-act-incoming/shoes/nude.png",
-      "sha256": "e66fbb4e4ca07d3ea9a00af926bcdfcb31a7d639f5da63ab1cd5859aa54a4a30",
+      "sha256": "bb02921601fe347811239f12a812b2905460709b24ded81b9adc31aa05b1e633",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "shoes/nude_f.png": {
       "path": "/workspace/v6p-act-incoming/shoes/nude_f.png",
-      "sha256": "860c67434b6374662dfe26bdfd5ee05c9881c951ae067a46db1addb925689df6",
+      "sha256": "4631e4562096c6ccd88ab34c06fe20a3811bd8db8741e5f6fbc1ffa78e849a92",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "base/shadow.png": {
       "path": "/workspace/v6p-act-incoming/base/shadow.png",
-      "sha256": "974ba2af829e4ca360406af36f9888b9b2504f691d6c18acd78f782ebae4a6b0",
+      "sha256": "25d24b788bb331183f68d0477f1d4bbe1c46499a546a0c179666101cf73d5f4e",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "pants/nude.png": {
       "path": "/workspace/v6p-act-incoming/pants/nude.png",
-      "sha256": "d65397c00b700e6e5e24e38aea3c9d46f4c4c679aa95a285c7059bb32e4c213a",
+      "sha256": "5b140544015f1f4e9f9a7f7c2cd02d6a6d86d2f17f42d122cb41bc9162216c48",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "pants/nude_f.png": {
       "path": "/workspace/v6p-act-incoming/pants/nude_f.png",
-      "sha256": "d084e63b13b3318bd0db0b45c0ae8a3f590b55066cca80c00a89776c94e48679",
+      "sha256": "d7a6fef726390a8d2f647ac1fd8e6c072fb01afff6bfd1bc6cd91474cc6a250c",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
       "pushup": "authored",
-      "other_bands": "transparent"
+      "other_bands": "review_artwork_not_approved"
     },
     "base/fx.png": {
       "path": "/workspace/v6p-act-incoming/base/fx.png",
-      "sha256": "d23c585f1429c5d4d71a7504af321d396f1fba6228c1cb1bdcfac1b6d72e4ff3",
+      "sha256": "754ef46deeea83a6affe61e12ccb4a801cc230df9a5fff27664b2c9885121047",
       "size": [
         384,
         2688
       ],
       "squat": "intentional_empty",
       "pushup": "intentional_empty",
-      "other_bands": "transparent",
+      "other_bands": "review_artwork_not_approved",
       "reason": "optional FX layer; squat/pushup have no painted FX (lie/sleep Z's do not apply). Sheet is present and fully transparent so it is not mistaken for a body duplicate."
     }
   },
   "skipped": {
-    "base/body_front.png": "v6p 1x1 placeholder \u2014 skipped",
-    "base/body_front_f.png": "v6p 1x1 placeholder \u2014 skipped"
+    "base/body_front.png": "v6p 1x1 placeholder — skipped",
+    "base/body_front_f.png": "v6p 1x1 placeholder — skipped"
   },
   "not_in_pilot": [
     "glasses/*",
     "facial/*",
     "other tops/pants/shoes/hairs"
   ]
-}
+}\n
