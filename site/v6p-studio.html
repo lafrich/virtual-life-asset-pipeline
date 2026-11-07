@@ -742,6 +742,9 @@ function editorPartFor(kind,dir=state.dir){
     const suffix=female?"_f":"";
     const front=pick("top/"+ch.top+suffix,"top/"+ch.top);
     const back=pick("top/"+ch.top+"_back"+suffix,"top/"+ch.top+"_back");
+    // "back" is an occluded garment underlayer, NOT the visible rear view.
+    // One Custom Wear source sheet contains SE/SW/NE/NW designs.
+    if(ch.top==="custom")return front;
     return (dir==="ne"||dir==="nw")&&C?.isPart(back)?back:front;
   }
   if(kind==="pants") return pick("pants/"+ch.pants+(female?"_f":""),"pants/"+ch.pants);
