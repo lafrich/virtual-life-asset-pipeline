@@ -243,7 +243,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <div class="wrap">
   <section class="card" aria-label="Appearance">
     <strong>APPEARANCE</strong>
-    <p class="note">Choose stock outfit parts or create Custom Wear. Custom Wear edits exact native frames without automatic retargeting.</p>
+    <p class="note">Choose stock outfit parts or create Custom Wear. Draw Custom Wear in four directions; the generator carries it onto native animation poses.</p>
     <label for="body">BASE BODY / FEMALE OR MALE</label>
     <div class="row"><select id="body"></select><button type="button" id="edit-body">✎ PIXEL</button></div>
     <label for="hair">HAIR</label>
@@ -280,7 +280,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <label for="custom-pants-template">CUSTOM PANTS · BASE TEMPLATE</label>
 <select id="custom-pants-template"></select>
 <button type="button" id="reset-custom-pants">CREATE / REPLACE FROM TEMPLATE</button>
-<p>Native animation sheet · edit any frame and angle. Pixels stay exact.</p>
+<p>Edit SE / SW / NE / NW on IDLE F0; Preview transfers the design to the native animations.</p>
 </div>
     <label for="pantsColor">PANTS COLOR</label>
     <select id="pantsColor"></select>
@@ -293,7 +293,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <label for="custom-shoes-template">CUSTOM SHOES · BASE TEMPLATE</label>
 <select id="custom-shoes-template"></select>
 <button type="button" id="reset-custom-shoes">CREATE / REPLACE FROM TEMPLATE</button>
-<p>Native animation sheet · edit any frame and angle. Pixels stay exact.</p>
+<p>Edit SE / SW / NE / NW on IDLE F0; Preview transfers the design to the native animations.</p>
 </div>
     <label for="shoesColor">SHOES COLOR</label>
     <select id="shoesColor"></select>
@@ -418,8 +418,8 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <script src="./v6p-asset-gallery.js?v=v6p-act-v2-20261107"></script>
 <script src="./drive-sync.js?v=v6p-pixel-20261107"></script>
 <script src="./v6p-compositor.js?v=custom-wear-20261108"></script>
-<script src="./v6p-custom-wear.js?v=native-inherit-v2-20261108"></script>
-<script src="./v6p-character-retarget.js?v=native-inherit-v2-20261108"></script>
+<script src="./v6p-custom-wear.js?v=rear-visible-v3-20261108"></script>
+<script src="./v6p-character-retarget.js?v=rear-visible-v3-20261108"></script>
 <script>
 (function(){
 "use strict";
