@@ -83,7 +83,7 @@ async function snapshotIdb(){
  })}finally{database.close()}
 }
 async function restoreIdb(entries){
- if(!entries.length||!root.indexedDB)return;
+ if(!root.indexedDB)return;
  const database=await new Promise((resolve,reject)=>{
   const request=indexedDB.open(DB,1);
   request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(STORE))request.result.createObjectStore(STORE,{keyPath:"id"})};
@@ -92,6 +92,9 @@ async function restoreIdb(entries){
  });
  try{await new Promise((resolve,reject)=>{
   const tx=database.transaction(STORE,"readwrite"),store=tx.objectStore(STORE);
+  // Restore is a snapshot, not a merge: older device-only emotions must
+  // disappear, including when this backup has no emotion records.
+  store.clear();
   for(const item of entries)store.put(item);
   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error("Emotion database restore failed"));
  })}finally{database.close()}
@@ -137,13 +140,18 @@ async function backup(){
    body:JSON.stringify({name:FILENAME,mimeType:"application/json",parents:[parent]})});
   file=await r.json();
  }
- const envelope=JSON.stringify({format:KIND,sha256:await hash(json),payload});
+ const expectedHash=await hash(json);
+ const envelope=JSON.stringify({format:KIND,sha256:expectedHash,payload});
  await api(UP+"/"+encodeURIComponent(file.id)+"?uploadType=media",{method:"PATCH",
   headers:{"Content-Type":"application/json; charset=UTF-8"},body:envelope});
  savedFile=file.id;
  const verified=await(await api(API+"/"+encodeURIComponent(savedFile)+"?alt=media")).text();
  const received=JSON.parse(verified);
- if(received.sha256!==await hash(JSON.stringify(received.payload)))throw Error("Drive read-back hash mismatch");
+ // Read-back must match OUR upload exactly; a different but internally
+ // checksummed snapshot is not proof that the current upload succeeded.
+ if(received.format!==KIND||received.sha256!==expectedHash||
+    received.sha256!==await hash(JSON.stringify(received.payload)))
+  throw Error("Drive read-back hash mismatch");
  return {keys:Object.keys(payload.local).length+Number(payload.emotions.length>0),name:FILENAME,emotions:payload.emotions.length};
 }
 function downloadRecovery(obj){
@@ -166,6 +174,8 @@ async function restore(){
  // Always export the current database before replacing any local values.
  downloadRecovery(current.payload);
  try{
+  for(const key of KEYS)if(!Object.prototype.hasOwnProperty.call(payload.local,key))
+   localStorage.removeItem(key);
   for(const [key,raw] of Object.entries(payload.local))localStorage.setItem(key,raw);
   await restoreIdb(payload.emotions);
  }catch(error){
