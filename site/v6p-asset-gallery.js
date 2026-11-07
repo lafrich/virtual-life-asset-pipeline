@@ -134,7 +134,12 @@ function detail(){
 function openSelected(){
  if(!selected)return;
  const url=selected.openUrl||(catalog()&&catalog().editorUrl(selected));
- if(url)location.href=url;
+ if(url){
+   try{if(root.parent&&root.parent!==root&&root.parent.VLMahlukWorkspace?.openEditor){
+     root.parent.VLMahlukWorkspace.openEditor(url);return;
+   }}catch{}
+   location.href=url;
+  }
 }
 function wearSelected(){
  if(!selected||selected.type!=="accessory")return;

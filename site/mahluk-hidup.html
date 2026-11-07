@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="id"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1d4c9b">
+<title>MAHLUK HIDUP.EXE · Unified Character Workspace</title>
+<style>
+:root{--xp:#d7d8d3;--line:#828b97;--ink:#243145;--blue:#16488e}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;font:12px Tahoma,"Segoe UI",Arial,sans-serif;color:var(--ink);background:#899fba}
+button{font:inherit;cursor:pointer;border:1px solid #747f90;background:linear-gradient(#fff,#d8dfeb);color:#172b45;padding:7px 10px;border-radius:2px}
+button:focus-visible,a:focus-visible{outline:3px solid #eebd53;outline-offset:1px}
+button:disabled{opacity:.5;cursor:not-allowed}
+#app{height:100dvh;display:flex;flex-direction:column;border:2px solid #d9e7fc;background:var(--xp);min-height:0}
+#titlebar{display:flex;align-items:center;gap:8px;padding:8px 11px;background:linear-gradient(95deg,#0c357a,#2b70c2 75%,#8bbcf5);color:white;box-shadow:inset 0 1px #a2c4ed}
+#titlebar h1{font-size:13px;margin:0;letter-spacing:.03em}
+#titlebar .sub{opacity:.88;font-size:10px}
+.window-buttons{margin-left:auto;display:flex;gap:3px}
+.window-buttons span{background:#dce8f7;border:1px solid #fff;color:#234477;width:19px;text-align:center;line-height:17px;font-weight:bold}
+#toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid #a1a6a8;background:#ebede8;min-height:42px}
+.tabs{display:flex;gap:4px;flex:1 1 360px;min-width:0}
+.tabs button{flex:1 1 0;min-width:0;padding:7px 4px;white-space:nowrap;font-weight:bold}
+.tabs button[aria-selected=true]{background:linear-gradient(#a8c8ff,#eaf4ff);border:1px solid #2b64ad;box-shadow:inset 0 2px #2b64ad}
+.sync-tools{display:flex;gap:5px;align-items:center}
+#status{background:#e5ecf5;border-top:1px solid #a0aab7;padding:5px 10px;display:flex;gap:12px;align-items:center;font-size:10px;min-height:29px}
+#workspace{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#c4d1dd}
+.view{position:absolute;inset:0;display:none;overflow:hidden}
+.view.active{display:flex;flex-direction:column}
+.frame{display:block;flex:1 1 100%;min-height:0;width:100%;border:0;background:#d5dfeb}
+#animation-view{flex-direction:row;gap:0}
+#motion-pane{display:flex;flex-direction:column;min-width:260px;width:34%;max-width:460px;border-right:2px solid #8a9eb1}
+#paint-pane{display:flex;flex-direction:column;flex:1;min-width:0}
+.pane-header{background:#e6e6df;border-bottom:1px solid #a6abb1;padding:5px 8px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px}
+.pane-header strong{white-space:nowrap}
+.pane-header button{padding:4px 7px}
+.pane-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mobile-panel-tabs{display:none}
+#status strong{color:#1b4780}
+#status-msg{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+#help{color:#183e79}
+@media(max-width:850px){
+ #titlebar{padding:6px 8px}
+ #toolbar{padding:4px;gap:4px}
+ .tabs{flex:1 1 100%;width:100%;gap:2px}
+ .tabs button{font-size:10px;padding:8px 1px}
+ .sync-tools{width:100%;justify-content:space-between}
+ .sync-tools button{padding:5px 7px;font-size:10px}
+ #animation-view{flex-direction:column}
+ .mobile-panel-tabs{display:flex;align-items:center;gap:4px;border-bottom:1px solid #7b91aa;background:#e4e5e1;padding:4px 6px}
+ .mobile-panel-tabs button[aria-pressed=true]{background:#c2d8fa;font-weight:bold}
+ #motion-pane,#paint-pane{width:100%;max-width:none;min-width:0;flex:1 1 auto;min-height:0;border:0}
+ #motion-pane[hidden],#paint-pane[hidden]{display:none!important}
+ .pane-header{display:none}
+}
+</style></head>
+<body><main id="app">
+<header id="titlebar"><span aria-hidden="true">▣</span><h1>MAHLUK HIDUP.EXE</h1><span class="sub">Character · Emotion · Situation · Motion</span><div class="window-buttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
+<nav id="toolbar" aria-label="Workspace">
+ <div class="tabs" role="tablist">
+  <button data-tab="emotion" role="tab" aria-selected="false">☺ EMOSI</button>
+  <button data-tab="character" role="tab" aria-selected="true">♟ CHARACTER</button>
+  <button data-tab="action" role="tab" aria-selected="false">◆ ACTION</button>
+  <button data-tab="animation" role="tab" aria-selected="false">▤ ANIMATION</button>
+ </div>
+ <div class="sync-tools">
+  <button id="drive-connect" title="Connect Google Drive for Mahluk workspace backup">☁ CONNECT</button>
+  <button id="drive-save" disabled title="Back up Character/Action/Animation drafts to Drive">↑ BACKUP</button>
+  <button id="drive-load" disabled title="Restore one backed-up workspace to this device">↓ RESTORE</button>
+  <button id="open-separate" title="Open selected workspace separately">↗ FULL WINDOW</button>
+ </div>
+</nav>
+<div id="workspace">
+ <section class="view" id="emotion-view" role="tabpanel" aria-label="Emosi editor">
+  <iframe id="emotion-frame" class="frame" title="Emosi.exe · face database and mouth/dialog editor" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
+ </section>
+ <section class="view active" id="character-view" role="tabpanel" aria-label="Character editor">
+  <iframe id="character-frame" class="frame" title="Character Studio · body, clothes and accessories" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+ </section>
+ <section class="view" id="action-view" role="tabpanel" aria-label="Action editor">
+  <iframe id="action-frame" class="frame" title="Action Editor · situations and animation binding" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
+ </section>
+ <section class="view" id="animation-view" role="tabpanel" aria-label="Animation editor">
+  <div class="mobile-panel-tabs"><button id="view-library" aria-pressed="true">DATABASE · 49 MOTIONS</button><button id="view-paint" aria-pressed="false">PIXEL EDITOR</button></div>
+  <div id="motion-pane"><div class="pane-header"><strong>MOTION DATABASE</strong><button id="new-clip">＋ NEW CLIP</button></div>
+   <iframe id="motion-frame" class="frame" title="Grok motion animation library, full four-view previews" loading="lazy"></iframe>
+  </div>
+  <div id="paint-pane"><div class="pane-header"><strong class="pane-label">PIXEL EDITOR · FRAME BY FRAME</strong><button id="pixel-full">↗ OPEN FULL</button></div>
+   <iframe id="pixel-frame" class="frame" title="Existing full Mahluk Pixel Editor" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
+  </div>
+ </section>
+</div>
+<footer id="status"><strong>V6P · 64×112 · 4 VIEWS</strong><span id="status-msg">Source editors preserved · separate databases are not overwritten</span><span id="help">LOCAL / DRIVE</span></footer>
+</main>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="/virtual-office/shared/hub-registry.js?v=mahluk-unified-1"></script>
+<script src="./mahluk-hub-drive.js?v=mahluk-hub-1"></script>
+<script src="./mahluk-hub.js?v=mahluk-hub-1"></script>
+</body></html>

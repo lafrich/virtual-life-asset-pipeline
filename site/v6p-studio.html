@@ -48,9 +48,13 @@ button.active,button[aria-pressed="true"]{background:#2b5797;color:#fff;border-c
 .vag-card small{font-size:10px}
 .vag-empty,.vag-detail p,#vagSource,#vagCompat{font-size:11px;color:#556277}
 .vag-hero img{width:128px;height:224px;image-rendering:pixelated;background:#d6e1e8}
+body.mahluk-embedded .banner{display:none}
+body.mahluk-embedded .wrap{max-width:none;padding:8px;gap:8px}
+body.mahluk-embedded #tab-gallery{max-width:none}
+body.mahluk-embedded{background:#bdcbd8}
 </style>
 </head>
-<body>
+<body><script>if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('mahluk-embedded');</script>
 <div class="banner">
   <h1>MAHLUK HIDUP · V6P COMPOSITOR (PREVIEW)</h1>
   <div class="tabs" role="tablist">
@@ -462,6 +466,12 @@ function editorPartFor(kind){
   if(kind==="glasses") return ch.glasses&&ch.glasses!=="none"?("glasses/"+ch.glasses):null;
   return null;
 }
+function routeToMahlukEditor(url){
+ try{if(window.parent&&window.parent!==window&&window.parent.VLMahlukWorkspace?.openEditor){
+  window.parent.VLMahlukWorkspace.openEditor(url);return;
+ }}catch{}
+ location.href=url;
+}
 function openPixelEditor(kind){
   persistLastCh();
   if(kind==="accessory"){
@@ -473,7 +483,7 @@ function openPixelEditor(kind){
     u.searchParams.set("frame",String(state.frame||0));
     if(id&&id!=="none") u.searchParams.set("project",id);
     else {u.searchParams.set("new","accessory");u.searchParams.set("name","Aksesoris baru");}
-    location.href=u.href;return;
+    routeToMahlukEditor(u.href);return;
   }
   const part=editorPartFor(kind);
   if(!part){setStatus("Tidak ada part v6p untuk "+kind,true);return;}
@@ -483,7 +493,7 @@ function openPixelEditor(kind){
   u.searchParams.set("action",state.action||"idle");
   u.searchParams.set("dir",state.dir||"se");
   u.searchParams.set("frame",String(state.frame||0));
-  location.href=u.href;
+  routeToMahlukEditor(u.href);
 }
 function showStudioTab(name){
   const gallery=name==="gallery";
@@ -533,7 +543,7 @@ if($("new-accessory")) $("new-accessory").addEventListener("click",()=>{
   u.searchParams.set("source","v6p");u.searchParams.set("new","accessory");
   u.searchParams.set("name","Aksesoris baru");u.searchParams.set("placement","front");
   u.searchParams.set("action",state.action||"idle");u.searchParams.set("dir",state.dir||"se");
-  location.href=u.href;
+  routeToMahlukEditor(u.href);
 });
 if($("new-clip")) $("new-clip").addEventListener("click",()=>{
   persistLastCh();
@@ -541,7 +551,7 @@ if($("new-clip")) $("new-clip").addEventListener("click",()=>{
   u.searchParams.set("source","v6p");u.searchParams.set("new","clip");
   u.searchParams.set("name","Clip baru");
   u.searchParams.set("action",state.action||"idle");u.searchParams.set("dir",state.dir||"se");
-  location.href=u.href;
+  routeToMahlukEditor(u.href);
 });
 if($("tab-btn-appearance")) $("tab-btn-appearance").addEventListener("click",()=>showStudioTab("appearance"));
 if($("tab-btn-gallery")) $("tab-btn-gallery").addEventListener("click",()=>showStudioTab("gallery"));
