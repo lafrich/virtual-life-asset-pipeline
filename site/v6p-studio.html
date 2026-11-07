@@ -457,19 +457,26 @@ async function refreshAssets(){
   await rebuild();
 }
 async function save(){
+  const S=window.V6PCharacterStore,G=window.V6PCharacterRetarget;
+  if(!state.characterId||!S?.get(state.characterId)){
+   setStatus("Click ADD NEW CHARACTER first; templates cannot overwrite saved characters.",true);return;
+  }
+  if(G){setStatus("Generating all character animation frames…");await G.generateCharacter(state.characterId);}
   await refreshAssets();
-  if(!state.sheet){ setStatus("Nothing to save",true); return; }
+  if(!state.sheet){setStatus("Nothing to save",true);return;}
   const clips={};
-  [["idle","idle"],["walk","walk"],["talk","talk"],["sit","sit"],["lie","lie"],["sleep","sleep"]].forEach(([cid,action])=>{
+  Object.keys(V.ROWS).forEach(action=>{const cid=action;
     const clip=V.extractClip(state.sheet,action);
     clips[cid]={
       sheet:clip.canvas.toDataURL("image/png"),
       frames:clip.frames,
       frame_ms:clipMs(action,clip.frames),
       loop:true,
-      source:"v6p-compositor"
+      source:"v6p-character-retarget-native"
     };
   });
+  const adapted=window.V6PCharacterRetarget?.generateAnchorClips(state.sheet)||{clips:[],warnings:[]};
+  for(const clip of adapted.clips)clips[clip.id]=clip;
   const sprite=V.extractFrame(state.sheet,"idle","se",0).toDataURL("image/png");
   const tooBig=Object.values(clips).some(c=>c.sheet.length>1250000)||sprite.length>1250000;
   if(tooBig){ setStatus("Export exceeded Semesta 1.25MB clip limit",true); return; }
@@ -488,7 +495,9 @@ async function save(){
   state.lastId=result.id;
   if(state.characterId&&window.V6PCharacterStore) window.V6PCharacterStore.update(state.characterId,{name:result.record.name,appearance:state.ch,faceId:state.faceId,status:"saved"});
   try{ localStorage.setItem(LAST_KEY,result.id); }catch(_e){}
-  setStatus("Saved "+result.id+" · characters topic"+(result.unsupportedBySemestaClips&&result.unsupportedBySemestaClips.length?" · extra "+result.unsupportedBySemestaClips.join(","):""));
+  setStatus("SAVED "+result.id+" · "+Object.keys(clips).length+" native/anchor animation clips in character database"+
+   (result.unsupportedBySemestaClips?.length?" · "+result.unsupportedBySemestaClips.length+" require separate Semesta runtime support":"")+
+   (adapted.warnings.length?" · "+adapted.warnings.join("; "):""));
   syncDbg();
 }
 function reload(){
@@ -528,8 +537,11 @@ function routeToMahlukEditor(url){
  }}catch{}
  location.href=url;
 }
-function openPixelEditor(kind){
+function openPixelEditor(kind,opts={}){
   persistLastCh();
+  if(!state.characterId&&kind!=="accessory"){
+    setStatus("Click ADD NEW CHARACTER first. Global stock art must not be overwritten.",true);return;
+  }
   if(kind==="accessory"){
     const id=$("studio-accessory")&&$("studio-accessory").value;
     const u=new URL("./pixel-editor.html",location.href);
@@ -547,9 +559,10 @@ function openPixelEditor(kind){
   u.searchParams.set("source","v6p");
   u.searchParams.set("part",part);
   if(state.characterId)u.searchParams.set("character",state.characterId);
-  u.searchParams.set("action",state.action||"idle");
-  u.searchParams.set("dir",state.dir||"se");
-  u.searchParams.set("frame",String(state.frame||0));
+  u.searchParams.set("action",opts.fix?opts.action||state.action:"idle");
+  u.searchParams.set("dir",opts.dir||state.dir||"se");
+  u.searchParams.set("frame",String(opts.fix?(opts.frame??state.frame??0):0));
+  u.searchParams.set("master",opts.fix?"0":"1");
   routeToMahlukEditor(u.href);
 }
 function showStudioTab(name){
@@ -642,14 +655,36 @@ window.V6PCharacterHost=Object.freeze({
   state.faceId="";$("char-name").value=gender==="female"?"Female Base":"Male Base";
   writeForm();renderFaces();await refreshAssets();
  },
- async qa(action){
-  if(!state.sheet)return;const selected=V.ROWS[action]!=null?action:"idle";
-  for(const cv of document.querySelectorAll("[data-qa-dir]")){
+ async qa(action,frame=0){
+  if(!state.sheet)return;
+  const all=[...document.querySelectorAll("[data-qa-dir]")];
+  const anchorId=String(action||"").startsWith("anchor:")?String(action).slice(7):"";
+  const anchor=anchorId&&window.V6PCharacterRetarget?.anchorDatabase().find(x=>x.id===anchorId);
+  if(anchor){
+   const generated=window.V6PCharacterRetarget.generateAnchorClip(state.sheet,anchor);
+   const im=new Image();
+   await new Promise((res,rej)=>{im.onload=res;im.onerror=rej;im.src=generated.sheet});
+   for(let d=0;d<all.length;d++){
+    const cv=all[d],c=cv.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);
+    c.drawImage(im,Math.min(Math.max(0,frame),anchor.frames.length-1)*64,d*112,64,112,0,0,64,112);
+   }
+   return;
+  }
+  if(V.ROWS[action]==null)return;
+  state.action=action;state.frame=Math.min(Math.max(0,frame),V.FRAMES[action]-1);
+  writeForm();draw();
+  for(const cv of all){
    const c=cv.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);
-   c.drawImage(V.extractFrame(state.sheet,selected,cv.dataset.qaDir,state.frame%V.FRAMES[selected]),0,0);
+   c.drawImage(V.extractFrame(state.sheet,action,cv.dataset.qaDir,state.frame),0,0);
   }
  },
- edit(kind,dir,action){state.dir=dir;state.action=action;state.frame=0;openPixelEditor(kind)}
+ edit(kind,dir,action,frame=0){
+  if(String(action).startsWith("anchor:")){
+   setStatus("Custom anchor motion: edit its motion frames in ANIMATION tab. Native V6P corrections are editable here.",true);return;
+  }
+  state.dir=dir;state.action=action;state.frame=frame;
+  openPixelEditor(kind,{fix:true,dir,action,frame});
+ }
 });
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
