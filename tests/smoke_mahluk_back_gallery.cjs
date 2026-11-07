@@ -22,7 +22,7 @@ async function test(){
   const editor=page.frameLocator('#character-pixel-frame');
   await page.locator('#character-pixel-overlay:not([hidden])').waitFor({timeout:65000});
   await editor.locator('#pixelOverlay:not([hidden])').waitFor({timeout:65000});
-  await editor.locator('#v6p-part').waitFor({timeout:65000});
+  await editor.locator('#v6p-part').waitFor({state:'attached',timeout:65000});
   const front=await editor.locator('#v6p-part').inputValue();
   assert.equal(front,'top/shirt_f','Front view must edit female shirt front layer');
   await editor.locator('#pixelDirection').selectOption('ne');
