@@ -22,6 +22,15 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 @media(max-width:950px){#layout{grid-template-columns:160px minmax(0,1fr)}#properties{grid-column:1/-1}#stage{width:min(100%,310px)}}
 @media(max-width:600px){#layout{grid-template-columns:1fr}#properties{grid-column:auto}#animations{max-height:120px}#stage{width:min(100%,310px)}}
 [hidden]{display:none!important}
+#animation-stock-preview{max-width:770px;text-align:center}
+#stock-canvas{width:min(260px,80vw);height:auto;aspect-ratio:64/112;image-rendering:pixelated;border:2px solid #697b8e;display:block;margin:10px auto;background:repeating-conic-gradient(#e6edf4 0 25%,#bbccda 0 50%) 0 0/20px 20px}
+#stock-controls{display:flex;gap:10px;align-items:end;justify-content:center;flex-wrap:wrap}
+#stock-controls label{width:120px}
+#stock-timeline{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+#stock-timeline button{min-width:45px}
+#stock-timeline button[aria-pressed=true]{background:#b9d7fd}
+#stock-status{margin:8px auto;max-width:570px}
+
 .flow-screen{max-width:950px;margin:14px auto;padding:17px;background:#e9e9e4;border:2px ridge #fff;box-shadow:0 3px 12px #445c7455}
 .flow-screen h1{font-size:18px;margin:0 0 12px}
 .flow-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -48,6 +57,23 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <div id="animations" aria-label="Saved animation clips"></div>
  <p id="animation-home-note" class="flow-note">Choose a starting pose, edit individual frames, preview the loop, then save.</p>
 </section>
+<section class="flow-screen" id="animation-stock-preview" hidden aria-label="Native stock animation preview">
+ <div class="flow-toolbar"><button id="stock-back">← ANIMATION GALLERY</button></div>
+ <h1 id="stock-title">STOCK ANIMATION</h1>
+ <p class="flow-note">NATIVE V6P STOCK · approved sprite frames used in Mahluk Hidup and Action Editor. This is the real game asset, not a Grok review.</p>
+ <div id="stock-controls">
+  <label>BASE <select id="stock-gender"><option value="male">MALE</option><option value="female">FEMALE</option></select></label>
+  <label>VIEW <select id="stock-dir"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></label>
+ </div>
+ <canvas id="stock-canvas" width="64" height="112" aria-label="Native animation frame from approved per-part game sprites"></canvas>
+ <div class="flow-toolbar" style="justify-content:center">
+  <button id="stock-prev">◀ FRAME</button><button id="stock-play">▶ PLAY</button><button id="stock-next">FRAME ▶</button>
+ </div>
+ <div id="stock-timeline" aria-label="Stock animation timeline"></div>
+ <p id="stock-status" class="flow-note" role="status">Loading approved native stock…</p>
+ <div class="flow-toolbar" style="justify-content:center"><button id="stock-edit-pixels">✎ EDIT LOCAL PIXEL FRAMES</button></div>
+ <p class="hint">Stock sheet stays protected. Any pixel edits use a local clip override; original GitHub stock and Custom Wear are unaffected.</p>
+</section>
 <section class="flow-screen" id="animation-setup" hidden>
  <h1>CREATE ANIMATION · BASE POSE</h1>
  <label>ACTIVITY NAME<input id="setup-name" maxlength="80" placeholder="e.g. Yoga Sphinx / Jogging / Reading"></label>
@@ -65,7 +91,7 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <div class="row"><button id="new">＋ NEW</button><button id="copy">⧉ DUPLICATE</button></div>
  <p class="hint">Edit frame and each of the four directions. This editor uses the existing base image; Custom Wear stays separate.</p>
  <div class="row"><button id="open-pixel">✎ PIXEL EDITOR</button><button id="export">↓ JSON</button></div>
- <div class="row"><button id="reference">GROK REFERENCE ↗</button></div>
+ <div class="row" hidden><button id="reference">GROK REFERENCE ARCHIVE (NOT GAME STOCK)</button></div>
 </aside>
 <section class="panel"><h2 id="animation-title">NEW ANIMATION</h2>
  <label>ACTIVITY NAME<input id="animation-name-edit" maxlength="80" placeholder="Activity name"></label>
@@ -97,5 +123,5 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 <script src="./v6p-part-catalog.js"></script><script src="./v6p-part-overrides.js"></script><script src="./v6p-character-store.js"></script>
 <script src="./v6p-activity-contract.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-clip-store.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-compositor.js?v=v6p-stock-approved-20261108"></script>
 <script src="/virtual-office/shared/hub-registry.js"></script>
-<script src="./mahluk-animation-studio.js?v=animation-flow-stock-20261108"></script>
+<script src="./mahluk-animation-studio.js?v=native-stock-gallery-20261108"></script>
 </body></html>
