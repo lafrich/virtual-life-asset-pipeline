@@ -175,6 +175,14 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
+      - name: Publish verified Grok V6B review gallery from original ZIP
+        run: |
+          python tools/publish_grok_review_assets.py
+          test -s _site/grok-assets/manifest.js
+          test -s _site/grok-assets/furniture/furniture-chair_sw.png
+          test -s _site/grok-assets/vehicle/id200_transport_becak_kampung_se.png
+          python -c "import json,pathlib; p=pathlib.Path('_site/grok-assets'); d=json.loads((p/'manifest.json').read_text()); assert d['count']==67 and d['fourWayPngs']==268; assert len(list(p.rglob('*.png')))==268"
+
       - name: Verify truly horizontal native sleep poses and discoverable Animation clips
         run: |
           python -m unittest discover -s tests -p "test_sleep_head_preservation.py" -v
