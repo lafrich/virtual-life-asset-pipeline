@@ -54,6 +54,12 @@ const {chromium}=require('playwright');
   }});
   // User switches angle then back, saving the actual drawing.
   await pixel.locator('#pixelDirection').selectOption('sw');
+  await pixel.locator('#pixelDirection').selectOption('ne');
+  assert.ok((await pixel.locator('#source-state').textContent()).includes('top/custom_f'),
+    'NE incorrectly opened tiny occluded top_back source');
+  await pixel.locator('#pixelDirection').selectOption('nw');
+  assert.ok((await pixel.locator('#source-state').textContent()).includes('top/custom_f'),
+    'NW incorrectly opened tiny occluded top_back source');
   await pixel.locator('#pixelDirection').selectOption('se');
   await page.locator('#character-pixel-back').click();
   await page.locator('#character-pixel-overlay').waitFor({state:'hidden',timeout:65000});
