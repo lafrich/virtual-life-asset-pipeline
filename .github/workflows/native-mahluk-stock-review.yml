@@ -108,8 +108,8 @@ jobs:
                   colors=np.unique(v[v[:,:,3]>0],axis=0)
                   out['unique_opaque_colors']=colors.tolist()
               if rel in obj['parts']:obj['parts'][rel]['sha256']=digest
-          meta.write_text(json.dumps(obj,indent=2,ensure_ascii=False)+'\\n')
-          hashfile.write_text(json.dumps(hashes,indent=2,ensure_ascii=False)+'\\n')
+          meta.write_text(json.dumps(obj,indent=2,ensure_ascii=False))
+          hashfile.write_text(json.dumps(hashes,indent=2,ensure_ascii=False))
           print('STAGED native keyed activity layers:',count)
           PY
           git config user.name 'github-actions[bot]'
