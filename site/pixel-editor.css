@@ -195,3 +195,29 @@ button:disabled{color:#888;opacity:.6}
  .wand-tolerance{margin-left:0;flex:1 0 120px}
  .wand-tolerance input[type=range]{width:100%;max-width:110px}
 }
+
+.overlay-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#e8e3d4;border:1px solid #b0bfce;padding:6px;margin-top:6px}
+.overlay-actions strong,.overlay-actions span{font-size:10px;color:#27496c;flex:1 1 160px}
+.overlay-actions label{font-size:10px;font-weight:700;display:flex;align-items:center;gap:4px}
+#clipboard-info{flex:1 1 140px}
+@media(max-width:680px){
+ .selection-buttons #select-all,.selection-buttons #copy-selection,.selection-buttons #cut-selection{grid-column:span 1}
+ .selection-buttons #paste-selection,.selection-buttons #paste-flip{grid-column:span 2}
+}
+
+[hidden]{display:none!important}
+
+.clip-actions{display:flex;flex-direction:column;gap:6px;background:#e8e3d4;border:1px solid #b0bfce;padding:6px;margin-top:6px}
+.clip-actions strong,.clip-actions span{font-size:10px;color:#27496c}
+.clip-bar,.clip-strip-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.clip-strip{display:flex;gap:4px;overflow-x:auto;max-width:100%;padding:2px 0}
+.clip-cell{min-width:58px;padding:4px 6px;border:1px solid #7a8ea3;background:#f7f4ea;color:#27496c;font-size:10px;font-weight:700;cursor:pointer;white-space:pre-line;text-align:left}
+.clip-cell.on{border-color:#1a5fa8;background:#d7e7f8}
+#clip-prev-m,#clip-prev-f{width:64px;height:112px;image-rendering:pixelated;background:#d4dde6;border:1px solid #8aa;flex:0 0 auto}
+.clip-preview-label{font-weight:700}
+#clip-ms{width:64px}
+@media(max-width:680px){
+ .clip-actions{padding:5px}
+ .clip-cell{min-width:52px;font-size:9px}
+ #clip-prev-m,#clip-prev-f{width:48px;height:84px}
+}

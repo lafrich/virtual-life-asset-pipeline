@@ -8,14 +8,31 @@ function sheetCanvas(){
 function loadImage(src){
  return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(Error("Cannot load "+src));i.src=src;});
 }
-async function loadSheet(part,preferredUrl){
- C.normalizePart(part);
- const {cv,c}=sheetCanvas();
- const img=await loadImage(preferredUrl||C.mediaUrl(part));
- if(img.naturalWidth!==C.W||img.naturalHeight!==C.H)throw Error("v6p part must be "+C.W+"×"+C.H+" (got "+img.naturalWidth+"×"+img.naturalHeight+")");
- c.clearRect(0,0,C.W,C.H);c.drawImage(img,0,0);
+function blankSheet(size){
+ const w=(size&&size.w)||C.W,h=(size&&size.h)||C.H;
+ const cv=document.createElement("canvas");cv.width=w;cv.height=h;
+ const c=cv.getContext("2d",{willReadFrequently:true});c.imageSmoothingEnabled=false;
  return cv;
 }
+function sizedCanvas(w,h){
+ const cv=document.createElement("canvas");cv.width=w;cv.height=h;
+ const c=cv.getContext("2d",{willReadFrequently:true});c.imageSmoothingEnabled=false;
+ return {cv,c};
+}
+async function loadSheetFromUrl(url,size){
+ const w=(size&&size.w)||C.W,h=(size&&size.h)||C.H;
+ const {cv,c}=sizedCanvas(w,h);
+ const img=await loadImage(url);
+ if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error("sheet must be "+w+"×"+h+" (got "+img.naturalWidth+"×"+img.naturalHeight+")");
+ c.clearRect(0,0,w,h);c.drawImage(img,0,0);
+ return cv;
+}
+async function loadSheet(part,preferredUrl){
+ C.normalizePart(part);
+ return loadSheetFromUrl(preferredUrl||C.mediaUrl(part));
+}
+function extractAt(sheet,x,y,w,h){return sheet.getContext("2d",{willReadFrequently:true}).getImageData(x,y,w,h);}
+function stampAt(sheet,x,y,image){sheet.getContext("2d").putImageData(image,x,y);}
 function extract(sheet,action,dir,frame){
  const o=C.cellOrigin(action,dir,frame);
  const c=sheet.getContext("2d",{willReadFrequently:true});
@@ -53,5 +70,5 @@ function hasAlpha(sheet){
  for(let i=3;i<d.length;i+=4)if(d[i]>0)return true;
  return false;
 }
-return Object.freeze({loadSheet,extract,stamp,applyEdits,toDataURL,patchObject,hasAlpha,sheetCanvas});
+return Object.freeze({loadSheet,loadSheetFromUrl,blankSheet,extract,extractAt,stamp,stampAt,applyEdits,toDataURL,patchObject,hasAlpha,sheetCanvas});
 });

@@ -1,0 +1,152 @@
+/* Persistence for activity-contract clips + per-layer 384×2688 sheets.
+   Built-in pushup layers come from media/v6p-act/; user edits are local overrides. */
+(function(root,factory){"use strict";const api=factory(root);if(typeof module==="object"&&module.exports)module.exports=api;if(root)root.V6PClipStore=api;})(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){"use strict";
+const KEY="vl-v6p-act-clips-v1";
+const FORMAT="v6p-act-clips-store-v1";
+function contract(){return (root&&root.V6PActivityContract)||(typeof require==="function"?require("./v6p-activity-contract.js"):null);}
+function storage(){try{return root&&root.localStorage;}catch{return null;}}
+function empty(){return {format:FORMAT,clips:{}};}
+function read(){
+ const raw=storage()?.getItem(KEY);
+ if(!raw)return empty();
+ try{
+  const obj=JSON.parse(raw);
+  if(!obj||obj.format!==FORMAT||!obj.clips||typeof obj.clips!=="object")return empty();
+  return {format:FORMAT,clips:obj.clips};
+ }catch{return empty();}
+}
+function write(store){
+ const s=storage();
+ if(!s)throw Error("localStorage unavailable");
+ s.setItem(KEY,JSON.stringify(store));
+}
+function now(){return new Date().toISOString();}
+function recordFromStore(id,row){
+ const A=contract();
+ const fallback=id==="clip_pushup"?A.pushupManifest():A.emptyManifest({id,name:id});
+ const manifest=row&&row.manifest?{...fallback,...row.manifest,frames:(row.manifest.frames||fallback.frames).map(f=>({key:f.key,ms:f.ms}))}:fallback;
+ return {
+  id,type:"clip",origin:row&&row.origin||(id==="clip_pushup"?"pilot":"user"),
+  name:manifest.name,
+  manifest,
+  layers:row&&row.layers&&typeof row.layers==="object"?row.layers:{},
+  saveStatus:row&&row.saveStatus||(id==="clip_pushup"?"stock":"local"),
+  driveFile:row&&row.driveFile||null,
+  updatedAt:row&&row.updatedAt||"",
+  thumbDataUrl:row&&row.thumbDataUrl||"",
+  frameMs:manifest.frames[0]?manifest.frames[0].ms:140
+ };
+}
+function normalizeId(id){
+ if(id==="clip_pushup"||id==="pushup")return "clip_pushup";
+ return id;
+}
+function get(id){
+ id=normalizeId(id);
+ const row=read().clips[id];
+ if(!row&&id!=="clip_pushup")return null;
+ return recordFromStore(id,row);
+}
+function list(){
+ const store=read();
+ const ids=new Set(["clip_pushup",...Object.keys(store.clips)]);
+ return [...ids].map(id=>recordFromStore(id,store.clips[id]));
+}
+function create(opts){
+ const A=contract();
+ const man=A.emptyManifest(opts||{});
+ if(get(man.id)&&man.id!=="clip_pushup")throw Error("Clip id exists");
+ const store=read();
+ store.clips[man.id]={manifest:man,layers:{},origin:"user",saveStatus:"local",updatedAt:now()};
+ write(store);
+ return get(man.id);
+}
+function updateManifest(id,patch){
+ id=normalizeId(id);
+ const rec=get(id); if(!rec)throw Error("Unknown clip "+id);
+ const manifest={...rec.manifest,...patch,id:rec.manifest.id};
+ if(patch&&Array.isArray(patch.frames))manifest.frames=patch.frames.map(f=>({key:String(f.key||"f0").slice(0,32),ms:Math.max(40,Math.min(800,Number(f.ms)||140))}));
+ const store=read();
+ const row=store.clips[id]||{layers:{},origin:rec.origin};
+ row.manifest=manifest;row.updatedAt=now();
+ if(rec.origin==="pilot"&&id==="clip_pushup")row.origin="pilot";
+ if(row.saveStatus!=="drive")row.saveStatus=id==="clip_pushup"&&!Object.keys(row.layers||{}).length?"stock":"local";
+ store.clips[id]=row;write(store);
+ return get(id);
+}
+function setLayer(id,part,dataUrl,meta){
+ id=normalizeId(id);
+ if(typeof dataUrl!=="string"||dataUrl.indexOf("data:image/png;base64,")!==0)throw Error("Layer must be a PNG data URL");
+ if(dataUrl.length>9000000)throw Error("Activity sheet too large for localStorage");
+ const rec=get(id); if(!rec)throw Error("Unknown clip "+id);
+ const store=read();
+ const row=store.clips[id]||{manifest:rec.manifest,layers:{},origin:rec.origin,saveStatus:"local"};
+ row.layers=row.layers||{};row.layers[part]=dataUrl;
+ if(meta&&meta.thumbDataUrl)row.thumbDataUrl=meta.thumbDataUrl;
+ row.updatedAt=now();row.saveStatus="local";
+ store.clips[id]=row;write(store);
+ return get(id);
+}
+function replaceLayers(id,layers){
+ id=normalizeId(id);
+ const rec=get(id); if(!rec)throw Error("Unknown clip "+id);
+ const store=read();
+ const row=store.clips[id]||{manifest:rec.manifest,layers:{},origin:rec.origin};
+ row.layers=layers&&typeof layers==="object"?layers:{};
+ row.updatedAt=now();
+ store.clips[id]=row;write(store);
+ return get(id);
+}
+function layerUrl(id,part){
+ id=normalizeId(id);
+ const rec=get(id);
+ if(rec&&rec.layers&&rec.layers[part])return rec.layers[part];
+ if(id==="clip_pushup"&&contract().PILOT_PARTS.indexOf(part)>=0)
+  return contract().mediaUrl(part);
+ if(id==="clip_pushup"&&part==="base/fx") return contract().mediaUrl(part);
+ return null;
+}
+function hasLayer(id,part){return !!layerUrl(id,part);}
+function markDrive(id,info){
+ id=normalizeId(id);
+ const store=read();
+ const rec=get(id); if(!rec)throw Error("Unknown clip "+id);
+ const row=store.clips[id]||{manifest:rec.manifest,layers:rec.layers||{}};
+ row.saveStatus="drive";row.driveFile=info||null;row.updatedAt=now();
+ store.clips[id]=row;write(store);
+ return get(id);
+}
+function remove(id){
+ id=normalizeId(id);
+ if(id==="clip_pushup")throw Error("Cannot delete the pushup pilot clip");
+ const store=read();delete store.clips[id];write(store);
+}
+function compatibility(rec){
+ const man=rec&&rec.manifest;
+ if(!man)return "Custom clip";
+ const n=(man.frames||[]).length;
+ const ms=(man.frames||[]).map(f=>f.ms).join(",");
+ const extra=man.band==="pushup"?
+  "Pilot pushup · authored on activity sheets 384×2688 · stock 44-row sheets untouched":
+  "User clip · activity sheet 384×2688 · painted frames only · no auto-strip";
+ return n+" frame(s) · "+(man.loop?"loop":"once")+" · ms ["+ms+"] · "+extra;
+}
+function galleryEntry(rec){
+ return {
+  id:rec.id,type:"clip",origin:rec.origin==="pilot"?"built-in":"user",
+  name:rec.name,part:null,placement:null,
+  sheetDataUrl:"",thumbDataUrl:rec.thumbDataUrl||"",
+  paintedActions:[rec.manifest&&rec.manifest.band||"custom"],
+  saveStatus:rec.saveStatus,driveFile:rec.driveFile||null,
+  updatedAt:rec.updatedAt||"",
+  compatibility:compatibility(rec),
+  openUrl:"./pixel-editor.html?source=v6p&project="+encodeURIComponent(rec.id),
+  manifest:rec.manifest,frameMs:rec.frameMs
+ };
+}
+function galleryEntries(){return list().map(galleryEntry);}
+return Object.freeze({
+ KEY,FORMAT,get,list,create,updateManifest,setLayer,replaceLayers,layerUrl,hasLayer,markDrive,remove,
+ compatibility,galleryEntry,galleryEntries
+});
+});

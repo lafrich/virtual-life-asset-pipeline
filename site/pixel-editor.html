@@ -6,15 +6,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#e9e7db">
 <title>Pixel Editor — Mahluk Hidup</title>
-<link rel="stylesheet" href="./pixel-editor.css?v=wand-selection-v1-20261103">
+<link rel="stylesheet" href="./pixel-editor.css?v=v6p-act-v2-20261107">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script defer src="./emotion-studio/shared-pixel-selection.js?v=mh2-selection-v1"></script>
 <script defer src="./pixel-edit-core.js?v=wand-selection-v1-20261103"></script>
 <script defer src="./master-parts.js?v=master-parts-1"></script>
 <script defer src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
 <script defer src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
-<script defer src="./v6p-pixel-source.js?v=v6p-pixel-20261107"></script>
-<script defer src="./drive-sync.js?v=v6p-pixel-20261107"></script>
-<script defer src="./pixel-editor.js?v=v6p-pixel-20261107"></script>
+<script defer src="./v6p-project-catalog.js?v=v6p-copy-paste-20261107"></script>
+<script defer src="./v6p-pixel-source.js?v=v6p-copy-paste-20261107"></script>
+<script defer src="./v6p-activity-contract.js?v=v6p-act-v2-20261107"></script>
+<script defer src="./v6p-clip-store.js?v=v6p-act-v2-20261107"></script>
+<script defer src="./v6p-compositor.js?v=v6p-act-v2-20261107"></script>
+<script defer src="./drive-sync.js?v=v6p-copy-paste-20261107"></script>
+<script defer src="./pixel-editor.js?v=v6p-act-v2-20261107"></script>
 </head>
 <body>
 <main class="paint">
@@ -28,8 +33,26 @@
 <div class="control"><label for="source-kind">SUMBER</label><select id="source-kind">
 <option value="otis">OTIS / MASTER PARTS</option>
 <option value="v6p">V6P PART SHEET (media/v6p)</option>
+<option value="accessory">V6P ACCESSORY LAYER</option>
+<option value="clip">V6P CUSTOM CLIP</option>
 </select></div>
 <div class="control" id="v6p-part-wrap" hidden><label for="v6p-part">V6P PART</label><select id="v6p-part"></select></div>
+<div class="control" id="v6p-project-wrap" hidden>
+<label for="v6p-project">USER PROJECT</label>
+<select id="v6p-project"></select>
+<div class="button-row">
+<button type="button" id="new-accessory">+ AKSESORIS</button>
+<button type="button" id="new-clip">+ CUSTOM CLIP</button>
+</div>
+<div class="control" id="accessory-place-wrap" hidden>
+<label for="accessory-place">Z POSITION</label>
+<select id="accessory-place">
+<option value="front">FRONT · above hair (like glasses)</option>
+<option value="back">BACK · behind body (like hair_back)</option>
+</select>
+</div>
+<p class="master-note" id="project-note">Transparent user layer. Overlay karakter terkunci dan tidak ikut tersimpan ke PNG.</p>
+</div>
 <div class="control"><label for="edit-mode">EDITING MODE</label><select id="edit-mode">
 <option value="master">MASTER / APPLY TO FRAMES</option>
 <option value="frame">FRAME / MANUAL FIX</option></select></div>
@@ -92,7 +115,14 @@
  </div>
 <div class="selection-actions" role="group" aria-label="Edit selection">
 <strong id="selection-info" aria-live="polite">NO SELECTION · RECT OR WAND</strong>
+<strong id="clipboard-info" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</strong>
+<label class="wand-setting"><input type="checkbox" id="paste-replace"> PASTE REPLACE</label>
 <div class="selection-buttons">
+<button type="button" id="select-all" title="Select all / Ctrl+A">▣ ALL</button>
+<button type="button" id="copy-selection" title="Copy selection / Ctrl+C">⧉ COPY</button>
+<button type="button" id="cut-selection" title="Cut selection / Ctrl+X">✂ CUT</button>
+<button type="button" id="paste-selection" disabled title="Paste copied pixels / Ctrl+V">▣ PASTE</button>
+<button type="button" id="paste-flip" disabled title="Mirror and paste / Ctrl+Shift+V">⇆ PASTE FLIP</button>
 <button type="button" id="nudge-left" disabled title="Move selected pixels 1px left">←</button>
 <button type="button" id="nudge-up" disabled title="Move selected pixels 1px up">↑</button>
 <button type="button" id="nudge-down" disabled title="Move selected pixels 1px down">↓</button>
@@ -100,6 +130,38 @@
 <button type="button" id="flip-horizontal" disabled>⇄ FLIP H</button>
 <button type="button" id="flip-vertical" disabled>⇅ FLIP V</button>
 <button type="button" id="deselect" disabled>× CLEAR</button>
+</div>
+</div>
+<div class="overlay-actions" id="overlay-actions" hidden>
+<strong>REFERENCE OVERLAY · LOCKED CHARACTER · NEVER EXPORTED</strong>
+<label class="wand-setting"><input type="checkbox" id="overlay-on" checked> SHOW BODY</label>
+<label class="wand-setting" for="overlay-alpha">OPACITY <output id="overlay-alpha-value">42%</output>
+<input type="range" id="overlay-alpha" min="0" max="90" value="42" step="1"></label>
+<label class="wand-setting"><input type="checkbox" id="overlay-pivot" checked> PIVOT 32,100</label>
+<span id="overlay-info">Acuan karakter untuk frame dan arah ini</span>
+</div>
+<div class="clip-actions" id="clip-actions" hidden>
+<strong>CLIP TIMELINE · ACTIVITY SHEET 384×2688 · STOCK 44-ROW SHEETS UNTOUCHED</strong>
+<div class="clip-bar">
+<button type="button" id="clip-play">▶ PLAY</button>
+<button type="button" id="clip-pause">❚❚ PAUSE</button>
+<label class="wand-setting"><input type="checkbox" id="clip-loop" checked> LOOP</label>
+<label class="wand-setting" for="clip-ms">MS <input id="clip-ms" type="number" min="40" max="800" step="10" value="140"></label>
+<label class="wand-setting"><input type="checkbox" id="clip-onion" checked> ONION</label>
+<label class="wand-setting" for="clip-layer">LAYER <select id="clip-layer"></select></label>
+<span class="clip-preview-label">M</span>
+<canvas id="clip-prev-m" width="64" height="112" aria-label="Male compose preview"></canvas>
+<span class="clip-preview-label">F</span>
+<canvas id="clip-prev-f" width="64" height="112" aria-label="Female compose preview"></canvas>
+<span id="clip-prev-note">Male / Female preview through the compositor</span>
+</div>
+<div class="clip-strip-row">
+<button type="button" id="clip-add">+ FRAME</button>
+<button type="button" id="clip-dup">DUPLICATE</button>
+<button type="button" id="clip-del">REMOVE</button>
+<button type="button" id="clip-left">◀ MOVE</button>
+<button type="button" id="clip-right">MOVE ▶</button>
+<div id="clip-strip" class="clip-strip" role="list"></div>
 </div>
 </div>
 <div id="swatches" class="swatches" aria-label="Otis color palette"></div>

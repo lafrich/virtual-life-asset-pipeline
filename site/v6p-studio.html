@@ -33,12 +33,32 @@ button.active,button[aria-pressed="true"]{background:#2b5797;color:#fff;border-c
 @media(max-width:860px){
   .wrap{grid-template-columns:1fr}
 }
+.tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tabs button{min-height:34px}
+#tab-gallery{max-width:1280px;margin:0 auto;padding:12px}
+.vag-title{font-weight:700;margin-bottom:8px}
+.vag-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.vag-toolbar input,.vag-toolbar select{min-width:160px}
+.vag-body{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px}
+@media(max-width:860px){.vag-body{grid-template-columns:1fr}}
+.vag-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;align-content:start}
+.vag-card{display:flex;flex-direction:column;gap:4px;align-items:center;padding:8px;min-height:180px;text-align:center}
+.vag-card img{width:64px;height:112px;image-rendering:pixelated;background:repeating-conic-gradient(#eef3f3 0 25%,#d6e1e8 0 50%) 50%/12px 12px}
+.vag-card.selected{background:#2b5797;color:#fff}
+.vag-card small{font-size:10px}
+.vag-empty,.vag-detail p,#vagSource,#vagCompat{font-size:11px;color:#556277}
+.vag-hero img{width:128px;height:224px;image-rendering:pixelated;background:#d6e1e8}
 </style>
 </head>
 <body>
 <div class="banner">
   <h1>MAHLUK HIDUP · V6P COMPOSITOR (PREVIEW)</h1>
+  <div class="tabs" role="tablist">
+    <button type="button" id="tab-btn-appearance" class="active" aria-pressed="true">APPEARANCE</button>
+    <button type="button" id="tab-btn-gallery" aria-pressed="false">ASSET GALLERY</button>
+  </div>
 </div>
+<div id="tab-appearance">
 <div class="wrap">
   <section class="card" aria-label="Appearance">
     <strong>APPEARANCE</strong>
@@ -84,6 +104,14 @@ button.active,button[aria-pressed="true"]{background:#2b5797;color:#fff;border-c
     </div>
     <label for="facial">FACIAL</label>
     <select id="facial"></select>
+    <label for="studio-accessory">ACCESSORY</label>
+    <div class="row">
+      <select id="studio-accessory"></select>
+      <button type="button" id="edit-accessory">Edit di Pixel Editor</button>
+      <button type="button" id="new-accessory">+ Aksesoris</button>
+      <button type="button" id="new-clip">+ Custom clip</button>
+    </div>
+    <p class="note">Aksesoris adalah layer transparan buatanmu. Front = di atas rambut (seperti kacamata). Back = di belakang tubuh (seperti hair_back). Overlay acuan di editor tidak pernah ikut ke PNG.</p>
   </section>
   <section class="card preview-col" aria-label="Preview">
     <canvas id="stage" width="192" height="336" data-testid="stage"></canvas>
@@ -122,14 +150,51 @@ button.active,button[aria-pressed="true"]{background:#2b5797;color:#fff;border-c
     <div class="faces" id="faces"></div>
   </section>
 </div>
+</div>
+<div id="tab-gallery" hidden>
+  <section class="card" aria-label="Asset gallery">
+    <div class="vag-title">ASSET GALLERY.EXE · apa yang sudah kamu buat</div>
+    <p class="note">Clip, aksesoris, dan part yang diedit muncul otomatis setelah disimpan di Pixel Editor — tanpa import JSON. Aset stock tidak ditimpa. Overlay acuan tidak pernah ikut tersimpan.</p>
+    <div class="vag-toolbar">
+      <input id="vagSearch" type="search" placeholder="Cari nama, tipe, status..." aria-label="Cari aset">
+      <select id="vagFilter" aria-label="Filter aset">
+        <option value="user">USER MADE</option>
+        <option value="all">ALL</option>
+        <option value="accessory">ACCESSORIES</option>
+        <option value="clip">CUSTOM CLIPS</option>
+        <option value="part-edit">EDITED PARTS</option>
+        <option value="built-in">BUILT-IN</option>
+      </select>
+      <span id="vagCount">0 ASET</span>
+      <button type="button" id="vagRefresh">↻ REFRESH</button>
+    </div>
+    <div class="vag-body">
+      <div id="vagGallery" class="vag-gallery" role="list"></div>
+      <section class="vag-detail">
+        <div class="vag-hero" id="vagHero"></div>
+        <h2 id="vagName">Pilih aset</h2>
+        <div id="vagSource"></div>
+        <p id="vagCompat"></p>
+        <div class="row">
+          <button type="button" id="vagOpen" disabled>✎ Open in editor</button>
+          <button type="button" id="vagWear" hidden>＋ Pakai di studio</button>
+        </div>
+      </section>
+    </div>
+  </section>
+</div>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="./emotion-studio/emotion-library.js?v=emosi-v1-bridge"></script>
 <script src="./emosi-bridge.js?v=preview-stock-20261107"></script>
 <script src="./vlhub-characters-publish.js?v=v6p-preview"></script>
 <script src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
 <script src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
+<script src="./v6p-project-catalog.js?v=v6p-copy-paste-20261107"></script>
+<script src="./v6p-activity-contract.js?v=v6p-act-v2-20261107"></script>
+<script src="./v6p-clip-store.js?v=v6p-act-v2-20261107"></script>
+<script src="./v6p-asset-gallery.js?v=v6p-act-v2-20261107"></script>
 <script src="./drive-sync.js?v=v6p-pixel-20261107"></script>
-<script src="./v6p-compositor.js?v=emosi-topmost-pixel-20261107"></script>
+<script src="./v6p-compositor.js?v=v6p-act-v2-20261107"></script>
 <script>
 (function(){
 "use strict";
@@ -138,6 +203,7 @@ const pageErrors=[];
 window.addEventListener("error",ev=>pageErrors.push(String(ev.message||ev.error||"error")));
 window.addEventListener("unhandledrejection",ev=>pageErrors.push(String(ev.reason||"rejection")));
 const LAST_KEY="v6p-studio-last-id";
+const LAST_CH_KEY="v6p-studio-last-ch";
 const $=id=>document.getElementById(id);
 const stage=$("stage"), strip=$("strip"), statusEl=$("status");
 const sctx=stage.getContext("2d"); sctx.imageSmoothingEnabled=false;
@@ -166,15 +232,35 @@ function fillSelect(id,values,labels){
 }
 fillSelect("body",["male","female"]);
 ["hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"].forEach(k=>fillSelect(k,V.OPT[k], k==="top"||k==="pants"||k==="shoes"?{nude:"nude (skin)"}:null));
+function fillAccessories(){
+  const sel=$("studio-accessory"); if(!sel||!window.V6PProjectCatalog) return;
+  const cur=sel.value || ((state.ch.accessories&&state.ch.accessories[0])||"none");
+  sel.innerHTML="";
+  const none=document.createElement("option"); none.value="none"; none.textContent="none"; sel.appendChild(none);
+  window.V6PProjectCatalog.list().filter(it=>it.type==="accessory").forEach(it=>{
+    const o=document.createElement("option");
+    o.value=it.id; o.textContent=it.name+" ["+it.placement+"]";
+    sel.appendChild(o);
+  });
+  sel.value=[...sel.options].some(o=>o.value===cur)?cur:"none";
+}
+function persistLastCh(){
+  try{ localStorage.setItem(LAST_CH_KEY, JSON.stringify(state.ch)); }catch(_e){}
+}
 function readForm(){
   const ch={};
   FIELDS.forEach(k=>ch[k]=$(k).value);
   ch.gender=ch.body;
   ch.face="blank";
+  const acc=$("studio-accessory")&&$("studio-accessory").value;
+  ch.accessories=acc&&acc!=="none"?[acc]:[];
   state.ch=V.norm(ch);
+  persistLastCh();
 }
 function writeForm(){
   FIELDS.forEach(k=>{ if($(k)) $(k).value=state.ch[k]; });
+  fillAccessories();
+  if($("studio-accessory")) $("studio-accessory").value=(state.ch.accessories&&state.ch.accessories[0])||"none";
   document.querySelectorAll("[data-action]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.action===state.action?"true":"false"));
   document.querySelectorAll("[data-dir]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.dir===state.dir?"true":"false"));
   $("outfit-nude").classList.toggle("active", state.ch.top==="nude"&&state.ch.pants==="nude"&&state.ch.shoes==="nude");
@@ -227,7 +313,8 @@ async function rebuild(){
   draw();
   state.ready=true;
   const faceLabel=face?face.label.replace(" / EMOSI.EXE",""):"blank";
-  setStatus("Ready · "+state.ch.body+" · "+state.ch.top+"/"+state.ch.pants+"/"+state.ch.shoes+" · face "+faceLabel+" · "+state.action+" "+state.dir);
+  const acc=(state.ch.accessories&&state.ch.accessories[0])||"none";
+  setStatus("Ready · "+state.ch.body+" · "+state.ch.top+"/"+state.ch.pants+"/"+state.ch.shoes+" · acc "+acc+" · face "+faceLabel+" · "+state.action+" "+state.dir);
   syncDbg();
 }
 function syncDbg(){
@@ -277,6 +364,12 @@ document.querySelectorAll("[data-dir]").forEach(b=>b.addEventListener("click",()
   setStatus("Ready · "+state.action+" "+state.dir);
 }));
 FIELDS.forEach(k=>$(k).addEventListener("change",rebuild));
+if($("studio-accessory")) $("studio-accessory").addEventListener("change",rebuild);
+window.__v6pWearAccessory=function(id){
+  fillAccessories();
+  if($("studio-accessory")) $("studio-accessory").value=id||"none";
+  rebuild();
+};
 $("outfit-normal").addEventListener("click",()=>{
   $("top").value="tee"; $("pants").value="trousers"; $("shoes").value="shoes"; rebuild();
 });
@@ -302,6 +395,8 @@ function clipMs(action,frames){
 }
 async function refreshAssets(){
   if(window.V6PCompositor&&V6PCompositor.clearCache) V.clearCache();
+  fillAccessories();
+  if(window.V6PAssetGallery) window.V6PAssetGallery.refresh();
   await rebuild();
 }
 async function save(){
@@ -368,6 +463,18 @@ function editorPartFor(kind){
   return null;
 }
 function openPixelEditor(kind){
+  persistLastCh();
+  if(kind==="accessory"){
+    const id=$("studio-accessory")&&$("studio-accessory").value;
+    const u=new URL("./pixel-editor.html",location.href);
+    u.searchParams.set("source","v6p");
+    u.searchParams.set("action",state.action||"idle");
+    u.searchParams.set("dir",state.dir||"se");
+    u.searchParams.set("frame",String(state.frame||0));
+    if(id&&id!=="none") u.searchParams.set("project",id);
+    else {u.searchParams.set("new","accessory");u.searchParams.set("name","Aksesoris baru");}
+    location.href=u.href;return;
+  }
   const part=editorPartFor(kind);
   if(!part){setStatus("Tidak ada part v6p untuk "+kind,true);return;}
   const u=new URL("./pixel-editor.html",location.href);
@@ -377,6 +484,16 @@ function openPixelEditor(kind){
   u.searchParams.set("dir",state.dir||"se");
   u.searchParams.set("frame",String(state.frame||0));
   location.href=u.href;
+}
+function showStudioTab(name){
+  const gallery=name==="gallery";
+  $("tab-appearance").hidden=gallery;
+  $("tab-gallery").hidden=!gallery;
+  $("tab-btn-appearance").classList.toggle("active",!gallery);
+  $("tab-btn-gallery").classList.toggle("active",gallery);
+  $("tab-btn-appearance").setAttribute("aria-pressed",String(!gallery));
+  $("tab-btn-gallery").setAttribute("aria-pressed",String(gallery));
+  if(gallery&&window.V6PAssetGallery) window.V6PAssetGallery.refresh();
 }
 async function sha256Hex(buf){
   const hash=await crypto.subtle.digest("SHA-256",buf);
@@ -409,6 +526,25 @@ async function saveOverridesToDrive(){
   const b=$("edit-"+k); if(b) b.addEventListener("click",()=>openPixelEditor(k));
 });
 if($("edit-face")) $("edit-face").addEventListener("click",()=>openPixelEditor("face"));
+if($("edit-accessory")) $("edit-accessory").addEventListener("click",()=>openPixelEditor("accessory"));
+if($("new-accessory")) $("new-accessory").addEventListener("click",()=>{
+  persistLastCh();
+  const u=new URL("./pixel-editor.html",location.href);
+  u.searchParams.set("source","v6p");u.searchParams.set("new","accessory");
+  u.searchParams.set("name","Aksesoris baru");u.searchParams.set("placement","front");
+  u.searchParams.set("action",state.action||"idle");u.searchParams.set("dir",state.dir||"se");
+  location.href=u.href;
+});
+if($("new-clip")) $("new-clip").addEventListener("click",()=>{
+  persistLastCh();
+  const u=new URL("./pixel-editor.html",location.href);
+  u.searchParams.set("source","v6p");u.searchParams.set("new","clip");
+  u.searchParams.set("name","Clip baru");
+  u.searchParams.set("action",state.action||"idle");u.searchParams.set("dir",state.dir||"se");
+  location.href=u.href;
+});
+if($("tab-btn-appearance")) $("tab-btn-appearance").addEventListener("click",()=>showStudioTab("appearance"));
+if($("tab-btn-gallery")) $("tab-btn-gallery").addEventListener("click",()=>showStudioTab("gallery"));
 if($("save-drive")) $("save-drive").addEventListener("click",()=>saveOverridesToDrive());
 async function boot(){
   writeForm();
@@ -420,8 +556,10 @@ async function boot(){
   }catch(e){
     setStatus("Emosi load warning: "+e.message,true);
   }
+  fillAccessories();
   renderFaces();
   await rebuild();
+  if(window.V6PAssetGallery) window.V6PAssetGallery.mount();
   syncDbg();
 }
 boot().catch(e=>setStatus(String(e),true));

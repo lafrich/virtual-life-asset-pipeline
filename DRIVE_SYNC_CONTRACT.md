@@ -63,3 +63,16 @@ including `../` or new filenames.
 4. Commit and push those media files so GitHub Pages / Semesta picks them up.
 
 Do not push Ichsan baked sheets (`ichsan.json`, `ichsan_v6b_sheet.png`) from this job.
+
+
+## User accessories and custom clips (not ingested into stock media)
+
+User-made accessories and custom clips are saved from the same Pixel Editor to the
+same `Pixel Edits` folder, but they **must not** use the stock `v6p--*.png` name
+or `kind: v6pPart`. Filenames are:
+
+`v6p-user--<accessory|clip>__<id>.png`
+
+`appProperties.kind` is `v6pUserProject`. The scheduled ingest job that copies
+`v6p--*.png` into `site/media/v6p/<part>.png` **ignores** these files, so stock
+whitelist parts are never overwritten by a new accessory or clip.

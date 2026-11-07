@@ -211,5 +211,32 @@ async function saveV6pPart(opts){
   status:"Tersimpan ke Drive, akan masuk game otomatis"};
 }
 
-return Object.freeze({CLIENT_ID,SCOPE,APPS,FORMAT,ASSET_FORMAT,ASSET_KINDS,connected,getClient,configure,disconnect,connect,folder,list,save,load,filename,validateRecord,pixelEditsFolder,saveV6pPart,partName,PART_W,PART_H});
+function userProjectFilename(type,id){
+ if(type!=="accessory"&&type!=="clip")throw Error("User project type must be accessory or clip");
+ if(typeof id!=="string"||!/^[a-z][a-z0-9_]{0,47}$/i.test(id))throw Error("Invalid project id");
+ return "v6p-user--"+type+"__"+id+".png";
+}
+async function saveV6pUserProject(opts){
+ if(!connected())await connect();
+ const type=opts&&opts.type,id=opts&&opts.id;
+ const name=userProjectFilename(type,id);
+ if(name.indexOf("v6p--")===0)throw Error("User projects must not use stock v6p-- filenames");
+ const sha=String(opts&&opts.sha256||"");
+ if(!/^[0-9a-f]{64}$/.test(sha))throw Error("sha256 must be 64 hex chars");
+ const bytes=await toBytes(opts.png);
+ if((opts.width!=null&&Number(opts.width)!==PART_W)||(opts.height!=null&&Number(opts.height)!==PART_H))
+  throw Error("user project sheets must be "+PART_W+"x"+PART_H+" RGBA");
+ const props={app:MAHLUK_APP,kind:"v6pUserProject",type:String(type),id:String(id),
+  width:String(PART_W),height:String(PART_H),sha256:sha};
+ const png=await upsertBinary(name,"image/png",bytes,props);
+ let json=null;
+ if(opts.jsonText){
+  const text=new TextEncoder().encode(String(opts.jsonText));
+  json=await upsertBinary(name.replace(/\.png$/,".project.json"),"application/json",text,props);
+ }
+ return {png,json,id,type,filename:name,appProperties:props,
+  status:"Tersimpan ke Drive sebagai proyek pengguna · tidak menimpa aset stock"};
+}
+
+return Object.freeze({CLIENT_ID,SCOPE,APPS,FORMAT,ASSET_FORMAT,ASSET_KINDS,connected,getClient,configure,disconnect,connect,folder,list,save,load,filename,validateRecord,pixelEditsFolder,saveV6pPart,saveV6pUserProject,userProjectFilename,partName,PART_W,PART_H});
 });

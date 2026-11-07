@@ -39,10 +39,21 @@ const W=384,H=4928,FW=64,FH=112,PIVOT=[32,100];
 const DIRS=['se','sw','ne','nw'];
 const ROWS={walk:0,idle:4,talk:8,sit:12,sit_type:16,sleep:20,tired:24,swim:28,float:32,lie:36,perch:40};
 const FRAMES={walk:6,idle:4,talk:4,sit:4,sit_type:4,sleep:4,tired:4,swim:6,float:4,lie:4,perch:4};
+function accessoryIds(raw){
+  if(!raw) return [];
+  const list=Array.isArray(raw)?raw:(typeof raw==='string'&&raw&&raw!=='none'?[raw]:[]);
+  const out=[];
+  for(const item of list){
+    const id=typeof item==='string'?item:(item&&item.id);
+    if(typeof id==='string'&&/^[a-z][a-z0-9_]{0,47}$/i.test(id)&&!out.includes(id)) out.push(id);
+  }
+  return out;
+}
 function norm(ch){
   const o=Object.assign({},DEF);
   if(ch) for(const k in OPT) if(OPT[k].includes(ch[k])) o[k]=ch[k];
   o.body=ch&&(ch.body==='female'||ch.body==='male')?ch.body:(o.gender==='female'?'female':'male');
+  o.accessories=accessoryIds(ch&&ch.accessories);
   return o;
 }
 const hx=c=>[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];
@@ -143,6 +154,25 @@ function stampEmosi(c,emosi,blankImg){
     }
   }
 }
+async function loadAccessoryImages(ch){
+  const empty={back:[],front:[]};
+  const Cat=root&&root.V6PProjectCatalog;
+  if(!Cat||!ch||!ch.accessories||!ch.accessories.length) return empty;
+  const back=[],front=[];
+  for(const id of ch.accessories){
+    const item=Cat.get(id);
+    if(!item||item.type!=='accessory'||!item.sheetDataUrl) continue;
+    const im=await new Promise(res=>{
+      const i=new Image();
+      i.onload=()=>res(i);
+      i.onerror=()=>res(null);
+      i.src=item.sheetDataUrl;
+    });
+    if(!im||!im.naturalWidth) continue;
+    (item.placement==='back'?back:front).push(im);
+  }
+  return {back,front};
+}
 async function compose(ch,fs,emosi){
   ch=norm(ch);
   fs=fs||'baked';
@@ -156,13 +186,26 @@ async function compose(ch,fs,emosi){
     return null;
   }
   LAST_MISSING=[];
+  const extras=await loadAccessoryImages(ch);
   const fx=L.pop(), shd=L.pop();
   const fronts=L.splice(baseNames.length);
+  const hairBackCount=baseNames.filter(n=>n.indexOf('hair/')===0&&n.slice(-5)==='_back').length;
+  const hairBackImgs=L.slice(0,hairBackCount);
+  const otherBase=L.slice(hairBackCount);
   const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
   const c=cv.getContext('2d',{willReadFrequently:true});
   c.imageSmoothingEnabled=false;
-  L.forEach(i=>c.drawImage(i,0,0));
-  recolor(cv,ch);
+  hairBackImgs.forEach(i=>c.drawImage(i,0,0));
+  if(hairBackImgs.length) recolor(cv,ch);
+  extras.back.forEach(i=>c.drawImage(i,0,0));
+  if(otherBase.length){
+    const body=document.createElement('canvas'); body.width=W; body.height=H;
+    const b=body.getContext('2d',{willReadFrequently:true});
+    b.imageSmoothingEnabled=false;
+    otherBase.forEach(i=>b.drawImage(i,0,0));
+    recolor(body,ch);
+    c.drawImage(body,0,0);
+  }
   if(fronts.length){
     const tmp=document.createElement('canvas'); tmp.width=W; tmp.height=H;
     const t=tmp.getContext('2d',{willReadFrequently:true});
@@ -171,18 +214,102 @@ async function compose(ch,fs,emosi){
     recolor(tmp,ch);
     c.drawImage(tmp,0,0);
   }
+  extras.front.forEach(i=>c.drawImage(i,0,0));
   c.globalCompositeOperation='destination-over'; c.drawImage(shd,0,0);
   c.globalCompositeOperation='source-over'; c.drawImage(fx,0,0);
   if(emosi){
     const faceName=baseNames.find(n=>n.indexOf('face/')===0);
-    const blankImg=faceName?L[baseNames.indexOf(faceName)]:null;
+    const blankImg=faceName?otherBase[baseNames.indexOf(faceName)-hairBackCount]:null;
     stampEmosi(c,emosi,blankImg);
   }
   return cv;
 }
+
+function previewAppearance(gender){
+  return norm({
+    body:gender==="female"?"female":"male",
+    gender:gender==="female"?"female":"male",
+    hair:"mid_curtain",hairColor:"navy",skin:"light",
+    top:"nude",topColor:"charcoal",pants:"nude",pantsColor:"slate",
+    shoes:"nude",shoesColor:"walnut",glasses:"none",facial:"none",face:"blank"
+  });
+}
+function activityAvailability(ch,manifest){
+  const A=root.V6PActivityContract;
+  const Store=root.V6PClipStore;
+  if(!A||!manifest) return {ok:false,unsupported:["no-manifest"],note:"No clip"};
+  ch=norm(ch);
+  const needed=files(ch).concat((ch.accessories||[]).map(id=>"accessory:"+id));
+  const hasLayer=part=>{
+    if(part.indexOf("accessory:")===0){
+      return !!(Store&&Store.hasLayer(manifest.id,part));
+    }
+    return !!(Store&&Store.hasLayer(manifest.id,part));
+  };
+  return A.availability({...ch},manifest,hasLayer,()=>needed);
+}
+async function loadAnyImage(url){
+  return new Promise(res=>{
+    const i=new Image();
+    i.onload=()=>res(i);
+    i.onerror=()=>res(null);
+    i.src=url;
+  });
+}
+async function composeActivity(ch,manifest,frameIndex,dir,opts){
+  ch=norm(ch);
+  const A=root.V6PActivityContract;
+  const Store=root.V6PClipStore;
+  if(!A||!manifest||!Store) return null;
+  const avail=activityAvailability(ch,manifest);
+  if(!avail.ok && !(opts&&opts.force)) return Object.assign(document.createElement("canvas"),{_disabled:true,_avail:avail,width:FW,height:FH});
+  const bandStart=Number.isInteger(manifest.bandStart)?manifest.bandStart:0;
+  let origin;
+  try{origin=A.cellOrigin(bandStart,dir,frameIndex);}catch{return null;}
+  const names=files(ch,"baked");
+  const exclude=opts&&opts.exclude;
+  const cv=document.createElement("canvas");cv.width=FW;cv.height=FH;
+  const c=cv.getContext("2d",{willReadFrequently:true});c.imageSmoothingEnabled=false;
+  async function drawPart(name){
+    if(!name||name===exclude) return true;
+    if(A.isOptional(name) && !Store.hasLayer(manifest.id,name)) return true;
+    const url=Store.layerUrl(manifest.id,name);
+    if(!url) return false;
+    const im=await loadAnyImage(url);
+    if(!im) return false;
+    c.drawImage(im,origin.x,origin.y,origin.w,origin.h,0,0,FW,FH);
+    return true;
+  }
+  const hairBack=names.filter(n=>n.indexOf("hair/")===0&&n.indexOf("_back")>0);
+  const otherBase=names.filter(n=>!isFrontLayer(n)&&hairBack.indexOf(n)<0);
+  for(const n of hairBack) await drawPart(n);
+  if(hairBack.length) recolor(cv,ch);
+  const Cat=root&&root.V6PProjectCatalog;
+  const accIds=ch.accessories||[];
+  for(const id of accIds){
+    const item=Cat&&Cat.get(id);
+    if(item&&item.placement==="back") await drawPart("accessory:"+id);
+  }
+  for(const n of otherBase) await drawPart(n);
+  recolor(cv,ch);
+  const front=names.filter(isFrontLayer);
+  for(const n of front) await drawPart(n);
+  recolor(cv,ch);
+  for(const id of accIds){
+    const item=Cat&&Cat.get(id);
+    if(!item||item.placement!=="back") await drawPart("accessory:"+id);
+  }
+  if(opts&&opts.emosi) stampEmosi(c,opts.emosi,null);
+  c.save();c.globalCompositeOperation="destination-over";
+  await drawPart("base/shadow");
+  c.restore();
+  await drawPart("base/fx");
+  cv._avail=avail;
+  return cv;
+}
 const key=(ch,emosiId)=>{
   const n=norm(ch);
-  return [n.body,n.hair,n.hairColor,n.skin,n.top,n.topColor,n.pants,n.pantsColor,n.shoes,n.shoesColor,n.glasses,n.facial,n.face,emosiId||''].join('.');
+  return [n.body,n.hair,n.hairColor,n.skin,n.top,n.topColor,n.pants,n.pantsColor,n.shoes,n.shoesColor,n.glasses,n.facial,n.face,emosiId||'',(n.accessories||[]).join(',')].join('.');
 };
 const SC={},SU={},FX={};
 function sheet(ch,emosi,emosiId){
@@ -230,5 +357,56 @@ function clearCache(){
   for(const k of Object.keys(FX)) delete FX[k];
   for(const k of Object.keys(SU)) delete SU[k];
 }
-return {OPT,DEF,VAR,P,K,FR,D,W,H,FW,FH,PIVOT,DIRS,ROWS,FRAMES,norm,cmap,files,compose,sheet,variant,key,extractClip,extractFrame,clearCache,img,get missing(){return LAST_MISSING.slice();}};
+
+function displayLookup(ch){
+  ch=norm(ch);
+  const M=cmap(ch), toDisp=new Map(), toKey=new Map();
+  for(const code in K){
+    const k=hx(K[code]), packed=(k[0]<<16)|(k[1]<<8)|k[2];
+    const mapped=M.get(packed);
+    if(mapped===undefined) continue;
+    const dr=mapped&255, dg=(mapped>>>8)&255, db=(mapped>>>16)&255;
+    toDisp.set(packed,[dr,dg,db]);
+    const dp=(dr<<16)|(dg<<8)|db;
+    if(!toKey.has(dp)) toKey.set(dp,k.slice());
+  }
+  return {toDisp,toKey};
+}
+function copyImageLike(image){
+  const data=new Uint8ClampedArray(image.data);
+  if(typeof ImageData==="function") return new ImageData(data,image.width,image.height);
+  return {data,width:image.width,height:image.height};
+}
+function keysToDisplay(image,ch){
+  if(!image||!image.data) return image;
+  const {toDisp}=displayLookup(ch);
+  const out=copyImageLike(image), d=out.data;
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]!==255) continue;
+    const disp=toDisp.get((d[i]<<16)|(d[i+1]<<8)|d[i+2]);
+    if(disp){ d[i]=disp[0]; d[i+1]=disp[1]; d[i+2]=disp[2]; }
+  }
+  return out;
+}
+function displayToKeys(image,ch,original){
+  if(!image||!image.data) return image;
+  const {toDisp,toKey}=displayLookup(ch);
+  const out=copyImageLike(image), d=out.data;
+  const o=original&&original.data;
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]===0) continue;
+    if(o&&o[i+3]===d[i+3]){
+      const disp=toDisp.get((o[i]<<16)|(o[i+1]<<8)|o[i+2]);
+      if(disp&&disp[0]===d[i]&&disp[1]===d[i+1]&&disp[2]===d[i+2]){
+        d[i]=o[i]; d[i+1]=o[i+1]; d[i+2]=o[i+2];
+        continue;
+      }
+    }
+    if(d[i+3]!==255) continue;
+    const key=toKey.get((d[i]<<16)|(d[i+1]<<8)|d[i+2]);
+    if(key){ d[i]=key[0]; d[i+1]=key[1]; d[i+2]=key[2]; }
+  }
+  return out;
+}
+return {OPT,DEF,VAR,P,K,FR,D,W,H,FW,FH,PIVOT,DIRS,ROWS,FRAMES,norm,cmap,files,compose,sheet,variant,key,extractClip,extractFrame,clearCache,img,composeActivity,previewAppearance,activityAvailability,keysToDisplay,displayToKeys,displayLookup,get missing(){return LAST_MISSING.slice();}};
 });

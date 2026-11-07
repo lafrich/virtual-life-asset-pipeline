@@ -146,3 +146,26 @@ const sha=crypto.createHash("sha256").update(png).digest("hex");
   assert.equal(baks.length,1);
   console.log("PASS: v6p catalog, editor/studio wiring, mocked Drive overwrite, sync script");
 })().catch(err=>{console.error(err);process.exit(1);});
+
+const catalogJs=fs.readFileSync(path.join(root,"site/v6p-project-catalog.js"),"utf8");
+const galleryJs=fs.readFileSync(path.join(root,"site/v6p-asset-gallery.js"),"utf8");
+assert.ok(page.includes("shared-pixel-selection.js"));
+assert.ok(page.includes('id="copy-selection"')&&page.includes('id="paste-selection"')&&page.includes('id="overlay-actions"'));
+assert.ok(editor.includes("MH2PixelSelection")&&editor.includes("loadProject")&&editor.includes("refreshOverlay"));
+assert.ok(editor.includes("overlayCanvas")&&editor.includes("NEVER")||editor.includes("not exported")||editor.includes("tidak ikut"));
+assert.ok(compositor.includes("loadAccessoryImages")&&compositor.includes("accessories"));
+assert.ok(drive.includes("saveV6pUserProject")&&drive.includes("v6pUserProject"));
+assert.ok(drive.includes("v6p-user--"));
+assert.ok(studio.includes('id="tab-btn-gallery"')&&studio.includes("ASSET GALLERY")&&studio.includes("studio-accessory"));
+assert.ok(studio.includes("v6p-asset-gallery.js")&&studio.includes("v6p-project-catalog.js"));
+assert.ok(studio.includes("v6p-activity-contract.js")&&studio.includes("v6p-clip-store.js"));
+assert.ok(page.includes("v6p-activity-contract.js")&&page.includes("id=\"clip-play\""));
+assert.ok(galleryJs.includes("composeActivity")||galleryJs.includes("V6PClipStore"));
+
+assert.ok(galleryJs.includes("Open in editor")||galleryJs.includes("vagOpen"));
+assert.ok(catalogJs.includes("never writes")||catalogJs.includes("Never writes"));
+assert.ok(fs.readFileSync(path.join(root,"DRIVE_SYNC_CONTRACT.md"),"utf8").includes("v6pUserProject"));
+assert.ok(catalog.PARTS.length===133,"133 whitelist unchanged");
+assert.equal(catalog.isPart("accessory/front/hat"),false);
+assert.throws(()=>catalog.normalizePart("accessory/front/hat"));
+console.log("PASS: accessory/gallery wiring keeps whitelist and Drive ingest separate");

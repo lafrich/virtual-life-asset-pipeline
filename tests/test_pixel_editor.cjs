@@ -133,3 +133,31 @@ assert.ok(controller.includes("state.selectionMask"),"shape masks must be used i
 assert.ok(controller.includes('if(state.tool==="wand")'),"wand must work in direct and cursor modes");
 
 console.log("PASS: real 64x112 pixel editor, region lock, brush/fill, validated import/export and Otis-only launch");
+
+for(const id of ["copy-selection","cut-selection","paste-selection","paste-flip","select-all","clipboard-info","paste-replace","clip-play","clip-pause","clip-add","clip-dup","clip-del","clip-strip","clip-prev-m","clip-prev-f","clip-ms","clip-onion"])
+ assert.ok(page.includes('id="'+id+'"'),"Missing Emosi clipboard control "+id);
+assert.ok(page.includes("emotion-studio/shared-pixel-selection.js"),"must reuse Emosi MH2PixelSelection");
+assert.ok(controller.includes("function copySelection(")&&controller.includes("function pasteSelection("));
+assert.ok(controller.includes("floatingPaste")&&controller.includes("MH2PixelSelection"));
+assert.ok(controller.includes('if(mod&&k==="c")')&&controller.includes('if(mod&&k==="v")'));
+assert.ok(controller.includes("mh2-rgba-clipboard-v1"),"clipboard key must match Emosi");
+assert.doesNotMatch(controller,/if\(e\.ctrlKey\)return;/,"Ctrl+C/V must not be swallowed after undo");
+const S=require("../site/emotion-studio/shared-pixel-selection.js");
+const src=new Uint8ClampedArray(64*112*4);
+src.set([200,10,20,255],(20*64+10)*4);
+src.set([10,200,20,255],(21*64+11)*4);
+const clipStamp=S.copy(src,64,112,{x:10,y:20,w:4,h:4});
+assert.equal(clipStamp.format,S.CLIP_FORMAT);
+assert.deepEqual([...clipStamp.pixels.slice(0,4)],[200,10,20,255]);
+const dest=new Uint8ClampedArray(64*112*4);
+dest.set([9,9,9,255],(40*64+30)*4);
+const out=S.paste(dest,64,112,clipStamp,{x:30,y:40});
+assert.deepEqual([...out.slice((40*64+30)*4,(40*64+30)*4+4)],[200,10,20,255],"paste writes copied pixels onto another cell");
+assert.deepEqual([...src.slice((20*64+10)*4,(20*64+10)*4+4)],[200,10,20,255],"copy source stays intact");
+const emptyBase=new Uint8ClampedArray(64*112*4);
+emptyBase.set([1,2,3,255],(40*64+31)*4);
+const floated=S.paste(emptyBase,64,112,clipStamp,{x:32,y:42});
+assert.deepEqual([...floated.slice((42*64+32)*4,(42*64+32)*4+4)],[200,10,20,255]);
+assert.deepEqual([...floated.slice((40*64+31)*4,(40*64+31)*4+4)],[1,2,3,255],"floating paste does not erase destination outside stamp");
+
+console.log("PASS: Emosi-style copy/paste via MH2PixelSelection, clipboard UI, and cross-frame paste");

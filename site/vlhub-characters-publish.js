@@ -11,7 +11,7 @@
 "use strict";
 const V2_KEY="mahluk-2-library-v1";
 const V1_KEY="virtual-life-character-storage-v1";
-const CLIP_CONSUMED=/^(idle|walk|talk|sit|lie|sleep|custom)$/;
+const CLIP_CONSUMED=/^(idle|walk|talk|sit|lie|sleep|custom|pushup|yoga_sphinx_idle|yoga_puppy_idle|hip_shake|yoga_happy_baby_idle)$/;
 const TINY="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 function slug(name){
  return String(name||"char").toLowerCase().replace(/[^a-z0-9]+/g,"").slice(0,18)||"char";
