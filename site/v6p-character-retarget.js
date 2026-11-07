@@ -167,18 +167,26 @@ async function generateCharacter(id,opts={}){
  const S=root?.V6PCharacterStore,C=root?.V6PPartCatalog;
  if(!S?.get(id)||!C)throw Error("Select a character in Character Database first");
  const repair=S.repairTopBackMasters?.(id)||{moved:0,remainingCorrections:0};
+ // Custom Wear must inherit ALL native garment poses before Preview/Save.
+ // Never treat its four painted directions as four isolated animation frames.
+ const custom=root?.V6PCustomWear?
+  await root.V6PCustomWear.propagate(id,S.get(id).appearance,opts):
+  {parts:[],frames:0,styled:0,details:0,manual:0,warnings:[]};
  const row=S.get(id);
  const selected=C.PARTS.filter(part=>Object.hasOwn(row.masters||{},part)||Object.hasOwn(row.parts||{},part));
  const parts=(opts.parts||selected).filter(p=>C.isPart(p)&&!root?.V6PCustomWear?.isCustomPart(p));
- if(!parts.length)return {parts:[],frames:0,corrected:0,message:"Stock and exact Custom Wear sheets already contain their native animations."};
+ if(!parts.length)return {parts:[],frames:custom.frames||0,corrected:custom.manual||0,
+  customWear:custom,reviewDirections:0,archivedStaleCorrections:0,
+  message:"Custom Wear 4-direction artwork transferred onto native animation poses."};
  const results=[];
  for(let i=0;i<parts.length;i++){
   if(typeof opts.progress==="function")opts.progress({index:i,total:parts.length,part:parts[i]});
   results.push(await generatePart(id,parts[i]));
  }
  root.V6PCompositor?.clearCache?.();
- return {parts:results,frames:results.reduce((n,p)=>n+p.generated,0),
- corrected:results.reduce((n,p)=>n+p.protectedFrames,0),
+ return {parts:results,customWear:custom,
+ frames:(custom.frames||0)+results.reduce((n,p)=>n+p.generated,0),
+ corrected:(custom.manual||0)+results.reduce((n,p)=>n+p.protectedFrames,0),
   reviewDirections:results.reduce((n,p)=>n+(p.reviewDirections?.length||0),0),
  archivedStaleCorrections:results.reduce((n,p)=>n+(p.staleArchived||0),0),
  repairedBackMasters:repair.moved,remainingLegacyCorrections:repair.remainingCorrections};
