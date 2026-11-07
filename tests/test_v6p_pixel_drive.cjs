@@ -23,6 +23,13 @@ assert.deepEqual({app:props.app,kind:props.kind,part:props.part,width:props.widt
 const page=fs.readFileSync(path.join(root,"site/pixel-editor.html"),"utf8");
 const editor=fs.readFileSync(path.join(root,"site/pixel-editor.js"),"utf8");
 const studio=fs.readFileSync(path.join(root,"site/v6p-studio.html"),"utf8");
+const indexHtml=fs.readFileSync(path.join(root,"site/index.html"),"utf8");
+assert.match(indexHtml,/location\.replace\(\s*["']\.\/v6p-studio\.html/);
+assert.match(indexHtml,/http-equiv="refresh"/);
+assert.match(indexHtml,/url=\.\/v6p-studio\.html/);
+assert.match(indexHtml,/<title>Mahluk Hidup — Character Studio<\/title>/);
+assert.doesNotMatch(studio,/href="\.\/index\.html"/);
+assert.doesNotMatch(studio,/v6b-reset-studio\.html/);
 const compositor=fs.readFileSync(path.join(root,"site/v6p-compositor.js"),"utf8");
 const drive=fs.readFileSync(path.join(root,"site/drive-sync.js"),"utf8");
 for(const id of ["source-kind","v6p-part","download-sheet","save-drive","drive-status","export-patch","import-patch","pixel-canvas"])
