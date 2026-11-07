@@ -13,10 +13,10 @@ const BANDS=Object.freeze({
   keys:Object.freeze(["standing","descending1","descending2","bottom_hold","ascending1","ascending2"])},
  pushup:{start:4,frames:4,ms:160,type:"loop",status:"authored",emosi:false,
   keys:Object.freeze(["plank_high","descending","bottom","ascending"])},
- yoga_sphinx_idle:{start:8,frames:4,ms:500,status:"reserved_transparent",emosi:true},
- yoga_puppy_idle:{start:12,frames:4,ms:500,status:"reserved_transparent",emosi:false},
- hip_shake:{start:16,frames:6,ms:120,status:"reserved_transparent",emosi:true},
- yoga_happy_baby_idle:{start:20,frames:4,ms:450,status:"reserved_transparent",emosi:false}
+ yoga_sphinx_idle:{start:8,frames:4,ms:500,status:"review_artwork",emosi:true},
+ yoga_puppy_idle:{start:12,frames:4,ms:500,status:"review_artwork",emosi:false},
+ hip_shake:{start:16,frames:6,ms:120,status:"review_artwork",emosi:true},
+ yoga_happy_baby_idle:{start:20,frames:4,ms:450,status:"review_artwork",emosi:false}
 });
 const INACTIVE=Object.freeze(["squat","jumping_jack","guard_jab","yoga_warrior","lie_supine"]);
 const PILOT_PARTS=Object.freeze([
@@ -27,7 +27,7 @@ const PILOT_PARTS=Object.freeze([
  "shoes/nude","shoes/nude_f",
  "pants/nude","pants/nude_f"
 ]);
-const SEMESTA_ACT_CLIPS=Object.freeze(["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]);
+// Only authored clips may be played by the compositor or game.\nconst SEMESTA_ACT_CLIPS=Object.freeze(["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]);
 const BACKLOG=Object.freeze([
  "crawl — planned floor locomotion clip; not authored",
  "crawl_idle — planned floor idle; not authored",
