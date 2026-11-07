@@ -153,4 +153,9 @@ const floated=S.paste(emptyBase,64,112,clipStamp,{x:32,y:42});
 assert.deepEqual([...floated.slice((42*64+32)*4,(42*64+32)*4+4)],[200,10,20,255]);
 assert.deepEqual([...floated.slice((40*64+31)*4,(40*64+31)*4+4)],[1,2,3,255],"floating paste does not erase destination outside stamp");
 
+
+assert.ok(page.includes("id=\"pixelToolbarPasteFlip\""),"must ship Emosi PASTE FLIP toolbar button");
+assert.ok(page.includes("id=\"pixelCanvas\"")&&page.includes("id=\"pixelOverlay\""),"must mount Emosi pixel dialog as-is");
+assert.ok(page.includes("emotion-studio/shared-pixel-editor.js")&&page.includes("emosi-pixel-dialog.css"),"must reuse Emosi editor JS/CSS");
+assert.ok(controller.includes("MH2PlanePixelEditor.create")&&controller.includes("function pullEmosiIntoState(")&&controller.includes("function syncEmosiOpen("),"v6p adapter must drive Emosi editor");
 console.log("PASS: Emosi-style copy/paste via MH2PixelSelection, clipboard UI, and cross-frame paste");

@@ -1,0 +1,69 @@
+/* Extra Mahluk sheet/clip/Drive chrome around Emosi’s pixel dialog, matching its beige toolbar. */
+html,body.mahluk-emosi-page{margin:0;min-height:100%;background:#8a9bb0;color:#21262f;font:12px/1.4 "Segoe UI",Tahoma,Arial,sans-serif;}
+body.mahluk-emosi-page{display:flex;flex-direction:column;min-height:100dvh;}
+.mahluk-sheet-bar{flex:none;background:#d2d0cb;border-bottom:2px solid #a4a29b;color:#1e2d42;padding:8px 10px;display:flex;flex-direction:column;gap:7px;}
+.mahluk-bar-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+.mahluk-bar-top strong{font:12px Consolas,monospace;}
+.mahluk-back{color:#143d78;border:2px solid;border-color:#fff #5f7da4 #5f7da4 #fff;background:#a9c8f6;text-decoration:none;padding:5px 9px;font:11px Consolas,monospace;}
+.mahluk-bar-controls{display:flex;flex-wrap:wrap;gap:7px 10px;align-items:center;}
+.mahluk-bar-controls label,.mahluk-sheet-bar label{display:flex;align-items:center;gap:5px;font:10px Consolas,monospace;}
+.mahluk-bar-controls select,.mahluk-bar-controls input[type=number],.mahluk-bar-controls input[type=range]{background:#fff;color:#1a1e29;border:2px inset #a0a0a0;padding:4px;}
+.mahluk-sheet-bar button{background:#e0ded9;color:#253142;border:2px solid;border-color:#fff #777 #777 #fff;padding:6px 8px;font:10px Consolas,monospace;cursor:pointer;}
+.mahluk-sheet-bar button.primary{background:#a9c8f6;color:#143d78;border-color:#fff #5f7da4 #5f7da4 #fff;}
+.mahluk-sheet-bar button:disabled{opacity:.38;}
+.mahluk-note{font:10px/1.45 Consolas,monospace;color:#3c526f;margin:0;}
+.mahluk-frame-nav{display:flex;align-items:center;gap:6px;}
+.mahluk-save-bar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;}
+body.mahluk-emosi-page #pixelOverlay{position:relative;inset:auto;flex:1;display:flex;align-items:stretch;justify-content:center;padding:8px;background:transparent;overflow:auto;z-index:1;}
+body.mahluk-emosi-page #pixelOverlay[hidden]{display:flex!important;}
+body.mahluk-emosi-page .pixel-dialog{width:min(1100px,100%);height:auto;min-height:640px;max-height:none;flex:1;}
+body.mahluk-emosi-page .clip-actions,body.mahluk-emosi-page .overlay-actions{display:flex;flex-direction:column;gap:6px;padding:7px;background:#cac9c6;border:2px solid;border-color:#fff #777 #777 #fff;}
+body.mahluk-emosi-page .clip-actions[hidden],body.mahluk-emosi-page .overlay-actions[hidden]{display:none!important;}
+body.mahluk-emosi-page .clip-bar,body.mahluk-emosi-page .clip-strip-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+body.mahluk-emosi-page .clip-strip{display:flex;gap:4px;overflow:auto;max-width:100%;}
+body.mahluk-emosi-page .clip-strip button{min-width:72px;}
+body.mahluk-emosi-page #clip-prev-m,body.mahluk-emosi-page #clip-prev-f{width:32px;height:56px;image-rendering:pixelated;background:#fff;border:1px solid #777;}
+@media(max-width:750px){
+ body.mahluk-emosi-page .pixel-dialog{min-height:0;width:100%;}
+ body.mahluk-emosi-page #pixelOverlay{padding:3px;}
+}
+
+/* Keep Emosi's dialog in document flow with a real height (do not let flex-basis:0 collapse it). */
+body.mahluk-emosi-page{
+  height:auto;
+  min-height:100dvh;
+}
+body.mahluk-emosi-page .mahluk-sheet-bar{flex:0 0 auto;}
+body.mahluk-emosi-page #pixelOverlay{
+  position:relative !important;
+  inset:auto !important;
+  flex:1 0 auto !important;
+  min-height:720px !important;
+  height:auto !important;
+  display:flex !important;
+  overflow:visible !important;
+  background:transparent !important;
+  z-index:1 !important;
+}
+body.mahluk-emosi-page .pixel-dialog{
+  width:min(1100px,100%) !important;
+  height:min(860px, max(640px, calc(100dvh - 210px))) !important;
+  min-height:640px !important;
+  max-height:none !important;
+  flex:none !important;
+  overflow:hidden;
+}
+body.mahluk-emosi-page .overlay-actions,
+body.mahluk-emosi-page .clip-actions{
+  flex:0 0 auto !important;
+  min-height:0 !important;
+}
+body.mahluk-emosi-page .overlay-actions{
+  flex-direction:row !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+}
+@media(max-width:750px){
+  body.mahluk-emosi-page #pixelOverlay{min-height:520px !important;padding:3px;}
+  body.mahluk-emosi-page .pixel-dialog{height:auto !important;min-height:520px !important;}
+}

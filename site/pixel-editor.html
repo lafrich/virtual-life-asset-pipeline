@@ -4,11 +4,14 @@
 <script src="./character-reference-reset.js?v=await-new-rig-v1"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#e9e7db">
+<meta name="theme-color" content="#cac9c6">
 <title>Pixel Editor — Mahluk Hidup</title>
-<link rel="stylesheet" href="./pixel-editor.css?v=v6p-act-v2-20261107">
+<link rel="stylesheet" href="./emotion-studio/emosi-pixel-dialog.css?v=v6p-emosi-editor-20261107">
+<link rel="stylesheet" href="./pixel-editor.css?v=v6p-emosi-editor-20261107">
+<link rel="stylesheet" href="./mahluk-emosi-chrome.css?v=v6p-emosi-editor-20261107">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script defer src="./emotion-studio/shared-pixel-selection.js?v=mh2-selection-v1"></script>
+<script defer src="./emotion-studio/shared-pixel-selection.js?v=v6p-emosi-editor-20261107"></script>
+<script defer src="./emotion-studio/shared-pixel-editor.js?v=v6p-emosi-editor-20261107"></script>
 <script defer src="./pixel-edit-core.js?v=wand-selection-v1-20261103"></script>
 <script defer src="./master-parts.js?v=master-parts-1"></script>
 <script defer src="./v6p-part-catalog.js?v=v6p-pixel-20261107"></script>
@@ -19,178 +22,266 @@
 <script defer src="./v6p-clip-store.js?v=v6p-act-v2-20261107"></script>
 <script defer src="./v6p-compositor.js?v=v6p-act-v2-20261107"></script>
 <script defer src="./drive-sync.js?v=v6p-copy-paste-20261107"></script>
-<script defer src="./pixel-editor.js?v=v6p-act-v2-20261107"></script>
+<script defer src="./pixel-editor.js?v=v6p-emosi-editor-20261107"></script>
 </head>
-<body>
-<main class="paint">
-<header class="titlebar"><span>▣</span><strong>OTIS_PIXEL_EDITOR.PNT — Paint</strong><span class="window-buttons" aria-hidden="true">▬ □ ×</span></header>
-<nav class="menubar" aria-label="Editor links"><a href="./#characters">← CHARACTERS</a><span class="sep">|</span><span>FILE</span><span>EDIT</span><span>VIEW</span><span class="version">V6B · 64×112 ORIGINAL PIXELS</span></nav>
-<div class="intro"><div><h1>OTIS / MASTER PARTS</h1><p>One master per body part and direction. Changes flow to source animation frames; review rotations and overlapping limbs manually.</p></div><div class="intro-tags"><span>HELMETED</span><span>6 EDIT PARTS</span><span>4 DIRECTIONS</span></div></div>
-<div id="editor-status" class="status" role="status">LOADING ORIGINAL OTIS SPRITES...</div>
-<div class="workspace">
-<aside class="controls">
-<h2>CHARACTER MASTER</h2>
-<div class="control"><label for="source-kind">SUMBER</label><select id="source-kind">
-<option value="otis">OTIS / MASTER PARTS</option>
-<option value="v6p">V6P PART SHEET (media/v6p)</option>
-<option value="accessory">V6P ACCESSORY LAYER</option>
-<option value="clip">V6P CUSTOM CLIP</option>
-</select></div>
-<div class="control" id="v6p-part-wrap" hidden><label for="v6p-part">V6P PART</label><select id="v6p-part"></select></div>
-<div class="control" id="v6p-project-wrap" hidden>
-<label for="v6p-project">USER PROJECT</label>
-<select id="v6p-project"></select>
-<div class="button-row">
-<button type="button" id="new-accessory">+ AKSESORIS</button>
-<button type="button" id="new-clip">+ CUSTOM CLIP</button>
-</div>
-<div class="control" id="accessory-place-wrap" hidden>
-<label for="accessory-place">Z POSITION</label>
-<select id="accessory-place">
-<option value="front">FRONT · above hair (like glasses)</option>
-<option value="back">BACK · behind body (like hair_back)</option>
-</select>
-</div>
-<p class="master-note" id="project-note">Transparent user layer. Overlay karakter terkunci dan tidak ikut tersimpan ke PNG.</p>
-</div>
-<div class="control"><label for="edit-mode">EDITING MODE</label><select id="edit-mode">
-<option value="master">MASTER / APPLY TO FRAMES</option>
-<option value="frame">FRAME / MANUAL FIX</option></select></div>
-<div class="control"><label for="part">SPLIT / EDIT PART</label><select id="part">
-<option value="head">HEAD / HELMET</option><option value="body">BODY / TORSO</option>
-<option value="arm_l">LEFT ARM</option><option value="arm_r">RIGHT ARM</option>
-<option value="leg_l">LEFT LEG</option><option value="leg_r">RIGHT LEG</option>
-</select></div>
-<p id="master-status" class="master-note">MASTER MODE: edits propagate to this direction's authored frames, with silhouette translation. Existing artwork is flattened; check each action's bends and overlaps.</p>
-<div class="divider"></div>
-<h2>FRAME</h2>
-<div class="control"><label for="action">ANIMATION</label><select id="action" aria-label="Action"></select></div>
-<div class="control"><label for="direction">DIRECTION</label><select id="direction"><option value="se">SE / DOWN-RIGHT</option><option value="sw">SW / DOWN-LEFT</option><option value="ne">NE / UP-RIGHT</option><option value="nw">NW / UP-LEFT</option></select></div>
-<div class="frame-row"><button type="button" id="prev-frame">◀</button><span id="frame-label">FRAME 1 / 1</span><button type="button" id="next-frame">▶</button></div>
-<div class="control"><label for="frame">TIMELINE</label><input id="frame" type="range" min="0" max="0" value="0"></div>
-<div class="divider"></div>
-<h2>HISTORY</h2><div class="button-row"><button type="button" id="undo" disabled>↶ UNDO</button><button type="button" id="redo" disabled>↷ REDO</button></div>
-<button type="button" id="reset-frame" class="wide">RESET THIS FRAME</button>
-</aside>
-<section class="canvas-column" aria-label="Editable pixel sprite">
-<div class="canvas-header"><strong id="canvas-title">OTIS / IDLE / SE / F0</strong><span id="frame-dirty">SOURCE PIXELS</span></div>
-<div id="canvas-scroll" class="canvas-scroll" aria-label="Scroll or pan the sprite workspace">
-<div id="canvas-stage" class="canvas-stage">
-<canvas id="pixel-canvas" width="512" height="896" aria-label="Editable pixel sprite. Cursor Mode moves a crosshair without painting; TAP applies the active tool."></canvas>
-</div>
-</div>
-<div class="drawing-toolbar" aria-label="Pixel drawing tools">
-<div class="drawing-tools-row">
-<div class="tools" role="group" aria-label="Paint tools">
-<button type="button" id="pan-toggle" aria-pressed="false" title="Move or scroll without painting">✋ PAN</button>
-<button type="button" data-tool="select" title="Rectangular marquee selection">▧ RECT</button>
-<button type="button" data-tool="wand" title="Select pixels by matching color">✦ WAND</button>
-<button type="button" data-tool="move" title="Drag selection to move pixels">↔ MOVE</button>
-<button type="button" data-tool="pencil" class="active">✎ PENCIL <kbd>B</kbd></button>
-<button type="button" data-tool="erase">▤ ERASER <kbd>E</kbd></button>
-<button type="button" data-tool="pick">◉ PICKER <kbd>I</kbd></button>
-<button type="button" data-tool="fill">▣ FILL <kbd>G</kbd></button>
-</div>
-<div class="drawing-ink"><label for="color">INK COLOR</label><input id="color" type="color" value="#61b3c4"></div>
-<div class="drawing-brush"><label for="brush-size">BRUSH SIZE <output id="brush-label">1 PX</output></label><input id="brush-size" type="range" min="1" max="4" value="1"></div>
-</div>
-<div class="selection-options" aria-label="Selection options">
- <span class="selection-options-title">SELECTION</span>
- <div class="selection-modes" role="group" aria-label="Selection add and subtract">
- <button type="button" data-select-mode="replace" class="active" aria-pressed="true">NEW</button>
- <button type="button" data-select-mode="add" aria-pressed="false">+ ADD</button>
- <button type="button" data-select-mode="subtract" aria-pressed="false">− SUB</button>
+<body class="emotion-window mahluk-emosi-page">
+<div class="mahluk-sheet-bar" aria-label="Mahluk sheet and clip controls">
+ <div class="mahluk-bar-top">
+  <a class="mahluk-back" href="./v6p-studio.html">← STUDIO</a>
+  <strong id="canvas-title">MAHLUK / PIXEL EDITOR</strong>
+  <span id="frame-dirty">SOURCE PIXELS</span>
+  <span id="editor-status" class="status" role="status">LOADING ORIGINAL PIXELS…</span>
  </div>
- <label class="wand-setting"><input type="checkbox" id="wand-contiguous" checked> CONNECTED</label>
- <label class="wand-setting wand-tolerance" for="wand-tolerance">TOLERANCE <output id="wand-tolerance-value">0</output>
- <input type="range" id="wand-tolerance" min="0" max="80" value="0" step="1"></label>
+ <div class="mahluk-bar-controls">
+  <label>SUMBER <select id="source-kind">
+   <option value="otis">OTIS / MASTER PARTS</option>
+   <option value="v6p">V6P PART SHEET (media/v6p)</option>
+   <option value="accessory">V6P ACCESSORY LAYER</option>
+   <option value="clip">V6P CUSTOM CLIP</option>
+  </select></label>
+  <span id="v6p-part-wrap" hidden><label>V6P PART <select id="v6p-part"></select></label></span>
+  <span id="v6p-project-wrap" hidden>
+   <label>USER PROJECT <select id="v6p-project"></select></label>
+   <button type="button" id="new-accessory">+ AKSESORIS</button>
+   <button type="button" id="new-clip">+ CUSTOM CLIP</button>
+   <span id="accessory-place-wrap" hidden>
+    <label>Z POSITION <select id="accessory-place">
+     <option value="front">FRONT · above hair</option>
+     <option value="back">BACK · behind body</option>
+    </select></label>
+   </span>
+   <span id="project-note" class="mahluk-note">Transparent user layer. Overlay is locked and never saved into the PNG.</span>
+  </span>
+  <label>MODE <select id="edit-mode">
+   <option value="master">MASTER / APPLY TO FRAMES</option>
+   <option value="frame">FRAME / MANUAL FIX</option>
+  </select></label>
+  <label>PART <select id="part">
+   <option value="head">HEAD / HELMET</option><option value="body">BODY / TORSO</option>
+   <option value="arm_l">LEFT ARM</option><option value="arm_r">RIGHT ARM</option>
+   <option value="leg_l">LEFT LEG</option><option value="leg_r">RIGHT LEG</option>
+  </select></label>
+  <label>ANIMATION <select id="action" aria-label="Action"></select></label>
+  <label>DIRECTION <select id="direction">
+   <option value="se">SE / DOWN-RIGHT</option>
+   <option value="sw">SW / DOWN-LEFT</option>
+   <option value="ne">NE / UP-RIGHT</option>
+   <option value="nw">NW / UP-LEFT</option>
+  </select></label>
+  <span class="mahluk-frame-nav">
+   <button type="button" id="prev-frame">◀</button>
+   <span id="frame-label">FRAME 1 / 1</span>
+   <button type="button" id="next-frame">▶</button>
+   <label>TIMELINE <input id="frame" type="range" min="0" max="0" value="0"></label>
+  </span>
+  <button type="button" id="undo" disabled>↶ UNDO</button>
+  <button type="button" id="redo" disabled>↷ REDO</button>
+  <button type="button" id="reset-frame">RESET THIS FRAME</button>
  </div>
-<div class="cursor-actions" role="group" aria-label="Virtual precision touchpad cursor">
- <button type="button" id="cursor-toggle" aria-pressed="false">⌖ CURSOR ON</button>
- <button type="button" id="cursor-left" aria-label="Cursor one pixel left">◀</button>
- <button type="button" id="cursor-up" aria-label="Cursor one pixel up">▲</button>
- <button type="button" id="cursor-down" aria-label="Cursor one pixel down">▼</button>
- <button type="button" id="cursor-right" aria-label="Cursor one pixel right">▶</button>
- <button type="button" id="cursor-tap" class="cursor-tap">● TAP / APPLY</button>
+ <p id="master-status" class="mahluk-note">V6P frames edit through Emosi’s native 64×112 pixel editor. Four directions ride in one atlas.</p>
+ <div class="overlay-actions" id="overlay-actions" hidden>
+  <strong>REFERENCE OVERLAY · LOCKED CHARACTER · NEVER EXPORTED</strong>
+  <label><input type="checkbox" id="overlay-on" checked> SHOW BODY</label>
+  <label>OPACITY <output id="overlay-alpha-value">42%</output>
+   <input id="overlay-alpha" type="range" min="0" max="90" value="42" step="1"></label>
+  <label><input type="checkbox" id="overlay-pivot" checked> PIVOT 32,100</label>
+  <span id="overlay-info">Acuan karakter untuk frame dan arah ini</span>
  </div>
-<div class="selection-actions" role="group" aria-label="Edit selection">
-<strong id="selection-info" aria-live="polite">NO SELECTION · RECT OR WAND</strong>
-<strong id="clipboard-info" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</strong>
-<label class="wand-setting"><input type="checkbox" id="paste-replace"> PASTE REPLACE</label>
-<div class="selection-buttons">
-<button type="button" id="select-all" title="Select all / Ctrl+A">▣ ALL</button>
-<button type="button" id="copy-selection" title="Copy selection / Ctrl+C">⧉ COPY</button>
-<button type="button" id="cut-selection" title="Cut selection / Ctrl+X">✂ CUT</button>
-<button type="button" id="paste-selection" disabled title="Paste copied pixels / Ctrl+V">▣ PASTE</button>
-<button type="button" id="paste-flip" disabled title="Mirror and paste / Ctrl+Shift+V">⇆ PASTE FLIP</button>
-<button type="button" id="nudge-left" disabled title="Move selected pixels 1px left">←</button>
-<button type="button" id="nudge-up" disabled title="Move selected pixels 1px up">↑</button>
-<button type="button" id="nudge-down" disabled title="Move selected pixels 1px down">↓</button>
-<button type="button" id="nudge-right" disabled title="Move selected pixels 1px right">→</button>
-<button type="button" id="flip-horizontal" disabled>⇄ FLIP H</button>
-<button type="button" id="flip-vertical" disabled>⇅ FLIP V</button>
-<button type="button" id="deselect" disabled>× CLEAR</button>
+ <div class="clip-actions" id="clip-actions" hidden>
+  <strong>CLIP TIMELINE · ACTIVITY SHEET 384×2688 · STOCK 44-ROW SHEETS UNTOUCHED</strong>
+  <div class="clip-bar">
+   <button type="button" id="clip-play">▶ PLAY</button>
+   <button type="button" id="clip-pause">❚❚ PAUSE</button>
+   <label><input type="checkbox" id="clip-loop" checked> LOOP</label>
+   <label for="clip-ms">MS <input id="clip-ms" type="number" min="40" max="800" step="10" value="140"></label>
+   <label><input type="checkbox" id="clip-onion" checked> ONION</label>
+   <label for="clip-layer">LAYER <select id="clip-layer"></select></label>
+   <span class="clip-preview-label">M</span>
+   <canvas id="clip-prev-m" width="64" height="112" aria-label="Male compose preview"></canvas>
+   <span class="clip-preview-label">F</span>
+   <canvas id="clip-prev-f" width="64" height="112" aria-label="Female compose preview"></canvas>
+   <span id="clip-prev-note">Male / Female preview through the compositor</span>
+  </div>
+  <div class="clip-strip-row">
+   <button type="button" id="clip-add">+ FRAME</button>
+   <button type="button" id="clip-dup">DUPLICATE</button>
+   <button type="button" id="clip-del">REMOVE</button>
+   <button type="button" id="clip-left">◀ MOVE</button>
+   <button type="button" id="clip-right">MOVE ▶</button>
+   <div id="clip-strip" class="clip-strip" role="list"></div>
+  </div>
+ </div>
+ <div class="mahluk-save-bar">
+  <button type="button" id="download-frame">↓ CURRENT FRAME.PNG</button>
+  <button type="button" id="download-sheet">↓ V6P PART SHEET.PNG (384×4928)</button>
+  <button type="button" id="export-patch" class="primary">↓ SAVE PIXEL EDITS.JSON</button>
+  <button type="button" id="import-patch">↑ LOAD PIXEL EDITS.JSON</button>
+  <button type="button" id="save-drive" class="primary">Save ke Drive</button>
+  <button type="button" id="clear-draft">DELETE LOCAL DRAFT</button>
+  <input type="file" id="patch-file" accept=".json,application/json" hidden>
+  <p id="drive-status" class="mahluk-note">Drive: belum disimpan.</p>
+  <span id="modified-count">0 MODIFIED FRAMES</span>
+  <span id="part-bounds">SELECTED PART ONLY</span>
+  <span id="source-state">SOURCE NOT LOADED</span>
+ </div>
 </div>
+<div id="pixelOverlay" class="pixel-overlay">
+ <section class="pixel-dialog" role="dialog" aria-modal="true" aria-labelledby="pixelTitle">
+  <header class="pixel-dialog-header"><strong id="pixelTitle">PIXEL EDITOR / SELECTED PLANE</strong><button id="pixelClose" title="Close editor">×</button></header>
+  <div class="pixel-toolbar">
+   <label>DIRECTION <select id="pixelDirection"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></label>
+   <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
+   <button data-pixel-tool="eraser">⌫ ERASER</button><button data-pixel-tool="select" title="Draw a rectangle around pixels to select them / S">▣ SELECT</button>
+   <button id="pixelToolbarCopy" class="pixel-quick-copy" type="button" title="Copy selection from current view / Ctrl+C">⧉ COPY</button>
+   <button id="pixelToolbarPaste" class="pixel-quick-paste" type="button" title="Paste pixels into current view / Ctrl+V">▣ PASTE</button>
+   <button id="pixelToolbarPasteFlip" class="pixel-quick-paste" type="button" title="Mirror and paste into current view / Ctrl+Shift+V">⇆ PASTE FLIP</button>
+   <button data-pixel-tool="move-pixels" title="Move selected pixels / M">✣ MOVE PIXELS</button>
+   <button data-pixel-tool="fill">▤ FILL</button>
+   <button data-pixel-tool="picker">◎ PICK</button><button data-pixel-tool="hand" title="Pan canvas by dragging / H">✥ HAND</button>
+   <label>COLOR <input id="pixelColor" type="color" value="#211d22"></label>
+   <label>SIZE <select id="pixelSize"><option value="1">1 PX</option><option value="2">2 PX</option><option value="3">3 PX</option><option value="5">5 PX</option></select></label>
+  </div>
+  <div class="pixel-workarea">
+   <div class="pixel-canvas-wrap" id="pixelCanvasWrap"><canvas id="pixelCanvas" tabindex="0" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time. Scroll to zoom, pinch to zoom on touch."></canvas></div>
+   <aside class="pixel-side">
+    <div class="sectionhead">PALETTE / SWATCHES</div>
+    <div class="pixel-swatches">
+     <button data-pixel-swatch="#1b1519" style="--swatch:#1b1519" title="Dark ink"></button>
+     <button data-pixel-swatch="#443330" style="--swatch:#443330" title="Shadow"></button>
+     <button data-pixel-swatch="#b97656" style="--swatch:#b97656" title="Skin shade"></button>
+     <button data-pixel-swatch="#e9a77c" style="--swatch:#e9a77c" title="Skin"></button>
+     <button data-pixel-swatch="#ffc99b" style="--swatch:#ffc99b" title="Highlight"></button>
+     <button data-pixel-swatch="#f4ece5" style="--swatch:#f4ece5" title="White"></button>
+     <button data-pixel-swatch="#5b718d" style="--swatch:#5b718d" title="Blue"></button>
+     <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
+    </div>
+    <label class="check"><input type="checkbox" id="pixelSync"> SYNC BRUSH · ALL 4 VIEWS (OPTIONAL)</label>
+    <button id="pixelSyncExisting" type="button" title="Transfer this view\u0027s existing pixel changes to other camera directions while preserving each native silhouette">↻ SYNC CURRENT EDITS TO 4 VIEWS</button>
+    <p class="hint">DEFAULT: EDIT ACTIVE VIEW ONLY. SE, SW, NE &amp; NW stay independent. Turn on Sync Brush only if you intentionally want pencil, eraser and fill edits to affect other views.</p>
+    <div class="pixel-reference-controls">
+     <div class="sectionhead">VIEW OVERLAY / REDRAW GUIDE</div>
+     <label>REFERENCE PLANE
+      <select id="pixelReferenceView">
+       <option value="off">OFF / NO OVERLAY</option>
+       <option value="se">SE · FRONT RIGHT</option>
+       <option value="sw">SW · FRONT LEFT</option>
+       <option value="ne">NE · BACK RIGHT</option>
+       <option value="nw">NW · BACK LEFT</option>
+      </select>
+     </label>
+     <label class="check"><input id="pixelReferenceFlip" type="checkbox" checked> AUTO MIRROR REFERENCE</label>
+     <label>OPACITY <input id="pixelReferenceOpacity" type="range" min="5" max="85" step="5" value="40"><span id="pixelReferenceOpacityLabel">40%</span></label>
+     <label>REF OFFSET X <input id="pixelReferenceX" type="number" min="-32" max="32" value="0" step="1"></label>
+     <label>REF OFFSET Y <input id="pixelReferenceY" type="number" min="-56" max="56" value="0" step="1"></label>
+     <p class="hint">Colored ghost overlay shows the selected source view over the active drawing view. For aligning and redrawing only; it is NEVER saved in the PNG.</p>
+    </div>
+    <div class="pixel-selection-controls">
+     <div class="sectionhead">SELECTION / TRANSFORM</div>
+     <div class="plane-buttons pixel-clipboard-actions">
+      <button id="pixelCopySelection" type="button" title="Copy selected RGBA pixels from active view / Ctrl+C">⧉ COPY</button>
+      <button id="pixelPasteSelection" type="button" title="Paste to active view without changing other views / Ctrl+V">▣ PASTE</button>
+      <button id="pixelPasteMirrored" type="button" title="Paste flipped horizontally, at mirrored X position / Ctrl+Shift+V">⇆ PASTE FLIP</button>
+     </div>
+     <div class="pixel-copy-to-view">
+      <div class="sectionhead">COPY PIXELS TO ANOTHER VIEW</div>
+      <label>DESTINATION VIEW
+       <select id="pixelCopyTarget" aria-label="Destination camera view for copied pixels">
+        <option value="se">SE · FRONT RIGHT</option>
+        <option value="sw">SW · FRONT LEFT</option>
+        <option value="ne">NE · BACK RIGHT</option>
+        <option value="nw">NW · BACK LEFT</option>
+       </select>
+      </label>
+      <label class="check"><input id="pixelCopyAutoMirror" type="checkbox" checked> AUTO MIRROR OPPOSITE SIDE</label>
+      <div class="plane-buttons">
+       <button id="pixelCopyToView" type="button" title="Copy selected pixels directly to the chosen view">⧉ COPY → VIEW</button>
+       <button id="pixelPasteToView" type="button" title="Paste saved clipboard onto the chosen view">▣ PASTE → VIEW</button>
+      </div>
+      <p class="hint">Select an area on SE/SW/NE/NW, then Copy → View. The target opens automatically for pixel-level adjustment. Only this frame is modified.</p>
+     </div>
+     <label class="check"><input id="pixelPasteReplace" type="checkbox"> REPLACE TRANSPARENT PIXELS (erase under transparent source)</label>
+     <p class="hint" id="pixelClipboardInfo" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</p>
+     <div class="plane-buttons"><button id="pixelSelectAll" type="button">▣ SELECT ALL</button><button id="pixelDeselect" type="button">◇ DESELECT</button></div>
+     <div class="plane-buttons"><button id="pixelFlipH" type="button">⇆ FLIP H</button><button id="pixelFlipV" type="button">⇅ FLIP V</button></div>
+     <div class="plane-buttons"><button id="pixelDeleteSelection" type="button">⌫ DELETE PIXELS</button></div>
+     <p class="hint" id="pixelSelectionInfo">No selection. Select rectangle, then Move Pixels or Flip.</p>
+    </div>
+    <label class="check"><input type="checkbox" id="pixelOnion" checked> HUMAN MALE BASE HEAD OVERLAY</label>
+    <label class="male-guide-range">MALE HEAD OPACITY <input id="pixelMaleOpacity" type="range" min="5" max="100" step="5" value="55"><span id="pixelMaleOpacityLabel">55%</span></label>
+    <div class="pixel-grid-controls">
+     <label class="check"><input type="checkbox" id="pixelGrid" checked> GRID MODE</label>
+     <label>GRID SIZE <select id="pixelGridType"><option value="1">1 × 1 PX</option><option value="8">8 × 8 PX</option><option value="16">16 × 16 PX</option></select></label>
+    </div>
+    <div class="pixel-zoom-controls">
+     <span>ZOOM</span>
+     <button id="pixelZoomOut" title="Zoom out (mouse wheel or pinch)">−</button>
+     <input id="pixelZoom" type="range" min="2" max="16" step="1" value="5" aria-label="Pixel canvas zoom">
+     <button id="pixelZoomIn" title="Zoom in (mouse wheel or pinch)">＋</button>
+     <button id="pixelZoomFit" title="Fit artwork to editor">FIT</button>
+     <span id="pixelZoomLabel">500%</span>
+    </div>
+    <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
+    <p class="hint">Edits work at native 64 × 112, across four directions. Pencil/eraser can be dragged with mouse or touch. Source planes and rig transforms remain separate.</p>
+    <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
+    <button id="pixelExport">↓ EXPORT 4-DIR PNG</button>
+   </aside>
+  </div>
+  <footer class="pixel-dialog-foot">
+   <span id="pixelStatus">SOURCE READY</span>
+   <button id="pixelApply">APPLY EDITED FRAME</button>
+   <button id="pixelSaveDefault" class="primary">▣ APPLY FRAME</button>
+  </footer>
+ </section>
 </div>
-<div class="overlay-actions" id="overlay-actions" hidden>
-<strong>REFERENCE OVERLAY · LOCKED CHARACTER · NEVER EXPORTED</strong>
-<label class="wand-setting"><input type="checkbox" id="overlay-on" checked> SHOW BODY</label>
-<label class="wand-setting" for="overlay-alpha">OPACITY <output id="overlay-alpha-value">42%</output>
-<input type="range" id="overlay-alpha" min="0" max="90" value="42" step="1"></label>
-<label class="wand-setting"><input type="checkbox" id="overlay-pivot" checked> PIVOT 32,100</label>
-<span id="overlay-info">Acuan karakter untuk frame dan arah ini</span>
-</div>
-<div class="clip-actions" id="clip-actions" hidden>
-<strong>CLIP TIMELINE · ACTIVITY SHEET 384×2688 · STOCK 44-ROW SHEETS UNTOUCHED</strong>
-<div class="clip-bar">
-<button type="button" id="clip-play">▶ PLAY</button>
-<button type="button" id="clip-pause">❚❚ PAUSE</button>
-<label class="wand-setting"><input type="checkbox" id="clip-loop" checked> LOOP</label>
-<label class="wand-setting" for="clip-ms">MS <input id="clip-ms" type="number" min="40" max="800" step="10" value="140"></label>
-<label class="wand-setting"><input type="checkbox" id="clip-onion" checked> ONION</label>
-<label class="wand-setting" for="clip-layer">LAYER <select id="clip-layer"></select></label>
-<span class="clip-preview-label">M</span>
-<canvas id="clip-prev-m" width="64" height="112" aria-label="Male compose preview"></canvas>
-<span class="clip-preview-label">F</span>
-<canvas id="clip-prev-f" width="64" height="112" aria-label="Female compose preview"></canvas>
-<span id="clip-prev-note">Male / Female preview through the compositor</span>
-</div>
-<div class="clip-strip-row">
-<button type="button" id="clip-add">+ FRAME</button>
-<button type="button" id="clip-dup">DUPLICATE</button>
-<button type="button" id="clip-del">REMOVE</button>
-<button type="button" id="clip-left">◀ MOVE</button>
-<button type="button" id="clip-right">MOVE ▶</button>
-<div id="clip-strip" class="clip-strip" role="list"></div>
-</div>
-</div>
-<div id="swatches" class="swatches" aria-label="Otis color palette"></div>
-</div>
-<div class="canvas-footer">
+
+<div id="legacy-compat" hidden>
+<canvas id="pixel-canvas" width="512" height="896"></canvas>
+<canvas id="small-preview" width="128" height="224"></canvas>
+<button type="button" id="pan-toggle" aria-pressed="false">PAN</button>
+<button type="button" data-tool="select">SELECT</button>
+<button type="button" data-tool="move">MOVE</button>
+<button type="button" data-tool="pencil" class="active">PENCIL</button>
+<button type="button" data-tool="erase">ERASE</button>
+<button type="button" data-tool="pick">PICK</button>
+<button type="button" data-tool="fill">FILL</button>
+<button type="button" data-tool="wand">WAND</button>
+<button type="button" data-select-mode="replace" class="active">NEW</button>
+<button type="button" data-select-mode="add">ADD</button>
+<button type="button" data-select-mode="subtract">SUB</button>
+<label><input type="checkbox" id="wand-contiguous" checked> CONNECTED</label>
+<label>TOLERANCE <output id="wand-tolerance-value">0</output>
+<input id="wand-tolerance" type="range" min="0" max="80" value="0"></label>
+<button type="button" id="cursor-toggle" aria-pressed="false">CURSOR ON</button>
+<button type="button" id="cursor-left">◀</button>
+<button type="button" id="cursor-up">▲</button>
+<button type="button" id="cursor-down">▼</button>
+<button type="button" id="cursor-right">▶</button>
+<button type="button" id="cursor-tap">TAP</button>
+<strong id="selection-info">NO SELECTION · RECT OR WAND</strong>
+<strong id="clipboard-info">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</strong>
+<label><input type="checkbox" id="paste-replace"> PASTE REPLACE</label>
+<button type="button" id="select-all">ALL</button>
+<button type="button" id="copy-selection">COPY</button>
+<button type="button" id="cut-selection">CUT</button>
+<button type="button" id="paste-selection" disabled>PASTE</button>
+<button type="button" id="paste-flip" disabled>PASTE FLIP</button>
+<button type="button" id="nudge-left" disabled>←</button>
+<button type="button" id="nudge-up" disabled>↑</button>
+<button type="button" id="nudge-down" disabled>↓</button>
+<button type="button" id="nudge-right" disabled>→</button>
+<button type="button" id="flip-horizontal" disabled>FLIP H</button>
+<button type="button" id="flip-vertical" disabled>FLIP V</button>
+<button type="button" id="deselect" disabled>CLEAR</button>
+<input id="color" type="color" value="#61b3c4">
+<label>BRUSH SIZE <output id="brush-label">1 PX</output>
+<input id="brush-size" type="range" min="1" max="4" value="1"></label>
+<div id="swatches" class="swatches"></div>
+<div id="canvas-scroll"><div id="canvas-stage"></div></div>
 <label>ZOOM <select id="zoom"><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option><option value="5">5×</option><option value="6">6×</option><option value="8" selected>8×</option><option value="10">10×</option></select></label>
-<label class="check"><input id="grid" type="checkbox"> PIXEL GRID</label>
+<label><input id="grid" type="checkbox"> PIXEL GRID</label>
 <span id="cursor-coord">X -- / Y --</span>
-<span id="gesture-hint" class="gesture-hint" role="status">CURSOR · drag canvas to aim and tap apply</span>
+<span id="gesture-hint">DIRECT</span>
 </div>
-</section>
-<aside class="export-panel">
-<h2>VIEW & SAVE</h2>
-<div class="mini-box"><canvas id="small-preview" width="128" height="224" aria-label="Actual 2x sprite preview"></canvas><p>2× PREVIEW</p></div>
-<div class="panel-note"><strong>AUTOSAVE ON</strong> — changes are stored in this browser after each stroke. Master corrections are projected across actions; switch to FRAME to fix tricky poses. GitHub publication still requires your authorization.</div>
-<div class="button-stack">
-<button type="button" id="download-frame">↓ CURRENT FRAME.PNG</button>
-<button type="button" id="download-sheet">↓ V6P PART SHEET.PNG (384×4928)</button>
-<button type="button" id="export-patch" class="primary">↓ SAVE PIXEL EDITS.JSON</button>
-<button type="button" id="import-patch">↑ LOAD PIXEL EDITS.JSON</button>
-<button type="button" id="save-drive" class="primary">Save ke Drive</button>
-<p id="drive-status" class="panel-note">Drive: belum disimpan. Login Google diperlukan untuk unggah otomatis ke My Drive/Membangun/Mahluk Hidup/Pixel Edits/.</p>
-<input type="file" id="patch-file" accept=".json,application/json" hidden>
-<button type="button" id="clear-draft">DELETE LOCAL DRAFT</button>
-</div>
-<div class="panel-note">V6P: setelah mengedit, override tersimpan di browser (localStorage) lalu muncul di v6p-studio lewat <strong>Muat ulang aset</strong>. <strong>Save ke Drive</strong> mengunggah sheet 384×4928 secara otomatis ke <code>My Drive/Membangun/Mahluk Hidup/Pixel Edits/</code> (akan masuk game lewat job sinkron). Unduhan PNG + PIXEL EDITS.JSON tetap ada kalau mau commit manual.</div>
-<div class="meta"><strong id="modified-count">0 MODIFIED FRAMES</strong><span id="part-bounds">SELECTED PART ONLY</span><span>OTHER AREAS LOCKED WHILE DRAWING</span><span id="source-state">SOURCE NOT LOADED</span></div>
-</aside>
-</div>
-<footer class="foot"><span>MAHLUK HIDUP / ORIGINAL SPRITE EDITOR</span><span>NO UNAPPROVED AUTOMATIC CHANGES TO THE LIVE GAME</span></footer>
-</main>
-</body></html>
+
+</body>
+</html>

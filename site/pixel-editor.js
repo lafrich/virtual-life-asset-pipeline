@@ -32,6 +32,7 @@ const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",par
  selection:null,selectionMask:null,selectionMode:"replace",wandContiguous:true,wandTolerance:0,selectionGesture:null,moveGesture:null,cursorMode:MOBILE_TOUCH,cursor:[32,42],
  trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null,
  clipboard:null,floatingPaste:null,project:null,actClip:null,clipLayer:null,onion:true,onionImage:null,playing:false,playTimer:0,clipUndo:[],clipRedo:[],overlayOn:true,overlayAlpha:0.42,overlayCanvas:null,showPivot:true};
+let emosiEditor=null;
 function status(s,error=false){$("editor-status").textContent=s;$("editor-status").classList.toggle("error",error);}
 function activeClip(){if(state.actClip)return {id:state.actClip.id,name:state.actClip.name,frames:state.actClip.frames.length};return state.clips.find(c=>c.id===state.action);}
 function currentKey(){return state.source==="v6p"?state.action+"|"+state.dir+"|"+state.frame:core.key(state.action,state.dir,state.frame);}
@@ -85,6 +86,7 @@ function displayToFile(img){
  const ch=previewCh(); return ch?window.V6PCompositor.displayToKeys(img,ch,state.originals.get(currentKey())):img;
 }
 function saveCurrent(){
+ pullEmosiIntoState();
  if(!state.current)return;
  const key=currentKey(),original=state.originals.get(key);
  const stored=displayToFile(state.current);
@@ -121,6 +123,7 @@ async function navigate(){
   }
   state.loading=false;updateSelectionUI();await refreshOverlay();render();
   if(state.actClip){fillClipStrip();refreshMFPreview();}
+  await syncEmosiOpen();
   status("EDITING ORIGINAL PIXELS / "+key+" / DRAFT NOT PUBLISHED");
  }catch(e){if(seq!==state.seq)return;status("LOAD FAILED: "+e.message,true);state.loading=true;render();}
 }
@@ -1264,6 +1267,83 @@ async function loadActClip(id,preferredLayer){
  status("EDITING CLIP / "+rec.name+" / layer "+layer);
 }
 
+
+function displayToFileFor(img,key){
+ if(state.source!=="v6p"||!img||!window.V6PCompositor||!window.V6PCompositor.displayToKeys) return img;
+ const ch=previewCh(); return ch?window.V6PCompositor.displayToKeys(img,ch,state.originals.get(key)):img;
+}
+function pullEmosiIntoState(){
+ if(!emosiEditor||typeof emosiEditor.getAtlas!=="function") return;
+ const atlas=emosiEditor.getAtlas(); if(!atlas) return;
+ const g=atlas.getContext("2d",{willReadFrequently:true});
+ const dirNow=emosiEditor.getDir&&emosiEditor.getDir();
+ if(dirNow&&DIRECTIONS.includes(dirNow)){
+  state.dir=dirNow;
+  if($("direction")) $("direction").value=dirNow;
+ }
+ const clip=activeClip(); if(!clip) return;
+ for(let i=0;i<4;i++){
+  const dir=DIRECTIONS[i];
+  const displayed=g.getImageData(0,i*HEIGHT,WIDTH,HEIGHT);
+  const key=state.source==="v6p"?state.action+"|"+dir+"|"+state.frame:core.key(state.action,dir,state.frame);
+  const stored=displayToFileFor(displayed,key);
+  const original=state.originals.get(key);
+  if(original&&identical(stored,original))state.edits.delete(key);
+  else state.edits.set(key,copy(stored));
+  if(state.source==="v6p"&&state.v6pSheet&&window.V6PPixelSource){
+   if(state.actClip){
+    const o=window.V6PActivityContract.cellOrigin(state.actClip.bandStart||0,dir,state.frame);
+    window.V6PPixelSource.stampAt(state.v6pSheet,o.x,o.y,stored);
+   }else{
+    window.V6PPixelSource.stamp(state.v6pSheet,state.action,dir,state.frame,stored);
+   }
+  }
+  if(dir===state.dir) state.current=displayed;
+ }
+}
+async function syncEmosiOpen(){
+ if(!emosiEditor) return;
+ const clip=activeClip(); if(!clip) return;
+ const atlas=document.createElement("canvas"); atlas.width=WIDTH; atlas.height=HEIGHT*4;
+ const g=atlas.getContext("2d");
+ const orig=document.createElement("canvas"); orig.width=WIDTH; orig.height=HEIGHT*4;
+ const og=orig.getContext("2d");
+ for(let i=0;i<4;i++){
+  const dir=DIRECTIONS[i];
+  const key=state.source==="v6p"?state.action+"|"+dir+"|"+state.frame:core.key(state.action,dir,state.frame);
+  const original=await originalFor(key,clip,dir,state.frame);
+  const displayed=fileToDisplay(copy(state.edits.get(key)||original));
+  g.putImageData(displayed,0,i*HEIGHT);
+  og.putImageData(fileToDisplay(copy(original)),0,i*HEIGHT);
+ }
+ const id=state.actClip?("clip / "+state.actClip.name+" / "+(state.clipLayer||"layer")):
+  state.project?state.project.name:(state.v6pPart||state.part||"plane");
+ const ref=(state.overlayOn&&state.overlayCanvas)?state.overlayCanvas:(state.onionImage||null);
+ emosiEditor.open({id:String(id),initialAtlas:atlas,originalAtlas:orig,referenceImage:ref,direction:state.dir});
+ const ov=$("pixelOverlay"); if(ov) ov.hidden=false;
+ if($("pixelDirection")) $("pixelDirection").value=state.dir;
+}
+function bootEmosiEditor(){
+ if(emosiEditor||!window.MH2PlanePixelEditor) return;
+ const overlay=$("pixelOverlay"),canvas=$("pixelCanvas");
+ if(!overlay||!canvas) return;
+ emosiEditor=window.MH2PlanePixelEditor.create({
+  overlay,canvas,reference:null,
+  onApply:(id)=>{pullEmosiIntoState();saveCurrent();persistV6pOverride();status("APPLIED "+id);return false;},
+  onSaveDefault:(id)=>{pullEmosiIntoState();saveCurrent();persistV6pOverride();status("SAVED FRAME "+id);return false;},
+  onRestore:()=>{}
+ });
+ const closeBtn=$("pixelClose");
+ if(closeBtn) closeBtn.onclick=()=>{try{pullEmosiIntoState();saveCurrent();}catch{} location.href="./v6p-studio.html";};
+ const pd=$("pixelDirection");
+ if(pd) pd.addEventListener("change",()=>{
+  if(DIRECTIONS.includes(pd.value)){
+   state.dir=pd.value;
+   if($("direction")) $("direction").value=state.dir;
+  }
+ });
+}
+
 function initControls(){
 
  $("zoom").value=String(state.zoom);
@@ -1469,6 +1549,7 @@ function initControls(){
  });
 }
 async function init(){
+ bootEmosiEditor();
  initControls();fitMobileZoom();render();fillV6pPartSelect();
  window.addEventListener("resize",()=>{fitMobileZoom();});
  if(window.VLCharacterReferenceReset?.active){
