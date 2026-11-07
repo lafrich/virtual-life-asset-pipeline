@@ -76,8 +76,8 @@ function opt(sel,value,label){const el=document.createElement("option");el.value
 function fillLists(){
  const src=$("workflow-source"),list=$("workflow-list"),oldSource=src.value,oldList=list.value;
  src.replaceChildren();list.replaceChildren();
- opt(src,"base:male","Start from Scratch · Male Base (nude)");
- opt(src,"base:female","Start from Scratch · Female Base (nude)");
+ opt(src,"base:male","Start from Scratch · Male Base");
+ opt(src,"base:female","Start from Scratch · Female Base");
  opt(list,"","Choose a character…");
  const seen=new Set();
  for(const row of S.list()){
@@ -167,19 +167,19 @@ function arrangeLegacyControls(){
  move("workflow-source","wizard-base-slot");
  move("workflow-clone","wizard-duplicate-slot");
  if($("workflow-clone"))$("workflow-clone").textContent="⧉ Duplicate This Character";
- const body=makePart("body","Body","Start from the nude Male or Female base, then choose skin color. You can edit the body sprite itself.");
+ const body=makePart("body","Body","Choose Male or Female body and skin color. Outfit presets are separate from the base.");
  field(body,"body");field(body,"skin");
  const hair=makePart("hair","Hair","Choose a hairstyle first, then edit front and back sprite layers. Four directions can be drawn from the same Pixel Editor.");
  field(hair,"hair");field(hair,"hairColor");
- const top=makePart("top","Top","Choose a shirt from the library, or draw your own four-angle top sprite.");
- field(top,"top");field(top,"topColor");
- const pants=makePart("pants","Pants","Choose trousers or a nude base, then customize its sprite.");
- field(pants,"pants");field(pants,"pantsColor");
- const shoes=makePart("shoes","Shoes","Choose shoes from the database or edit the four-direction pixel art.");
- field(shoes,"shoes");field(shoes,"shoesColor");
+ const top=makePart("top","Top","Choose a top or Custom Wear, cloned from a native full animation sheet.");
+ field(top,"top");move("custom-top-panel","wizard-part-top");field(top,"topColor");
+ const pants=makePart("pants","Pants","Choose pants, or Custom Wear to edit every native animation frame.");
+ field(pants,"pants");move("custom-pants-panel","wizard-part-pants");field(pants,"pantsColor");
+ const shoes=makePart("shoes","Shoes","Choose shoes or Custom Wear, with editable native animation frames.");
+ field(shoes,"shoes");move("custom-shoes-panel","wizard-part-shoes");field(shoes,"shoesColor");
  const extra=makePart("extras","Accessories","Optional glasses, facial hair and accessories. Emotions are kept in EMOSI.EXE.");
  field(extra,"glasses");field(extra,"facial");field(extra,"studio-accessory");
- const face=makePart("face","Face / Emosi","Expressions are edited in EMOSI.EXE, not drawn onto the nude body.");
+ const face=makePart("face","Face / Emosi","Expressions are edited in EMOSI.EXE, separate from the outfit.");
  const faceCard=document.querySelector('.wrap .card[aria-label="Face database"]');
  if(faceCard){face.append(faceCard.querySelector(".row")||document.createElement("div"));const faces=$("faces");if(faces)face.append(faces)}
  const preset=$("outfit-normal")?.closest(".row");
@@ -262,7 +262,7 @@ async function regenerate(){
   const recoverNote=repair?("Repaired "+repair+" legacy rear-view sprite masters into their correct back layers. "):"";
   result(done.parts.length?
    recoverNote+archiveNote+"Native V6B frames rebuilt without shifting pixels. Color edits follow native poses; custom silhouettes remain exact on IDLE F0 until each action is corrected manually. "+corrected+" newer manual corrections kept. Check walking, sitting and sleeping poses.":
-   recoverNote+archiveNote+"Original outfit animations loaded (including Nude). Check each motion and direction.");
+   recoverNote+archiveNote+"Original native outfit frames loaded. Custom Wear remains exact, with no retargeting.");
   state.pendingPreview=false;
   return true;
  }catch(error){result("Generation failed: "+error.message,true);notice(error.message,true);return false}
