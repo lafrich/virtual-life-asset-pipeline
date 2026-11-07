@@ -4,7 +4,32 @@ Repo: `lafrich/virtual-life-asset-pipeline`
 Branch: `main`  
 Live: https://lafrich.github.io/virtual-life-asset-pipeline/
 
-## This deploy (Emosi pixel editor reused as-is for Mahluk)
+## This deploy (tidied Mahluk pixel editor chrome)
+
+- Previous `origin/main` (safe restore point): `69fe8c8b717cfe4095886c0bd7ec57ebdd749920`
+- Feature commits: `424b972647c79616ea95ee6658778e86a7810f38` (SOURCE/REF/SAVE drawers + compact clip row), `b059a954399dc2f38f23c5168bd813b281457f9c` (phone toolbar wrap)
+
+Restore this deploy (fast-forward only — do not force-push):
+
+```bash
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+git revert --no-edit b059a954399dc2f38f23c5168bd813b281457f9c
+git revert --no-edit 424b972647c79616ea95ee6658778e86a7810f38
+git push origin main
+```
+
+If this ROLLBACK notes commit is also on `main`, revert it first (newest first), then the feature commits newest first. That restores the pre-tidy Emosi-same Mahluk chrome (extra panels stacked above the dialog) while keeping Emosi's native pixel dialog and the v6p adapter. Real-color mapping, accessories, gallery, clip timeline, and Drive save remain. It does not revert the V6B asset generator (`69fe8c8b717cfe4095886c0bd7ec57ebdd749920`) or the Emosi-same editor wiring (`b964b665c7c534953bd94def079a3c1c0f87c45f`). Stock 44-row sheets stay untouched.
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+
+- https://lafrich.github.io/virtual-life-asset-pipeline/v6p-studio.html
+- https://lafrich.github.io/virtual-life-asset-pipeline/pixel-editor.html?source=v6p&project=clip_pushup
+- Phone 390 and 360: toolbar wraps; SELECT, COPY, PASTE, PASTE FLIP, MOVE PIXELS, FILL, PICK, and HAND all visible without horizontal overflow
+- Side-by-side with https://lafrich.github.io/virtual-office/emotion-studio/ (open PIXEL EDITOR)
+
+## Previous deploy (Emosi pixel editor reused as-is for Mahluk)
 
 - Previous `origin/main` (safe restore point): `e67f8f53848040db572e01c4f2e5426781ae155f`
 - Feature commit: `b964b665c7c534953bd94def079a3c1c0f87c45f`
