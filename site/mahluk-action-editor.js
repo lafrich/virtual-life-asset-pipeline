@@ -100,10 +100,10 @@ function refFor(entry,value){
   return null;
  }
  if(value?.startsWith("grok:")){
-  const action=state.catalog.find(x=>x.id===value.slice(5));if(!action)return null;
-  const native=publishedClip(entry,action.id);if(native)return native;
-  if(entry.ch&&V?.ROWS[action.id]!=null)return {frames:V.FRAMES[action.id],frameMs:Array(V.FRAMES[action.id]).fill(140),
-   layout:"base",loop:true,action, ch:entry.ch};
+  const a=state.catalog.find(x=>x.id===value.slice(5));if(!a)return null;
+  const native=publishedClip(entry,a.id);if(native)return native;
+  if(entry.ch&&V?.ROWS[a.id]!=null)return {frames:V.FRAMES[a.id],frameMs:Array(V.FRAMES[a.id]).fill(140),
+   layout:"base",loop:true,action:a, ch:entry.ch};
   return null; // Never substitute unrelated actor pixels.
  }
  if(value?.startsWith("clip:")){
