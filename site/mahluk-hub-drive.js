@@ -163,8 +163,20 @@ async function restore(){
  const current=await collect();
  // Always export the current database before replacing any local values.
  downloadRecovery(current.payload);
- for(const [key,raw] of Object.entries(payload.local))localStorage.setItem(key,raw);
- await restoreIdb(payload.emotions);
+ try{
+  for(const [key,raw] of Object.entries(payload.local))localStorage.setItem(key,raw);
+  await restoreIdb(payload.emotions);
+ }catch(error){
+  // Restore is all-or-nothing for localStorage; IndexedDB uses one transaction.
+  // This rollback is best effort for an already-full browser quota.
+  for(const [key,old] of Object.entries(current.payload.local)){
+   try{localStorage.setItem(key,old)}catch{}
+  }
+  for(const key of KEYS){
+   if(!(key in current.payload.local)){try{localStorage.removeItem(key)}catch{}}
+  }
+  throw Error("Restore rolled back; recovery JSON was downloaded: "+error.message);
+ }
  try{
   root.VLHub?.publish("characters",{source:"mahluk-hidup",operation:"restore"});
   root.VLHub?.publish("accessories",{source:"mahluk-hidup",operation:"restore"});
