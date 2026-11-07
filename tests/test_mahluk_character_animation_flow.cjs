@@ -8,7 +8,7 @@ function loadUMD(file,window){
  return context.module.exports;
 }
 test('male/female standard outfit defaults and isolated custom-wear sheets',()=>{
- const ls=localStorage(),window={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/custom',normalizePart:x=>x}};
+ const ls=localStorage(),window={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/custom'||p==='top/custom_f',normalizePart:x=>x}};
  const S=loadUMD('site/v6p-character-store.js',window);
  const m=S.create({name:'Custom M',gender:'male'}),f=S.create({name:'Custom F',gender:'female'});
  assert.equal(m.appearance.hair,'none');assert.equal(f.appearance.body,'female');
@@ -24,7 +24,7 @@ test('male/female standard outfit defaults and isolated custom-wear sheets',()=>
  assert.equal(S.list().length,3);
 });
 test('V6P composer uses character-local layer and preserves stock fallback',()=>{
- const ls=localStorage(),window={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/custom',normalizePart:x=>x}};
+ const ls=localStorage(),window={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/custom'||p==='top/custom_f',normalizePart:x=>x}};
  const Store=loadUMD('site/v6p-character-store.js',window);window.V6PCharacterStore=Store;
  const ch=Store.create({name:'A',gender:'female'});
  Store.update(ch.id,{appearance:{top:'custom'}});
