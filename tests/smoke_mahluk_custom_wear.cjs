@@ -34,7 +34,7 @@ const {chromium}=require('playwright');
    const sourceStats=[];
    // Only IDLE F0 is painted. All other native frames remain untouched.
    for(const dir of C.DIRS){
-    const part=(dir==='ne'||dir==='nw')?'top/custom_back_f':'top/custom_f';
+    const part='top/custom_f';
     const sheet=await P.loadSheetFromUrl(S.getPart(id,part));
     const idle=P.extract(sheet,'idle',dir,0),d=idle.data;
     const counts=new Map();
@@ -66,11 +66,21 @@ const {chromium}=require('playwright');
     S.setPart(id,part,sheet.toDataURL('image/png'));
     sourceStats.push({dir,part,opaque,changedPalette:top[1],motifPixels:marks.length});
    }
+   // Four directions must now belong to the VISIBLE garment, not the
+   // 35-pixel underlayer that is occluded by the main top sheet.
+   const nativeMain=await P.loadSheet('top/tee_f');
+   const nativeUnder=await P.loadSheet('top/tee_back_f');
+   const rearMask=['ne','nw'].map(dir=>{
+    const main=P.extract(nativeMain,'idle',dir,0).data;
+    const under=P.extract(nativeUnder,'idle',dir,0).data;
+    return {dir,visible:[...main].filter((v,i)=>i%4===3&&v>=128).length,
+      under:[...under].filter((v,i)=>i%4===3&&v>=128).length};
+   });
    const generated=await R.generateCharacter(id);
    V.clearCache();
    const checks=[],countsByAction={},failures=[];
    for(const dir of C.DIRS){
-    const part=(dir==='ne'||dir==='nw')?'top/custom_back_f':'top/custom_f';
+    const part='top/custom_f';
     const originalPart=part.replace('/custom','/tee');
     const sheet=await P.loadSheetFromUrl(S.getPart(id,part));
     const stock=await P.loadSheet(originalPart);
@@ -104,12 +114,16 @@ const {chromium}=require('playwright');
     if(d.some((x,i)=>i%4===0&&x===230&&d[i+1]===44&&d[i+2]===187&&d[i+3]===255))
      compositeLogoFrames++;
    }
-   return {sourceStats,generated:generated.customWear,checks:checks.length,
+   return {sourceStats,rearMask,generated:generated.customWear,checks:checks.length,
     countsByAction,failures:failures.slice(0,15),failureCount:failures.length,compositeLogoFrames,
     fourSources:C.DIRS.every(dir=>sourceStats.some(x=>x.dir===dir&&x.motifPixels>=1))};
   });
   console.log('CUSTOM WEAR EVIDENCE',JSON.stringify(result));
   assert.equal(result.fourSources,true,'Four direction sources not painted');
+  assert.ok(result.sourceStats.filter(x=>['ne','nw'].includes(x.dir)).every(x=>x.part==='top/custom_f'),
+    'Rear source still points to the occluded back layer');
+  assert.ok(result.rearMask.some(x=>x.visible>x.under),
+    'Native rear-visible Tee should be drawn on the main sheet, not only the underlayer');
   assert.ok(result.generated?.frames>20,'No native animation frames inherited garment artwork');
   assert.equal(result.failureCount,0,'Motif must inherit all native occupied frames without changing alpha');
   assert.ok(result.compositeLogoFrames>=4,'The playable composed Walk must display the garment logo');
