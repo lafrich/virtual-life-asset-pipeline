@@ -13,7 +13,7 @@ async function run(){
  const serious=[];
  page.on('pageerror',e=>serious.push(String(e)));
  try{
-  await page.goto('http://127.0.0.1:4173/v6p-studio.html?embedded=1',{waitUntil:'domcontentloaded',timeout:45000});
+  await page.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/v6p-studio.html?embedded=1',{waitUntil:'domcontentloaded',timeout:45000});
   await page.locator('body.wizard-ready').waitFor({timeout:65000});
   await page.locator('#wizard-home:not([hidden])').waitFor({timeout:65000});
   console.log('[ok] WIZARD HOME');
@@ -66,6 +66,27 @@ async function run(){
   await page.locator('#wizard-back').click();
   assert.equal(await page.locator('#wizard-home').isVisible(),true);
   console.log('[ok] MODIFY EXISTING -> CUSTOMIZE -> BACK HOME');
+  const app=await browser.newPage({viewport:{width:1280,height:900}});
+  try{
+   await app.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/mahluk-hidup.html?tab=character',
+    {waitUntil:'domcontentloaded',timeout:45000});
+   const character=app.frameLocator('#character-frame');
+   await character.locator('body.wizard-ready').waitFor({timeout:65000});
+   await character.locator('#wizard-start-new').click();
+   await character.locator('#workflow-source').selectOption('base:male');
+   await character.locator('#wizard-next').click();
+   await character.locator('#wizard-customize:not([hidden])').waitFor({timeout:65000});
+   await character.locator('#wizard-part-nav [data-part=top]').click();
+   await character.locator('#edit-top').click();
+   await app.locator('#character-pixel-overlay:not([hidden])').waitFor({timeout:65000});
+   assert.equal(await app.locator('#character-view.active').isVisible(),true,
+    'Pixel Editor must remain inside Character tab');
+   await app.locator('#character-pixel-back').click();
+   await app.locator('#character-pixel-overlay[hidden]').waitFor({timeout:65000});
+   assert.equal(await character.locator('#wizard-customize').isVisible(),true,
+    'Back from Pixel Editor must restore the Customize step');
+   console.log('[ok] PIXEL EDITOR OPENS INSIDE CHARACTER AND BACK RESTORES CUSTOMIZE');
+  }finally{await app.close()}
   console.log('PASS Character wizard browser smoke');
  }catch(error){
   console.error('PAGE STATUS',await page.locator('#wizard-notice').textContent().catch(()=>'<missing>'));
