@@ -24,9 +24,8 @@ function layers(kind,body){
 function sourceFor(part,kind,template){return part.replace("/custom","/"+template);}
 function isCustomPart(part){return /^(?:top\/custom(?:_back)?(?:_f)?|pants\/custom(?:_f)?|shoes\/custom(?:_f)?)$/.test(part||"");}
 function directionsFor(part){
- if(part.startsWith("top/")){
-  return part.includes("_back")?["ne","nw"]:["se","sw"];
- }
+ // A top's "_back" layer is its occluded underlayer, not its rear-facing
+ // sprite. Both physical layers have native sprites in every direction.
  return DIRS;
 }
 function same(a,b,i){return a[i]===b[i]&&a[i+1]===b[i+1]&&a[i+2]===b[i+2]&&a[i+3]===b[i+3]}
@@ -168,6 +167,59 @@ function snapshot(pixels){
  c.getContext("2d").putImageData(new ImageData(new Uint8ClampedArray(pixels),FW,FH),0,0);
  return c.toDataURL("image/png");
 }
+/* Back-view repair for drafts created by the old editor:
+   NE/NW were wrongly painted on top/custom_back, whose native sheet contains
+   only a small occluded underlayer. Transfer those edits onto the actually
+   visible main top/custom NE/NW source without replacing any existing art.
+   The original back sheet remains untouched as the user's safety copy. */
+async function migrateLegacyRear(id,ch,S,P,C,V){
+ if(ch.top!=="custom")return {migrated:0};
+ const row=S.get(id),template=selectedTemplate(row,"top");
+ const ticket="native-main-rear-v2:"+template;
+ const flag=ch.body==="female"?"topRearMainV2F":"topRearMainV2M";
+ if(row?.customWear?.[flag]===ticket)return {migrated:0};
+ const [mainPart,underPart]=layers("top",ch.body);
+ const mainUrl=S.getPart(id,mainPart),underUrl=S.getPart(id,underPart);
+ if(!mainUrl||!underUrl)return {migrated:0};
+ const [mainSheet,underSheet,nativeMain,nativeUnder]=await Promise.all([
+  P.loadSheetFromUrl(mainUrl),P.loadSheetFromUrl(underUrl),
+  P.loadSheet(sourceFor(mainPart,"top",template)),P.loadSheet(sourceFor(underPart,"top",template))
+ ]);
+ const origMain=nativeMain,origUnder=nativeUnder;
+ let moved=0,skipped=0,hasLegacyEdits=false;
+ for(const dir of ["ne","nw"]){
+  const oldMain=extract(mainSheet,C,"idle",dir,0);
+  const baseMain=V.keysToDisplay(extract(origMain,C,"idle",dir,0),ch);
+  const oldUnder=extract(underSheet,C,"idle",dir,0);
+  const baseUnder=V.keysToDisplay(extract(origUnder,C,"idle",dir,0),ch);
+  const mainData=oldMain.data,baseData=baseMain.data;
+  const legacy=oldUnder.data,oldBase=baseUnder.data;
+  const hasMainArt=mainData.some((value,i)=>value!==baseData[i]);
+  const hasUnderArt=legacy.some((value,i)=>value!==oldBase[i]);
+  if(!hasUnderArt)continue;
+  hasLegacyEdits=true;
+  if(hasMainArt){skipped++;continue} // Never overwrite a hand-drawn main rear view.
+  const palette=paletteFromViews([{source:baseUnder,edited:oldUnder}]);
+  const transferred=renderPose(baseMain,oldUnder,baseUnder,palette);
+  let exact=0;
+  // Some legacy designs were drawn outside the tiny native underlayer.
+  // If a painted pixel already lands on the visible Tee mask, retain it
+  // at that exact location rather than guessing a projection.
+  for(let i=0;i<legacy.length;i+=4){
+   if(oldBase[i+3]>=128||legacy[i+3]<128||baseData[i+3]<128)continue;
+   transferred.data[i]=legacy[i];transferred.data[i+1]=legacy[i+1];transferred.data[i+2]=legacy[i+2];
+   exact++;
+  }
+  if(transferred.changed||exact){
+   stamp(mainSheet,C,"idle",dir,0,transferred.data);moved++;
+  }
+ }
+ if(moved)S.setPart(id,mainPart,mainSheet.toDataURL("image/png"));
+ // Remember the attempted migration, including drafts without legacy art:
+ // a later native-rear edit must never be overwritten by old underlayer data.
+ S.update(id,{customWear:{[flag]:ticket}});
+ return {migrated:moved,skipped,legacy:hasLegacyEdits};
+}
 async function ensure(id,appearance,opts={}){
  const S=root?.V6PCharacterStore,P=root?.V6PPixelSource,C=root?.V6PPartCatalog,V=root?.V6PCompositor;
  if(!S||!P||!C||!V)throw Error("Custom Wear dependencies are missing");
@@ -187,6 +239,10 @@ async function ensure(id,appearance,opts={}){
    rows.push({part,template,created:true});
   }
  }
+ if(ch.top==="custom"&&(!opts.kind||opts.kind==="top")&&opts.migrate!==false){
+  const migrated=await migrateLegacyRear(id,ch,S,P,C,V);
+  if(migrated.migrated)rows.push({part:layers("top",ch.body)[0],rearMigrated:migrated.migrated});
+ }
  V.clearCache?.();return rows;
 }
 async function propagate(id,appearance,opts={}){
@@ -203,7 +259,6 @@ async function propagate(id,appearance,opts={}){
    const rawSheet=await P.loadSheet(origin);
    const saved=S.getPart(id,part);if(!saved)throw Error("Custom Wear source missing: "+part);
    const editedSheet=await P.loadSheetFromUrl(saved);
-   const originalSheet=await P.loadSheet(origin);
    const rawViews=[];
    for(const dir of directionsFor(part)){
     const original=extract(rawSheet,C,"idle",dir,0);
@@ -211,14 +266,27 @@ async function propagate(id,appearance,opts={}){
     const edited=extract(editedSheet,C,"idle",dir,0);
     rawViews.push({dir,source:baseline,raw:original,edited});
    }
-   const palette=paletteFromViews(rawViews);
+   // The visible main Tee is the single four-direction design source.
+   // The _back sheet is a native occluded seam layer: inherit its color
+   // treatment from the visible Tee instead of making users draw it again.
+   let pigmentViews=rawViews;
+   if(kind==="top"&&part.includes("_back")){
+    const mainPart=paths[0], mainRaw=await P.loadSheet(sourceFor(mainPart,kind,template));
+    const mainSaved=await P.loadSheetFromUrl(S.getPart(id,mainPart));
+    const mainViews=DIRS.map(dir=>({
+     dir,source:V.keysToDisplay(extract(mainRaw,C,"idle",dir,0),ch),
+     edited:extract(mainSaved,C,"idle",dir,0)
+    }));
+    pigmentViews=mainViews.concat(rawViews);
+   }
+   const palette=paletteFromViews(pigmentViews);
    const output=document.createElement("canvas");output.width=C.W;output.height=C.H;
    const g=output.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;
    // All custom layers are absolute RGB, including inactive/rear rows.
    // Never let stock palette-key magenta leak through the compositor.
    const rawAll=rawSheet.getContext("2d",{willReadFrequently:true}).getImageData(0,0,C.W,C.H);
    g.putImageData(V.keysToDisplay(rawAll,ch),0,0);
-   const oldGenerated=row.generated?.[part]?.engine==="native-material-v1";
+   const oldGenerated=["native-material-v1","native-material-v2"].includes(row.generated?.[part]?.engine);
    let styled=0,detailCount=0,manual=0,geometryChanges=0;
    for(const action of C.ACTIONS)for(const dir of directionsFor(part))for(let n=0;n<C.FRAMES[action];n++){
     const view=rawViews.find(x=>x.dir===dir);
@@ -253,7 +321,7 @@ async function propagate(id,appearance,opts={}){
     if(S.master(id,part,view.dir)!==png)S.setMaster(id,part,view.dir,png);
    }
    const done=output.toDataURL("image/png");
-   S.setGenerated(id,part,done,{engine:"native-material-v1",template,
+   S.setGenerated(id,part,done,{engine:"native-material-v2",template,
     propagatedFrames:styled,details:detailCount,protectedFrames:manual,geometryChanges});
    result.parts.push({part,template,frames:styled,details:detailCount,protectedFrames:manual,geometryChanges});
    result.details+=detailCount;result.manual+=manual;result.geometryChanges+=geometryChanges;
@@ -272,5 +340,5 @@ function changeTemplate(id,kind,template,opts={}){
  return template;
 }
 return Object.freeze({TEMPLATES,DEFAULT,layers,selectedTemplate,sourceFor,isCustomPart,
- directionsFor,bounds,paletteFromViews,detailsFromView,renderPose,ensure,propagate,changeTemplate});
+ directionsFor,bounds,paletteFromViews,detailsFromView,renderPose,migrateLegacyRear,ensure,propagate,changeTemplate});
 });
