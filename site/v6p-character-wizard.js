@@ -158,7 +158,9 @@ function selectPart(id){
  if(!$("wizard-part-"+id))id="body";state.category=id;
  for(const el of document.querySelectorAll(".wizard-part"))el.hidden=el.id!=="wizard-part-"+id;
  for(const el of document.querySelectorAll("#wizard-part-nav button"))el.setAttribute("aria-pressed",String(el.dataset.part===id));
- storeStep();
+ // The initial layout runs before session restoration. Never replace the
+ // remembered Customize/selected character step with a temporary HOME state.
+ if(state.initialized)storeStep();
 }
 function arrangeLegacyControls(){
  const wizard=$("character-wizard");
@@ -370,7 +372,8 @@ function bind(){
 async function restore(){
  if(state.initialized)return;state.initialized=true;
  fillLists();motionChoices();
- const previous=restoreStep();const row=S.get(previous?.characterId||S.selected());
+ const previous=restoreStep();
+ const row=S.get(previous?.characterId)||S.get(S.selected());
  if(previous&&ORDER.includes(previous.step)&&row){
   state.mode=previous.mode==="modify"?"modify":"new";
   state.category=previous.category||"body";state.saved=!!previous.saved;
