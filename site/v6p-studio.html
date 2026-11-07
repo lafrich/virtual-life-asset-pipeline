@@ -458,6 +458,42 @@ function fillSelect(id,values,labels){
 }
 fillSelect("body",["male","female"]);
 ["hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"].forEach(k=>fillSelect(k,V.OPT[k],["top","pants","shoes"].includes(k)?{custom:"＋ Custom Wear"}:null));
+const CW=window.V6PCustomWear;
+function syncCustomWearUI(){
+ const row=state.characterId&&window.V6PCharacterStore?.get(state.characterId);
+ for(const kind of ["top","pants","shoes"]){
+  const panel=$("custom-"+kind+"-panel"),select=$("custom-"+kind+"-template");
+  if(panel)panel.hidden=state.ch[kind]!=="custom";
+  if(select&&CW)select.value=CW.selectedTemplate(row,kind);
+ }
+}
+function setupCustomWear(){
+ if(!CW)return;
+ for(const kind of ["top","pants","shoes"]){
+  const select=$("custom-"+kind+"-template");
+  if(!select)continue;
+  select.replaceChildren();
+  CW.TEMPLATES[kind].forEach(v=>{
+   const option=document.createElement("option");option.value=v;option.textContent=v.replaceAll("_"," ").toUpperCase();select.append(option);
+  });
+  $("reset-custom-"+kind).addEventListener("click",async()=>{
+   if(!state.characterId)return setStatus("Create or open a character before making Custom Wear.",true);
+   const template=select.value;
+   const names=CW.layers(kind,state.ch.body);
+   const hasArtwork=names.some(part=>window.V6PCharacterStore.getPart(state.characterId,part));
+   if(hasArtwork&&!window.confirm("Replace your Custom "+kind+" artwork with a fresh "+template+" template? Existing custom frames in both body variants will be reset."))return;
+   try{
+    CW.changeTemplate(state.characterId,kind,template,{reset:true});
+    await CW.ensure(state.characterId,{...state.ch,[kind]:"custom",characterId:state.characterId});
+    await refreshAssets();
+    setStatus("Custom "+kind+" recreated from "+template+" native animation sheets. All frames are editable.");
+   }catch(error){setStatus("Custom Wear template error: "+error.message,true)}
+  });
+ }
+ if($("edit-top-back"))$("edit-top-back").addEventListener("click",()=>openPixelEditor("top",{dir:"ne"}));
+ syncCustomWearUI();
+}
+setupCustomWear();
 function fillAccessories(){
   const sel=$("studio-accessory"); if(!sel||!window.V6PProjectCatalog) return;
   const cur=sel.value || ((state.ch.accessories&&state.ch.accessories[0])||"none");
@@ -494,7 +530,7 @@ function writeForm(){
   if($("studio-accessory")) $("studio-accessory").value=(state.ch.accessories&&state.ch.accessories[0])||"none";
   document.querySelectorAll("[data-action]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.action===state.action?"true":"false"));
   document.querySelectorAll("[data-dir]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.dir===state.dir?"true":"false"));
-  $("outfit-nude").classList.toggle("active", state.ch.top==="nude"&&state.ch.pants==="nude"&&state.ch.shoes==="nude");
+  syncCustomWearUI();
   $("outfit-normal").classList.toggle("active", state.ch.top==="tee"&&state.ch.pants==="trousers"&&state.ch.shoes==="shoes");
 }
 function setStatus(msg,err){
@@ -530,6 +566,9 @@ async function rebuild(){
   readForm();
   writeForm();
   setStatus("Composing…");
+  if(state.characterId&&CW)try{
+   await CW.ensure(state.characterId,state.ch);
+  }catch(error){setStatus("Custom Wear creation failed: "+error.message,true);state.sheet=null;return}
   const face=currentEmosi();
   const img=await loadOverlay(face);
   const cv=await V.compose(state.ch,"baked",img||null);
@@ -605,9 +644,6 @@ window.__v6pWearAccessory=function(id){
 $("outfit-normal").addEventListener("click",()=>{
   $("top").value="tee"; $("pants").value="trousers"; $("shoes").value="shoes"; rebuild();
 });
-$("outfit-nude").addEventListener("click",()=>{
-  $("top").value="nude"; $("pants").value="nude"; $("shoes").value="nude"; rebuild();
-});
 let timer=null;
 function tick(){
   const nf=V.FRAMES[state.action]||4;
@@ -664,7 +700,7 @@ async function save(){
     faceId:state.faceId||"",
     v6p:Object.assign({},state.ch),
     hairStyle:state.ch.hair,
-    clothesColor:state.ch.top==="nude"?"nude":state.ch.topColor
+    clothesColor:state.ch.top==="custom"?"custom":state.ch.topColor
   });
   if(!result.ok){ setStatus("Save failed: "+result.error,true); return; }
   state.lastId=result.id;
@@ -719,7 +755,7 @@ function routeToMahlukEditor(url){
  }}catch{}
  location.href=url;
 }
-function openPixelEditor(kind,opts={}){
+async function openPixelEditor(kind,opts={}){
   persistLastCh();
   if(!state.characterId&&kind!=="accessory"){
     setStatus("Click ADD NEW CHARACTER first. Global stock art must not be overwritten.",true);return;
@@ -737,14 +773,17 @@ function openPixelEditor(kind,opts={}){
   }
   const part=editorPartFor(kind,opts.dir||state.dir);
   if(!part){setStatus("Tidak ada part v6p untuk "+kind,true);return;}
+  if(CW?.isCustomPart(part))try{
+   await CW.ensure(state.characterId,state.ch);
+  }catch(error){setStatus("Custom Wear not ready: "+error.message,true);return}
   const u=new URL("./pixel-editor.html",location.href);
   u.searchParams.set("source","v6p");
   u.searchParams.set("part",part);
   if(state.characterId)u.searchParams.set("character",state.characterId);
-  u.searchParams.set("action",opts.fix?opts.action||state.action:"idle");
+  u.searchParams.set("action",opts.fix?opts.action||state.action:(CW?.isCustomPart(part)?state.action:"idle"));
   u.searchParams.set("dir",opts.dir||state.dir||"se");
-  u.searchParams.set("frame",String(opts.fix?(opts.frame??state.frame??0):0));
-  u.searchParams.set("master",opts.fix?"0":"1");
+  u.searchParams.set("frame",String(opts.fix||CW?.isCustomPart(part)?(opts.frame??state.frame??0):0));
+  u.searchParams.set("master",opts.fix||CW?.isCustomPart(part)?"0":"1");
   routeToMahlukEditor(u.href);
 }
 function showStudioTab(name){
