@@ -1,6 +1,6 @@
 {
   "contract": "v6p-act ACTIVITY SHEET CONTRACT v2",
-  "generated": "2026-11-07T06:46:09.724133+00:00",
+  "generated": "2026-11-08T00:00:00+07:00",
   "sheet": {
     "w": 384,
     "h": 2688,
@@ -21,7 +21,7 @@
       "nw"
     ]
   },
-  "rule": "A clip is READY only when status==authored AND every required part listed below has that clip authored. Fully transparent reserved bands must NOT be treated as ready / playable.",
+  "rule": "A clip is READY when contract status is authored AND each part required for that appearance exists. Unsupported clothing/accessories disable that appearance; do not substitute nude art under clothing.",
   "bands": {
     "squat": {
       "start": 0,
@@ -42,85 +42,93 @@
     },
     "pushup": {
       "start": 4,
-      "frames": 4,
+      "frames": 6,
       "ms_per_frame": 160,
       "type": "loop",
       "status": "authored",
       "emosi": false,
-      "note": "Starts and ends in plank. 4-frame loop: high, descending, bottom, ascending. Enter/exit transitions are not in this clip. Head is face-down/sideways so Emosi is disabled; painted blank face only on SE/SW (NE/NW empty).",
+      "note": "Approved native keyed Male/Female sprites; four directions; no runtime skeletal rig. Outfit support limited to authored part layers.",
       "keys": [
         "plank_high",
-        "descending",
+        "lowering_1",
+        "lowering_2",
         "bottom",
-        "ascending"
+        "rising_1",
+        "rising_2"
       ]
     },
     "yoga_sphinx_idle": {
       "start": 8,
       "frames": 4,
       "ms_per_frame": 500,
-      "status": "reserved_transparent",
-      "emosi": true,
-      "note": "front upright; not authored yet"
+      "status": "authored",
+      "emosi": false,
+      "note": "Approved native keyed Male/Female sprites; four directions; no runtime skeletal rig. Outfit support limited to authored part layers.",
+      "type": "loop"
     },
     "yoga_puppy_idle": {
       "start": 12,
       "frames": 4,
       "ms_per_frame": 500,
-      "status": "reserved_transparent",
+      "status": "authored",
       "emosi": false,
-      "note": "knees down, hips raised, chest/forehead on the floor; not authored yet"
+      "note": "Approved native keyed Male/Female sprites; four directions; no runtime skeletal rig. Outfit support limited to authored part layers.",
+      "type": "loop"
     },
     "hip_shake": {
       "start": 16,
       "frames": 6,
-      "ms_per_frame": 120,
-      "status": "reserved_transparent",
+      "ms_per_frame": 125,
+      "status": "authored",
       "emosi": true,
-      "note": "not authored yet"
+      "note": "Approved native keyed Male/Female sprites; four directions; no runtime skeletal rig. Outfit support limited to authored part layers.",
+      "type": "loop"
     },
     "yoga_happy_baby_idle": {
       "start": 20,
       "frames": 4,
-      "ms_per_frame": 450,
-      "status": "reserved_transparent",
+      "ms_per_frame": 500,
+      "status": "authored",
       "emosi": false,
-      "note": "supine, holding feet, knees to armpits, gentle rock; not authored yet"
+      "note": "Approved native keyed Male/Female sprites; four directions; no runtime skeletal rig. Outfit support limited to authored part layers.",
+      "type": "loop"
     }
   },
   "parts": {
     "base/body.png": {
-      "path": "/workspace/v6p-act-incoming/base/body.png",
-      "sha256": "1c72d52738d964b1888f56ad2146b4f0614a4eb5bdfa6a551d56c946d0de277b",
+      "path": "site/media/v6p-act/base/body.png",
+      "sha256": "fb732c9019079d0981e0fbbd692d5146bcfd866690cabcd2baeb3b218773ca26",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "base/body_f.png": {
-      "path": "/workspace/v6p-act-incoming/base/body_f.png",
-      "sha256": "dd3145c2c51f4a3d37e58ea504d279324833cdf8d029b103eebfc4495c7a663d",
+      "path": "site/media/v6p-act/base/body_f.png",
+      "sha256": "c059e57a6503d823a787e9e503b1902ca7de20335ac2fe888c395e8dd9dca740",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "face/m_blank.png": {
-      "path": "/workspace/v6p-act-incoming/face/m_blank.png",
-      "sha256": "247b75cc4234a63dcb80d6c3b51acec4798acbc39bd7bd36327e6eef60ac02ca",
+      "path": "site/media/v6p-act/face/m_blank.png",
+      "sha256": "4fde6c3ffd211c4245a693de9b5e8efcae4b742a8098195846fcb0b2b3d0ecd9",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent",
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
       "dirs_painted": [
         "se",
         "sw"
@@ -129,18 +137,19 @@
         "ne",
         "nw"
       ],
-      "note": "Squat (draft): blank face follows the translated upright head for Emosi. Pushup (live): emosi false; painted blank face only, taken from the lie horizontal head and translated to the plank head (SE/SW). NE/NW empty."
+      "note": "Squat (draft): blank face follows the translated upright head for Emosi. Pushup (live): emosi false; painted blank face only, taken from the lie horizontal head and translated to the plank head (SE/SW). NE/NW empty.",
+      "status": "authored"
     },
     "face/f_blank.png": {
-      "path": "/workspace/v6p-act-incoming/face/f_blank.png",
-      "sha256": "33c5ee0f5479121ce2e7369816a4f63ce1bc93db7cf2b276dd9a7b4c12848fe0",
+      "path": "site/media/v6p-act/face/f_blank.png",
+      "sha256": "015abe9afe57237ba1defd5bc0fbe41e0ee07b8d689560a7cc0bdc365591b7e2",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent",
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
       "dirs_painted": [
         "se",
         "sw"
@@ -149,171 +158,186 @@
         "ne",
         "nw"
       ],
-      "note": "Squat (draft): blank face follows the translated upright head for Emosi. Pushup (live): emosi false; painted blank face only, taken from the lie horizontal head and translated to the plank head (SE/SW). NE/NW empty."
+      "note": "Squat (draft): blank face follows the translated upright head for Emosi. Pushup (live): emosi false; painted blank face only, taken from the lie horizontal head and translated to the plank head (SE/SW). NE/NW empty.",
+      "status": "authored"
     },
     "top/nude.png": {
-      "path": "/workspace/v6p-act-incoming/top/nude.png",
-      "sha256": "4facb35c29108a01cb28ebf6200faaba94108fa9590544c69e65d197c6a05102",
+      "path": "site/media/v6p-act/top/nude.png",
+      "sha256": "0d6e7867252a1273792d5cc76e7c3f8369dd3c56b6a2f9b41fcecb95f3c4663a",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "top/nude_f.png": {
-      "path": "/workspace/v6p-act-incoming/top/nude_f.png",
-      "sha256": "5c2e83ea98cf89a61d1e7b196d831a9cf53f348532fecbe5a96bfcf9b3f19149",
+      "path": "site/media/v6p-act/top/nude_f.png",
+      "sha256": "ea5e5fe59f60b2c0d95b4b961a6fc706708b6eb78c39e8f1cc449ef0ae323f30",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "top/nude_back.png": {
-      "path": "/workspace/v6p-act-incoming/top/nude_back.png",
-      "sha256": "092cf837e06dc4fd2c63c70045fb2a1b95ce03608b67a4d3cecf9fb1eb58f9c3",
+      "path": "site/media/v6p-act/top/nude_back.png",
+      "sha256": "79ed358172ba2adc556077c74c29e008b117ddc56ed1b4e354275ba71b963499",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "top/nude_back_f.png": {
-      "path": "/workspace/v6p-act-incoming/top/nude_back_f.png",
-      "sha256": "39bd34116a5abb19f5cce1d72f09516d5199bc1a7a89d6da1234170c83a5bce2",
+      "path": "site/media/v6p-act/top/nude_back_f.png",
+      "sha256": "0775880f13e9552379ed8d3aa23c9cd6abead22d25443edde8cc489b4b0a2e41",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "hair/mid_curtain_back.png": {
-      "path": "/workspace/v6p-act-incoming/hair/mid_curtain_back.png",
-      "sha256": "208e38e1bebde5382f777deac28f7618ad0075ee1b45dbd855a050d43e807f05",
+      "path": "site/media/v6p-act/hair/mid_curtain_back.png",
+      "sha256": "3f70898ecc4467634b85d8e915ddca90ed8d49e9e0fcaf271433e19c0897f290",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "hair/mid_curtain_front.png": {
-      "path": "/workspace/v6p-act-incoming/hair/mid_curtain_front.png",
-      "sha256": "e9dbad470e17ab62c2f7cee76c1a7e01dad22e61647d11e7822bdb08de8ab87b",
+      "path": "site/media/v6p-act/hair/mid_curtain_front.png",
+      "sha256": "f270f1bd9bc94144bec7a7d87e19aac09e40893212ea972d8ddb021bd32125c3",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "hair/long_back.png": {
-      "path": "/workspace/v6p-act-incoming/hair/long_back.png",
-      "sha256": "eef17132ab46718d4162980651bddfabdc37a961060791280234f4de999f0841",
+      "path": "site/media/v6p-act/hair/long_back.png",
+      "sha256": "ff269abaf61c88d11077d62bd77fdf13a9ac58b6bfd06d79616936869bf78bc9",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "hair/long_front.png": {
-      "path": "/workspace/v6p-act-incoming/hair/long_front.png",
-      "sha256": "8cd1596ae15a1c2685ca6e2e3da7f0ff7f1762839ed05bba6617cf6b3047b5e0",
+      "path": "site/media/v6p-act/hair/long_front.png",
+      "sha256": "a26d5599ca80cd5c38bb8c07168b8d1300617ccde9c30a81b2ea735eab633c14",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "shoes/nude.png": {
-      "path": "/workspace/v6p-act-incoming/shoes/nude.png",
-      "sha256": "e66fbb4e4ca07d3ea9a00af926bcdfcb31a7d639f5da63ab1cd5859aa54a4a30",
+      "path": "site/media/v6p-act/shoes/nude.png",
+      "sha256": "ba64e2ccf7df9047d1c5a152ed0e767e001909f7b8083cada43940c0893374f9",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "shoes/nude_f.png": {
-      "path": "/workspace/v6p-act-incoming/shoes/nude_f.png",
-      "sha256": "860c67434b6374662dfe26bdfd5ee05c9881c951ae067a46db1addb925689df6",
+      "path": "site/media/v6p-act/shoes/nude_f.png",
+      "sha256": "c51b342a10b7c6668e091efb277bf0f746f13ffd896d38c5a5a98cc7fbc39c92",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "base/shadow.png": {
-      "path": "/workspace/v6p-act-incoming/base/shadow.png",
-      "sha256": "974ba2af829e4ca360406af36f9888b9b2504f691d6c18acd78f782ebae4a6b0",
+      "path": "site/media/v6p-act/base/shadow.png",
+      "sha256": "6dc0ecb4faf4b87b0e4ca99e554f103d46eea1a6110a15ea53824e027dc74070",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "pants/nude.png": {
-      "path": "/workspace/v6p-act-incoming/pants/nude.png",
-      "sha256": "d65397c00b700e6e5e24e38aea3c9d46f4c4c679aa95a285c7059bb32e4c213a",
+      "path": "site/media/v6p-act/pants/nude.png",
+      "sha256": "08aac25f292e3b24413ec693f524f94f075e7499ace745af782f1fe86e8f8712",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "pants/nude_f.png": {
-      "path": "/workspace/v6p-act-incoming/pants/nude_f.png",
-      "sha256": "d084e63b13b3318bd0db0b45c0ae8a3f590b55066cca80c00a89776c94e48679",
+      "path": "site/media/v6p-act/pants/nude_f.png",
+      "sha256": "b1229efa354791d919961c2fd9a5cf36f84556a90061ab8a7b97dffb2b7edd62",
       "size": [
         384,
         2688
       ],
       "squat": "draft_inactive",
-      "pushup": "authored",
-      "other_bands": "transparent"
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "status": "authored"
     },
     "base/fx.png": {
-      "path": "/workspace/v6p-act-incoming/base/fx.png",
-      "sha256": "d23c585f1429c5d4d71a7504af321d396f1fba6228c1cb1bdcfac1b6d72e4ff3",
+      "path": "site/media/v6p-act/base/fx.png",
+      "sha256": "5ece1a5323c23e75672949353eb282b47e28c30969c507de8e34c82d01eb424a",
       "size": [
         384,
         2688
       ],
       "squat": "intentional_empty",
-      "pushup": "intentional_empty",
-      "other_bands": "transparent",
-      "reason": "optional FX layer; squat/pushup have no painted FX (lie/sleep Z's do not apply). Sheet is present and fully transparent so it is not mistaken for a body duplicate."
+      "pushup": "authored_replaced_6_frames",
+      "other_bands": "authored_4_activities",
+      "reason": "optional FX layer; squat/pushup have no painted FX (lie/sleep Z's do not apply). Sheet is present and fully transparent so it is not mistaken for a body duplicate.",
+      "status": "authored"
     }
   },
   "skipped": {
-    "base/body_front.png": "v6p 1x1 placeholder \u2014 skipped",
-    "base/body_front_f.png": "v6p 1x1 placeholder \u2014 skipped"
+    "base/body_front.png": "v6p 1x1 placeholder — skipped",
+    "base/body_front_f.png": "v6p 1x1 placeholder — skipped"
   },
   "not_in_pilot": [
     "glasses/*",
     "facial/*",
-    "other tops/pants/shoes/hairs"
+    "other tops/pants/shoes/hairs: not authored; no appearance fallback"
   ]
 }
