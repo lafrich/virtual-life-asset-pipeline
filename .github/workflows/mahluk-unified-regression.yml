@@ -4,11 +4,13 @@ on:
     branches:
       - feature/mahluk-unified-workspace-20261107
       - feature/character-animation-action-workflow-20261107
+      - fix/character-draw-four-apply-animation-20261107
     paths:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
       - "site/v6p-motion-review.js"
       - "site/v6p-character-*.js"
+      - "site/v6p-pixel-source.js"
       - "site/pixel-editor.js"
       - "site/v6p-compositor.js"
       - "site/v6p-grok-copy.js"
@@ -20,6 +22,7 @@ on:
       - "tools/publish_grok_motion_review.py"
       - "tests/test_mahluk_unified_workspace.cjs"
       - "tests/test_mahluk_character_animation_flow.cjs"
+      - "tests/test_mahluk_character_retarget.cjs"
       - ".github/workflows/mahluk-unified-regression.yml"
   workflow_dispatch:
 permissions:
@@ -40,6 +43,7 @@ jobs:
           node --check site/mahluk-animation-studio.js
           node --check site/v6p-character-store.js
           node --check site/v6p-character-workflow.js
+          node --check site/v6p-character-retarget.js
           node --check site/v6p-compositor.js
           node --check site/v6p-motion-review.js
           node --check site/v6p-grok-copy.js
@@ -47,7 +51,7 @@ jobs:
           node --check site/pixel-editor.js
       - name: Check preserved existing editors and new app shell
         run: |
-          node --test tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs
+          node --test tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs
           node tests/test_pixel_editor.cjs
           node tests/test_emotion_studio.cjs
       - uses: actions/setup-python@v5

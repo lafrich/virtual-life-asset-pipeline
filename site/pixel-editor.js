@@ -30,7 +30,7 @@ const state={pack:null,clips:[],action:"idle",dir:"se",frame:0,mode:"master",par
  originals:new Map(),edits:new Map(),imageRequests:new Map(),history:[],redo:[],
  current:null,loading:true,drawing:false,previous:null,before:null,seq:0,
  selection:null,selectionMask:null,selectionMode:"replace",wandContiguous:true,wandTolerance:0,selectionGesture:null,moveGesture:null,cursorMode:MOBILE_TOUCH,cursor:[32,42],
- trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null,characterId:"",
+ trackpad:null,touchSelectAnchor:null,touchMoveAnchor:null,characterId:"",masterMode:false,
  clipboard:null,floatingPaste:null,project:null,actClip:null,clipLayer:null,onion:true,onionImage:null,playing:false,playTimer:0,clipUndo:[],clipRedo:[],overlayOn:true,overlayAlpha:0.42,overlayCanvas:null,showPivot:true};
 let emosiEditor=null;
 function status(s,error=false){$("editor-status").textContent=s;$("editor-status").classList.toggle("error",error);}
@@ -90,6 +90,7 @@ function saveCurrent(){
  if(!state.current)return;
  const key=currentKey(),original=state.originals.get(key);
  const stored=displayToFile(state.current);
+ const changed=!original||!identical(stored,original);
  if(original&&identical(stored,original))state.edits.delete(key);
  else state.edits.set(key,copy(stored));
  if(state.source==="v6p"&&state.v6pSheet&&window.V6PPixelSource){
@@ -99,6 +100,15 @@ function saveCurrent(){
    persistClipLayer();
   }else{
    window.V6PPixelSource.stamp(state.v6pSheet,state.action,state.dir,state.frame,stored);
+   if(changed&&state.characterId&&state.v6pPart&&window.V6PCharacterStore){
+    try{
+     if(state.masterMode){
+      const cv=document.createElement("canvas");cv.width=WIDTH;cv.height=HEIGHT;
+      cv.getContext("2d").putImageData(stored,0,0);
+      window.V6PCharacterStore.setMaster(state.characterId,state.v6pPart,state.dir,cv.toDataURL("image/png"));
+     }else window.V6PCharacterStore.markCorrection(state.characterId,state.v6pPart,state.action,state.dir,state.frame);
+    }catch(error){status("CHARACTER FRAME SAVE ERROR: "+error.message,true)}
+   }
    persistV6pOverride();
   }
  }
@@ -171,8 +181,9 @@ function queueMasterSync(){
  .finally(()=>{state.syncing=false;});
 }
 function modeUI(){
- if($("autofit-outfit")) $("autofit-outfit").hidden=!(state.source==="v6p"&&state.characterId&&!state.actClip&&!state.project);
- const isMaster=state.mode==="master"&&state.source!=="v6p";
+ if($("autofit-outfit")) $("autofit-outfit").hidden=true; // Generation is in Character Editor
+ if($("clear-character-correction"))$("clear-character-correction").hidden=!(state.characterId&&state.v6pPart&&!state.masterMode&&!state.project&&!state.actClip);
+ const isMaster=(state.mode==="master"&&state.source!=="v6p")||state.masterMode;
  $("action").disabled=isMaster;$("frame").disabled=isMaster;
  $("prev-frame").disabled=isMaster;$("next-frame").disabled=isMaster;
  if($("part"))$("part").disabled=state.source==="v6p";
@@ -191,7 +202,7 @@ function modeUI(){
     state.project?(state.project.type==="accessory"?
     "AKSESORIS: layer transparan 384×4928. Overlay karakter terkunci dan tidak pernah digabung ke export. Copy/paste antar frame dan arah. Hanya frame yang dilukis yang ikut animasi.":
     "CUSTOM CLIP: sheet 384×4928 yang kamu lukis sendiri. Bukan auto-animasi. Copy/paste frame. Kompatibilitas Semesta tercatat eksplisit di gallery."):
-    "V6P: edit satu frame 64×112 dari sheet 384×4928. Override tersimpan di browser; Save ke Drive untuk permanen. Mode MASTER Otis tidak dipakai di sini."):
+    (state.masterMode?"CHARACTER MASTER: Draw four directions on IDLE FRAME 1. Return to Character and GENERATE ALL ANIMATIONS.":"CHARACTER FIX: Edit pose frame; correction kept per-character.")):
    (isMaster?"MASTER: DRAW ON IDLE F0; ALL ORIGINAL ACTION FRAMES IN THIS DIRECTION INHERIT PIXEL DELTAS.":
    "FRAME: FIX SPECIFIC POSES / AUTOSAVE TO THIS BROWSER.");
  render();
@@ -318,11 +329,11 @@ async function loadProject(id,params){
  state.clips=C.clips();
  state.originals=new Map();state.edits=new Map();state.history=[];state.redo=[];
  fillV6pActions();
- const action=(params&&params.get("action"))||"idle";
+ const action=state.masterMode?"idle":(params&&params.get("action"))||"idle";
  state.action=C.ACTIONS.includes(action)?action:"idle";
  const dir=(params&&params.get("dir"))||"se";
  state.dir=C.DIRS.includes(dir)?dir:"se";
- const frame=Number(params&&params.get("frame")||0);
+ const frame=state.masterMode?0:Number(params&&params.get("frame")||0);
  state.frame=Number.isInteger(frame)?frame:0;
  $("action").value=state.action;$("direction").value=state.dir;
  modeUI();historyButtons();updateCounts();
@@ -1342,6 +1353,15 @@ function pullEmosiIntoState(){
     window.V6PPixelSource.stampAt(state.v6pSheet,o.x,o.y,stored);
    }else{
     window.V6PPixelSource.stamp(state.v6pSheet,state.action,dir,state.frame,stored);
+    if(state.characterId&&state.v6pPart&&window.V6PCharacterStore&&original&&!identical(stored,original)){
+     try{
+      if(state.masterMode){
+       const master=document.createElement("canvas");master.width=WIDTH;master.height=HEIGHT;
+       master.getContext("2d").putImageData(stored,0,0);
+       window.V6PCharacterStore.setMaster(state.characterId,state.v6pPart,dir,master.toDataURL("image/png"));
+      }else window.V6PCharacterStore.markCorrection(state.characterId,state.v6pPart,state.action,dir,state.frame);
+     }catch(error){status("FRAME SAVE ERROR "+dir+": "+error.message,true)}
+    }
    }
   }
   if(dir===state.dir) state.current=displayed;
@@ -1380,7 +1400,11 @@ function bootEmosiEditor(){
   onRestore:()=>{}
  });
  const closeBtn=$("pixelClose");
- if(closeBtn) closeBtn.onclick=()=>{try{pullEmosiIntoState();saveCurrent();}catch{} location.href="./v6p-studio.html";};
+ if(closeBtn) closeBtn.onclick=()=>{
+  try{pullEmosiIntoState();saveCurrent();}catch{}
+  if(window.parent!==window&&window.parent.VLMahlukWorkspace) window.parent.VLMahlukWorkspace.show("character");
+  else location.href="./v6p-studio.html";
+ };
  const pd=$("pixelDirection");
  if(pd) pd.addEventListener("change",()=>{
   if(DIRECTIONS.includes(pd.value)){
@@ -1391,7 +1415,15 @@ function bootEmosiEditor(){
 }
 
 function initControls(){
- if($("autofit-outfit"))$("autofit-outfit").onclick=()=>autoFitCurrentDirection().catch(e=>status("AUTO-FIT ERROR: "+e.message,true));
+ if($("clear-character-correction"))$("clear-character-correction").onclick=()=>{
+  if(!state.characterId||!state.v6pPart||state.masterMode)return;
+  if(!window.V6PCharacterStore.isCorrection(state.characterId,state.v6pPart,state.action,state.dir,state.frame))
+   return status("This frame is not protected. Generate from Character Editor to refresh it.");
+  if(!confirm("Remove this frame's manual correction lock? Next Character Generate will replace it with the automatically retargeted pose."))return;
+  window.V6PCharacterStore.clearCorrection(state.characterId,state.v6pPart,state.action,state.dir,state.frame);
+  status("Correction lock removed for "+state.action+" / "+state.dir+" F"+(state.frame+1)+". Return to Character and GENERATE ALL ANIMATIONS.");
+ };
+
 
  $("zoom").value=String(state.zoom);
  refreshToolState();
@@ -1606,6 +1638,8 @@ async function init(){
  }
  const params=new URLSearchParams(location.search);
  const qPart=params.get("part"),qSource=params.get("source");
+ state.masterMode=params.get("master")==="1"&&params.get("character")!=null;
+ if(state.masterMode&&qSource==="v6p"){params.set("action","idle");params.set("frame","0")}
  state.characterId=/^mh2_[a-z0-9]+$/.test(params.get("character")||"")&&window.V6PCharacterStore?.get(params.get("character"))?params.get("character"):"";
  if(qSource==="v6p"||(qPart&&window.V6PPartCatalog&&window.V6PPartCatalog.isPart(qPart))||params.get("project")||params.get("new")){
   try{
