@@ -77,12 +77,13 @@ async function originalFor(key,clip,dir,index){
 function previewCh(){
  return lastStudioCharacter()||(window.V6PCompositor?window.V6PCompositor.norm(window.V6PCompositor.DEF):null);
 }
+function exactWear(){return !!window.V6PCustomWear?.isCustomPart(state.v6pPart);}
 function fileToDisplay(img){
- if(state.source!=="v6p"||!img||!window.V6PCompositor||!window.V6PCompositor.keysToDisplay) return img;
+ if(state.source!=="v6p"||!img||exactWear()||!window.V6PCompositor||!window.V6PCompositor.keysToDisplay) return img;
  const ch=previewCh(); return ch?window.V6PCompositor.keysToDisplay(img,ch):img;
 }
 function displayToFile(img){
- if(state.source!=="v6p"||!img||!window.V6PCompositor||!window.V6PCompositor.displayToKeys) return img;
+ if(state.source!=="v6p"||!img||exactWear()||!window.V6PCompositor||!window.V6PCompositor.displayToKeys) return img;
  const ch=previewCh(); return ch?window.V6PCompositor.displayToKeys(img,ch,state.originals.get(currentKey())):img;
 }
 function saveCurrent(){
@@ -102,8 +103,10 @@ function saveCurrent(){
    window.V6PPixelSource.stamp(state.v6pSheet,state.action,state.dir,state.frame,stored);
    if(changed&&state.characterId&&state.v6pPart&&window.V6PCharacterStore){
     try{
-     if(state.masterMode){
-      const cv=document.createElement("canvas");cv.width=WIDTH;cv.height=HEIGHT;
+     if(exactWear()){
+       // Exact custom sheet persists unchanged; no master retarget.
+      }else if(state.masterMode){
+       const cv=document.createElement("canvas");cv.width=WIDTH;cv.height=HEIGHT;
       cv.getContext("2d").putImageData(stored,0,0);
       window.V6PCharacterStore.setMaster(state.characterId,state.v6pPart,state.dir,cv.toDataURL("image/png"));
      }else window.V6PCharacterStore.markCorrection(state.characterId,state.v6pPart,state.action,state.dir,state.frame);
@@ -202,7 +205,7 @@ function modeUI(){
     state.project?(state.project.type==="accessory"?
     "AKSESORIS: layer transparan 384×4928. Overlay karakter terkunci dan tidak pernah digabung ke export. Copy/paste antar frame dan arah. Hanya frame yang dilukis yang ikut animasi.":
     "CUSTOM CLIP: sheet 384×4928 yang kamu lukis sendiri. Bukan auto-animasi. Copy/paste frame. Kompatibilitas Semesta tercatat eksplisit di gallery."):
-    (state.masterMode?"CHARACTER MASTER: Draw four directions on IDLE FRAME 1. Return to Character and GENERATE ALL ANIMATIONS.":"CHARACTER FIX: Edit pose frame; correction kept per-character.")):
+    (exactWear()?"CUSTOM WEAR: Edit all native frames and directions. Exact RGB, no retarget.":state.masterMode?"CHARACTER MASTER: Draw four directions on IDLE FRAME 1. Return to Character and GENERATE ALL ANIMATIONS.":"CHARACTER FIX: Edit pose frame; correction kept per-character.")):
    (isMaster?"MASTER: DRAW ON IDLE F0; ALL ORIGINAL ACTION FRAMES IN THIS DIRECTION INHERIT PIXEL DELTAS.":
    "FRAME: FIX SPECIFIC POSES / AUTOSAVE TO THIS BROWSER.");
  render();
@@ -390,7 +393,7 @@ function fillV6pActions(){
 function fillV6pPartSelect(){
  const sel=$("v6p-part");if(!sel||!window.V6PPartCatalog)return;
  sel.innerHTML="";
- for(const part of window.V6PPartCatalog.PARTS){const o=document.createElement("option");o.value=part;o.textContent=part;sel.append(o);}
+ for(const part of window.V6PPartCatalog.PARTS){if(window.V6PCustomWear?.isCustomPart(part)&&!state.characterId)continue;const o=document.createElement("option");o.value=part;o.textContent=part;sel.append(o);}
  if(state.v6pPart)sel.value=state.v6pPart;
 }
 async function sha256Hex(buf){
@@ -402,7 +405,11 @@ async function loadV6pPart(part,params){
  if(!C||!S)throw Error("v6p source helpers not loaded");
  part=C.normalizePart(part);
  if(state.characterId)
-  part=topPartForDirection(part,(params&&params.get("dir"))||state.dir);
+   part=topPartForDirection(part,(params&&params.get("dir"))||state.dir);
+ if(state.characterId&&window.V6PCustomWear?.isCustomPart(part)){
+  const row=window.V6PCharacterStore?.get(state.characterId);
+  if(row)await window.V6PCustomWear.ensure(state.characterId,{...row.appearance,characterId:state.characterId});
+ }
  state.loading=true;state.current=null;
  state.source="v6p";state.project=null;state.actClip=null;state.clipLayer=null;state.v6pPart=part;state.mode="frame";
  if($("edit-mode"))$("edit-mode").value="frame";
@@ -1328,7 +1335,7 @@ async function loadActClip(id,preferredLayer){
 
 
 function displayToFileFor(img,key){
- if(state.source!=="v6p"||!img||!window.V6PCompositor||!window.V6PCompositor.displayToKeys) return img;
+ if(state.source!=="v6p"||!img||exactWear()||!window.V6PCompositor||!window.V6PCompositor.displayToKeys) return img;
  const ch=previewCh(); return ch?window.V6PCompositor.displayToKeys(img,ch,state.originals.get(key)):img;
 }
 function pullEmosiIntoState(){
@@ -1355,7 +1362,7 @@ function pullEmosiIntoState(){
   // physical layer/direction even when it looks identical to the loaded sheet.
   // Previously an unmodified-looking correct NE/NW sprite could be skipped,
   // leaving Preview to rebuild from stale animation results.
-  if(state.masterMode&&state.source==="v6p"&&state.characterId&&state.v6pPart&&
+  if(state.masterMode&&!exactWear()&&state.source==="v6p"&&state.characterId&&state.v6pPart&&
      !state.project&&!state.actClip&&window.V6PCharacterStore){
    const master=document.createElement("canvas");master.width=WIDTH;master.height=HEIGHT;
    master.getContext("2d").putImageData(stored,0,0);
@@ -1371,7 +1378,7 @@ function pullEmosiIntoState(){
     window.V6PPixelSource.stampAt(state.v6pSheet,o.x,o.y,stored);
    }else{
     window.V6PPixelSource.stamp(state.v6pSheet,state.action,dir,state.frame,stored);
-    if(state.characterId&&state.v6pPart&&window.V6PCharacterStore&&original&&!identical(stored,original)&&!state.masterMode){
+    if(state.characterId&&state.v6pPart&&window.V6PCharacterStore&&original&&!identical(stored,original)&&!state.masterMode&&!exactWear()){
      try{window.V6PCharacterStore.markCorrection(state.characterId,state.v6pPart,state.action,dir,state.frame)}
      catch(error){status("FRAME SAVE ERROR "+dir+": "+error.message,true)}
     }
@@ -1622,7 +1629,7 @@ function initControls(){
  if($("save-drive"))$("save-drive").onclick=()=>saveV6pToDrive();
  if($("source-kind"))$("source-kind").onchange=async e=>{
   const v=e.target.value;
-  if(v==="v6p"){state.project=null;fillV6pPartSelect();await loadV6pPart(($("v6p-part")&&$("v6p-part").value)||"top/nude");return;}
+  if(v==="v6p"){state.project=null;fillV6pPartSelect();await loadV6pPart(($("v6p-part")&&$("v6p-part").value)||"top/tee");return;}
   if(v==="clip"){
    if(window.V6PClipStore){
     const existing=window.V6PClipStore.list()[0];
@@ -1742,7 +1749,7 @@ async function init(){
      placement:params.get("placement")==="back"?"back":"front"
     });
     await loadProject(created.id,params);
-   }else await loadV6pPart(qPart||"top/nude",params);
+   }else await loadV6pPart(qPart||"top/tee",params);
    refreshToolState();fitMobileZoom();
   }catch(e){status("V6P SOURCE FAILED: "+e.message,true);}
   return;
