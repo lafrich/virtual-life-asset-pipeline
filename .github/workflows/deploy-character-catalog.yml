@@ -81,6 +81,7 @@ on:
       - "tests/test_character_motion_studio.py"
       - "tests/test_legacy_face_previews.py"
       - "tools/build_animation_catalog.py"
+      - "tools/build_launcher_globe.py"
       - "tools/animation_backlog.py"
       - "tests/test_animation_backlog.py"
       - "tools/new_animation_template.py"
@@ -175,6 +176,11 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
+      - name: Render V6B Semesta rotating Earth launcher thumbnail
+        run: |
+          python tools/build_launcher_globe.py
+          mkdir -p _site/launcher-assets
+          cp assets/launcher_thumbnails/semesta_earth_rotate_v6b_4x.gif _site/launcher-assets/
       - name: Publish original Manusia Silver V6B preview for Membangun
         run: |
           set -euo pipefail
