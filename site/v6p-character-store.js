@@ -30,6 +30,8 @@ function update(id,patch){
   appearance:patch.appearance&&typeof patch.appearance==="object"?{...old.appearance,...patch.appearance}:old.appearance,
   faceId:patch.faceId!==undefined?text(patch.faceId,100):old.faceId,
   status:patch.status||old.status,updated:new Date().toISOString()};
+ if(!patch.status&&(JSON.stringify(row.appearance)!==JSON.stringify(old.appearance)||
+  row.name!==old.name||row.faceId!==old.faceId))row.status="draft";
  all[index]=row;write(all);return row;
 }
 function getPart(id,part){const row=get(id);return row?.parts?.[part]||null}
@@ -39,7 +41,14 @@ function setPart(id,part,dataUrl){
  const all=read(),i=all.findIndex(x=>x.id===id);if(i<0)throw Error("Unknown character");
  all[i].parts={...(all[i].parts||{}),[part]:dataUrl};all[i].updated=new Date().toISOString();write(all);return all[i];
 }
-function resetPart(id,part){const all=read(),i=all.findIndex(x=>x.id===id);if(i<0)throw Error("Unknown character");const parts={...all[i].parts};delete parts[part];all[i].parts=parts;write(all)}
+function resetPart(id,part){
+ return writeRow(id,row=>{
+  for(const field of ["parts","masters","corrections","generated"]){
+   const next={...(row[field]||{})};delete next[part];row[field]=next;
+  }
+  row.status="draft";
+ });
+}
 function writeRow(id,edit){
  const all=read(),i=all.findIndex(x=>x.id===id);if(i<0)throw Error("Unknown character "+id);
  edit(all[i]);all[i].updated=now();write(all);return all[i];
