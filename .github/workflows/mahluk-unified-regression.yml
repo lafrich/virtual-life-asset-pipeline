@@ -100,6 +100,7 @@ jobs:
           ln -s "$PWD/site" /tmp/character-wizard-root/virtual-life-asset-pipeline
           python3 -m http.server 4173 --bind 127.0.0.1 -d /tmp/character-wizard-root >/tmp/character-wizard-server.log 2>&1 &
           node tests/smoke_mahluk_custom_wear.cjs
+          node tests/smoke_mahluk_custom_wear_roundtrip.cjs
           node tests/smoke_mahluk_character_wizard.cjs
           node tests/smoke_mahluk_pixel_angle.cjs
           node tests/smoke_mahluk_back_gallery.cjs
