@@ -1,0 +1,582 @@
+{
+  "format": "mahluk-modular-rig-v2-action",
+  "rig": "mahluk-modular-rig-v2",
+  "id": "wash_hands",
+  "label": "WASH HANDS",
+  "applies_to": [
+    "male",
+    "female"
+  ],
+  "frames": 6,
+  "frame_ms": [
+    140,
+    160,
+    160,
+    160,
+    160,
+    180
+  ],
+  "loop": false,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "available": false,
+  "notes": "Hands together at basin height with a slight squat.",
+  "tracks": {
+    "ankle_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "ankle_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "knee_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -10.4808,
+          "y": -6.1707,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -11.8557,
+          "y": -5.1648,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": -10.9657,
+          "y": -6.2638,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": -12.7457,
+          "y": -4.0657,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": -11.8557,
+          "y": -5.1648,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "torso": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "angle": 3,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 6,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 6,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 6,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 6,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "pelvis": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 8.5302,
+          "y": -5.752,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 10.1717,
+          "y": -4.6421,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 9.2817,
+          "y": -3.5431,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 11.0617,
+          "y": -5.7412,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 10.1717,
+          "y": -4.6421,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "knee_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": -5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": -5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": -5,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ]
+  }
+}

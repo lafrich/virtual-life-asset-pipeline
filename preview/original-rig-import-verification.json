@@ -1,0 +1,44 @@
+{
+  "incoming_vs_manifest_sha256_matches": 93,
+  "public_url_base": "https://lafrich.github.io/virtual-life-asset-pipeline/media/original-rig",
+  "public_pngs_fetched": 92,
+  "public_vs_incoming_matches": 92,
+  "overlapping_17_hash_identical": true,
+  "overlapping_17": [
+    "male-body-head.png",
+    "female-body-head.png",
+    "male-body-torso.png",
+    "female-body-torso.png",
+    "male-body-eye-l.png",
+    "male-body-eye-r.png",
+    "female-body-eye-l.png",
+    "female-body-eye-r.png",
+    "hair-front-hair-cap.png",
+    "body-head.png",
+    "brows-brow-l.png",
+    "brows-brow-r.png",
+    "face-eye-l.png",
+    "face-eye-r.png",
+    "face-mouth.png",
+    "face-nose.png",
+    "gender-bases.png"
+  ],
+  "blank_heads": {
+    "male": {
+      "added_interior_se_sw": 27,
+      "removed": 0,
+      "bbox_preserved": true,
+      "orig_opaque_identical": true,
+      "sha256": "4393e11cc99659c3fb2193dc651ebf69b611e4779ee9e8a4c73be301b032c3b3"
+    },
+    "female": {
+      "added_interior_se_sw": 28,
+      "removed": 0,
+      "bbox_preserved": true,
+      "orig_opaque_identical": true,
+      "sha256": "80249dc04ae9e6c116f98ea18bdd8f315e5168bdd4bfd6ae07844340a8b9650c"
+    }
+  },
+  "anchors_unchanged": true,
+  "headMerged": false
+}

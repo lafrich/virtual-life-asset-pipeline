@@ -1,0 +1,514 @@
+{
+  "format": "mahluk-modular-rig-v2-action",
+  "rig": "mahluk-modular-rig-v2",
+  "id": "yoga_tree",
+  "label": "YOGA TREE",
+  "applies_to": [
+    "male",
+    "female"
+  ],
+  "frames": 6,
+  "frame_ms": [
+    180,
+    220,
+    320,
+    320,
+    220,
+    180
+  ],
+  "loop": false,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "available": false,
+  "notes": "Tree pose with authored raised-foot leg tracks (left ankle to right calf), standing on the right leg.",
+  "tracks": {
+    "hip_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": -12,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": -12,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": -12,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": -12,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -7.1297,
+          "y": -12.4112,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 4,
+          "y": -14,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 4,
+          "y": 6,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 5,
+          "y": 7,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 4,
+          "y": -12,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": -4,
+          "y": -8,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "ankle_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 16.1232,
+          "y": -18.1396,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 16.1232,
+          "y": -18.1396,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 16.1232,
+          "y": -18.1396,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 16.1232,
+          "y": -18.1396,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "shoulder_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 5,
+          "y": -8,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -3,
+          "y": -14,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": -3,
+          "y": 6,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": -4,
+          "y": 7,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": -3,
+          "y": -12,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 4,
+          "y": -8,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "knee_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -6,
+          "y": -8,
+          "z": 0,
+          "angle": 55,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": -6,
+          "y": -8,
+          "z": 0,
+          "angle": 55,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": -6,
+          "y": -8,
+          "z": 0,
+          "angle": 55,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": -6,
+          "y": -8,
+          "z": 0,
+          "angle": 55,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "shoulder_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 140,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ]
+  }
+}

@@ -9,6 +9,7 @@ exactly to the generator sprite without seams, double ownership or repaint.
 from __future__ import annotations
 
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -589,6 +590,62 @@ def publish_gender_bases(media: Path, dest: Path):
 
 
 
+def apply_preview_blank_heads(dest: Path) -> None:
+    """Keep official generated heads, but use Ellen blank planes as live head slots."""
+    blanks = ROOT / "assets/base-rig-actions/blank-heads"
+    manifest_path = dest / "manifest.json"
+    if not blanks.exists() or not manifest_path.exists():
+        return
+    man = json.loads(manifest_path.read_text(encoding="utf-8"))
+    slots = list(man.get("slots") or [])
+    names = {row.get("name") for row in slots}
+    changed = False
+    extra = []
+    for row in slots:
+        name = row.get("name")
+        if name not in ("male-body-head", "female-body-head") or row.get("bone") != "head":
+            continue
+        gender = "male" if name.startswith("male") else "female"
+        src = blanks / f"{gender}-body-head-blank.png"
+        if not src.exists():
+            continue
+        shutil.copy2(src, dest / src.name)
+        row["layer_type"] = "archive"
+        blank_name = f"{gender}-body-head-blank"
+        if blank_name not in names:
+            extra.append({
+                "name": blank_name,
+                "gender": gender,
+                "mode": "base",
+                "layer_type": "body",
+                "bone": "head",
+                "expression": False,
+                "src": f"media/original-rig/{src.name}",
+            })
+            names.add(blank_name)
+        changed = True
+    if not changed:
+        return
+    # Insert each blank head immediately after its archived official head.
+    out = []
+    extras = {row["name"]: row for row in extra}
+    for row in slots:
+        out.append(row)
+        gender = "male" if str(row.get("name","")).startswith("male") else "female"
+        blank_name = f"{gender}-body-head-blank"
+        if row.get("name") in ("male-body-head", "female-body-head") and blank_name in extras:
+            out.append(extras.pop(blank_name))
+    out.extend(extras.values())
+    man["slots"] = out
+    man["headMerged"] = False
+    man["blank_heads"] = {
+        "male": "media/original-rig/male-body-head-blank.png",
+        "female": "media/original-rig/female-body-head-blank.png",
+    }
+    manifest_path.write_text(json.dumps(man, indent=2) + "\n", encoding="utf-8")
+
+
+
 def generate(media: Path, with_gender: bool = True):
     dest = media / "original-rig"
     dest.mkdir(parents=True, exist_ok=True)
@@ -676,6 +733,7 @@ def generate(media: Path, with_gender: bool = True):
     }
     (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n",
                                           encoding="utf-8")
+    apply_preview_blank_heads(dest)
     print(f"ORIGINAL V6B CUTOUTS: {len(slots)} source + {len(gender_slots)} gender/mode slots, four views, pixel-perfect.")
 
 

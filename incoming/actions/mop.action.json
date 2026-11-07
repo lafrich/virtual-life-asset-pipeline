@@ -1,0 +1,174 @@
+{
+  "format": "mahluk-modular-rig-v2-action",
+  "rig": "mahluk-modular-rig-v2",
+  "id": "mop",
+  "label": "MOP",
+  "applies_to": [
+    "male",
+    "female"
+  ],
+  "frames": 4,
+  "frame_ms": [
+    180,
+    180,
+    180,
+    180
+  ],
+  "loop": true,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "available": false,
+  "notes": "Mopping arm cycle. Prop shaft is external.",
+  "tracks": {
+    "wrist_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -10.7566,
+          "y": -4.2748,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -11.7608,
+          "y": -8.2549,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": -10.3385,
+          "y": -0.2967,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": -10.7566,
+          "y": -4.2748,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 6.4565,
+          "y": -11.2902,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 5.4114,
+          "y": -12.7731,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 6.6655,
+          "y": -9.3012,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 6.4565,
+          "y": -11.2902,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "torso": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 6,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 3,
+          "y": 0,
+          "z": 0,
+          "angle": 9,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 6,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 6,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ]
+  }
+}

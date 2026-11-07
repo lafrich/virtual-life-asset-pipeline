@@ -1,0 +1,174 @@
+{
+  "format": "mahluk-modular-rig-v2-action",
+  "rig": "mahluk-modular-rig-v2",
+  "id": "greet_wave",
+  "label": "GREET WAVE",
+  "applies_to": [
+    "male",
+    "female"
+  ],
+  "frames": 6,
+  "frame_ms": [
+    140,
+    140,
+    140,
+    140,
+    140,
+    160
+  ],
+  "loop": false,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "available": false,
+  "notes": "Near-side wave.",
+  "tracks": {
+    "shoulder_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 140,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 180,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -8.6618,
+          "y": -13.6968,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -4,
+          "y": 4,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 6,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": -4,
+          "y": 4,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": 6,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ]
+  }
+}

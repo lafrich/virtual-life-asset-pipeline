@@ -1,0 +1,358 @@
+{
+  "format": "mahluk-modular-rig-v2-action",
+  "rig": "mahluk-modular-rig-v2",
+  "id": "kneel",
+  "label": "KNEEL",
+  "applies_to": [
+    "male",
+    "female"
+  ],
+  "frames": 4,
+  "frame_ms": [
+    160,
+    200,
+    320,
+    180
+  ],
+  "loop": false,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "available": false,
+  "notes": "One-knee kneel (left knee contacts the ground, right foot planted). Distinct from toilet_squat.",
+  "tracks": {
+    "ankle_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -0.157,
+          "y": -4.4952,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": -0.157,
+          "y": -4.4952,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "knee_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -4,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0.2642,
+          "y": 5.9928,
+          "z": 0,
+          "angle": 78,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0.2642,
+          "y": 5.9928,
+          "z": 0,
+          "angle": 78,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": -4,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "hip_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 22,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 22,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "knee_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 4,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 3,
+          "y": -1,
+          "z": 0,
+          "angle": 10,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 3,
+          "y": -1,
+          "z": 0,
+          "angle": 10,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 4,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "hip_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": -8,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": -8,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "pelvis": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 4,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 6,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 6,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 3,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "ankle_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": -2,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 2.5757,
+          "y": 3.6075,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 2.5757,
+          "y": 3.6075,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": -1,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ]
+  }
+}

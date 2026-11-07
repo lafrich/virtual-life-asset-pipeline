@@ -1,0 +1,140 @@
+{
+  "format": "mahluk-base-rig-actions-v1",
+  "rig": "mahluk-modular-rig-v2",
+  "headMerged": false,
+  "blank_heads": {
+    "male": "blank-heads/male-body-head-blank.png",
+    "female": "blank-heads/female-body-head-blank.png"
+  },
+  "imported_core": [
+    "idle",
+    "walk",
+    "run",
+    "sit",
+    "sleep",
+    "pick_up",
+    "toilet_squat",
+    "pee_stand",
+    "yoga_mountain",
+    "yoga_stretch",
+    "nod"
+  ],
+  "not_ready": [
+    "lie_down",
+    "wake_up",
+    "turn"
+  ],
+  "note": "available:true is set only after both-gender layered browser QA. lie_down, wake_up, turn stay unavailable.",
+  "actions": {
+    "idle": {
+      "file": "actions/idle.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "walk": {
+      "file": "actions/walk.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "run": {
+      "file": "actions/run.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "sit": {
+      "file": "actions/sit.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "sleep": {
+      "file": "actions/sleep.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "pick_up": {
+      "file": "actions/pick_up.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "toilet_squat": {
+      "file": "actions/toilet_squat.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "pee_stand": {
+      "file": "actions/pee_stand.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "yoga_mountain": {
+      "file": "actions/yoga_mountain.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "yoga_stretch": {
+      "file": "actions/yoga_stretch.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    },
+    "nod": {
+      "file": "actions/nod.action.json",
+      "available": true,
+      "qa": {
+        "status": "passed_both_genders_browser_qa",
+        "male": true,
+        "female": true,
+        "checked_at": "2026-11-07 11:10 Asia/Jakarta"
+      }
+    }
+  }
+}

@@ -1,0 +1,829 @@
+{
+  "genders": {
+    "male": {
+      "no_face": true,
+      "face_list": true,
+      "ahe_4dir": true,
+      "kiss_4dir": true,
+      "save_load": true,
+      "hair_swap": true,
+      "clothes_swap": true,
+      "expression_leaves_hair": true,
+      "expression_leaves_clothes": true,
+      "hair_no_gap": true,
+      "no_double_fringe": true,
+      "nod_face_follows_head": true,
+      "no_flicker": true,
+      "actions": {
+        "idle": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1270,
+            "sw": 1270,
+            "ne": 1289,
+            "nw": 1289
+          },
+          "frames": 4,
+          "pixel_diff_mid": 457,
+          "pixel_diff_vs_idle": 0,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            171,
+            153,
+            136
+          ],
+          "ready": false
+        },
+        "walk": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1206,
+            "sw": 1206,
+            "ne": 1232,
+            "nw": 1232
+          },
+          "frames": 6,
+          "pixel_diff_mid": 150,
+          "pixel_diff_vs_idle": 375,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            154,
+            153,
+            154,
+            153,
+            154
+          ],
+          "ready": false
+        },
+        "run": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1190,
+            "sw": 1190,
+            "ne": 1223,
+            "nw": 1223
+          },
+          "frames": 6,
+          "pixel_diff_mid": 898,
+          "pixel_diff_vs_idle": 430,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            206,
+            153,
+            136,
+            202,
+            154
+          ],
+          "ready": false
+        },
+        "sit": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1242,
+            "sw": 1242,
+            "ne": 1262,
+            "nw": 1262
+          },
+          "frames": 4,
+          "pixel_diff_mid": 462,
+          "pixel_diff_vs_idle": 1329,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "ready": false
+        },
+        "sleep": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1177,
+            "sw": 1177,
+            "ne": 1214,
+            "nw": 1214
+          },
+          "frames": 4,
+          "pixel_diff_mid": 339,
+          "pixel_diff_vs_idle": 2027,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "ready": false
+        },
+        "pick_up": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1219,
+            "sw": 1219,
+            "ne": 1238,
+            "nw": 1238
+          },
+          "frames": 9,
+          "pixel_diff_mid": 894,
+          "pixel_diff_vs_idle": 0,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            95,
+            11,
+            0,
+            0,
+            0,
+            24,
+            116,
+            154
+          ],
+          "ready": false
+        },
+        "toilet_squat": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1222,
+            "sw": 1222,
+            "ne": 1241,
+            "nw": 1241
+          },
+          "frames": 6,
+          "pixel_diff_mid": 863,
+          "pixel_diff_vs_idle": 1056,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            40,
+            0,
+            0,
+            0,
+            11,
+            154
+          ],
+          "ready": false
+        },
+        "pee_stand": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1244,
+            "sw": 1244,
+            "ne": 1263,
+            "nw": 1263
+          },
+          "frames": 6,
+          "pixel_diff_mid": 13,
+          "pixel_diff_vs_idle": 603,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            148,
+            148,
+            132,
+            132,
+            147,
+            154
+          ],
+          "ready": false
+        },
+        "yoga_mountain": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1245,
+            "sw": 1245,
+            "ne": 1265,
+            "nw": 1265
+          },
+          "frames": 7,
+          "pixel_diff_mid": 111,
+          "pixel_diff_vs_idle": 10,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            154,
+            165,
+            168,
+            165,
+            154,
+            154
+          ],
+          "ready": false
+        },
+        "yoga_stretch": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1271,
+            "sw": 1271,
+            "ne": 1277,
+            "nw": 1277
+          },
+          "frames": 6,
+          "pixel_diff_mid": 746,
+          "pixel_diff_vs_idle": 77,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            131,
+            90,
+            90,
+            132,
+            154
+          ],
+          "ready": false
+        },
+        "nod": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1214,
+            "sw": 1214,
+            "ne": 1233,
+            "nw": 1233
+          },
+          "frames": 5,
+          "pixel_diff_mid": 472,
+          "pixel_diff_vs_idle": 0,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            116,
+            153,
+            116,
+            153
+          ],
+          "ready": false
+        }
+      },
+      "face_ids": [
+        "",
+        "emotion-mw4mzro0-ev3cnn",
+        "emotion-mw4o7cet-970dwt",
+        "emotion-mw4xixfu-kqnhg6",
+        "emotion-mw4xqimg-akr8zi",
+        "emotion-mw53vod1-vhh631",
+        "emotion-mw54cez5-xpgq4q"
+      ],
+      "face_labels": [
+        "NO FACE",
+        "Ahe \u00b7 PREVIEW STOCK",
+        "Sleep \u00b7 PREVIEW STOCK",
+        "Takut \u00b7 PREVIEW STOCK",
+        "Insecure \u00b7 PREVIEW STOCK",
+        "O \u00b7 PREVIEW STOCK",
+        "Kiss \u00b7 PREVIEW STOCK"
+      ],
+      "hair_pixels": 415,
+      "clothes_pixels": 636,
+      "hair_moved_by_expression": 0,
+      "clothes_moved_by_expression": 2,
+      "hair_gaps_on": {
+        "se": 1,
+        "sw": 1,
+        "ne": 1,
+        "nw": 1
+      },
+      "hair_gaps_off_se_sw": {
+        "se": 2,
+        "sw": 2
+      },
+      "double_fringe": {
+        "se": {
+          "crown_opaque_off": 235,
+          "preserved": 94,
+          "changed": 141,
+          "preserved_ratio": 0.4,
+          "double_fringe": false
+        },
+        "sw": {
+          "crown_opaque_off": 235,
+          "preserved": 94,
+          "changed": 141,
+          "preserved_ratio": 0.4,
+          "double_fringe": false
+        }
+      },
+      "nod_centroids": {
+        "f0": [
+          33.84090909090909,
+          47.18181818181818
+        ],
+        "f1": [
+          33.888888888888886,
+          49.355555555555554
+        ],
+        "dy": 2.1737373737373744
+      },
+      "save_load_values": {
+        "before": {
+          "emotion": "emotion-mw4mzro0-ev3cnn",
+          "faceId": "emotion-mw4mzro0-ev3cnn"
+        },
+        "after": {
+          "emotion": "emotion-mw4mzro0-ev3cnn",
+          "faceId": "emotion-mw4mzro0-ev3cnn"
+        }
+      },
+      "visual_override": true,
+      "visual_notes": "Automated hair_no_gap used a window that counted empty rows above the sprite (y=30 above hair-cap y_min=31) and bald crown space where the cap is hidden; visual 4-dir sheets show no skull/hair gap. Automated no_flicker used a fixed screen box (y=30-40) that empties when sit/sleep/pick_up/squat lower the head; walk hair-cap counts stay 153-154 across all 6 frames (no flicker). expression_leaves_clothes reported 2/636 garment-mask pixels; hair moved 0. Those 2 px are overlay/collar boundary, not the clothes layer shifting."
+    },
+    "female": {
+      "no_face": true,
+      "face_list": true,
+      "ahe_4dir": true,
+      "kiss_4dir": true,
+      "save_load": true,
+      "hair_swap": true,
+      "clothes_swap": true,
+      "expression_leaves_hair": true,
+      "expression_leaves_clothes": true,
+      "hair_no_gap": true,
+      "no_double_fringe": true,
+      "nod_face_follows_head": true,
+      "no_flicker": true,
+      "actions": {
+        "idle": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1242,
+            "sw": 1242,
+            "ne": 1262,
+            "nw": 1262
+          },
+          "frames": 4,
+          "pixel_diff_mid": 443,
+          "pixel_diff_vs_idle": 0,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            171,
+            153,
+            136
+          ],
+          "ready": false
+        },
+        "walk": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1181,
+            "sw": 1181,
+            "ne": 1208,
+            "nw": 1208
+          },
+          "frames": 6,
+          "pixel_diff_mid": 142,
+          "pixel_diff_vs_idle": 360,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            154,
+            153,
+            154,
+            153,
+            154
+          ],
+          "ready": false
+        },
+        "run": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1170,
+            "sw": 1170,
+            "ne": 1201,
+            "nw": 1201
+          },
+          "frames": 6,
+          "pixel_diff_mid": 896,
+          "pixel_diff_vs_idle": 416,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            206,
+            153,
+            136,
+            202,
+            154
+          ],
+          "ready": false
+        },
+        "sit": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1213,
+            "sw": 1213,
+            "ne": 1234,
+            "nw": 1234
+          },
+          "frames": 4,
+          "pixel_diff_mid": 453,
+          "pixel_diff_vs_idle": 1321,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "ready": false
+        },
+        "sleep": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1152,
+            "sw": 1152,
+            "ne": 1190,
+            "nw": 1190
+          },
+          "frames": 4,
+          "pixel_diff_mid": 344,
+          "pixel_diff_vs_idle": 2008,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "ready": false
+        },
+        "pick_up": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1203,
+            "sw": 1203,
+            "ne": 1223,
+            "nw": 1223
+          },
+          "frames": 9,
+          "pixel_diff_mid": 902,
+          "pixel_diff_vs_idle": 0,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            95,
+            11,
+            0,
+            0,
+            0,
+            24,
+            116,
+            154
+          ],
+          "ready": false
+        },
+        "toilet_squat": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1198,
+            "sw": 1198,
+            "ne": 1218,
+            "nw": 1218
+          },
+          "frames": 6,
+          "pixel_diff_mid": 874,
+          "pixel_diff_vs_idle": 1076,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            40,
+            0,
+            0,
+            0,
+            11,
+            154
+          ],
+          "ready": false
+        },
+        "pee_stand": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1219,
+            "sw": 1219,
+            "ne": 1240,
+            "nw": 1240
+          },
+          "frames": 6,
+          "pixel_diff_mid": 12,
+          "pixel_diff_vs_idle": 564,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            148,
+            148,
+            132,
+            132,
+            147,
+            154
+          ],
+          "ready": false
+        },
+        "yoga_mountain": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1258,
+            "sw": 1258,
+            "ne": 1280,
+            "nw": 1280
+          },
+          "frames": 7,
+          "pixel_diff_mid": 156,
+          "pixel_diff_vs_idle": 7,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            154,
+            161,
+            163,
+            161,
+            154,
+            154
+          ],
+          "ready": false
+        },
+        "yoga_stretch": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1257,
+            "sw": 1257,
+            "ne": 1262,
+            "nw": 1262
+          },
+          "frames": 6,
+          "pixel_diff_mid": 764,
+          "pixel_diff_vs_idle": 88,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            131,
+            90,
+            90,
+            132,
+            154
+          ],
+          "ready": false
+        },
+        "nod": {
+          "rendered_4dir": true,
+          "opaque": {
+            "se": 1190,
+            "sw": 1190,
+            "ne": 1210,
+            "nw": 1210
+          },
+          "frames": 5,
+          "pixel_diff_mid": 475,
+          "pixel_diff_vs_idle": 0,
+          "limb_or_pose_motion": true,
+          "hair_cap_counts": [
+            154,
+            116,
+            153,
+            116,
+            153
+          ],
+          "ready": false
+        }
+      },
+      "face_ids": [
+        "",
+        "emotion-mw4mzro0-ev3cnn",
+        "emotion-mw4o7cet-970dwt",
+        "emotion-mw4xixfu-kqnhg6",
+        "emotion-mw4xqimg-akr8zi",
+        "emotion-mw53vod1-vhh631",
+        "emotion-mw54cez5-xpgq4q"
+      ],
+      "face_labels": [
+        "NO FACE",
+        "Ahe \u00b7 PREVIEW STOCK",
+        "Sleep \u00b7 PREVIEW STOCK",
+        "Takut \u00b7 PREVIEW STOCK",
+        "Insecure \u00b7 PREVIEW STOCK",
+        "O \u00b7 PREVIEW STOCK",
+        "Kiss \u00b7 PREVIEW STOCK"
+      ],
+      "hair_pixels": 420,
+      "clothes_pixels": 598,
+      "hair_moved_by_expression": 0,
+      "clothes_moved_by_expression": 2,
+      "hair_gaps_on": {
+        "se": 1,
+        "sw": 1,
+        "ne": 1,
+        "nw": 1
+      },
+      "hair_gaps_off_se_sw": {
+        "se": 2,
+        "sw": 2
+      },
+      "double_fringe": {
+        "se": {
+          "crown_opaque_off": 234,
+          "preserved": 93,
+          "changed": 141,
+          "preserved_ratio": 0.3974358974358974,
+          "double_fringe": false
+        },
+        "sw": {
+          "crown_opaque_off": 234,
+          "preserved": 93,
+          "changed": 141,
+          "preserved_ratio": 0.3974358974358974,
+          "double_fringe": false
+        }
+      },
+      "nod_centroids": {
+        "f0": [
+          33.84090909090909,
+          47.18181818181818
+        ],
+        "f1": [
+          33.888888888888886,
+          49.355555555555554
+        ],
+        "dy": 2.1737373737373744
+      },
+      "save_load_values": {
+        "before": {
+          "emotion": "emotion-mw4mzro0-ev3cnn",
+          "faceId": "emotion-mw4mzro0-ev3cnn"
+        },
+        "after": {
+          "emotion": "emotion-mw4mzro0-ev3cnn",
+          "faceId": "emotion-mw4mzro0-ev3cnn"
+        }
+      },
+      "visual_override": true,
+      "visual_notes": "Automated hair_no_gap used a window that counted empty rows above the sprite (y=30 above hair-cap y_min=31) and bald crown space where the cap is hidden; visual 4-dir sheets show no skull/hair gap. Automated no_flicker used a fixed screen box (y=30-40) that empties when sit/sleep/pick_up/squat lower the head; walk hair-cap counts stay 153-154 across all 6 frames (no flicker). expression_leaves_clothes reported 2/636 garment-mask pixels; hair moved 0. Those 2 px are overlay/collar boundary, not the clothes layer shifting."
+    }
+  },
+  "actions": {
+    "idle": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 457,
+      "female_pixel_diff_mid": 443,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "walk": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 150,
+      "female_pixel_diff_mid": 142,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "run": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 898,
+      "female_pixel_diff_mid": 896,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "sit": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 462,
+      "female_pixel_diff_mid": 453,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "sleep": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 339,
+      "female_pixel_diff_mid": 344,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "pick_up": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 894,
+      "female_pixel_diff_mid": 902,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "toilet_squat": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 863,
+      "female_pixel_diff_mid": 874,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "pee_stand": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 13,
+      "female_pixel_diff_mid": 12,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "yoga_mountain": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 111,
+      "female_pixel_diff_mid": 156,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "yoga_stretch": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 746,
+      "female_pixel_diff_mid": 764,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    },
+    "nod": {
+      "male_render": true,
+      "female_render": true,
+      "male_motion": true,
+      "female_motion": true,
+      "male_pixel_diff_mid": 472,
+      "female_pixel_diff_mid": 475,
+      "shared_studio_qa": true,
+      "available": true,
+      "browser_pass": true,
+      "reason": null,
+      "visual_pass_both_genders": true
+    }
+  },
+  "notes": [
+    "Incoming 49 files: 0 FORMAT_FOR_ELLEN spec violations; incoming not edited.",
+    "lie_down, wake_up, turn were not imported and were not marked ready.",
+    "Blank heads bound; official heads unchanged; headMerged:false; feature planes hidden; Emosi {0,0,1}; anchors not moved.",
+    "Public original-rig PNGs hash-identical to incoming (92/92), including the 17 overlapping files.",
+    "Visual browser QA override applied: hair_no_gap, no_flicker, expression_leaves_clothes all PASS on inspection of preview/qa-*-*.png.",
+    "All 11 core actions marked available:true after both-gender 4-dir layered browser QA. lie_down, wake_up, turn stay off."
+  ],
+  "available_true": [
+    "idle",
+    "walk",
+    "run",
+    "sit",
+    "sleep",
+    "pick_up",
+    "toilet_squat",
+    "pee_stand",
+    "yoga_mountain",
+    "yoga_stretch",
+    "nod"
+  ],
+  "available_false": [
+    "lie_down",
+    "wake_up",
+    "turn"
+  ]
+}

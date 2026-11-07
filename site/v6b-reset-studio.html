@@ -20,7 +20,7 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 [hidden]{display:none!important}a{color:#2459a5}#animation-list{display:grid;gap:5px}#animation-list button{text-align:left}
 @media(max-width:870px){main{grid-template-columns:1fr 1fr}.viewport{min-height:400px}}@media(max-width:620px){main{display:flex;flex-direction:column}canvas#stage{width:256px;height:448px}body{padding:3px}}
 </style>
-<link rel="stylesheet" href="./emotion-studio/shared-pixel-ui.css"><script defer src="./emotion-studio/shared-pixel-selection.js"></script><script defer src="./emotion-studio/shared-pixel-editor.js"></script><script defer src="./emotion-studio/emotion-library.js"></script><script defer src="./v6b-part-transfer.js"></script>
+<link rel="stylesheet" href="./emotion-studio/shared-pixel-ui.css"><script defer src="./emotion-studio/shared-pixel-selection.js"></script><script defer src="./emotion-studio/shared-pixel-editor.js"></script><script defer src="./modular-rig-v2.js?v=limbs-hair-20261107"></script><script defer src="./emotion-studio/emotion-library.js"></script><script defer src="./emosi-bridge.js?v=preview-stock-20261107"></script><script defer src="./v6b-part-transfer.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script defer src="../virtual-office/emotion-studio/drive-sync.js"></script>
 </head><body><div class="app">
@@ -29,7 +29,10 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <main><section class="panel">
 <h2>CHARACTER BASE</h2>
 <div class="control"><label>BODY TEMPLATE</label><select id="body"><option value="male">HUMAN MALE · NUDE V6B SOURCE</option><option value="female">HUMAN FEMALE · NUDE V6B SOURCE</option></select></div>
-<div class="control"><label>CHARACTER NAME</label><input id="name" value="NEW HUMAN"></div><button id="duplicate-character" style="width:100%">＋ DUPLICATE AS NEW CHARACTER</button>
+<div class="control"><label>CHARACTER NAME</label><input id="name" value="NEW HUMAN"></div>
+<div class="buttons"><button type="button" id="toggle-hair">HAIR: ON</button><button type="button" id="toggle-outfit">CLOTHES: OFF</button></div>
+<p class="note" id="wardrobe-note">Hair on draws navy hair-back + hair-cap + hair-front-fringe and hides the anatomical body-fringe crown so the fringe is not double-drawn. Hair off keeps the body-fringe crown (the head itself is jaw/ears only). Clothes toggle additive native garment-* planes; the body underneath does not swap.</p>
+<button id="duplicate-character" style="width:100%">＋ DUPLICATE AS NEW CHARACTER</button>
 <div class="control"><label>DIRECTION</label><select id="direction"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></div>
 <p class="note">Original authored human v6b assets. Edit anatomy and skin pixels with BODY PARTS. Ichsan is archived as a character sample, not a template.</p><div class="control"><label>REFERENCE SKIN TONE</label><input type="color" id="skin" value="#d6a585" disabled></div>
 <hr>
@@ -49,8 +52,9 @@ hr{border:0;border-top:1px solid #b9c7d5;margin:14px 0}
 <div class="control"><label>BODY BOUNCE · PIXELS</label><input id="bob" type="range" min="0" max="6" value="1"></div>
 <p class="note" id="motion-original-note"></p><button id="save-action">SAVE AS CUSTOM ACTION</button></div>
 <div id="emotions" hidden><h2>MANUAL FACE ATLAS</h2><p class="note">Reads the original Emosi.exe PNG frames as a single overlay; no eyes/mouth splitting.</p>
-<p class="note" id="emotion-source-note">EMOSI.EXE DATABASE · locally saved expressions and Google Drive only; no old Emotion Studio catalog.</p>
-<div class="buttons"><button id="connect-emotion-drive">☁ CONNECT GOOGLE DRIVE</button><button id="refresh-emotion-drive">↻ REFRESH DRIVE</button></div><p class="note" id="emotion-drive-status">Drive sign-in is session-only. No GitHub token required. Uses the same Google OAuth client as EMOSI.EXE.</p><div class="control"><label>FACE ASSET</label><select id="emotion"><option value="">NO FACE</option></select></div>
+<p class="note" id="emotion-source-note">EMOSI.EXE DATABASE · user-authored preview stock, locally saved expressions, and Google Drive. The 12 packaged starters are archive-only and never used as a default.</p>
+<p class="note" id="blank-head-status">Blank head planes bound (male-body-head-blank / female-body-head-blank). headMerged: false. Baked feature planes hidden. Official head PNGs left unchanged.</p>
+<div class="buttons"><button id="load-drive-stock">LOAD DRIVE STOCK</button><button id="connect-emotion-drive">☁ CONNECT GOOGLE DRIVE</button><button id="refresh-emotion-drive">↻ REFRESH DRIVE</button></div><p class="note" id="emotion-drive-status">Drive stock not loaded</p><div class="control"><label>FACE ASSET</label><select id="emotion"><option value="">NO FACE</option></select></div>
 <div class="control"><label>HEAD OFFSET X</label><input id="face-x" type="number" value="0"></div>
 <div class="control"><label>HEAD OFFSET Y</label><input id="face-y" type="number" value="0"></div><button id="reload-emotions">SYNC FROM EMOSI.EXE</button></div>
 </section>
@@ -154,7 +158,27 @@ const $=id=>document.getElementById(id),DIR=["se","sw","ne","nw"],FW=64,FH=112,P
 const ROWMAP={walk:0,idle:4,talk:8,sit:12,sit_type:16,sleep:20,tired:24,swim:28,float:32,lie:36,perch:40};
 const STOCK=["idle","walk","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"];
 const KEY="mahluk-v6b-simple-studio-v1";let editor="characters",frame=0,playing=false,last=0,emotions=new Map();
-const neutral=(id)=>({id:"draft_human_"+id,baseId:"human_"+id+"_base",name:"NEW HUMAN "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="female"?"#d9a989":"#d6a585",partEdits:{},frameEdits:{},customSheets:{},actions:{idle:{fps:4,frames:4,source:"v6b-native",action:"idle"},walk:{fps:7,frames:6,source:"v6b-native",action:"walk"}},current:"idle",emotion:"",faceOffset:[0,0]});
+const emptyPixels=()=>Object.fromEntries(DIR.map(d=>[d,[]]));let layeredReady=false,registryActions=new Map(),registryMeta=null;
+function normalizeCharacter(m){
+  if(!m||typeof m!=="object")return m;
+  const next={...m};
+  if(!next.format)next.format="mahluk-v6b-character-v1";
+  next.pixels=next.pixels&&typeof next.pixels==="object"?{...next.pixels}:emptyPixels();
+  for(const d of DIR)if(!Array.isArray(next.pixels[d]))next.pixels[d]=[];
+  if(!Array.isArray(next.faceOffset)||next.faceOffset.length<2)next.faceOffset=[0,0];
+  if(typeof next.emotion!=="string")next.emotion="";
+  if(!next.actions||typeof next.actions!=="object")next.actions={};
+  return next;
+}
+function snapshot(m){
+  const copy=normalizeCharacter(clone(m));
+  copy.faceId=typeof copy.emotion==="string"?copy.emotion:"";
+  copy.headMerged=false;
+  if(copy.hair!=="none")copy.hair="cap";
+  copy.outfit=!!copy.outfit;
+  return copy;
+}
+const neutral=(id)=>({id:"draft_human_"+id,baseId:"human_"+id+"_base",name:"NEW HUMAN "+id.toUpperCase(),body_type:id,frame:[FW,FH],pivot:PIVOT.slice(),directions:DIR.slice(),rowmap:{...ROWMAP},format:"mahluk-v6b-character-v1",skin:id==="female"?"#d9a989":"#d6a585",partEdits:{},frameEdits:{},customSheets:{},actions:{idle:{fps:4,frames:4,source:"v6b-native",action:"idle"},walk:{fps:7,frames:6,source:"v6b-native",action:"walk"}},current:"idle",pixels:emptyPixels(),emotion:"",faceOffset:[0,0],hair:"cap",outfit:false,headMerged:false,faceId:""});
 let model=neutral("male"),editMode="frame",activePart="";
 let nativeCatalog=null,sourceManifest=null,nativeReady=false;
 const sourcePartImages=new Map(),motionPartImages=new Map(),frameOverrideImages=new Map(),partEditImages=new Map(),sheetImages=new Map(),patchCache=new Map(),sourcePartRows=new Map(),motionPartsByGender=new Map();
@@ -213,6 +237,30 @@ async function loadNative(){
  nativeReady=true;setNativeActions();renderPartList();renderMotions();syncMotionUI();draw();
  status("NATIVE MALE/FEMALE V6B READY · FRAME-PRECISE BODY PARTS LOADED");const ready=$("part-open-feedback");if(ready)ready.textContent="READY · Select a native body part and open full pixel editor";
 }
+async function loadRegistryActions(){
+ const response=await fetch("./media/base-rig-actions/registry.json",{cache:"no-store"});
+ if(!response.ok)throw Error("registry HTTP "+response.status);
+ registryMeta=await response.json();
+ registryActions.clear();
+ for(const [id,meta] of Object.entries(registryMeta.actions||{})){
+  const doc=await (await fetch("./media/base-rig-actions/"+meta.file,{cache:"no-store"})).json();
+  registryActions.set(id,{...doc,available:!!meta.available});
+  if(!model.actions[id])model.actions[id]={fps:Math.max(1,Math.round(1000/(doc.frame_ms?.[0]||160))),frames:doc.frames,source:"base-rig-registry",action:id};
+ }
+}
+async function bootLayeredPreview(){
+ try{
+  for(let i=0;i<80 && !window.VLModularRigV2;i++)await new Promise(r=>setTimeout(r,25));
+  if(window.VLModularRigV2){
+   await window.VLModularRigV2.loadNativeArt();
+  }
+  await loadRegistryActions();
+  layeredReady=!!(window.VLModularRigV2&&window.VLModularRigV2.hasNativeArt);
+  if(!model.actions[model.current]&&registryActions.has("idle"))model.current="idle";
+  renderMotions();syncMotionUI();draw();
+  status(layeredReady?"LAYERED PREVIEW READY · BLANK HEADS · headMerged:false · "+registryActions.size+" CORE ACTIONS":"LAYERED PREVIEW NOT READY");
+ }catch(error){status("LAYERED PREVIEW FAILED: "+error.message)}
+}
 function box(ctx,x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)));}
 function shade(hex,k){let rgb=parseInt(hex.slice(1),16);return "#"+[rgb>>16,(rgb>>8)&255,rgb&255].map(v=>Math.max(0,Math.min(255,Math.round(v*k))).toString(16).padStart(2,"0")).join("");}
 function body(ctx,dir,action,f,opts={}){
@@ -270,7 +318,21 @@ function partPatch(ctx,act,dir,f){
   data.data.set(result.data);tc.putImageData(data,0,0);ctx.drawImage(tile,0,0);
  }
 }
+function layeredBase(){
+ const rig=window.VLModularRigV2;
+ return rig.normalize({gender:model.body_type==="female"?"female":"male",visual:"gender",
+  outfit:!!model.outfit,hair:model.hair==="none"?"none":"cap",headMerged:false,
+  hideFaceFeatures:true,blankHead:true,phone:false});
+}
+function renderLayered(ctx,dir,action,f){
+ const rig=window.VLModularRigV2;
+ const doc=registryActions.get(action)||{frames:1,tracks:{}};
+ const pose=rig.sampleTrack(doc.tracks||{},f,doc.frames||1,layeredBase());
+ const atlas=faceCache.get(model.emotion)||null;
+ rig.draw(ctx,pose,dir,{clear:false,emosi:atlas,emosiFrame:f});
+}
 function renderBody(ctx,dir,action,f){
+ if(layeredReady&&window.VLModularRigV2?.hasNativeArt){renderLayered(ctx,dir,action,f);return}
  const actor=nativeActor();if(!actor||!nativeReady)return;
  const di=DIR.indexOf(dir),cfg=model.actions[action]||{},act=cfg.action||cfg.based_on||action;
  const custom=model.customSheets?.[action];
@@ -288,10 +350,10 @@ function renderBody(ctx,dir,action,f){
  partPatch(ctx,act,dir,f%(motion.frames||4));
 }
 function drawTo(ctx,dir,action,f,faceFrame=f){ctx.clearRect(0,0,64,112);const key=action+"|"+f+"|"+dir,edited=frameOverrideImages.get(key);if(edited&&edited.complete&&edited.naturalWidth)ctx.drawImage(edited,0,0);else renderBody(ctx,dir,action,f);
- const atlas=faceCache.get(model.emotion),entry=emotions.get(model.emotion);
- if(atlas&&entry&&(!/^n/.test(dir))){const i=DIR.indexOf(dir),n=entry.frames||1,ox=model.faceOffset[0],oy=model.faceOffset[1];ctx.drawImage(atlas,(faceFrame%n)*64,i*112,64,112,ox,oy,64,112);}
+ if(!layeredReady){const atlas=faceCache.get(model.emotion),entry=emotions.get(model.emotion);
+ if(atlas&&entry&&(!/^n/.test(dir))){const i=DIR.indexOf(dir),n=entry.frames||1,ox=model.faceOffset[0],oy=model.faceOffset[1];ctx.drawImage(atlas,(faceFrame%n)*64,i*112,64,112,ox,oy,64,112);}}
 }
-function frameCount(){return Math.max(1,Number(model.actions[model.current]?.frames)||((model.actions[model.current]?.action||model.current)==="idle"?4:6))}
+function frameCount(){const doc=registryActions.get(model.current);if(doc?.frames)return doc.frames;return Math.max(1,Number(model.actions[model.current]?.frames)||((model.actions[model.current]?.action||model.current)==="idle"?4:6))}
 function draw(){frame=frame%frameCount();$("frame-index").max=String(frameCount()-1);drawTo(cx,$("direction").value,model.current,frame);$("frame-index").value=frame;$("readout").textContent=model.current.toUpperCase()+" · "+$("direction").value.toUpperCase()+" · FRAME "+(frame+1)+" / "+frameCount()+" · "+(model.actions[model.current]?.fps||12)+" FPS"}
 function tab(id){editor=id;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));for(const p of ["parts","pixels","actions","emotions"])$(p).hidden=p!==id;status("ACTIVE TAB: "+id.toUpperCase());}
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
@@ -316,7 +378,7 @@ $("play").onclick=()=>{playing=!playing;$("play").textContent=playing?"Ⅱ PAUSE
 $("reset-frame").onclick=()=>{frame=0;draw()};$("frame-index").oninput=()=>{playing=false;$("play").textContent="▶ PLAY";frame=Number($("frame-index").value);draw()};
 function tick(now){if(playing&&now-last>=1000/(model.actions[model.current]?.fps||12)){frame=(frame+1)%frameCount();last=now;draw()}requestAnimationFrame(tick)}requestAnimationFrame(tick);
 function download(filename,blob){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}
-function exportJSON(){download((model.id||"character")+".json",new Blob([JSON.stringify(model,null,2)],{type:"application/json"}))}
+function exportJSON(){download((model.id||"character")+".json",new Blob([JSON.stringify(snapshot(model),null,2)],{type:"application/json"}))}
 function packageMotion(){const a=model.actions[model.current];return {format:"mahluk-v6b-motion-v1",id:model.current,action:a.action||a.based_on||model.current,frame:[64,112],pivot:[32,100],directions:DIR,frames:frameCount(),fps:a.fps||12,parameters:{arm:a.arm??2,stride:a.stride??4,bob:a.bob??1},source:a.source||"custom"}}
 function validMotion(m){return m&&m.format==="mahluk-v6b-motion-v1"&&typeof m.id==="string"&&/^[a-z0-9_-]{1,60}$/.test(m.id)&&typeof m.action==="string"&&!!nativeActor()?.motions?.some(a=>a.id===m.action&&a.available&&a.frames===m.frames)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&Number.isFinite(m.fps)&&m.fps>=1&&m.fps<=30&&m.parameters&&["arm","stride","bob"].every(k=>Number.isFinite(m.parameters[k])&&m.parameters[k]>=0&&m.parameters[k]<=16)}
 $("export-motion").onclick=()=>download(model.current+"_motion.json",new Blob([JSON.stringify(packageMotion(),null,2)],{type:"application/json"}));
@@ -345,12 +407,12 @@ $("atlas-file").onchange=async e=>{
 };
 $("import-motion").onclick=()=>$("motion-file").click();
 $("motion-file").onchange=async e=>{try{const file=e.target.files?.[0];if(!file)return;const m=JSON.parse(await file.text());if(!validMotion(m))throw Error("Motion package incompatible: requires v6b 64×112, pivot 32/100, four views, 6 frames and supported action");model.actions[m.id]={...m.parameters,frames:m.frames,fps:m.fps,action:m.action,source:"v6b-native-variant",based_on:m.action};model.current=m.id;renderMotions();syncMotionUI();frame=0;draw();status("INSTALLED EXTERNAL V6B MOTION: "+m.id)}catch(err){status("MOTION IMPORT FAILED: "+err.message)}e.target.value=""};
-function valid(m){return m?.format==="mahluk-v6b-character-v1"&&["male","female"].includes(m.body_type)&&JSON.stringify(m.frame)==="[64,112]"&&JSON.stringify(m.pivot)==="[32,100]"&&JSON.stringify(m.directions)===JSON.stringify(DIR)&&m.pixels&&DIR.every(d=>Array.isArray(m.pixels[d]))&&m.actions&&typeof m.actions==="object";}
-$("save-local").onclick=()=>{try{localStorage.setItem(KEY,JSON.stringify(model));status("CHARACTER SAVED TO THIS BROWSER · EXPORT JSON TO MOVE DEVICES")}catch(e){status("SAVE FAILED: "+e.message)}};
-$("load-local").onclick=()=>{try{const m=JSON.parse(localStorage.getItem(KEY));if(!valid(m))throw Error("No compatible saved character");model=m;restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();setEmotion(m.emotion);draw();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
+function valid(m){const n=normalizeCharacter(m);return n?.format==="mahluk-v6b-character-v1"&&["male","female"].includes(n.body_type)&&JSON.stringify(n.frame)==="[64,112]"&&JSON.stringify(n.pivot)==="[32,100]"&&JSON.stringify(n.directions)===JSON.stringify(DIR)&&n.pixels&&DIR.every(d=>Array.isArray(n.pixels[d]))&&n.actions&&typeof n.actions==="object";}
+$("save-local").onclick=()=>{try{localStorage.setItem(KEY,JSON.stringify(snapshot(model)));status("CHARACTER SAVED TO THIS BROWSER · EXPORT JSON TO MOVE DEVICES")}catch(e){status("SAVE FAILED: "+e.message)}};
+$("load-local").onclick=()=>{try{const raw=JSON.parse(localStorage.getItem(KEY));if(!valid(raw))throw Error("No compatible saved character");model=normalizeCharacter(raw);if(typeof raw.faceId==="string"&&raw.faceId)model.emotion=raw.faceId;model.headMerged=false;restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();if($("toggle-hair"))$("toggle-hair").textContent=model.hair==="none"?"HAIR: OFF":"HAIR: ON";if($("toggle-outfit"))$("toggle-outfit").textContent=model.outfit?"CLOTHES: ON":"CLOTHES: OFF";void (async()=>{await loadEmotions();await setEmotion(model.emotion||model.faceId||"");draw()})();status("LOCAL CHARACTER LOADED")}catch(e){status("LOAD FAILED: "+e.message)}};
 $("export-json").onclick=exportJSON;
 $("import-json").onclick=()=>$("import-file").click();
-$("import-file").onchange=async e=>{try{const m=JSON.parse(await e.target.files[0].text());if(!valid(m))throw Error("V6B contract mismatch");model=m;restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();await setEmotion(m.emotion);draw();status("V6B CHARACTER IMPORTED")}catch(err){status("IMPORT FAILED: "+err.message)}e.target.value=""};
+$("import-file").onchange=async e=>{try{const m=JSON.parse(await e.target.files[0].text());if(!valid(m))throw Error("V6B contract mismatch");model=normalizeCharacter(m);restoreFrameOverrides();restorePartEdits();setNativeActions();renderPartList();renderMotions();applyUI();await loadEmotions();await setEmotion(model.emotion);draw();status("V6B CHARACTER IMPORTED")}catch(err){status("IMPORT FAILED: "+err.message)}e.target.value=""};
 $("export-sheet").onclick=()=>{const out=document.createElement("canvas");out.width=64*frameCount();out.height=112*4;const ctx=out.getContext("2d");for(let d=0;d<4;d++)for(let f=0;f<frameCount();f++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;drawTo(tile.getContext("2d"),DIR[d],model.current,f);ctx.drawImage(tile,f*64,d*112)}out.toBlob(blob=>blob&&download(model.current+"_v6b_four_view.png",blob),"image/png");status("EXPORTED "+frameCount()+" FRAMES × 4 DIRECTIONS · V6B NATIVE SIZE")};
 $("emotion").onchange=()=>setEmotion($("emotion").value);
 for(const [id,index] of [["face-x",0],["face-y",1]])$(id).oninput=()=>{model.faceOffset[index]=Math.max(-64,Math.min(64,Number($(id).value)||0));draw()};
@@ -380,29 +442,51 @@ async function connectEmotionDrive(){
  finally{$("connect-emotion-drive").disabled=false}
 }
 async function loadEmotions(){
- const U=window.MH2UniversalEmotions;if(!U){status("EMOSI NATIVE ATLAS READER UNAVAILABLE");return}
  const local=await readLocalEmotions().catch(()=>[]);
+ const U=window.MH2UniversalEmotions;if(!U){status("EMOSI NATIVE ATLAS READER UNAVAILABLE");return}
+ const B=window.VLMahlukEmosiBridge;
  const entries=new Map();let localCount=0;
- // Exact same IndexedDB database as the live EMOSI.EXE, not old GitHub Emotion Studio.
- for(const e of local)if(U.validEntry(e)){entries.set(e.id,{...e,origin:"local"});localCount++}
- // Cloud project data from the live EMOSI.EXE Google Drive folder wins on matching IDs.
- for(const [id,e] of driveEmotions)entries.set(id,e);
+ for(const e of local){
+  if(!U.validEntry(e)||B?.isStarterEntry(e))continue;
+  entries.set(e.id,{...e,origin:"local"});localCount++;
+ }
+ let previewCount=0,previewError="";
+ if(B?.loadPreviewStock){
+  const preview=await B.loadPreviewStock();
+  previewCount=preview.entries.length;previewError=preview.error||"";
+  B.mergeIncoming(entries,preview.entries.map(e=>({...e,origin:"preview"})),"preview");
+ }
+ const driveList=[...driveEmotions.values()].filter(e=>!B?.isStarterEntry(e));
+ if(B?.mergeIncoming)B.mergeIncoming(entries,driveList,"drive");
+ else for(const e of driveList)if(!entries.has(e.id))entries.set(e.id,e);
  const select=$("emotion");emotions.clear();select.replaceChildren();
  const empty=document.createElement("option");empty.value="";empty.textContent="NO FACE";select.append(empty);
  for(const e of entries.values()){
   if(!(e.base==="universal"||e.base==="original"&&model.body_type==="ichsan"||e.base===model.body_type))continue;
+  if(B?.isStarterEntry(e))continue;
   emotions.set(e.id,e);const o=document.createElement("option");o.value=e.id;
-  o.textContent=e.name+" · "+(e.origin==="drive"?"EMOSI DRIVE":"EMOSI LOCAL");select.append(o);
+  const origin=e.origin==="drive"?"EMOSI DRIVE":e.origin==="preview"?"PREVIEW STOCK":"EMOSI LOCAL";
+  o.textContent=e.name+" · "+origin;select.append(o);
  }
  if(!emotions.has(model.emotion))model.emotion="";
  select.value=model.emotion;await setEmotion(model.emotion);
+ const driveStock=previewCount+driveEmotions.size;
+ const driveStatus=$("emotion-drive-status");
+ if(driveStatus){
+  driveStatus.textContent=driveStock||emosiDrive()?.connected()?
+   (B?.statusMessage({count:emotions.size,local:localCount,localAuthored:localCount,preview:previewCount,drive:driveEmotions.size,connected:!!emosiDrive()?.connected(),error:previewError})||("EMOSI PREVIEW STOCK · "+previewCount+" authored expressions")):
+   "Drive stock not loaded";
+ }
  const note=$("emotion-source-note");
- if(note)note.textContent="EMOSI.EXE ONLY · "+driveEmotions.size+" Google Drive projects · "+localCount+" locally saved. No old Emotion Studio catalog or GitHub token.";
- status("EMOSI.EXE · "+emotions.size+" compatible saved expressions · DRIVE "+(emosiDrive()?.connected()?"CONNECTED":"CONNECT TO LOAD CLOUD"));
+ if(note)note.textContent="EMOSI.EXE · "+previewCount+" preview stock · "+driveEmotions.size+" Google Drive · "+localCount+" local user entries. 12 starters archived, never used as a fallback.";
+ status(driveStock||emosiDrive()?.connected()?
+  "EMOSI.EXE · "+emotions.size+" compatible expressions · preview "+previewCount+" · DRIVE "+(emosiDrive()?.connected()?"CONNECTED":"not connected"):
+  "Drive stock not loaded");
 }
 $("reload-emotions").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else await loadEmotions()};
+$("load-drive-stock").onclick=async()=>{await loadEmotions()};
 $("connect-emotion-drive").onclick=connectEmotionDrive;
-$("refresh-emotion-drive").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else status("CONNECT GOOGLE DRIVE FIRST")};
+$("refresh-emotion-drive").onclick=async()=>{if(emosiDrive()?.connected())await syncEmotionDrive();else await loadEmotions()};
 const pixelOverlay=$("pixelOverlay"),pixelCanvas=$("pixelCanvas");
 function applyPixelEditor(atlas){if(editMode==="part")storeEditedPart(atlas);else storeEditedFrame(atlas);return true}
 let pixelEditor=null;
@@ -491,6 +575,27 @@ $("restore-part").onclick=()=>{
 
 function storeEditedFrame(atlas){if(!atlas)return;const name=model.current,f=frame;model.frameEdits||={};for(let d=0;d<4;d++){const slice=document.createElement("canvas");slice.width=64;slice.height=112;slice.getContext("2d").drawImage(atlas,0,d*112,64,112,0,0,64,112);const key=name+"|"+f+"|"+DIR[d],url=slice.toDataURL("image/png");model.frameEdits[key]=url;const img=new Image();img.onload=draw;img.src=url;frameOverrideImages.set(key,img)}draw();status("NATIVE PIXEL EDITS APPLIED · "+name.toUpperCase()+" FRAME "+(f+1)+" · 4 VIEWS")}
 $("open-pixel").onclick=()=>{const frameEditor=ensurePixelEditor();if(!frameEditor)return status("NATIVE EDITOR UNAVAILABLE");if(!nativeReady)return status("NATIVE V6B NOT LOADED YET");editMode="frame";const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;const ac=atlas.getContext("2d");for(let d=0;d<4;d++){const tile=document.createElement("canvas");tile.width=64;tile.height=112;const tc=tile.getContext("2d");const key=model.current+"|"+frame+"|"+DIR[d],img=frameOverrideImages.get(key);if(img?.complete&&img.naturalWidth)tc.drawImage(img,0,0);else renderBody(tc,DIR[d],model.current,frame);ac.drawImage(tile,0,d*112)}try{frameEditor.open({id:model.current+"-frame-"+(frame+1),initialAtlas:atlas,originalAtlas:atlas,direction:$("direction").value})}catch(e){status("FRAME EDITOR FAILED: "+e.message)}};
-renderMotions();applyUI();draw();loadEmotions();loadNative().catch(e=>{nativeReady=false;partFeedback("NATIVE V6B LOAD FAILED: "+e.message,true)});
+window.VLBaseRigPreview={
+  get model(){return model},
+  get layeredReady(){return layeredReady},
+  get registry(){return registryMeta},
+  faces(){return [...emotions.keys()]},
+  faceNames(){return [...$("emotion").options].map(o=>({id:o.value,label:o.textContent}))},
+  actions(){return [...registryActions.keys()]},
+  async setGender(g){if($("body").value!==g){$("body").value=g;$("body").onchange()}},
+  async setEmotion(id){model.emotion=id||"";model.faceId=id||"";if($("emotion"))$("emotion").value=id||"";await setEmotion(id||"");draw();return model.emotion},
+  setAction(id){if(!model.actions[id]&&registryActions.has(id)){const doc=registryActions.get(id);model.actions[id]={fps:Math.max(1,Math.round(1000/(doc.frame_ms?.[0]||160))),frames:doc.frames,source:"base-rig-registry",action:id}}model.current=id;frame=0;renderMotions();syncMotionUI();draw();return model.current},
+  setDir(d){$("direction").value=d;draw();return $("direction").value},
+  setHair(on){model.hair=on?"cap":"none";if($("toggle-hair"))$("toggle-hair").textContent=on?"HAIR: ON":"HAIR: OFF";draw();return model.hair},
+  setOutfit(on){model.outfit=!!on;if($("toggle-outfit"))$("toggle-outfit").textContent=model.outfit?"CLOTHES: ON":"CLOTHES: OFF";draw();return model.outfit},
+  setFrame(f){frame=((Number(f)||0)%Math.max(1, (registryActions.get(model.current)||{}).frames||frameCount()));draw();return frame},
+  stageData(){return c.toDataURL("image/png")},
+  snapshot(){return snapshot(model)}
+};
+if($("toggle-hair"))$("toggle-hair").onclick=()=>{model.hair=model.hair==="none"?"cap":"none";$("toggle-hair").textContent=model.hair==="none"?"HAIR: OFF":"HAIR: ON";draw()};
+if($("toggle-outfit"))$("toggle-outfit").onclick=()=>{model.outfit=!model.outfit;$("toggle-outfit").textContent=model.outfit?"CLOTHES: ON":"CLOTHES: OFF";draw()};
+renderMotions();applyUI();draw();loadEmotions();
+bootLayeredPreview();
+loadNative().catch(e=>{nativeReady=false;partFeedback("NATIVE V6B LOAD FAILED: "+e.message,true);bootLayeredPreview()});
 })();
 </script></body></html>

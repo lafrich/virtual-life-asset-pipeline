@@ -1,0 +1,174 @@
+{
+  "format": "mahluk-modular-rig-v2-action",
+  "rig": "mahluk-modular-rig-v2",
+  "id": "sweep",
+  "label": "SWEEP",
+  "applies_to": [
+    "male",
+    "female"
+  ],
+  "frames": 4,
+  "frame_ms": [
+    160,
+    160,
+    160,
+    160
+  ],
+  "loop": true,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "available": false,
+  "notes": "Sweeping arm cycle. Prop shaft is external.",
+  "tracks": {
+    "wrist_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -6.1722,
+          "y": -0.3883,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -8.1404,
+          "y": 1.4833,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": -2.2824,
+          "y": -2.5949,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": -6,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 6.6376,
+          "y": -3.6501,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 4.5182,
+          "y": -1.0314,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 8.6349,
+          "y": -3.7548,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 7,
+          "y": -4,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "torso": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "angle": 3,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 6,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "angle": 3,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,310 @@
+{
+  "format": "mahluk-modular-rig-v2-action",
+  "rig": "mahluk-modular-rig-v2",
+  "id": "yoga_stretch",
+  "label": "YOGA STRETCH",
+  "applies_to": [
+    "male",
+    "female"
+  ],
+  "frames": 6,
+  "frame_ms": [
+    180,
+    220,
+    300,
+    300,
+    220,
+    180
+  ],
+  "loop": false,
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "frame": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "available": false,
+  "notes": "Lateral overhead stretch, distinct from daily stretch.",
+  "tracks": {
+    "shoulder_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 140,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 170,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 170,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 170,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 170,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_r": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -3,
+          "y": -12,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": -1.437,
+          "y": -5.6477,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 0.9841,
+          "y": -3.6518,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 0.7084,
+          "y": -4.6131,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": -2.9839,
+          "y": -9.4696,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": -4,
+          "y": -8,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "wrist_l": [
+      {
+        "frame": 0,
+        "value": {
+          "x": -4.96,
+          "y": -15.6251,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 4.0703,
+          "y": 2.7191,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 11.8801,
+          "y": 4.6941,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 11.7756,
+          "y": 3.6995,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 3.3501,
+          "y": -5.311,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 4,
+          "y": -8,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ],
+    "torso": [
+      {
+        "frame": 0,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 1,
+        "value": {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "angle": 8,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 2,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 16,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 3,
+        "value": {
+          "x": 2,
+          "y": 0,
+          "z": 0,
+          "angle": 16,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 4,
+        "value": {
+          "x": 1,
+          "y": 0,
+          "z": 0,
+          "angle": 8,
+          "scale": 1,
+          "visible": true
+        }
+      },
+      {
+        "frame": 5,
+        "value": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "angle": 0,
+          "scale": 1,
+          "visible": true
+        }
+      }
+    ]
+  }
+}

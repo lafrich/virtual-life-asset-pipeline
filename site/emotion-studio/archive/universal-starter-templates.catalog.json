@@ -1,0 +1,112 @@
+{
+  "format": "mahluk-2-universal-emotions-v1",
+  "cell": [
+    64,
+    112
+  ],
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "updated": "2026-11-06",
+  "entries": [
+    {
+      "id": "universal-neutral",
+      "name": "Neutral",
+      "base": "universal",
+      "frames": 1,
+      "fps": 6,
+      "template": "neutral"
+    },
+    {
+      "id": "universal-happy",
+      "name": "Happy",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "happy"
+    },
+    {
+      "id": "universal-angry",
+      "name": "Angry",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "angry"
+    },
+    {
+      "id": "universal-sad",
+      "name": "Sad",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "sad"
+    },
+    {
+      "id": "universal-surprised",
+      "name": "Surprised",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "surprised"
+    },
+    {
+      "id": "universal-shy",
+      "name": "Blush / Shy",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "shy"
+    },
+    {
+      "id": "universal-cheeky",
+      "name": "Cheeky",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "cheeky"
+    },
+    {
+      "id": "universal-bleh",
+      "name": "Bleh",
+      "base": "universal",
+      "frames": 4,
+      "fps": 6,
+      "template": "bleh"
+    },
+    {
+      "id": "universal-wink",
+      "name": "Wink",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "wink"
+    },
+    {
+      "id": "universal-sleepy",
+      "name": "Sleepy",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "sleepy"
+    },
+    {
+      "id": "universal-cry",
+      "name": "Crying",
+      "base": "universal",
+      "frames": 4,
+      "fps": 6,
+      "template": "cry"
+    },
+    {
+      "id": "universal-grimace",
+      "name": "Grimace",
+      "base": "universal",
+      "frames": 3,
+      "fps": 6,
+      "template": "grimace"
+    }
+  ]
+}

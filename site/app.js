@@ -134,6 +134,54 @@ function matchingCharacters() {
   );
 }
 
+
+function isHumanBaseActor(character){
+  const bases=["human_male_base","human_female_base"];
+  return !!(character&&(bases.includes(character.id)||bases.includes(character.base_id)||bases.includes(character.baseId)));
+}
+function storedFaceId(character){
+  return typeof character?.faceId==="string"?character.faceId:"";
+}
+function currentFaceId(){
+  const expr=state.expression;
+  if(!expr)return "";
+  return expr.source==="emosi"?String(expr.id).replace(/^emosi_/,""):String(expr.id||"");
+}
+function findExpression(character,faceId){
+  if(!character?.expressions||!faceId)return null;
+  const raw=String(faceId),bare=raw.replace(/^emosi_/,"");
+  return character.expressions.find(f=>f.id===raw||f.id==="emosi_"+bare||String(f.id).replace(/^emosi_/,"")===bare)||null;
+}
+function defaultExpressionFor(character){
+  const saved=storedFaceId(character);
+  if(saved)return findExpression(character,saved);
+  if(isHumanBaseActor(character))return null;
+  return character.expressions?.find(f=>f.id==="neutral"&&f.motion_sheets?.walk)||null;
+}
+function attachExpression(face,{enterFaceMode=false}={}){
+  if(!state.selected||!face)return;
+  if(enterFaceMode){selectFace(face);return}
+  state.expression=face;
+  state.expressionAuto=false;
+  if($("motion-auto-face"))$("motion-auto-face").checked=false;
+  state.faceImage=null;state.faceOverlay=null;state.motionFaceImage=null;
+  const character=state.selected;
+  if(face.sheet)cachedImage(face.sheet,image=>{
+    if(state.selected!==character||state.expression!==face)return;
+    state.faceImage=image;draw();
+  });
+  if(face.overlay)cachedImage(face.overlay,image=>{
+    if(state.selected!==character||state.expression!==face)return;
+    state.faceOverlay=image;draw();
+  });
+  const motionSheet=face.motion_sheets?.[state.motion?.id];
+  if(motionSheet)cachedImage(motionSheet,image=>{
+    if(state.selected!==character||state.expression!==face)return;
+    state.motionFaceImage=image;draw();
+  });
+  draw();
+}
+
 function selectCharacter(character) {
   if (!character) return;
   state.selected = character;
@@ -141,10 +189,14 @@ function selectCharacter(character) {
   state.mode = "walk";
   state.expressionAuto=true;
   if($("motion-auto-face"))$("motion-auto-face").checked=true;
-  // The base mannequins and Theodore have real same-actor face motion
-  // atlases. Activate neutral by default so head/eyes animate on first play.
-  state.expression = character.expressions?.find(f=>f.id==="neutral" &&
-    f.motion_sheets?.walk) || null;
+  // Male/Female Base and their custom characters default to a blank face.
+  // A saved faceId is restored; never fall back to the archived starters.
+  const savedFace=storedFaceId(character);
+  if(savedFace||isHumanBaseActor(character)){
+    state.expressionAuto=false;
+    if($("motion-auto-face"))$("motion-auto-face").checked=false;
+  }
+  state.expression = defaultExpressionFor(character);
   state.motion = null;
   state.frame = 0;
   state.autoDir = 0;
@@ -189,6 +241,8 @@ function selectCharacter(character) {
   $("edit-pixels").hidden = character.id !== "legacy_otis" || !character.sheet;
   $("face-tab-count").textContent = String(character.expressions?.length || 0).padStart(2, "0");
   buildFaces(character);
+  const resolvedFace=defaultExpressionFor(character);
+  if(resolvedFace)attachExpression(resolvedFace);
   // Enter each character with ALL actions visible; stale filters from a
   // previous actor must not hide Bathtub Bathe in Male/Female motion lists.
   $("motion-search").value="";
@@ -240,33 +294,71 @@ async function refreshEmosiFaces() {
   const bridge=window.VLMahlukEmosiBridge;
   if(!bridge)return;
   const status=$("emosi-sync-status");
-  if(status)status.textContent="MEMBACA DATABASE EMOSI.EXE ...";
+  if(status && !bridge.stockLoaded)status.textContent="Drive stock not loaded";
   try {
     const result=await bridge.refresh();
     if(state.selected){
       const previous=state.expression?.id;
+      const saved=storedFaceId(state.selected);
       buildFaces(state.selected);
-      if(state.mode==="face"&&previous?.startsWith("emosi_")){
-        const face=state.selected.expressions.find(e=>e.id===previous);
-        if(face)selectFace(face);
+      const want=previous||saved;
+      const face=findExpression(state.selected,want);
+      if(face){
+        if(state.mode==="face")selectFace(face);
+        else attachExpression(face);
+      }else if(isHumanBaseActor(state.selected)&&!previous){
+        state.expression=null;
       }
     }
-    if(status)status.textContent="EMOSI.EXE · "+result.count+" EKSPRESI · "+result.local+" LOCAL · "+result.drive+" GOOGLE DRIVE"+(result.connected?" · CONNECTED":" · CONNECT TO LOAD CLOUD")+(result.error?" · "+result.error:"");
+    if(status)status.textContent=result.status||(result.stockLoaded?
+      "EMOSI.EXE · "+result.count+" expressions":"Drive stock not loaded");
   } catch(error) {
-    if(status)status.textContent="EMOSI SYNC GAGAL · "+error.message;
+    if(status)status.textContent="Drive stock not loaded · "+error.message;
   }
+}
+function selectBlankFace(){
+  if(!state.selected)return;
+  state.expression=null;
+  state.expressionAuto=false;
+  if($("motion-auto-face"))$("motion-auto-face").checked=false;
+  state.faceImage=null;state.faceOverlay=null;state.blinkOverlay=null;state.motionFaceImage=null;
+  const container=$("face-grid");
+  if(container)[...container.children].forEach(button=>{
+    const on=button.dataset.faceId==="";
+    button.classList.toggle("active",on);
+    button.setAttribute("aria-pressed",String(on));
+  });
+  if($("motion-expression-active"))$("motion-expression-active").textContent="FACE: NO FACE / BLANK";
+  setStatus("BLANK FACE · NO EXPRESSION OVERLAY");
+  draw();
 }
 function buildFaces(character) {
   window.VLMahlukEmosiBridge?.apply(character);
   const container = $("face-grid");
   container.replaceChildren();
-  const faces = Array.isArray(character.expressions) ? character.expressions : [];
-  $("face-count").textContent = String(faces.length).padStart(2, "0");
-
+  const human=isHumanBaseActor(character);
+  const faces = (Array.isArray(character.expressions) ? character.expressions : [])
+    .filter(face=>human?face?.source==="emosi":true);
+  if(human){
+    const blank=document.createElement("button");
+    blank.type="button";
+    blank.className="face-option";
+    blank.dataset.faceId="";
+    blank.title="No face / blank";
+    const isBlank=state.selected===character&&!state.expression;
+    blank.classList.toggle("active",isBlank);
+    blank.setAttribute("aria-pressed",String(isBlank));
+    const label=document.createElement("span");
+    label.textContent="NO FACE / BLANK";
+    blank.append(label);
+    blank.addEventListener("click",()=>selectBlankFace());
+    container.append(blank);
+  }
   for (const face of faces) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "face-option";
+    button.dataset.faceId=face.id;
     button.setAttribute("aria-pressed", "false");
     button.title = face.label;
     const img = new Image();
@@ -279,6 +371,8 @@ function buildFaces(character) {
     button.addEventListener("click", () => selectFace(face));
     container.append(button);
   }
+  $("face-count").textContent = String(container.children.length).padStart(2, "0");
+  if($("face-tab-count"))$("face-tab-count").textContent=String(container.children.length).padStart(2,"0");
 }
 
 function buildMotions(character) {
@@ -659,6 +753,7 @@ function hydrateCharacter(row,base){
    (["base","light","medium","tan","deep","dark"].includes(row.skinTone)?row.skinTone:"base"):null,
   thumbnail:typeof row.portrait==="string"&&/^data:image\/png;base64,/.test(row.portrait)?
    row.portrait:base.thumbnail,
+  faceId:typeof row.faceId==="string"?row.faceId:"",
   description:base.template_category.toUpperCase()+" · "+row.name+" · 4-direction modular outfit / original motion & face atlases"};
 }
 function rebuildCustomCharacters(){
@@ -765,7 +860,7 @@ async function saveCustomCharacter(){
  catch(error){setStatus("CHARACTER PREVIEW ERROR: "+error.message);return;}
  const record={id,name,base:baseId,category:base.template_category,
   ...(HUMAN_BASES.includes(baseId)?{skinTone:$("custom-skin-tone").value}:{}),
-  ...(portrait?{portrait}:{}),updated:Date.now()};
+  ...(portrait?{portrait}:{}),faceId:currentFaceId(),updated:Date.now()};
  const index=rows.findIndex(x=>x.id===id);
  if(index<0)rows.unshift(record);else rows[index]=record;
  const equipment=readAccessoryJson(ACCESSORY_EQUIP,{});
@@ -1591,6 +1686,7 @@ document.addEventListener("mahluk:pose-saved",()=>{
   }
 });
 $("sync-emosi")?.addEventListener("click",()=>void refreshEmosiFaces());
+$("load-emosi-stock")?.addEventListener("click",()=>void refreshEmosiFaces());
 $("connect-emosi-drive")?.addEventListener("click",async()=>{
   const button=$("connect-emosi-drive"),status=$("emosi-sync-status");
   if(!window.VLMahlukEmosiBridge)return;

@@ -1,0 +1,13 @@
+{
+  "format": "mahluk-emosi-preview-stock-v1",
+  "source": "incoming/emosi-stock/authored",
+  "note": "1:1 copies of user-authored Drive projects for the preview library. Not the 12 universal starters.",
+  "entries": [
+    "emotion-mw4mzro0-ev3cnn.emotion.json",
+    "emotion-mw4o7cet-970dwt.emotion.json",
+    "emotion-mw4xixfu-kqnhg6.emotion.json",
+    "emotion-mw4xqimg-akr8zi.emotion.json",
+    "emotion-mw53vod1-vhh631.emotion.json",
+    "emotion-mw54cez5-xpgq4q.emotion.json"
+  ]
+}

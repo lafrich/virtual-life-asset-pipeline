@@ -73,7 +73,7 @@
   return {format:"mahluk-modular-rig-v2",version:2,character_id:ID,
    frame:[W,H],pivot:[32,100],fps:FPS,frames:FRAMES,direction:"se",
    emotion:"neutral",faceLayers:{},name:"PIXEL REFERENCE / 01",phone:true,
-   gender:"male",outfit:true,visual:"original_clothed",
+   gender:"male",outfit:true,visual:"original_clothed",headMerged:false,hair:"cap",
    parts:Object.fromEntries(BONES.map(b=>[b.id,{x:0,y:0,z:0,angle:0,scale:1,visible:true}]))};
  }
  function referencePose(){
@@ -97,6 +97,10 @@
    if(source.gender==="male"||source.gender==="female")state.gender=source.gender;
    if(typeof source.outfit==="boolean")state.outfit=source.outfit;
    if(source.visual==="gender"||source.visual==="original_clothed")state.visual=source.visual;
+   state.headMerged=source.headMerged===true;
+   if(typeof source.blankHead==="boolean")state.blankHead=source.blankHead;
+   if(typeof source.hideFaceFeatures==="boolean")state.hideFaceFeatures=source.hideFaceFeatures;
+   if(source.hair==="none"||source.hair==="cap")state.hair=source.hair;
    if(DIR.includes(source.direction))state.direction=source.direction;
    state.fps=clamp(source.fps||FPS,4,30);
    state.frames=Math.round(clamp(source.frames||FRAMES,4,96));
@@ -494,7 +498,28 @@
   // Anatomical left and right are not tied to the fixed screen-left half.
   return id.replace(/_(l|r)$/,(_,side)=>side==="l"?"_r":"_l");
  }
+ const HIDDEN_FACE_BONES=Object.freeze(["brow_l","brow_r","eye_l","eye_r","nose","mouth","blush_l","blush_r"]);
+ const HAIR_BONES=Object.freeze(["hair_back","hair_cap","fringe_l","fringe_mid","fringe_r"]);
+ const HAIR_FRONT_BONES=Object.freeze(["hair_cap","fringe_l","fringe_mid","fringe_r","glasses"]);
+ function isAnatomicalFringe(part){
+  return !!part&&part.layer_type==="body"&&(part.bone==="fringe_l"||part.bone==="fringe_mid"||part.bone==="fringe_r");
+ }
+ function isNavyHairPart(part){
+  if(!part||isAnatomicalFringe(part))return false;
+  if(part.source==="hair_back"||part.source==="hair_front")return true;
+  return HAIR_BONES.includes(part.bone);
+ }
+ function isNavyFrontPart(part){
+  if(!part||isAnatomicalFringe(part))return false;
+  return part.source==="hair_front"||part.bone==="hair_cap"||part.bone==="fringe_l"||part.bone==="fringe_mid"||part.bone==="fringe_r"||part.bone==="glasses";
+ }
+ function genderLayerGroup(part){
+  if(part.bone==="hair_back"||part.source==="hair_back")return 0;
+  if(isNavyFrontPart(part))return 2;
+  return 1;
+ }
  function sourceSlot(part,state){
+  if(part.layer_type==="archive")return false;
   if(!part.gender)return true; // Legacy source record compatibility.
   if(part.gender!==state.gender)return false;
   // The body is ALWAYS the same anatomically authored base. Outfit means
@@ -503,6 +528,32 @@
   if(part.layer_type==="garment")return !!state.outfit;
   // Keep supporting old archived manifest records.
   return part.mode===(state.outfit?"outfit":"base");
+ }
+ function shouldHidePart(part,state){
+  if(!part||!state)return false;
+  if(part.layer_type==="archive")return true;
+  if(state.headMerged===true)return false;
+  if((state.visual==="gender"||state.hideFaceFeatures===true)&&HIDDEN_FACE_BONES.includes(part.bone))return true;
+  if(state.hair==="none"&&isNavyHairPart(part))return true;
+  if(state.hair!=="none"&&isAnatomicalFringe(part))return true;
+  return false;
+ }
+ function drawEmosiOverlay(ctx,image,frame,view,coords){
+  const dir=DIR.indexOf(view);
+  if(dir<0||!image)return;
+  const node=coords.emotion,anchor=BMAP.emotion;
+  if(!node||node.visible===false||!anchor)return;
+  const mirrored=view==="sw"||view==="nw";
+  const width=image.naturalWidth||image.width||W;
+  const n=Math.max(1,Math.round(width/W));
+  const f=((frame%n)+n)%n;
+  ctx.save();
+  ctx.translate(mirrored?W-node.x:node.x,node.y);
+  ctx.rotate((mirrored?-1:1)*node.angle*Math.PI/180);
+  ctx.scale(node.scale||1,node.scale||1);
+  ctx.translate(-(mirrored?W-anchor.x:anchor.x),-anchor.y);
+  ctx.drawImage(image,f*W,dir*H,W,H,0,0,W,H);
+  ctx.restore();
  }
  function drawRigLayer(ctx,image,bone,view,coords,dir,expression=0,isExpression=false){
   const anchor=BMAP[bone],node=coords[bone];
@@ -520,11 +571,11 @@
  }
  // A plane is one transparent, source-authored cutout anchored to its own
  // bone. Sort by explicit relative Z; equal Z preserves native V6B paint order.
- function depthOrder(parts,coords){
-  return parts.map((part,order)=>({part,order,z:coords[part.bone]?.z??0}))
-   .sort((a,b)=>a.z-b.z||a.order-b.order).map(row=>row.part);
+ function depthOrder(parts,coords,grouped=false){
+  return parts.map((part,order)=>({part,order,z:coords[part.bone]?.z??0,g:grouped?genderLayerGroup(part):1}))
+   .sort((a,b)=>a.z-b.z||a.g-b.g||a.order-b.order).map(row=>row.part);
  }
- function drawNative(ctx,state,view,coords){
+ function drawNative(ctx,state,view,coords,options={}){
   const dir=originalArt.directions.indexOf(view);
   if(dir<0)return;
   if(state.visual!=="gender"&&manualLayerProvider){
@@ -532,6 +583,7 @@
    if(manual){
     for(const part of depthOrder(manual,coords)){
      if(part.bone==="phone"&&!state.phone)continue;
+     if(shouldHidePart(part,state))continue;
      drawRigLayer(ctx,part.image,part.bone,view,coords,dir);
     }
     return;
@@ -542,23 +594,33 @@
   const parts=[];
   for(const part of originalArt.slots){
    if(state.visual==="gender"){
-    if(!part.gender||!sourceSlot(part,state))continue;
+    const sharedNavyHair=!part.gender&&(part.source==="hair_back"||part.source==="hair_front");
+    if(!(part.gender||sharedNavyHair)||!sourceSlot(part,state))continue;
    }else if(part.gender)continue;
+   if(shouldHidePart(part,state))continue;
    parts.push(part);
   }
-  for(const part of depthOrder(parts,coords)){
+  let overlayDrawn=false;
+  const paintOverlay=()=>{
+   if(overlayDrawn||!options.emosi)return;
+   overlayDrawn=true;
+   drawEmosiOverlay(ctx,options.emosi,options.emosiFrame||0,view,coords);
+  };
+  for(const part of depthOrder(parts,coords,state.visual==="gender")){
+   if(isNavyFrontPart(part))paintOverlay();
    if(part.bone==="phone"&&!state.phone)continue;
    const emotion=state.faceLayers[part.bone]||state.emotion;
    const expressionIndex=Math.max(0,originalArt.emotions.indexOf(emotion));
    drawRigLayer(ctx,part.image,part.bone,view,coords,dir,expressionIndex,part.expression);
   }
+  paintOverlay();
  }
  function draw(ctx,source,direction="se",options={}){
   const state=normalize(source),view=DIR.includes(direction)?direction:state.direction;
   const coords=world(state);
   ctx.save();ctx.imageSmoothingEnabled=false;
   if(options.clear!==false)ctx.clearRect(0,0,W,H);
-  if(originalArt)drawNative(ctx,state,view,coords);
+  if(originalArt)drawNative(ctx,state,view,coords,options);
   else if(!root?.document){
    // Legacy pure-code Node verification remains available. Browsers never
    // display the previous rejected procedurally redrawn reference.
@@ -647,6 +709,6 @@
    proportions:{head:PROPORTIONS.head,shirt:PROPORTIONS.shirt,
     pants:PROPORTIONS.pants,shoes:PROPORTIONS.shoes}};
  }
- return Object.freeze({ID,W,H,DIR,ART_REVISION,BONES,BMAP,HIERARCHY,EMOTIONS,FACE_BONES,PALETTE,
-  PROPORTIONS,ORIGINAL_SOURCE,mirrorBone,sourceSlot,setManualLayerProvider,loadNativeArt,get hasNativeArt(){return !!originalArt;},neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
+ return Object.freeze({ID,W,H,DIR,ART_REVISION,BONES,BMAP,HIERARCHY,EMOTIONS,FACE_BONES,HIDDEN_FACE_BONES,HAIR_BONES,PALETTE,
+  PROPORTIONS,ORIGINAL_SOURCE,mirrorBone,sourceSlot,shouldHidePart,drawEmosiOverlay,setManualLayerProvider,loadNativeArt,get hasNativeArt(){return !!originalArt;},neutral,referencePose,normalize,world,draw,spriteSheet,sampleTrack,key,makeTracks,exportModel});
 });

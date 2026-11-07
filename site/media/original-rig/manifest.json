@@ -1,0 +1,819 @@
+{
+  "preview": "media/original-rig/gender-bases.png",
+  "rotation_qa": "media/original-rig/rotation-qa.png",
+  "gender_bases": [
+    "male",
+    "female"
+  ],
+  "outfit_modes": [
+    "base",
+    "outfit"
+  ],
+  "anatomy_source": "human-male-base and human-female-base",
+  "anatomy_layers_shared_across_outfits": true,
+  "outfit_layer_mode": "additive_native_garments",
+  "rig_pivot": [
+    32,
+    100
+  ],
+  "format": "mahluk-original-source-rig-v1",
+  "art_style": "original_v6b",
+  "generator": "chars-iso/v6b/tools/live_v6b.py",
+  "asset_revision": "2026-11-06-four-view-anatomical-hands-v2",
+  "reference": "new editable reference using original source art; archived character listings remain hidden",
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "emotions": [
+    "neutral",
+    "happy",
+    "mischievous",
+    "angry",
+    "surprised",
+    "blush",
+    "grin"
+  ],
+  "frame_size": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "slots": [
+    {
+      "name": "hair-back-hair-back",
+      "bone": "hair_back",
+      "source": "hair_back",
+      "expression": false,
+      "src": "media/original-rig/hair-back-hair-back.png"
+    },
+    {
+      "name": "body-head",
+      "bone": "head",
+      "source": "body",
+      "expression": false,
+      "src": "media/original-rig/body-head.png"
+    },
+    {
+      "name": "arm-far-elbow-l",
+      "bone": "elbow_l",
+      "source": "arm_far",
+      "expression": false,
+      "src": "media/original-rig/arm-far-elbow-l.png"
+    },
+    {
+      "name": "arm-far-elbow-r",
+      "bone": "elbow_r",
+      "source": "arm_far",
+      "expression": false,
+      "src": "media/original-rig/arm-far-elbow-r.png"
+    },
+    {
+      "name": "arm-far-shoulder-l",
+      "bone": "shoulder_l",
+      "source": "arm_far",
+      "expression": false,
+      "src": "media/original-rig/arm-far-shoulder-l.png"
+    },
+    {
+      "name": "arm-far-shoulder-r",
+      "bone": "shoulder_r",
+      "source": "arm_far",
+      "expression": false,
+      "src": "media/original-rig/arm-far-shoulder-r.png"
+    },
+    {
+      "name": "shoes-ankle-l",
+      "bone": "ankle_l",
+      "source": "shoes",
+      "expression": false,
+      "src": "media/original-rig/shoes-ankle-l.png"
+    },
+    {
+      "name": "shoes-ankle-r",
+      "bone": "ankle_r",
+      "source": "shoes",
+      "expression": false,
+      "src": "media/original-rig/shoes-ankle-r.png"
+    },
+    {
+      "name": "pants-hip-l",
+      "bone": "hip_l",
+      "source": "pants",
+      "expression": false,
+      "src": "media/original-rig/pants-hip-l.png"
+    },
+    {
+      "name": "pants-hip-r",
+      "bone": "hip_r",
+      "source": "pants",
+      "expression": false,
+      "src": "media/original-rig/pants-hip-r.png"
+    },
+    {
+      "name": "pants-knee-l",
+      "bone": "knee_l",
+      "source": "pants",
+      "expression": false,
+      "src": "media/original-rig/pants-knee-l.png"
+    },
+    {
+      "name": "pants-knee-r",
+      "bone": "knee_r",
+      "source": "pants",
+      "expression": false,
+      "src": "media/original-rig/pants-knee-r.png"
+    },
+    {
+      "name": "pants-pelvis",
+      "bone": "pelvis",
+      "source": "pants",
+      "expression": false,
+      "src": "media/original-rig/pants-pelvis.png"
+    },
+    {
+      "name": "shirt-torso",
+      "bone": "torso",
+      "source": "shirt",
+      "expression": false,
+      "src": "media/original-rig/shirt-torso.png"
+    },
+    {
+      "name": "arm-near-elbow-l",
+      "bone": "elbow_l",
+      "source": "arm_near",
+      "expression": false,
+      "src": "media/original-rig/arm-near-elbow-l.png"
+    },
+    {
+      "name": "arm-near-elbow-r",
+      "bone": "elbow_r",
+      "source": "arm_near",
+      "expression": false,
+      "src": "media/original-rig/arm-near-elbow-r.png"
+    },
+    {
+      "name": "arm-near-shoulder-l",
+      "bone": "shoulder_l",
+      "source": "arm_near",
+      "expression": false,
+      "src": "media/original-rig/arm-near-shoulder-l.png"
+    },
+    {
+      "name": "arm-near-shoulder-r",
+      "bone": "shoulder_r",
+      "source": "arm_near",
+      "expression": false,
+      "src": "media/original-rig/arm-near-shoulder-r.png"
+    },
+    {
+      "name": "face-eye-l",
+      "bone": "eye_l",
+      "source": "face",
+      "expression": true,
+      "src": "media/original-rig/face-eye-l.png"
+    },
+    {
+      "name": "face-eye-r",
+      "bone": "eye_r",
+      "source": "face",
+      "expression": true,
+      "src": "media/original-rig/face-eye-r.png"
+    },
+    {
+      "name": "face-mouth",
+      "bone": "mouth",
+      "source": "face",
+      "expression": true,
+      "src": "media/original-rig/face-mouth.png"
+    },
+    {
+      "name": "face-nose",
+      "bone": "nose",
+      "source": "face",
+      "expression": true,
+      "src": "media/original-rig/face-nose.png"
+    },
+    {
+      "name": "hair-front-fringe-l",
+      "bone": "fringe_l",
+      "source": "hair_front",
+      "expression": false,
+      "src": "media/original-rig/hair-front-fringe-l.png"
+    },
+    {
+      "name": "hair-front-fringe-mid",
+      "bone": "fringe_mid",
+      "source": "hair_front",
+      "expression": false,
+      "src": "media/original-rig/hair-front-fringe-mid.png"
+    },
+    {
+      "name": "hair-front-fringe-r",
+      "bone": "fringe_r",
+      "source": "hair_front",
+      "expression": false,
+      "src": "media/original-rig/hair-front-fringe-r.png"
+    },
+    {
+      "name": "hair-front-hair-cap",
+      "bone": "hair_cap",
+      "source": "hair_front",
+      "expression": false,
+      "src": "media/original-rig/hair-front-hair-cap.png"
+    },
+    {
+      "name": "acc-head-glasses",
+      "bone": "glasses",
+      "source": "acc_head",
+      "expression": true,
+      "src": "media/original-rig/acc-head-glasses.png"
+    },
+    {
+      "name": "brows-brow-l",
+      "bone": "brow_l",
+      "source": "brows",
+      "expression": true,
+      "src": "media/original-rig/brows-brow-l.png"
+    },
+    {
+      "name": "brows-brow-r",
+      "bone": "brow_r",
+      "source": "brows",
+      "expression": true,
+      "src": "media/original-rig/brows-brow-r.png"
+    },
+    {
+      "name": "male-body-ankle_l",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "ankle_l",
+      "expression": false,
+      "src": "media/original-rig/male-body-ankle-l.png"
+    },
+    {
+      "name": "male-body-ankle_r",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "ankle_r",
+      "expression": false,
+      "src": "media/original-rig/male-body-ankle-r.png"
+    },
+    {
+      "name": "male-body-elbow_l",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "elbow_l",
+      "expression": false,
+      "src": "media/original-rig/male-body-elbow-l.png"
+    },
+    {
+      "name": "male-body-elbow_r",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "elbow_r",
+      "expression": false,
+      "src": "media/original-rig/male-body-elbow-r.png"
+    },
+    {
+      "name": "male-body-eye_l",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "eye_l",
+      "expression": false,
+      "src": "media/original-rig/male-body-eye-l.png"
+    },
+    {
+      "name": "male-body-eye_r",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "eye_r",
+      "expression": false,
+      "src": "media/original-rig/male-body-eye-r.png"
+    },
+    {
+      "name": "male-body-fringe_l",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "fringe_l",
+      "expression": false,
+      "src": "media/original-rig/male-body-fringe-l.png"
+    },
+    {
+      "name": "male-body-fringe_mid",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "fringe_mid",
+      "expression": false,
+      "src": "media/original-rig/male-body-fringe-mid.png"
+    },
+    {
+      "name": "male-body-fringe_r",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "fringe_r",
+      "expression": false,
+      "src": "media/original-rig/male-body-fringe-r.png"
+    },
+    {
+      "name": "male-body-head",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "archive",
+      "bone": "head",
+      "expression": false,
+      "src": "media/original-rig/male-body-head.png"
+    },
+    {
+      "name": "male-body-head-blank",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "head",
+      "expression": false,
+      "src": "media/original-rig/male-body-head-blank.png"
+    },
+    {
+      "name": "male-body-hip_l",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "hip_l",
+      "expression": false,
+      "src": "media/original-rig/male-body-hip-l.png"
+    },
+    {
+      "name": "male-body-hip_r",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "hip_r",
+      "expression": false,
+      "src": "media/original-rig/male-body-hip-r.png"
+    },
+    {
+      "name": "male-body-knee_l",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "knee_l",
+      "expression": false,
+      "src": "media/original-rig/male-body-knee-l.png"
+    },
+    {
+      "name": "male-body-knee_r",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "knee_r",
+      "expression": false,
+      "src": "media/original-rig/male-body-knee-r.png"
+    },
+    {
+      "name": "male-body-mouth",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "mouth",
+      "expression": false,
+      "src": "media/original-rig/male-body-mouth.png"
+    },
+    {
+      "name": "male-body-nose",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "nose",
+      "expression": false,
+      "src": "media/original-rig/male-body-nose.png"
+    },
+    {
+      "name": "male-body-pelvis",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "pelvis",
+      "expression": false,
+      "src": "media/original-rig/male-body-pelvis.png"
+    },
+    {
+      "name": "male-body-shoulder_l",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "shoulder_l",
+      "expression": false,
+      "src": "media/original-rig/male-body-shoulder-l.png"
+    },
+    {
+      "name": "male-body-shoulder_r",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "shoulder_r",
+      "expression": false,
+      "src": "media/original-rig/male-body-shoulder-r.png"
+    },
+    {
+      "name": "male-body-torso",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "torso",
+      "expression": false,
+      "src": "media/original-rig/male-body-torso.png"
+    },
+    {
+      "name": "male-body-wrist_l",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "wrist_l",
+      "expression": false,
+      "src": "media/original-rig/male-body-wrist-l.png"
+    },
+    {
+      "name": "male-body-wrist_r",
+      "gender": "male",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "wrist_r",
+      "expression": false,
+      "src": "media/original-rig/male-body-wrist-r.png"
+    },
+    {
+      "name": "male-garment-ankle_l",
+      "gender": "male",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "ankle_l",
+      "expression": false,
+      "src": "media/original-rig/male-garment-ankle-l.png"
+    },
+    {
+      "name": "male-garment-ankle_r",
+      "gender": "male",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "ankle_r",
+      "expression": false,
+      "src": "media/original-rig/male-garment-ankle-r.png"
+    },
+    {
+      "name": "male-garment-hip_l",
+      "gender": "male",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "hip_l",
+      "expression": false,
+      "src": "media/original-rig/male-garment-hip-l.png"
+    },
+    {
+      "name": "male-garment-hip_r",
+      "gender": "male",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "hip_r",
+      "expression": false,
+      "src": "media/original-rig/male-garment-hip-r.png"
+    },
+    {
+      "name": "male-garment-knee_l",
+      "gender": "male",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "knee_l",
+      "expression": false,
+      "src": "media/original-rig/male-garment-knee-l.png"
+    },
+    {
+      "name": "male-garment-knee_r",
+      "gender": "male",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "knee_r",
+      "expression": false,
+      "src": "media/original-rig/male-garment-knee-r.png"
+    },
+    {
+      "name": "male-garment-pelvis",
+      "gender": "male",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "pelvis",
+      "expression": false,
+      "src": "media/original-rig/male-garment-pelvis.png"
+    },
+    {
+      "name": "male-garment-torso",
+      "gender": "male",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "torso",
+      "expression": false,
+      "src": "media/original-rig/male-garment-torso.png"
+    },
+    {
+      "name": "female-body-ankle_l",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "ankle_l",
+      "expression": false,
+      "src": "media/original-rig/female-body-ankle-l.png"
+    },
+    {
+      "name": "female-body-ankle_r",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "ankle_r",
+      "expression": false,
+      "src": "media/original-rig/female-body-ankle-r.png"
+    },
+    {
+      "name": "female-body-elbow_l",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "elbow_l",
+      "expression": false,
+      "src": "media/original-rig/female-body-elbow-l.png"
+    },
+    {
+      "name": "female-body-elbow_r",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "elbow_r",
+      "expression": false,
+      "src": "media/original-rig/female-body-elbow-r.png"
+    },
+    {
+      "name": "female-body-eye_l",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "eye_l",
+      "expression": false,
+      "src": "media/original-rig/female-body-eye-l.png"
+    },
+    {
+      "name": "female-body-eye_r",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "eye_r",
+      "expression": false,
+      "src": "media/original-rig/female-body-eye-r.png"
+    },
+    {
+      "name": "female-body-fringe_l",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "fringe_l",
+      "expression": false,
+      "src": "media/original-rig/female-body-fringe-l.png"
+    },
+    {
+      "name": "female-body-fringe_mid",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "fringe_mid",
+      "expression": false,
+      "src": "media/original-rig/female-body-fringe-mid.png"
+    },
+    {
+      "name": "female-body-fringe_r",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "fringe_r",
+      "expression": false,
+      "src": "media/original-rig/female-body-fringe-r.png"
+    },
+    {
+      "name": "female-body-head",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "archive",
+      "bone": "head",
+      "expression": false,
+      "src": "media/original-rig/female-body-head.png"
+    },
+    {
+      "name": "female-body-head-blank",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "head",
+      "expression": false,
+      "src": "media/original-rig/female-body-head-blank.png"
+    },
+    {
+      "name": "female-body-hip_l",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "hip_l",
+      "expression": false,
+      "src": "media/original-rig/female-body-hip-l.png"
+    },
+    {
+      "name": "female-body-hip_r",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "hip_r",
+      "expression": false,
+      "src": "media/original-rig/female-body-hip-r.png"
+    },
+    {
+      "name": "female-body-knee_l",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "knee_l",
+      "expression": false,
+      "src": "media/original-rig/female-body-knee-l.png"
+    },
+    {
+      "name": "female-body-knee_r",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "knee_r",
+      "expression": false,
+      "src": "media/original-rig/female-body-knee-r.png"
+    },
+    {
+      "name": "female-body-mouth",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "mouth",
+      "expression": false,
+      "src": "media/original-rig/female-body-mouth.png"
+    },
+    {
+      "name": "female-body-nose",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "nose",
+      "expression": false,
+      "src": "media/original-rig/female-body-nose.png"
+    },
+    {
+      "name": "female-body-pelvis",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "pelvis",
+      "expression": false,
+      "src": "media/original-rig/female-body-pelvis.png"
+    },
+    {
+      "name": "female-body-shoulder_l",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "shoulder_l",
+      "expression": false,
+      "src": "media/original-rig/female-body-shoulder-l.png"
+    },
+    {
+      "name": "female-body-shoulder_r",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "shoulder_r",
+      "expression": false,
+      "src": "media/original-rig/female-body-shoulder-r.png"
+    },
+    {
+      "name": "female-body-torso",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "torso",
+      "expression": false,
+      "src": "media/original-rig/female-body-torso.png"
+    },
+    {
+      "name": "female-body-wrist_l",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "wrist_l",
+      "expression": false,
+      "src": "media/original-rig/female-body-wrist-l.png"
+    },
+    {
+      "name": "female-body-wrist_r",
+      "gender": "female",
+      "mode": "base",
+      "layer_type": "body",
+      "bone": "wrist_r",
+      "expression": false,
+      "src": "media/original-rig/female-body-wrist-r.png"
+    },
+    {
+      "name": "female-garment-ankle_l",
+      "gender": "female",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "ankle_l",
+      "expression": false,
+      "src": "media/original-rig/female-garment-ankle-l.png"
+    },
+    {
+      "name": "female-garment-ankle_r",
+      "gender": "female",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "ankle_r",
+      "expression": false,
+      "src": "media/original-rig/female-garment-ankle-r.png"
+    },
+    {
+      "name": "female-garment-hip_l",
+      "gender": "female",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "hip_l",
+      "expression": false,
+      "src": "media/original-rig/female-garment-hip-l.png"
+    },
+    {
+      "name": "female-garment-hip_r",
+      "gender": "female",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "hip_r",
+      "expression": false,
+      "src": "media/original-rig/female-garment-hip-r.png"
+    },
+    {
+      "name": "female-garment-knee_l",
+      "gender": "female",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "knee_l",
+      "expression": false,
+      "src": "media/original-rig/female-garment-knee-l.png"
+    },
+    {
+      "name": "female-garment-knee_r",
+      "gender": "female",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "knee_r",
+      "expression": false,
+      "src": "media/original-rig/female-garment-knee-r.png"
+    },
+    {
+      "name": "female-garment-pelvis",
+      "gender": "female",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "pelvis",
+      "expression": false,
+      "src": "media/original-rig/female-garment-pelvis.png"
+    },
+    {
+      "name": "female-garment-torso",
+      "gender": "female",
+      "mode": "outfit",
+      "layer_type": "garment",
+      "bone": "torso",
+      "expression": false,
+      "src": "media/original-rig/female-garment-torso.png"
+    }
+  ],
+  "pixels_preserved": true,
+  "validation": "28 exact pixel reconstruction checks (4 directions \u00d7 7 expressions)",
+  "headMerged": false,
+  "preview_subset": false,
+  "blank_heads": {
+    "male": "media/original-rig/male-body-head-blank.png",
+    "female": "media/original-rig/female-body-head-blank.png"
+  },
+  "note": "Preview integration of published original-rig planes. Live heads are Ellen blank planes; official male/female-body-head PNGs are archived and not drawn. Gender mode draws gendered body + additive garment-* and shared navy hair (hair-back, hair-front-hair-cap, hair-front-fringe). Anatomical body-fringe is the bald crown and is hidden while navy hair is active to avoid double fringe. Shared Ichsan arm-near/arm-far/pants/shirt/shoes/face/brows/glasses stay available for original_clothed mode and are skipped in gender mode. Anchors unchanged; headMerged:false; Emosi placement {0,0,1}."
+}
