@@ -10,6 +10,7 @@ on:
       - fix/mahluk-pixel-sprite-view-switch-20261108
       - fix/character-back-layers-and-readonly-gallery-20261108
       - fix/mahluk-nude-preview-stale-frames-20261108
+      - fix/mahluk-hide-nude-garment-options-20261108
     paths:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
