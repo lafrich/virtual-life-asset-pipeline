@@ -103,8 +103,9 @@ function saveCurrent(){
    window.V6PPixelSource.stamp(state.v6pSheet,state.action,state.dir,state.frame,stored);
    if(changed&&state.characterId&&state.v6pPart&&window.V6PCharacterStore){
     try{
-     if(exactWear()){
-       // Exact custom sheet persists unchanged; no master retarget.
+     if(exactWear()&&state.masterMode){
+       // This is one of the four source designs, not an animation pose.
+       // Full sheet is already persisted; Preview will propagate it.
       }else if(state.masterMode){
        const cv=document.createElement("canvas");cv.width=WIDTH;cv.height=HEIGHT;
       cv.getContext("2d").putImageData(stored,0,0);
@@ -205,7 +206,7 @@ function modeUI(){
     state.project?(state.project.type==="accessory"?
     "AKSESORIS: layer transparan 384×4928. Overlay karakter terkunci dan tidak pernah digabung ke export. Copy/paste antar frame dan arah. Hanya frame yang dilukis yang ikut animasi.":
     "CUSTOM CLIP: sheet 384×4928 yang kamu lukis sendiri. Bukan auto-animasi. Copy/paste frame. Kompatibilitas Semesta tercatat eksplisit di gallery."):
-    (exactWear()?"CUSTOM WEAR: Edit all native frames and directions. Exact RGB, no retarget.":state.masterMode?"CHARACTER MASTER: Draw four directions on IDLE FRAME 1. Return to Character and GENERATE ALL ANIMATIONS.":"CHARACTER FIX: Edit pose frame; correction kept per-character.")):
+    (exactWear()?(state.masterMode?"CUSTOM WEAR DESIGN: Draw SE / SW / NE / NW on IDLE F0. Preview applies this design to the native animation poses.":"CUSTOM WEAR POSE CORRECTION: Only edit this frame if the generated design needs a manual fix."):state.masterMode?"CHARACTER MASTER: Draw four directions on IDLE FRAME 1. Return to Character and GENERATE ALL ANIMATIONS.":"CHARACTER FIX: Edit pose frame; correction kept per-character.")):
    (isMaster?"MASTER: DRAW ON IDLE F0; ALL ORIGINAL ACTION FRAMES IN THIS DIRECTION INHERIT PIXEL DELTAS.":
    "FRAME: FIX SPECIFIC POSES / AUTOSAVE TO THIS BROWSER.");
  render();
@@ -1378,7 +1379,7 @@ function pullEmosiIntoState(){
     window.V6PPixelSource.stampAt(state.v6pSheet,o.x,o.y,stored);
    }else{
     window.V6PPixelSource.stamp(state.v6pSheet,state.action,dir,state.frame,stored);
-    if(state.characterId&&state.v6pPart&&window.V6PCharacterStore&&original&&!identical(stored,original)&&!state.masterMode&&!exactWear()){
+    if(state.characterId&&state.v6pPart&&window.V6PCharacterStore&&original&&!identical(stored,original)&&!state.masterMode){
      try{window.V6PCharacterStore.markCorrection(state.characterId,state.v6pPart,state.action,dir,state.frame)}
      catch(error){status("FRAME SAVE ERROR "+dir+": "+error.message,true)}
     }
