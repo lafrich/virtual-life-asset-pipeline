@@ -165,6 +165,13 @@ async function restore(){
  downloadRecovery(current.payload);
  for(const [key,raw] of Object.entries(payload.local))localStorage.setItem(key,raw);
  await restoreIdb(payload.emotions);
+ try{
+  root.VLHub?.publish("characters",{source:"mahluk-hidup",operation:"restore"});
+  root.VLHub?.publish("accessories",{source:"mahluk-hidup",operation:"restore"});
+  root.VLHub?.publish("emotions",{source:"mahluk-hidup",operation:"restore"});
+  root.VLHub?.publish("actions",{source:"mahluk-hidup",operation:"restore"});
+  root.VLHub?.publish("animations",{source:"mahluk-hidup",operation:"restore"});
+ }catch{}
  savedFile=file.id;
  return {keys:Object.keys(payload.local).length+Number(payload.emotions.length>0),emotions:payload.emotions.length};
 }
