@@ -62,10 +62,26 @@ function show(name){
  animation:"ANIMATION · 4-direction frame-by-frame asset/anchor editor + Pixel Editor"}[tab]);
 }
 function openEditor(value){
- const url=fixedUrl(value);
+ const url=fixedUrl(value),target=new URL(url);
+ if(target.searchParams.get("character")){
+  show("character");
+  const frame=$("character-pixel-frame");
+  frame.src=url;
+  $("character-pixel-overlay").hidden=false;
+  note("Editing a character-local sprite · Back to Character preserves your wizard step");
+  return;
+ }
  const frame=$("pixel-frame");frame.src=url;frame.dataset.loaded="1";
  mobilePane="paint";show("animation");setPane("paint");
- note("Editing via existing Pixel Editor · current draft and stock sources preserved");
+ note("Editing via original Pixel Editor · source assets preserved");
+}
+async function closeCharacterPixel(){
+ const overlay=$("character-pixel-overlay");
+ if(!overlay||overlay.hidden)return;
+ const frame=$("character-pixel-frame");
+ try{await frame?.contentWindow?.VirtualLifePixelEditor?.flush?.()}
+ catch(error){note("Pixel save failed: "+error.message);return}
+ overlay.hidden=true;show("character");refreshCharacter();
 }
 function refreshCharacter(){
  const el=$("character-frame");try{el?.contentWindow?.postMessage({type:"mahluk:refresh-character"},ORIGIN)}catch{}
@@ -84,6 +100,7 @@ function bind(){
  $("view-library").onclick=()=>setPane("library");
  $("view-paint").onclick=()=>setPane("paint");
  $("new-clip").onclick=newClip;
+ $("character-pixel-back").onclick=()=>void closeCharacterPixel();
  $("pixel-full").onclick=()=>window.open($("pixel-frame").src,"_blank","noopener,noreferrer");
  $("open-separate").onclick=openFull;
  window.addEventListener("message",e=>{
@@ -123,6 +140,6 @@ function bind(){
   };
  }
 }
-window.VLMahlukWorkspace=Object.freeze({show,openEditor,newClip,refreshCharacter,note});
+window.VLMahlukWorkspace=Object.freeze({show,openEditor,closeCharacterPixel,newClip,refreshCharacter,note});
 bind();show(new URLSearchParams(location.search).get("tab")||"character");
 })();
