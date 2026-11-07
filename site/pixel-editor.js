@@ -182,6 +182,7 @@ function queueMasterSync(){
 }
 function modeUI(){
  if($("autofit-outfit")) $("autofit-outfit").hidden=true; // Generation is in Character Editor
+ if($("clear-character-correction"))$("clear-character-correction").hidden=!(state.characterId&&state.v6pPart&&!state.masterMode&&!state.project&&!state.actClip);
  const isMaster=(state.mode==="master"&&state.source!=="v6p")||state.masterMode;
  $("action").disabled=isMaster;$("frame").disabled=isMaster;
  $("prev-frame").disabled=isMaster;$("next-frame").disabled=isMaster;
@@ -1414,6 +1415,14 @@ function bootEmosiEditor(){
 }
 
 function initControls(){
+ if($("clear-character-correction"))$("clear-character-correction").onclick=()=>{
+  if(!state.characterId||!state.v6pPart||state.masterMode)return;
+  if(!window.V6PCharacterStore.isCorrection(state.characterId,state.v6pPart,state.action,state.dir,state.frame))
+   return status("This frame is not protected. Generate from Character Editor to refresh it.");
+  if(!confirm("Remove this frame's manual correction lock? Next Character Generate will replace it with the automatically retargeted pose."))return;
+  window.V6PCharacterStore.clearCorrection(state.characterId,state.v6pPart,state.action,state.dir,state.frame);
+  status("Correction lock removed for "+state.action+" / "+state.dir+" F"+(state.frame+1)+". Return to Character and GENERATE ALL ANIMATIONS.");
+ };
 
 
  $("zoom").value=String(state.zoom);
