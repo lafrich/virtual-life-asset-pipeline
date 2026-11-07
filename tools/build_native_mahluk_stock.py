@@ -13,7 +13,7 @@ import json
 import numpy as np
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "site/media/v6p"
 TARGET = ROOT / "site/media/v6p-act"
 FW,FH = 64,112
