@@ -1,4 +1,5 @@
 name: Native Mahluk Stock — Review Build
+# Review-only build: source sprite identities preserved; production remains gated.
 
 on:
   push:
