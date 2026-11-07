@@ -142,10 +142,13 @@ function drawObject(ctx){
 function render(){
  const cv=$("action-canvas"),ctx=cv.getContext("2d");ctx.imageSmoothingEnabled=false;
  ctx.clearRect(0,0,cv.width,cv.height);
- const r=ref(),length=r?.frames||1;state.frame=Math.min(state.frame,length-1);
+ const bound=ref(),entry=actor(),V=root.V6PCompositor;
+ const r=bound||(entry.ch&&V?{frames:V.FRAMES.idle,frameMs:Array(V.FRAMES.idle).fill(220),
+  loop:true,layout:"base",actor:entry.name,action:{id:"idle"},ch:entry.ch}:null);
+ const length=r?.frames||1;state.frame=Math.min(state.frame,length-1);
  $("frame").max=String(length-1);$("frame").value=String(state.frame);$("frame-number").textContent=(state.frame+1)+" / "+length;
  const who=actor().name,choose=$("phase-"+state.phase).value;
- $("preview-note").textContent=r?(r.layout==="activity"?"LOCAL ANIMATION TEMPLATE · not automatically fitted to "+who:
+ $("preview-note").textContent=!bound&&r?"IDLE REFERENCE · "+who+" · choose an ENTER / LOOP / EXIT animation":r?(r.layout==="activity"?"LOCAL ANIMATION TEMPLATE · not automatically fitted to "+who:
   r.layout==="published"?"ACTUAL CHARACTER CLIP · "+who:"V6P CHARACTER PREVIEW · "+who)+
   " · "+r.action?.id+" · "+$("dir").value.toUpperCase():
   (choose?"No compatible frames for "+who+" / "+choose+". Use Animation Editor to author frames.":"Select ENTER / LOOP / EXIT animation for "+who);
@@ -258,6 +261,21 @@ function wire(){
  $("frame").oninput=e=>{stop();state.frame=Number(e.target.value)||0;render()};
  $("actor").onchange=()=>{stop();state.frame=0;render()};
  $("refresh-actors").onclick=()=>{refreshActors();render()};
+ const canvas=$("action-canvas");let dragging=null;
+ canvas.style.touchAction="none";canvas.style.cursor="grab";
+ canvas.addEventListener("pointerdown",e=>{
+  const rect=canvas.getBoundingClientRect();
+  dragging={sx:e.clientX,sy:e.clientY,ox:Number($("offset-x").value)||0,oy:Number($("offset-y").value)||0,w:rect.width,h:rect.height};
+  canvas.setPointerCapture(e.pointerId);canvas.style.cursor="grabbing";
+ });
+ canvas.addEventListener("pointermove",e=>{
+  if(!dragging)return;const d=dragging;
+  const x=Math.max(-256,Math.min(256,Math.round(d.ox+(e.clientX-d.sx)*64/d.w)));
+  const y=Math.max(-256,Math.min(256,Math.round(d.oy+(e.clientY-d.sy)*112/d.h)));
+  $("offset-x").value=x;$("offset-y").value=y;render();
+ });
+ canvas.addEventListener("pointerup",()=>{dragging=null;canvas.style.cursor="grab"});
+ canvas.addEventListener("pointercancel",()=>{dragging=null;canvas.style.cursor="grab"});
  $("dir").onchange=()=>{stop();render()};
  for(const id of ["object","offset-x","offset-y"]) $(id).addEventListener("input",render);
  for(const phase of ["enter","loop","exit"]){
