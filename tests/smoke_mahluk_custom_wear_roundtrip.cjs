@@ -73,7 +73,7 @@ const {chromium}=require('playwright');
   await char.locator('#wizard-customize:not([hidden])').waitFor({timeout:65000});
   assert.equal(await char.locator('#top').inputValue(),'custom','Top changed back to base clothes after editor Back');
   assert.equal(await char.locator('#wizard-part-top').isVisible(),true,'Returned to a different tab');
-  const after=await page.evaluate(async({id,pos})=>{
+  const after=await page.evaluate(async({id,pos,rearPos})=>{
    const w=document.getElementById('character-frame').contentWindow;
    const S=w.V6PCharacterStore,P=w.V6PPixelSource;
    const sheet=await P.loadSheetFromUrl(S.getPart(id,'top/custom_f'));
