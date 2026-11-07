@@ -175,6 +175,13 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
+      - name: Publish Grok motion review database (not gameplay)
+        run: |
+          python tools/publish_grok_motion_review.py
+          test -s _site/grok-motion-preview/catalog.json
+          test -s _site/grok-motion-preview/ichsan_yoga_mountain_sheet.png
+          test -s _site/grok-motion-preview/npc_pee_stand_sheet.png
+          python -c "import json,pathlib; p=pathlib.Path('_site/grok-motion-preview'); d=json.loads((p/'catalog.json').read_text()); assert d['count']==49 and len(d['actions'])==49; assert d['isGameInstalled'] is False and d['reviewStatus']=='pending_owner_review'; assert len(list(p.glob('*_sheet.png')))==108"
       - name: Publish verified Grok V6B review gallery from original ZIP
         run: |
           python tools/publish_grok_review_assets.py
