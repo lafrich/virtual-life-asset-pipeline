@@ -31,6 +31,17 @@ test('per-frame detail edit is transported instead of simply changing the palett
  for(let i=0;i<out.length;i+=4)if(out[i+3]){if(out[i]===10&&out[i+1]===240)detailed++;if(out[i]===180&&out[i+1]===80)native++}
  assert.ok(detailed>0,'detail should follow the target pose');assert.ok(native>0,'rest of native target should remain unchanged');
 });
+test('new four-view hair/garment remains visible when old stock animation layer is blank',()=>{
+ const R=umd('site/v6p-character-retarget.js',{localStorage:store()});
+ const empty=rgba(),painted=rgba(),person=rgba(),moved=rgba();
+ paintBox(painted,{x0:25,x1:39,y0:21,y1:37},[60,20,140]);
+ paintBox(person,{x0:18,x1:46,y0:12,y1:104},[120,80,40]);
+ paintBox(moved,{x0:24,x1:52,y0:15,y1:107},[120,80,40]);
+ const out=R.transferFrame(empty,painted,empty,person,moved);
+ let count=0;for(let i=3;i<out.length;i+=4)if(out[i])count++;
+ assert.ok(count>0,'new hair should transfer using body pose anchor instead of vanish');
+ assert.deepEqual(readColor(empty,30,30),[0,0,0,0],'native source remains immutable');
+});
 test('cloning a character retains four masters and per-pose fixes without global leakage',()=>{
  const ls=store(),w={localStorage:ls,V6PPartCatalog:{isPart:p=>p==='top/nude',normalizePart:x=>x,DIRS:['se','sw','ne','nw'],ACTIONS:['idle','walk'],FRAMES:{idle:4,walk:6}}};
  const S=umd('site/v6p-character-store.js',w);
