@@ -7,7 +7,7 @@ const URLS=Object.freeze({
  emotion:"/virtual-office/emotion-studio/",
  character:"./v6p-studio.html?embedded=1",
  action:"./mahluk-action-editor.html?embedded=1",
- animation:"./mahluk-motion-library.html?embedded=1"
+ animation:"./mahluk-animation-studio.html?embedded=1"
 });
 const FRAMES=Object.freeze({
  emotion:"emotion-frame",character:"character-frame",action:"action-frame",
@@ -52,7 +52,7 @@ function show(name){
  note({emotion:"EMOSI.EXE · emotion database and dialog lipsync are the original editor",
  character:"CHARACTER EDITOR · same source appearance and asset library",
  action:"ACTION EDITOR · situation binding is stored as a separate draft",
- animation:"ANIMATION · original Pixel Editor + Grok Motion Review (not playable until approved)"}[tab]);
+ animation:"ANIMATION · 4-direction frame-by-frame asset/anchor editor + Pixel Editor"}[tab]);
 }
 function openEditor(value){
  const url=fixedUrl(value);

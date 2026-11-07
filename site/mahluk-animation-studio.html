@@ -1,0 +1,62 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MAHLUK · ANIMATION EDITOR</title>
+<style>
+:root{--blue:#21549b;--ink:#203c5d;--line:#899bad;--panel:#e9e9e4}
+*{box-sizing:border-box}body{margin:0;background:#b8c9dd;color:var(--ink);font:12px Tahoma,Arial,sans-serif}
+button,input,select{font:inherit;color:inherit;border:1px solid #8292a6;padding:6px;background:#f9fcff}
+button{cursor:pointer;background:linear-gradient(#fff,#d8e3f0)}button[aria-pressed=true]{background:#b6d7fe;border-color:#306cb4}button:disabled{opacity:.45}
+#header{padding:8px 12px;background:linear-gradient(90deg,#17458c,#548dd5);color:white;display:flex;gap:8px;justify-content:space-between;font-weight:bold}
+#layout{display:grid;grid-template-columns:minmax(180px,240px) minmax(240px,1fr) minmax(172px,230px);gap:7px;padding:7px;min-height:calc(100dvh - 40px)}
+.panel{background:var(--panel);border:1px solid var(--line);padding:9px;min-width:0;min-height:0}
+.panel h2{font-size:12px;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid #abb4bc}
+.row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:6px 0}.row>*{flex:1}
+label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;font-weight:bold}label select,label input{width:100%}
+#animations{display:flex;flex-direction:column;gap:5px;overflow-y:auto;max-height:55dvh}
+#animations button{text-align:left;white-space:normal}#animations button.active{background:#b9d7fd}
+#stage{display:block;margin:7px auto;width:min(100%,360px);max-height:66dvh;aspect-ratio:64/112;image-rendering:pixelated;background:repeating-conic-gradient(#e6edf4 0 25%,#bbccda 0 50%) 0 0/20px 20px;border:2px solid #697b8e;touch-action:none;cursor:crosshair}
+#frame-strip{display:flex;gap:5px;overflow-x:auto;max-width:100%;padding:6px;background:#cbd9e9}
+#frame-strip button{min-width:56px;flex:0 0 auto}
+#status{font-size:11px;padding:8px;background:#dce9f8;border:1px solid #9cb1ca}
+.hint{font-size:10px;line-height:1.4;color:#586c7f}
+#transform input[type=range]{padding:0}#parts button.active{background:#a4cdfb}
+@media(max-width:950px){#layout{grid-template-columns:160px minmax(0,1fr)}#properties{grid-column:1/-1}#stage{width:min(100%,310px)}}
+@media(max-width:600px){#layout{grid-template-columns:1fr}#properties{grid-column:auto}#animations{max-height:120px}#stage{width:min(100%,310px)}}
+</style></head><body>
+<header id="header"><span>ANIMATION EDITOR · PIXEL SPRITE + ANCHOR</span><span>BASE MALE/FEMALE · NO HAIR</span></header>
+<main id="layout">
+<aside class="panel"><h2>ANIMATION DATABASE</h2>
+ <div class="row"><button id="new">＋ NEW</button><button id="copy">⧉ COPY</button></div>
+ <label>BASE TEMPLATE<select id="template"><option value="idle">Idle</option><option value="walk">Walk</option><option value="talk">Talk</option><option value="sit">Sit</option><option value="sleep">Sleep</option><option value="lie">Lie</option></select></label>
+ <label>BASE BODY<select id="gender"><option value="male">Male Base · nude</option><option value="female">Female Base · nude</option></select></label>
+ <div id="animations" aria-label="Saved animation clips"></div>
+ <p class="hint">Edit anchor dan frame di sini, atau lanjut koreksi pixel lewat Pixel Editor. Gerakan bukan rig, setiap frame disimpan sebagai PNG sprite.</p>
+ <div class="row"><button id="open-pixel">✎ PIXEL EDITOR</button><button id="export">↓ JSON</button></div>
+ <div class="row"><button id="reference">GROK REFERENCE ↗</button></div>
+</aside>
+<section class="panel"><h2 id="animation-title">NEW ANIMATION</h2>
+ <div class="row"><label>VIEW<select id="view"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></label>
+ <label>FRAME MS<input type="number" id="ms" value="140" min="40" max="800" step="10"></label></div>
+ <canvas id="stage" width="384" height="672" aria-label="Large pose canvas with rotatable pixel parts"></canvas>
+ <div class="row"><button id="prev">◀</button><button id="play">▶ PLAY</button><button id="next">▶</button>
+ <label style="flex:1"><input id="loop" type="checkbox" checked> LOOP</label></div>
+ <div id="frame-strip" aria-label="Frame by frame timeline"></div>
+ <div class="row"><button id="add-frame">＋ FRAME</button><button id="duplicate">DUP FRAME</button><button id="remove-frame">✕ FRAME</button></div>
+ <div class="row"><button id="save" style="background:#c2dcff">▣ SAVE ANIMATION DATABASE</button></div>
+ <p id="status" role="status">New animation uses the nude Male/Female template without hair.</p>
+</section>
+<aside id="properties" class="panel"><h2>ASSET / ANCHOR</h2>
+ <div id="parts"></div>
+ <label><input id="move-anchor" type="checkbox"> MOVE ANCHOR (drag on canvas)</label>
+ <label>ROTATION <output id="rotation-label">0°</output><input id="rotation" type="range" min="-180" max="180" value="0"></label>
+ <div class="row"><label>OFFSET X<input id="px" type="number" min="-128" max="128" value="0"></label><label>OFFSET Y<input id="py" type="number" min="-128" max="128" value="0"></label></div>
+ <div class="row"><label>ANCHOR X<input id="ax" type="number" min="0" max="63" value="32"></label><label>ANCHOR Y<input id="ay" type="number" min="0" max="111" value="60"></label></div>
+ <div class="row"><button id="reset-transform">RESET PART</button></div>
+ <p class="hint">Pilih bagian tubuh, drag untuk memindahkan atau geser anchor. Rotasi dilakukan pada sprite part, lalu frame hasilnya dibake jadi PNG asli 64×112 per arah.</p>
+ <p class="hint">Saat pose berubah drastis, cek overlap tangan/kaki dan perbaiki di Pixel Editor. Animasi baru berstatus draft sampai dihubungkan ke action/game.</p>
+</aside>
+</main>
+<script src="./v6p-part-catalog.js"></script><script src="./v6p-part-overrides.js"></script><script src="./v6p-character-store.js"></script>
+<script src="./v6p-activity-contract.js"></script><script src="./v6p-clip-store.js"></script><script src="./v6p-compositor.js"></script>
+<script src="/virtual-office/shared/hub-registry.js"></script>
+<script src="./mahluk-animation-studio.js?v=animation-anchor-1"></script>
+</body></html>

@@ -19,7 +19,7 @@ const K={"H0":"#FF08FA","H1":"#FF0EF7","H2":"#FF14F4","H3":"#FF1AF1","H4":"#FF20
 const P={"hair":{"black":["#0F0E0E","#1C1A1A","#242121","#2E2A2A","#4C4644"],"navy":["#10141B","#1C2330","#232A38","#2A3242","#3E5A88"],"brown":["#25180F","#3D2718","#4D321F","#5C3B25","#8A6040"],"chestnut":["#361B11","#582C1C","#713823","#86432A","#B46A44"],"blonde":["#564724","#8F753B","#B5964C","#D8B25A","#F4DE9A"],"red":["#41170F","#6C2619","#893120","#A33A26","#D2663E"],"white":["#505254","#85878B","#A9ACB1","#C9CDD3","#F2F4F7"],"pink":["#573140","#8F516A","#B66786","#D97BA0","#F4B3CC"]},"skin":{"porcelain":{"i":"#F8E4D6","h":"#F2D8C7","e":"#E7BCA3","a":"#DFB195","7":"#AD795C","5":"#8E6147"},"light":{"i":"#F1D3B5","h":"#EBC8A8","e":"#E0AE8A","a":"#D9A47E","7":"#A8704E","5":"#8A5A3C"},"tan":{"i":"#E3B791","h":"#DDAD87","e":"#D3976F","a":"#CC8E65","7":"#9E613E","5":"#824E30"},"medium":{"i":"#C99364","h":"#C48B5D","e":"#BB794C","a":"#B57246","7":"#8C4E2B","5":"#733F21"},"brown":{"i":"#9A6644","h":"#96613F","e":"#8F5434","a":"#8B4F2F","7":"#6B361D","5":"#582C17"},"deep":{"i":"#66412B","h":"#633E28","e":"#5F3621","a":"#5C331E","7":"#472313","5":"#3A1C0E"}},"top":{"charcoal":{"C":["#3F4655","#2A3242","#262D3B","#1E2430","#1A1F29"],"O":["#2A3242","#262D3B","#222936","#1E2430","#1B202A"]},"white":{"C":["#EEF1F4","#ECEFF3","#D4D7DB","#AAACAF","#929497"],"O":["#ECEFF3","#D4D7DB","#C2C4C7","#AAACAF","#97999C"]},"navy":{"C":["#38496E","#22355E","#1F3055","#182644","#15213A"],"O":["#22355E","#1F3055","#1C2B4D","#182644","#16223C"]},"red":{"C":["#BF4943","#B8352E","#A63029","#842621","#72211D"],"O":["#B8352E","#A63029","#972B26","#842621","#76221D"]},"green":{"C":["#518760","#3E7A4E","#386E46","#2D5838","#264C30"],"O":["#3E7A4E","#386E46","#336440","#2D5838","#284E32"]},"mustard":{"C":["#DDAD4E","#D9A43A","#C39434","#9C762A","#876624"],"O":["#D9A43A","#C39434","#B28630","#9C762A","#8B6925"]},"sky":{"C":["#8CBAE1","#7FB2DE","#72A0C8","#5B80A0","#4F6E8A"],"O":["#7FB2DE","#72A0C8","#6892B6","#5B80A0","#51728E"]},"pink":{"C":["#E8A4BC","#E59AB5","#CE8BA3","#A56F82","#8E5F70"],"O":["#E59AB5","#CE8BA3","#BC7E94","#A56F82","#936374"]}},"pants":{"slate":["#4E5769","#3A4458","#333C4D","#29303E"],"night":["#333945","#1C2330","#191F2A","#141822"],"denim":["#5C79A4","#4A6A9A","#415D88","#344A6C"],"khaki":["#BCA479","#B49A6A","#9E885D","#7E6C4A"],"olive":["#6D744C","#5D6438","#525831","#414627"],"grey":["#878C94","#7A7F88","#6B7078","#55595F"]},"shoes":{"walnut":["#5A412F","#4C3728","#6E5848","#E8E6E0"],"black":["#24252B","#1F1F25","#3E3F44","#E8E6E0"],"white":["#E9E7E2","#C6C4C0","#ECEAE5","#B4B0A8"],"red":["#B8352E","#9C2D27","#C14D47","#E8E6E0"],"navy":["#22355E","#1D2D50","#3D4D71","#E8E6E0"],"tan":["#A87A4E","#8F6842","#B28A63","#E8E6E0"]},"swatch":{"hair":{"black":"#2E2A2A","navy":"#2A3242","brown":"#5C3B25","chestnut":"#86432A","blonde":"#D8B25A","red":"#A33A26","white":"#C9CDD3","pink":"#D97BA0"},"skin":{"porcelain":"#F8E4D6","light":"#F1D3B5","tan":"#E3B791","medium":"#C99364","brown":"#9A6644","deep":"#66412B"},"top":{"charcoal":"#2A3242","white":"#ECEFF3","navy":"#22355E","red":"#B8352E","green":"#3E7A4E","mustard":"#D9A43A","sky":"#7FB2DE","pink":"#E59AB5"},"pants":{"slate":"#3A4458","night":"#1C2330","denim":"#4A6A9A","khaki":"#B49A6A","olive":"#5D6438","grey":"#7A7F88"},"shoes":{"walnut":"#5A412F","black":"#24252B","white":"#E9E7E2","red":"#B8352E","navy":"#22355E","tan":"#A87A4E"}},"inner_dark":["#333945","#1C2330","#19202B","#141923","#11161E"],"inner_light":["#EEF1F4","#ECEFF3","#D4D7DB","#AAACAF","#929497"],"glasses":"#4C5468"};
 const FR={"short":"bangs","swept":"swept","mid_curtain":"curtain","mid":"bangs","wavy":"bangs","wavy_curtain":"curtain","long":"bangs","long_curtain":"curtain"};
 const OPT={
-  hair:['short','swept','mid_curtain','mid','wavy','wavy_curtain','long','long_curtain'],
+  hair:['none','short','swept','mid_curtain','mid','wavy','wavy_curtain','long','long_curtain'],
   hairColor:['black','navy','brown','chestnut','blonde','red','white','pink'],
   skin:['porcelain','light','tan','medium','brown','deep'],
   top:['tee','tee_long','tee_graphic','shirt','shirt_tie','cardigan','cardigan_dots','nude'],
@@ -54,6 +54,7 @@ function norm(ch){
   if(ch) for(const k in OPT) if(OPT[k].includes(ch[k])) o[k]=ch[k];
   o.body=ch&&(ch.body==='female'||ch.body==='male')?ch.body:(o.gender==='female'?'female':'male');
   o.accessories=accessoryIds(ch&&ch.accessories);
+  o.characterId=ch&&/^mh2_[a-z0-9]+$/.test(ch.characterId||'')?ch.characterId:'';
   return o;
 }
 const hx=c=>[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];
@@ -73,7 +74,7 @@ function files(ch,fs){
   const blank=ch.face==='blank';
   const faceKey=blank?'blank':(fs||'baked');
   return [
-    'hair/'+ch.hair+'_back',
+    ch.hair==='none'?null:'hair/'+ch.hair+'_back',
     'base/body'+b,
     'top/'+ch.top+'_back'+b,
     'shoes/'+sh+b,
@@ -83,7 +84,7 @@ function files(ch,fs){
     'base/body_front'+b,
     'face/'+(ch.body==='female'?'f':'m')+'_'+faceKey,
     fa!=='none'?'facial/'+fa+(faceKey==='surpr'?'_surpr':''):null,
-    'hair/'+ch.hair+'_front',
+    ch.hair==='none'?null:'hair/'+ch.hair+'_front',
     ch.glasses!=='none'?'glasses/'+ch.glasses:null,
     blank?null:'brows/'+(FR[ch.hair]||'bangs')+'_'+faceKey
   ].filter(Boolean);
@@ -94,9 +95,10 @@ function isFrontLayer(name){
 let LAST_MISSING=[];
 let GEN=0;
 const IM={};
-const img=src=>{
-  const override=(typeof root!=="undefined"&&root&&root.V6PPartOverrides&&root.V6PPartOverrides.urlFor(src))||null;
-  const key=(override||src)+'#'+GEN;
+const img=(src,characterId)=>{
+  const local=(characterId&&root?.V6PCharacterStore?.getPart(characterId,src))||null;
+  const override=local||(typeof root!=="undefined"&&root&&root.V6PPartOverrides&&root.V6PPartOverrides.urlFor(src))||null;
+  const key=(characterId||'')+'|'+(override||src)+'#'+GEN;
   return IM[key]||(IM[key]=new Promise(res=>{
     const i=new Image();
     i.onload=()=>res(i);
@@ -180,7 +182,7 @@ async function compose(ch,fs,emosi){
   const baseNames=names.filter(n=>!isFrontLayer(n));
   const frontNames=names.filter(isFrontLayer);
   const needed=baseNames.concat(frontNames).concat(['base/shadow','base/fx']);
-  const L=await Promise.all(needed.map(img));
+  const L=await Promise.all(needed.map(n=>img(n,ch.characterId)));
   if(L.some(x=>!x)){
     LAST_MISSING=needed.filter((_,i)=>!L[i]);
     return null;
@@ -309,7 +311,7 @@ async function composeActivity(ch,manifest,frameIndex,dir,opts){
 }
 const key=(ch,emosiId)=>{
   const n=norm(ch);
-  return [n.body,n.hair,n.hairColor,n.skin,n.top,n.topColor,n.pants,n.pantsColor,n.shoes,n.shoesColor,n.glasses,n.facial,n.face,emosiId||'',(n.accessories||[]).join(',')].join('.');
+  return [n.characterId||'',n.body,n.hair,n.hairColor,n.skin,n.top,n.topColor,n.pants,n.pantsColor,n.shoes,n.shoesColor,n.glasses,n.facial,n.face,emosiId||'',(n.accessories||[]).join(',')].join('.');
 };
 const SC={},SU={},FX={};
 function sheet(ch,emosi,emosiId){

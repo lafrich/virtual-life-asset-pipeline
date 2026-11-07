@@ -65,7 +65,7 @@ function choose(id){
  stop();state.selected=a;state.frame=0;
  const actor=$("motion-actor").value;
  if(!a.sheets?.[actor]){
-  const first=Object.keys(a.sheets||{})[0];if(first){state.actor=first;$("motion-actor").value=first}
+  const first=["ichsan","npc"].find(k=>!!a.sheets?.[k]);if(first){state.actor=first;$("motion-actor").value=first}
  }
  const selected=$("motion-list").querySelectorAll("button[data-motion-id]");
  selected.forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.motionId===id)));

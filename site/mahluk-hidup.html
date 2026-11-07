@@ -27,7 +27,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .view.active{display:flex;flex-direction:column}
 .frame{display:block;flex:1 1 100%;min-height:0;width:100%;border:0;background:#d5dfeb}
 #animation-view{flex-direction:row;gap:0}
-#motion-pane{display:flex;flex-direction:column;min-width:260px;width:34%;max-width:460px;border-right:2px solid #8a9eb1}
+#motion-pane{display:flex;flex-direction:column;min-width:260px;width:64%;max-width:none;border-right:2px solid #8a9eb1}
 #paint-pane{display:flex;flex-direction:column;flex:1;min-width:0}
 .pane-header{background:#e6e6df;border-bottom:1px solid #a6abb1;padding:5px 8px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px}
 .pane-header strong{white-space:nowrap}
@@ -79,9 +79,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <iframe id="action-frame" class="frame" title="Action Editor · situations and animation binding" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
  </section>
  <section class="view" id="animation-view" role="tabpanel" aria-label="Animation editor">
-  <div class="mobile-panel-tabs"><button id="view-library" aria-pressed="true">DATABASE · 49 MOTIONS</button><button id="view-paint" aria-pressed="false">PIXEL EDITOR</button></div>
-  <div id="motion-pane"><div class="pane-header"><strong>MOTION DATABASE</strong><button id="new-clip">＋ NEW CLIP</button></div>
-   <iframe id="motion-frame" class="frame" title="Grok motion animation library, full four-view previews" loading="lazy"></iframe>
+  <div class="mobile-panel-tabs"><button id="view-library" aria-pressed="true">ANIMATION STUDIO</button><button id="view-paint" aria-pressed="false">PIXEL EDITOR</button></div>
+  <div id="motion-pane"><div class="pane-header"><strong>ANIMATION DATABASE · BASE / ANCHOR</strong><button id="new-clip">＋ PIXEL CLIP</button></div>
+   <iframe id="motion-frame" class="frame" title="Animation editor · editable frames, anchored sprite parts and database" loading="lazy"></iframe>
   </div>
   <div id="paint-pane"><div class="pane-header"><strong class="pane-label">PIXEL EDITOR · FRAME BY FRAME</strong><button id="pixel-full">↗ OPEN FULL</button></div>
    <iframe id="pixel-frame" class="frame" title="Existing full Mahluk Pixel Editor" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>

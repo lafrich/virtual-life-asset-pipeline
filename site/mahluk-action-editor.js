@@ -6,7 +6,7 @@
 const KEY="mahluk-action-situations-v1",FORMAT="mahluk-situation-database-v1";
 const DIRS=["se","sw","ne","nw"];
 const $=id=>document.getElementById(id);
-const state={rows:[],selected:null,phase:"loop",frame:0,catalog:[],cache:new Map(),playing:false,timer:null,token:0};
+const state={rows:[],selected:null,phase:"loop",frame:0,catalog:[],cache:new Map(),playing:false,timer:null,token:0,sheets:new Map()};
 function safeId(s){return /^[a-z][a-z0-9_]{1,47}$/.test(s)}
 function status(s,err=false){$("status").textContent=s;$("status").classList.toggle("err",err)}
 function load(){
@@ -37,7 +37,7 @@ function readForm(){
   throw Error("Foot offset must be an integer between -256 and +256");
  return {id,name,trigger:$("trigger").value,object:$("object").value,
   enter:$("phase-enter").value,loop:$("phase-loop").value,exit:$("phase-exit").value,
-  offsetX,offsetY,notes:$("notes").value.slice(0,400),status:"draft_unapproved"};
+  offsetX,offsetY,characterId:$("actor").value,notes:$("notes").value.slice(0,400),status:"draft_unapproved"};
 }
 function fillForm(row){
  const value=row||blank();
@@ -47,6 +47,7 @@ function fillForm(row){
  $("phase-exit").value=value.exit||"";
  $("offset-x").value=Number(value.offsetX)||0;$("offset-y").value=Number(value.offsetY)||0;
  $("notes").value=value.notes||"";state.selected=value.id;
+ if(value.characterId&&[...$("actor").options].some(o=>o.value===value.characterId))$("actor").value=value.characterId;
  drawList();render();
 }
 function drawList(){
@@ -77,22 +78,47 @@ function selectPhase(p){
  document.querySelectorAll("[data-phase]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.phase===p)));
  render();
 }
+function realCharacters(){
+ let saved=[];try{const v=JSON.parse(localStorage.getItem("mahluk-2-library-v1")||"[]");if(Array.isArray(v))saved=v.filter(x=>x&&x.id&&x.clips&&Object.keys(x.clips).length)}catch{}
+ return saved;
+}
+function refreshActors(){
+ const select=$("actor"),current=select.value;select.replaceChildren();
+ const add=(id,name)=>{const option=document.createElement("option");option.value=id;option.textContent=name;select.append(option)};
+ add("base:male","MALE BASE · NUDE / NO HAIR");add("base:female","FEMALE BASE · NUDE / NO HAIR");
+ const seen=new Set(["base:male","base:female"]);
+ for(const row of root.V6PCharacterStore?.list()||[]){if(!seen.has(row.id)){add(row.id,row.name+" · DRAFT");seen.add(row.id)}}
+ for(const row of realCharacters()){if(!seen.has(row.id)){add(row.id,row.name+" · SAVED");seen.add(row.id)}}
+ select.value=[...select.options].some(x=>x.value===current)?current:"base:male";
+}
+function actor(){
+ const id=$("actor").value,local=root.V6PCharacterStore?.get(id),pub=realCharacters().find(x=>x.id===id);
+ if(local)return {id,name:local.name,gender:local.gender,ch:{...local.appearance,characterId:id},clips:pub?.clips||{}};
+ if(pub)return {id,name:pub.name,gender:pub.base||"male",ch:pub.v6p?{...pub.v6p,characterId:id}:null,clips:pub.clips||{}};
+ const female=id==="base:female";return {id,name:female?"Female Base":"Male Base",gender:female?"female":"male",
+  ch:{...root.V6PCompositor?.previewAppearance(female?"female":"male"),hair:"none",top:"nude",pants:"nude",shoes:"nude",face:"blank"},
+  clips:{}};
+}
+function publishedClip(entry,cid){
+ const clip=entry.clips?.[cid];if(!clip||!clip.sheet)return null;
+ return {url:clip.sheet,frames:Math.max(1,Number(clip.frames)||1),frameMs:clip.frame_ms||[180],
+  loop:clip.loop!==false,layout:"published",actor:entry.name,action:{id:cid}};
+}
 function ref(){
- const value=$("phase-"+state.phase).value;
+ const value=$("phase-"+state.phase).value,entry=actor(),V=root.V6PCompositor;
  if(value.startsWith("grok:")){
-  const a=state.catalog.find(x=>x.id===value.slice(5));
-  if(!a)return null;
-  const actor=$("actor").value;
-  const source=a.sheets?.[actor]||a.sheets?.ichsan||a.sheets?.npc;
-  return source?{url:source.url,frames:a.frames,frameMs:a.frame_ms,loop:a.loop!==false,layout:"grok",action:a,actor}:null;
+  const a=state.catalog.find(x=>x.id===value.slice(5));if(!a)return null;
+  const native=publishedClip(entry,a.id);if(native)return native;
+  if(entry.ch&&V&&V.ROWS[a.id]!=null)return {frames:V.FRAMES[a.id],frameMs:Array(V.FRAMES[a.id]).fill(140),
+   loop:a.loop!==false,layout:"base",actor:entry.name,action:a,ch:entry.ch};
+  return null; // NEVER substitute Ichsan/Noor/NPC pixels for another character
  }
  if(value.startsWith("clip:")){
-  const clip=root.V6PClipStore?.get(value.slice(5));
-  if(!clip)return null;
-  const part=Object.keys(clip.layers||{})[0]||clip.manifest.requiredParts?.[0];
-  const url=part&&root.V6PClipStore.layerUrl(clip.id,part);
+  const id=value.slice(5),native=publishedClip(entry,id);if(native)return native;
+  const clip=root.V6PClipStore?.get(id);if(!clip)return null;
+  const part=Object.keys(clip.layers||{})[0]||clip.manifest.requiredParts?.[0],url=part&&root.V6PClipStore.layerUrl(id,part);
   return url?{url,frames:clip.manifest.frames.length,frameMs:clip.manifest.frames.map(x=>x.ms),
-   loop:clip.manifest.loop!==false,layout:"activity",action:clip,actor:"user clip"}:null;
+   loop:clip.manifest.loop!==false,layout:"activity",action:clip,actor:entry.name}:null;
  }
  return null;
 }
@@ -102,26 +128,46 @@ function getImage(url){
  }));
  return state.cache.get(url);
 }
+function drawObject(ctx){
+ const obj=$("object").value;ctx.save();ctx.fillStyle="#a8bacb";ctx.strokeStyle="#53647a";ctx.lineWidth=1;
+ if(obj==="chair"){ctx.fillRect(28,82,30,8);ctx.fillRect(28,58,6,30);ctx.fillRect(32,89,3,16);ctx.fillRect(52,89,3,16)}
+ else if(obj==="bed"){ctx.fillRect(4,78,56,16);ctx.fillRect(4,93,4,13);ctx.fillRect(56,93,4,13)}
+ else if(obj==="table"){ctx.fillRect(5,71,54,6);ctx.fillRect(10,78,4,30);ctx.fillRect(50,78,4,30)}
+ else if(obj==="toilet"){ctx.fillRect(20,82,27,14);ctx.fillRect(19,69,8,18)}
+ else if(obj==="vehicle"){ctx.fillRect(4,72,55,22);ctx.fillRect(12,93,10,10);ctx.fillRect(44,93,10,10)}
+ else if(obj==="door"){ctx.strokeRect(16,12,32,88)}
+ else if(obj==="shower"){ctx.strokeRect(14,15,36,88);ctx.fillRect(20,22,24,3)}
+ ctx.restore();
+}
 function render(){
  const cv=$("action-canvas"),ctx=cv.getContext("2d");ctx.imageSmoothingEnabled=false;
  ctx.clearRect(0,0,cv.width,cv.height);
- const r=ref();
- const length=r?.frames||1;
- state.frame=Math.min(state.frame,length-1);
- $("frame").max=String(length-1);$("frame").value=String(state.frame);
- $("frame-number").textContent=(state.frame+1)+" / "+length;
- $("preview-note").textContent=r?(r.layout==="grok"?"GROK REVIEW · not playable · ":"CUSTOM CLIP LOCAL · ")+
-   r.action?.id+" · "+$("dir").value.toUpperCase():"No animation assigned to "+state.phase.toUpperCase();
- if(!r)return;
+ const r=ref(),length=r?.frames||1;state.frame=Math.min(state.frame,length-1);
+ $("frame").max=String(length-1);$("frame").value=String(state.frame);$("frame-number").textContent=(state.frame+1)+" / "+length;
+ const who=actor().name,choose=$("phase-"+state.phase).value;
+ $("preview-note").textContent=r?(r.layout==="activity"?"LOCAL ANIMATION TEMPLATE · not automatically fitted to "+who:
+  r.layout==="published"?"ACTUAL CHARACTER CLIP · "+who:"V6P CHARACTER PREVIEW · "+who)+
+  " · "+r.action?.id+" · "+$("dir").value.toUpperCase():
+  (choose?"No compatible frames for "+who+" / "+choose+". Use Animation Editor to author frames.":"Select ENTER / LOOP / EXIT animation for "+who);
  const token=++state.token;
- getImage(r.url).then(img=>{
-  if(token!==state.token||ref()?.url!==r.url)return;
-  const d=DIRS.indexOf($("dir").value);
-  const frame=Math.min(state.frame,r.frames-1);
-  const oy=r.layout==="activity"?(Number(r.action.manifest.bandStart)||0)*112:0;
-  ctx.clearRect(0,0,cv.width,cv.height);
-  ctx.drawImage(img,frame*64,oy+d*112,64,112,0,0,cv.width,cv.height);
- }).catch(e=>status(e.message,true));
+ if(!r)return;
+ const draw=img=>{
+  if(token!==state.token)return;ctx.clearRect(0,0,cv.width,cv.height);
+  const surface=document.createElement("canvas");surface.width=64;surface.height=112;
+  const c=surface.getContext("2d");c.imageSmoothingEnabled=false;drawObject(c);
+  const d=DIRS.indexOf($("dir").value),n=Math.min(state.frame,r.frames-1);
+  const oy=r.layout==="activity"?(Number(r.action.manifest.bandStart)||0)*112:r.layout==="base"?
+   (root.V6PCompositor.ROWS[r.action.id]+d)*112:d*112;
+  c.drawImage(img,n*64,oy,64,112,Number($("offset-x").value)||0,Number($("offset-y").value)||0,64,112);
+  ctx.drawImage(surface,0,0,cv.width,cv.height);
+ };
+ if(r.layout==="base"){
+  const key=JSON.stringify({ch:r.ch});
+  let p=state.sheets.get(key);
+  if(!p){p=root.V6PCompositor.sheet(r.ch,null,"");state.sheets.set(key,p)}
+  p.then(draw).catch(e=>status(e.message,true));return;
+ }
+ getImage(r.url).then(draw).catch(e=>status(e.message,true));
 }
 function stop(){
  state.playing=false;if(state.timer)clearTimeout(state.timer);state.timer=null;$("play").textContent="▶ PLAY";
@@ -153,13 +199,9 @@ function bindMotion(){
   open("./pixel-editor.html?source=v6p&project="+encodeURIComponent(value.slice(5)));return;
  }
  if(value.startsWith("grok:")){
-  const action=state.catalog.find(x=>x.id===value.slice(5));
-  if(!action||!root.V6PGrokMotionCopy){status("Grok importer not loaded",true);return}
-  status("Creating safe local copy for Pixel Editor…");
-  root.V6PGrokMotionCopy.makeCopy(action,$("actor").value).then(id=>{
-   const url="./pixel-editor.html?source=v6p&project="+encodeURIComponent(id);
-   open(url);
-  }).catch(e=>status(e.message,true));
+  status("Grok is a motion reference, not this actor's sprite. Opening Animation Editor for a proper Male/Female base draft.");
+  if(root.parent&&root.parent!==root&&root.parent.VLMahlukWorkspace)root.parent.VLMahlukWorkspace.show("animation");
+  else location.href="./mahluk-animation-studio.html";
  }
 }
 async function loadMotions(){
@@ -215,12 +257,15 @@ function wire(){
  $("next").onclick=()=>{stop();state.frame=Math.min((ref()?.frames||1)-1,state.frame+1);render()};
  $("frame").oninput=e=>{stop();state.frame=Number(e.target.value)||0;render()};
  $("actor").onchange=()=>{stop();state.frame=0;render()};
+ $("refresh-actors").onclick=()=>{refreshActors();render()};
  $("dir").onchange=()=>{stop();render()};
+ for(const id of ["object","offset-x","offset-y"]) $(id).addEventListener("input",render);
  for(const phase of ["enter","loop","exit"]){
   $("phase-"+phase).onchange=()=>{stop();state.frame=0;render()};
  }
  document.querySelectorAll("[data-phase]").forEach(b=>b.onclick=()=>selectPhase(b.dataset.phase));
  document.addEventListener("visibilitychange",()=>{if(document.hidden)stop()});
+ refreshActors();
  if(state.rows.length)fillForm(state.rows[0]);else newAction();
  void loadMotions();
 }
