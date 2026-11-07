@@ -37,5 +37,5 @@ function appProperties(part,sha256){
   const p=normalizePart(part);
   return {app:"mahluk",kind:"v6pPart",part:p,width:String(W),height:String(H),sha256:String(sha256||"")};
 }
-return Object.freeze({PARTS,W,H,FW,FH,PIVOT,DIRS,ROWS,FRAMES,ACTIONS,isPart,normalizePart,filename,sidecarName,parseFilename,mediaPath,mediaUrl,cellOrigin,clips,appProperties});
+return Object.freeze({PARTS,W,H,FW,FH,PIVOT,DIRS,ROWS,FRAMES,ACTIONS,isPart,isCustomWear,normalizePart,filename,sidecarName,parseFilename,mediaPath,mediaUrl,cellOrigin,clips,appProperties});
 });
