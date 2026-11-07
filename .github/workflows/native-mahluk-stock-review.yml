@@ -7,6 +7,7 @@ on:
     paths:
       - tools/build_native_mahluk_stock.py
       - tools/preview_native_mahluk_stock.py
+      - site/v6p-activity-contract.js
       - site/v6p-clip-store.js
       - site/mahluk-animation-studio.js
       - site/v6p-asset-gallery.js
