@@ -212,20 +212,12 @@ async function propagate(id,appearance,opts={}){
     rawViews.push({dir,source:baseline,raw:original,edited});
    }
    const palette=paletteFromViews(rawViews);
-   // Canonical stock keys are used for recolor; source designs have
-   // visible RGB, so remap the keys through the same native palette.
-   const keyMap=new Map();
-   for(const [key,to] of palette.entries()){
-    const original=rawViews.flatMap(v=>{
-     const raw=v.raw.data,display=v.source.data,items=[];
-     for(let i=0;i<raw.length;i+=4)if(raw[i+3]>=128&&rgb(display,i)===key){items.push(rgb(raw,i));break}
-     return items;
-    });
-    for(const token of original)keyMap.set(token,to);
-   }
    const output=document.createElement("canvas");output.width=C.W;output.height=C.H;
    const g=output.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;
-   g.drawImage(rawSheet,0,0);
+   // All custom layers are absolute RGB, including inactive/rear rows.
+   // Never let stock palette-key magenta leak through the compositor.
+   const rawAll=rawSheet.getContext("2d",{willReadFrequently:true}).getImageData(0,0,C.W,C.H);
+   g.putImageData(V.keysToDisplay(rawAll,ch),0,0);
    const oldGenerated=row.generated?.[part]?.engine==="native-material-v1";
    let styled=0,detailCount=0,manual=0,geometryChanges=0;
    for(const action of C.ACTIONS)for(const dir of directionsFor(part))for(let n=0;n<C.FRAMES[action];n++){
@@ -245,12 +237,8 @@ async function propagate(id,appearance,opts={}){
     if(corrected||(!oldGenerated&&changedBefore)){
      stamp(output,C,action,dir,n,edited.data);manual++;continue;
     }
-    const raw=renderPose(native,view.edited,view.source,keyMap);
-    const target=raw.data;
-    // Default original palette is maintained on all native pixels that
-    // have not been recolored or overlaid with a motif.
-    const resultBytes=V.keysToDisplay({data:target,width:FW,height:FH},ch).data;
-    // Motifs and recolored pixels must be applied AFTER keysToDisplay.
+    // Palette colors and projected motif pixels are layered directly on
+    // the native rendered pose, preserving every original alpha pixel.
     const recolored=renderPose(base,view.edited,view.source,palette);
     // renderPose(base) preserves the native RGB mask and follows the
     // geometric correspondence of this particular pose.
