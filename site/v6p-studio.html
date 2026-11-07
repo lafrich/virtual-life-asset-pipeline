@@ -399,7 +399,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <script src="./v6p-asset-gallery.js?v=v6p-act-v2-20261107"></script>
 <script src="./drive-sync.js?v=v6p-pixel-20261107"></script>
 <script src="./v6p-compositor.js?v=v6p-act-v2-20261107"></script>
-<script src="./v6p-character-retarget.js?v=nude-clean-rebuild-1"></script>
+<script src="./v6p-character-retarget.js?v=native-pose-20261108"></script>
 <script>
 (function(){
 "use strict";
@@ -627,7 +627,7 @@ async function save(){
       frames:clip.frames,
       frame_ms:clipMs(action,clip.frames),
       loop:true,
-      source:"v6p-character-retarget-native"
+      source:"v6p-native-pose-compositor"
     };
   });
   const adapted=window.V6PCharacterRetarget?.generateAnchorClips(state.sheet)||{clips:[],warnings:[]};
@@ -863,6 +863,6 @@ window.V6PCharacterHost=Object.freeze({
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
-<script src="./v6p-character-wizard.js?v=nude-clean-rebuild-1"></script>
+<script src="./v6p-character-wizard.js?v=native-pose-20261108"></script>
 </body>
 </html>
