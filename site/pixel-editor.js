@@ -1352,6 +1352,15 @@ function pullEmosiIntoState(){
     window.V6PPixelSource.stampAt(state.v6pSheet,o.x,o.y,stored);
    }else{
     window.V6PPixelSource.stamp(state.v6pSheet,state.action,dir,state.frame,stored);
+    if(state.characterId&&state.v6pPart&&window.V6PCharacterStore&&original&&!identical(stored,original)){
+     try{
+      if(state.masterMode){
+       const master=document.createElement("canvas");master.width=WIDTH;master.height=HEIGHT;
+       master.getContext("2d").putImageData(stored,0,0);
+       window.V6PCharacterStore.setMaster(state.characterId,state.v6pPart,dir,master.toDataURL("image/png"));
+      }else window.V6PCharacterStore.markCorrection(state.characterId,state.v6pPart,state.action,dir,state.frame);
+     }catch(error){status("FRAME SAVE ERROR "+dir+": "+error.message,true)}
+    }
    }
   }
   if(dir===state.dir) state.current=displayed;
