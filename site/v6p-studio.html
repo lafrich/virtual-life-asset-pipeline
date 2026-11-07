@@ -457,7 +457,11 @@ function fillSelect(id,values,labels){
   });
 }
 fillSelect("body",["male","female"]);
-["hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"].forEach(k=>fillSelect(k,V.OPT[k],["top","pants","shoes"].includes(k)?{custom:"＋ Custom Wear"}:null));
+// Nude is an internal V6P stock/base sprite variant, not a selectable garment in Character Customize.
+["hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"].forEach(k=>{
+  const garment=["top","pants","shoes"].includes(k);
+  fillSelect(k,garment?V.OPT[k].filter(v=>v!=="nude"):V.OPT[k],garment?{custom:"＋ Custom Wear"}:null);
+});
 const CW=window.V6PCustomWear;
 function syncCustomWearUI(){
  const row=state.characterId&&window.V6PCharacterStore?.get(state.characterId);
