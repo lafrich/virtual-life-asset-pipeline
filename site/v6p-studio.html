@@ -90,9 +90,9 @@ body.mahluk-embedded{background:#bdcbd8}
     <strong>APPEARANCE</strong>
     <p class="note">Same v6p layers as the archived Character Creator. Hair is unchanged. Nude (skin) is a new clothing option, not a missing layer. Setelah mengedit PNG di <code>media/v6p/</code>, klik <strong>Muat ulang aset</strong> lalu <strong>Save to characters</strong>. <a href="./EDIT_GUIDE.md">EDIT_GUIDE.md</a></p>
     <label for="body">BASE BODY / FEMALE OR MALE</label>
-    <select id="body"></select>
+    <div class="row"><select id="body"></select><button type="button" id="edit-body">✎ PIXEL</button></div>
     <label for="hair">HAIR</label>
-    <select id="hair"></select>
+    <div class="row"><select id="hair"></select><button type="button" id="edit-hair">✎ PIXEL</button></div>
     <label for="hairColor">HAIR COLOR</label>
     <select id="hairColor"></select>
     <label for="skin">SKIN</label>
@@ -495,6 +495,8 @@ function editorPartFor(kind){
   const female=ch.body==="female";
   const pick=(a,b)=>C&&C.isPart(a)?a:(C&&C.isPart(b)?b:a);
   if(kind==="face") return female?"face/f_blank":"face/m_blank";
+  if(kind==="body") return female?"base/body_f":"base/body";
+  if(kind==="hair") return ch.hair==="none"?null:"hair/"+ch.hair+"_front";
   if(kind==="top") return pick("top/"+ch.top+(female?"_f":""),"top/"+ch.top);
   if(kind==="pants") return pick("pants/"+ch.pants+(female?"_f":""),"pants/"+ch.pants);
   if(kind==="shoes") return pick("shoes/"+ch.shoes+(female?"_f":""),"shoes/"+ch.shoes);
@@ -568,7 +570,7 @@ async function saveOverridesToDrive(){
     setStatus("DRIVE SAVE FAILED: "+msg,true);
   }
 }
-["top","pants","shoes","glasses"].forEach(k=>{
+["body","hair","top","pants","shoes","glasses"].forEach(k=>{
   const b=$("edit-"+k); if(b) b.addEventListener("click",()=>openPixelEditor(k));
 });
 if($("edit-face")) $("edit-face").addEventListener("click",()=>openPixelEditor("face"));
