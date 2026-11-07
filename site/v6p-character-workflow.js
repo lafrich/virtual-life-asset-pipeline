@@ -76,7 +76,8 @@ function updateMasterCount(){
  if(!row)return;
  const ch=H.get().ch,sel=part.value;
  const gender=ch.body==="female"?"_f":"";
- const partKey=sel==="hair"?(ch.hair==="none"?"":"hair/"+ch.hair+"_front"):
+ const partKey=sel==="hair-back"?(ch.hair==="none"?"":"hair/"+ch.hair+"_back"):
+  sel==="hair"?(ch.hair==="none"?"":"hair/"+ch.hair+"_front"):
   sel==="body"?"base/body"+gender:
   sel==="face"?"face/"+(gender?"f":"m")+"_blank":
   sel==="top"?"top/"+ch.top+gender:
@@ -150,7 +151,7 @@ function togglePlay(){
 if(!part.id){
  const wrap=document.createElement("label");wrap.textContent="CORRECT PART";wrap.style.cssText="font-size:10px;width:100%";
  part.id="qa-part";wrap.append(part);$("all-views").after(wrap);
- for(const p of ["body","hair","top","pants","shoes","face"])add(part,p,p.toUpperCase());
+ for(const p of ["body","hair","hair-back","top","pants","shoes"])add(part,p,p.toUpperCase());
  part.value="top";
 }
 allMotions();
