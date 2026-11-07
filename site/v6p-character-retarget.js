@@ -88,13 +88,14 @@ function put(sheet,C,action,dir,n,pixels){
 async function generatePart(id,part,opts){
  const S=root?.V6PCharacterStore,C=root?.V6PPartCatalog,P=root?.V6PPixelSource;
  if(!S||!C||!P)throw Error("Character sprite generator dependencies missing");
+ if(root?.V6PCustomWear?.isCustomPart(part))return {part,generated:0,protectedFrames:0,unchanged:0,staleArchived:0,masters:[],reviewDirections:[],warning:[]};
  const row=S.get(id);if(!row)throw Error("Open a real saved character draft first");
  C.normalizePart(part);
  const base=await P.loadSheet(part),existing=row.parts?.[part]?await P.loadSheetFromUrl(row.parts[part]):null;
   const output=document.createElement("canvas");output.width=C.W;output.height=C.H;
  const g=output.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;
  // Each generation starts from the canonical native motion sheet. Never reuse
- // previously warped animation frames as a source, especially for nude outfits.
+ // previously generated or warped frames as their own source.
  g.drawImage(base,0,0);
  const sources={},masters=[],warning=[],reviewDirections=[];
  for(const dir of DIRS){
@@ -168,8 +169,8 @@ async function generateCharacter(id,opts={}){
  const repair=S.repairTopBackMasters?.(id)||{moved:0,remainingCorrections:0};
  const row=S.get(id);
  const selected=C.PARTS.filter(part=>Object.hasOwn(row.masters||{},part)||Object.hasOwn(row.parts||{},part));
- const parts=(opts.parts||selected).filter(p=>C.isPart(p));
- if(!parts.length)return {parts:[],frames:0,corrected:0,message:"No custom sprites yet. Existing database parts already have stock animations."};
+ const parts=(opts.parts||selected).filter(p=>C.isPart(p)&&!root?.V6PCustomWear?.isCustomPart(p));
+ if(!parts.length)return {parts:[],frames:0,corrected:0,message:"Stock and exact Custom Wear sheets already contain their native animations."};
  const results=[];
  for(let i=0;i<parts.length;i++){
   if(typeof opts.progress==="function")opts.progress({index:i,total:parts.length,part:parts[i]});
