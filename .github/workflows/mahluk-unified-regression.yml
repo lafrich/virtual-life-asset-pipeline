@@ -25,6 +25,7 @@ on:
       - "tests/test_mahluk_character_animation_flow.cjs"
       - "tests/test_mahluk_character_retarget.cjs"
       - "tests/test_mahluk_character_wizard.cjs"
+      - "tests/smoke_mahluk_character_wizard.cjs"
       - ".github/workflows/mahluk-unified-regression.yml"
   workflow_dispatch:
 permissions:
@@ -68,3 +69,21 @@ jobs:
           python -c "import json,pathlib; p=pathlib.Path('_site/grok-motion-preview'); j=json.loads((p/'catalog.json').read_text()); assert len(j['actions'])==49 and len(list(p.glob('*_sheet.png')))==108 and j['isGameInstalled'] is False"
       - name: Confirm no Playwright or deployment from feature branch
         run: test -s site/mahluk-hidup.html && test -s site/v6p-studio.html && test -s site/pixel-editor.html
+
+  wizard-browser-smoke:
+    needs: regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install browser test tools
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.0
+          npx playwright install chromium
+      - name: Smoke test Character wizard step-by-step
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 -d site >/tmp/character-wizard-server.log 2>&1 &
+          node tests/smoke_mahluk_character_wizard.cjs
