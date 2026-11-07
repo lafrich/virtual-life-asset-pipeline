@@ -11,13 +11,13 @@ assert.deepStrictEqual(A.DIRS,["se","sw","ne","nw"]);
 assert.strictEqual(A.BANDS.squat.status,"draft_inactive");
 assert.strictEqual(A.BANDS.pushup.status,"authored");
 assert.strictEqual(A.BANDS.pushup.start,4);
-assert.strictEqual(A.BANDS.pushup.frames,4);
+assert.strictEqual(A.BANDS.pushup.frames,6);
 assert.strictEqual(A.BANDS.pushup.ms,160);
 assert.strictEqual(A.BANDS.pushup.emosi,false);
-assert.deepStrictEqual(A.BANDS.pushup.keys,["plank_high","descending","bottom","ascending"]);
+assert.deepStrictEqual(A.BANDS.pushup.keys,["plank_high","lowering_1","lowering_2","bottom","rising_1","rising_2"]);
 assert.strictEqual(A.BANDS.yoga_sphinx_idle.start,8);
 assert.strictEqual(A.BANDS.yoga_sphinx_idle.ms,500);
-assert.strictEqual(A.BANDS.yoga_sphinx_idle.emosi,true);
+assert.strictEqual(A.BANDS.yoga_sphinx_idle.emosi,false);
 assert.strictEqual(A.BANDS.yoga_puppy_idle.start,12);
 assert.strictEqual(A.BANDS.hip_shake.start,16);
 assert.strictEqual(A.BANDS.hip_shake.frames,6);
@@ -26,12 +26,17 @@ assert.ok(!A.BANDS.jumping_jack);
 assert.ok(A.INACTIVE.includes("squat"));
 assert.ok(A.isPlayable("pushup"));
 assert.ok(!A.isPlayable("squat"));
+for(const id of ["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]){
+ assert.ok(A.isPlayable(id),"Native stock must be playable: "+id);
+}
+const nude=C.norm({body:"male",gender:"male",top:"nude",pants:"nude",shoes:"nude",face:"blank"});
+assert.strictEqual(nude.top,"nude");assert.strictEqual(nude.pants,"nude");assert.strictEqual(nude.shoes,"nude");
 const o=A.cellOrigin(4,"se",0);
 assert.deepStrictEqual(o,{x:0,y:448,w:64,h:112});
 const man=A.pushupManifest();
 assert.strictEqual(man.id,"clip_pushup");
 assert.strictEqual(man.bandStart,4);
-assert.strictEqual(man.frames.length,4);
+assert.strictEqual(man.frames.length,6);
 assert.strictEqual(man.frames[0].ms,160);
 
 function fakeFiles(ch){

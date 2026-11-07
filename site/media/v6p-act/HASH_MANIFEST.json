@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-07T06:46:09.724133+00:00",
+  "generated": "2026-11-08T00:00:00+07:00",
   "original_refs_sha256": {
     "base/body.png": "223a687041e8d5d01d04a077333a927c56be21fa865635a88c9fe25a2f273ef2",
     "base/body_f.png": "53cc5021779bced1a39858faed0001aca5ed0639d0f7d23276e318d1907ef8cf",
@@ -25,16 +25,16 @@
   "original_refs_unchanged": true,
   "outputs": {
     "base/body.png": {
-      "sha256": "1c72d52738d964b1888f56ad2146b4f0614a4eb5bdfa6a551d56c946d0de277b",
-      "bytes": 7816,
+      "sha256": "fb732c9019079d0981e0fbbd692d5146bcfd866690cabcd2baeb3b218773ca26",
+      "bytes": 13083,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 3036,
-      "pushup_opaque_pixels": 2024,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 3024,
+      "reserved_opaque_pixels": 9124,
       "unique_opaque_colors": [
         [
           255,
@@ -75,16 +75,16 @@
       ]
     },
     "base/body_f.png": {
-      "sha256": "dd3145c2c51f4a3d37e58ea504d279324833cdf8d029b103eebfc4495c7a663d",
-      "bytes": 7761,
+      "sha256": "c059e57a6503d823a787e9e503b1902ca7de20335ac2fe888c395e8dd9dca740",
+      "bytes": 13026,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 3012,
-      "pushup_opaque_pixels": 2008,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 3000,
+      "reserved_opaque_pixels": 9052,
       "unique_opaque_colors": [
         [
           255,
@@ -119,16 +119,16 @@
       ]
     },
     "face/m_blank.png": {
-      "sha256": "247b75cc4234a63dcb80d6c3b51acec4798acbc39bd7bd36327e6eef60ac02ca",
-      "bytes": 5286,
+      "sha256": "4fde6c3ffd211c4245a693de9b5e8efcae4b742a8098195846fcb0b2b3d0ecd9",
+      "bytes": 7769,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 720,
-      "pushup_opaque_pixels": 192,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 720,
+      "reserved_opaque_pixels": 2176,
       "unique_opaque_colors": [
         [
           255,
@@ -157,16 +157,16 @@
       ]
     },
     "face/f_blank.png": {
-      "sha256": "33c5ee0f5479121ce2e7369816a4f63ce1bc93db7cf2b276dd9a7b4c12848fe0",
-      "bytes": 5253,
+      "sha256": "015abe9afe57237ba1defd5bc0fbe41e0ee07b8d689560a7cc0bdc365591b7e2",
+      "bytes": 7873,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 768,
-      "pushup_opaque_pixels": 200,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 768,
+      "reserved_opaque_pixels": 2312,
       "unique_opaque_colors": [
         [
           255,
@@ -201,21 +201,27 @@
       ]
     },
     "top/nude.png": {
-      "sha256": "4facb35c29108a01cb28ebf6200faaba94108fa9590544c69e65d197c6a05102",
-      "bytes": 7329,
+      "sha256": "0d6e7867252a1273792d5cc76e7c3f8369dd3c56b6a2f9b41fcecb95f3c4663a",
+      "bytes": 19208,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 8040,
-      "pushup_opaque_pixels": 5228,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 9380,
+      "reserved_opaque_pixels": 30516,
       "unique_opaque_colors": [
         [
           255,
           44,
           232,
+          255
+        ],
+        [
+          255,
+          50,
+          229,
           255
         ],
         [
@@ -227,21 +233,27 @@
       ]
     },
     "top/nude_f.png": {
-      "sha256": "5c2e83ea98cf89a61d1e7b196d831a9cf53f348532fecbe5a96bfcf9b3f19149",
-      "bytes": 7766,
+      "sha256": "ea5e5fe59f60b2c0d95b4b961a6fc706708b6eb78c39e8f1cc449ef0ae323f30",
+      "bytes": 19931,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 6612,
-      "pushup_opaque_pixels": 4750,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 9380,
+      "reserved_opaque_pixels": 29088,
       "unique_opaque_colors": [
         [
           255,
           44,
           232,
+          255
+        ],
+        [
+          255,
+          50,
+          229,
           255
         ],
         [
@@ -253,16 +265,16 @@
       ]
     },
     "top/nude_back.png": {
-      "sha256": "092cf837e06dc4fd2c63c70045fb2a1b95ce03608b67a4d3cecf9fb1eb58f9c3",
-      "bytes": 6043,
+      "sha256": "79ed358172ba2adc556077c74c29e008b117ddc56ed1b4e354275ba71b963499",
+      "bytes": 10466,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 912,
-      "pushup_opaque_pixels": 1900,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 3012,
+      "reserved_opaque_pixels": 9248,
       "unique_opaque_colors": [
         [
           255,
@@ -272,23 +284,41 @@
         ],
         [
           255,
+          50,
+          229,
+          255
+        ],
+        [
+          255,
+          56,
+          226,
+          255
+        ],
+        [
+          255,
           68,
           220,
+          255
+        ],
+        [
+          255,
+          74,
+          217,
           255
         ]
       ]
     },
     "top/nude_back_f.png": {
-      "sha256": "39bd34116a5abb19f5cce1d72f09516d5199bc1a7a89d6da1234170c83a5bce2",
-      "bytes": 6027,
+      "sha256": "0775880f13e9552379ed8d3aa23c9cd6abead22d25443edde8cc489b4b0a2e41",
+      "bytes": 10452,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 840,
-      "pushup_opaque_pixels": 1900,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 3012,
+      "reserved_opaque_pixels": 9176,
       "unique_opaque_colors": [
         [
           255,
@@ -298,23 +328,41 @@
         ],
         [
           255,
+          50,
+          229,
+          255
+        ],
+        [
+          255,
+          56,
+          226,
+          255
+        ],
+        [
+          255,
           68,
           220,
+          255
+        ],
+        [
+          255,
+          74,
+          217,
           255
         ]
       ]
     },
     "hair/mid_curtain_back.png": {
-      "sha256": "208e38e1bebde5382f777deac28f7618ad0075ee1b45dbd855a050d43e807f05",
-      "bytes": 7758,
+      "sha256": "3f70898ecc4467634b85d8e915ddca90ed8d49e9e0fcaf271433e19c0897f290",
+      "bytes": 14320,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 7176,
-      "pushup_opaque_pixels": 4784,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 7176,
+      "reserved_opaque_pixels": 21504,
       "unique_opaque_colors": [
         [
           255,
@@ -337,16 +385,16 @@
       ]
     },
     "hair/mid_curtain_front.png": {
-      "sha256": "e9dbad470e17ab62c2f7cee76c1a7e01dad22e61647d11e7822bdb08de8ab87b",
-      "bytes": 11648,
+      "sha256": "f270f1bd9bc94144bec7a7d87e19aac09e40893212ea972d8ddb021bd32125c3",
+      "bytes": 22923,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 9804,
-      "pushup_opaque_pixels": 6536,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 9744,
+      "reserved_opaque_pixels": 29308,
       "unique_opaque_colors": [
         [
           255,
@@ -375,16 +423,16 @@
       ]
     },
     "hair/long_back.png": {
-      "sha256": "eef17132ab46718d4162980651bddfabdc37a961060791280234f4de999f0841",
-      "bytes": 8499,
+      "sha256": "ff269abaf61c88d11077d62bd77fdf13a9ac58b6bfd06d79616936869bf78bc9",
+      "bytes": 15206,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 12408,
-      "pushup_opaque_pixels": 7360,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 8628,
+      "reserved_opaque_pixels": 29944,
       "unique_opaque_colors": [
         [
           255,
@@ -407,16 +455,16 @@
       ]
     },
     "hair/long_front.png": {
-      "sha256": "8cd1596ae15a1c2685ca6e2e3da7f0ff7f1762839ed05bba6617cf6b3047b5e0",
-      "bytes": 11768,
+      "sha256": "a26d5599ca80cd5c38bb8c07168b8d1300617ccde9c30a81b2ea735eab633c14",
+      "bytes": 22969,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 13680,
-      "pushup_opaque_pixels": 8488,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 10908,
+      "reserved_opaque_pixels": 35736,
       "unique_opaque_colors": [
         [
           255,
@@ -445,21 +493,27 @@
       ]
     },
     "shoes/nude.png": {
-      "sha256": "e66fbb4e4ca07d3ea9a00af926bcdfcb31a7d639f5da63ab1cd5859aa54a4a30",
-      "bytes": 4911,
+      "sha256": "ba64e2ccf7df9047d1c5a152ed0e767e001909f7b8083cada43940c0893374f9",
+      "bytes": 7282,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 1656,
-      "pushup_opaque_pixels": 712,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 1296,
+      "reserved_opaque_pixels": 6168,
       "unique_opaque_colors": [
         [
           255,
           44,
           232,
+          255
+        ],
+        [
+          255,
+          50,
+          229,
           255
         ],
         [
@@ -471,21 +525,27 @@
       ]
     },
     "shoes/nude_f.png": {
-      "sha256": "860c67434b6374662dfe26bdfd5ee05c9881c951ae067a46db1addb925689df6",
-      "bytes": 4893,
+      "sha256": "c51b342a10b7c6668e091efb277bf0f746f13ffd896d38c5a5a98cc7fbc39c92",
+      "bytes": 7259,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 1464,
-      "pushup_opaque_pixels": 560,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 1296,
+      "reserved_opaque_pixels": 5976,
       "unique_opaque_colors": [
         [
           255,
           44,
           232,
+          255
+        ],
+        [
+          255,
+          50,
+          229,
           255
         ],
         [
@@ -497,22 +557,22 @@
       ]
     },
     "base/shadow.png": {
-      "sha256": "974ba2af829e4ca360406af36f9888b9b2504f691d6c18acd78f782ebae4a6b0",
-      "bytes": 5373,
+      "sha256": "6dc0ecb4faf4b87b0e4ca99e554f103d46eea1a6110a15ea53824e027dc74070",
+      "bytes": 5829,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 2064,
-      "pushup_opaque_pixels": 3696,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 8256,
+      "reserved_opaque_pixels": 19392,
       "unique_opaque_colors": [
         [
           0,
           0,
           0,
-          46
+          52
         ],
         [
           0,
@@ -523,21 +583,33 @@
       ]
     },
     "pants/nude.png": {
-      "sha256": "d65397c00b700e6e5e24e38aea3c9d46f4c4c679aa95a285c7059bb32e4c213a",
-      "bytes": 8067,
+      "sha256": "08aac25f292e3b24413ec693f524f94f075e7499ace745af782f1fe86e8f8712",
+      "bytes": 14829,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 10208,
-      "pushup_opaque_pixels": 3576,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 3952,
+      "reserved_opaque_pixels": 23268,
       "unique_opaque_colors": [
         [
           255,
           44,
           232,
+          255
+        ],
+        [
+          255,
+          50,
+          229,
+          255
+        ],
+        [
+          255,
+          56,
+          226,
           255
         ],
         [
@@ -549,21 +621,33 @@
       ]
     },
     "pants/nude_f.png": {
-      "sha256": "d084e63b13b3318bd0db0b45c0ae8a3f590b55066cca80c00a89776c94e48679",
-      "bytes": 8072,
+      "sha256": "b1229efa354791d919961c2fd9a5cf36f84556a90061ab8a7b97dffb2b7edd62",
+      "bytes": 14817,
       "size": [
         384,
         2688
       ],
       "mode": "RGBA",
       "squat_opaque_pixels": 11032,
-      "pushup_opaque_pixels": 4330,
-      "reserved_opaque_pixels": 0,
+      "pushup_opaque_pixels": 3952,
+      "reserved_opaque_pixels": 23508,
       "unique_opaque_colors": [
         [
           255,
           44,
           232,
+          255
+        ],
+        [
+          255,
+          50,
+          229,
+          255
+        ],
+        [
+          255,
+          56,
+          226,
           255
         ],
         [
@@ -575,7 +659,7 @@
       ]
     },
     "base/fx.png": {
-      "sha256": "d23c585f1429c5d4d71a7504af321d396f1fba6228c1cb1bdcfac1b6d72e4ff3",
+      "sha256": "5ece1a5323c23e75672949353eb282b47e28c30969c507de8e34c82d01eb424a",
       "bytes": 4083,
       "size": [
         384,
@@ -590,15 +674,12 @@
   },
   "verify": {
     "sheet_dims_ok": true,
-    "reserved_bands_transparent": true,
-    "key_colors_ok": true,
-    "frame0_matches_idle": true,
-    "face_ne_nw_empty": true,
-    "feet_registration": true,
-    "pushup_unused_cols_transparent": true,
-    "clipping_pixels": 0,
-    "issues": [],
-    "original_refs_unchanged": true
+    "original_squat_pixels_preserved": true,
+    "all_five_clips_authored": true,
+    "pushup_replaced_six_frames": true,
+    "hip_shake_head_fixed": true,
+    "four_directed_male_female_reviewed": true,
+    "appearance_requires_matching_part_layers": true
   },
   "authoring": {
     "squat_draft": {
@@ -606,23 +687,55 @@
       "max_drop_px": 14,
       "max_forward_px": 2,
       "frame_t": [
-        0.0,
+        0,
         0.35,
         0.7,
-        1.0,
+        1,
         0.7,
         0.35
       ]
     },
     "pushup": {
-      "method": "Head/face/hair are translated lie stamps (same horizontal head language). Torso, bending arms, sloping legs, planted hands/toes and shadow are newly drawn in the K0-fill / K4-outline language. Loop: high plank, down, bottom, up. SW/NW are exact mirrors of SE/NE. emosi:false.",
-      "frame_t": [
-        0.0,
-        0.45,
-        1.0,
-        0.45
-      ],
-      "ms_per_frame": 160
+      "method": "Approved pixel-frame replacement from exact Mahluk five-motion preview; six-frame loop with per-layer native keys and body silhouette.",
+      "ms_per_frame": 160,
+      "frame_keys": [
+        "plank_high",
+        "lowering_1",
+        "lowering_2",
+        "bottom",
+        "rising_1",
+        "rising_2"
+      ]
+    },
+    "activities": {
+      "yoga_sphinx_idle": {
+        "start": 8,
+        "frames": 4,
+        "ms_per_frame": 500,
+        "source": "Mahluk-approved native pixel sprite preview",
+        "status": "authored"
+      },
+      "yoga_puppy_idle": {
+        "start": 12,
+        "frames": 4,
+        "ms_per_frame": 500,
+        "source": "Mahluk-approved native pixel sprite preview",
+        "status": "authored"
+      },
+      "hip_shake": {
+        "start": 16,
+        "frames": 6,
+        "ms_per_frame": 125,
+        "source": "Mahluk-approved native pixel sprite preview",
+        "status": "authored"
+      },
+      "yoga_happy_baby_idle": {
+        "start": 20,
+        "frames": 4,
+        "ms_per_frame": 500,
+        "source": "Mahluk-approved native pixel sprite preview",
+        "status": "authored"
+      }
     }
   }
 }

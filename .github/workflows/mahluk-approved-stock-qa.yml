@@ -1,0 +1,47 @@
+name: Mahluk Native Stock — Approved QA
+on:
+  push:
+    branches:
+      - main
+      - feature/mahluk-approved-stock-20261108
+    paths:
+      - 'site/media/v6p-act/**'
+      - 'site/v6p-activity-contract.js'
+      - 'site/v6p-clip-store.js'
+      - 'site/v6p-compositor.js'
+      - 'site/mahluk-action-editor.js'
+      - 'tests/test_mahluk_native_stock_approved.py'
+      - 'tests/test_v6p_clip_store.cjs'
+      - 'tests/test_v6p_activity_contract.cjs'
+      - '.github/workflows/mahluk-approved-stock-qa.yml'
+  pull_request:
+    paths:
+      - 'site/media/v6p-act/**'
+      - 'site/v6p-activity-contract.js'
+      - 'site/v6p-clip-store.js'
+      - 'site/v6p-compositor.js'
+      - 'site/mahluk-action-editor.js'
+      - 'tests/test_mahluk_native_stock_approved.py'
+      - 'tests/test_v6p_clip_store.cjs'
+      - 'tests/test_v6p_activity_contract.cjs'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install sprite test requirements
+        run: python -m pip install Pillow numpy
+      - name: Validate native activity stock and composition contracts
+        run: |
+          python tests/test_mahluk_native_stock_approved.py
+          node tests/test_v6p_activity_contract.cjs
+          node tests/test_v6p_clip_store.cjs
+          node --check site/v6p-compositor.js
+          node --check site/v6p-clip-store.js
+          node --check site/mahluk-action-editor.js
+          node --check site/mahluk-animation-studio.js

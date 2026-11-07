@@ -11,12 +11,12 @@ const OPTIONAL=Object.freeze(["base/fx","base/body_front","base/body_front_f"]);
 const BANDS=Object.freeze({
  squat:{start:0,frames:6,ms:140,type:"loop",status:"draft_inactive",emosi:true,
   keys:Object.freeze(["standing","descending1","descending2","bottom_hold","ascending1","ascending2"])},
- pushup:{start:4,frames:4,ms:160,type:"loop",status:"authored",emosi:false,
-  keys:Object.freeze(["plank_high","descending","bottom","ascending"])},
- yoga_sphinx_idle:{start:8,frames:4,ms:500,status:"reserved_transparent",emosi:true},
- yoga_puppy_idle:{start:12,frames:4,ms:500,status:"reserved_transparent",emosi:false},
- hip_shake:{start:16,frames:6,ms:120,status:"reserved_transparent",emosi:true},
- yoga_happy_baby_idle:{start:20,frames:4,ms:450,status:"reserved_transparent",emosi:false}
+ pushup:{start:4,frames:6,ms:160,type:"loop",status:"authored",emosi:false,
+  keys:Object.freeze(["plank_high","lowering_1","lowering_2","bottom","rising_1","rising_2"])},
+ yoga_sphinx_idle:{start:8,frames:4,ms:500,type:"loop",status:"authored",emosi:false},
+ yoga_puppy_idle:{start:12,frames:4,ms:500,type:"loop",status:"authored",emosi:false},
+ hip_shake:{start:16,frames:6,ms:125,type:"loop",status:"authored",emosi:true},
+ yoga_happy_baby_idle:{start:20,frames:4,ms:500,type:"loop",status:"authored",emosi:false}
 });
 const INACTIVE=Object.freeze(["squat","jumping_jack","guard_jab","yoga_warrior","lie_supine"]);
 const PILOT_PARTS=Object.freeze([

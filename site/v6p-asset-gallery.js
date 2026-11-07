@@ -14,6 +14,7 @@ function originLabel(it){
 function saveLabel(it){
  if(it.saveStatus==="drive")return "SAVED TO DRIVE";
  if(it.saveStatus==="stock")return "STOCK / GITHUB";
+ if(it.saveStatus==="review")return "STOCK DRAFT";
  if(it.type==="part-edit")return "LOCAL ONLY · STOCK UNTOUCHED";
  return "LOCAL ONLY";
 }
