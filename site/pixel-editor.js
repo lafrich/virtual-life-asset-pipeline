@@ -401,7 +401,7 @@ async function loadV6pPart(part,params){
  const C=window.V6PPartCatalog,S=window.V6PPixelSource,O=window.V6PPartOverrides;
  if(!C||!S)throw Error("v6p source helpers not loaded");
  part=C.normalizePart(part);
- if(state.characterId&&state.masterMode)
+ if(state.characterId)
   part=topPartForDirection(part,(params&&params.get("dir"))||state.dir);
  state.loading=true;state.current=null;
  state.source="v6p";state.project=null;state.actClip=null;state.clipLayer=null;state.v6pPart=part;state.mode="frame";
@@ -1407,7 +1407,7 @@ function topPartForDirection(part,dir){
 }
 function onSpriteAngleChanged(dir){
  if(!DIRECTIONS.includes(dir))return;
- if(state.characterId&&state.masterMode&&state.v6pPart&&!state.project&&!state.actClip){
+ if(state.characterId&&state.v6pPart&&!state.project&&!state.actClip){
   const target=topPartForDirection(state.v6pPart,dir);
   if(target!==state.v6pPart){
    if(state.layerSwitching)return;
