@@ -69,10 +69,34 @@ jobs:
           mkdir -p assets/mahluk_native_stock_review
           cp build/native-mahluk-stock-review/review_contact_sheet.png assets/mahluk_native_stock_review/
           cp build/native-mahluk-stock-review/NATIVE_STOCK_REVIEW.json assets/mahluk_native_stock_review/
+          python - <<'PY'
+          from pathlib import Path
+          import shutil,json
+          build=Path('build/native-mahluk-stock-review')
+          root=Path('site/media/v6p-act')
+          count=0
+          for src in build.rglob('*.png'):
+              if src.name=='review_contact_sheet.png': continue
+              out=root/src.relative_to(build)
+              out.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(src,out)
+              count+=1
+          meta=root/'READINESS.json'
+          obj=json.loads(meta.read_text())
+          for action in ['yoga_sphinx_idle','yoga_puppy_idle','hip_shake','yoga_happy_baby_idle']:
+              obj['bands'][action]['status']='review_artwork'
+              obj['bands'][action]['note']='Real V6P keyed part-sheet review frames; not visually approved; game playback disabled'
+          for part in obj['parts'].values():
+              part['other_bands']='review_artwork_not_approved'
+          meta.write_text(json.dumps(obj,indent=2,ensure_ascii=False)+'\\n')
+          print('STAGED native keyed activity layers:',count)
+          PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/mahluk_native_stock_review/NATIVE_STOCK_REVIEW.json
           git add -f assets/mahluk_native_stock_review/review_contact_sheet.png
+          git add -f site/media/v6p-act
+          git add site/media/v6p-act/READINESS.json
           if ! git diff --cached --quiet; then
             git commit -m 'review: native character stock contact sheet [skip ci]'
             git push origin HEAD:preview/mahluk-native-stock-2026-11-08
