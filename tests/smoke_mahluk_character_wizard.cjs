@@ -82,7 +82,7 @@ async function run(){
    assert.equal(await app.locator('#character-view.active').isVisible(),true,
     'Pixel Editor must remain inside Character tab');
    await app.locator('#character-pixel-back').click();
-   await app.locator('#character-pixel-overlay[hidden]').waitFor({timeout:65000});
+   await app.locator('#character-pixel-overlay').waitFor({state:'hidden',timeout:65000});
    assert.equal(await character.locator('#wizard-customize').isVisible(),true,
     'Back from Pixel Editor must restore the Customize step');
    console.log('[ok] PIXEL EDITOR OPENS INSIDE CHARACTER AND BACK RESTORES CUSTOMIZE');
