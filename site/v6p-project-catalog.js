@@ -150,7 +150,7 @@ function partEditEntries(){
 function builtinEntries(){
  const C=catalog();
  if(!C)return [];
- return C.PARTS.map(part=>({
+ return C.PARTS.filter(part=>!C.isCustomWear?.(part)).map(part=>({
   id:"stock_"+part.replaceAll("/","__"),
   type:"part",
   origin:"built-in",
