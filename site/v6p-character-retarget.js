@@ -171,7 +171,11 @@ async function generatePart(id,part,opts){
   const corrected=!!row.corrections?.[part]?.[key];
   const correctedAt=row.correctionUpdatedAt?.[part]?.[key];
   const masterAt=row.masterUpdatedAt?.[part]?.[dir];
-  const fresh=corrected&&!!correctedAt&&(!masterAt||Date.parse(correctedAt)>=Date.parse(masterAt));
+  const correctionVersion=row.correctionVersion?.[part]?.[key];
+  const masterVersion=row.masterVersion?.[part]?.[dir];
+  const fresh=corrected&&(Number.isInteger(correctionVersion)?
+   (!Number.isInteger(masterVersion)||correctionVersion>=masterVersion):
+   (!!correctedAt&&(!masterAt||Date.parse(correctedAt)>=Date.parse(masterAt))));
   if(fresh&&existing){
    // Hand-corrected frame written after its current source master: preserve it.
    put(output,C,action,dir,n,frame(existing,C,action,dir,n).data);
