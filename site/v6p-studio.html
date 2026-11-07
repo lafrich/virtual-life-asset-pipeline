@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:,">
+<title>Mahluk Hidup — V6P Compositor (preview)</title>
+<style>
+:root{--ink:#173956;--line:#3978c1;--paper:#f7f5ee;--panel:#eceae2}
+*{box-sizing:border-box}
+body{margin:0;background:#bccedb;color:var(--ink);font:13px/1.45 Consolas,"Courier New",monospace}
+.banner{position:relative;z-index:2;background:#d9ebff;border-bottom:2px solid var(--line);padding:10px 14px;font-weight:700;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+.banner a{background:#205cab;color:#fff;padding:8px 12px;text-decoration:none;border:1px solid #0d3c7b}
+h1{margin:0;font-size:15px}
+.wrap{display:grid;grid-template-columns:260px minmax(0,1fr) 240px;gap:12px;padding:12px;max-width:1280px;margin:0 auto}
+.card{background:var(--panel);border:2px solid #fff;box-shadow:0 0 0 2px #44556a;padding:12px}
+label{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;margin:8px 0 4px;color:#2e4361}
+select,input[type=text],button{font:inherit;color:inherit;border:1px solid #657a96;background:#fbfbf6;padding:6px}
+select,input[type=text]{width:100%}
+button{cursor:pointer;font-weight:700}
+button:hover{background:#dbe9fa}
+button.active,button[aria-pressed="true"]{background:#2b5797;color:#fff;border-color:#153a78}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.preview-col{display:flex;flex-direction:column;align-items:center;gap:10px}
+#stage{background:repeating-conic-gradient(#eef3f3 0 25%,#d6e1e8 0 50%) 50%/16px 16px;border:2px solid #62728b;image-rendering:pixelated}
+#strip{image-rendering:pixelated;background:#c8d2d9;border:1px solid #62728b}
+#status{min-height:2.4em;padding:8px;background:#dce6f4;border:1px solid #99aac3;width:100%}
+#status.err{background:#f9dfdc;color:#a52828}
+.faces{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.faces button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;min-height:72px}
+.faces img{width:32px;height:56px;image-rendering:pixelated;background:#ddd}
+.note{font-size:11px;color:#556277}
+@media(max-width:860px){
+  .wrap{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="banner">
+  <h1>MAHLUK HIDUP · V6P COMPOSITOR (PREVIEW)</h1>
+  <a href="./index.html">← Character Studio</a>
+  <a href="./v6b-reset-studio.html">Reset Studio</a>
+</div>
+<div class="wrap">
+  <section class="card" aria-label="Appearance">
+    <strong>APPEARANCE</strong>
+    <p class="note">Same v6p layers as the archived Character Creator. Hair is unchanged. Nude (skin) is a new clothing option, not a missing layer. Setelah mengedit PNG di <code>media/v6p/</code>, klik <strong>Muat ulang aset</strong> lalu <strong>Save to characters</strong>. <a href="./EDIT_GUIDE.md">EDIT_GUIDE.md</a></p>
+    <label for="body">BODY</label>
+    <select id="body"></select>
+    <label for="hair">HAIR</label>
+    <select id="hair"></select>
+    <label for="hairColor">HAIR COLOR</label>
+    <select id="hairColor"></select>
+    <label for="skin">SKIN</label>
+    <select id="skin"></select>
+    <label>OUTFIT PRESET</label>
+    <div class="row">
+      <button type="button" id="outfit-normal">Normal</button>
+      <button type="button" id="outfit-nude">Nude (skin)</button>
+    </div>
+    <label for="top">TOP</label>
+    <select id="top"></select>
+    <label for="topColor">TOP COLOR</label>
+    <select id="topColor"></select>
+    <label for="pants">PANTS</label>
+    <select id="pants"></select>
+    <label for="pantsColor">PANTS COLOR</label>
+    <select id="pantsColor"></select>
+    <label for="shoes">SHOES</label>
+    <select id="shoes"></select>
+    <label for="shoesColor">SHOES COLOR</label>
+    <select id="shoesColor"></select>
+    <label for="glasses">GLASSES</label>
+    <select id="glasses"></select>
+    <label for="facial">FACIAL</label>
+    <select id="facial"></select>
+  </section>
+  <section class="card preview-col" aria-label="Preview">
+    <canvas id="stage" width="192" height="336" data-testid="stage"></canvas>
+    <canvas id="strip" width="256" height="112" data-testid="strip"></canvas>
+    <div class="row">
+      <button type="button" data-action="idle">Idle</button>
+      <button type="button" data-action="walk">Walk</button>
+      <button type="button" data-action="sit">Sit</button>
+      <button type="button" data-action="sleep">Sleep</button>
+    </div>
+    <div class="row">
+      <button type="button" data-dir="se">SE</button>
+      <button type="button" data-dir="sw">SW</button>
+      <button type="button" data-dir="ne">NE</button>
+      <button type="button" data-dir="nw">NW</button>
+    </div>
+    <div class="row">
+      <button type="button" id="play">Play</button>
+      <button type="button" id="stop">Stop</button>
+    </div>
+    <label for="char-name">NAME</label>
+    <input id="char-name" type="text" value="V6P Preview" maxlength="60">
+    <div class="row">
+      <button type="button" id="refresh-assets">Muat ulang aset</button>
+      <button type="button" id="save">Save to characters</button>
+      <button type="button" id="reload">Reload last</button>
+    </div>
+    <div id="status">Loading compositor…</div>
+  </section>
+  <section class="card" aria-label="Face database">
+    <strong>EMOSI · FACE DATABASE</strong>
+    <p class="note">Blank face draws behind hair. An Emosi face overlays that blank sheet. Old built-in faces are not selectable.</p>
+    <div class="faces" id="faces"></div>
+  </section>
+</div>
+<script src="./emotion-studio/emotion-library.js?v=emosi-v1-bridge"></script>
+<script src="./emosi-bridge.js?v=preview-stock-20261107"></script>
+<script src="./vlhub-characters-publish.js?v=v6p-preview"></script>
+<script src="./v6p-compositor.js?v=v6p-preview"></script>
+<script>
+(function(){
+"use strict";
+const V=window.V6PCompositor;
+const pageErrors=[];
+window.addEventListener("error",ev=>pageErrors.push(String(ev.message||ev.error||"error")));
+window.addEventListener("unhandledrejection",ev=>pageErrors.push(String(ev.reason||"rejection")));
+const LAST_KEY="v6p-studio-last-id";
+const $=id=>document.getElementById(id);
+const stage=$("stage"), strip=$("strip"), statusEl=$("status");
+const sctx=stage.getContext("2d"); sctx.imageSmoothingEnabled=false;
+const xctx=strip.getContext("2d"); xctx.imageSmoothingEnabled=false;
+const state={
+  ch:V.norm(V.DEF),
+  action:"walk",
+  dir:"se",
+  frame:0,
+  playing:false,
+  faceId:"",
+  faces:[],
+  sheet:null,
+  lastId:"",
+  ready:false
+};
+const FIELDS=["body","hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"];
+function fillSelect(id,values,labels){
+  const el=$(id);
+  el.innerHTML="";
+  values.forEach(v=>{
+    const o=document.createElement("option");
+    o.value=v; o.textContent=(labels&&labels[v])||v;
+    el.appendChild(o);
+  });
+}
+fillSelect("body",["male","female"]);
+["hair","hairColor","skin","top","topColor","pants","pantsColor","shoes","shoesColor","glasses","facial"].forEach(k=>fillSelect(k,V.OPT[k], k==="top"||k==="pants"||k==="shoes"?{nude:"nude (skin)"}:null));
+function readForm(){
+  const ch={};
+  FIELDS.forEach(k=>ch[k]=$(k).value);
+  ch.gender=ch.body;
+  ch.face="blank";
+  state.ch=V.norm(ch);
+}
+function writeForm(){
+  FIELDS.forEach(k=>{ if($(k)) $(k).value=state.ch[k]; });
+  document.querySelectorAll("[data-action]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.action===state.action?"true":"false"));
+  document.querySelectorAll("[data-dir]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.dir===state.dir?"true":"false"));
+  $("outfit-nude").classList.toggle("active", state.ch.top==="nude"&&state.ch.pants==="nude"&&state.ch.shoes==="nude");
+  $("outfit-normal").classList.toggle("active", state.ch.top==="tee"&&state.ch.pants==="trousers"&&state.ch.shoes==="shoes");
+}
+function setStatus(msg,err){
+  statusEl.textContent=msg;
+  statusEl.classList.toggle("err",!!err);
+}
+function currentEmosi(){
+  if(!state.faceId) return null;
+  return state.faces.find(f=>f.id===state.faceId)||null;
+}
+function loadOverlay(face){
+  if(!face) return Promise.resolve(null);
+  if(face._img&&face._img.complete) return Promise.resolve(face._img);
+  return new Promise((res,rej)=>{
+    const i=new Image();
+    i.onload=()=>{face._img=i;res(i)};
+    i.onerror=()=>rej(new Error("emosi overlay failed "+face.id));
+    i.src=face.overlay;
+  });
+}
+function draw(){
+  if(!state.sheet) return;
+  const frame=V.extractFrame(state.sheet,state.action,state.dir,state.frame);
+  sctx.clearRect(0,0,stage.width,stage.height);
+  sctx.drawImage(frame,0,0,stage.width,stage.height);
+  xctx.clearRect(0,0,strip.width,strip.height);
+  V.DIRS.forEach((d,i)=>{
+    const f=V.extractFrame(state.sheet,state.action,d,state.frame);
+    xctx.drawImage(f,i*64,0);
+  });
+}
+async function rebuild(){
+  readForm();
+  writeForm();
+  setStatus("Composing…");
+  const face=currentEmosi();
+  const img=await loadOverlay(face);
+  const cv=await V.compose(state.ch,"baked",img||null);
+  if(!cv){
+    setStatus("Compose failed"+(V.missing&&V.missing.length?": missing "+V.missing.join(", "):""),true);
+    state.sheet=null;
+    return;
+  }
+  state.sheet=cv;
+  const nf=V.FRAMES[state.action]||4;
+  state.frame=((state.frame%nf)+nf)%nf;
+  draw();
+  state.ready=true;
+  const faceLabel=face?face.label.replace(" / EMOSI.EXE",""):"blank";
+  setStatus("Ready · "+state.ch.body+" · "+state.ch.top+"/"+state.ch.pants+"/"+state.ch.shoes+" · face "+faceLabel+" · "+state.action+" "+state.dir);
+  syncDbg();
+}
+function syncDbg(){
+  window.__v6pStudio={
+    ready:state.ready,
+    errors:pageErrors.slice(),
+    config:Object.assign({},state.ch),
+    faceId:state.faceId,
+    action:state.action,
+    dir:state.dir,
+    frame:state.frame,
+    lastId:state.lastId,
+    sheetSize:state.sheet?[state.sheet.width,state.sheet.height]:null
+  };
+}
+function renderFaces(){
+  const box=$("faces");
+  box.innerHTML="";
+  const blank=document.createElement("button");
+  blank.type="button";
+  blank.id="face-blank";
+  blank.textContent="No face (blank)";
+  blank.setAttribute("aria-pressed", state.faceId===""?"true":"false");
+  blank.addEventListener("click",()=>{state.faceId="";renderFaces();rebuild();});
+  box.appendChild(blank);
+  state.faces.forEach(f=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.dataset.faceId=f.id;
+    b.setAttribute("aria-pressed", state.faceId===f.id?"true":"false");
+    const im=document.createElement("img");
+    im.src=f.portrait||f.overlay;
+    im.alt="";
+    const cap=document.createElement("span");
+    cap.textContent=(f.label||f.id).replace(" / EMOSI.EXE","");
+    b.appendChild(im); b.appendChild(cap);
+    b.addEventListener("click",()=>{state.faceId=f.id;renderFaces();rebuild();});
+    box.appendChild(b);
+  });
+}
+document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>{
+  state.action=b.dataset.action; state.frame=0; writeForm(); if(state.sheet) draw(); syncDbg();
+  setStatus("Ready · "+state.action+" "+state.dir);
+}));
+document.querySelectorAll("[data-dir]").forEach(b=>b.addEventListener("click",()=>{
+  state.dir=b.dataset.dir; writeForm(); if(state.sheet) draw(); syncDbg();
+  setStatus("Ready · "+state.action+" "+state.dir);
+}));
+FIELDS.forEach(k=>$(k).addEventListener("change",rebuild));
+$("outfit-normal").addEventListener("click",()=>{
+  $("top").value="tee"; $("pants").value="trousers"; $("shoes").value="shoes"; rebuild();
+});
+$("outfit-nude").addEventListener("click",()=>{
+  $("top").value="nude"; $("pants").value="nude"; $("shoes").value="nude"; rebuild();
+});
+let timer=null;
+function tick(){
+  const nf=V.FRAMES[state.action]||4;
+  const ms=state.action==="walk"?140:280;
+  timer=setTimeout(()=>{
+    state.frame=(state.frame+1)%nf;
+    draw();
+    syncDbg();
+    if(state.playing) tick();
+  },ms);
+}
+$("play").addEventListener("click",()=>{ if(state.playing) return; state.playing=true; tick(); });
+$("stop").addEventListener("click",()=>{ state.playing=false; if(timer) clearTimeout(timer); });
+function clipMs(action,frames){
+  const one=action==="walk"?140:280;
+  return Array.from({length:frames},()=>one);
+}
+async function refreshAssets(){
+  if(window.V6PCompositor&&V6PCompositor.clearCache) V.clearCache();
+  await rebuild();
+}
+async function save(){
+  await refreshAssets();
+  if(!state.sheet){ setStatus("Nothing to save",true); return; }
+  const clips={};
+  [["idle","idle"],["walk","walk"],["talk","talk"],["sit","sit"],["lie","lie"],["sleep","sleep"]].forEach(([cid,action])=>{
+    const clip=V.extractClip(state.sheet,action);
+    clips[cid]={
+      sheet:clip.canvas.toDataURL("image/png"),
+      frames:clip.frames,
+      frame_ms:clipMs(action,clip.frames),
+      loop:true,
+      source:"v6p-compositor"
+    };
+  });
+  const sprite=V.extractFrame(state.sheet,"idle","se",0).toDataURL("image/png");
+  const tooBig=Object.values(clips).some(c=>c.sheet.length>1250000)||sprite.length>1250000;
+  if(tooBig){ setStatus("Export exceeded Semesta 1.25MB clip limit",true); return; }
+  const result=window.VLHubCharactersPublish.publish({
+    id:state.lastId||undefined,
+    name:$("char-name").value||"V6P Preview",
+    gender:state.ch.body,
+    sprite,clips,
+    rigSystem:"v6p",
+    faceId:state.faceId||"",
+    v6p:Object.assign({},state.ch),
+    hairStyle:state.ch.hair,
+    clothesColor:state.ch.top==="nude"?"nude":state.ch.topColor
+  });
+  if(!result.ok){ setStatus("Save failed: "+result.error,true); return; }
+  state.lastId=result.id;
+  try{ localStorage.setItem(LAST_KEY,result.id); }catch(_e){}
+  setStatus("Saved "+result.id+" · characters topic"+(result.unsupportedBySemestaClips&&result.unsupportedBySemestaClips.length?" · extra "+result.unsupportedBySemestaClips.join(","):""));
+  syncDbg();
+}
+function reload(){
+  let id=state.lastId;
+  try{ id=localStorage.getItem(LAST_KEY)||id; }catch(_e){}
+  let lib=[];
+  try{ lib=JSON.parse(localStorage.getItem("mahluk-2-library-v1")||"[]"); }catch(_e){ lib=[]; }
+  const rec=(id&&lib.find(r=>r.id===id))||[...lib].reverse().find(r=>r&&r.v6p)||null;
+  if(!rec||!rec.v6p){ setStatus("No saved v6p character to reload",true); return; }
+  state.ch=V.norm(rec.v6p);
+  state.faceId=rec.faceId||"";
+  state.lastId=rec.id;
+  $("char-name").value=rec.name||"V6P Preview";
+  writeForm();
+  renderFaces();
+  rebuild().then(()=>setStatus("Reloaded "+rec.id+" · face "+(state.faceId||"blank")));
+}
+$("refresh-assets").addEventListener("click",()=>refreshAssets().catch(e=>setStatus(String(e),true)));
+$("save").addEventListener("click",()=>save().catch(e=>setStatus(String(e),true)));
+$("reload").addEventListener("click",reload);
+async function boot(){
+  writeForm();
+  try{
+    if(window.VLMahlukEmosiBridge) await window.VLMahlukEmosiBridge.refresh();
+    const actor={id:"v6p",gender:state.ch.body,expressions:[]};
+    if(window.VLMahlukEmosiBridge) window.VLMahlukEmosiBridge.apply(actor);
+    state.faces=(actor.expressions||[]).filter(e=>e&&e.source==="emosi");
+  }catch(e){
+    setStatus("Emosi load warning: "+e.message,true);
+  }
+  renderFaces();
+  await rebuild();
+  syncDbg();
+}
+boot().catch(e=>setStatus(String(e),true));
+})();
+</script>
+</body>
+</html>
