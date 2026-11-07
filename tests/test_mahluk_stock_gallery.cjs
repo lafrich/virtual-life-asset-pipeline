@@ -46,7 +46,7 @@ test('five approved stock animation IDs remain playable in database',()=>{
 test('rejected Grok imported clips are removed, user-authored clips untouched',()=>{
  const {Store,localStorage}=makeStore();
  const rows=Store.list();
- assert.deepEqual(rows.filter(x=>x.id.startsWith('clp_grok_')).map(x=>x.id),[]);
+ assert.equal(rows.filter(x=>x.id.startsWith('clp_grok_')).length,0);
  assert.equal(Store.get('clp_grok_yoga_preview'),null);
  assert.equal(Store.get('clp_other_grok'),null);
  assert.ok(Store.get('clp_user_handmade'));
