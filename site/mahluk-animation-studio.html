@@ -21,19 +21,54 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 #transform input[type=range]{padding:0}#parts button.active{background:#a4cdfb}
 @media(max-width:950px){#layout{grid-template-columns:160px minmax(0,1fr)}#properties{grid-column:1/-1}#stage{width:min(100%,310px)}}
 @media(max-width:600px){#layout{grid-template-columns:1fr}#properties{grid-column:auto}#animations{max-height:120px}#stage{width:min(100%,310px)}}
+[hidden]{display:none!important}
+.flow-screen{max-width:950px;margin:14px auto;padding:17px;background:#e9e9e4;border:2px ridge #fff;box-shadow:0 3px 12px #445c7455}
+.flow-screen h1{font-size:18px;margin:0 0 12px}
+.flow-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.flow-actions button{min-height:82px;text-align:left;padding:13px;font-weight:bold}
+.flow-actions small{display:block;font-weight:normal;margin-top:6px}
+#animations{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;max-height:none}
+#animations button{min-height:65px;text-align:left;padding:9px}
+#animations button strong,#animations button small{display:block}
+#gif-preview{display:block;image-rendering:pixelated;aspect-ratio:64/112;width:min(175px,100%);height:auto;
+ background:repeating-conic-gradient(#d2dce8 0 25%,#fafafa 0 50%) 0 0/16px 16px;border:1px solid #75879a}
+.flow-toolbar{display:flex;gap:7px;flex-wrap:wrap}.flow-toolbar button{min-width:130px}
+#setup-name{font-size:13px}.flow-note{padding:8px;background:#dce9f8;border:1px solid #9db1c7}
+@media(max-width:650px){.flow-actions{grid-template-columns:1fr}.flow-screen{margin:6px;padding:11px}}
 </style></head><body>
 <header id="header"><span>ANIMATION EDITOR · PIXEL SPRITE + ANCHOR</span><span>BASE MALE/FEMALE · NO HAIR</span></header>
-<main id="layout">
-<aside class="panel"><h2>ANIMATION DATABASE</h2>
- <div class="row"><button id="new">＋ NEW</button><button id="copy">⧉ COPY</button></div>
- <label>BASE TEMPLATE<select id="template"><option value="idle">Idle</option><option value="walk">Walk</option><option value="talk">Talk</option><option value="sit">Sit</option><option value="sleep">Sleep</option><option value="lie">Lie</option></select></label>
- <label>BASE BODY<select id="gender"><option value="male">Male Base · standard outfit</option><option value="female">Female Base · standard outfit</option></select></label>
+<section class="flow-screen" id="animation-home">
+ <h1>ANIMATION DATABASE</h1>
+ <div class="flow-actions">
+  <button id="animation-start-new">＋ CREATE ANIMATION<small>Make a new motion from a starting pose</small></button>
+  <button id="animation-start-pose">◎ CHOOSE BASE POSE<small>Standing Idle · Sitting Idle · Lie Down Idle</small></button>
+  <button id="animation-start-gallery">▦ GALLERY ANIMATION<small>Open and modify saved animations</small></button>
+ </div>
+ <h2>GALLERY · ANIMATIONS</h2>
  <div id="animations" aria-label="Saved animation clips"></div>
- <p class="hint">Edit anchor dan frame di sini, atau lanjut koreksi pixel lewat Pixel Editor. Gerakan bukan rig, setiap frame disimpan sebagai PNG sprite.</p>
+ <p id="animation-home-note" class="flow-note">Choose a starting pose, edit individual frames, preview the loop, then save.</p>
+</section>
+<section class="flow-screen" id="animation-setup" hidden>
+ <h1>CREATE ANIMATION · BASE POSE</h1>
+ <label>ACTIVITY NAME<input id="setup-name" maxlength="80" placeholder="e.g. Yoga Sphinx / Jogging / Reading"></label>
+ <label>STARTING POSE<select id="template">
+  <option value="idle">STANDING IDLE</option><option value="sit">SITTING IDLE</option>
+  <option value="lie">LIE DOWN IDLE</option><option value="sleep">SLEEP / LYING IDLE</option>
+ </select></label>
+ <label>CHARACTER BASE<select id="gender"><option value="male">MALE BASE</option><option value="female">FEMALE BASE</option></select></label>
+ <p class="hint">Body comes from the existing Male/Female base. Clothes and Custom Wear remain managed in the Character editor, not here.</p>
+ <div class="flow-toolbar"><button id="setup-back">← BACK</button><button id="setup-create">CREATE & EDIT FRAMES →</button></div>
+</section>
+<div id="animation-workspace" hidden><main id="layout">
+<aside class="panel"><div class="flow-toolbar"><button id="animation-editor-back">← BACK TO GALLERY</button></div>
+<h2>FRAME BY FRAME</h2>
+ <div class="row"><button id="new">＋ NEW</button><button id="copy">⧉ DUPLICATE</button></div>
+ <p class="hint">Edit frame and each of the four directions. This editor uses the existing base image; Custom Wear stays separate.</p>
  <div class="row"><button id="open-pixel">✎ PIXEL EDITOR</button><button id="export">↓ JSON</button></div>
  <div class="row"><button id="reference">GROK REFERENCE ↗</button></div>
 </aside>
 <section class="panel"><h2 id="animation-title">NEW ANIMATION</h2>
+ <label>ACTIVITY NAME<input id="animation-name-edit" maxlength="80" placeholder="Activity name"></label>
  <div class="row"><label>VIEW<select id="view"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></label>
  <label>FRAME MS<input type="number" id="ms" value="140" min="40" max="800" step="10"></label></div>
  <canvas id="stage" width="384" height="672" aria-label="Large pose canvas with rotatable pixel parts"></canvas>
@@ -41,10 +76,14 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <label style="flex:1"><input id="loop" type="checkbox" checked> LOOP</label></div>
  <div id="frame-strip" aria-label="Frame by frame timeline"></div>
  <div class="row"><button id="add-frame">＋ FRAME</button><button id="duplicate">DUP FRAME</button><button id="remove-frame">✕ FRAME</button></div>
- <div class="row"><button id="save" style="background:#c2dcff">▣ SAVE ANIMATION DATABASE</button></div>
+ <div class="flow-toolbar"><button id="save" style="background:#c2dcff">▣ SAVE ANIMATION</button>
+ <button id="animation-save-sync">☁ SAVE & SYNC DRIVE</button></div>
  <p id="status" role="status">New animation uses the standard-outfit Male/Female template without hair.</p>
 </section>
-<aside id="properties" class="panel"><h2>ASSET / ANCHOR</h2>
+<aside id="properties" class="panel"><h2>LOOP PREVIEW · GIF-STYLE</h2>
+ <canvas id="gif-preview" width="64" height="112" aria-label="Animated frame loop preview"></canvas>
+ <p id="gif-preview-note" class="hint">Animated preview uses the edited frames; select PLAY to run the loop.</p>
+ <h2>ASSET / ANCHOR</h2>
  <div id="parts"></div>
  <label><input id="move-anchor" type="checkbox"> MOVE ANCHOR (drag on canvas)</label>
  <label>ROTATION <output id="rotation-label">0°</output><input id="rotation" type="range" min="-180" max="180" value="0"></label>
@@ -54,9 +93,9 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <p class="hint">Pilih bagian tubuh, drag untuk memindahkan atau geser anchor. Rotasi dilakukan pada sprite part, lalu frame hasilnya dibake jadi PNG asli 64×112 per arah.</p>
  <p class="hint">Saat pose berubah drastis, cek overlap tangan/kaki dan perbaiki di Pixel Editor. Animasi baru berstatus draft sampai dihubungkan ke action/game.</p>
 </aside>
-</main>
+</main></div>
 <script src="./v6p-part-catalog.js"></script><script src="./v6p-part-overrides.js"></script><script src="./v6p-character-store.js"></script>
 <script src="./v6p-activity-contract.js"></script><script src="./v6p-clip-store.js"></script><script src="./v6p-compositor.js"></script>
 <script src="/virtual-office/shared/hub-registry.js"></script>
-<script src="./mahluk-animation-studio.js?v=animation-anchor-1"></script>
+<script src="./mahluk-animation-studio.js?v=animation-flow-v2-20261108"></script>
 </body></html>
