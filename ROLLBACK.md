@@ -4,7 +4,31 @@ Repo: `lafrich/virtual-life-asset-pipeline`
 Branch: `main`  
 Live: https://lafrich.github.io/virtual-life-asset-pipeline/
 
-## This deploy (v6p editor package: real colors, copy/paste, accessories, gallery, clip timeline)
+## This deploy (remove unused V6B Character Studio pages and stale preview/)
+
+- Previous `origin/main` (safe restore point): `84457b213de9f0fa99a9d44606c5f3990669eb84`
+- Feature commit: `ce096dd442177fda5376bc2194e01a3a660244eb`
+
+Restore this deploy (fast-forward only — do not force-push):
+
+```bash
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+git revert --no-edit ce096dd442177fda5376bc2194e01a3a660244eb
+git push origin main
+```
+
+If this ROLLBACK notes commit is also on `main`, revert it first (newest first), then the feature commit. That restores the old V6B Character Studio body inside `site/index.html`, `v6b-reset-studio.html`, the accessory/action/action-scene editors, the leftover studio scripts/CSS, the retired tests, and `preview/`. It does not revert the v6p editor package (`5ec339f7102e504efe34ac316723a3089e567ac9`) or the v6p-studio root redirect. Live modules fetched by v6p-studio, the pixel editor, or virtual-office (including `shared-pixel-selection.js`, action/universal/warteg/indonesia bridges, `site/media/`, and `preview-stock/`) were not removed.
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+
+- https://lafrich.github.io/virtual-life-asset-pipeline/ (redirects to v6p-studio.html)
+- https://lafrich.github.io/virtual-life-asset-pipeline/v6p-studio.html
+- https://lafrich.github.io/virtual-life-asset-pipeline/pixel-editor.html?source=v6p
+- https://lafrich.github.io/virtual-life-asset-pipeline/v6b-reset-studio.html should 404
+
+## Previous deploy (v6p editor package: real colors, copy/paste, accessories, gallery, clip timeline)
 
 - Previous `origin/main` (safe restore point): `0bfeff4e8c29d5e39230d1c209bc848334849ce1`
 - Feature commit: `5ec339f7102e504efe34ac316723a3089e567ac9`
