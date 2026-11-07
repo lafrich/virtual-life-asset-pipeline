@@ -175,9 +175,9 @@ function arrangeLegacyControls(){
  field(hair,"hair");field(hair,"hairColor");
  const top=makePart("top","Top","Choose a top or Custom Wear, cloned from a native full animation sheet.");
  field(top,"top");move("custom-top-panel","wizard-part-top");field(top,"topColor");
- const pants=makePart("pants","Pants","Choose pants, or Custom Wear to edit every native animation frame.");
+ const pants=makePart("pants","Pants","Choose pants or design Custom Wear in four views, then generate native motion.");
  field(pants,"pants");move("custom-pants-panel","wizard-part-pants");field(pants,"pantsColor");
- const shoes=makePart("shoes","Shoes","Choose shoes or Custom Wear, with editable native animation frames.");
+ const shoes=makePart("shoes","Shoes","Choose shoes or design Custom Wear in four views, then generate native motion.");
  field(shoes,"shoes");move("custom-shoes-panel","wizard-part-shoes");field(shoes,"shoesColor");
  const extra=makePart("extras","Accessories","Optional glasses, facial hair and accessories. Emotions are kept in EMOSI.EXE.");
  field(extra,"glasses");field(extra,"facial");field(extra,"studio-accessory");
@@ -264,7 +264,7 @@ async function regenerate(){
   const recoverNote=repair?("Repaired "+repair+" legacy rear-view sprite masters into their correct back layers. "):"";
   result(done.parts.length?
    recoverNote+archiveNote+"Native V6B frames rebuilt without shifting pixels. Color edits follow native poses; custom silhouettes remain exact on IDLE F0 until each action is corrected manually. "+corrected+" newer manual corrections kept. Check walking, sitting and sleeping poses.":
-   recoverNote+archiveNote+"Original native outfit frames loaded. Custom Wear remains exact, with no retargeting.");
+   recoverNote+archiveNote+"Custom Wear four-view designs applied to visible native clothing layers; check the generated poses.");
   state.pendingPreview=false;
   return true;
  }catch(error){result("Generation failed: "+error.message,true);notice(error.message,true);return false}
