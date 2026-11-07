@@ -26,6 +26,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .view{position:absolute;inset:0;display:none;overflow:hidden}
 .view.active{display:flex;flex-direction:column}
 .frame{display:block;flex:1 1 100%;min-height:0;width:100%;border:0;background:#d5dfeb}
+#character-pixel-overlay{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;background:#c6d4e7}
+#character-pixel-overlay[hidden]{display:none!important}
+#character-pixel-toolbar{display:flex;align-items:center;gap:12px;padding:6px 10px;background:linear-gradient(90deg,#144687,#5785bf);color:#fff}
+#character-pixel-toolbar button{padding:7px 11px;background:#e9f1fd;color:#1e477a;border-color:#85b2e5}
+#character-pixel-frame{flex:1 1 auto;min-height:0}
 #animation-view{flex-direction:row;gap:0}
 #motion-pane{display:flex;flex-direction:column;min-width:260px;width:64%;max-width:none;border-right:2px solid #8a9eb1}
 #paint-pane{display:flex;flex-direction:column;flex:1;min-width:0}
@@ -74,6 +79,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
  </section>
  <section class="view active" id="character-view" role="tabpanel" aria-label="Character editor">
   <iframe id="character-frame" class="frame" title="Character Studio · body, clothes and accessories" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+  <div id="character-pixel-overlay" hidden aria-label="Character Pixel Editor">
+   <div id="character-pixel-toolbar"><button type="button" id="character-pixel-back">← BACK TO CHARACTER</button>
+    <strong>EDIT SPRITE · CHARACTER</strong><span style="margin-left:auto;font-size:10px">Changes save to this character only</span></div>
+   <iframe id="character-pixel-frame" class="frame" title="Pixel Editor for selected Character part" allow="clipboard-read; clipboard-write"></iframe>
+  </div>
  </section>
  <section class="view" id="action-view" role="tabpanel" aria-label="Action editor">
   <iframe id="action-frame" class="frame" title="Action Editor · situations and animation binding" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
