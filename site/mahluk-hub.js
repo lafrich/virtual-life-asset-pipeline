@@ -57,7 +57,7 @@ function show(name){
  const u=new URL(location.href);u.searchParams.set("tab",tab);
  history.replaceState(null,"",u.pathname+u.search+u.hash);
  note({emotion:"EMOSI.EXE · emotion database and dialog lipsync are the original editor",
- character:"CHARACTER EDITOR · same source appearance and asset library",
+ character:"CHARACTER · Start → Base → Customize → Preview → Save",
  action:"ACTION EDITOR · situation binding is stored as a separate draft",
  animation:"ANIMATION · 4-direction frame-by-frame asset/anchor editor + Pixel Editor"}[tab]);
 }
@@ -81,7 +81,7 @@ async function closeCharacterPixel(){
  const frame=$("character-pixel-frame");
  try{await frame?.contentWindow?.VirtualLifePixelEditor?.flush?.()}
  catch(error){note("Pixel save failed: "+error.message);return}
- overlay.hidden=true;show("character");refreshCharacter();
+ overlay.hidden=true;show("character");
 }
 function refreshCharacter(){
  const el=$("character-frame");try{el?.contentWindow?.postMessage({type:"mahluk:refresh-character"},ORIGIN)}catch{}
