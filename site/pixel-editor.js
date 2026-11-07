@@ -1402,7 +1402,10 @@ function bootEmosiEditor(){
  const closeBtn=$("pixelClose");
  if(closeBtn) closeBtn.onclick=()=>{
   try{pullEmosiIntoState();saveCurrent();}catch{}
-  if(window.parent!==window&&window.parent.VLMahlukWorkspace) window.parent.VLMahlukWorkspace.show("character");
+  if(window.parent!==window&&window.parent.VLMahlukWorkspace){
+   if(window.parent.VLMahlukWorkspace.closeCharacterPixel)void window.parent.VLMahlukWorkspace.closeCharacterPixel();
+   else window.parent.VLMahlukWorkspace.show("character");
+  }
   else location.href="./v6p-studio.html";
  };
  const pd=$("pixelDirection");

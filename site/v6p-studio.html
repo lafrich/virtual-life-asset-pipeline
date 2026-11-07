@@ -61,6 +61,85 @@ body.mahluk-embedded{background:#bdcbd8}
 #all-views canvas{width:100%;max-width:96px;image-rendering:pixelated;background:repeating-conic-gradient(#edf2f4 0 25%,#c3d2e1 0 50%) 0 0/12px 12px}
 #all-views figcaption{font-size:10px;font-weight:bold}
 @media(max-width:860px){#character-flow{margin:8px;padding:8px}#character-flow .row{align-items:stretch}}
+
+/* Character Wizard: existing compositor and pixel-edit source elements are reused. */
+body.wizard-ready{background:#bcc9d9;font:12px/1.45 Tahoma,"Segoe UI",Arial,sans-serif}
+body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #tab-appearance > .wrap{display:none!important}
+#character-wizard{max-width:1160px;margin:12px auto;background:#e8e9e6;border:1px solid #6681a4;box-shadow:0 0 0 2px #f9ffff,0 5px 20px #617b9b44;min-height:min(690px,calc(100dvh - 28px));display:flex;flex-direction:column}
+#character-wizard[hidden]{display:none!important}
+#character-wizard button,#character-wizard select,#character-wizard input{font:12px Tahoma,Arial,sans-serif}
+.wizard-titlebar{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;color:#fff;background:linear-gradient(90deg,#114389,#4483c8);font-size:13px;gap:10px}
+.wizard-titlebar small{font-size:11px;color:#e1ebfa}
+.wizard-steps{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;background:#dae3ed;border-bottom:1px solid #aab7c5;padding:11px}
+.wizard-step-label{color:#60748c;font-size:11px;padding:6px 10px;border:1px solid transparent}
+.wizard-step-label.current{border-color:#6897ce;background:#f5faff;color:#214b84;font-weight:700}
+.wizard-step-label.done{color:#1c654f}
+.wizard-screen{padding:22px 25px;flex:1;min-height:340px}
+.wizard-screen[hidden],#wizard-existing[hidden]{display:none!important}
+.wizard-screen h2{font-size:20px;line-height:1.25;margin:0 0 9px;color:#204d80}
+.wizard-sub{font-size:12px;color:#53657b;margin:0 0 20px}
+.wizard-home-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.wizard-choice{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:25px;min-height:160px;text-align:left!important;background:#f6f8fc!important;border:1px solid #91aac8!important}
+.wizard-choice:hover,.wizard-choice:focus-visible{background:#dceafb!important;border-color:#2b6abc!important}
+.wizard-choice strong{font-size:16px}
+.wizard-choice span{font-size:12px;color:#51677f;font-weight:400}
+#wizard-existing{margin-top:15px;padding:15px;background:#f7f9fb;border:1px solid #adbacb}
+.wizard-fields{max-width:520px;margin:0 auto}
+.wizard-fields select{padding:10px;width:100%}
+.wizard-fields .wizard-tip{background:#dae8f7;border:1px solid #a9bed6;color:#385473;padding:12px;margin-top:14px}
+.wizard-custom-layout{display:grid;grid-template-columns:150px minmax(260px,1fr) minmax(160px,235px);gap:13px;align-items:start}
+#wizard-part-nav{display:flex;flex-direction:column;gap:5px}
+#wizard-part-nav button{width:100%;text-align:left;padding:10px;background:#f6f7f9}
+#wizard-part-nav button[aria-pressed=true]{background:#c3dafa;color:#174783;border-color:#3a77bb}
+#wizard-part-host{min-height:265px;background:#f9faf9;border:1px solid #b0bfcd;padding:15px}
+#wizard-part-host > .card{border:0;box-shadow:none;background:transparent;padding:0}
+.wizard-part[hidden]{display:none!important}
+.wizard-part h3{font-size:14px;margin:0 0 10px;color:#244d7d}
+.wizard-part .row{align-items:center}
+.wizard-part .row select{flex:1;min-width:100px}
+.wizard-part button{white-space:normal}
+.wizard-live{padding:12px;border:1px solid #b2bdca;background:#e1e8f1;text-align:center}
+#wizard-live-canvas{display:block;margin:4px auto 10px;width:min(150px,100%);height:auto;image-rendering:pixelated;background:repeating-conic-gradient(#e8edf1 0 25%,#c7d2de 0 50%) 0 0/12px 12px}
+.wizard-live small{display:block;color:#52677c}
+#wizard-preview-slot .preview-col{max-width:800px;margin:0 auto;width:100%;background:#f3f6f9;border:1px solid #aab8c8;box-shadow:none}
+#wizard-preview-slot #all-views{max-width:570px}
+#wizard-preview-slot #stage{max-width:180px;height:auto}
+#wizard-preview-slot #strip{max-width:100%;height:auto}
+#wizard-preview-slot #status{max-width:690px}
+#wizard-preview-slot label[for="char-name"]{display:none!important}
+#wizard-preview-slot [data-action],#wizard-preview-slot [data-dir],#wizard-preview-slot #play,#wizard-preview-slot #stop{display:none}
+#wizard-preview-slot #refresh-assets,#wizard-preview-slot #reload,#wizard-preview-slot #save,#wizard-preview-slot #save-drive{display:none!important}
+#wizard-preview-slot #generate-character{background:#dbe9fb!important;color:#1c4b7b}
+#wizard-save-pane{max-width:590px;margin:auto;background:#f7f9fb;border:1px solid #b2c2d2;padding:25px}
+#wizard-save-pane #char-name{font-size:15px;padding:10px}
+#wizard-save-pane #save,#wizard-save-pane #reload{display:none!important}
+.wizard-save-note{padding:12px;background:#e8f0f9;color:#425c75;margin:15px 0}
+#wizard-save-confirm{padding:12px;margin-top:16px;border:1px solid #9bb6cd;background:#f6fbff}
+.wizard-footer{position:sticky;bottom:0;background:#e5e9eb;border-top:1px solid #a8b6c4;padding:11px 15px;display:flex;gap:10px;align-items:center}
+.wizard-footer button{padding:10px 18px;min-width:112px;border-radius:2px}
+#wizard-next{background:#c5dcfa;border-color:#326ab4;color:#1e477e}
+#wizard-back{background:#fff}
+#wizard-notice{flex:1;color:#506780;font-size:11px;text-align:center;min-width:0}
+#wizard-save-success{color:#176249;font-weight:bold;display:none}
+#wizard-save-success.visible{display:block}
+@media(max-width:850px){
+ #character-wizard{margin:4px;min-height:calc(100dvh - 8px)}
+ .wizard-screen{padding:13px}
+ .wizard-custom-layout{grid-template-columns:minmax(0,1fr) 170px}
+ #wizard-part-nav{grid-column:1/-1;flex-direction:row;overflow:auto}
+ #wizard-part-nav button{flex:0 0 auto;width:auto;min-width:75px;text-align:center;padding:8px}
+ .wizard-home-choices{grid-template-columns:1fr}
+ .wizard-choice{min-height:115px;padding:16px}
+}
+@media(max-width:530px){
+ .wizard-custom-layout{grid-template-columns:minmax(0,1fr)}
+ .wizard-live{grid-row:2}
+ #wizard-live-canvas{width:105px}
+ .wizard-titlebar small{display:none}
+ .wizard-step-label{padding:5px;font-size:10px}
+ .wizard-footer{padding:8px}
+ .wizard-footer button{min-width:85px;padding:9px}
+}
 </style>
 </head>
 <body><script>if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('mahluk-embedded');</script>
@@ -72,6 +151,58 @@ body.mahluk-embedded{background:#bdcbd8}
   </div>
 </div>
 <div id="tab-appearance">
+<section id="character-wizard" aria-label="Build Character wizard" hidden>
+ <header class="wizard-titlebar"><strong>▣ BUILD CHARACTER</strong><small>MAHLUK HIDUP.EXE · CHARACTER</small></header>
+ <nav class="wizard-steps" aria-label="Character creation steps">
+  <span data-wizard-progress="home" class="wizard-step-label current">1. START</span>
+  <span>›</span><span data-wizard-progress="base" class="wizard-step-label">2. BASE</span>
+  <span>›</span><span data-wizard-progress="customize" class="wizard-step-label">3. CUSTOMIZE</span>
+  <span>›</span><span data-wizard-progress="preview" class="wizard-step-label">4. PREVIEW</span>
+  <span>›</span><span data-wizard-progress="save" class="wizard-step-label">5. SAVE</span>
+ </nav>
+ <section id="wizard-home" class="wizard-screen">
+  <h2>Create or edit a character</h2><p class="wizard-sub">Pick a starting point. Your existing characters and sprite edits will stay in the library.</p>
+  <div class="wizard-home-choices">
+   <button type="button" id="wizard-start-new" class="wizard-choice"><strong>＋ Add New Character</strong><span>Start with a clean male/female base or duplicate a character.</span></button>
+   <button type="button" id="wizard-start-modify" class="wizard-choice"><strong>✎ Modify Existing Character</strong><span>Open a character from your database and continue customizing it.</span></button>
+  </div>
+  <div id="wizard-existing" hidden><label for="workflow-list">Character Database</label><div id="wizard-existing-slot"></div><p class="wizard-sub">Select a character and open it to continue. Saved records without a local editable draft are opened as a safe editable copy.</p></div>
+ </section>
+ <section id="wizard-base" class="wizard-screen" hidden>
+  <div class="wizard-fields"><h2>Choose your base</h2>
+   <p class="wizard-sub">Start from scratch using a blank nude body, or use an existing character as your starting point.</p>
+   <label for="workflow-source">START FROM</label><div id="wizard-base-slot"></div>
+   <p class="wizard-tip">Male Base and Female Base have no hair, nude top, nude pants and nude shoes. You can customize everything in the next step.</p>
+  </div>
+ </section>
+ <section id="wizard-customize" class="wizard-screen" hidden>
+  <h2>Customize character</h2><p class="wizard-sub">Select a body part, choose from the library or edit its four views in Pixel Editor. Your sprite edits are kept for this character.</p>
+  <div class="wizard-custom-layout">
+   <nav id="wizard-part-nav" aria-label="Character part categories"></nav>
+   <div id="wizard-part-host"></div>
+   <aside class="wizard-live"><strong>LIVE PREVIEW</strong><canvas id="wizard-live-canvas" width="64" height="112" aria-label="Live 2D character appearance"></canvas>
+    <small>Idle · front right (SE)</small><p class="note">Choose a part and click Edit Sprite to draw SE, SW, NE, NW.</p>
+    <div id="wizard-duplicate-slot"></div>
+   </aside>
+  </div>
+ </section>
+ <section id="wizard-preview" class="wizard-screen" hidden>
+  <h2>Check angles & animations</h2>
+  <p class="wizard-sub">Your outfit is applied to the available sprite animations. Switch motions and frames; click any direction to fix that pose in Pixel Editor.</p>
+  <div id="wizard-preview-slot"></div>
+ </section>
+ <section id="wizard-save" class="wizard-screen" hidden>
+  <h2>Save your character</h2><p class="wizard-sub">Check the name and save the character with its generated animation sprites into the character database.</p>
+  <div id="wizard-save-pane"><label for="char-name">CHARACTER NAME</label><div id="wizard-name-slot"></div>
+   <div class="wizard-save-note">Your character and animation frames will be saved to the local character library. Back up from the MAHLUK toolbar to use the same edits on another device.</div>
+   <div id="wizard-save-confirm">Ready to save.</div><p id="wizard-save-success" role="status"></p>
+   <div id="wizard-backup-slot"></div>
+  </div>
+ </section>
+ <footer class="wizard-footer"><button type="button" id="wizard-back">← BACK</button>
+  <span id="wizard-notice" role="status">Choose how to begin.</span>
+  <button type="button" id="wizard-next">NEXT →</button></footer>
+</section>
 <section id="character-flow" aria-label="Character database workflow">
  <strong>CHARACTER DATABASE · ADD / MODIFY / SAVE</strong>
  <div class="row">
@@ -499,6 +630,7 @@ async function save(){
    (result.unsupportedBySemestaClips?.length?" · "+result.unsupportedBySemestaClips.length+" require separate Semesta runtime support":"")+
    (adapted.warnings.length?" · "+adapted.warnings.join("; "):""));
   syncDbg();
+  return result.record;
 }
 function reload(){
   let id=state.lastId;
@@ -652,6 +784,11 @@ async function boot(){
 }
 window.V6PCharacterHost=Object.freeze({
  get(){return {id:state.characterId,ch:{...state.ch},faceId:state.faceId,name:$("char-name").value,action:state.action,dir:state.dir,frame:state.frame}},
+ frame(action="idle",dir="se",n=0){
+  if(!state.sheet||V.ROWS[action]==null)return null;
+  return V.extractFrame(state.sheet,action,dir,Math.max(0,Math.min(V.FRAMES[action]-1,n)));
+ },
+ async publish(){return await save()},
  async open(record){
   state.characterId=record?.id||"";state.lastId=record?.status==="saved"?record.id:"";
   state.ch=V.norm({...record?.appearance,characterId:state.characterId});state.faceId=record?.faceId||"";
@@ -697,6 +834,6 @@ window.V6PCharacterHost=Object.freeze({
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
-<script src="./v6p-character-workflow.js?v=character-master-2"></script>
+<script src="./v6p-character-wizard.js?v=character-wizard-2"></script>
 </body>
 </html>
