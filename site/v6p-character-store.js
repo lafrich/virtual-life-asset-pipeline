@@ -20,7 +20,7 @@ function create({name,gender="male",from=""}={}){
  const source=from?get(from):null;if(from&&!source)throw Error("Missing clone source");
  const id=freshId(),row={id,name:text(name)||"New Character",gender:source?.gender||gender,
   appearance:source?{...source.appearance,accessories:[...(source.appearance?.accessories||[])]}:starter(gender),
-  faceId:source?.faceId||"",parts:source?{...source.parts}:{},derived:source?{...source.derived}:{},
+  faceId:source?.faceId||"",parts:source?{...source.parts}:{},masters:source?JSON.parse(JSON.stringify(source.masters||{})):{},corrections:source?JSON.parse(JSON.stringify(source.corrections||{})):{},generated:source?JSON.parse(JSON.stringify(source.generated||{})):{},derived:source?{...source.derived}:{},
   origin:source?.id||"base",status:"draft",updated:new Date().toISOString()};
  const all=read();all.push(row);write(all);select(id);return row;
 }
@@ -40,6 +40,41 @@ function setPart(id,part,dataUrl){
  all[i].parts={...(all[i].parts||{}),[part]:dataUrl};all[i].updated=new Date().toISOString();write(all);return all[i];
 }
 function resetPart(id,part){const all=read(),i=all.findIndex(x=>x.id===id);if(i<0)throw Error("Unknown character");const parts={...all[i].parts};delete parts[part];all[i].parts=parts;write(all)}
+function writeRow(id,edit){
+ const all=read(),i=all.findIndex(x=>x.id===id);if(i<0)throw Error("Unknown character "+id);
+ edit(all[i]);all[i].updated=now();write(all);return all[i];
+}
+function now(){return new Date().toISOString()}
+function master(id,part,dir){
+ if(!C()?.isPart(part)||!C().DIRS.includes(dir))return null;
+ return get(id)?.masters?.[part]?.[dir]||null;
+}
+function setMaster(id,part,dir,png){
+ if(!C()?.isPart(part)||!C().DIRS.includes(dir))throw Error("Invalid part or direction");
+ if(typeof png!=="string"||!png.startsWith("data:image/png;base64,")||png.length>350000)throw Error("Master must be a 64x112 PNG");
+ return writeRow(id,row=>{row.masters={...(row.masters||{})};
+  row.masters[part]={...(row.masters[part]||{}),[dir]:png};
+  row.status="draft";
+ });
+}
+function markCorrection(id,part,action,dir,frame){
+ if(!C()?.isPart(part)||!C().ACTIONS.includes(action)||!C().DIRS.includes(dir)||!Number.isInteger(frame)||frame<0||frame>=C().FRAMES[action])throw Error("Invalid corrected frame");
+ return writeRow(id,row=>{row.corrections={...(row.corrections||{})};
+  row.corrections[part]={...(row.corrections[part]||{}),[action+"|"+dir+"|"+frame]:true};
+  row.status="draft";
+ });
+}
+function isCorrection(id,part,action,dir,frame){return !!get(id)?.corrections?.[part]?.[action+"|"+dir+"|"+frame]}
+function clearCorrection(id,part,action,dir,frame){
+ return writeRow(id,row=>{const c={...(row.corrections||{})};c[part]={...(c[part]||{})};delete c[part][action+"|"+dir+"|"+frame];row.corrections=c;});
+}
+function setGenerated(id,part,png,detail){
+ if(!C()?.isPart(part)||typeof png!=="string"||!png.startsWith("data:image/png;base64,")||png.length>9000000)throw Error("Invalid generated V6P sheet");
+ return writeRow(id,row=>{row.parts={...(row.parts||{}),[part]:png};
+  row.generated={...(row.generated||{}),[part]:{...(detail||{}),at:now()}};
+  row.status="draft";
+ });
+}
 function markDerived(id,part,views){const all=read(),i=all.findIndex(x=>x.id===id);if(i<0)throw Error("Unknown character");all[i].derived={...(all[i].derived||{}),[part]:views};write(all)}
-return Object.freeze({KEY,SELECTED,FORMAT,starter,list,get,create,update,getPart,setPart,resetPart,markDerived,selected,select});
+return Object.freeze({KEY,SELECTED,FORMAT,starter,list,get,create,update,getPart,setPart,resetPart,master,setMaster,markCorrection,isCorrection,clearCorrection,setGenerated,markDerived,selected,select});
 });
