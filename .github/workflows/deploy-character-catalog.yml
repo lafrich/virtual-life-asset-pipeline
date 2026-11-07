@@ -314,7 +314,8 @@ jobs:
           set -euo pipefail
           for STALE_DEPLOYMENT in \
             b290c907dff0fa7c8b787593c1146c0b307ca29f \
-            b341e153568a47319285067f7119cde9bc80f634
+            b341e153568a47319285067f7119cde9bc80f634 \
+            4a65d875c5b5c018c65f94a8d2395f61a3d80f17
           do
             URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/${STALE_DEPLOYMENT}/cancel"
             STATUS=$(curl --silent --show-error --retry 2 --output /tmp/pages-cancel-response.json --write-out '%{http_code}' \
@@ -338,6 +339,15 @@ jobs:
         run: sleep 15
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Inspect Pages payload before deployment
+        run: |
+          set -euo pipefail
+          echo "Validated static site size:"
+          du -sh _site
+          echo "Total files:"
+          find _site -type f | wc -l
+          echo "Largest file:"
+          find _site -type f -printf '%s %p\n' | sort -nr | head -n 1
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
