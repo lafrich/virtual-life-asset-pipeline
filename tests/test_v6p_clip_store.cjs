@@ -29,7 +29,7 @@ for(const id of ["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga
  assert.strictEqual(clip.saveStatus,"stock");
  assert.ok(names.includes(clip.id));
  assert.ok(Store.hasLayer(id,"base/body"));
- assert.match(Store.layerUrl(id,"base/body"),/media\\/v6p-act\\/base\\/body\\.png/);
+ assert.strictEqual(Store.layerUrl(id,"base/body"),"./media/v6p-act/base/body.png");
  assert.throws(()=>Store.remove(id));
 }
 assert.strictEqual(Store.get("pushup").manifest.frames.length,6);
