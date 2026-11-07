@@ -30,7 +30,7 @@ test('V6P composer uses character-local layer and preserves stock fallback',()=>
  Store.update(ch.id,{appearance:{top:'custom'}});
  Store.setPart(ch.id,'top/custom_f','data:image/png;base64,QUJD');
  const V=loadUMD('site/v6p-compositor.js',window);
- const n=V.norm({...ch.appearance,characterId:ch.id});
+ const n=V.norm({...Store.get(ch.id).appearance,characterId:ch.id});
  assert.equal(n.hair,'none');assert.equal(n.body,'female');assert.equal(n.characterId,ch.id);
  assert.ok(!V.files(n).some(part=>part.startsWith('hair/')),'hairless base should not invent hair');
  assert.ok(V.files(n).includes('top/custom_f'));
