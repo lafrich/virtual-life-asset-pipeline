@@ -1417,6 +1417,9 @@ function topPartForDirection(part,dir){
  const front=part.replace(/_back(?=_f$|$)/,"");
  const bare=front.slice(0,front.length-suffix.length);
  const back=bare+"_back"+suffix;
+ // The V6B top_back file is physically behind the body, not the NE/NW
+ // picture of the visible Tee. All four Custom Wear views edit top/custom.
+ if(bare==="top/custom"||bare==="top/custom_back")return front;
  const next=(dir==="ne"||dir==="nw")?back:front;
  return window.V6PPartCatalog.isPart(next)?next:part;
 }
