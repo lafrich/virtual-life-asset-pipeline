@@ -374,9 +374,13 @@ async function restore(){
  if(previous&&ORDER.includes(previous.step)&&row){
   state.mode=previous.mode==="modify"?"modify":"new";
   state.category=previous.category||"body";state.saved=!!previous.saved;
-  selectPart(state.category);await H.open(row);setStep(previous.step);
+  selectPart(state.category);await H.open(row);
+  // Initial restore may finish after the user chooses a new base.
+  // Do not send the Wizard back to a stale step on that race.
+  if(state.step!=="home")return;
+  setStep(previous.step);
   if(previous.step==="save")$("wizard-save-confirm").textContent="Character is ready to save.";
- }else setStep("home");
+ }else if(state.step==="home")setStep("home");
  renderLive();
 }
 arrangeLegacyControls();selectFixPart();bind();
