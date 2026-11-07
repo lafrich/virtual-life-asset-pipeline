@@ -21,6 +21,9 @@ function create({name,gender="male",from=""}={}){
  const id=freshId(),row={id,name:text(name)||"New Character",gender:source?.gender||gender,
   appearance:source?{...source.appearance,accessories:[...(source.appearance?.accessories||[])]}:starter(gender),
   faceId:source?.faceId||"",parts:source?{...source.parts}:{},masters:source?JSON.parse(JSON.stringify(source.masters||{})):{},corrections:source?JSON.parse(JSON.stringify(source.corrections||{})):{},generated:source?JSON.parse(JSON.stringify(source.generated||{})):{},
+  revision:source?.revision||0,
+  masterVersion:source?JSON.parse(JSON.stringify(source.masterVersion||{})):{},
+  correctionVersion:source?JSON.parse(JSON.stringify(source.correctionVersion||{})):{},
   masterUpdatedAt:source?JSON.parse(JSON.stringify(source.masterUpdatedAt||{})):{},
   correctionUpdatedAt:source?JSON.parse(JSON.stringify(source.correctionUpdatedAt||{})):{},
   correctionArchive:source?JSON.parse(JSON.stringify(source.correctionArchive||{})):{},
@@ -47,7 +50,7 @@ function setPart(id,part,dataUrl){
 }
 function resetPart(id,part){
  return writeRow(id,row=>{
-  for(const field of ["parts","masters","masterUpdatedAt","corrections","correctionUpdatedAt","generated","correctionArchive"]){
+  for(const field of ["parts","masters","masterVersion","masterUpdatedAt","corrections","correctionVersion","correctionUpdatedAt","generated","correctionArchive"]){
    const next={...(row[field]||{})};delete next[part];row[field]=next;
   }
   row.status="draft";
@@ -71,6 +74,9 @@ function setMaster(id,part,dir,png){
   row.masters[part]={...(row.masters[part]||{}),[dir]:png};
   // An identical Save must not invalidate a later hand-corrected animation.
   if(previous!==png){
+   row.revision=(row.revision||0)+1;
+   row.masterVersion={...(row.masterVersion||{})};
+   row.masterVersion[part]={...(row.masterVersion[part]||{}),[dir]:row.revision};
    row.masterUpdatedAt={...(row.masterUpdatedAt||{})};
    row.masterUpdatedAt[part]={...(row.masterUpdatedAt[part]||{}),[dir]:now()};
   }
@@ -82,6 +88,9 @@ function markCorrection(id,part,action,dir,frame){
  return writeRow(id,row=>{row.corrections={...(row.corrections||{})};
   const key=action+"|"+dir+"|"+frame;
   row.corrections[part]={...(row.corrections[part]||{}),[key]:true};
+  row.revision=(row.revision||0)+1;
+  row.correctionVersion={...(row.correctionVersion||{})};
+  row.correctionVersion[part]={...(row.correctionVersion[part]||{}),[key]:row.revision};
   row.correctionUpdatedAt={...(row.correctionUpdatedAt||{})};
   row.correctionUpdatedAt[part]={...(row.correctionUpdatedAt[part]||{}),[key]:now()};
   row.status="draft";
@@ -93,6 +102,9 @@ function isCorrection(id,part,action,dir,frame){return !!get(id)?.corrections?.[
 function shouldKeepCorrection(id,part,action,dir,frame){
  const row=get(id),key=action+"|"+dir+"|"+frame;
  if(!row?.corrections?.[part]?.[key])return false;
+ const cv=row.correctionVersion?.[part]?.[key];
+ const mv=row.masterVersion?.[part]?.[dir];
+ if(Number.isInteger(cv))return !Number.isInteger(mv)||cv>=mv;
  const saved=row.correctionUpdatedAt?.[part]?.[key];
  if(!saved)return false; // unversioned legacy correction, not safe to preserve as active
  const master=row.masterUpdatedAt?.[part]?.[dir];
@@ -114,6 +126,7 @@ function archiveStaleCorrections(id,part,frames){
    // Old flags can be removed after the previous frame is backed up.
    if(row.corrections?.[part])delete row.corrections[part][key];
    if(row.correctionUpdatedAt?.[part])delete row.correctionUpdatedAt[part][key];
+   if(row.correctionVersion?.[part])delete row.correctionVersion[part][key];
   }
   row.correctionArchive=archive;
  }).correctionArchive?.[part]?frames.length:0;
@@ -121,7 +134,9 @@ function archiveStaleCorrections(id,part,frames){
 function clearCorrection(id,part,action,dir,frame){
  return writeRow(id,row=>{const c={...(row.corrections||{})};c[part]={...(c[part]||{})};delete c[part][action+"|"+dir+"|"+frame];row.corrections=c;
   const dates={...(row.correctionUpdatedAt||{})};dates[part]={...(dates[part]||{})};
-  delete dates[part][action+"|"+dir+"|"+frame];row.correctionUpdatedAt=dates;});
+  delete dates[part][action+"|"+dir+"|"+frame];row.correctionUpdatedAt=dates;
+  const versions={...(row.correctionVersion||{})};versions[part]={...(versions[part]||{})};
+  delete versions[part][action+"|"+dir+"|"+frame];row.correctionVersion=versions;});
 }
 /* Fix legacy edits where back-facing top masters were mistakenly saved on
    top/front before the distinct *_back source layer was wired into the UI.
