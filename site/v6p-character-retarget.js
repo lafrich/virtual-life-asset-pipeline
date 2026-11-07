@@ -1,8 +1,7 @@
-/* MAHLUK V6P - 4-view appearance -> existing frame-by-frame motion atlas.
-   Paint each view once (idle F0); generate each of 11 stock V6P action frames
-   by transferring painted style onto the native posed silhouette. No rig and
-   no fabricated views. Corrected frames remain immutable when regenerating.
-   Shape transfer is approximate, preview and manual correction still required. */
+/* MAHLUK V6P - four-direction masters on canonical native pose sheets.
+   The compositor supplies the actual limbs and clothing poses for every action.
+   Reapply only palette edits; never distort pixels by bounding-box guessing.
+   Preserve original idle F0 drawings and hand-corrected frames. */
 (function(root,factory){"use strict";const api=factory(root);if(typeof module==="object"&&module.exports)module.exports=api;if(root)root.V6PCharacterRetarget=api;})(typeof window!=="undefined"?window:null,function(root){
 "use strict";
 const DIRS=["se","sw","ne","nw"],FW=64,FH=112;
@@ -33,90 +32,38 @@ function remapColors(original,painted){
  }
  return map;
 }
-function segment(x,y,box){
- // For upright poses, independent limb/torso bands retain approximate placement.
- const nx=(x-box.x)/Math.max(1,box.w),ny=(y-box.y)/Math.max(1,box.h);
- if(ny<.26)return "head";
- if(ny>.68)return nx<.5?"leg_l":"leg_r";
- if(nx<.26)return "arm_l";
- if(nx>.74)return "arm_r";
- return "torso";
-}
-function regionBounds(data,box,w=FW,h=FH){
- if(!box)return {};
- const out={};
- for(let y=box.y;y<box.y+box.h;y++)for(let x=box.x;x<box.x+box.w;x++){
-  if(data[(y*w+x)*4+3]<8)continue;
-  const name=segment(x,y,box);
-  if(!out[name])out[name]={x,y,maxx:x,maxy:y};
-  else {const r=out[name];r.x=Math.min(r.x,x);r.y=Math.min(r.y,y);r.maxx=Math.max(r.maxx,x);r.maxy=Math.max(r.maxy,y)}
- }
- for(const r of Object.values(out)){r.w=r.maxx-r.x+1;r.h=r.maxy-r.y+1;delete r.maxx;delete r.maxy}
- return out;
-}
-function mapCoord(x,y,from,to){
- const u=(x-to.x+.5)/Math.max(1,to.w),v=(y-to.y+.5)/Math.max(1,to.h);
- return {x:Math.max(0,Math.min(FW-1,Math.floor(from.x+u*from.w))),
-         y:Math.max(0,Math.min(FH-1,Math.floor(from.y+v*from.h)))};
-}
-function transferFrame(original,painted,posed,sourcePoseRef=null,targetPoseRef=null){
- if(original.length!==FW*FH*4||painted.length!==original.length||posed.length!==original.length)
-  throw Error("Expected three native RGBA 64x112 frames");
- if(equals(original,painted))return new Uint8ClampedArray(posed);
+/* No geometric retargeting: the original part sheets are already fully posed.
+   This retains the exact native silhouette, transparency and pixel positions. */
+function paintNativePose(posed,palette){
+ if(posed.length!==FW*FH*4)throw Error("Expected a native RGBA 64x112 frame");
  const result=new Uint8ClampedArray(posed);
- const sourceBounds=bounds(original)||bounds(painted),targetBounds=bounds(posed);
- if(!sourceBounds)return result;
- // Transparent stock (e.g. short hair back) must still inherit motion
- // from a reference body atlas rather than disappear in every target pose.
- if(!targetBounds){
-  const from=bounds(sourcePoseRef||original)||sourceBounds,to=bounds(targetPoseRef||posed)||sourceBounds;
-  for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){
-   const i=(y*FW+x)*4;if(painted[i+3]<8)continue;
-   const u=(x-from.x+.5)/Math.max(1,from.w),v=(y-from.y+.5)/Math.max(1,from.h);
-   const dx=Math.round(to.x+u*to.w-.5),dy=Math.round(to.y+v*to.h-.5);
-   if(dx<0||dx>=FW||dy<0||dy>=FH)continue;
-   const j=(dy*FW+dx)*4;
-   result[j]=painted[i];result[j+1]=painted[i+1];result[j+2]=painted[i+2];result[j+3]=painted[i+3];
-  }
-  return result;
- }
- const srcRegions=regionBounds(original,sourceBounds),dstRegions=regionBounds(posed,targetBounds);
- const upright=(targetBounds.h>targetBounds.w*.9&&sourceBounds.h>sourceBounds.w*.9);
- const palette=remapColors(original,painted);
- // First pass preserves target native pose silhouette and transfers dominant colors.
- for(let i=0;i<posed.length;i+=4)if(posed[i+3]>8&&palette.has(color(posed,i))){
-  const c=palette.get(color(posed,i));result[i]=(c>>16)&255;result[i+1]=(c>>8)&255;result[i+2]=c&255;
- }
- // Transfer source texture details by correspondence. Only edits replace stock pixels.
- // A few isolated edits do not recolor an unrelated limb or alter empty pixels.
- for(let y=targetBounds.y;y<targetBounds.y+targetBounds.h;y++)
- for(let x=targetBounds.x;x<targetBounds.x+targetBounds.w;x++){
-  const i=(y*FW+x)*4;if(posed[i+3]<8)continue;
-  let from=sourceBounds,to=targetBounds;
-  if(upright){const name=segment(x,y,targetBounds);if(srcRegions[name]&&dstRegions[name]){from=srcRegions[name];to=dstRegions[name]}}
-  const at=mapCoord(x,y,from,to),j=(at.y*FW+at.x)*4;
-  if(original[j+3]<8||painted[j+3]<8)continue;
-  if(painted[j]===original[j]&&painted[j+1]===original[j+1]&&painted[j+2]===original[j+2])continue;
-  result[i]=painted[j];result[i+1]=painted[j+1];result[i+2]=painted[j+2];result[i+3]=painted[j+3];
- }
- // Carry added silhouette pixels, e.g. sleeves/hair outside the original mask.
- // Map each added pixel forward using native silhouette bounds.
- const mapPoint=(x,y,from,to)=>{
-  const u=(x-from.x+.5)/Math.max(1,from.w),v=(y-from.y+.5)/Math.max(1,from.h);
-  return {x:Math.round(to.x+u*to.w-.5),y:Math.round(to.y+v*to.h-.5)};
- };
- for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){
-  const i=(y*FW+x)*4;
-  if(painted[i+3]<8||original[i+3]>8)continue;
-  // Keep extras around source silhouette; unrelated new disconnected art is not invented.
-  if(x<sourceBounds.x-16||x>sourceBounds.x+sourceBounds.w+16||
-     y<sourceBounds.y-16||y>sourceBounds.y+sourceBounds.h+16)continue;
-  const at=mapPoint(x,y,sourceBounds,targetBounds);
-  if(at.x<0||at.x>=FW||at.y<0||at.y>=FH)continue;
-  const j=(at.y*FW+at.x)*4;
-  result[j]=painted[i];result[j+1]=painted[i+1];result[j+2]=painted[i+2];result[j+3]=painted[i+3];
+ for(let i=0;i<posed.length;i+=4){
+  if(posed[i+3]<8)continue;
+  const mapped=palette.get(color(posed,i));
+  if(mapped===undefined)continue;
+  result[i]=(mapped>>16)&255;result[i+1]=(mapped>>8)&255;result[i+2]=mapped&255;
  }
  return result;
+}
+function masterDiff(original,painted,palette=remapColors(original,painted)){
+ if(original.length!==FW*FH*4||painted.length!==original.length)
+  throw Error("Expected two RGBA 64x112 master frames");
+ let geometry=0,unmapped=0,colorEdits=0;
+ for(let i=0;i<original.length;i+=4){
+  const was=original[i+3]>8,now=painted[i+3]>8;
+  if(was!==now||(was&&now&&original[i+3]!==painted[i+3])){geometry++;continue}
+  if(!was||!now||color(original,i)===color(painted,i))continue;
+  colorEdits++;
+  if(palette.get(color(original,i))!==color(painted,i))unmapped++;
+ }
+ return {geometry,unmapped,colorEdits};
+}
+/* Preserve the legacy API for callers, but do not transfer shapes/details
+   to estimated coordinates. Original and target may be different actions. */
+function transferFrame(original,painted,posed){
+ if(original.length!==FW*FH*4||painted.length!==original.length||posed.length!==original.length)
+  throw Error("Expected three native RGBA 64x112 frames");
+ return paintNativePose(posed,remapColors(original,painted));
 }
 function image(url){
  return new Promise((resolve,reject)=>{
@@ -144,14 +91,12 @@ async function generatePart(id,part,opts){
  const row=S.get(id);if(!row)throw Error("Open a real saved character draft first");
  C.normalizePart(part);
  const base=await P.loadSheet(part),existing=row.parts?.[part]?await P.loadSheetFromUrl(row.parts[part]):null;
- const bodyPart=row.appearance?.body==="female"?"base/body_f":"base/body";
- const bodySheet=part===bodyPart?base:await P.loadSheet(bodyPart);
- const output=document.createElement("canvas");output.width=C.W;output.height=C.H;
+  const output=document.createElement("canvas");output.width=C.W;output.height=C.H;
  const g=output.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;
  // Each generation starts from the canonical native motion sheet. Never reuse
  // previously warped animation frames as a source, especially for nude outfits.
  g.drawImage(base,0,0);
- const sources={},masters=[],warning=[];
+ const sources={},masters=[],warning=[],reviewDirections=[];
  for(const dir of DIRS){
   const original=frame(base,C,"idle",dir,0).data;
   let painted;
@@ -162,7 +107,9 @@ async function generatePart(id,part,opts){
   // Recover from the stock silhouette unless this direction has a real master.
   else if(existing&&!row.generated?.[part])painted=frame(existing,C,"idle",dir,0).data;
   else painted=original;
-  sources[dir]={original,painted,body:frame(bodySheet,C,"idle",dir,0).data};
+  const palette=remapColors(original,painted),diff=masterDiff(original,painted,palette);
+  if(m&&(diff.geometry||diff.unmapped))reviewDirections.push(dir.toUpperCase());
+  sources[dir]={original,painted,palette,diff};
  }
  let generated=0,protectedFrames=0,unchanged=0;
  const stale=[];
@@ -194,15 +141,16 @@ async function generatePart(id,part,opts){
    stale.push({key,png});
   }
   const original=frame(base,C,action,dir,n).data;
-  const source=sources[dir],painted=transferFrame(source.original,source.painted,original,source.body,frame(bodySheet,C,action,dir,n).data);
+  const source=sources[dir],painted=paintNativePose(original,source.palette);
   if(equals(original,painted))unchanged++;else generated++;
   put(output,C,action,dir,n,painted);
  }
  // Master input stays pixel-perfect and should not be overwritten by generated warp.
- for(const dir of DIRS)if(S.master(id,part,dir)&&!S.isCorrection(id,part,"idle",dir,0))
+ for(const dir of DIRS)if(S.master(id,part,dir)&&!S.shouldKeepCorrection(id,part,"idle",dir,0))
   put(output,C,"idle",dir,0,sources[dir].painted);
  if(masters.length<4)warning.push((4-masters.length)+" direction(s) using existing/stock source sprites");
- warning.push("Pose shape transfer approximate: inspect especially sit, sleep, lie, float and swim");
+ if(reviewDirections.length)warning.push("Custom silhouettes/details in "+reviewDirections.join("/")+
+   " remain exact on IDLE F0. Correct other poses in Pixel Editor; no geometric warping.");
  if(stale.length){
   // If archiving fails (e.g. browser storage full), abort without overwriting
   // the previous character data; never silently destroy manual corrections.
@@ -210,9 +158,9 @@ async function generatePart(id,part,opts){
   warning.push(stale.length+" obsolete frame correction(s) archived and rebuilt from source");
  }
  S.setGenerated(id,part,output.toDataURL("image/png"),{
-  generated,protectedFrames,unchanged,masters,staleArchived:stale.length,warning
+  generated,protectedFrames,unchanged,masters,reviewDirections,engine:"native-palette-v1",staleArchived:stale.length,warning
  });
- return {part,generated,protectedFrames,unchanged,staleArchived:stale.length,masters,warning};
+ return {part,generated,protectedFrames,unchanged,staleArchived:stale.length,masters,reviewDirections,warning};
 }
 async function generateCharacter(id,opts={}){
  const S=root?.V6PCharacterStore,C=root?.V6PPartCatalog;
@@ -230,6 +178,7 @@ async function generateCharacter(id,opts={}){
  root.V6PCompositor?.clearCache?.();
  return {parts:results,frames:results.reduce((n,p)=>n+p.generated,0),
  corrected:results.reduce((n,p)=>n+p.protectedFrames,0),
+  reviewDirections:results.reduce((n,p)=>n+(p.reviewDirections?.length||0),0),
  archivedStaleCorrections:results.reduce((n,p)=>n+(p.staleArchived||0),0),
  repairedBackMasters:repair.moved,remainingLegacyCorrections:repair.remainingCorrections};
 }
@@ -292,5 +241,5 @@ function generateAnchorClips(characterSheet){
  return {clips:result,warnings};
 }
 
-return Object.freeze({DIRS,FW,FH,ANCHOR_KEY,bounds,remapColors,transferFrame,generatePart,generateCharacter,anchorDatabase,generateAnchorClip,generateAnchorClips});
+return Object.freeze({DIRS,FW,FH,ANCHOR_KEY,bounds,remapColors,masterDiff,paintNativePose,transferFrame,generatePart,generateCharacter,anchorDatabase,generateAnchorClip,generateAnchorClips});
 });
