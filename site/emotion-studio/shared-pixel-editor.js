@@ -312,7 +312,8 @@
     x:dx,y:dy,mirror,replace
    }));
    ctx.putImageData(original,0,targetDir*H);
-   dir=targetDir;els.dir.value=DIR[dir];ref=refs?.[DIR[dir]]||ref;
+   dir=targetDir;els.dir.value=DIR[dir];ref=refs?refs[DIR[dir]]||null:ref;
+   if(typeof onDirectionChange==="function")onDirectionChange(DIR[dir]);
    // A copy-to-view must never leave a previously enabled all-views brush
    // active: subsequent drawing on the pasted side would alter the original.
    if(switching)els.sync.checked=false;
