@@ -4,6 +4,28 @@ Repo: `lafrich/virtual-life-asset-pipeline`
 Branch: `main`  
 Live: https://lafrich.github.io/virtual-life-asset-pipeline/
 
+## This deploy (root URL → v6p-studio)
+
+- Previous `origin/main` (safe restore point): `48ddc5b5da0cd91ddded9f27fdb9f9cfea6ba371`
+- Feature commit: `a6215a1e876222b0eab944c49f2eed2bf5e8bcac`
+
+Restore this deploy (fast-forward only — do not force-push):
+
+```bash
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+git revert --no-edit a6215a1e876222b0eab944c49f2eed2bf5e8bcac
+git push origin main
+```
+
+If this ROLLBACK notes commit is also on `main`, revert it first (newest first), then the feature commit. That removes the `site/index.html` redirect to `v6p-studio.html` and restores the v6p banner links to Character Studio and Reset Studio. It does not delete or restore any character assets. The old Character Studio page and `v6b-reset-studio.html` were kept because tests and runtime still reference them.
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+
+- https://lafrich.github.io/virtual-life-asset-pipeline/ opens `v6p-studio.html`
+- https://lafrich.github.io/virtual-life-asset-pipeline/v6p-studio.html
+
 ## This deploy (Emosi topmost + v6p pixel-editor Drive save)
 
 - Previous `origin/main` (safe restore point): `3f7904b6cce5abdec60523deca4c536415650300`
