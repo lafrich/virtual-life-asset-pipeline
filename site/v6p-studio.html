@@ -266,8 +266,8 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <label for="custom-top-template">CUSTOM TOP · BASE TEMPLATE</label>
 <select id="custom-top-template"></select>
 <button type="button" id="reset-custom-top">CREATE / REPLACE FROM TEMPLATE</button>
-<button type="button" id="edit-top-back">✎ EDIT BACK WEAR</button>
-<p>Native animation sheet · edit any frame and angle. Pixels stay exact.</p>
+<button type="button" id="edit-top-back" hidden>✎ EDIT BACK WEAR</button>
+<p>Draw your design in four directions (SE, SW, NE, NW). Preview transfers it to all native poses.</p>
 </div>
     <label for="topColor">TOP COLOR</label>
     <select id="topColor"></select>
@@ -486,7 +486,7 @@ function setupCustomWear(){
     CW.changeTemplate(state.characterId,kind,template,{reset:true});
     await CW.ensure(state.characterId,{...state.ch,[kind]:"custom",characterId:state.characterId});
     await refreshAssets();
-    setStatus("Custom "+kind+" recreated from "+template+" native animation sheets. All frames are editable.");
+    setStatus("Custom "+kind+" created from "+template+". Edit four directions; Preview applies the design to native animations.");
    }catch(error){setStatus("Custom Wear template error: "+error.message,true)}
   });
  }
@@ -780,10 +780,10 @@ async function openPixelEditor(kind,opts={}){
   u.searchParams.set("source","v6p");
   u.searchParams.set("part",part);
   if(state.characterId)u.searchParams.set("character",state.characterId);
-  u.searchParams.set("action",opts.fix?opts.action||state.action:(CW?.isCustomPart(part)?state.action:"idle"));
+  u.searchParams.set("action",opts.fix?opts.action||state.action:"idle");
   u.searchParams.set("dir",opts.dir||state.dir||"se");
-  u.searchParams.set("frame",String(opts.fix||CW?.isCustomPart(part)?(opts.frame??state.frame??0):0));
-  u.searchParams.set("master",opts.fix||CW?.isCustomPart(part)?"0":"1");
+  u.searchParams.set("frame",String(opts.fix?(opts.frame??state.frame??0):0));
+  u.searchParams.set("master",opts.fix?"0":"1");
   routeToMahlukEditor(u.href);
 }
 function showStudioTab(name){
