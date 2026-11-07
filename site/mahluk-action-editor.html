@@ -9,7 +9,7 @@ button{cursor:pointer;background:linear-gradient(#fff,#d8e1ed)}
 button:disabled{opacity:.45;cursor:not-allowed}
 button[aria-pressed=true]{background:#bed8fb;border-color:#2b68bd}
 #head{background:linear-gradient(90deg,#17448e,#578bcb);color:white;padding:9px;font-weight:bold;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}
-#main{display:grid;grid-template-columns:225px minmax(240px,310px) minmax(360px,1fr);gap:8px;margin-top:8px}
+#main{display:grid;grid-template-columns:minmax(240px,350px) minmax(360px,1fr);gap:8px;margin-top:8px}
 .pane{border:1px solid #818d9f;box-shadow:inset 1px 1px white;background:#e8e8e2;padding:8px;min-width:0}
 .pane h2{font-size:11px;margin:2px 0 8px;border-bottom:1px solid #a7afbd;padding-bottom:5px}
 .row{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
@@ -21,7 +21,7 @@ label{display:flex;flex-direction:column;font-size:10px;font-weight:bold;gap:4px
 #draft-list button.selected{background:#bbd8ff}
 .pane input:not([type=checkbox]):not([type=range]),.pane select,.pane textarea{width:100%;min-width:0}
 .pane textarea{min-height:66px}
-#action-canvas{display:block;margin:7px auto;image-rendering:pixelated;background:repeating-conic-gradient(#dae3f0 0 25%,#becde0 0 50%) 0 0/24px 24px;border:1px solid #738aa6;width:min(440px,100%);max-height:65dvh;height:auto;aspect-ratio:64/112}
+#action-canvas{display:block;margin:7px auto;image-rendering:pixelated;background:repeating-conic-gradient(#dae3f0 0 25%,#becde0 0 50%) 0 0/24px 24px;border:1px solid #738aa6;width:min(680px,100%);height:auto;aspect-ratio:576/400;touch-action:none}
 .timeline{background:#d5dee9;border:1px solid #a6b3c3;padding:7px;display:flex;flex-direction:column;gap:4px}
 .timeline .row{margin:2px 0}
 #frame{width:100%}
@@ -30,15 +30,49 @@ label{display:flex;flex-direction:column;font-size:10px;font-weight:bold;gap:4px
 small,.note{font-size:10px;color:#5c6878}
 #preview-note{min-height:20px}
 #new,#save{background:#d2e4fd;border-color:#427dbb}
-@media(max-width:1050px){#main{grid-template-columns:220px minmax(0,1fr)}#preview-pane{grid-column:1/-1}}
+@media(max-width:1050px){#main{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:650px){#main{grid-template-columns:1fr}#preview-pane{grid-column:auto}#draft-list{max-height:120px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#action-canvas{width:min(300px,100%)}}
+[hidden]{display:none!important}
+.flow-home,.flow-choose{max-width:990px;margin:12px auto;padding:18px;background:#e8e8e2;border:2px ridge #fff;box-shadow:0 2px 9px #48627a55}
+.flow-home h1,.flow-choose h2{font-size:18px;margin:0 0 13px}
+.flow-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.flow-actions button{min-height:90px;text-align:left;padding:15px;font-weight:700}
+.flow-actions small{display:block;margin-top:6px;font-weight:normal}
+.flow-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:10px}
+.flow-gallery button{min-height:70px;text-align:left;padding:10px;white-space:normal}
+.flow-gallery button strong,.flow-gallery button small{display:block}
+#cast-list{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
+#cast-list button[aria-pressed=true]{background:#bad7fd;border:2px solid #3275b9}
+.flow-toolbar{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0}
+.flow-toolbar button{min-width:110px}
+.flow-note{padding:7px 9px;background:#dce9f8;border:1px solid #abc0d8}
+@media(max-width:650px){.flow-actions{grid-template-columns:1fr}.flow-home,.flow-choose{margin:6px;padding:11px}}
 </style></head><body>
 <header id="head"><span>ACTION EDITOR · SITUATION / ANIMATION BINDING</span><span>V6P · 64×112 · FOUR VIEWS</span></header>
-<div id="main">
-<aside class="pane"><h2>ACTION DATABASE</h2><div class="row"><button id="new">＋ NEW</button><button id="duplicate">⧉ COPY</button></div>
+<section id="action-home" class="flow-home">
+ <h1>ACTION DATABASE</h1>
+ <div class="flow-actions">
+  <button type="button" id="action-start-new">＋ CREATE ACTION<small>Start a new scene</small></button>
+  <button type="button" id="action-start-modify">✎ MODIFY EXISTING<small>Choose a saved action to edit</small></button>
+  <button type="button" id="action-start-gallery">▦ ACTION GALLERY<small>Browse scenes and characters</small></button>
+ </div>
+ <h2 id="action-home-heading">GALLERY · SAVED ACTIONS</h2>
+ <div id="action-gallery" class="flow-gallery"></div>
+ <p id="action-home-note" class="flow-note">Choose Create, Modify, or an action in your gallery.</p>
+</section>
+<section id="action-choose" class="flow-choose" hidden>
+ <h2>CHOOSE CHARACTERS · ACTION SCENE</h2>
+ <p>Choose saved characters or a Male/Female base. Add multiple characters; position and animate them independently in the next step.</p>
+ <div class="row"><select id="choose-actor" aria-label="Character to add to scene"></select><button id="choose-add">＋ ADD CHARACTER</button></div>
+ <div id="choose-cast-list" class="flow-gallery"></div>
+ <div class="flow-toolbar"><button id="choose-back">← BACK</button><button id="choose-next">CONTINUE TO SCENE →</button></div>
+</section>
+<div id="action-workspace" hidden><div id="main">
+<aside class="pane" id="action-legacy-side" hidden><h2>ACTION DATABASE</h2><div class="row"><button id="new">＋ NEW</button><button id="duplicate">⧉ COPY</button></div>
 <div id="draft-list" aria-label="Saved situation actions"></div><p class="note">Action situation drafts are separate from the playable game. No automatic changes to Jiwa or Semesta.</p>
 <div class="row"><button id="delete">⌫ DELETE</button><button id="export">↓ JSON</button></div></aside>
-<section class="pane"><h2>WHEN / OBJECT / ANIMATION</h2>
+<section class="pane"><div class="flow-toolbar"><button type="button" id="action-editor-back">← BACK TO GALLERY</button></div>
+<h2>SCENE SETTINGS · ACTION</h2>
 <label>ACTION ID<input id="action-id" maxlength="48" placeholder="sit_on_chair"></label>
 <label>DISPLAY NAME<input id="action-name" maxlength="80" placeholder="Sit on Chair"></label>
 <div class="row"><label>TRIGGER<select id="trigger"><option value="interact">INTERACT / ACTION BUTTON</option><option value="event">EVENT</option><option value="automatic">AUTOMATIC</option><option value="script">JIWA RULE</option></select></label>
@@ -49,19 +83,23 @@ small,.note{font-size:10px;color:#5c6878}
 <div class="row"><label>FOOT OFFSET X<input id="offset-x" type="number" min="-256" max="256" value="0"></label>
 <label>FOOT OFFSET Y<input id="offset-y" type="number" min="-256" max="256" value="0"></label></div>
 <label>CONTEXT / NOTES<textarea id="notes" maxlength="400" placeholder="e.g. Actor sits at chair pivot, return to idle when moving."></textarea></label>
-<div class="row"><button id="save">▣ SAVE DRAFT</button><button id="edit-motion">✎ PIXEL EDITOR</button></div>
+<div class="flow-toolbar"><button id="save">▣ SAVE ACTION</button><button id="action-save-sync">☁ SAVE & SYNC DRIVE</button></div>
+<div class="row"><button id="edit-motion">✎ OPEN ANIMATION EDITOR</button></div>
 <p class="note">Enter → Loop → Exit are bindings, not fabricated animations. Preview uses existing sprites; custom action execution requires approval/integration in Jiwa.</p>
 </section>
-<aside class="pane" id="preview-pane"><h2>PREVIEW · FRAME TIMELINE</h2>
+<aside class="pane" id="preview-pane"><h2>SCENE · DRAG CHARACTERS</h2>
+ <p class="note">Drag each character to place them. Select a character below to set its own animation.</p>
+ <div id="cast-list" aria-label="Characters placed in this action"></div>
+ <div class="row"><button type="button" id="cast-add">＋ ADD CHARACTER</button><button type="button" id="cast-remove">✕ REMOVE SELECTED</button></div>
 <div class="row"><select id="actor" aria-label="Character from database"></select><button type="button" id="refresh-actors" title="Reload real saved characters">↻ CHARACTERS</button>
 <select id="dir" aria-label="Direction"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></div>
 <div class="row"><button data-phase="enter" aria-pressed="false">ENTER</button><button data-phase="loop" aria-pressed="true">LOOP</button><button data-phase="exit" aria-pressed="false">EXIT</button></div>
-<canvas id="action-canvas" width="192" height="336"></canvas>
+<canvas id="action-canvas" width="576" height="400"></canvas>
 <div class="timeline"><div class="row"><button id="prev">◀</button><button id="play">▶ PLAY</button><button id="next">▶</button><span id="frame-number">1 / 1</span></div>
 <input id="frame" type="range" min="0" max="0" value="0"></div>
 <p id="preview-note" class="note">Select a real character and a bound animation. Unavailable poses will be marked, not fabricated.</p>
 <p id="status" role="status">SITUATION DATABASE · REAL CHARACTER INPUT · LOCAL DRAFT</p>
-</aside></div>
+</aside></div></div>
 <script src="./v6p-part-catalog.js"></script>
 <script src="./v6p-part-overrides.js"></script>
 <script src="./v6p-character-store.js"></script>
@@ -70,5 +108,5 @@ small,.note{font-size:10px;color:#5c6878}
 <script src="./v6p-clip-store.js?v=v6p-act-v2-20261107"></script>
 <script src="./v6p-grok-copy.js?v=mahluk-unified-1"></script>
 <script src="/virtual-office/shared/hub-registry.js?v=mahluk-unified-1"></script>
-<script src="./mahluk-action-editor.js?v=mahluk-unified-1"></script>
+<script src="./mahluk-action-editor.js?v=scene-flow-20261108-1"></script>
 </body></html>
