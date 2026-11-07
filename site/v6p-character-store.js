@@ -77,6 +77,40 @@ function isCorrection(id,part,action,dir,frame){return !!get(id)?.corrections?.[
 function clearCorrection(id,part,action,dir,frame){
  return writeRow(id,row=>{const c={...(row.corrections||{})};c[part]={...(c[part]||{})};delete c[part][action+"|"+dir+"|"+frame];row.corrections=c;});
 }
+/* Fix legacy edits where back-facing top masters were mistakenly saved on
+   top/front before the distinct *_back source layer was wired into the UI.
+   Non-destructive for user artwork: only relocate wrongly addressed master
+   pointers; keep old full sheets and manual corrections for recovery. */
+function repairTopBackMasters(id){
+ const row=get(id);if(!row)return {moved:0,remainingCorrections:0};
+ const changes=[],catalog=C();
+ if(!catalog)return {moved:0,remainingCorrections:0};
+ for(const [part,views] of Object.entries(row.masters||{})){
+  if(!/^top\//.test(part)||/_back(?:_f)?$/.test(part))continue;
+  const suffix=part.endsWith("_f")?"_f":"";
+  const base=part.slice(0,part.length-suffix.length);
+  const back=base+"_back"+suffix;
+  if(!catalog.isPart(back))continue;
+  for(const dir of ["ne","nw"])if(views?.[dir]){
+   if(!row.masters?.[back]?.[dir])changes.push({from:part,to:back,dir,data:views[dir]});
+  }
+ }
+ if(!changes.length)return {moved:0,remainingCorrections:0};
+ let remaining=0;
+ writeRow(id,record=>{
+  const masters=JSON.parse(JSON.stringify(record.masters||{}));
+  for(const ch of changes){
+   masters[ch.to]={...(masters[ch.to]||{}),[ch.dir]:ch.data};
+   delete masters[ch.from][ch.dir];
+  }
+  record.masters=masters;record.status="draft";
+  remaining=Object.entries(record.corrections||{}).reduce((n,[part,flags])=>
+   n+(/^top\//.test(part)&&!/_back(?:_f)?$/.test(part)?
+    Object.keys(flags||{}).filter(k=>/\|(ne|nw)\|/.test(k)).length:0),0);
+  record.backViewRepair={moved:changes.length,at:now(),remainingCorrections:remaining};
+ });
+ return {moved:changes.length,remainingCorrections:remaining};
+}
 function setGenerated(id,part,png,detail){
  if(!C()?.isPart(part)||typeof png!=="string"||!png.startsWith("data:image/png;base64,")||png.length>9000000)throw Error("Invalid generated V6P sheet");
  return writeRow(id,row=>{row.parts={...(row.parts||{}),[part]:png};
@@ -85,5 +119,5 @@ function setGenerated(id,part,png,detail){
  });
 }
 function markDerived(id,part,views){const all=read(),i=all.findIndex(x=>x.id===id);if(i<0)throw Error("Unknown character");all[i].derived={...(all[i].derived||{}),[part]:views};write(all)}
-return Object.freeze({KEY,SELECTED,FORMAT,starter,list,get,create,update,getPart,setPart,resetPart,master,setMaster,markCorrection,isCorrection,clearCorrection,setGenerated,markDerived,selected,select});
+return Object.freeze({KEY,SELECTED,FORMAT,starter,list,get,create,update,getPart,setPart,resetPart,master,setMaster,markCorrection,isCorrection,clearCorrection,setGenerated,repairTopBackMasters,markDerived,selected,select});
 });
