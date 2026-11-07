@@ -84,11 +84,14 @@ async function run(){
    const updated=await P.loadSheetFromUrl(S.getPart(row.id,part));
    const newFrame=P.extract(updated,'walk','ne',1);
    const staleGone=[...newFrame.data.slice(kp,kp+3)].join(',')!=='250,21,11';
+   const olderFrames=S.get(row.id)?.correctionArchive?.[part]?.['walk|ne|1'];
+   const archiveHistorySafe=Array.isArray(olderFrames)&&olderFrames.length===2&&
+    olderFrames.every(x=>x.png?.startsWith('data:image/png;base64,'));
    return {
     originalRestored:originalBytes.every((v,i)=>v===cleanedBytes[i]),
     archived,flagLeft,archivedCount:cleaned.archivedStaleCorrections,
     nudeMatches,masterTransferred,liveFixBefore,keepColor,liveFixAfter,
-    staleGone,staleArchived:upgraded.archivedStaleCorrections,
+    staleGone,staleArchived:upgraded.archivedStaleCorrections,archiveHistorySafe,
     characterId:row.id
    };
   });
@@ -105,6 +108,7 @@ async function run(){
   assert.equal(evidence.liveFixAfter,false,'Master edit did not invalidate older correction');
   assert.equal(evidence.staleGone,true,'Stale hand correction still appears after master changed');
   assert.ok(evidence.staleArchived>=1,'Stale pose was not archived');
+  assert.equal(evidence.archiveHistorySafe,true,'Subsequent source rebuild erased an earlier archived correction');
   console.log('[ok] master source and newer hand fixes retain causal ordering');
   assert.deepEqual(errors,[]);
   console.log('PASS female nude clean source regeneration');
