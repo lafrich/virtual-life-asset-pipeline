@@ -175,6 +175,16 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
+      - name: Publish original Manusia Silver V6B preview for Membangun
+        run: |
+          set -euo pipefail
+          mkdir -p _site/launcher-assets
+          if test -s assets/npc_manusia_silver/manusia_silver_idle_4views_4x.gif; then
+            cp assets/npc_manusia_silver/manusia_silver_idle_4views_4x.gif _site/launcher-assets/manusia_silver_idle_4views_4x.gif
+            echo "Published original Manusia Silver animation."
+          else
+            echo "::warning::Manusia Silver source generator did not produce the GIF; no placeholder will be published."
+          fi
       - name: Publish Grok motion review database (not gameplay)
         run: |
           python tools/publish_grok_motion_review.py
