@@ -181,7 +181,9 @@ jobs:
           test -s _site/grok-assets/manifest.js
           test -s _site/grok-assets/furniture/furniture-chair_sw.png
           test -s _site/grok-assets/vehicle/id200_transport_becak_kampung_se.png
-          python -c "import json,pathlib; p=pathlib.Path('_site/grok-assets'); d=json.loads((p/'manifest.json').read_text()); assert d['count']==67 and d['fourWayPngs']==268; assert len(list(p.rglob('*.png')))==268"
+          test -s _site/grok-assets/vehicle/id200_transport_angkot_kota_se.png
+          test -s _site/grok-assets/cityprop/park-table_sw.png
+          python -c "import json,pathlib; p=pathlib.Path('_site/grok-assets'); d=json.loads((p/'manifest.json').read_text()); assert d['count']==85 and d['fourWayPngs']==340; assert len(list(p.rglob('*.png')))==340"
 
       - name: Verify truly horizontal native sleep poses and discoverable Animation clips
         run: |
