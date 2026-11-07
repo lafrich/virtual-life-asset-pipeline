@@ -4,7 +4,29 @@ Repo: `lafrich/virtual-life-asset-pipeline`
 Branch: `main`  
 Live: https://lafrich.github.io/virtual-life-asset-pipeline/
 
-## This deploy (root URL → v6p-studio)
+## This deploy (v6p editor package: real colors, copy/paste, accessories, gallery, clip timeline)
+
+- Previous `origin/main` (safe restore point): `0bfeff4e8c29d5e39230d1c209bc848334849ce1`
+- Feature commit: `5ec339f7102e504efe34ac316723a3089e567ac9`
+
+Restore this deploy (fast-forward only — do not force-push):
+
+```bash
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+git revert --no-edit 5ec339f7102e504efe34ac316723a3089e567ac9
+git push origin main
+```
+
+If this ROLLBACK notes commit is also on `main`, revert it first (newest first), then the feature commit. That removes the real-color editor display, Emosi-style copy/paste wiring, accessory projects, Asset Gallery, frame-by-frame clip editor, activity contract v2, `site/media/v6p-act/` pushup art, and the additive `CLIP_CONSUMED` clip names. It does not revert the v6p-studio root redirect (`a6215a1e876222b0eab944c49f2eed2bf5e8bcac`) or the earlier Emosi topmost / Drive-save commit (`d88c7570ea985078e667f536de18823409570dc7`). The original 44-row 384×4928 part sheets stay in place either way.
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+
+- https://lafrich.github.io/virtual-life-asset-pipeline/v6p-studio.html
+- https://lafrich.github.io/virtual-life-asset-pipeline/pixel-editor.html?source=v6p&project=clip_pushup
+
+## Previous deploy (root URL → v6p-studio)
 
 - Previous `origin/main` (safe restore point): `48ddc5b5da0cd91ddded9f27fdb9f9cfea6ba371`
 - Feature commit: `a6215a1e876222b0eab944c49f2eed2bf5e8bcac`
