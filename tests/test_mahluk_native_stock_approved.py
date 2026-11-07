@@ -48,7 +48,10 @@ for action,(start,frames,ms) in ACTIONS.items():
                 yy,xx=np.where(cell[:,:,3]>0)
                 assert len(xx)>30,(action,dir,gender,frame,"empty")
                 assert 0<xx.min() and xx.max()<63 and 0<yy.min() and yy.max()<111,(action,dir,gender,frame,"clipped")
-                states.append(cell.tobytes())
+                moving_key=(f"pants/nude{gender}.png" if action in ("hip_shake","yoga_happy_baby_idle") else key)
+                moving=part_images[moving_key][(start+di)*112:(start+di+1)*112,frame*64:(frame+1)*64]
+                states.append(moving.tobytes())
+            # Head is intentionally fixed in Hip Shake and Happy Baby; the motion lives in the hips/legs.
             assert len(set(states))>=2,(action,dir,gender,"static")
 # Head and hair MUST be exactly unchanged throughout 6 hip-shake frames.
 for di,direction in enumerate(DIRS):
