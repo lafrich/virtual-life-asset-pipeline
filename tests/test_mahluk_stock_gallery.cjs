@@ -81,6 +81,10 @@ test('Animation Studio opens stock through native composer, not editable anchor 
  assert.match(js,/source\.record\.appearance|record\.appearance/);
  assert.match(js,/function hitTestPart\(/);
  assert.match(js,/function anatomyBounds\(/);
+ assert.match(js,/state\.frame=state\.previewFrame;render\(\);drawGif\(\);tick\(\)/,
+  'Large Sprite + Anchor stage must animate the same frame as the GIF preview');
+ assert.match(js,/if\(state\.playing\)\{const playingFrame=state\.previewFrame;stop\(\);state\.frame=playingFrame;\}/,
+  'Clicking a playing body part pauses on that exact frame before opening Pixel Editor');
  assert.doesNotMatch(js,/mahluk-motion-library\.html/);
 });
 test('Action Editor sources native stock, never rejected Grok review',()=>{
