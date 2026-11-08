@@ -88,7 +88,22 @@ function nativeOpen(clip){
 
 function say(msg,err=false){$("status").textContent=msg;$("status").style.background=err?"#f8d7d5":"#dce9f8"}
 function deep(v){return JSON.parse(JSON.stringify(v))}
-function db(){try{const o=JSON.parse(localStorage.getItem(KEY)||"{}");return o&&typeof o==="object"&&!Array.isArray(o)?o:{}}catch{return {}}}
+const scratch=()=>root.parent?.VLMahlukWorkspace?.draftStorage||localStorage;
+function db(){try{const o=JSON.parse(scratch().getItem(KEY)||"{}");return o&&typeof o==="object"&&!Array.isArray(o)?o:{}}catch{return {}}}
+function putDb(value){scratch().setItem(KEY,JSON.stringify(value))}
+async function refreshCloud(){
+ const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+ if(!bridge?.isOnline?.())return;
+ try{
+  const items=await bridge.listOnline("animation"),meta=db();
+  for(const row of items){
+   if(!row?.id||!row?.clip||!row?.meta)continue;
+   Store.importCloudRecord(row);meta[row.id]=row.meta;
+  }
+  putDb(meta);listClips();
+  $("animation-home-note").textContent="ONLINE DATABASE · "+items.length+" animations loaded";
+ }catch(error){$("animation-home-note").textContent="Cloud load failed: "+error.message}
+}
 function records(){return Object.keys(db()).length}
 function freshPose(){const p={};for(const name of PARTS){const [x,y]=ANCHORS[name];p[name]={x:0,y:0,angle:0,ax:x,ay:y}}return p}
 function pose(dir=state.dir,index=state.frame){
@@ -228,7 +243,7 @@ async function create(from){
  const initial=from?deep(state.frames):Array.from({length:Math.min(6,V.FRAMES[template]||4)},(_,i)=>({key:"f"+i,ms:140}));
  const clip=Store.create({name,frames:initial,requiredParts:["base/body"]});
  const row={id:clip.id,name,gender,template,frames:deep(initial),loop:from?state.loop:true,tracks:from?deep(state.tracks):{}};
- const data=db();data[row.id]=row;localStorage.setItem(KEY,JSON.stringify(data));
+ const data=db();data[row.id]=row;putDb(data);
  await open(row.id);say("NEW "+name+" · "+template.toUpperCase()+" · edit frames and preview before saving.");
 }
 function stop(){state.playing=false;clearTimeout(state.timer);$("play").textContent="▶ PLAY"}
@@ -262,17 +277,17 @@ async function save(withDrive=false){
  Store.setLayer(state.id,"base/body",atlas.toDataURL("image/png"),{thumbDataUrl:bake("se",0).toDataURL("image/png")});
  const all=db();all[state.id]={id:state.id,name:state.name,gender:state.gender,template:state.template,
   frames:deep(state.frames),loop:state.loop,tracks:deep(state.tracks),updated:new Date().toISOString()};
- localStorage.setItem(KEY,JSON.stringify(all));
+ putDb(all);
  try{root.VLHub?.publish("animations",{source:"mahluk-animation-studio",id:state.id,status:"draft"})}catch{}
- let message="SAVED LOCAL · "+state.name+" · "+state.frames.length+" frames × 4 directions";
- if(withDrive){
-  try{
-   if(root.parent===root||!root.parent?.VLMahlukWorkspace?.syncDrive)throw Error("Open from MAHLUK.EXE and connect Drive");
-   const result=await root.parent.VLMahlukWorkspace.syncDrive();
-   message+=" · DRIVE VERIFIED · "+(result.name||"Mahluk backup");
-  }catch(e){message+=" · DRIVE NOT SYNCED: "+e.message}
- }else message+=" · Use SAVE & SYNC to back up to Drive";
- home(message);
+ const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+ if(!bridge?.isOnline?.())throw Error("Connect Google Drive in MAHLUK toolbar before Save Online");
+ const rec=Store.get(state.id),meta=all[state.id];
+ const receipt=await bridge.saveOnline("animation",state.id,{
+  id:state.id,meta,clip:{manifest:rec.manifest,
+   layers:{"base/body":atlas.toDataURL("image/png")}}
+ });
+ if(!receipt.verified)throw Error("Cloud animation verification failed");
+ home("CLOUD VERIFIED · "+state.name+" · "+state.frames.length+" frames × 4 directions");
 }
 function editPixels(){
  if(!state.id)return say("Create animation first",true);
@@ -340,5 +355,8 @@ cv.addEventListener("pointermove",e=>{
 });
 cv.addEventListener("pointerup",()=>{state.drag=null});cv.addEventListener("pointercancel",()=>{state.drag=null});
 window.addEventListener("pagehide",()=>{stop();nativeStop()});
-show("home");updateProperty();loadSource().catch(e=>say(e.message,true));
+root.addEventListener("message",e=>{
+ if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected")void refreshCloud();
+});
+show("home");void refreshCloud();updateProperty();loadSource().catch(e=>say(e.message,true));
 })(window);

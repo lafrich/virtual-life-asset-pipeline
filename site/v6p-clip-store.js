@@ -176,7 +176,7 @@ function galleryEntry(rec){
 }
 function galleryEntries(){return list().map(galleryEntry);}
 return Object.freeze({
- KEY,FORMAT,BUILTIN_IDS,get,list,create,updateManifest,setLayer,replaceLayers,layerUrl,hasLayer,markDrive,remove,
+ KEY,FORMAT,BUILTIN_IDS,get,list,create,updateManifest,setLayer,replaceLayers,importCloudRecord,layerUrl,hasLayer,markDrive,remove,
  compatibility,galleryEntry,galleryEntries
 });
 });
