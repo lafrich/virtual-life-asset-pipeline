@@ -28,7 +28,10 @@ function install(store,id,gender){
   !/^data:image\/png;base64,/.test(val)))throw Error("Invalid Genesis source sheets");
  const original=store.get(id);
  if(!original)throw Error("Cannot mutate unknown draft");
- const look={...(source.appearance||{}),body:gender,gender,face:"blank",characterId:id};
+ // Approved Genesis custom shoe pixels are barefoot skin colours, not authored footwear.
+ // Dress new clones with the existing native Mahluk shoe atlas; preserve all
+ // original shoes/custom[_f] sheets in the draft for explicit future editing.
+ const look={...(source.appearance||{}),body:gender,gender,shoes:"shoes",face:"blank",characterId:id};
  store.update(id,{appearance:look,faceId:""});
  for(const [key,png] of parts)store.setPart(id,key,png);
  return store.get(id);
