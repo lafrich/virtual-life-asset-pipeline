@@ -143,36 +143,6 @@ async function refreshCloud(){
   $("animation-home-note").textContent="ONLINE DATABASE · "+items.length+" animations loaded";
  }catch(error){$("animation-home-note").textContent="Cloud load failed: "+error.message}
 }
-async function ensureBundledReviewPunch(){
- // Review package shipped with the application. Does not modify native Idle,
- // Walk, approved activity stock, or any existing user/Drive animation record.
- const file="./motion-packs/clp_standing_punch.motion.json";
- const response=await fetch(file,{cache:"no-store"});
- if(!response.ok)throw Error("Bundled Standing Punch unavailable: "+response.status);
- const data=await response.json();
- if(data.format!==Contract.FORMAT||data.id!=="clp_standing_punch"||data.sourceAction!=="idle")
-  throw Error("Standing Punch motion pack is not a canonical V6B Idle derivative");
- if(!Array.isArray(data.frames)||!Array.isArray(data.tracks?.se))throw Error("Invalid Standing Punch track");
- const motion=Contract.make({sourceAction:data.sourceAction,frames:data.frames,
-  tracks:data.tracks,status:"draft"});
- const existing=Store.get(data.id);
- if(existing)return; // preserve any already imported/modified version.
- const clip=Store.create({id:data.id,name:data.name,frames:data.frames,
-  loop:data.loop!==false,requiredParts:[]});
- const saved=Store.updateManifest(clip.id,{name:data.name,frames:data.frames,
-  loop:data.loop!==false,requiredParts:[],source:Contract.FORMAT,
-  motion,category:"punch",reviewCandidate:true});
- Contract.validateManifest(saved.manifest);
- const meta=db();
- if(!Object.hasOwn(meta,data.id)){
-  meta[data.id]={id:data.id,name:data.name,gender:"male",sourceId:"base:male",
-   stockReference:"",template:"idle",frames:deep(data.frames),
-   loop:data.loop!==false,tracks:deep(data.tracks),approval:"review",
-   updated:new Date().toISOString()};
-  putDb(meta);
- }
- if(state.screen==="home")listClips();
-}
 function records(){return Object.keys(db()).length}
 function freshPose(){const p={};for(const name of PARTS){const [x,y]=ANCHORS[name];p[name]={x:0,y:0,angle:0,ax:x,ay:y}}return p}
 function pose(dir=state.dir,index=state.frame){
@@ -301,42 +271,38 @@ function paintStrip(){
  }
 }
 function clipCategory(clip){
- if(clip.manifest?.category==="punch"||clip.id==="clp_standing_punch")return "punch";
- if(clip.origin==="pilot"&&A.isPlayable(clip.manifest.band))return "stock";
- return "other";
+ const category=String(clip.manifest?.category||"motions").toLowerCase();
+ return /^[a-z][a-z0-9_]{0,31}$/.test(category)?category:"motions";
 }
 function listClips(){
  const holder=$("animations");holder.replaceChildren();
- const order={stock:0,punch:1,other:2};
- const rows=Store.list().sort((a,b)=>order[clipCategory(a)]-order[clipCategory(b)]);
+ const rows=Store.list().sort((a,b)=>clipCategory(a).localeCompare(clipCategory(b)));
  const drafts=db();
  let previousCategory="";
  for(const clip of rows){
   const category=clipCategory(clip);
   if(category!==previousCategory){
-   const heading=document.createElement("h3");
-   heading.className="animation-category";
-   heading.textContent=category==="stock"?"STOCK · APPROVED":category==="punch"?"PUNCH":"OTHER ANIMATIONS";
-   holder.append(heading);
-   previousCategory=category;
+   const heading=document.createElement("h3");heading.className="animation-category";
+   heading.textContent=category.replaceAll("_"," ").toUpperCase();
+   holder.append(heading);previousCategory=category;
   }
-  const official=clip.origin==="pilot"&&A.isPlayable(clip.manifest.band);
   const card=document.createElement("div");card.className="clip-card";
-   const b=document.createElement("button");b.classList.toggle("active",state.id===clip.id);
-   b.dataset.clip=clip.id;
-   const title=document.createElement("strong"),info=document.createElement("small");
-   title.textContent=official?(STOCK_TITLES[clip.manifest.band]||clip.name.toUpperCase()):clip.name;
-   info.textContent=clip.manifest.frames.length+" FRAMES · "+
-    (official?"APPROVED NATIVE STOCK":clip.manifest.reviewCandidate?"REVIEW · IDLE-BASED MOTION":drafts[clip.id]?"EDITABLE ANIMATION":"USER PIXEL CLIP");
-   b.append(title,info);b.onclick=()=>void open(clip.id);
-   const modify=document.createElement("button");modify.className="modify-motion";
-   modify.textContent="✎ MODIFY · SPRITE + ANCHOR";
-   modify.dataset.modify=clip.id;
-   modify.onclick=()=>void modifyClip(clip).catch(e=>{
-    $("animation-home-note").textContent="Could not modify: "+e.message;});
-   card.append(b,modify);holder.append(card);
-  }
-  if(!rows.length)holder.textContent="No animations yet";
+  const button=document.createElement("button");
+  button.classList.toggle("active",state.id===clip.id);button.dataset.clip=clip.id;
+  const title=document.createElement("strong"),info=document.createElement("small");
+  title.textContent=clip.name;
+  info.textContent=clip.manifest.frames.length+" FRAMES · "+
+   (Contract.isStock(clip.manifest)?"APPROVED · GENESIS V6B":
+    clip.origin==="bundled"?"REVIEW · GENESIS V6B":
+    drafts[clip.id]?"EDITABLE ANIMATION":"USER CLIP");
+  button.append(title,info);button.onclick=()=>void open(clip.id);
+  const modify=document.createElement("button");modify.className="modify-motion";
+  modify.textContent="✎ MODIFY · SPRITE + ANCHOR";modify.dataset.modify=clip.id;
+  modify.onclick=()=>void modifyClip(clip).catch(e=>{
+   $("animation-home-note").textContent="Could not modify: "+e.message;});
+  card.append(button,modify);holder.append(card);
+ }
+ if(!rows.length)holder.textContent="No animations yet";
 }
 function setMeta(rec){
  state.id=rec.id;state.name=rec.name;state.gender=rec.gender;state.template=rec.template;
@@ -349,14 +315,19 @@ function setMeta(rec){
  $("animation-name-edit").value=state.name;
 }
 async function open(id){
- stop();const clip=Store.get(id),meta=db()[id];
+ stop();const clip=Store.get(id);
  if(!clip)return say("Missing animation "+id,true);
- if(clip.origin==="pilot"&&A.isPlayable(clip.manifest.band)){
-  nativeOpen(clip);return;
- }
+ const bundled=clip.origin==="bundled";
+ const meta=db()[id]||(bundled?{
+  id:clip.id,name:clip.name,gender:characterSource().gender,
+  sourceId:state.sourceId,stockReference:"",
+  template:clip.manifest.motion.sourceAction,frames:deep(clip.manifest.frames),
+  loop:clip.manifest.loop!==false,tracks:deep(clip.manifest.motion.tracks)
+ }:null);
  if(!meta){await modifyClip(clip);return;}
  setMeta(meta);show("editor");await loadSource();
- say("LOADED "+meta.name+" · editable all 4 directions / "+state.frames.length+" frames");
+ say("LOADED "+meta.name+" · "+(bundled?"REVIEW ONLY · MODIFY TO SAVE":"EDITABLE")+
+  " · "+state.frames.length+" frames × four directions");
 }
 async function create(from,sourceClip=null){
  stop();
@@ -380,7 +351,7 @@ async function create(from,sourceClip=null){
 }
 async function modifyClip(clip){
  if(!clip)return;
- if(db()[clip.id]&&!Contract.isStock(clip.manifest)){await open(clip.id);return;}
+ if(clip.origin!=="bundled"&&db()[clip.id]&&!Contract.isStock(clip.manifest)){await open(clip.id);return;}
  if($("gallery-character")?.value)selectSource($("gallery-character").value);
  $("source-character").value=state.sourceId;
  $("template").value="idle";
@@ -397,12 +368,12 @@ function tick(){if(!state.playing)return;const ms=state.frames[state.previewFram
  },ms);
 }
 function toggle(){if(state.playing){stop();render();return}
- if(!db()[state.id])return say("Open an editable animation first",true);
+ if(!db()[state.id]&&Store.get(state.id)?.origin!=="bundled")return say("Open a motion first",true);
  state.previewFrame=state.frame;state.playing=true;$("play").textContent="❚❚ PAUSE";
  render();drawGif();tick()}
 function changeFrame(n){stop();state.frame=Math.max(0,Math.min(state.frames.length-1,n));render()}
 function addFrame(duplicate){
- if(!db()[state.id])return say("New animation first",true);
+ if(!db()[state.id]&&Store.get(state.id)?.origin!=="bundled")return say("New animation first",true);
  if(state.frames.length>=6)return say("Current activity atlas supports max 6 frames. Use additional clips for longer actions.",true);
  const idx=state.frame+1,source=state.frames[state.frame];
  state.frames.splice(idx,0,{key:"f"+Date.now().toString(36).slice(-5),ms:source.ms});
@@ -430,6 +401,8 @@ async function validateStock(motion){
   if(!hasPixels(bake(dir,i)))throw Error("Empty selected appearance pose "+dir+" F"+(i+1));
 }
 async function save(publishStock=false){
+ if(Store.get(state.id)?.origin==="bundled")
+  throw Error("Bundled motion is read-only. Click MODIFY for an editable copy.");
  if(!db()[state.id])return say("Create or modify a motion first",true);
  state.name=$("animation-name-edit").value.trim().slice(0,80);
  if(!state.name)throw Error("Enter an animation name");
@@ -467,6 +440,7 @@ async function save(publishStock=false){
   " · "+state.frames.length+" FRAMES × 4 DIRECTIONS · DRIVE VERIFIED");
 }
 function editPixels(){
+ if(Store.get(state.id)?.origin==="bundled")return say("Click MODIFY first to edit this review motion safely.",true);
  if(!db()[state.id])return say("Open a motion first",true);
  if(state.part==="head")return say("Edit the expression in EMOSI.EXE. Genesis body is locked.",true);
  let character=characterSource();
@@ -530,7 +504,7 @@ for(const name of PARTS){const b=document.createElement("button");b.dataset.part
  b.style.cssText="width:100%;display:block;margin:4px 0";b.onclick=()=>{state.part=name;selectPixelTargetByBody();render()};$("parts").append(b)}
 for(const id of ["rotation","px","py","ax","ay"]){
  const input=$(id);input.addEventListener("input",()=>{
-  if(!db()[state.id])return;
+  if(!db()[state.id]&&Store.get(state.id)?.origin!=="bundled")return;
   const p=selected(),k={rotation:"angle",px:"x",py:"y",ax:"ax",ay:"ay"}[id],n=Number(input.value);
   if(!Number.isFinite(n))return;p[k]=Math.round(n);render()
  });
@@ -617,13 +591,14 @@ root.addEventListener("message",e=>{
  }
 });
 fillSources();show("home");updateProperty();
- // Bundled review motion must never wait for Drive sync/auth: render it locally first.
- void ensureBundledReviewPunch().catch(error=>{
-  $("animation-home-note").textContent="Standing Punch review import: "+error.message;
+ // JSON is loaded independently of online/Drive state, using the shared registry.
+ void Store.loadBundled().then(()=>listClips()).catch(error=>{
+  $("animation-home-note").textContent="Motion registry: "+error.message;
  });
  void refreshCloud();
 const returnMotion=new URLSearchParams(location.search).get("motion");
-if(returnMotion&&Store.get(returnMotion)&&db()[returnMotion])
- void open(returnMotion).catch(e=>say("Animation return failed: "+e.message,true));
-else loadSource().catch(e=>say(e.message,true));
+if(returnMotion){
+ void Store.loadBundled().then(()=>open(returnMotion))
+  .catch(e=>say("Animation return failed: "+e.message,true));
+}else loadSource().catch(e=>say(e.message,true));
 })(window);
