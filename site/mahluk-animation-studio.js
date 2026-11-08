@@ -8,6 +8,7 @@ const KEY="vl-mahluk-animation-anchor-poses-v1",PARTS=["leg_l","leg_r","torso","
 const ANCHORS={head:[32,35],torso:[32,60],arm_l:[20,54],arm_r:[44,54],leg_l:[25,84],leg_r:[39,84]};
 const cv=$("stage"),screen=cv.getContext("2d"),state={id:"",name:"",gender:"male",template:"idle",frames:[{key:"f0",ms:140},{key:"f1",ms:140}],loop:true,
  dir:"se",frame:0,part:"head",tracks:{},sheet:null,playing:false,timer:0,images:new Map(),drag:null,revision:0,previewFrame:0,screen:"home"};
+const Tools=root.VLAnimationSetTools?.init({state,V,Store,db,render,stop,say,loadSource});
 screen.imageSmoothingEnabled=false;
 const STOCK_TITLES=Object.freeze({pushup:"PUSH-UP",yoga_sphinx_idle:"YOGA SPHINX · IDLE",
  yoga_puppy_idle:"YOGA PUPPY DOG · IDLE",hip_shake:"HIP SHAKE",
@@ -100,7 +101,7 @@ async function refreshCloud(){
    if(!row?.id||!row?.clip||!row?.meta)continue;
    Store.importCloudRecord(row);meta[row.id]=row.meta;
   }
-  putDb(meta);listClips();
+  putDb(meta);listClips();Tools?.motionOptions();void Tools?.refreshCharacters();
   $("animation-home-note").textContent="ONLINE DATABASE · "+items.length+" animations loaded";
  }catch(error){$("animation-home-note").textContent="Cloud load failed: "+error.message}
 }
@@ -122,6 +123,7 @@ function setSource(){const ch=V.norm({...V.DEF,body:state.gender,gender:state.ge
 async function loadSource(){const rev=++state.revision;state.sheet=await setSource();if(rev===state.revision){state.images.clear();render()}}
 function action(){return V.ROWS[state.template]!=null?state.template:"idle"}
 function sourceCell(dir=state.dir,frame=state.frame){
+ const external=Tools?.sourceCell(dir,frame);if(external)return external;
  const key=dir+"/"+frame+"/"+state.template+"/"+state.gender;
  if(state.images.has(key))return state.images.get(key);
  const sheet=state.sheet;if(!sheet)return null;
@@ -153,6 +155,7 @@ function bake(dir=state.dir,index=state.frame){
   c.save();c.translate(p.ax+p.x,p.ay+p.y);c.rotate(r);
   c.drawImage(pieces[part],-p.ax,-p.ay);c.restore();
  }
+ Tools?.drawEmotion(c,dir,index,trans.head);
  return out;
 }
 function render(){
@@ -165,7 +168,7 @@ function render(){
  $("animation-title").textContent=(state.name||"NEW ANIMATION")+" · "+state.dir.toUpperCase()+" F"+(state.frame+1);
  if(document.activeElement!==$("animation-name-edit"))$("animation-name-edit").value=state.name;
  $("ms").value=state.frames[state.frame]?.ms||140;$("loop").checked=state.loop;
- updateProperty();paintStrip();if(!state.playing)drawGif();
+ updateProperty();paintStrip();Tools?.renderUi();if(!state.playing)drawGif();
 }
 function drawGif(){
  const dest=$("gif-preview");if(!dest)return;
@@ -180,7 +183,7 @@ function show(screen){
  $("animation-home").hidden=screen!=="home";$("animation-setup").hidden=screen!=="setup";
  $("animation-workspace").hidden=screen!=="editor";
  $("animation-stock-preview").hidden=screen!=="stock";
- if(screen==="home")listClips();else if(screen==="editor")render();
+ if(screen==="home")listClips();else if(screen==="editor"){Tools?.onOpen();render()}
 }
 function home(message){
  if(message)$("animation-home-note").textContent=message;
@@ -219,6 +222,7 @@ function setMeta(rec){
  state.frame=0;state.dir="se";state.part="head";
  $("gender").value=state.gender;$("template").value=state.template;
  $("animation-name-edit").value=state.name;
+ Tools?.loadMeta(rec);
 }
 async function open(id){
  stop();const clip=Store.get(id),meta=db()[id];
@@ -242,7 +246,8 @@ async function create(from){
   throw Error("Select a supported Male/Female base and starting pose");
  const initial=from?deep(state.frames):Array.from({length:Math.min(6,V.FRAMES[template]||4)},(_,i)=>({key:"f"+i,ms:140}));
  const clip=Store.create({name,frames:initial,requiredParts:["base/body"]});
- const row={id:clip.id,name,gender,template,frames:deep(initial),loop:from?state.loop:true,tracks:from?deep(state.tracks):{}};
+ const row={id:clip.id,name,gender,template,frames:deep(initial),loop:from?state.loop:true,tracks:from?deep(state.tracks):{},
+  ...(from?Tools?.saveMeta():{emotionCues:[],emotionAssets:{},viewSources:{}})};
  const data=db();data[row.id]=row;putDb(data);
  await open(row.id);say("NEW "+name+" · "+template.toUpperCase()+" · edit frames and preview before saving.");
 }
@@ -263,20 +268,22 @@ function addFrame(duplicate){
  const idx=state.frame+1,source=state.frames[state.frame];
  state.frames.splice(idx,0,{key:"f"+Date.now().toString(36).slice(-5),ms:source.ms});
  for(const d of DIRS){if(!state.tracks[d])state.tracks[d]=[];const copy=duplicate?deep(pose(d,state.frame)):freshPose();state.tracks[d].splice(idx,0,copy)}
- state.frame=idx;render();
+ Tools?.onInsert(idx,duplicate);state.frame=idx;render();
 }
 async function save(withDrive=false){
  if(!db()[state.id])return say("New animation first",true);
  state.name=$("animation-name-edit").value.trim().slice(0,80);
  if(!state.name)throw Error("Enter an activity name");
  if(!state.sheet)await loadSource();if(!state.sheet)throw Error("Base pixels missing");
+ await Tools?.ensureReady();
  const atlas=canvas(384,2688),a=atlas.getContext("2d");a.imageSmoothingEnabled=false;
  for(let d=0;d<4;d++)for(let f=0;f<state.frames.length;f++)
   a.drawImage(bake(DIRS[d],f),f*64,d*112);
  Store.updateManifest(state.id,{name:state.name,frames:deep(state.frames),loop:state.loop,requiredParts:["base/body"]});
  Store.setLayer(state.id,"base/body",atlas.toDataURL("image/png"),{thumbDataUrl:bake("se",0).toDataURL("image/png")});
  const all=db();all[state.id]={id:state.id,name:state.name,gender:state.gender,template:state.template,
-  frames:deep(state.frames),loop:state.loop,tracks:deep(state.tracks),updated:new Date().toISOString()};
+  frames:deep(state.frames),loop:state.loop,tracks:deep(state.tracks),updated:new Date().toISOString(),
+  ...Tools?.saveMeta()};
  putDb(all);
  try{root.VLHub?.publish("animations",{source:"mahluk-animation-studio",id:state.id,status:"draft"})}catch{}
  const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
@@ -294,7 +301,9 @@ function editPixels(){
  const url="./pixel-editor.html?source=v6p&project="+encodeURIComponent(state.id);
  if(root.parent!==root&&root.parent.VLMahlukWorkspace?.openEditor)root.parent.VLMahlukWorkspace.openEditor(url);else location.href=url;
 }
-function exportJSON(){const data=db()[state.id];if(!data)return say("No saved pose metadata",true);
+function exportJSON(){const stored=db()[state.id];if(!stored)return say("No animation metadata",true);
+ const data={...stored,name:state.name,gender:state.gender,template:state.template,
+  frames:deep(state.frames),tracks:deep(state.tracks),loop:state.loop,...Tools?.saveMeta()};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");
  link.href=url;link.download=state.id+".animation.json";document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
@@ -337,7 +346,8 @@ $("animation-save-sync").onclick=()=>save(true).catch(e=>say(e.message,true));
 $("play").onclick=toggle;$("prev").onclick=()=>changeFrame(state.frame-1);$("next").onclick=()=>changeFrame(state.frame+1);
 $("add-frame").onclick=()=>addFrame(false);$("duplicate").onclick=()=>addFrame(true);
 $("remove-frame").onclick=()=>{if(state.frames.length<2)return say("At least one frame is required",true);
- for(const d of DIRS)state.tracks[d]?.splice(state.frame,1);state.frames.splice(state.frame,1);state.frame=Math.max(0,state.frame-1);render()};
+ const idx=state.frame;for(const d of DIRS)state.tracks[d]?.splice(idx,1);
+ state.frames.splice(idx,1);Tools?.onRemove(idx);state.frame=Math.max(0,idx-1);render()};
 $("open-pixel").onclick=editPixels;$("export").onclick=exportJSON;
 cv.addEventListener("pointerdown",e=>{
  if(!db()[state.id])return;
