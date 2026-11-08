@@ -1807,6 +1807,8 @@ async function init(){
 window.VirtualLifePixelEditor={
  async flush(){
   cancelTemporaryMove();await state.syncPromise;
+  // Back from the parent toolbar must capture unsaved modal sprite pixels.
+  if(emosiEditor?.isOpen?.())pullEmosiIntoState();
   if(!state.loading)saveCurrent();
   clearTimeout(localTimer);
   if(state.source==="v6p"){persistV6pOverride();return;}
@@ -1816,6 +1818,7 @@ window.VirtualLifePixelEditor={
 };
 window.addEventListener("pagehide",()=>{if(state.loading)return;
  cancelTemporaryMove();
+ try{if(emosiEditor?.isOpen?.())pullEmosiIntoState()}catch{}
  try{
   if(state.source==="v6p")persistV6pOverride();
   else localStorage.setItem(LOCAL,JSON.stringify(patchObject()));
