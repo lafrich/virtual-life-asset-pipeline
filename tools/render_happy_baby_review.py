@@ -80,7 +80,6 @@ def native_pose(gender,view,frame):
       "shoes/nude"+suffix,
       "pants/nude"+suffix,
       "top/nude"+suffix,
-      "base/body_front"+suffix,
       "face/"+("f" if gender=="female" else "m")+"_blank"
     )
     base=Image.new("RGBA",(W,H),(0,0,0,0))
