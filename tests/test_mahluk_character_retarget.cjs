@@ -103,7 +103,11 @@ test('Grok review-only frames are not silently added as playable motions',()=>{
  const page=read('site/v6p-character-workflow.js'),generator=read('site/v6p-character-retarget.js');
  assert.doesNotMatch(generator,/pending_owner_review.*[=]true/);
  assert.doesNotMatch(generator,/grok-motion-preview/);
- assert.match(page,/NO UNIVERSAL ANCHOR/);
+ // No disabled legacy placeholder: valid motions come from one verified registry.
+  assert.match(page,/loadBundled/);
+  assert.match(page,/UC\.validateManifest\(motion\.manifest\)/);
+  assert.doesNotMatch(page,/unmapped:/);
+  assert.doesNotMatch(page,/grok-motion-preview/);
 });
 test('all newly touched JavaScript parses',()=>{
  for(const p of ['site/v6p-character-store.js','site/v6p-character-retarget.js','site/v6p-character-workflow.js','site/pixel-editor.js'])
