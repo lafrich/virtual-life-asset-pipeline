@@ -343,18 +343,32 @@ async function open(id){
  setMeta(meta);show("editor");await loadSource();
  say("LOADED "+meta.name+" · editable all 4 directions / "+state.frames.length+" frames");
 }
-async function create(from){
+async function create(from,sourceClip=null){
  stop();
- const name=String(from?(state.name+" Copy"):$("setup-name").value).trim().slice(0,80);
+ const name=String(sourceClip?(sourceClip.name+" · Modified"):from?(state.name+" Copy"):$("setup-name").value).trim().slice(0,80);
  if(!name)throw Error("Enter an activity name before editing");
- const gender=from?state.gender:$("gender").value,template=from?state.template:$("template").value;
- if(!["male","female"].includes(gender)||!(from?V.ROWS[template]!=null:["idle","sit","lie","sleep"].includes(template)))
-  throw Error("Select a supported Male/Female base and starting pose");
- const initial=from?deep(state.frames):Array.from({length:Math.min(6,V.FRAMES[template]||4)},(_,i)=>({key:"f"+i,ms:140}));
+ const sourceId=from?state.sourceId:$("source-character").value||$("gallery-character").value||"base:male";
+ const chosen=characterSource(sourceId),gender=chosen.gender;
+ const template=from?state.template:$("template").value;
+ if(!["male","female"].includes(gender)||!["idle","sit","lie","sleep"].includes(template))
+  throw Error("Choose Genesis / Character and a supported starting pose");
+ const initial=sourceClip?deep(sourceClip.manifest.frames):
+  from?deep(state.frames):Array.from({length:Math.min(6,V.FRAMES[template]||4)},(_,i)=>({key:"f"+i,ms:140}));
  const clip=Store.create({name,frames:initial,requiredParts:["base/body"]});
- const row={id:clip.id,name,gender,template,frames:deep(initial),loop:from?state.loop:true,tracks:from?deep(state.tracks):{}};
+ const row={id:clip.id,name,gender,sourceId,template,frames:deep(initial),
+  stockReference:sourceClip?.origin==="pilot"?sourceClip.id:from?state.stockReference:"",
+  loop:sourceClip?sourceClip.manifest.loop!==false:from?state.loop:true,tracks:from?deep(state.tracks):{}};
  const data=db();data[row.id]=row;putDb(data);
- await open(row.id);say("NEW "+name+" · "+template.toUpperCase()+" · edit frames and preview before saving.");
+ await open(row.id);
+ say("EDITABLE COPY · "+name+" · "+chosen.name+" · original clip protected. Pose changes move this character's composited pixels.");
+}
+async function modifyClip(clip){
+ if(!clip)return;
+ if(db()[clip.id]){await open(clip.id);return;}
+ if($("gallery-character")?.value)selectSource($("gallery-character").value);
+ $("source-character").value=state.sourceId;
+ $("template").value="idle";
+ await create(false,clip);
 }
 function stop(){state.playing=false;clearTimeout(state.timer);$("play").textContent="▶ PLAY"}
 function tick(){if(!state.playing)return;const ms=state.frames[state.previewFrame]?.ms||140;
@@ -385,7 +399,8 @@ async function save(withDrive=false){
   a.drawImage(bake(DIRS[d],f),f*64,d*112);
  Store.updateManifest(state.id,{name:state.name,frames:deep(state.frames),loop:state.loop,requiredParts:["base/body"]});
  Store.setLayer(state.id,"base/body",atlas.toDataURL("image/png"),{thumbDataUrl:bake("se",0).toDataURL("image/png")});
- const all=db();all[state.id]={id:state.id,name:state.name,gender:state.gender,template:state.template,
+ const all=db();all[state.id]={id:state.id,name:state.name,gender:state.gender,sourceId:state.sourceId,
+  stockReference:state.stockReference,template:state.template,
   frames:deep(state.frames),loop:state.loop,tracks:deep(state.tracks),updated:new Date().toISOString()};
  putDb(all);
  try{root.VLHub?.publish("animations",{source:"mahluk-animation-studio",id:state.id,status:"draft"})}catch{}
@@ -400,9 +415,27 @@ async function save(withDrive=false){
  home("CLOUD VERIFIED · "+state.name+" · "+state.frames.length+" frames × 4 directions");
 }
 function editPixels(){
- if(!state.id)return say("Create animation first",true);
- const url="./pixel-editor.html?source=v6p&project="+encodeURIComponent(state.id);
- if(root.parent!==root&&root.parent.VLMahlukWorkspace?.openEditor)root.parent.VLMahlukWorkspace.openEditor(url);else location.href=url;
+ if(!db()[state.id])return say("Open an editable sprite + anchor animation first",true);
+ let character=characterSource();
+ if(!character.record){
+  if(!Characters||!Genesis)return say("Character Editor source unavailable",true);
+  const row=Characters.create({name:"Genesis "+state.gender.toUpperCase()+" · Animation Custom Wear",gender:state.gender});
+  Genesis.install(Characters,row.id,state.gender);
+  state.sourceId=row.id;fillSources();selectSource(row.id);
+  const meta=db();meta[state.id]={...meta[state.id],sourceId:row.id};putDb(meta);
+  character=characterSource();
+  void loadSource().catch(error=>say(error.message,true));
+ }
+ const part=$("pixel-target")?.value;
+ if(!part||!root.V6PPartCatalog?.isPart(part))return say("Select a real Character part or Custom Wear first",true);
+ const url=new URL("./pixel-editor.html",location.href);
+ url.searchParams.set("source","v6p");url.searchParams.set("character",character.record.id);
+ url.searchParams.set("part",part);url.searchParams.set("dir",state.dir);
+ url.searchParams.set("action",action());url.searchParams.set("frame",String(state.frame%V.FRAMES[action()]));
+ url.searchParams.set("from","animation");url.searchParams.set("motion",state.id);
+ if(root.parent!==root&&root.parent.VLMahlukWorkspace?.openEditor)
+  root.parent.VLMahlukWorkspace.openEditor(url.href);
+ else location.href=url.href;
 }
 function exportJSON(){const data=db()[state.id];if(!data)return say("No saved pose metadata",true);
  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");
