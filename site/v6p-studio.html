@@ -423,6 +423,8 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <script src="./v6p-compositor.js?v=genesis-footwear-v2"></script>
 <script src="./v6p-custom-wear.js?v=rear-visible-v3-20261108"></script>
 <script src="./v6p-character-retarget.js?v=rear-visible-v3-20261108"></script>
+<script src="./v6p-universal-motion-contract.js?v=universal-v1"></script>
+<script src="./v6p-universal-motion.js?v=universal-v1"></script>
 <script>
 (function(){
 "use strict";
@@ -695,6 +697,28 @@ async function save(){
   });
   const adapted=window.V6PCharacterRetarget?.generateAnchorClips(state.sheet)||{clips:[],warnings:[]};
   for(const clip of adapted.clips)clips[clip.id]=clip;
+  // Compile published universal stock for the existing character clip readers.
+  // These PNGs are derived artifacts only. Motion data and approved idle/walk stay canonical.
+  const UC=window.V6PUniversalMotionContract,UM=window.V6PUniversalMotion;
+  const approvedMotions=(window.V6PClipStore?.list()||[])
+    .filter(row=>UC?.isStock(row.manifest));
+  for(const row of approvedMotions){
+    UC.validateManifest(row.manifest);
+    const n=row.manifest.frames.length;
+    const img=document.createElement("canvas");img.width=n*64;img.height=4*112;
+    const ctx=img.getContext("2d");ctx.imageSmoothingEnabled=false;
+    const rig=await UM.prepare({...state.ch,characterId:state.characterId},
+      row.manifest.motion.sourceAction,{sourceKey:"character-publish:"+state.characterId});
+    const face=await loadOverlay(currentEmosi());
+    for(let di=0;di<UC.DIRS.length;di++)for(let fi=0;fi<n;fi++){
+      const dir=UC.DIRS[di],frame=UM.renderPrepared(rig,dir,
+        row.manifest.motion.tracks[dir][fi],{emosi:face,frameIndex:fi});
+      ctx.drawImage(frame,fi*64,di*112);
+    }
+    clips[row.id]={sheet:img.toDataURL("image/png"),frames:n,
+      frame_ms:row.manifest.frames.map(f=>f.ms),loop:row.manifest.loop!==false,
+      source:UC.FORMAT};
+  }
   const sprite=V.extractFrame(state.sheet,"idle","se",0).toDataURL("image/png");
   const tooBig=Object.values(clips).some(c=>c.sheet.length>1250000)||sprite.length>1250000;
   if(tooBig){ setStatus("Export exceeded Semesta 1.25MB clip limit",true); return; }
