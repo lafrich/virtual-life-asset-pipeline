@@ -9,6 +9,11 @@ if(!S||!H||!V||!R||!C||!$("character-wizard"))return;
 const STORE="mahluk-character-wizard-v1",ORDER=["home","base","customize","preview","save"];
 const state={step:"home",mode:"new",category:"body",frame:0,playing:false,timer:0,busy:false,pendingPreview:true,initialized:false,saved:false};
 let previewRevision=0;
+const NativePython=root.GenesisCharacterPythonPreview;
+function pythonStatus(message,error=false){
+ const e=$("qa-python-status");
+ if(e){e.textContent=String(message);e.style.color=error?"#a52d26":"#506780";}
+}
 function notice(str,err){const el=$("wizard-notice");el.textContent=String(str||"");el.style.color=err?"#a52d26":"#506780";}
 function result(str,err){const el=$("generate-result");el.textContent=str;el.style.color=err?"#aa312a":"#506780";}
 let archivedRows=[],cloudRows=[];
@@ -276,10 +281,14 @@ function motionChoices(){
   opt(select,"motion:"+rec.id,category+" / "+rec.name.toUpperCase()+
    (UC.isStock(rec.manifest)?" · STOCK":" · REVIEW"));
  }
+ for(const row of NativePython?.list()||[])
+  opt(select,"python:"+row.id,"PYTHON / "+row.name.toUpperCase()+" · "+row.frames+" FR"+
+   (row.origin==="cloud"?" · DATABASE":" · IMPORTED"));
  if([...select.options].some(x=>x.value===keep))select.value=keep;else select.value="idle";
 }
 function numFrames(){
  const action=$("qa-animation").value;
+ if(action.startsWith("python:"))return NativePython?.get(action.slice(7))?.frames.length||1;
  if(action.startsWith("motion:"))return root.V6PClipStore?.get(action.slice(7))?.manifest?.frames?.length||1;
  return C.FRAMES[action]||R.anchorDatabase().find(x=>"anchor:"+x.id===action)?.frames.length||1;
 }
@@ -289,7 +298,16 @@ async function preview(){
  state.frame=Math.min(n-1,Math.max(0,state.frame));
  $("qa-frame").max=String(n-1);$("qa-frame").value=String(state.frame);
  $("qa-frame-label").textContent="FRAME "+(state.frame+1)+" / "+n;
- try{await H.qa(action,state.frame)}catch(error){if(stamp===previewRevision)result("Preview unavailable: "+error.message,true)}
+ if(action.startsWith("python:"))
+  pythonStatus("NATIVE PYTHON DIAGNOSTIC · "+(H.get()?.ch?.body==="female"?"FEMALE":"MALE")+
+   " baseline. Custom Wear and Emosi from the selected character are not applied yet.");
+ else pythonStatus("Native animations use this Genesis character. Python imported motions are diagnostic only.");
+ try{await H.qa(action,state.frame)}catch(error){
+  if(stamp===previewRevision){
+   result("Preview unavailable: "+error.message,true);
+   if(action.startsWith("python:"))pythonStatus("Python preview failed: "+error.message,true);
+  }
+ }
 }
 async function regenerate(){
  const info=readInfo();if(state.busy)return false;
@@ -364,7 +382,9 @@ function tick(){
  const clip=R.anchorDatabase().find(x=>"anchor:"+x.id===selected);
  const motionFrame=selected.startsWith("motion:")?
   root.V6PClipStore?.get(selected.slice(7))?.manifest?.frames?.[state.frame]:null;
- const ms=motionFrame?.ms||clip?.frames[state.frame]?.ms||(selected==="walk"?140:240);
+ const pythonFrame=selected.startsWith("python:")?
+  NativePython?.get(selected.slice(7))?.frames?.[state.frame]:null;
+ const ms=pythonFrame?.ms||motionFrame?.ms||clip?.frames[state.frame]?.ms||(selected==="walk"?140:240);
  state.timer=setTimeout(()=>{if(!state.playing)return;
   state.frame=(state.frame+1)%numFrames();void preview();tick();
  },Math.min(800,Math.max(40,ms)));
@@ -379,11 +399,48 @@ function selectFixPart(){
  for(const cv of document.querySelectorAll("[data-qa-dir]")){
   cv.style.cursor="pointer";cv.title="Edit this direction/frame";
   cv.onclick=()=>{
+   if($("qa-animation").value.startsWith("python:")){
+    pythonStatus("To edit Python poses, open Animation; Character and Custom Wear are protected.",true);
+    return;
+   }
    storeStep();H.edit(select.value,cv.dataset.qaDir,$("qa-animation").value,state.frame);
   };
  }
 }
+async function loadPythonFromDatabase(selectFirst=true){
+ const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+ if(!bridge?.isOnline?.())throw Error("Connect Google Drive from MAHLUK toolbar first");
+ pythonStatus("Loading Python animations from Drive…");
+ const previous=$("qa-animation").value;
+ const rows=await bridge.listOnline("animation"),accepted=NativePython?.setCloud(rows)||[];
+ motionChoices();
+ const chosen=accepted.find(r=>"python:"+r.id===previous)||accepted[0];
+ if(selectFirst&&chosen){
+  $("qa-animation").value="python:"+chosen.id;
+  stopPreview();state.frame=0;await preview();
+ }
+ pythonStatus(accepted.length?
+  accepted.length+" Python source(s) loaded. Choose PYTHON / animation in the dropdown. Native diagnostic only; Custom Wear not yet applied.":
+  "No saved native Python source in your Drive database.");
+ return accepted;
+}
+async function importPythonFile(file){
+ if(!file)return;
+ if(!/\.py$/i.test(file.name)||file.size>200000)
+  throw Error("Choose a Genesis .py file under 200 KB");
+ const data=NativePython?.importFile(await file.text());
+ if(!data)throw Error("Genesis Python parser unavailable");
+ motionChoices();$("qa-animation").value="python:"+data.id;
+ stopPreview();state.frame=0;await preview();
+}
 function bind(){
+ $("qa-import-python").onclick=()=>$("qa-python-file").click();
+ $("qa-python-file").onchange=e=>{
+  const f=e.target.files?.[0];e.target.value="";
+  void importPythonFile(f).catch(error=>pythonStatus("Import rejected: "+error.message,true));
+ };
+ $("qa-from-database").onclick=()=>void loadPythonFromDatabase(true)
+  .catch(error=>pythonStatus("Database unavailable: "+error.message,true));
  $("wizard-tab-gallery").onclick=()=>showHomeTab("gallery");
  $("wizard-tab-start").onclick=()=>showHomeTab("start");
  $("wizard-start-new").onclick=()=>{state.mode="new";$("wizard-existing").hidden=true;fillLists();setStep("base")};
@@ -453,6 +510,7 @@ root.addEventListener("message",e=>{
      const saved=await bridge.listOnline("animation");
      for(const row of saved)if(row?.clip?.manifest&&row?.meta)
       root.V6PClipStore.importCloudRecord(row);
+     NativePython?.setCloud(saved);
      motionChoices();
     }catch(error){notice("Online motions: "+error.message,true)}
    })();
@@ -472,6 +530,7 @@ void (async()=>{
   const saved=await bridge.listOnline("animation");
   for(const row of saved)if(row?.clip?.manifest&&row?.meta)
    root.V6PClipStore.importCloudRecord(row);
+  NativePython?.setCloud(saved);
   motionChoices();
  }catch(error){notice("Online motions: "+error.message,true)}
 })();
