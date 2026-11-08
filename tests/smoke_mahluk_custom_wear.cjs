@@ -16,6 +16,13 @@ const {chromium}=require('playwright');
   await page.locator('#workflow-source').selectOption('base:female');
   await page.locator('#wizard-next').click();
   await page.locator('#wizard-customize:not([hidden])').waitFor({timeout:65000});
+  // Regression tests generic Custom Wear from a clean independent fixture.
+  // Never overwrite the approved Genesis custom layer source to make a stock test pass.
+  await page.evaluate(async()=>{
+   const S=window.V6PCharacterStore,H=window.V6PCharacterHost;
+   const fixture=S.create({name:'Custom Wear regression clean fixture',gender:'female'});
+   await H.open(fixture);
+  });
   for(const kind of ['top','pants','shoes'])assert.equal(await page.locator('#'+kind+' option[value=nude]').count(),0);
   await page.locator('#wizard-part-nav [data-part=top]').click();
   await page.locator('#top').selectOption('custom');
