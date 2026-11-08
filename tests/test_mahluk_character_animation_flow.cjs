@@ -58,21 +58,18 @@ test('character wizard, female base, 4-view QA and pixel scope wired',()=>{
  assert.match(p,/V6PCharacterStore\.setPart/);assert.match(p,/autoFitCurrentDirection/);
  assert.match(h,/u\.searchParams\.set\("character",state\.characterId\)/);
 });
-test('animation editor is genuinely frame by frame with asset anchors',()=>{
- const h=read('site/mahluk-animation-studio.html'),js=read('site/mahluk-animation-studio.js');
- for(const id of ['stage','frame-strip','rotation','ax','ay','add-frame','duplicate','save','template','gender'])
+test('Genesis Python Animation replaces the cutout editor with native pose source',()=>{
+ const h=read('site/mahluk-animation-native.html'),js=read('site/mahluk-animation-native.js');
+ const hub=read('site/mahluk-hub.js');
+ for(const id of ['start-import','start-create','python-file','stage','timeline','joint-x',
+  'joint-y','angle-slider','save-cloud','export-python','install'])
   assert.ok(h.includes('id="'+id+'"'),id);
- assert.match(js,/function bake\(/);
-  const renderer=read('site/v6p-universal-motion.js');
-  assert.match(renderer,/g\.rotate\(angle\*Math\.PI\/180\)/);
-  assert.match(js,/Motion\.renderPrepared\(/);
-  assert.match(renderer,/drawPiece\(g,item\.parts\[p\],pose,p\)/);
- assert.doesNotMatch(js,/Store\.setLayer\(state\.id,"base\/body"/);
-  assert.match(js,/Store\.setLayer\(state\.id,"preview\/composite"/);
- assert.match(js,/requiredParts:\[\]/);
-  assert.match(js,/Contract\.make\(/);
- assert.match(js,/hair:"none"/);
- assert.match(js,/state\.frames\.length>=6/);
+ assert.match(js,/C\.fromPython/);
+ assert.match(js,/C\.toPython/);
+ assert.match(js,/genesis-native-worker\.js/);
+ assert.match(hub,/animation:"\.\/mahluk-animation-native\.html/);
+ assert.doesNotMatch(hub,/mahluk-animation-studio/);
+ assert.doesNotMatch(js,/V6PUniversalMotion|drawPiece\(/);
 });
 test('action real character input has no phantom Noor',()=>{
  const h=read('site/mahluk-action-editor.html'),js=read('site/mahluk-action-editor.js');

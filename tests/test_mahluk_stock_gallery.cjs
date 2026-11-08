@@ -26,7 +26,7 @@ test('original 11 native V6B actions, dimensions and layering stay unchanged',()
  assert.equal(V.FW,64);assert.equal(V.FH,112);assert.equal(V.H,4928);
 });
 test('no Punch hardcoding remains in the active editors',()=>{
- const paths=['site/mahluk-animation-studio.js','site/mahluk-action-editor.js',
+ const paths=['site/mahluk-animation-native.js','site/mahluk-action-editor.js',
   'site/v6p-studio.html','site/v6p-character-wizard.js','site/v6p-character-workflow.js'];
  for(const p of paths)assert.doesNotMatch(read(p),/motion:clp_standing_punch|clp_standing_punch\.motion\.json/);
 });

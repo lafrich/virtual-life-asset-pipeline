@@ -60,7 +60,7 @@ test('unmodified Animation / Action editors are still separate, while Face is ro
  assert.match(html,/window\.parent\.VLMahlukWorkspace\.show\("emotion"\)/);
  const hub=read('site/mahluk-hub.js');
  assert.match(hub,/action:"\.\/mahluk-action-editor\.html/);
- assert.match(hub,/animation:"\.\/mahluk-animation-studio\.html/);
+ assert.match(hub,/animation:"\.\/mahluk-animation-native\.html/);
 });
 test('all modified browser JavaScript and inline studio scripts parse',()=>{
  for(const file of ['site/v6p-character-wizard.js','site/mahluk-hub.js','site/pixel-editor.js'])

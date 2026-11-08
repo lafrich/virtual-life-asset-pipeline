@@ -14,7 +14,8 @@ test('new Idle motion anchors derive from measured Genesis four-view shoulders',
  assert.deepEqual([C.pose('ne').arm_l.ax,C.pose('ne').arm_l.ay],[25,65]);
  assert.deepEqual([C.pose('nw').arm_r.ax,C.pose('nw').arm_r.ay],[38,65]);
  assert.equal(C.tracks(2).nw[1].arm_r.ay,65);
- assert.match(read('site/mahluk-animation-studio.js'),/Contract\.pose\(dir\)/);
+ const Native=require('../site/genesis-native-python-contract.js');
+ assert.deepEqual(Object.keys(Native.ANCHORS).length,15);
 });
 test('universal movement is a standalone four-direction pose, never character clothing',()=>{
  const {frames,value}=motion();
@@ -45,7 +46,7 @@ test('manifest is V6B-compatible and only a reviewed record is stock',()=>{
  assert.throws(()=>C.validateManifest({...base,id:'walk'}),/animation ID/);
 });
 test('motion renderer reads physical layers and editor never bakes outfit pixels to base/body',()=>{
- const animation=read('site/mahluk-animation-studio.js'),rig=read('site/v6p-universal-motion.js'),
+ const animation=read('site/mahluk-animation-native.js'),rig=read('site/v6p-universal-motion.js'),
   action=read('site/mahluk-action-editor.js'),studio=read('site/v6p-studio.html');
  assert.match(rig,/V6\.files\(ch,"baked"\)/);
  assert.match(rig,/images\[name\]/);
@@ -53,22 +54,21 @@ test('motion renderer reads physical layers and editor never bakes outfit pixels
  assert.match(rig,/silhouette\[i\]=255/);
  assert.doesNotMatch(rig,/bounds\(body\.data\)/,
   'Sparse skin layer must not define the six-part source silhouette');
- assert.match(animation,/Motion\.prepare\(/);
- assert.match(animation,/Motion\.renderPrepared\(/);
- assert.match(animation,/Contract\.make\(/);
+ assert.match(animation,/C\.fromPython/);
+ assert.match(animation,/C\.toPython/);
+ assert.doesNotMatch(animation,/drawPiece\(/);
  assert.doesNotMatch(animation,/Store\.setLayer\(state\.id,"base\/body"/);
- assert.match(animation,/Store\.setLayer\(state\.id,"preview\/composite"/);
  assert.match(action,/layout:"universal"/);
  assert.match(action,/Motion\.render\(/);
  assert.match(studio,/UC\?\.isStock\(row\.manifest\)/);
 });
 test('UI preserves Pixel/Action UX, offers color edit and strict AI import without altering Emosi',()=>{
  const pixel=read('site/pixel-editor.html'),pixjs=read('site/pixel-editor.js'),
-  animation=read('site/mahluk-animation-studio.html'),action=read('site/mahluk-action-editor.html');
+  animation=read('site/mahluk-animation-native.html'),action=read('site/mahluk-action-editor.html');
  for(const id of ['wear-recolor-tools','wear-recolor-from','wear-recolor-to','wear-recolor','pixelCanvas'])
   assert.ok(pixel.includes('id="'+id+'"'),id);
  assert.match(pixjs,/function recolorCustomWear\(/);
- for(const id of ['import-motion','import-motion-file','submit-stock','stage','frame-strip'])
+ for(const id of ['start-import','python-file','install','stage','timeline'])
   assert.ok(animation.includes('id="'+id+'"'),id);
  assert.match(action,/id="action-canvas"/);
  assert.match(read('docs/GENESIS_V6B_ANIMATION_AI_CONTRACT.md'),/STRICT GENESIS V6B MOTION AUTHOR/);
