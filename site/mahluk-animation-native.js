@@ -8,7 +8,7 @@ const STAGE=$("stage"),ctx=STAGE.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 let draft=null,dir="se",frame=0,gender="male",joint="hand_near",angle="elbow_near";
 let preview=null,rendered=false,timer=0,playing=false,worker=null,serial=0,editVersion=0;
-let frameCache=new Map(),dragging=null,verifiedSrc="",saved=false,cacheKey="";
+let frameCache=new Map(),dragging=null,verifiedSrc="",saved=false,cacheKey="",galleryRevision=0;
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null;}catch{return null}};
 const clone=x=>JSON.parse(JSON.stringify(x));
 function message(text,error=false){$("status").textContent=text;$("status").classList.toggle("error",!!error)}
@@ -188,6 +188,7 @@ async function saveCloud(){
  }catch(error){message("Cloud save failed: "+error.message,true)}
 }
 async function gallery(){
+ const token=++galleryRevision;
  const area=$("gallery");area.replaceChildren();
  if(!notifyOnline()){
   area.textContent="Connect Google Drive from Mahluk Hidup before loading saved native Python animations.";return
@@ -201,7 +202,9 @@ async function gallery(){
    const prior=unique.get(row.id);
    if(!prior||String(row.savedAt||"")>=String(prior.savedAt||""))unique.set(row.id,row);
   }
+  if(token!==galleryRevision)return; // Ignore an older concurrent cloud reload.
   const rows=[...unique.values()];
+  area.replaceChildren();
   for(const data of rows){
    try{C.fromPython(data.python)}catch{continue}
    const b=document.createElement("button");const label=document.createElement("strong");
@@ -212,7 +215,7 @@ async function gallery(){
   }
   if(!rows.length)area.textContent="No saved Python native animation sources yet.";
   $("home-note").textContent="Cloud gallery loaded: "+rows.length+" native Python source(s).";
- }catch(e){area.textContent="Cloud read failed: "+e.message}
+ }catch(e){if(token===galleryRevision)area.textContent="Cloud read failed: "+e.message}
 }
 for(const name of C.TEMPLATES){
  const option=document.createElement("option");option.value=name;option.textContent=name.toUpperCase().replaceAll("_"," ");
