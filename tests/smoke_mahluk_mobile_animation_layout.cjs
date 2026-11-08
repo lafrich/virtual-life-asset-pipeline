@@ -41,13 +41,18 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
     });
     let scrolled=0;
     if(isMobile){
-     assert.ok(scroll.height>scroll.client+40,
-      'Gallery content not scrollable in constrained mobile iframe: '+JSON.stringify(scroll));
-     await inner.locator('#animation-start-new').hover();
-     await page.mouse.wheel(0,500);
-     await page.waitForTimeout(180);
-     scrolled=await inner.locator('body').evaluate(()=>document.scrollingElement.scrollTop);
-     assert.ok(scrolled>15,'Swipe/wheel could not scroll Animation Gallery: '+scrolled);
+     if(scroll.height>scroll.client+40){
+      await inner.locator('#animation-start-new').hover();
+      await page.mouse.wheel(0,500);
+      await page.waitForTimeout(180);
+      scrolled=await inner.locator('body').evaluate(()=>document.scrollingElement.scrollTop);
+      assert.ok(scrolled>15,'Swipe/wheel could not scroll overflowing Animation Gallery: '+scrolled);
+     }else{
+      // A tall phone may fit the whole Home gallery; it must not be
+      // artificially scrollable just to satisfy the shorter-phone test.
+      assert.equal(scroll.overflowY,'auto');
+      assert.ok((await inner.locator('#animation-start-new').boundingBox()).height>30);
+     }
     }
     await inner.locator('#animation-start-new').click();
     await inner.locator('#animation-setup:not([hidden])').waitFor();
