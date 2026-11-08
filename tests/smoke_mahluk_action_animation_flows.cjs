@@ -137,6 +137,9 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator('#drive-connect').click();
   await page.locator('#drive-connect').getByText('CONNECTED').waitFor({timeout:15000});
+  // The app preserves the last selected tab in the URL (Animation).
+  // Explicitly select Action before asserting that its lazy iframe loaded.
+  await page.evaluate(()=>window.VLMahlukWorkspace.show('action'));
   const again=page.frameLocator('#action-frame');
   await again.locator('#action-home:not([hidden])').waitFor({timeout:45000});
   await again.locator('#action-gallery button').filter({hasText:'Two Character Dialogue'}).waitFor({timeout:30000});
