@@ -13,8 +13,8 @@ function boot(initial={}){
  let config=null;
  const Gate={mount:cfg=>{config=cfg;return {exportUniversal:async()=>true}}};
  const document={readyState:"complete",querySelector:()=>null,addEventListener:()=>{},getElementById:()=>null};
- const window={MembangunUniversal:U,MembangunCloudStartup:Gate,VLMahlukHubDrive:D,document};
- vm.runInNewContext(JS,{window,document,location:{origin:"https://lafrich.github.io"},console});
+ const window={MembangunUniversal:U,MembangunCloudStartup:Gate,VLMahlukHubDrive:D,document,location:{search:''}};
+ vm.runInNewContext(JS,{window,document,location:{origin:"https://lafrich.github.io"},URLSearchParams,console});
  return {config,D,U,calls,records};
 }
 test("Mahluk startup lists verified native Character, Action and Animation Drive records",async()=>{
