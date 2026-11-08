@@ -40,6 +40,9 @@ function stopAnim(el){
 function animateClip(img,it){
  stopAnim(img);
  if(it.type!=="clip")return;
+ // Universal motions are reviewed in existing Animation/Character QA.
+ // Never send them to the retired fixed-band activity composer.
+ if(it.manifest?.motion?.format==="genesis-v6b-universal-motion-v1")return;
  if(it.manifest&&root.V6PCompositor&&root.V6PCompositor.composeActivity){
   const man=it.manifest;
   let f=0;
