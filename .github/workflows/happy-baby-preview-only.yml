@@ -51,7 +51,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/previews/happy-baby-rocking/
+          # Repo globally ignores generated PNG/GIF: force-stage preview media only.
+          git add docs/previews/happy-baby-rocking/README.json
+          git add -f docs/previews/happy-baby-rocking/*.gif docs/previews/happy-baby-rocking/*.png
           if ! git diff --cached --quiet; then
             git commit -m "Publish standalone Happy Baby Genesis preview media [preview-generated]"
             git push origin HEAD:preview/genesis-happy-baby-20261108
