@@ -185,7 +185,6 @@ function queueMasterSync(){
  .finally(()=>{state.syncing=false;});
 }
 function modeUI(){
- if($("autofit-outfit")) $("autofit-outfit").hidden=true; // Generation is in Character Editor
  if($("clear-character-correction"))$("clear-character-correction").hidden=!(state.characterId&&state.v6pPart&&!state.masterMode&&!state.project&&!state.actClip);
  const isMaster=(state.mode==="master"&&state.source!=="v6p")||state.masterMode;
  $("action").disabled=isMaster;$("frame").disabled=isMaster;
@@ -383,9 +382,7 @@ function referenceLook(ch){
  return ch;
 }
 async function refreshOverlay(){
- const box=$("overlay-actions");
  const show=state.source==="v6p"&&(!!state.characterId||!!state.project||!!state.actClip)&&!!window.V6PCompositor;
- if(box)box.hidden=!show;
  if(!show){state.overlayCanvas=null;return;}
  try{
   let ch=lastStudioCharacter();
@@ -395,15 +392,13 @@ async function refreshOverlay(){
    if(!avail.ok) ch=window.V6PCompositor.previewAppearance(ch.body==="female"?"female":"male");
    const cv=await window.V6PCompositor.composeActivity(ch,state.actClip,state.frame,state.dir,{exclude:state.clipLayer});
    state.overlayCanvas=(cv&&!cv._disabled)?cv:null;
-   if($("overlay-info"))$("overlay-info").textContent="Acuan CLIP "+state.actClip.name+" / "+state.dir.toUpperCase()+" / F"+state.frame+" · opacity "+Math.round(state.overlayAlpha*100)+"% · tidak ikut PNG";
    return;
   }
   if(state.project&&state.project.type==="accessory")
    ch={...ch,accessories:(ch.accessories||[]).filter(id=>id!==state.project.id)};
   const sheet=await window.V6PCompositor.sheet(referenceLook(ch));
-  if(!sheet){state.overlayCanvas=null;if($("overlay-info"))$("overlay-info").textContent="Overlay gagal dimuat (aset karakter kurang)";return;}
+  if(!sheet){state.overlayCanvas=null;return;}
   state.overlayCanvas=window.V6PCompositor.extractFrame(sheet,state.action,state.dir,state.frame);
-  if($("overlay-info"))$("overlay-info").textContent="Acuan "+state.action.toUpperCase()+" / "+state.dir.toUpperCase()+" / F"+state.frame+" · opacity "+Math.round(state.overlayAlpha*100)+"% · tidak ikut PNG";
  }catch(e){state.overlayCanvas=null;}
 }
 function fillV6pActions(){
@@ -1579,13 +1574,6 @@ function initControls(){
  if($("paste-selection"))$("paste-selection").onclick=()=>pasteSelection(false);
  if($("paste-flip"))$("paste-flip").onclick=()=>pasteSelection(true);
  if($("select-all"))$("select-all").onclick=selectAll;
- if($("overlay-on"))$("overlay-on").onchange=e=>{state.overlayOn=e.target.checked;render();};
- if($("overlay-alpha"))$("overlay-alpha").oninput=e=>{
-  state.overlayAlpha=Number(e.target.value)/100;$("overlay-alpha-value").textContent=e.target.value+"%";
-  if($("overlay-info")&&state.project)$("overlay-info").textContent="Acuan "+state.action.toUpperCase()+" / "+state.dir.toUpperCase()+" / F"+state.frame+" · opacity "+e.target.value+"% · tidak ikut PNG";
-  render();
- };
- if($("overlay-pivot"))$("overlay-pivot").onchange=e=>{state.showPivot=e.target.checked;render();};
  if($("new-accessory"))$("new-accessory").onclick=async()=>{const item=createUserProject("accessory");if(item)await loadProject(item.id);};
  if($("new-clip"))$("new-clip").onclick=async()=>{
   const rec=createActClip();
