@@ -25,8 +25,16 @@ test('original editor mechanics are left in place and route into the shell',()=>
  assert.match(studio,/VLMahlukWorkspace\?\.openEditor/);
  assert.match(gallery,/VLMahlukWorkspace\?\.openEditor/);
  for(const id of ['pixelToolbarCopy','pixelToolbarPaste','pixelToolbarPasteFlip',
-  'pixelSyncExisting','clip-strip','clip-ms','clip-onion','save-drive'])
+  'pixelEraseCanvas','pixel-back','clip-strip','clip-ms','clip-onion','save-drive'])
   assert.ok(pixel.includes('id="'+id+'"'),id+' must survive refactor');
+ for(const id of ['pixelSyncExisting','pixelSync','pixelReferenceView',
+  'pixelCopyToView','pixelPasteToView','pixelExport'])
+  assert.ok(!pixel.includes('id="'+id+'"'),id+' is removed; do not resurrect dead UI');
+ const shared=read('site/emotion-studio/shared-pixel-editor.js');
+ assert.match(shared,/els\.erase\.onclick/);
+ assert.doesNotMatch(shared,/els\.syncExisting|els\.copyToView|els\.export\.onclick/);
+ assert.match(pixjs,/function backToCaller\(/);
+ assert.match(read('site/mahluk-hub.js'),/closeAnimationPixel/);
  for(const fn of ['persistV6pOverride','persistClipLayer','saveV6pToDrive','loadActClip'])
   assert.ok(pixjs.includes(fn),fn+' must survive refactor');
  assert.ok(read('site/emosi-bridge.js').includes('VLMahlukEmosiBridge'));
