@@ -75,7 +75,8 @@ function v1Record(v2){
  };
 }
 function unsupportedClips(record){
- return Object.keys(record.clips||{}).filter(id=>!CLIP_CONSUMED.test(id));
+ return Object.keys(record.clips||{}).filter(id=>!CLIP_CONSUMED.test(id)&&
+  !(/^(?:clp|clip)_[a-z0-9_]{3,70}$/.test(id)&&record.clips[id]?.source==="genesis-v6b-universal-motion-v1"));
 }
 function publish(input,env){
  const store=(env&&env.localStorage)||(root&&root.localStorage);
