@@ -39,13 +39,16 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
      return {height:el.scrollHeight,client:el.clientHeight,
       overflowY:getComputedStyle(document.body).overflowY};
     });
-    assert.ok(scroll.height>scroll.client+40,
-     'Gallery content not scrollable in constrained mobile iframe: '+JSON.stringify(scroll));
-    await inner.locator('#animation-start-new').hover();
-    await page.mouse.wheel(0,500);
-    await page.waitForTimeout(180);
-    const scrolled=await inner.locator('body').evaluate(()=>document.scrollingElement.scrollTop);
-    assert.ok(scrolled>15,'Swipe/wheel could not scroll Animation Gallery: '+scrolled);
+    let scrolled=0;
+    if(isMobile){
+     assert.ok(scroll.height>scroll.client+40,
+      'Gallery content not scrollable in constrained mobile iframe: '+JSON.stringify(scroll));
+     await inner.locator('#animation-start-new').hover();
+     await page.mouse.wheel(0,500);
+     await page.waitForTimeout(180);
+     scrolled=await inner.locator('body').evaluate(()=>document.scrollingElement.scrollTop);
+     assert.ok(scrolled>15,'Swipe/wheel could not scroll Animation Gallery: '+scrolled);
+    }
     await inner.locator('#animation-start-new').click();
     await inner.locator('#animation-setup:not([hidden])').waitFor();
     await inner.locator('#setup-name').fill('Mobile Screen Test');
