@@ -44,7 +44,9 @@ function stop(){state.playing=false;clearTimeout(state.timer);state.timer=null;$
 function show(screen){
  stop();state.screen=screen;
  $("action-home").hidden=screen!=="home";$("action-choose").hidden=screen!=="choose";$("action-workspace").hidden=screen!=="editor";
- if(screen==="home")drawGallery();else if(screen==="choose")drawChoose();else{drawCast();void render()}
+ if(screen==="home")drawGallery();
+ else if(screen==="choose"){refreshActors();drawChoose();}
+ else{drawCast();void render()}
 }
 function home(message){
  if(message){state.message=message;$("action-home-note").textContent=message}
