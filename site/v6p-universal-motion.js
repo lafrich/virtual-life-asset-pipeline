@@ -78,7 +78,7 @@ async function prepare(rawAppearance,sourceAction="idle",opts={}){
     const im=images[name];if(!im)continue;
     let raw=imageFrame(im,sourceAction,dir);
     // Native sheets contain palette keys. Custom Wear is authored in exact RGB.
-    if(!root.V6PCustomWear?.isCustomPart(name))raw=V6.keysToDisplay(raw,ch);
+    if(!/^(?:top|pants|shoes)\/custom(?:_back)?(?:_f)?$/.test(name))raw=V6.keysToDisplay(raw,ch);
     entries.push({name,parts:segment(raw,geometry)});
    }
    directions[dir]={entries,geometry,
