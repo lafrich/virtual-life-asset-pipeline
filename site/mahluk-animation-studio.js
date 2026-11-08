@@ -1,13 +1,16 @@
 /* True sprite-frame Animation Studio. Six articulated cutout pixel layers with
    explicit anchor transforms, baked to four-direction PNG frames; no skeletal rig.
-   Uses native V6P blank-face, hairless standard-outfit Male/Female source templates. */
+   Uses Genesis Male/Female or a selected Character's own body, clothes and
+   Custom Wear as the source. Approved stock stays read-only. */
 (function(root){"use strict";
-const $=id=>document.getElementById(id),V=root.V6PCompositor,Store=root.V6PClipStore,A=root.V6PActivityContract;
+const $=id=>document.getElementById(id),V=root.V6PCompositor,Store=root.V6PClipStore,A=root.V6PActivityContract,
+ Characters=root.V6PCharacterStore,Genesis=root.V6PGenesisBase;
 if(!V||!Store||!A)return;
 const KEY="vl-mahluk-animation-anchor-poses-v1",PARTS=["leg_l","leg_r","torso","arm_l","arm_r","head"],DIRS=["se","sw","ne","nw"];
 const ANCHORS={head:[32,35],torso:[32,60],arm_l:[20,54],arm_r:[44,54],leg_l:[25,84],leg_r:[39,84]};
 const cv=$("stage"),screen=cv.getContext("2d"),state={id:"",name:"",gender:"male",template:"idle",frames:[{key:"f0",ms:140},{key:"f1",ms:140}],loop:true,
- dir:"se",frame:0,part:"head",tracks:{},sheet:null,playing:false,timer:0,images:new Map(),drag:null,revision:0,previewFrame:0,screen:"home"};
+ dir:"se",frame:0,part:"head",tracks:{},sheet:null,playing:false,timer:0,images:new Map(),drag:null,revision:0,previewFrame:0,screen:"home",
+ sourceId:"base:male",sourceLook:null,stockReference:"",stockGuides:new Map()};
 screen.imageSmoothingEnabled=false;
 const STOCK_TITLES=Object.freeze({pushup:"PUSH-UP",yoga_sphinx_idle:"YOGA SPHINX · IDLE",
  yoga_puppy_idle:"YOGA PUPPY DOG · IDLE",hip_shake:"HIP SHAKE",
@@ -17,8 +20,42 @@ function nativeStop(){
  nativeStock.playing=false;clearTimeout(nativeStock.timer);
  if($("stock-play"))$("stock-play").textContent="▶ PLAY";
 }
+function characterOptions(){
+ const rows=[
+  {id:"base:male",name:"GENESIS MALE NUDE",gender:"male"},
+  {id:"base:female",name:"GENESIS FEMALE NUDE",gender:"female"}];
+ for(const ch of Characters?.list?.()||[]){
+  if(!ch?.id||!["male","female"].includes(ch.gender))continue;
+  rows.push({id:ch.id,name:"CHARACTER · "+ch.name,gender:ch.gender});
+ }
+ return rows;
+}
+function characterSource(id=state.sourceId){
+ const row=characterOptions().find(x=>x.id===id)||characterOptions()[0];
+ return {...row,record:row.id.startsWith("mh2_")?Characters?.get?.(row.id):null};
+}
+function selectSource(id){
+ const row=characterSource(id);state.sourceId=row.id;state.gender=row.gender;
+ for(const control of ["gallery-character","source-character"])
+  if($(control))$(control).value=row.id;
+ $("gender").value=row.gender;
+ if($("stock-gender"))$("stock-gender").value=row.gender;
+ if($("source-label"))$("source-label").textContent=row.name+" · CUSTOM WEAR SOURCE · "+state.dir.toUpperCase();
+ updatePixelTargets();
+ return row;
+}
+function fillSources(){
+ const all=characterOptions();
+ for(const id of ["gallery-character","source-character"]){
+  const target=$(id);if(!target)continue;
+  target.replaceChildren();
+  for(const ch of all){const o=document.createElement("option");o.value=ch.id;o.textContent=ch.name;target.append(o);}
+ }
+ if(!all.some(x=>x.id===state.sourceId))state.sourceId="base:male";
+ selectSource(state.sourceId);
+}
 function nativeAppearance(gender){
- // Native per-part activity sheet base. These keys are INTERNAL, not Character clothing options.
+ // Approved activity-preview source; never a substitute for a saved Character.
  return V.norm({...V.previewAppearance(gender),body:gender,gender,
    hair:"none",top:"nude",pants:"nude",shoes:"nude",
    face:"blank",glasses:"none",facial:"none"});
@@ -83,6 +120,7 @@ function nativeOpen(clip){
  nativeStop();nativeStock.clip=clip;nativeStock.frame=0;
  state.id=clip.id;state.name=clip.name;
  $("stock-title").textContent=STOCK_TITLES[clip.manifest.band]||clip.name.toUpperCase();
+ $("stock-gender").value=characterSource().gender;
  show("stock");nativeToggle();
 }
 
@@ -118,11 +156,76 @@ function updateProperty(){
  document.querySelectorAll("[data-part]").forEach(b=>b.classList.toggle("active",b.dataset.part===state.part));
 }
 function canvas(w,h){const out=document.createElement("canvas");out.width=w;out.height=h;return out}
-function setSource(){const ch=V.norm({...V.DEF,body:state.gender,gender:state.gender,hair:"none",hairColor:"black",top:"tee",pants:"trousers",shoes:"shoes",face:"blank",glasses:"none",facial:"none"});return V.sheet(ch,null,"")}
-async function loadSource(){const rev=++state.revision;state.sheet=await setSource();if(rev===state.revision){state.images.clear();render()}}
+function imageFor(url){
+ return new Promise((resolve,reject)=>{
+  const img=new Image();img.onload=()=>resolve(img);
+  img.onerror=()=>reject(Error("Selected Genesis sprite source could not load"));img.src=url;
+ });
+}
+async function setSource(){
+ const selected=characterSource();
+ const gender=selected.gender;
+ if(selected.record){
+  const record=selected.record;
+  const look=V.norm({...record.appearance,body:gender,gender,characterId:record.id,face:"blank"});
+  const result=await V.sheet(look,null,"");
+  if(!result)throw Error("Selected Character parts missing; repair in Character tab");
+  state.sourceLook=look;
+  return result;
+ }
+ if(!Genesis)throw Error("Genesis Male/Female sources not loaded");
+ const base=Genesis.get(gender),suffix=gender==="female"?"_f":"";
+ const look=V.norm({...base.appearance,gender,body:gender,hair:"none",top:"nude",pants:"nude",shoes:"nude",face:"blank",glasses:"none",facial:"none"});
+ const native=await V.sheet(look,null,"");
+ if(!native)throw Error("Original Genesis body sheet missing");
+ const out=canvas(384,4928),g=out.getContext("2d");
+ g.imageSmoothingEnabled=false;g.drawImage(native,0,0);
+ // Original exact Genesis Custom Wear. Never rasterize it into an unrelated
+ // starter outfit; stage transforms use this *character's* composed pixels.
+ for(const part of ["top/custom_back"+suffix,"shoes/custom"+suffix,"pants/custom"+suffix,"top/custom"+suffix]){
+  const url=base.parts?.[part];
+  if(!url)throw Error("Missing Genesis source layer "+part);
+  g.drawImage(await imageFor(url),0,0);
+ }
+ state.sourceLook=V.norm({...base.appearance,body:gender,gender,top:"custom",pants:"custom",shoes:"custom",face:"blank"});
+ return out;
+}
+async function loadSource(){
+ const rev=++state.revision;
+ const sheet=await setSource();
+ if(rev!==state.revision)return;
+ state.sheet=sheet;state.images.clear();render();
+}
+function updatePixelTargets(){
+ const target=$("pixel-target");if(!target)return;
+ const source=characterSource();
+ // Re-read the draft after every Character edit to avoid stale appearance.
+ const look=source.record?.appearance||Genesis?.get?.(source.gender)?.appearance||{};
+ const f=source.gender==="female"?"_f":"";
+ const options=[
+  ["base/body"+f,"BODY / SKIN"],
+  ["top/"+(look.top||"custom")+f,"TOP / CUSTOM WEAR"],
+  ["pants/"+(look.pants||"custom")+f,"PANTS / CUSTOM WEAR"],
+  ["shoes/"+(look.shoes||"custom")+f,"SHOES / CUSTOM WEAR"]
+ ];
+ if(look.hair&&look.hair!=="none")options.push(["hair/"+look.hair+"_front","HAIR"]);
+ target.replaceChildren();
+ for(const [part,name] of options){
+  if(!root.V6PPartCatalog?.isPart(part))continue;
+  const o=document.createElement("option");o.value=part;o.textContent=name+" · "+part;target.append(o);
+ }
+ selectPixelTargetByBody();
+}
+function selectPixelTargetByBody(){
+ const el=$("pixel-target");if(!el||!el.options.length)return;
+ const preferred=state.part==="head"?"base/body":state.part.startsWith("arm")||state.part==="torso"?"top/":
+  "pants/";
+ const match=[...el.options].find(o=>o.value.startsWith(preferred));
+ if(match)el.value=match.value;
+}
 function action(){return V.ROWS[state.template]!=null?state.template:"idle"}
 function sourceCell(dir=state.dir,frame=state.frame){
- const key=dir+"/"+frame+"/"+state.template+"/"+state.gender;
+ const key=dir+"/"+frame+"/"+state.template+"/"+state.sourceId;
  if(state.images.has(key))return state.images.get(key);
  const sheet=state.sheet;if(!sheet)return null;
  const out=V.extractFrame(sheet,action(),dir,frame%V.FRAMES[action()]);
