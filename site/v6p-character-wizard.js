@@ -444,13 +444,37 @@ async function restore(){
 arrangeLegacyControls();selectFixPart();bind();
 showHomeTab("start");
 root.addEventListener("message",e=>{
- if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected")void refreshCloud();
+ if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected"){
+   void refreshCloud();
+   void (async()=>{
+    const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+    if(!bridge?.isOnline?.())return;
+    try{
+     const saved=await bridge.listOnline("animation");
+     for(const row of saved)if(row?.clip?.manifest&&row?.meta)
+      root.V6PClipStore.importCloudRecord(row);
+     motionChoices();
+    }catch(error){notice("Online motions: "+error.message,true)}
+   })();
+  }
 });
 root.addEventListener("mahluk:published-archive",()=>void refreshArchive());
 void refreshArchive();void refreshCloud();
 // Registry loads independently of Character Host and Drive.
-void root.V6PClipStore?.loadBundled?.().then(()=>motionChoices()).catch(error=>
- notice("Motion registry: "+error.message,true));
+void (async()=>{
+ // JSON packs must not wait for cloud auth, but cloud-submitted motions share
+ // the exact same clip registry when the user connects another device.
+ try{await root.V6PClipStore?.loadBundled?.();motionChoices()}
+ catch(error){notice("Motion registry: "+error.message,true)}
+ const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+ if(!bridge?.isOnline?.())return;
+ try{
+  const saved=await bridge.listOnline("animation");
+  for(const row of saved)if(row?.clip?.manifest&&row?.meta)
+   root.V6PClipStore.importCloudRecord(row);
+  motionChoices();
+ }catch(error){notice("Online motions: "+error.message,true)}
+})();
 root.addEventListener("mahluk:character-ready",()=>void restore().catch(e=>notice("Wizard load: "+e.message,true)));
 if(root.__v6pStudio?.ready)void restore().catch(e=>notice("Wizard load: "+e.message,true));
 })(window);
