@@ -16,18 +16,20 @@ const FRAMES=Object.freeze({
 const TAB_IDS=["emotion","character","action","animation"];
 let tab="character";
 const ephemeral=new Map();
+const SESSION_KEYS=new Set(["vl-v6p-character-workflow-v1","vl-v6p-selected-character-v1",
+ "vl-v6p-act-clips-v1","vl-mahluk-animation-anchor-poses-v1","mahluk-action-situations-v1"]);
 const draftStorage=Object.freeze({
  getItem(key){
   if(ephemeral.has(key))return ephemeral.get(key);
-  if(key==="vl-v6p-character-workflow-v1"){
+  if(SESSION_KEYS.has(key)){
    const previous=localStorage.getItem(key);
-   if(previous!==null)ephemeral.set(key,previous);
+   ephemeral.set(key,previous);
    return previous;
   }
   return localStorage.getItem(key);
  },
  setItem(key,value){ephemeral.set(key,String(value))},
- removeItem(key){ephemeral.delete(key)},
+ removeItem(key){ephemeral.set(key,null)},
  key(n){return [...ephemeral.keys()][n]||null},
  get length(){return ephemeral.size}
 });

@@ -9,7 +9,7 @@ const BUILTIN_IDS=["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yo
 function builtinBand(id){return id.startsWith("clip_")?id.slice(5):id;}
 function isBuiltin(id){return BUILTIN_IDS.includes(builtinBand(id));}
 function contract(){return (root&&root.V6PActivityContract)||(typeof require==="function"?require("./v6p-activity-contract.js"):null);}
-function storage(){try{return root&&root.localStorage;}catch{return null;}}
+function storage(){try{return root?.parent?.VLMahlukWorkspace?.draftStorage||root?.localStorage}catch{return null}}
 function empty(){return {format:FORMAT,clips:{}};}
 function read(){
  const raw=storage()?.getItem(KEY);
@@ -57,6 +57,14 @@ function recordFromStore(id,row){
   thumbDataUrl:row&&row.thumbDataUrl||"",
   frameMs:manifest.frames[0]?manifest.frames[0].ms:140
  };
+}
+function importCloudRecord(rec){
+ if(!rec||!rec.id||!rec.clip||!rec.clip.manifest||!rec.meta)throw Error("Invalid cloud animation record");
+ const store=read();
+ store.clips[rec.id]={manifest:rec.clip.manifest,layers:rec.clip.layers||{},
+  origin:"user",saveStatus:"drive",updatedAt:rec.meta.updated||new Date().toISOString()};
+ write(store);
+ return get(rec.id);
 }
 function normalizeId(id){
  return BUILTIN_IDS.includes(id)?"clip_"+id:id;
