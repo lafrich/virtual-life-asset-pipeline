@@ -35,6 +35,19 @@ test('V6P composer uses character-local layer and preserves stock fallback',()=>
  assert.ok(!V.files(n).some(part=>part.startsWith('hair/')),'hairless base should not invent hair');
  assert.ok(V.files(n).includes('top/custom_f'));
  assert.ok(V.key(n).includes(ch.id));
+ // Default Genesis custom shoe sources retain the approved Mahluk order.
+ const genesisBarefoot=V.norm({...n,top:'custom',pants:'custom',shoes:'custom'});
+ const original=V.files(genesisBarefoot);
+ assert.ok(original.indexOf('shoes/custom_f')<original.indexOf('pants/custom_f'),
+  'Original nude Custom Wear source order must remain unchanged');
+ // Mixed custom pants + explicit stock shoes must not cover shoe pixels on
+ // different Walk / Sit frames (the source of flickering black edges).
+ const dressed=V.files(V.norm({...genesisBarefoot,shoes:'shoes'}));
+ assert.ok(dressed.indexOf('pants/custom_f')<dressed.indexOf('shoes/shoes_f'),
+  'Stock female shoes must overlay custom pants');
+ const normal=V.files(V.norm({...genesisBarefoot,pants:'trousers',shoes:'shoes'}));
+ assert.ok(normal.indexOf('shoes/shoes_f')<normal.indexOf('pants/trousers_f'),
+  'Unrelated ordinary outfit ordering must stay the same');
 });
 test('character wizard, female base, 4-view QA and pixel scope wired',()=>{
  const h=read('site/v6p-studio.html'),wf=read('site/v6p-character-workflow.js'),p=read('site/pixel-editor.js');
