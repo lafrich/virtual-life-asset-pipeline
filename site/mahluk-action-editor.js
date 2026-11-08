@@ -381,7 +381,11 @@ function wire(){
  $("scene-zoom").oninput=()=>zoomAt(Number($("scene-zoom").value)/100);
  $("scene-zoom-in").onclick=()=>zoomAt(state.camera.zoom+.25);
  $("scene-zoom-out").onclick=()=>zoomAt(state.camera.zoom-.25);
- $("scene-fit").onclick=()=>{state.camera.x=0;state.camera.y=0;zoomAt(1)};
+ $("scene-fit").onclick=()=>{
+  state.camera.zoom=1;state.camera.x=0;state.camera.y=0;
+  $("scene-zoom").value="100";$("scene-zoom-value").textContent="100%";
+  void render();
+ };
  $("scene-grid").onchange=()=>{state.camera.grid=$("scene-grid").checked;void render()};
  const stage=$("action-canvas");
  stage.addEventListener("wheel",e=>{
