@@ -104,8 +104,8 @@ function refreshActors(){
 }
 function actor(id=current()?.characterId||$("actor").value){
  const local=root.V6PCharacterStore?.get(id),published=realCharacters().find(x=>x.id===id);
- if(local)return {id,name:local.name,ch:{...local.appearance,characterId:id},clips:published?.clips||{},assetParts:local.parts||published?.assetParts||{},assetVersion:local.revision||0};
- if(published)return {id,name:published.name,ch:published.v6p?{...published.v6p,characterId:id}:null,clips:published.clips||{},assetParts:published.assetParts||{},assetVersion:published.updated||""};
+ if(local)return {id,name:local.name,ch:{...local.appearance,characterId:id},clips:published?.clips||{},assetParts:local.parts||published?.assetParts||{},assetVersion:local.revision||0,faceId:local.faceId||""};
+ if(published)return {id,name:published.name,ch:published.v6p?{...published.v6p,characterId:id}:null,clips:published.clips||{},assetParts:published.assetParts||{},assetVersion:published.updated||"",faceId:published.faceId||""};
  const female=id==="base:female";
  return {id,name:female?"Female Base":"Male Base",
   ch:V?.norm({...V.previewAppearance(female?"female":"male"),hair:"none",top:"tee",pants:"trousers",shoes:"shoes",face:"blank"}),clips:{}};
@@ -151,6 +151,14 @@ function refFor(entry,value){
 }
 function ref(){
  const row=current();return row?refFor(actor(row.characterId),row[state.phase]||"native:idle"):null;
+}
+async function faceForActor(entry){
+ const bridge=root.VLMahlukEmosiBridge;
+ if(!entry?.faceId||!bridge?.apply)return null;
+ const target={id:entry.id,gender:entry.ch?.body||"male",expressions:[]};
+ bridge.apply(target);
+ const face=target.expressions.find(f=>f.id===entry.faceId);
+ return face?.overlay?getImage(face.overlay):null;
 }
 function getImage(url){
  if(!state.cache.has(url))state.cache.set(url,new Promise((resolve,reject)=>{
@@ -225,8 +233,9 @@ async function render(){
     const key=JSON.stringify(r.ch);if(!state.sheets.has(key))state.sheets.set(key,V.sheet(r.ch,null,""));
     img=await state.sheets.get(key);
    }else if(r.layout==="universal"){
+      const emosi=await faceForActor(entry);
       img=await Motion.render(r.ch,r.action.manifest,state.frame%r.frames,m.dir,{
-       partOverrides:r.assetParts,sourceKey:"action:"+entry.id+":"+r.assetVersion});
+       partOverrides:r.assetParts,sourceKey:"action:"+entry.id+":"+r.assetVersion,emosi});
     }else if(r.layout==="activity-native"){
      img=await V.composeActivity(r.ch,r.action.manifest,state.frame%r.frames,m.dir);
      if(!img||img._disabled)return {m,error:img?._avail?.note||"Selected appearance has unsupported stock layers"};
@@ -458,6 +467,7 @@ function wire(){
   if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected")void refreshCloud();
  });
  home();void refreshCloud();
+  void root.VLMahlukEmosiBridge?.refresh?.().then(()=>{if(state.screen==="editor")void render()}).catch(()=>{});
 }
 root.VLMahlukActionEditor=Object.freeze({load,persist,KEY,FORMAT});
 wire();
