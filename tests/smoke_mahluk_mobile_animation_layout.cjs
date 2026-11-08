@@ -1,0 +1,67 @@
+'use strict';
+// Mobile viewport acceptance: nested Animation iframe fills the app and the
+// Gallery/Setup/Frame Editor scroll inside the iframe instead of being clipped.
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ try{
+  for(const viewport of [{width:360,height:640},{width:412,height:850}]){
+   const context=await browser.newContext({viewport,deviceScaleFactor:2,isMobile:true,hasTouch:true});
+   const page=await context.newPage(),errors=[];
+   page.on('pageerror',e=>errors.push(e.message));
+   await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({status:200,
+    contentType:'text/javascript',body:'window.google={accounts:{oauth2:{initTokenClient(){return {requestAccessToken(){}}}}}};'}));
+   try{
+    await page.goto(ROOT+'/mahluk-hidup.html?tab=animation',{waitUntil:'domcontentloaded',timeout:45000});
+    const inner=page.frameLocator('#motion-frame');
+    await inner.locator('#animation-home:not([hidden])').waitFor({timeout:65000});
+    const metrics=await page.evaluate(()=>{
+     const bounds=id=>{const r=document.getElementById(id).getBoundingClientRect();
+      return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom}};
+     return {workspace:bounds('workspace'),view:bounds('animation-view'),
+      pane:bounds('motion-pane'),frame:bounds('motion-frame'),footer:bounds('status')};
+    });
+    assert.ok(metrics.view.height>250,'Animation view collapsed on mobile: '+JSON.stringify(metrics));
+    assert.ok(metrics.pane.height>=metrics.view.height-2,'Animation pane does not fill view: '+JSON.stringify(metrics));
+    assert.ok(metrics.frame.height>=metrics.view.height-3,'Animation iframe clips content: '+JSON.stringify(metrics));
+    assert.ok(metrics.frame.bottom<=metrics.footer.y+2,'Animation iframe overlaps footer');
+    const scroll=await inner.locator('body').evaluate(()=>{
+     const el=document.scrollingElement;
+     return {height:el.scrollHeight,client:el.clientHeight,
+      overflowY:getComputedStyle(document.body).overflowY};
+    });
+    assert.ok(scroll.height>scroll.client+40,
+     'Gallery content not scrollable in constrained mobile iframe: '+JSON.stringify(scroll));
+    await inner.locator('#animation-start-new').hover();
+    await page.mouse.wheel(0,500);
+    await page.waitForTimeout(180);
+    const scrolled=await inner.locator('body').evaluate(()=>document.scrollingElement.scrollTop);
+    assert.ok(scrolled>15,'Swipe/wheel could not scroll Animation Gallery: '+scrolled);
+    await inner.locator('#animation-start-new').click();
+    await inner.locator('#animation-setup:not([hidden])').waitFor();
+    await inner.locator('#setup-name').fill('Mobile Screen Test');
+    await inner.locator('#gender').selectOption('female');
+    await inner.locator('#template').selectOption('sit');
+    await inner.locator('#setup-create').click();
+    await inner.locator('#animation-workspace:not([hidden])').waitFor({timeout:65000});
+    await inner.locator('#stage').waitFor({state:'visible',timeout:65000});
+    const editorHeight=await inner.locator('body').evaluate(()=>document.scrollingElement.scrollHeight);
+    assert.ok(editorHeight>metrics.frame.height+60,'Editor content should scroll on mobile');
+    await inner.locator('#save').scrollIntoViewIfNeeded();
+    assert.equal(await inner.locator('#save').isVisible(),true,'Save Online inaccessible beneath mobile editor');
+    await inner.locator('#animation-editor-back').click();
+    await inner.locator('#animation-home:not([hidden])').waitFor();
+    assert.deepEqual(errors,[],'Browser errors');
+    console.log('PASS mobile Animation '+viewport.width+'×'+viewport.height+
+     ' iframe='+Math.round(metrics.frame.height)+'px scroll='+Math.round(scrolled)+
+     ' Gallery→Setup→Frame Editor→Back');
+   }catch(err){
+    console.error('MOBILE LAYOUT ERROR '+viewport.width+'×'+viewport.height,err);
+    await page.screenshot({path:'/tmp/mahluk-mobile-animation-'+viewport.width+'.png',fullPage:true}).catch(()=>{});
+    throw err;
+   }finally{await context.close()}
+  }
+ }finally{await browser.close()}
+})().catch(e=>{console.error(e);process.exitCode=1});
