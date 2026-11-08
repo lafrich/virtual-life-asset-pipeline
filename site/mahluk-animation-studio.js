@@ -519,8 +519,14 @@ for(const id of ["rotation","px","py","ax","ay"]){
  });
 }
 $("reset-transform").onclick=()=>{pose()[state.part]=freshPose()[state.part];render()};
-$("gender").onchange=()=>{if(!db()[state.id])return;selectSource("base:"+$("gender").value);
- void loadSource().catch(e=>say(e.message,true))};
+$("gender").onchange=()=>{
+ // Preserve old setup automation and imported flows while this legacy
+ // control is hidden behind the new Based Character picker.
+ const source="base:"+$("gender").value;
+ selectSource(source);
+ if(state.screen==="editor"&&db()[state.id])
+  void loadSource().catch(e=>say(e.message,true));
+};
 $("template").onchange=()=>{if(!db()[state.id])return;state.template=$("template").value;state.images.clear();render()};
 $("view").onchange=()=>{stop();state.dir=$("view").value;render()};
 $("ms").onchange=()=>{state.frames[state.frame].ms=Math.max(40,Math.min(800,Number($("ms").value)||140));render()};
