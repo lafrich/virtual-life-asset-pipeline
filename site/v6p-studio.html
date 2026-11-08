@@ -407,7 +407,8 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="./emotion-studio/emotion-library.js?v=emosi-v1-bridge"></script>
 <script src="./emosi-bridge.js?v=preview-stock-20261107"></script>
-<script src="./vlhub-characters-publish.js?v=v6p-preview"></script>
+<script src="./v6p-published-archive.js?v=quota-idb-20261108"></script>
+<script src="./vlhub-characters-publish.js?v=quota-idb-20261108"></script>
 <script src="./v6p-part-catalog.js?v=custom-wear-stock-20261108"></script>
 <script src="./v6p-pixel-source.js?v=v6p-retarget-1"></script>
 <script src="./v6p-part-overrides.js?v=v6p-pixel-20261107"></script>
@@ -695,7 +696,7 @@ async function save(){
   const sprite=V.extractFrame(state.sheet,"idle","se",0).toDataURL("image/png");
   const tooBig=Object.values(clips).some(c=>c.sheet.length>1250000)||sprite.length>1250000;
   if(tooBig){ setStatus("Export exceeded Semesta 1.25MB clip limit",true); return; }
-  const result=window.VLHubCharactersPublish.publish({
+  const result=await window.VLHubCharactersPublish.publishAsync({
     id:state.characterId||state.lastId||undefined,
     name:$("char-name").value||"V6P Preview",
     gender:state.ch.body,
@@ -708,9 +709,18 @@ async function save(){
   });
   if(!result.ok){ setStatus("Save failed: "+result.error,true); return; }
   state.lastId=result.id;
-  if(state.characterId&&window.V6PCharacterStore) window.V6PCharacterStore.update(state.characterId,{name:result.record.name,appearance:state.ch,faceId:state.faceId,status:"saved"});
+  let draftWarning="";
+  if(state.characterId&&window.V6PCharacterStore){
+    try{window.V6PCharacterStore.update(state.characterId,{name:result.record.name,appearance:state.ch,faceId:state.faceId,status:"saved"});}
+    catch(e){
+      if(!window.VLHubCharactersPublish.isQuota(e))throw e;
+      draftWarning=" · draft status unchanged (storage full)";
+    }
+  }
   try{ localStorage.setItem(LAST_KEY,result.id); }catch(_e){}
   setStatus("SAVED "+result.id+" · "+Object.keys(clips).length+" native/anchor animation clips in character database"+
+    (result.stored==="indexeddb"?" · FULL SPRITES: INDEXEDDB; older Semesta clients need compatibility sync":"")+
+    draftWarning+
    (result.unsupportedBySemestaClips?.length?" · "+result.unsupportedBySemestaClips.length+" require separate Semesta runtime support":"")+
    (adapted.warnings.length?" · "+adapted.warnings.join("; "):""));
   syncDbg();

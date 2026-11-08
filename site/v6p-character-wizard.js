@@ -11,9 +11,21 @@ const state={step:"home",mode:"new",category:"body",frame:0,playing:false,timer:
 let previewRevision=0;
 function notice(str,err){const el=$("wizard-notice");el.textContent=String(str||"");el.style.color=err?"#a52d26":"#506780";}
 function result(str,err){const el=$("generate-result");el.textContent=str;el.style.color=err?"#aa312a":"#506780";}
+let archivedRows=[];
 function published(){
+ let local=[];
  try{const data=JSON.parse(localStorage.getItem("mahluk-2-library-v1")||"[]");
- return Array.isArray(data)?data.filter(x=>x&&x.id&&x.v6p):[]}catch{return []}
+  if(Array.isArray(data))local=data.filter(x=>x&&x.id&&x.v6p);
+ }catch{}
+ const merged=new Map(local.map(x=>[x.id,x]));
+ for(const row of archivedRows)merged.set(row.id,row);
+ return [...merged.values()];
+}
+async function refreshArchive(){
+ try{
+  archivedRows=await (root.V6PPublishedArchive?.list?.()||Promise.resolve([]));
+  fillLists();
+ }catch(error){notice("Character archive unavailable: "+error.message,true)}
 }
 function showHomeTab(tab){
  const gallery=tab==="gallery";
@@ -388,6 +400,8 @@ async function restore(){
 }
 arrangeLegacyControls();selectFixPart();bind();
 showHomeTab("start");
+root.addEventListener("mahluk:published-archive",()=>void refreshArchive());
+void refreshArchive();
 root.addEventListener("mahluk:character-ready",()=>void restore().catch(e=>notice("Wizard load: "+e.message,true)));
 if(root.__v6pStudio?.ready)void restore().catch(e=>notice("Wizard load: "+e.message,true));
 })(window);

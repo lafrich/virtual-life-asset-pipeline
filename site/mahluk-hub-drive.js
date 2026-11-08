@@ -117,6 +117,9 @@ function validatePayload(payload){
   if(!item||typeof item.id!=="string"||!/^[a-z0-9_-]{1,64}$/i.test(item.id)||
      typeof item.png!=="string"||!/^data:image\/png;base64,/.test(item.png))throw Error("Invalid emotion database entry");
  }
+ if(payload.archived!==undefined&&(!Array.isArray(payload.archived)||
+  payload.archived.some(x=>!x||!/^mh2_[a-z0-9]+$/.test(x.id)||x.format!=="mahluk-2-character-v1"||typeof x.clips!=="object")))
+  throw Error("Invalid published character archive");
 }
 function utf8(str){return new TextEncoder().encode(str)}
 async function hash(str){
@@ -125,7 +128,8 @@ async function hash(str){
 }
 async function collect(){
  const local=localKeys(),emotions=await snapshotIdb();
- const payload={format:KIND,savedAt:new Date().toISOString(),local,emotions};
+ const archived=await (root.V6PPublishedArchive?.list?.()||Promise.resolve([]));
+ const payload={format:KIND,savedAt:new Date().toISOString(),local,emotions,archived};
  validatePayload(payload);
  const json=JSON.stringify(payload);
  if(utf8(json).byteLength>byteLimit)throw Error("Backup exceeds 25MB. Export clips individually first; nothing uploaded");
@@ -178,6 +182,8 @@ async function restore(){
    localStorage.removeItem(key);
   for(const [key,raw] of Object.entries(payload.local))localStorage.setItem(key,raw);
   await restoreIdb(payload.emotions);
+  if(Array.isArray(payload.archived)&&root.V6PPublishedArchive?.replace)
+   await root.V6PPublishedArchive.replace(payload.archived);
  }catch(error){
   // Restore is all-or-nothing for localStorage; IndexedDB uses one transaction.
   // This rollback is best effort for an already-full browser quota.
@@ -187,6 +193,8 @@ async function restore(){
   for(const key of KEYS){
    if(!(key in current.payload.local)){try{localStorage.removeItem(key)}catch{}}
   }
+  try{if(root.V6PPublishedArchive?.replace)
+   await root.V6PPublishedArchive.replace(current.payload.archived||[])}catch{}
   throw Error("Restore rolled back; recovery JSON was downloaded: "+error.message);
  }
  try{
