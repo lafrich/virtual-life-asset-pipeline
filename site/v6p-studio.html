@@ -986,11 +986,12 @@ window.V6PCharacterHost=Object.freeze({
     manifest.motion.sourceAction,{partOverrides:existing?.parts||base?.parts||{},
      sourceKey:"qa:"+state.characterId+":"+id});
    const index=Math.min(Math.max(0,frame),manifest.frames.length-1);
+   const emosi=await loadOverlay(currentEmosi()); // Existing Emosi.exe output, not reauthored.
    for(const cv of all){
     const ctx=cv.getContext("2d");ctx.imageSmoothingEnabled=false;
     ctx.clearRect(0,0,64,112);
     ctx.drawImage(M.renderPrepared(rig,cv.dataset.qaDir,
-     manifest.motion.tracks[cv.dataset.qaDir][index]),0,0);
+     manifest.motion.tracks[cv.dataset.qaDir][index],{emosi,frameIndex:index}),0,0);
    }
    return;
   }
