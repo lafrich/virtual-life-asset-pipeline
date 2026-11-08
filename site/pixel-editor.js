@@ -1504,7 +1504,9 @@ async function syncEmosiOpen(){
  if($("pixelDirection")) $("pixelDirection").value=state.dir;
 }
 async function backToCaller(){
- const params=new URLSearchParams(location.search),fromAnimation=params.get("from")==="animation";
+ const params=new URLSearchParams(location.search);
+ const fromAnimation=params.get("from")==="animation"||
+  (params.get("source")==="v6p"&&!params.get("character"));
  try{
   if(emosiEditor?.isOpen?.())pullEmosiIntoState();
   if(!state.loading)saveCurrent();
