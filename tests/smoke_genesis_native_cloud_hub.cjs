@@ -68,6 +68,37 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   await again.locator("#gallery button").filter({hasText:"Cloud Native Test"}).waitFor({timeout:35000});
   const file=[...files.values()].find(x=>x.name==="mahluk-animation-legacy-purge-done-v1.json");
   assert.ok(file,"Cloud-side legacy migration marker missing");
+  // Verify fixed-ID overwrite and Puppet/Slice editing with mocked Drive.
+  page.on("dialog",dialog=>dialog.accept());
+  await page.evaluate(()=>window.VLMahlukWorkspace.show("genesis"));
+  const genesis=page.frameLocator("#genesis-frame");
+  await genesis.locator("#stage").waitFor({timeout:65000});
+  await genesis.locator("#joint-x").fill("35");
+  await genesis.locator("#joint-x").press("Tab");
+  await genesis.locator("#mode-slice").click();
+  await genesis.locator("#slice-part").selectOption("arm_l");
+  const b=await genesis.locator("#stage").boundingBox();
+  assert.ok(b,"Genesis slice canvas is missing");
+  await page.mouse.click(b.x+b.width*32/64,b.y+b.height*30/112);
+  await genesis.locator("#save").click();
+  await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
+  let masters=[...files.values()].filter(row=>row.name==="genesis__genesis_male_nude.json");
+  assert.equal(masters.length,1,"Genesis must save to one stable male ID");
+  let rig=JSON.parse(masters[0].content).record;
+  assert.equal(rig.id,"genesis_male_nude");
+  assert.equal(rig.joints.se.head.x,35);
+  await genesis.locator("#mode-puppet").click();
+  await genesis.locator("#joint-x").fill("36");
+  await genesis.locator("#joint-x").press("Tab");
+  await genesis.locator("#save").click();
+  await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
+  masters=[...files.values()].filter(row=>row.name==="genesis__genesis_male_nude.json");
+  assert.equal(masters.length,1,"Repeat Save must overwrite, never create another Genesis Male");
+  rig=JSON.parse(masters[0].content).record;
+  assert.equal(rig.joints.se.head.x,36);
+  await genesis.locator("#gender").selectOption("female");
+  assert.equal(await genesis.locator("#joint-x").inputValue(),"32","Male changes leaked into Female master");
+  console.log("PASS Genesis master rig/slice + cloud overwrite + independent female source");
   // Consume the *same* saved Python source from Character's existing QA dropdown.
   await page.evaluate(()=>window.VLMahlukWorkspace.show("character"));
   const character=page.frameLocator("#character-frame");

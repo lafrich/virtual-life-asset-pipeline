@@ -127,9 +127,9 @@ function saveLocalBackup(){
 async function loadCloud(){
  const b=bridge();if(!b?.isOnline?.())throw Error("Connect Drive in Mahluk toolbar");
  show("Loading two fixed Genesis master IDs from Drive…");
+ if(dirty&&!root.confirm("Reload saved Genesis rig and discard unsaved edits?"))return;
  const rows=await b.listOnline("genesis");
  const count=M.cloudRows(rows);
- if(dirty&&!root.confirm("Reload saved Genesis rig and discard unsaved edits?"))return;
  profile=M.load(gender);dirty=false;jointInput();paint();
  show("Cloud master sync verified · "+count+" profile(s) · "+profile.id);
 }
