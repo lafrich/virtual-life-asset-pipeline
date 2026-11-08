@@ -63,8 +63,10 @@ test('animation editor is genuinely frame by frame with asset anchors',()=>{
  for(const id of ['stage','frame-strip','rotation','ax','ay','add-frame','duplicate','save','template','gender'])
   assert.ok(h.includes('id="'+id+'"'),id);
  assert.match(js,/function bake\(/);assert.match(js,/c\.rotate\(r\)/);
- assert.match(js,/Store\.setLayer\(state\.id,"base\/body"/);
- assert.match(js,/requiredParts:\["base\/body"\]/);
+ assert.doesNotMatch(js,/Store\.setLayer\(state\.id,"base\/body"/);
+  assert.match(js,/Store\.setLayer\(state\.id,"preview\/composite"/);
+ assert.match(js,/requiredParts:\[\]/);
+  assert.match(js,/Contract\.make\(/);
  assert.match(js,/hair:"none"/);
  assert.match(js,/state\.frames\.length>=6/);
 });
