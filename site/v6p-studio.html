@@ -700,6 +700,14 @@ async function save(){
   // Compile published universal stock for the existing character clip readers.
   // These PNGs are derived artifacts only. Motion data and approved idle/walk stay canonical.
   const UC=window.V6PUniversalMotionContract,UM=window.V6PUniversalMotion;
+  // Load the approved motion registry from the same online animation database.
+  // Published character exports must not silently miss stock added in a prior session.
+  const motionHub=window.parent!==window&&window.parent.VLMahlukWorkspace;
+  if(motionHub?.isOnline?.()){
+    const records=await motionHub.listOnline("animation");
+    for(const record of records)if(UC?.isStock(record?.clip?.manifest))
+      window.V6PClipStore.importCloudRecord(record);
+  }
   const approvedMotions=(window.V6PClipStore?.list()||[])
     .filter(row=>UC?.isStock(row.manifest));
   for(const row of approvedMotions){
