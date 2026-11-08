@@ -38,9 +38,10 @@
   function toggle(disabled){busy=disabled;sync.disabled=importButton.disabled=confirm.disabled=disabled}
   async function enter(data){
    if(!data||data.verified!==true)throw Error("Drive load not verified; editor locked");
+   // Hydrate first; do not purge a browser draft when editor initialization fails.
+   if(typeof config.onReady==="function")await config.onReady(data);
    if(typeof api.cleanup==="function")await api.cleanup(data);
    ready=true;view.remove();
-   if(typeof config.onReady==="function")await config.onReady(data);
   }
   sync.onclick=async()=>{
    if(busy)return;toggle(true);message("Connecting to Google Drive…");
