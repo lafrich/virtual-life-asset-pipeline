@@ -12,7 +12,7 @@ function safeId(s){return /^[a-z][a-z0-9_]{1,47}$/.test(s||"")}
 function status(s,err=false){$("status").textContent=s;$("status").classList.toggle("err",err)}
 function load(){
  try{
-  const data=JSON.parse(localStorage.getItem(KEY)||"null");
+  const data=JSON.parse((root.parent?.VLMahlukWorkspace?.draftStorage||localStorage).getItem(KEY)||"null");
   if(data?.format!==FORMAT||!Array.isArray(data.items))return [];
   const rows=data.items.filter(x=>x&&safeId(x.id)).slice(0,150);
   // Retire ONLY unapproved Grok motion bindings; preserve the scene and other animations.
@@ -29,7 +29,8 @@ function load(){
  }catch{return []}
 }
 function persist(){
- localStorage.setItem(KEY,JSON.stringify({format:FORMAT,savedAt:new Date().toISOString(),items:state.rows}));
+ (root.parent?.VLMahlukWorkspace?.draftStorage||localStorage).setItem(KEY,
+  JSON.stringify({format:FORMAT,savedAt:new Date().toISOString(),items:state.rows}));
  try{root.VLHub?.publish("actions",{count:state.rows.length,status:"draft_unapproved"})}catch{}
  root.dispatchEvent(new CustomEvent("mahluk:action-saved",{detail:{count:state.rows.length}}));
 }
@@ -275,19 +276,29 @@ function saveLocal(){
  else state.rows[index]=row;
  state.selected=row.id;persist();return row;
 }
-async function save(withDrive=false){
+async function save(){
  try{
-  stop();const row=saveLocal();let msg="SAVED LOCAL · "+row.name+" · "+row.actors.length+" CHAR";
-  if(withDrive){
-   try{
-    if(!root.parent||root.parent===root||!root.parent.VLMahlukWorkspace?.syncDrive)
-     throw Error("Open from MAHLUK.EXE and connect Drive");
-    const info=await root.parent.VLMahlukWorkspace.syncDrive();
-    msg+=" · DRIVE VERIFIED · "+(info.name||"Mahluk Backup");
-   }catch(error){msg+=" · DRIVE NOT SYNCED: "+error.message}
-  }else msg+=" · Use SAVE & SYNC to back up";
-  home(msg);
- }catch(error){status("SAVE FAILED: "+error.message,true)}
+  stop();const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+  if(!bridge?.isOnline?.())throw Error("Connect Google Drive in MAHLUK toolbar before Save Online");
+  const row=readForm(),receipt=await bridge.saveOnline("action",row.id,row);
+  if(!receipt.verified)throw Error("Drive write not verified");
+  const index=state.rows.findIndex(x=>x.id===row.id);
+  if(index>=0)state.rows[index]=row;else state.rows.unshift(row);
+  state.selected=row.id;persist();
+  home("CLOUD VERIFIED · "+row.name+" · "+row.actors.length+" characters");
+ }catch(error){status("SAVE ONLINE FAILED: "+error.message,true)}
+}
+async function refreshCloud(){
+ const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+ if(!bridge?.isOnline?.())return;
+ try{
+  const rows=await bridge.listOnline("action");
+  const combined=new Map(state.rows.map(x=>[x.id,x]));
+  for(const row of rows)if(row?.id&&safeId(row.id))combined.set(row.id,row);
+  state.rows=[...combined.values()];
+  if(state.screen==="home")drawGallery();
+  $("action-home-note").textContent="ONLINE DATABASE · "+rows.length+" actions loaded";
+ }catch(error){$("action-home-note").textContent="Cloud load failed: "+error.message}
 }
 function selectPhase(p){
  stop();state.phase=p;state.frame=0;
@@ -343,7 +354,7 @@ function wire(){
  for(const id of ["offset-x","offset-y"])$(id).oninput=()=>{const m=current();if(!m)return;
   m.x=Math.max(0,Math.min(480,Math.round(Number($("offset-x").value)||0)));
   m.y=Math.max(0,Math.min(232,Math.round(Number($("offset-y").value)||0)));void render()};
- $("save").onclick=()=>void save(false);$("action-save-sync").onclick=()=>void save(true);
+ $("save").onclick=()=>void save();$("action-save-sync").onclick=()=>void save();
  $("edit-motion").onclick=()=>{
   const m=current();if(!m)return;
   if(root.parent!==root&&root.parent.VLMahlukWorkspace)root.parent.VLMahlukWorkspace.show("animation");
@@ -411,7 +422,10 @@ function wire(){
   state.drag=null;
  });
  document.addEventListener("visibilitychange",()=>{if(document.hidden)stop()});
- home();
+ root.addEventListener("message",e=>{
+  if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected")void refreshCloud();
+ });
+ home();void refreshCloud();
 }
 root.VLMahlukActionEditor=Object.freeze({load,persist,KEY,FORMAT});
 wire();
