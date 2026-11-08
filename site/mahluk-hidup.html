@@ -25,14 +25,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
 #workspace{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:#c4d1dd}
 .view{position:absolute;inset:0;display:none;overflow:hidden}
 .view.active{display:flex;flex-direction:column}
-.frame{display:block;flex:1 1 100%;min-height:0;width:100%;border:0;background:#d5dfeb}
+.frame{display:block;flex:1 1 0;min-height:0;min-width:0;width:100%;height:100%;border:0;background:#d5dfeb}
 #character-pixel-overlay{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;background:#c6d4e7}
 #character-pixel-overlay[hidden]{display:none!important}
 #character-pixel-toolbar{display:flex;align-items:center;gap:12px;padding:6px 10px;background:linear-gradient(90deg,#144687,#5785bf);color:#fff}
 #character-pixel-toolbar button{padding:7px 11px;background:#e9f1fd;color:#1e477a;border-color:#85b2e5}
 #character-pixel-frame{flex:1 1 auto;min-height:0}
 #animation-view{flex-direction:column;position:relative}
-#motion-pane{display:flex;flex-direction:column;width:100%;height:100%;min-width:0}
+#motion-pane{display:flex;flex:1 1 0;flex-direction:column;width:100%;height:auto;min-height:0;min-width:0;overflow:hidden}
+#motion-frame{display:block;flex:1 1 0;width:100%;height:100%;min-width:0;min-height:0;border:0}
 #paint-pane{display:none}
 .pane-header{background:#e6e6df;border-bottom:1px solid #a6abb1;padding:5px 8px;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px}
 .pane-header strong{white-space:nowrap}
@@ -56,7 +57,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
  #animation-view{flex-direction:column}
  .mobile-panel-tabs{display:none}
  .mobile-panel-tabs button[aria-pressed=true]{background:#c2d8fa;font-weight:bold}
- #motion-pane,#paint-pane{width:100%;max-width:none;min-width:0;flex:1 1 auto;min-height:0;border:0}
+ #motion-pane{width:100%;max-width:none;min-width:0;min-height:0;height:auto;flex:1 1 0;border:0}
+ #paint-pane{width:100%;max-width:none;min-width:0;min-height:0;border:0}
+ #motion-frame{flex:1 1 0;height:100%;min-height:0}
  #motion-pane[hidden],#paint-pane[hidden]{display:none!important}
  .pane-header{display:none}
 }
