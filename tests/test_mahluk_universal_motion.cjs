@@ -7,6 +7,15 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const C=require('../site/v6p-universal-motion-contract.js');
 function motion(n=3){const frames=Array.from({length:n},(_,i)=>({key:'f'+i,ms:140}));
  return {frames,value:C.make({sourceAction:'idle',frames,tracks:C.tracks(n)})};}
+test('new Idle motion anchors derive from measured Genesis four-view shoulders',()=>{
+ assert.deepEqual([C.pose('se').arm_l.ax,C.pose('se').arm_l.ay],[25,61]);
+ assert.deepEqual([C.pose('se').arm_r.ax,C.pose('se').arm_r.ay],[39,61]);
+ assert.deepEqual([C.pose('sw').arm_r.ax,C.pose('sw').arm_r.ay],[38,61]);
+ assert.deepEqual([C.pose('ne').arm_l.ax,C.pose('ne').arm_l.ay],[25,65]);
+ assert.deepEqual([C.pose('nw').arm_r.ax,C.pose('nw').arm_r.ay],[38,65]);
+ assert.equal(C.tracks(2).nw[1].arm_r.ay,65);
+ assert.match(read('site/mahluk-animation-studio.js'),/Contract\.pose\(dir\)/);
+});
 test('universal movement is a standalone four-direction pose, never character clothing',()=>{
  const {frames,value}=motion();
  assert.equal(C.validate(value,frames),true);
