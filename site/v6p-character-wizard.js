@@ -299,9 +299,9 @@ async function preview(){
  $("qa-frame").max=String(n-1);$("qa-frame").value=String(state.frame);
  $("qa-frame-label").textContent="FRAME "+(state.frame+1)+" / "+n;
  if(action.startsWith("python:"))
-  pythonStatus("NATIVE PYTHON DIAGNOSTIC · "+(H.get()?.ch?.body==="female"?"FEMALE":"MALE")+
-   " baseline. Custom Wear and Emosi from the selected character are not applied yet.");
- else pythonStatus("Native animations use this Genesis character. Python imported motions are diagnostic only.");
+  pythonStatus("GENESIS CHARACTER PYTHON PREVIEW · "+(H.get()?.ch?.body==="female"?"FEMALE":"MALE")+
+   " · this character's Custom Wear and Emosi are included; master rig drives the pose.");
+ else pythonStatus("Native animations use this Genesis character. Python animations are preview-only until gameplay install is verified.");
  try{await H.qa(action,state.frame)}catch(error){
   if(stamp===previewRevision){
    result("Preview unavailable: "+error.message,true);
@@ -407,6 +407,14 @@ function selectFixPart(){
   };
  }
 }
+async function refreshGenesisMasterFromCloud(){
+ const b=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+ if(!b?.isOnline?.())return;
+ try{
+  const count=root.GenesisMasterRig?.cloudRows(await b.listOnline("genesis"))||0;
+  if(count&&$("qa-animation")?.value.startsWith("python:")&&state.step==="preview")void preview();
+ }catch(error){notice("Genesis rig cloud sync: "+error.message,true)}
+}
 async function loadPythonFromDatabase(selectFirst=true){
  const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
  if(!bridge?.isOnline?.())throw Error("Connect Google Drive from MAHLUK toolbar first");
@@ -420,7 +428,7 @@ async function loadPythonFromDatabase(selectFirst=true){
   stopPreview();state.frame=0;await preview();
  }
  pythonStatus(accepted.length?
-  accepted.length+" Python source(s) loaded. Choose PYTHON / animation in the dropdown. Native diagnostic only; Custom Wear not yet applied.":
+  accepted.length+" Python source(s) loaded. Choose PYTHON / animation in the dropdown. Selected Character Custom Wear and Emosi included in preview.":
   "No saved native Python source in your Drive database.");
  return accepted;
 }
@@ -512,6 +520,7 @@ root.addEventListener("message",e=>{
       root.V6PClipStore.importCloudRecord(row);
      NativePython?.setCloud(saved);
      motionChoices();
+     void refreshGenesisMasterFromCloud();
     }catch(error){notice("Online motions: "+error.message,true)}
    })();
   }
@@ -532,8 +541,18 @@ void (async()=>{
    root.V6PClipStore.importCloudRecord(row);
   NativePython?.setCloud(saved);
   motionChoices();
+  void refreshGenesisMasterFromCloud();
  }catch(error){notice("Online motions: "+error.message,true)}
 })();
+root.addEventListener("message",e=>{
+ if(e.origin===location.origin&&e.data?.type==="genesis:master-overwritten"){
+  void refreshGenesisMasterFromCloud();
+ }
+});
+root.addEventListener("storage",e=>{
+ if(e.key===root.GenesisMasterRig?.KEY&&$("qa-animation")?.value.startsWith("python:"))
+  void preview();
+});
 root.addEventListener("mahluk:character-ready",()=>void restore().catch(e=>notice("Wizard load: "+e.message,true)));
 if(root.__v6pStudio?.ready)void restore().catch(e=>notice("Wizard load: "+e.message,true));
 })(window);

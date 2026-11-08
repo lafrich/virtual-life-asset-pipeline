@@ -1,25 +1,14 @@
-/* One shared Python diagnostic preview bridge for Character's existing
- * 4-direction QA. Uploaded Python is only parsed as declarative JSON,
- * never executed. Source animations are not installed to gameplay.
- *
- * IMPORTANT: Python live_v6b currently renders approved Ichsan/Noor diagnostic
- * configurations, not arbitrary saved Genesis garments/Custom Wear. The UI
- * must accurately identify this native-pose-only limitation.
- */
+/* Character Genesis Python pose preview. Uses the currently selected native
+ * Character source sheet (including Custom Wear + Emosi), not sample people. */
 (function(root){"use strict";
 const Contract=root.GenesisNativePythonContract;
 if(!Contract)return;
 const dirs=Contract.DIRS;
 const records=new Map();
 const cloudIds=new Set();
-const cache=new Map();
-const waiting=new Map();
-let worker=null,seq=0;
 function register(data,origin="manual"){
  const valid=Contract.validate(data);
  records.set(valid.id,{data:valid,origin});
- // Re-importing a file under the same ID invalidates previously rendered pixels.
- for(const key of cache.keys())if(key.startsWith(valid.id+"|"))cache.delete(key);
  return valid;
 }
 function importFile(source){
@@ -55,45 +44,30 @@ function list(){
  return [...records.values()].map(({data,origin})=>({id:data.id,name:data.name,template:data.template,frames:data.frames.length,origin}));
 }
 function get(id){return records.get(id)?.data||null}
-function beginWorker(){
- if(worker)return worker;
- worker=new Worker("./genesis-native-worker.js?v=character-qa-batch-v1");
- worker.onmessage=e=>{
-  const m=e.data||{},row=waiting.get(m.id);
-  if(!row)return;
-  if(m.type==="renderBatch"&&m.images){
-   waiting.delete(m.id);row.resolve(m.images);
-  }else if(m.type==="error"){
-   waiting.delete(m.id);row.reject(Error("Python native renderer: "+m.message));
-  }
- };
- worker.onerror=e=>{
-  const error=Error("Python worker unavailable: "+(e.message||"startup error"));
-  for(const row of waiting.values())row.reject(error);
-  waiting.clear();worker.terminate();worker=null;
- };
- return worker;
-}
-async function render(id,gender,index){
+/* A Python source is declarative geometry. Render it onto the *actual*
+ * selected Character atlas and approved Genesis master rig. No hardcoded
+ * sample configurations, no sample Python worker, and no source overwrite.
+ * The Character compositor already stamps Emosi last into the native sheet;
+ * the puppet renderer draws the head/face slice last again.
+ */
+async function render(id,gender,index,{sheet,profile}={}){
  const data=get(id);
  if(!data)throw Error("Python animation not imported in Character");
- if(gender!=="male"&&gender!=="female")throw Error("Select a Genesis Male or Female base");
+ if(!["male","female"].includes(gender))throw Error("Choose Genesis Male or Female");
  if(!Number.isInteger(index)||index<0||index>=data.frames.length)throw Error("Frame out of range");
- const signature=JSON.stringify(data);
- const key=data.id+"|"+gender+"|"+index+"|"+signature.length+"|"+signature.slice(-40);
- if(cache.has(key))return cache.get(key);
- const idNum=++seq;
- const promise=new Promise((resolve,reject)=>{
-  waiting.set(idNum,{resolve,reject});
-  beginWorker().postMessage({type:"renderBatch",id:idNum,request:{data,gender,frame:index}});
- });
- try{
-  const images=await promise;
-  if(!dirs.every(dir=>typeof images?.[dir]==="string"&&images[dir].startsWith("data:image/png;base64,")))
-   throw Error("Native Python preview is missing one of four directions");
-  cache.set(key,images);
-  return images;
- }catch(e){cache.delete(key);throw e}
+ if(!sheet)throw Error("Selected Genesis character's Native/Custom Wear source sheet is unavailable");
+ const master=root.GenesisMasterRig,puppet=root.GenesisPuppetRenderer;
+ if(!master||!puppet)throw Error("Genesis master renderer not loaded");
+ const rig=profile?master.validate(profile):master.load(gender);
+ const images={};
+ for(const dir of dirs){
+  const frame=puppet.render({
+   sheet,template:data.template,direction:dir,frame:index,
+   pose:data.poses[dir][index],profile:rig
+  });
+  images[dir]=frame.toDataURL("image/png");
+ }
+ return images;
 }
 async function draw(images,canvases,active){
  const bitmaps=await Promise.all(dirs.map(dir=>new Promise((resolve,reject)=>{

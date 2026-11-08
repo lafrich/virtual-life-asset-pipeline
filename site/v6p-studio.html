@@ -352,7 +352,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
      <button type="button" id="qa-from-database">☁ FROM DATABASE</button>
      <input id="qa-python-file" type="file" accept=".py,text/x-python" hidden>
     </div>
-    <p class="note" id="qa-python-status" role="status">Python preview uses native V6B diagnostic Male/Female characters. Custom Wear and Emosi are not applied to Python poses yet.</p>
+    <p class="note" id="qa-python-status" role="status">Python animation preview uses this Genesis character and its Custom Wear and Emosi. The same Genesis master rig drives the pose; no character source is overwritten.</p>
     <div class="row">
       <button type="button" id="qa-prev">◀ FRAME</button>
       <input type="range" id="qa-frame" min="0" max="0" value="0" aria-label="Animation frame" style="flex:3;min-width:90px">
@@ -366,7 +366,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
      <figure><canvas width="64" height="112" data-qa-dir="ne"></canvas><figcaption>NE · BACK</figcaption></figure>
      <figure><canvas width="64" height="112" data-qa-dir="nw"></canvas><figcaption>NW · BACK</figcaption></figure>
     </div>
-    <p class="note">Click an angle to correct an original native animation frame. Imported Python preview is diagnostic only and cannot overwrite character or Custom Wear.</p>
+    <p class="note">Click an angle to correct an original native animation frame. Imported Python poses preview on this character, including Custom Wear and Emosi. They cannot overwrite the source character or gameplay.</p>
     <div id="status">Loading compositor…</div>
     <p id="drive-status" class="note">Drive: belum disimpan.</p>
   </section>
@@ -432,7 +432,9 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
 <script src="./v6p-universal-motion-contract.js?v=idle-pivot-v2"></script>
 <script src="./v6p-universal-motion.js?v=idle-silhouette-v2"></script>
 <script src="./genesis-native-python-contract.js?v=character-python-qa-v1"></script>
-<script src="./genesis-character-python-preview.js?v=character-python-qa-v1"></script>
+<script src="./genesis-master-rig.js?v=genesis-character-v1"></script>
+<script src="./genesis-puppet-renderer.js?v=genesis-character-v1"></script>
+<script src="./genesis-character-python-preview.js?v=genesis-character-v1"></script>
 <script>
 (function(){
 "use strict";
@@ -980,8 +982,11 @@ window.V6PCharacterHost=Object.freeze({
    if(!data)throw Error("Python animation source not imported");
    const gender=state.ch.body==="female"?"female":"male";
    const index=Math.max(0,Math.min(data.frames.length-1,frame));
-   const images=await engine.render(id,gender,index);
-   // Native diagnostic pixels only. Never overwrite Genesis character sheets.
+   const master=window.GenesisMasterRig;
+   const images=await engine.render(id,gender,index,{
+    sheet:state.sheet,profile:master?.load(gender)
+   });
+   // Uses selected Character physical layers plus master rig; preview never writes to them.
    await engine.draw(images,all,()=> $("qa-animation").value===action&&Number($("qa-frame").value)===index);
    return;
   }
@@ -1040,6 +1045,6 @@ window.V6PCharacterHost=Object.freeze({
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
-<script src="./v6p-character-wizard.js?v=character-python-qa-v1"></script>
+<script src="./v6p-character-wizard.js?v=genesis-character-master-v1"></script>
 </body>
 </html>
