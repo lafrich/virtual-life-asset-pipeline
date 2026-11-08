@@ -8,6 +8,7 @@ on:
       - "site/mahluk-animation-native.*"
       - "site/mahluk-hub.js"
       - "tests/test_genesis_native_*"
+      - "tests/smoke_genesis_native*.cjs"
       - "chars-iso/v6b/tools/live_v6b.py"
       - ".github/workflows/genesis-native-animation-qa.yml"
   workflow_dispatch:
