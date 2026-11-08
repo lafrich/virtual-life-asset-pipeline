@@ -93,5 +93,45 @@ function publish(input,env){
   note:"Semesta currently consumes idle|walk|talk|sit|lie|sleep|custom clip keys and requires data-URL sheets."
  };
 }
-return Object.freeze({V1_KEY,V2_KEY,CLIP_CONSUMED,v2Record,v1Record,publish,unsupportedClips});
+/* Graceful quota path: the complete character stays in IndexedDB.
+ * Existing full published records are never compacted or deleted. The
+ * lightweight localStorage entry is for legacy gallery discovery only.
+ * Semesta requires a separate indexed-clip runtime for newly archived clips. */
+function isQuota(error){
+ return error?.name==="QuotaExceededError"||
+  /quota.*exceed|exceed.*quota|storage.*full/i.test(String(error?.message||error||""));
+}
+async function publishAsync(input,env){
+ const store=(env&&env.localStorage)||(root&&root.localStorage);
+ if(!store)return {ok:false,error:"localStorage unavailable"};
+ try{return publish(input,env)}
+ catch(error){
+  if(!isQuota(error))throw error;
+  const archive=(env&&env.archive)||(root&&root.V6PPublishedArchive);
+  if(!archive?.put)return {ok:false,error:"Browser storage full and IndexedDB archive unavailable. Keep the tab open and back up your draft."};
+  const record=v2Record(input),v1=v1Record(record);
+  // If the full V2 write succeeded but V1 legacy metadata hit the quota,
+  // the original complete V2 record is already durable. Do not downgrade it.
+  const existing=read(store,V2_KEY,[]).find(x=>x.id===record.id);
+  if(existing&&Object.values(existing.clips||{}).some(c=>typeof c.sheet==="string"&&c.sheet.startsWith("data:image/"))){
+   return {ok:true,id:record.id,v1Id:v1.id,record,stored:"localStorage",warning:"Legacy V1 index could not be updated; complete V2 character is saved."};
+  }
+  await archive.put(record); // Commit lossless source FIRST.
+  let indexed=false,legacy=false;
+  try{
+   const rows=read(store,V2_KEY,[]).filter(x=>x&&x.id!==record.id);
+   rows.push(archive.index(record));
+   store.setItem(V2_KEY,JSON.stringify(rows));indexed=true;
+  }catch(e){if(!isQuota(e))throw e}
+  try{
+   const rows=read(store,V1_KEY,[]).filter(x=>x&&x.id!==v1.id);
+   rows.push(v1);store.setItem(V1_KEY,JSON.stringify(rows));legacy=true;
+  }catch(e){if(!isQuota(e))throw e}
+  try{root?.dispatchEvent?.(new CustomEvent("mahluk:published-archive",{detail:{id:record.id}}))}catch{}
+  return {ok:true,id:record.id,v1Id:v1.id,record,stored:"indexeddb",
+    indexed,legacy,unsupportedBySemestaClips:unsupportedClips(record),
+    warning:"Full sprite clips saved to browser IndexedDB. Older Semesta readers may not play archived clips until synchronized through the updated character bridge."};
+ }
+}
+return Object.freeze({V1_KEY,V2_KEY,CLIP_CONSUMED,v2Record,v1Record,publish,publishAsync,unsupportedClips,isQuota});
 });
