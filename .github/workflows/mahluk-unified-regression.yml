@@ -9,10 +9,12 @@ on:
       - feature/mahluk-character-wizard-navigation-20261107
       - fix/mahluk-pixel-sprite-view-switch-20261108
       - fix/character-back-layers-and-readonly-gallery-20261108
+      - feature/nondestructive-cloud-entry-20261108
       - fix/mahluk-nude-preview-stale-frames-20261108
     paths:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
+      - "site/cloud-first-*.js"
       - "site/v6p-character-*.js"
       - "site/v6p-pixel-source.js"
       - "site/pixel-editor.js"
@@ -35,6 +37,7 @@ on:
       - "tests/smoke_mahluk_mobile_animation_layout.cjs"
       - "tests/smoke_mahluk_native_stock_gallery.cjs"
       - "tests/smoke_mahluk_drive_backup_restore.cjs"
+      - "tests/smoke_mahluk_cloud_startup.cjs"
       - "tests/smoke_mahluk_character_quota.cjs"
       - "tests/test_mahluk_stock_gallery.cjs"
       - ".github/workflows/mahluk-unified-regression.yml"
@@ -100,6 +103,7 @@ jobs:
           mkdir -p /tmp/character-wizard-root
           ln -s "$PWD/site" /tmp/character-wizard-root/virtual-life-asset-pipeline
           python3 -m http.server 4173 --bind 127.0.0.1 -d /tmp/character-wizard-root >/tmp/character-wizard-server.log 2>&1 &
+          node tests/smoke_mahluk_cloud_startup.cjs
           node tests/smoke_mahluk_drive_backup_restore.cjs
           node tests/smoke_mahluk_character_quota.cjs
           node tests/smoke_mahluk_mobile_animation_layout.cjs

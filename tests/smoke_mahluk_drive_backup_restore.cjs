@@ -37,7 +37,7 @@ const digest=s=>crypto.createHash('sha256').update(s).digest('hex');
   return json({error:{message:'Unexpected mocked endpoint'}},400);
  });
  try{
-  await page.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/mahluk-hidup.html?tab=action',{waitUntil:'domcontentloaded',timeout:45000});
+  await page.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/mahluk-hidup.html?tab=action&legacyCloud=1',{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(()=>!!window.google?.accounts?.oauth2&&!!window.VLMahlukHubDrive);
   const dummy={
    'vl-v6p-part-overrides-v1':{customWear:'four-directions'},

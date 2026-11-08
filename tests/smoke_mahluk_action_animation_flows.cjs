@@ -47,7 +47,7 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   return f?JSON.parse(f.content)?.record:null;
  }
  try{
-  await page.goto(root+'/mahluk-hidup.html?tab=action',{waitUntil:'domcontentloaded',timeout:45000});
+  await page.goto(root+'/mahluk-hidup.html?tab=action&legacyCloud=1',{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(()=>!!window.VLMahlukHubDrive&&!!window.google?.accounts?.oauth2);
   await page.locator('#drive-connect').click();
   await page.locator('#drive-connect').getByText('CONNECTED').waitFor({timeout:15000});

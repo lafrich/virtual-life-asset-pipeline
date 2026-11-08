@@ -78,7 +78,7 @@ async function run(){
   console.log('[ok] MODIFY EXISTING -> CUSTOMIZE -> BACK HOME');
   const app=await browser.newPage({viewport:{width:1280,height:900}});
   try{
-   await app.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/mahluk-hidup.html?tab=character',
+   await app.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/mahluk-hidup.html?tab=character&legacyCloud=1',
     {waitUntil:'domcontentloaded',timeout:45000});
    const character=app.frameLocator('#character-frame');
    await character.locator('body.wizard-ready').waitFor({timeout:65000});
