@@ -1,0 +1,49 @@
+{
+  "title": "Yoga Happy Baby Rocking",
+  "source": "Mahluk native V6P Happy Baby keyed part sheets",
+  "stage": "VISUAL REVIEW ONLY",
+  "reference": "user GIF: 508x508, six frames, 150ms each",
+  "native": [
+    64,
+    112
+  ],
+  "pivot": [
+    32,
+    100
+  ],
+  "directions": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "genders": [
+    "male",
+    "female"
+  ],
+  "frame_source_indices": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1
+  ],
+  "offset_x": [
+    0,
+    0,
+    1,
+    1,
+    0,
+    0
+  ],
+  "offset_y": [
+    0,
+    0,
+    -2,
+    -4,
+    -2,
+    0
+  ],
+  "limitations": "Motion recipe from GIF, first pass only. Clothing is native nude-source/blank face, not custom-drawn Genesis wardrobe; no per-limb foot grip refinement. Nothing installed in Animation Stock."
+}
