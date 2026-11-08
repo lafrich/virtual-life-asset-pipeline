@@ -68,15 +68,30 @@ async function prepare(rawAppearance,sourceAction="idle",opts={}){
     throw Error("Missing Genesis physical layer "+name+"; do not replace with baked composite");
   }
   const bodyName="base/body"+(ch.body==="female"?"_f":"");
+  if(!images[bodyName])throw Error("Missing canonical Genesis body "+bodyName);
   const directions={};
   for(const dir of C6.DIRS){
-   const body=images[bodyName]?imageFrame(images[bodyName],sourceAction,dir):null;
-   if(!body)throw Error("Missing canonical Genesis body "+bodyName);
-   const geometry=bounds(body.data);
-   const entries=[];
+   const originals=[];
+   const silhouette=new Uint8ClampedArray(FW*FH*4);
+   // On Genesis the body PNG is deliberately sparse: it has only exposed skin.
+   // Deriving anatomy from its alpha alone puts the hip at y≈49 and makes back
+   // arms vanish. Use the real *visible Idle F0* envelope of all physical
+   // layers, then split every layer with that same calibrated six-part mask.
+   // This only reads source pixels; original Idle/Walk art is never written.
    for(const name of layers){
     const im=images[name];if(!im)continue;
-    let raw=imageFrame(im,sourceAction,dir);
+    const raw=imageFrame(im,sourceAction,dir);
+    originals.push({name,raw});
+    const bytes=raw.data;
+    for(let i=3;i<bytes.length;i+=4)
+     if(bytes[i]>30)silhouette[i]=255;
+   }
+   if(!silhouette.some((alpha,i)=>i%4===3&&alpha))
+    throw Error("Empty Genesis source silhouette "+ch.body+" "+sourceAction+" "+dir);
+   const geometry=bounds(silhouette);
+   const entries=[];
+   for(const {name,raw:original} of originals){
+    let raw=original;
     // Native sheets contain palette keys. Custom Wear is authored in exact RGB.
     if(!/^(?:top|pants|shoes)\/custom(?:_back)?(?:_f)?$/.test(name))raw=V6.keysToDisplay(raw,ch);
     entries.push({name,parts:segment(raw,geometry)});
