@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../">
+<title>V6B · Genesis Motion Staging</title>
+<style>
+:root{font:12px Tahoma,Arial,sans-serif;background:#a8bddc;color:#1e3858}
+*{box-sizing:border-box}body{margin:0;padding:12px}.shell{max-width:1240px;margin:auto;background:#e7eef9;border:2px ridge white;box-shadow:0 8px 22px #37517155}
+header{padding:11px 14px;background:linear-gradient(#3e82ce,#18539e);color:white;display:flex;gap:16px;align-items:center;justify-content:space-between}
+header strong{font-size:16px}header a{color:white}.intro{padding:10px 14px;background:#f3f7ff;border-bottom:1px solid #95acce}
+.layout{display:grid;grid-template-columns:minmax(240px,300px) minmax(270px,1fr) minmax(220px,255px);gap:10px;padding:10px}
+.panel{padding:11px;background:white;border:1px solid #a2b7d5;min-width:0}
+h2{font-size:12px;color:#164f96;border-bottom:1px solid #d3e1f0;padding-bottom:7px;margin:0 0 12px}
+label{display:block;margin:10px 0;font-size:11px;font-weight:bold}input,select,button{font:inherit}
+input:not([type=checkbox]):not([type=range]):not([type=file]),select{width:100%;margin-top:4px;padding:8px;border:1px solid #8b9cb5;background:#fefefe}
+input[type=range]{width:100%}button{padding:8px 11px;margin:4px 3px 4px 0;background:linear-gradient(#fff,#d6e5f7);border:1px solid #849cbd;color:#184b84;font-weight:bold;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}
+.primary{background:linear-gradient(#5b99df,#195fbb);color:white}
+.help{font-size:11px;color:#55708d;line-height:1.55}
+.ref{max-width:100%;max-height:260px;display:block;margin:9px auto;object-fit:contain}
+.refbox{background:#e8edf4;border:1px dashed #9daec2;min-height:90px}
+canvas{display:block;image-rendering:pixelated;max-width:100%;aspect-ratio:64/112;width:min(360px,100%);height:auto;margin:9px auto;border:2px solid #6b87a7;background:repeating-conic-gradient(#e1e9f3 0 25%,#aebfd1 0 50%) 0 0/20px 20px;touch-action:none}
+.controls,.directions,.timeline{display:flex;gap:4px;flex-wrap:wrap}.controls button,.directions button,.timeline button{flex:1;min-width:45px}.selected{background:#a9d3ff!important;border-color:#145ba4!important}
+.fieldgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#status{padding:10px;border:1px solid #a2b8d4;background:#eaf2ff;line-height:1.5;margin:10px}.notice{background:#fff9e4;border-left:3px solid #cf9f38;padding:8px}
+footer{padding:9px 13px;background:#f0f5fc;border-top:1px solid #c0d0e1}
+@media(max-width:1000px){.layout{grid-template-columns:1fr 1fr}.layout>.panel:last-child{grid-column:1/-1}}
+@media(max-width:640px){body{padding:0}.layout{grid-template-columns:1fr}.layout>.panel:last-child{grid-column:auto}}
+</style></head>
+<body><div class="shell">
+<header><strong>▦ V6B GENERATOR · GENESIS MOTION</strong><a href="v6b-asset-generator/">← Asset Generator</a></header>
+<div class="intro">GIF sebagai <b>referensi gerak</b> → animasikan base Genesis Mahluk Hidup → ekspor <b>draft</b> untuk review Animation Stock. Tidak mengubah stock yang sudah approved.</div>
+<div class="layout">
+<section class="panel">
+<h2>01 · REFERENCE & GENESIS</h2>
+<label>Reference GIF<input id="gif" type="file" accept="image/gif"></label>
+<div class="refbox"><img id="ref" class="ref" alt="Preview GIF referensi" hidden><p id="empty-ref" class="help">GIF belum dipilih. GIF tidak pernah otomatis menjadi sprite atau dikirim ke server.</p></div>
+<label>Genesis template<select id="gender"><option value="male">Genesis Male Nude</option><option value="female">Genesis Female Nude</option></select></label>
+<label>Nama animasi<input id="name" value="New Genesis Motion" maxlength="80"></label>
+<label>Starting pose<select id="template"><option value="idle">Standing Idle</option><option value="sit">Sitting Idle</option><option value="lie">Lie Down</option><option value="sleep">Sleep</option></select></label>
+<div class="fieldgrid"><label>Jumlah frame (1–6)<input id="frame-count" type="number" value="4" min="1" max="6"></label><label>Durasi/frame (40–800ms)<input id="duration" type="number" value="140" min="40" max="800"></label></div>
+<label><input id="loop" type="checkbox" checked> Loop</label>
+<button id="initialize" class="primary">INITIALIZE GENESIS</button>
+<p class="help">Sumber: native V6P compositor Mahluk Hidup, base polos dan tanpa wajah. Bukan Male/Female Base V6P lama sebagai pilihan baru.</p>
+</section>
+<section class="panel">
+<h2>02 · FOUR-DIRECTION MOTION</h2>
+<div class="directions" id="dirs"></div>
+<canvas id="stage" width="64" height="112" aria-label="Genesis sprite pose preview"></canvas>
+<div class="timeline" id="frames"></div>
+<div class="controls"><button id="play">▶ PLAY</button><button id="prev">◀ FRAME</button><button id="next">FRAME ▶</button><button id="duplicate">COPY PREVIOUS</button></div>
+<p class="help">Drag body part di canvas untuk mengatur posisinya. Pilih tiap arah dan frame; semua gerak berbasis native Genesis.</p>
+</section>
+<section class="panel">
+<h2>03 · POSE / EXPORT</h2>
+<label>Body part<select id="part"><option value="head">Head</option><option value="torso">Torso</option><option value="arm_l">Arm L</option><option value="arm_r">Arm R</option><option value="leg_l">Leg L</option><option value="leg_r">Leg R</option></select></label>
+<div class="fieldgrid"><label>Offset X<input id="x" type="number"></label><label>Offset Y<input id="y" type="number"></label><label>Angle °<input id="angle" type="number"></label><label>Frame ms<input id="ms" type="number" min="40" max="800"></label></div>
+<button id="reset">RESET PART</button>
+<button id="export" class="primary" disabled>EXPORT STOCK DRAFT JSON</button>
+<button id="export-png" disabled>EXPORT PNG ATLAS</button>
+<p class="notice help">DRAFT / BELUM TERPASANG. File mengikuti manifest dan ukuran atlas Mahluk, tetapi harus diperiksa dan dipublikasikan sebagai stock secara terpisah. Tidak ada auto-convert GIF ke seluruh sudut.</p>
+<h2>04 · SOURCE / SYNC</h2>
+<p class="help">Semua edit berlangsung di memori sesi. Simpan draft via download; tidak ada localStorage atau IndexedDB. Google Drive dan publikasi GitHub tidak dilakukan diam-diam.</p>
+<a href="mahluk-hidup.html?tab=animation">Buka Mahluk Hidup → Animation</a>
+</section>
+</div><div id="status" role="status">Choose Genesis base and initialize. GIF reference is optional.</div>
+<footer>64×112 px · pivot (32,100) · SE / SW / NE / NW · 6-column activity sheet · REVIEW ONLY</footer>
+</div>
+<script src="v6p-part-catalog.js"></script>
+<script src="v6p-compositor.js"></script>
+<script src="v6b-asset-generator/genesis-motion-contract.js"></script>
+<script src="v6b-asset-generator/genesis-motion.js"></script>
+</body></html>
