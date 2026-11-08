@@ -90,10 +90,12 @@ function refreshActors(){
  for(const name of ["actor","choose-actor"]){
   const el=$(name),value=el.value;el.replaceChildren();
   const add=(id,label)=>{const option=document.createElement("option");option.value=id;option.textContent=label;el.append(option)};
-  add("base:male","MALE BASE · NO HAIR");add("base:female","FEMALE BASE · NO HAIR");
-  const seen=new Set(["base:male","base:female"]);
+  // Action Editor consumes CREATED actors, never stock base mannequins.
+  // Create one from either approved Genesis base in Character first.
+  const seen=new Set();
   for(const row of root.V6PCharacterStore?.list()||[])if(!seen.has(row.id)){add(row.id,row.name+" · DRAFT");seen.add(row.id)}
   for(const row of realCharacters())if(!seen.has(row.id)){add(row.id,row.name+" · SAVED");seen.add(row.id)}
+  if(!seen.size)add("","Create Genesis character in Character tab first");
   if([...el.options].some(x=>x.value===value))el.value=value;
  }
 }
