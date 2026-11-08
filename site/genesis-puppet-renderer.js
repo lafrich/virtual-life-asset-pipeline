@@ -4,7 +4,7 @@
  * Each edited mask selects pixels in the 64x112 frame; no source pixels or
  * Character/Custom Wear/Emosi data are written by this renderer.
  */
-(function(root,factory){"use strict";const api=factory(root);if(typeof module==="object"&&module.exports)module.exports=api;if(root)root.GenesisPuppetRenderer=api;})(typeof window!=="undefined"?window:null,function(root){
+(function(root,factory){"use strict";const api=factory(root);if(typeof module==="object"&&module.exports)module.exports=api;if(root)root.GenesisPuppetRenderer=api;})(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){
  "use strict";
  const Master=()=>root?.GenesisMasterRig,Python=()=>root?.GenesisNativePythonContract,V=()=>root?.V6PCompositor;
  const LINKS=Object.freeze({
