@@ -412,7 +412,7 @@ async function loadPythonFromDatabase(selectFirst=true){
  if(!bridge?.isOnline?.())throw Error("Connect Google Drive from MAHLUK toolbar first");
  pythonStatus("Loading Python animations from Drive…");
  const previous=$("qa-animation").value;
- const rows=await bridge.listOnline("animation"),accepted=NativePython?.setCloud(rows)||[];
+ const rows=await bridge.listOnline("animation"),accepted=NativePython?.setCloud(rows,{preferCloud:true})||[];
  motionChoices();
  const chosen=accepted.find(r=>"python:"+r.id===previous)||accepted[0];
  if(selectFirst&&chosen){
