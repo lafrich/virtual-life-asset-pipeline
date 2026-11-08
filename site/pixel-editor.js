@@ -185,6 +185,7 @@ function queueMasterSync(){
  .finally(()=>{state.syncing=false;});
 }
 function modeUI(){
+ if($("wear-recolor-tools"))$("wear-recolor-tools").hidden=!(state.masterMode&&state.characterId&&exactWear());
  if($("clear-character-correction"))$("clear-character-correction").hidden=!(state.characterId&&state.v6pPart&&!state.masterMode&&!state.project&&!state.actClip);
  const isMaster=(state.mode==="master"&&state.source!=="v6p")||state.masterMode;
  $("action").disabled=isMaster;$("frame").disabled=isMaster;
@@ -1517,6 +1518,36 @@ async function backToCaller(){
  const destination=fromAnimation?"./mahluk-animation-studio.html":"./v6p-studio.html";
  location.href=fromAnimation?destination+"?motion="+encodeURIComponent(params.get("motion")||""):destination;
 }
+async function recolorCustomWear(){
+ if(!state.characterId||!exactWear()||!state.masterMode||state.action!=="idle"||state.frame!==0)
+  return status("RECOLOR requires Character Custom Wear master: IDLE F0.",true);
+ const S=window.V6PPixelSource;
+ if(!S||!state.v6pSheet)return status("Custom Wear atlas missing",true);
+ const from=$("wear-recolor-from").value.toLowerCase(),to=$("wear-recolor-to").value.toLowerCase();
+ if(from===to)return status("Choose different FROM and TO colors");
+ const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+ const old=rgb(from),next=rgb(to);
+ pullEmosiIntoState();
+ let count=0,views=0;
+ for(const dir of DIRECTIONS){
+  if(topPartForDirection(state.v6pPart,dir)!==state.v6pPart)continue;
+  const frame=S.extract(state.v6pSheet,"idle",dir,0),d=frame.data;
+  let changed=0;
+  for(let i=0;i<d.length;i+=4){
+   if(d[i+3]<16||d[i]!==old[0]||d[i+1]!==old[1]||d[i+2]!==old[2])continue;
+   d[i]=next[0];d[i+1]=next[1];d[i+2]=next[2];changed++;
+  }
+  if(!changed)continue;
+  S.stamp(state.v6pSheet,"idle",dir,0,frame);
+  state.edits.set("idle|"+dir+"|0",copy(frame));
+  if(state.dir===dir)state.current=copy(frame);
+  count+=changed;views++;
+ }
+ if(!count)return status("No matching opaque pixels. Choose the exact existing FROM color.",true);
+ persistV6pOverride();
+ await syncEmosiOpen();
+ status("CUSTOM WEAR RECOLORED · "+count+" pixels across "+views+" directions. Preview regenerates native poses.");
+}
 function bootEmosiEditor(){
  if(emosiEditor||!window.MH2PlanePixelEditor) return;
  const overlay=$("pixelOverlay"),canvas=$("pixelCanvas");
@@ -1548,6 +1579,7 @@ function initControls(){
  };
 
 
+ if($("wear-recolor"))$("wear-recolor").onclick=()=>void recolorCustomWear().catch(e=>status("RECOLOR FAILED · "+e.message,true));
  $("zoom").value=String(state.zoom);
  refreshToolState();
  $("pan-toggle").onclick=()=>{cancelTemporaryMove();state.panMode=!state.panMode;refreshToolState();render();};
