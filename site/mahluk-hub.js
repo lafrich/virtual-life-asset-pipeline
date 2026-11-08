@@ -84,7 +84,7 @@ function show(name){
 }
 function openEditor(value){
  const url=fixedUrl(value),target=new URL(url);
- if(target.searchParams.get("character")){
+ if(target.searchParams.get("character")&&target.searchParams.get("from")!=="animation"){
   show("character");
   const frame=$("character-pixel-frame");
   frame.src=url;
@@ -110,9 +110,10 @@ async function closeAnimationPixel(){
  if(!overlay||overlay.hidden)return;
  try{await $("pixel-frame")?.contentWindow?.VirtualLifePixelEditor?.flush?.()}
  catch(error){note("Animation pixel save failed: "+error.message);return}
- overlay.hidden=true;
- const motion=$("motion-frame");if(motion?.src)motion.contentWindow?.location?.reload?.();
- note("Animation Gallery → Editor · pixel corrections saved");
+ overlay.hidden=true;show("animation");
+ const motion=$("motion-frame");
+ try{motion?.contentWindow?.postMessage({type:"mahluk:refresh-animation"},ORIGIN)}catch{}
+ note("Back to Sprite + Anchor · Character/Custom Wear corrections saved");
 }
 function refreshCharacter(){
  const el=$("character-frame");try{el?.contentWindow?.postMessage({type:"mahluk:refresh-character"},ORIGIN)}catch{}
@@ -194,7 +195,7 @@ async function loadOnline(kind,id){
  if(!drive?.connected())throw Error("Connect Google Drive first");
  return drive.loadRecord(kind,id);
 }
-window.VLMahlukWorkspace=Object.freeze({show,openEditor,closeCharacterPixel,newClip,refreshCharacter,note,
+window.VLMahlukWorkspace=Object.freeze({show,openEditor,closeCharacterPixel,closeAnimationPixel,newClip,refreshCharacter,note,
  syncDrive,saveOnline,listOnline,loadOnline,isOnline:()=>!!window.VLMahlukHubDrive?.connected(),draftStorage});
 bind();show(new URLSearchParams(location.search).get("tab")||"character");
 })();
