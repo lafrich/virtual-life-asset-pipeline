@@ -586,5 +586,8 @@ root.addEventListener("message",e=>{
  }
 });
 fillSources();show("home");void refreshCloud();updateProperty();
-loadSource().catch(e=>say(e.message,true));
+const returnMotion=new URLSearchParams(location.search).get("motion");
+if(returnMotion&&Store.get(returnMotion)&&db()[returnMotion])
+ void open(returnMotion).catch(e=>say("Animation return failed: "+e.message,true));
+else loadSource().catch(e=>say(e.message,true));
 })(window);
