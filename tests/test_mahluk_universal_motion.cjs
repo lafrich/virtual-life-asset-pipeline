@@ -40,7 +40,10 @@ test('motion renderer reads physical layers and editor never bakes outfit pixels
   action=read('site/mahluk-action-editor.js'),studio=read('site/v6p-studio.html');
  assert.match(rig,/V6\.files\(ch,"baked"\)/);
  assert.match(rig,/images\[name\]/);
- assert.match(rig,/const geometry=bounds\(body\.data\)/);
+ assert.match(rig,/const geometry=bounds\(silhouette\)/);
+ assert.match(rig,/silhouette\[i\]=255/);
+ assert.doesNotMatch(rig,/bounds\(body\.data\)/,
+  'Sparse skin layer must not define the six-part source silhouette');
  assert.match(animation,/Motion\.prepare\(/);
  assert.match(animation,/Motion\.renderPrepared\(/);
  assert.match(animation,/Contract\.make\(/);
