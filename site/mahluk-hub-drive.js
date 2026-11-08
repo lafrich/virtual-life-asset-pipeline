@@ -18,7 +18,77 @@ const KEYS=[
 ];
 const DB="emotion-studio-local-v1",STORE="emotion-assets";
 const byteLimit=25*1024*1024;
-let token="",expires=0,baseFolder="",savedFile="";
+let token="",expires=0,baseFolder="",savedFile="",recordFolder="";
+const CLOUD_FORMAT="mahluk-online-record-v1";
+const CLOUD_TYPES=new Set(["character","action","animation"]);
+function validCloud(kind,id){
+ if(!CLOUD_TYPES.has(kind)||!/^[-a-z0-9_]{2,80}$/.test(String(id||"")))
+  throw Error("Invalid cloud record kind / id");
+}
+async function cloudFolder(){
+ if(recordFolder)return recordFolder;
+ const main=await createFolder("root","Membangun");
+ const mahluk=await createFolder(main,"Mahluk Hidup");
+ recordFolder=await createFolder(mahluk,"Online Database");
+ return recordFolder;
+}
+function filename(kind,id){validCloud(kind,id);return kind+"__"+id+".json"}
+async function saveRecord(kind,id,record){
+ validCloud(kind,id);
+ if(!connected())throw Error("Connect Google Drive before saving. Nothing was published.");
+ const parent=await cloudFolder(),name=filename(kind,id);
+ const json=JSON.stringify(record),digest=await hash(json);
+ const payload=JSON.stringify({format:CLOUD_FORMAT,kind,id,sha256:digest,record});
+ let file=await find(parent,name,"application/json");
+ if(!file){
+  const r=await api(API+"?fields=id",{method:"POST",headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({name,mimeType:"application/json",parents:[parent]})});
+  file=await r.json();
+ }
+ await api(UP+"/"+encodeURIComponent(file.id)+"?uploadType=media",{
+  method:"PATCH",headers:{"Content-Type":"application/json; charset=UTF-8"},body:payload
+ });
+ const saved=JSON.parse(await (await api(API+"/"+encodeURIComponent(file.id)+"?alt=media")).text());
+ if(saved.format!==CLOUD_FORMAT||saved.kind!==kind||saved.id!==id||
+  saved.sha256!==digest||await hash(JSON.stringify(saved.record))!==digest)
+  throw Error("Cloud write failed verification; character was NOT marked saved");
+ return {id,kind,name,verified:true,fileId:file.id};
+}
+async function listRecords(kind){
+ if(!CLOUD_TYPES.has(kind))throw Error("Unknown cloud collection");
+ if(!connected())throw Error("Connect Google Drive before loading the online gallery");
+ const parent=await cloudFolder(),files=[];let page="";
+ do{
+  const params=new URLSearchParams({
+   q:"'"+quoted(parent)+"' in parents and name contains '"+kind+"__' and mimeType = 'application/json' and trashed = false",
+   fields:"nextPageToken,files(id,name,mimeType,modifiedTime)",pageSize:"1000"
+  });
+  if(page)params.set("pageToken",page);
+  const response=await (await api(API+"?"+params)).json();
+  files.push(...(response.files||[]).filter(f=>f.name?.startsWith(kind+"__")));
+  page=response.nextPageToken||"";
+ }while(page);
+ const rows=[];
+ for(const file of files){
+  try{
+   const payload=JSON.parse(await (await api(API+"/"+encodeURIComponent(file.id)+"?alt=media")).text());
+   if(payload.format!==CLOUD_FORMAT||payload.kind!==kind||
+      filename(kind,payload.id)!==file.name||
+      payload.sha256!==await hash(JSON.stringify(payload.record)))throw Error("Checksum mismatch");
+   rows.push(payload.record);
+  }catch(error){throw Error("Cannot load online "+file.name+": "+error.message)}
+ }
+ return rows;
+}
+async function loadRecord(kind,id){
+ validCloud(kind,id);if(!connected())throw Error("Connect Google Drive first");
+ const parent=await cloudFolder(),file=await find(parent,filename(kind,id),"application/json");
+ if(!file)return null;
+ const data=JSON.parse(await (await api(API+"/"+encodeURIComponent(file.id)+"?alt=media")).text());
+ if(data.format!==CLOUD_FORMAT||data.kind!==kind||data.id!==id||
+  data.sha256!==await hash(JSON.stringify(data.record)))throw Error("Online record integrity check failed");
+ return data.record;
+}
 function connected(){return !!token&&Date.now()+60000<expires}
 function oauth(){
  return root.google?.accounts?.oauth2;
@@ -31,7 +101,7 @@ function connect(){
    callback:r=>{
     if(r.error||!r.access_token){reject(Error(r.error_description||r.error||"Google Drive denied"));return}
     token=r.access_token;expires=Date.now()+1000*(Number(r.expires_in)||3500);
-    baseFolder="";savedFile="";resolve(true);
+    baseFolder="";savedFile="";recordFolder="";resolve(true);
    },
    error_callback:e=>reject(Error(e?.message||e?.type||"Google popup closed"))
   }).requestAccessToken({prompt:""});}catch(e){reject(e)}
@@ -207,5 +277,5 @@ async function restore(){
  savedFile=file.id;
  return {keys:Object.keys(payload.local).length+Number(payload.emotions.length>0),emotions:payload.emotions.length};
 }
-root.VLMahlukHubDrive=Object.freeze({connect,backup,restore,connected,KEYS,KIND});
+root.VLMahlukHubDrive=Object.freeze({connect,backup,restore,connected,KEYS,KIND,saveRecord,listRecords,loadRecord});
 })(window);
