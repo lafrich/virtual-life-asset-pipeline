@@ -124,8 +124,10 @@ function refFor(entry,value){
   return null;
  }
  if(value?.startsWith("clip:")){
-  const id=value.slice(5),published=publishedClip(entry,id);if(published)return published;
-  const clip=Store?.get(id);if(!clip)return null;
+  const id=value.slice(5),clip=Store?.get(id);
+  const published=publishedClip(entry,id);
+  if(!clip&&published)return published;
+  if(!clip)return null;
    if(Motion&&MotionContract?.isUniversal(clip.manifest)&&entry.ch){
     try{MotionContract.validateManifest(clip.manifest)}catch{return null}
     return {frames:clip.manifest.frames.length,frameMs:clip.manifest.frames.map(x=>x.ms),
@@ -139,6 +141,7 @@ function refFor(entry,value){
     return {frames:clip.manifest.frames.length,frameMs:clip.manifest.frames.map(x=>x.ms),
       loop:clip.manifest.loop!==false,layout:"activity-native",action:clip,ch};
   }
+  if(published)return published;
   const part=Object.keys(clip.layers||{})[0]||clip.manifest.requiredParts?.[0];
   const url=part&&Store.layerUrl(id,part);
   return url?{url,frames:clip.manifest.frames.length,frameMs:clip.manifest.frames.map(x=>x.ms),
