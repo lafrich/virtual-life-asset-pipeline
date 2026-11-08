@@ -35,3 +35,25 @@ jobs:
           node --check site/mahluk-animation-native.js
           node tests/test_genesis_native_python_contract.cjs
           test -s site/mahluk-animation-native.html
+  browser-native:
+    needs: native-python
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install browser testing runtime
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.0
+          npx playwright install chromium
+      - name: Serve unmodified native reference data to browser worker
+        run: |
+          mkdir -p site/genesis-native-source/tools site/genesis-native-source/study site/genesis-native-source/live/chars
+          cp chars-iso/v6b/tools/live_v6b.py site/genesis-native-source/tools/
+          cp chars-iso/v6b/study/ref_*.npy site/genesis-native-source/study/
+          cp chars-iso/v6b/live/chars/{ichsan,noor}.json site/genesis-native-source/live/chars/
+          python3 -m http.server 4173 --bind 127.0.0.1 -d site >/tmp/genesis-native-http.log 2>&1 &
+          sleep 1
+          node tests/smoke_genesis_native_animation.cjs
