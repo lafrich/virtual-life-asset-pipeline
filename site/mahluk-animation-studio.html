@@ -46,6 +46,14 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 #gif-preview{display:block;image-rendering:pixelated;aspect-ratio:64/112;width:min(175px,100%);height:auto;
  background:repeating-conic-gradient(#d2dce8 0 25%,#fafafa 0 50%) 0 0/16px 16px;border:1px solid #75879a}
 .flow-toolbar{display:flex;gap:7px;flex-wrap:wrap}.flow-toolbar button{min-width:130px}
+.animation-tool{padding:9px 0;border-top:1px solid #a4b1bf;margin-top:10px}
+.animation-tool h3{font-size:11px;margin:0 0 8px;color:#1a4c86}
+.animation-tool button{min-width:0;white-space:normal}
+.animation-tool select{width:100%;min-width:0;max-width:100%}
+.animation-tool .row{flex-wrap:wrap}.animation-tool .row button{flex:1 1 72px}
+.animation-tool .hint{overflow-wrap:anywhere}
+.lane-item{display:flex;gap:6px;align-items:center;justify-content:space-between;border:1px solid #a4b5c9;background:#f7fbff;padding:4px 6px;margin:4px 0}
+.lane-item span{overflow-wrap:anywhere}.lane-item button{flex:0 0 auto;padding:2px 7px}
 #setup-name{font-size:13px}.flow-note{padding:8px;background:#dce9f8;border:1px solid #9db1c7}
 @media(max-width:650px){
  #header{gap:8px;align-items:center;flex-wrap:wrap;padding:6px 9px;font-size:11px}
@@ -110,7 +118,36 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <div class="row"><button id="new">＋ NEW</button><button id="copy">⧉ DUPLICATE</button></div>
  <p class="hint">Edit frame and each of the four directions. This editor uses the existing base image; Custom Wear stays separate.</p>
  <div class="row"><button id="open-pixel">✎ PIXEL EDITOR</button><button id="export">↓ JSON</button></div>
-</aside>
+ <section class="animation-tool" aria-label="Set animation">
+   <h3>SET ANIMATION · BODY MOTION</h3>
+   <label>ANIMATION DATABASE<select id="set-animation-source"><option value="">Choose an animation</option></select></label>
+   <button type="button" id="set-animation-apply">◎ SET ANIMATION AS BASE</button>
+   <p id="set-animation-state" class="hint">Choose saved motion to reuse poses and timing.</p>
+  </section>
+  <section class="animation-tool" aria-label="Set emosi">
+   <h3>SET EMOSI · EXPRESSION TRACK</h3>
+   <label>EMOSI.EXE DATABASE<select id="set-emotion-source"><option value="">Select emotion</option></select></label>
+   <div class="row">
+    <label>START FRAME (0-BASED)<input id="set-emotion-start" type="number" min="0" max="5" value="0"></label>
+    <label>LENGTH (FRAMES)<input id="set-emotion-length" type="number" min="1" max="6" value="1"></label>
+   </div>
+   <div class="row"><button type="button" id="set-emotion-place">＋ PLACE EMOSI</button>
+    <button type="button" id="set-emotion-refresh">↻ REFRESH</button></div>
+   <p id="set-emotion-note" class="hint">Loading authored Emosi.exe expressions…</p>
+   <p id="set-emotion-count" class="hint">0 placements</p>
+   <div id="set-emotion-cues" aria-label="Expression placements on animation timeline"></div>
+   <p class="hint">Place different Emosi entries across frame ranges. Last overlapping placement takes priority. Back views stay expression-free.</p>
+  </section>
+  <section class="animation-tool" aria-label="Set front or back from another character">
+   <h3>SET FRONT / BACK · CHARACTER SOURCE</h3>
+   <label>CHARACTER DATABASE<select id="set-character-source"><option value="">Choose a character</option></select></label>
+   <div class="row"><button type="button" id="set-front">↑ SET FRONT</button>
+    <button type="button" id="set-back">↓ SET BACK</button></div>
+   <div class="row"><button type="button" id="clear-front">RESET FRONT</button>
+    <button type="button" id="clear-back">RESET BACK</button></div>
+   <p id="set-view-note" class="hint">Source sprites are copied into the current animation only.</p>
+  </section>
+ </aside>
 <section class="panel"><h2 id="animation-title">NEW ANIMATION</h2>
  <label>ACTIVITY NAME<input id="animation-name-edit" maxlength="80" placeholder="Activity name"></label>
  <div class="row"><label>VIEW<select id="view"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></label>
@@ -139,7 +176,11 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 </aside>
 </main></div>
 <script src="./v6p-part-catalog.js"></script><script src="./v6p-part-overrides.js"></script><script src="./v6p-character-store.js"></script>
+<script src="./emotion-studio/emotion-library.js?v=animation-set-20261108"></script>
+<script src="./emosi-source.js?v=animation-set-20261108"></script>
+<script src="./emosi-bridge.js?v=animation-set-20261108"></script>
 <script src="./v6p-activity-contract.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-clip-store.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-compositor.js?v=v6p-stock-approved-20261108"></script>
 <script src="/virtual-office/shared/hub-registry.js"></script>
-<script src="./mahluk-animation-studio.js?v=animation-cloud-v3-20261108"></script>
+<script src="./mahluk-animation-set-tools.js?v=animation-set-20261108"></script>
+<script src="./mahluk-animation-studio.js?v=animation-set-20261108"></script>
 </body></html>
