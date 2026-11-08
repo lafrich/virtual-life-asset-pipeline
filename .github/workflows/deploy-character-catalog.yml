@@ -176,6 +176,8 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
+      - name: Discover and validate Mahluk JSON animation assets
+        run: python tools/build_mahluk_motion_registry.py _site/motion-packs
       - name: Render V6B Semesta rotating Earth launcher thumbnail
         run: |
           python tools/build_launcher_globe.py
