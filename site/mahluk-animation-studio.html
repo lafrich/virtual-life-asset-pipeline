@@ -43,6 +43,11 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 #animations{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;max-height:none}
 #animations button{min-height:65px;text-align:left;padding:9px}
 #animations button strong,#animations button small{display:block}
+#animations .clip-card{display:flex;flex-direction:column;gap:4px;min-width:0;border:1px solid #9eaec0;padding:5px;background:#eff4fa}
+#animations .clip-card button{width:100%}
+#animations .clip-card .modify-motion{background:#d4e7fe;border-color:#4e87bd}
+#pixel-target{font-weight:bold}
+#source-label{padding:7px;border:1px solid #9eafc2;background:#f1f6fc}
 #gif-preview{display:block;image-rendering:pixelated;aspect-ratio:64/112;width:min(175px,100%);height:auto;
  background:repeating-conic-gradient(#d2dce8 0 25%,#fafafa 0 50%) 0 0/16px 16px;border:1px solid #75879a}
 .flow-toolbar{display:flex;gap:7px;flex-wrap:wrap}.flow-toolbar button{min-width:130px}
@@ -69,10 +74,11 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <h1>ANIMATION DATABASE</h1>
  <div class="flow-actions">
   <button id="animation-start-new">＋ CREATE ANIMATION<small>Make a new motion from a starting pose</small></button>
-  <button id="animation-start-pose">◎ CHOOSE BASE POSE<small>Standing Idle · Sitting Idle · Lie Down Idle</small></button>
-  <button id="animation-start-gallery">▦ GALLERY ANIMATION<small>Open and modify saved animations</small></button>
+  <button id="animation-start-gallery">▦ GALLERY ANIMATION<small>Preview or modify approved and saved motions</small></button>
  </div>
  <h2>GALLERY · ANIMATIONS</h2>
+ <label>ANIMATE CHARACTER <select id="gallery-character" aria-label="Choose Genesis or an existing Character"></select></label>
+ <p class="hint">Choose Genesis Male/Female or a Character draft first. Preview protects the original; Modify creates an editable pose copy.</p>
  <div id="animations" aria-label="Saved animation clips"></div>
  <p id="animation-home-note" class="flow-note">Choose a starting pose, edit individual frames, preview the loop, then save.</p>
 </section>
@@ -90,8 +96,8 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  </div>
  <div id="stock-timeline" aria-label="Stock animation timeline"></div>
  <p id="stock-status" class="flow-note" role="status">Loading approved native stock…</p>
- <div class="flow-toolbar" style="justify-content:center"><button id="stock-edit-pixels">✎ EDIT LOCAL PIXEL FRAMES</button></div>
- <p class="hint">Stock sheet stays protected. Any pixel edits use a local clip override; original GitHub stock and Custom Wear are unaffected.</p>
+ <div class="flow-toolbar" style="justify-content:center"><button id="stock-edit-pixels">✎ MODIFY IN SPRITE + ANCHOR EDITOR</button></div>
+ <p class="hint">The approved stock remains read-only. Modify makes a new animation draft using the selected Genesis base; Custom Wear remains owned by Character.</p>
 </section>
 <section class="flow-screen" id="animation-setup" hidden>
  <h1>CREATE ANIMATION · BASE POSE</h1>
@@ -100,22 +106,26 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
   <option value="idle">STANDING IDLE</option><option value="sit">SITTING IDLE</option>
   <option value="lie">LIE DOWN IDLE</option><option value="sleep">SLEEP / LYING IDLE</option>
  </select></label>
- <label>CHARACTER BASE<select id="gender"><option value="male">MALE BASE</option><option value="female">FEMALE BASE</option></select></label>
- <p class="hint">Body comes from the existing Male/Female base. Clothes and Custom Wear remain managed in the Character editor, not here.</p>
+ <label>BASED CHARACTER<select id="source-character" aria-label="Animation source character"></select></label>
+ <label hidden>GENESIS GENDER (legacy)<select id="gender"><option value="male">GENESIS MALE</option><option value="female">GENESIS FEMALE</option></select></label>
+ <p class="hint">Choose Genesis Male Nude / Genesis Female Nude or a saved Character. Animation transforms move the composited body and its Custom Wear together. Character-owned clothing is edited on its own layer, never overwritten by this pose editor.</p>
  <div class="flow-toolbar"><button id="setup-back">← BACK</button><button id="setup-create">CREATE & EDIT FRAMES →</button></div>
 </section>
 <div id="animation-workspace" hidden><main id="layout">
 <aside class="panel"><div class="flow-toolbar"><button id="animation-editor-back">← BACK TO GALLERY</button></div>
-<h2>FRAME BY FRAME</h2>
+<h2>SPRITE + ANCHOR</h2>
+ <p class="hint" id="source-label">GENESIS MALE NUDE · pose preview</p>
  <div class="row"><button id="new">＋ NEW</button><button id="copy">⧉ DUPLICATE</button></div>
- <p class="hint">Edit frame and each of the four directions. This editor uses the existing base image; Custom Wear stays separate.</p>
- <div class="row"><button id="open-pixel">✎ PIXEL EDITOR</button><button id="export">↓ JSON</button></div>
+ <p class="hint">Move body cutouts and anchors. Tap a visible region on the current frame to select it; clothing pixels move with their source character.</p>
+ <label>PIXEL TARGET<select id="pixel-target" aria-label="Selected editable sprite layer"></select></label>
+ <div class="row"><button id="open-pixel">✎ EDIT SELECTED SPRITE</button><button id="export">↓ POSE JSON</button></div>
+ <p class="hint">Pixel Editor opens the real selected character part or Custom Wear sheet at the current direction/frame. No unscoped blank canvas.</p>
 </aside>
 <section class="panel"><h2 id="animation-title">NEW ANIMATION</h2>
  <label>ACTIVITY NAME<input id="animation-name-edit" maxlength="80" placeholder="Activity name"></label>
  <div class="row"><label>VIEW<select id="view"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></label>
  <label>FRAME MS<input type="number" id="ms" value="140" min="40" max="800" step="10"></label></div>
- <canvas id="stage" width="384" height="672" aria-label="Large pose canvas with rotatable pixel parts"></canvas>
+ <canvas id="stage" width="384" height="672" aria-label="Select a visible body region on the playing frame to move its pose or edit its character sprite"></canvas>
  <div class="row"><button id="prev">◀</button><button id="play">▶ PLAY</button><button id="next">▶</button>
  <label style="flex:1"><input id="loop" type="checkbox" checked> LOOP</label></div>
  <div id="frame-strip" aria-label="Frame by frame timeline"></div>
@@ -127,19 +137,20 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 <aside id="properties" class="panel"><h2>LOOP PREVIEW · GIF-STYLE</h2>
  <canvas id="gif-preview" width="64" height="112" aria-label="Animated frame loop preview"></canvas>
  <p id="gif-preview-note" class="hint">Animated preview uses the edited frames; select PLAY to run the loop.</p>
- <h2>ASSET / ANCHOR</h2>
+ <h2>BODY CUTOUT / ANCHOR</h2>
  <div id="parts"></div>
  <label><input id="move-anchor" type="checkbox"> MOVE ANCHOR (drag on canvas)</label>
  <label>ROTATION <output id="rotation-label">0°</output><input id="rotation" type="range" min="-180" max="180" value="0"></label>
  <div class="row"><label>OFFSET X<input id="px" type="number" min="-128" max="128" value="0"></label><label>OFFSET Y<input id="py" type="number" min="-128" max="128" value="0"></label></div>
  <div class="row"><label>ANCHOR X<input id="ax" type="number" min="0" max="63" value="32"></label><label>ANCHOR Y<input id="ay" type="number" min="0" max="111" value="60"></label></div>
  <div class="row"><button id="reset-transform">RESET PART</button></div>
- <p class="hint">Pilih bagian tubuh, drag untuk memindahkan atau geser anchor. Rotasi dilakukan pada sprite part, lalu frame hasilnya dibake jadi PNG asli 64×112 per arah.</p>
- <p class="hint">Saat pose berubah drastis, cek overlap tangan/kaki dan perbaiki di Pixel Editor. Animasi baru berstatus draft sampai dihubungkan ke action/game.</p>
+ <p class="hint">Pilih bagian tubuh di frame, lalu drag untuk geser; aktifkan Move Anchor untuk mengubah titik putar. Cutout dibuat dari sprite karakter aktif, termasuk Custom Wear yang terlihat.</p>
+ <p class="hint">Ini cutout piksel enam area, bukan tulang 3D atau skinning otomatis. Untuk pose ekstrem, cek overlap dan pilih sprite bagian yang perlu diperbaiki. Original Genesis dan stock tetap aman.</p>
 </aside>
 </main></div>
 <script src="./v6p-part-catalog.js"></script><script src="./v6p-part-overrides.js"></script><script src="./v6p-character-store.js"></script>
+<script src="./genesis-source.js?v=genesis-only-20261108"></script><script src="./genesis-base-bridge.js?v=genesis-footwear-v2"></script>
 <script src="./v6p-activity-contract.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-clip-store.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-compositor.js?v=v6p-stock-approved-20261108"></script>
 <script src="/virtual-office/shared/hub-registry.js"></script>
-<script src="./mahluk-animation-studio.js?v=animation-cloud-v3-20261108"></script>
+<script src="./mahluk-animation-studio.js?v=animation-character-first-v4-20261108"></script>
 </body></html>
