@@ -40,6 +40,9 @@ on:
       - "tests/smoke_mahluk_cloud_startup.cjs"
       - "tests/smoke_mahluk_character_quota.cjs"
       - "tests/test_mahluk_stock_gallery.cjs"
+      - "tests/test_mahluk_universal_motion.cjs"
+      - "site/v6p-universal-motion*.js"
+      - "site/vlhub-characters-publish.js"
       - ".github/workflows/mahluk-unified-regression.yml"
   workflow_dispatch:
 permissions:
