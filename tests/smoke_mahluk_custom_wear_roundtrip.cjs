@@ -11,7 +11,7 @@ const {chromium}=require('playwright');
  const char=page.frameLocator('#character-frame');
  const pixel=page.frameLocator('#character-pixel-frame');
  try{
-  await page.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/mahluk-hidup.html?tab=character',
+  await page.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/mahluk-hidup.html?tab=character&legacyCloud=1',
     {waitUntil:'domcontentloaded',timeout:45000});
   await char.locator('body.wizard-ready').waitFor({timeout:65000});
   await char.locator('#wizard-home:not([hidden])').waitFor({timeout:65000});
