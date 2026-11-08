@@ -6,6 +6,7 @@ on:
       - "site/genesis-native-*.js"
       - "site/genesis-native-render.py"
       - "site/mahluk-animation-native.*"
+      - "site/mahluk-hub.js"
       - "tests/test_genesis_native_*"
       - "chars-iso/v6b/tools/live_v6b.py"
       - ".github/workflows/genesis-native-animation-qa.yml"
@@ -57,3 +58,7 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 -d site >/tmp/genesis-native-http.log 2>&1 &
           sleep 1
           node tests/smoke_genesis_native_animation.cjs
+          mkdir -p /tmp/mahluk-native-hub-root
+          ln -s "$PWD/site" /tmp/mahluk-native-hub-root/virtual-life-asset-pipeline
+          python3 -m http.server 4174 --bind 127.0.0.1 -d /tmp/mahluk-native-hub-root >/tmp/mahluk-native-hub-http.log 2>&1 &
+          node tests/smoke_genesis_native_cloud_hub.cjs
