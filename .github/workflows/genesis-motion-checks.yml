@@ -1,0 +1,42 @@
+name: Genesis Motion Draft Checks
+
+on:
+  pull_request:
+    paths:
+      - 'site/v6b-asset-generator/**'
+      - 'tools/test-genesis-motion-contract.cjs'
+      - 'tests/test_happy_baby_rocking.cjs'
+      - 'assets/animation_stock/**'
+      - 'site/v6p-activity-contract.js'
+      - 'site/v6p-clip-store.js'
+      - 'site/v6p-compositor.js'
+      - 'site/mahluk-animation-studio.js'
+      - '.github/workflows/genesis-motion-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax check
+        run: |
+          node --check site/v6b-asset-generator/genesis-motion-contract.js
+          node --check site/v6b-asset-generator/genesis-motion.js
+          node --check site/v6p-activity-contract.js
+          node --check site/v6p-clip-store.js
+          node --check site/v6p-compositor.js
+          node --check site/mahluk-animation-studio.js
+      - name: Genesis contract tests
+        run: |
+          node tools/test-genesis-motion-contract.cjs
+          node tests/test_happy_baby_rocking.cjs
+          node tests/test_v6p_activity_contract.cjs
+          node tests/test_v6p_clip_store.cjs
+          node --test tests/test_mahluk_stock_gallery.cjs

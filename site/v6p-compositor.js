@@ -272,8 +272,13 @@ async function composeActivity(ch,manifest,frameIndex,dir,opts){
   const avail=activityAvailability(ch,manifest);
   if(!avail.ok && !(opts&&opts.force)) return Object.assign(document.createElement("canvas"),{_disabled:true,_avail:avail,width:FW,height:FH});
   const bandStart=Number.isInteger(manifest.bandStart)?manifest.bandStart:0;
-  let origin;
-  try{origin=A.cellOrigin(bandStart,dir,frameIndex);}catch{return null;}
+  // Review-only motion recipes reuse approved native Genesis activity pixels.
+  // Never write into source sheet, and do not claim motion inferred from GIF.
+  let origin,motion;
+  try{
+    motion=A.motionAt?.(manifest.band,frameIndex,dir)||null;
+    origin=A.cellOrigin(bandStart,dir,motion?motion.sourceFrame:frameIndex);
+  }catch{return null;}
   const names=files(ch,"baked");
   const exclude=opts&&opts.exclude;
   const cv=document.createElement("canvas");cv.width=FW;cv.height=FH;
@@ -285,7 +290,9 @@ async function composeActivity(ch,manifest,frameIndex,dir,opts){
     if(!url) return false;
     const im=await loadAnyImage(url);
     if(!im) return false;
-    c.drawImage(im,origin.x,origin.y,origin.w,origin.h,0,0,FW,FH);
+    const moved=motion&&name!=="base/shadow"&&name!=="base/fx";
+    c.drawImage(im,origin.x,origin.y,origin.w,origin.h,
+      moved?motion.dx:0,moved?motion.dy:0,FW,FH);
     return true;
   }
   const hairBack=names.filter(n=>n.indexOf("hair/")===0&&n.indexOf("_back")>0);

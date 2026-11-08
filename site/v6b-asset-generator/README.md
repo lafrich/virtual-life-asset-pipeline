@@ -13,3 +13,11 @@ Google Drive: existing OAuth public Client ID from Semesta, drive.file permissio
 ZIP's semesta-assetObject-STAGING.json is a proposed import record. **Not installed:** Semesta Connect must be tested separately for actual size, pivot, placement, layering, collision. No game, existing asset, original character, rig or animation code was changed.
 
 Validation: Javascript syntax checked; embedded browser-Python dispatch code verified using CPython against actual archived source for chair and orange bajaj (4/4 pixel-identical to review archive each; recipe regeneration hash stable; ZIP staging included). Native browser Pyodide, Google popup, and live Semesta integration were not yet verified.
+
+## Genesis motion / GIF reference (isolated staging)
+
+Open `genesis-motion.html` from the generator. This additive tool uses the *same native Mahluk V6P compositor* (`site/v6p-compositor.js`) to render the two allowed blank-faced, hairless Genesis bases: **Genesis Male Nude** and **Genesis Female Nude**. The GIF remains a visual reference (browser object URL, never treated as rendered character art). Drag/adjust six semantic parts over 1–6 frames and SE/SW/NE/NW. Export is a **REVIEW ONLY** JSON package with `v6p-act-clip-manifest-v1`, metadata/tracks and the 384×2688 per-clip `base/body` PNG atlas; the optional standalone PNG can be downloaded too. Source templates: idle, sit, lie, sleep. Frame 64×112, pivot (32,100); native activity contract maximum 6 frames, 40–800 ms each.
+
+This is **not** an automatic GIF-to-pixel retarget system, does **not** upload to Drive or publish to Mahluk stock, and does **not** alter existing character rig, Custom Wear, Emosi.exe, approved animation clips, Semesta, or the standalone NumPy/Pillow I1–I6/B4 renderer. Draft output is deliberately non-destructive; applying motion to arbitrary clothed Genesis characters and automatic stock ingestion still require a separate reviewed integration. It persists nothing to localStorage/IndexedDB. Source GIF must be supplied for actual new motion authoring.
+
+Schema/validator: `genesis-motion-contract.js`; UI: `genesis-motion.html` + `genesis-motion.js`. Export `REVIEW_ONLY_NOT_INSTALLED` must never be described as live stock.
