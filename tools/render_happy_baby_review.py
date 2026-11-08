@@ -86,7 +86,6 @@ def native_pose(gender,view,frame):
     base=Image.new("RGBA",(W,H),(0,0,0,0))
     base.alpha_composite(source("base/shadow",view,frame))
     colors=color_key_mapping(gender)
-    dy=YOFF[frame] if False else 0
     return base,parts,colors
 def frame_canvas(gender,view,idx):
     original=FRAMES[idx]
@@ -97,9 +96,9 @@ def frame_canvas(gender,view,idx):
         body.alpha_composite(image)
     dx=XOFF[idx]*(1 if view in ("se","ne") else -1)
     dy=YOFF[idx]
-    result=shadow_parts.copy()
-    result.alpha_composite(body,(dx,dy))
-    return result
+    shifted=Image.new("RGBA",(W,H),(0,0,0,0))
+    shifted.paste(body,(dx,dy))
+    return Image.alpha_composite(shadow_parts,shifted)
 def view_cell(gender,view,idx):
     art=frame_canvas(gender,view,idx).resize((W*SCALE,H*SCALE),Image.Resampling.NEAREST)
     tile=Image.new("RGB",(W*SCALE,H*SCALE),(30,45,67))
@@ -112,13 +111,13 @@ def review_grid(idx):
     cellw=W*SCALE;cellh=H*SCALE
     canvas=Image.new("RGB",(side*2+cellw*4+gap*3,top*2+cellh*2+gap),(19,31,50))
     draw=ImageDraw.Draw(canvas)
-    draw.text((14,9),"GENESIS / HAPPY BABY ROCKING / REVIEW ONLY — NOT IN DATABASE",font=FONT,fill=(224,236,253))
+    draw.text((14,9),"GENESIS / HAPPY BABY ROCKING / REVIEW ONLY - NOT IN DATABASE",font=FONT,fill=(224,236,253))
     for row,gender in enumerate(("male","female")):
         for col,view in enumerate(DIRS):
             x=side+col*(cellw+gap);y=top+row*(cellh+gap)
             canvas.paste(view_cell(gender,view,idx),(x,y))
             title(draw,(x,y),gender.upper()+" / "+view.upper())
-    draw.text((14,canvas.height-20),"NATIVE V6P HAPPY BABY SOURCE — F%d/6 — 150ms/frame — DO NOT PUBLISH"%(idx+1),fill=(219,224,231),font=FONT)
+    draw.text((14,canvas.height-20),"NATIVE V6P HAPPY BABY SOURCE - F%d/6 - 150ms/frame - DO NOT PUBLISH"%(idx+1),fill=(219,224,231),font=FONT)
     return canvas
 full=[review_grid(i) for i in range(6)]
 full[0].save(DEST/"genesis_happy_baby_rocking_review.gif",save_all=True,append_images=full[1:],
@@ -132,7 +131,7 @@ for gender in ("male","female"):
 gap=12; pad=12; fw=W*SCALE; fh=H*SCALE
 contact=Image.new("RGB",(pad*2+fw*6+gap*5,30+fh*2+gap),(20,31,47))
 draw=ImageDraw.Draw(contact)
-draw.text((12,8),"SIX NATIVE-PIXEL KEYFRAMES — SE VIEW — MALE/FEMALE — NOT STOCK",fill=(226,237,250),font=FONT)
+draw.text((12,8),"SIX NATIVE-PIXEL KEYFRAMES - SE VIEW - MALE/FEMALE - NOT STOCK",fill=(226,237,250),font=FONT)
 for row,gender in enumerate(("male","female")):
  for i in range(6):
     x=pad+i*(fw+gap);y=30+row*(fh+gap)
