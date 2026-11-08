@@ -126,7 +126,7 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   assert.ok(pixelBox,'Action scene pixel editor canvas missing');
   await page.mouse.click(pixelBox.x+pixelBox.width*20/64,pixelBox.y+pixelBox.height*50/112);
   await a.locator('#pixelApply').click();
-  await a.locator('#pixelOverlay[hidden]').waitFor({timeout:15000});
+  await a.locator('#pixelOverlay').waitFor({state:'hidden',timeout:15000});
   assert.match(await a.locator('#status').textContent(),/FRAME EDIT APPLIED/);
   await a.locator('#save').click();
   await a.locator('#action-home:not([hidden])').waitFor({timeout:30000});
