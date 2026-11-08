@@ -55,8 +55,9 @@ function canonicalLook(raw){
 async function prepare(rawAppearance,sourceAction="idle",opts={}){
  const C6=C(),V6=V(),ch=canonicalLook(rawAppearance);
  if(!C6.SOURCE_ACTIONS.includes(sourceAction))throw Error("Unsupported Genesis source pose: "+sourceAction);
- const key=JSON.stringify([ch,sourceAction,opts.sourceKey||"",!!opts.partOverrides]);
- if(!opts.partOverrides&&cache.has(key))return cache.get(key);
+ const overridden=!!Object.keys(opts.partOverrides||{}).length;
+ const key=JSON.stringify([ch,sourceAction,opts.sourceKey||"",overridden]);
+ if(cache.has(key))return cache.get(key);
  const ready=(async()=>{
   const layers=V6.files(ch,"baked");
   const images={};
@@ -86,7 +87,7 @@ async function prepare(rawAppearance,sourceAction="idle",opts={}){
   }
   return {appearance:ch,sourceAction,directions,sourceKey:opts.sourceKey||ch.characterId||ch.body};
  })();
- if(!opts.partOverrides)cache.set(key,ready);
+ cache.set(key,ready);
  try{return await ready}catch(error){cache.delete(key);throw error}
 }
 function drawPiece(g,piece,pose,p){
