@@ -7,8 +7,9 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
-  for(const viewport of [{width:360,height:640},{width:412,height:850}]){
-   const context=await browser.newContext({viewport,deviceScaleFactor:2,isMobile:true,hasTouch:true});
+  for(const viewport of [{width:1280,height:900},{width:360,height:640},{width:412,height:850}]){
+   const isMobile=viewport.width<600;
+   const context=await browser.newContext({viewport,deviceScaleFactor:isMobile?2:1,isMobile,hasTouch:isMobile});
    const page=await context.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({status:200,
@@ -23,6 +24,12 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
      return {workspace:bounds('workspace'),view:bounds('animation-view'),
       pane:bounds('motion-pane'),frame:bounds('motion-frame'),footer:bounds('status')};
     });
+    const btn=await inner.locator('#animation-start-new').boundingBox();
+    const clickTarget=btn&&await page.evaluate(({x,y})=>{
+      const node=document.elementFromPoint(x,y);
+      return {id:node?.id||'',tag:node?.tagName||'',className:typeof node?.className==='string'?node.className:''};
+    },{x:btn.x+btn.width/2,y:btn.y+btn.height/2});
+    console.log('ANIMATION FRAME DIAGNOSTIC '+JSON.stringify({viewport,metrics,button:btn,hit:clickTarget}));
     assert.ok(metrics.view.height>250,'Animation view collapsed on mobile: '+JSON.stringify(metrics));
     assert.ok(metrics.pane.height>=metrics.view.height-2,'Animation pane does not fill view: '+JSON.stringify(metrics));
     assert.ok(metrics.frame.height>=metrics.view.height-3,'Animation iframe clips content: '+JSON.stringify(metrics));
@@ -54,7 +61,7 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
     await inner.locator('#animation-editor-back').click();
     await inner.locator('#animation-home:not([hidden])').waitFor();
     assert.deepEqual(errors,[],'Browser errors');
-    console.log('PASS mobile Animation '+viewport.width+'×'+viewport.height+
+    console.log('PASS viewport Animation '+viewport.width+'×'+viewport.height+
      ' iframe='+Math.round(metrics.frame.height)+'px scroll='+Math.round(scrolled)+
      ' Gallery→Setup→Frame Editor→Back');
    }catch(err){
