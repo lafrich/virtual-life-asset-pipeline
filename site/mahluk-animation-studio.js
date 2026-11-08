@@ -445,6 +445,7 @@ function editPixels(){
  if(!part||!root.V6PCustomWear?.isCustomPart(part)||!root.V6PPartCatalog?.isPart(part))return say("Select a real Character part or Custom Wear first",true);
  const url=new URL("./pixel-editor.html",location.href);
  url.searchParams.set("source","v6p");url.searchParams.set("character",character.record.id);
+ url.searchParams.set("master","1"); // Design Custom Wear in all four idle source views.
  url.searchParams.set("part",part);url.searchParams.set("dir",state.dir);
  url.searchParams.set("action",action());url.searchParams.set("frame",String(state.frame%V.FRAMES[action()]));
  url.searchParams.set("from","animation");url.searchParams.set("motion",state.id);
