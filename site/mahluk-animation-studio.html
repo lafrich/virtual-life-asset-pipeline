@@ -47,6 +47,9 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 #animations .clip-card button{width:100%}
 #animations .clip-card .modify-motion{background:#d4e7fe;border-color:#4e87bd}
 #pixel-target{font-weight:bold}
+#part-edit-shortcut{margin:7px auto;padding:7px;justify-content:space-between;align-items:center;background:#e3efff;border:1px solid #8cb0d5}
+#part-edit-now{background:#c6ddff;border-color:#3971af}
+#part-edit-label{font-size:11px}
 #source-label{padding:7px;border:1px solid #9eafc2;background:#f1f6fc}
 #gif-preview{display:block;image-rendering:pixelated;aspect-ratio:64/112;width:min(175px,100%);height:auto;
  background:repeating-conic-gradient(#d2dce8 0 25%,#fafafa 0 50%) 0 0/16px 16px;border:1px solid #75879a}
@@ -126,6 +129,10 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <div class="row"><label>VIEW<select id="view"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></label>
  <label>FRAME MS<input type="number" id="ms" value="140" min="40" max="800" step="10"></label></div>
  <canvas id="stage" width="384" height="672" aria-label="Select a visible body region on the playing frame to move its pose or edit its character sprite"></canvas>
+ <div class="flow-toolbar" id="part-edit-shortcut" hidden>
+  <strong id="part-edit-label">PART SELECTED</strong>
+  <button id="part-edit-now" type="button">✎ EDIT PIXELS OF THIS PART</button>
+ </div>
  <div class="row"><button id="prev">◀</button><button id="play">▶ PLAY</button><button id="next">▶</button>
  <label style="flex:1"><input id="loop" type="checkbox" checked> LOOP</label></div>
  <div id="frame-strip" aria-label="Frame by frame timeline"></div>
