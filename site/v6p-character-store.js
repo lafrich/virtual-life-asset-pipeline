@@ -4,7 +4,9 @@
 "use strict";
 const KEY="vl-v6p-character-workflow-v1",SELECTED="vl-v6p-selected-character-v1",FORMAT="v6p-character-workflow-v1";
 const C=()=>root?.V6PPartCatalog||(typeof require==="function"?require("./v6p-part-catalog.js"):null);
-const storage=()=>root?.localStorage;
+// A character being edited in MAHLUK.EXE lives in shared RAM, not the
+// 5MB browser localStorage quota. The online Drive Save is the durable action.
+const storage=()=>root?.parent?.VLMahlukWorkspace?.draftStorage||root?.localStorage;
 const ID=/^mh2_[a-z0-9]+$/;
 const text=(v,n=60)=>String(v||"").trim().slice(0,n);
 function migrateAppearance(value){
