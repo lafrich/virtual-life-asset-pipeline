@@ -121,7 +121,7 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <div class="row"><button id="new">＋ NEW</button><button id="copy">⧉ DUPLICATE</button></div>
  <p class="hint">Move universal Genesis pose anchors. Body and clothing render as separate layers for each preview appearance.</p>
  <label>PIXEL TARGET<select id="pixel-target" aria-label="Selected editable sprite layer"></select></label>
- <div class="row"><button id="open-pixel">✎ EDIT SELECTED SPRITE</button><button id="export">↓ POSE JSON</button></div>
+ <div class="row"><button id="open-pixel">✎ EDIT CUSTOM WEAR PIXELS</button><button id="import-motion">↑ IMPORT AI MOTION.JSON</button><button id="export">↓ POSE JSON</button><input id="import-motion-file" type="file" accept=".json,application/json" hidden></div>
  <p class="hint">Pixel Editor opens the real selected character part or Custom Wear sheet at the current direction/frame. No unscoped blank canvas.</p>
 </aside>
 <section class="panel"><h2 id="animation-title">NEW ANIMATION</h2>
@@ -160,5 +160,5 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 <script src="./v6p-activity-contract.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-clip-store.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-compositor.js?v=v6p-stock-approved-20261108"></script>
 <script src="./v6p-custom-wear.js?v=rear-visible-v3-20261108"></script><script src="./v6p-universal-motion-contract.js?v=universal-v1"></script><script src="./v6p-universal-motion.js?v=universal-v1"></script>
 <script src="/virtual-office/shared/hub-registry.js"></script>
-<script src="./mahluk-animation-studio.js?v=universal-motion-v1"></script>
+<script src="./mahluk-animation-studio.js?v=universal-motion-v2"></script>
 </body></html>
