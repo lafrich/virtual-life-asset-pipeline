@@ -1,0 +1,27 @@
+name: Genesis Motion Draft Checks
+
+on:
+  pull_request:
+    paths:
+      - 'site/v6b-asset-generator/**'
+      - 'tools/test-genesis-motion-contract.cjs'
+      - '.github/workflows/genesis-motion-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax check
+        run: |
+          node --check site/v6b-asset-generator/genesis-motion-contract.js
+          node --check site/v6b-asset-generator/genesis-motion.js
+      - name: Genesis contract tests
+        run: node tools/test-genesis-motion-contract.cjs
