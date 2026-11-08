@@ -103,8 +103,8 @@ function opt(sel,value,label){const el=document.createElement("option");el.value
 function fillLists(){
  const src=$("workflow-source"),list=$("workflow-list"),oldSource=src.value,oldList=list.value;
  src.replaceChildren();list.replaceChildren();
- opt(src,"base:male","Start from Scratch · Male Base");
- opt(src,"base:female","Start from Scratch · Female Base");
+ opt(src,"base:male","Genesis Male Nude");
+ opt(src,"base:female","Genesis Female Nude");
  opt(list,"","Choose a character…");
  const seen=new Set();
  for(const row of S.list()){
@@ -121,8 +121,8 @@ function fillLists(){
  else $("wizard-gallery-count").textContent="("+published().length+")";
 }
 function sourceRecord(value){
- if(value==="base:female")return {type:"base",gender:"female"};
- if(value==="base:male"||!value)return {type:"base",gender:"male"};
+ if(value==="base:female")return {type:"genesis",gender:"female"};
+ if(value==="base:male"||!value)return {type:"genesis",gender:"male"};
  const id=value.split(":")[1];
  const draft=S.get(id);if(draft)return {type:"clone",id,name:draft.name};
  const saved=published().find(x=>x.id===id);
@@ -252,7 +252,12 @@ async function createFromBase(){
  else if(data.type==="published"){
   record=S.create({name:data.name+" Copy",gender});
   record=S.update(record.id,{appearance:data.appearance,faceId:data.faceId});
- }else record=S.create({name:gender==="female"?"New Female Character":"New Male Character",gender});
+ }else if(data.type==="genesis"){
+   // Clones only the chosen approved Genesis; source remains immutable.
+   root.V6PGenesisBase.get(gender);
+   record=S.create({name:gender==="female"?"New Genesis Female":"New Genesis Male",gender});
+   record=root.V6PGenesisBase.install(S,record.id,gender);
+  }else throw Error("Unsupported base. Select Genesis Male/Female.");
  await H.open(record);state.pendingPreview=true;state.saved=false;
  fillLists();renderLive();setStep("customize","Customize your new character. No original database character was overwritten.");
 }
