@@ -46,22 +46,12 @@
    heading:overlay.querySelector("#pixelTitle"),dir:overlay.querySelector("#pixelDirection"),
    color:overlay.querySelector("#pixelColor"),size:overlay.querySelector("#pixelSize"),
    onion:overlay.querySelector("#pixelOnion"),headOpacity:overlay.querySelector("#pixelMaleOpacity"),headOpacityLabel:overlay.querySelector("#pixelMaleOpacityLabel"),grid:overlay.querySelector("#pixelGrid"),
-   sync:overlay.querySelector("#pixelSync"),syncExisting:overlay.querySelector("#pixelSyncExisting"),
-   refView:overlay.querySelector("#pixelReferenceView"),
-   refFlip:overlay.querySelector("#pixelReferenceFlip"),
-   refOpacity:overlay.querySelector("#pixelReferenceOpacity"),
-   refOpacityLabel:overlay.querySelector("#pixelReferenceOpacityLabel"),
-   refX:overlay.querySelector("#pixelReferenceX"),refY:overlay.querySelector("#pixelReferenceY"),
    copy:overlay.querySelector("#pixelCopySelection"),
    paste:overlay.querySelector("#pixelPasteSelection"),
    pasteMirror:overlay.querySelector("#pixelPasteMirrored"),
    toolbarCopy:overlay.querySelector("#pixelToolbarCopy"),
    toolbarPaste:overlay.querySelector("#pixelToolbarPaste"),
    toolbarPasteFlip:overlay.querySelector("#pixelToolbarPasteFlip"),
-   copyTarget:overlay.querySelector("#pixelCopyTarget"),
-   autoMirror:overlay.querySelector("#pixelCopyAutoMirror"),
-   copyToView:overlay.querySelector("#pixelCopyToView"),
-   pasteToView:overlay.querySelector("#pixelPasteToView"),
    pasteReplace:overlay.querySelector("#pixelPasteReplace"),
    clipboardInfo:overlay.querySelector("#pixelClipboardInfo"),
    selectAll:overlay.querySelector("#pixelSelectAll"),
@@ -76,7 +66,7 @@
    status:overlay.querySelector("#pixelStatus"),undo:overlay.querySelector("#pixelUndo"),
    redo:overlay.querySelector("#pixelRedo"),apply:overlay.querySelector("#pixelApply"),
    save:overlay.querySelector("#pixelSaveDefault"),restore:overlay.querySelector("#pixelRestore"),
-   export:overlay.querySelector("#pixelExport"),close:overlay.querySelector("#pixelClose")
+   erase:overlay.querySelector("#pixelEraseCanvas"),close:overlay.querySelector("#pixelClose")
   };
   const atlas=document.createElement("canvas");atlas.width=W;atlas.height=H*4;
   const ctx=atlas.getContext("2d",{willReadFrequently:true});
@@ -101,7 +91,7 @@
    const available=!!saved;
    els.paste.disabled=!available;els.pasteMirror.disabled=!available;
    els.toolbarPaste.disabled=!available;els.toolbarPasteFlip.disabled=!available;
-   els.pasteToView.disabled=!available;
+
    els.clipboardInfo.textContent=available?
     "READY · "+(saved.bone||"PLANE").toUpperCase()+" / "+(saved.direction||"SE").toUpperCase()+
     " · "+saved.w+"×"+saved.h+" PX · COPY BETWEEN VIEWS / PARTS":
@@ -120,7 +110,7 @@
    els.undo.disabled=!history.length;els.redo.disabled=!redo.length;
    els.status.textContent=(dirty?"● UNSAVED PIXELS":"ORIGINAL PLANE")+
     " · "+bone.toUpperCase()+" · "+DIR[dir].toUpperCase()+
-    (els.sync.checked?" · SYNC 4 VIEW":" · VIEW ONLY")+
+    " · ACTIVE VIEW ONLY"+
     " · "+history.length+" undo steps";
   };
   function saveHistory(){
@@ -150,21 +140,6 @@
     out.restore();
    }
    out.drawImage(atlas,sx,sy,W,H,0,0,canvas.width,canvas.height);
-   // Ghost another angle on top of the active cutout to guide redraw.
-   // This is only a display composite: the 64×448 source atlas is intact.
-   const ghost=DIR.indexOf(els.refView.value);
-   if(ghost>=0&&ghost!==dir){
-    const ox=clamp(Number(els.refX.value)||0,-32,32)*u,
-     oy=clamp(Number(els.refY.value)||0,-56,56)*v;
-    const autoFlip=els.refFlip.checked&&
-      ((ghost===1||ghost===3)!==(dir===1||dir===3));
-    out.save();out.imageSmoothingEnabled=false;
-    out.globalAlpha=clamp(Number(els.refOpacity.value)||40,5,85)/100;
-    out.filter="sepia(1) saturate(3) hue-rotate(160deg)";
-    if(autoFlip){out.translate(canvas.width,0);out.scale(-1,1)}
-    out.drawImage(atlas,0,ghost*H,W,H,ox,oy,canvas.width,canvas.height);
-    out.restore();
-   }
    if(els.grid.checked){
     const step=Math.max(1,Math.min(16,Number(els.gridType.value)||1));
     out.save();out.strokeStyle=step===1?"rgba(65,94,128,.29)":"rgba(56,111,161,.65)";
@@ -224,7 +199,7 @@
     y:clamp(Math.floor((e.clientY-rect.top)/rect.height*H),0,H-1)
    };
   }
-  function targetDirections(){return els.sync.checked?[0,1,2,3]:[dir]}
+  function targetDirections(){return [dir]}
   function plot(x,y){
    const size=Math.round(Number(els.size.value)||1);
    const start=Math.floor((size-1)/2),ink=rgba(els.color.value);
@@ -316,7 +291,7 @@
    if(typeof onDirectionChange==="function")onDirectionChange(DIR[dir]);
    // A copy-to-view must never leave a previously enabled all-views brush
    // active: subsequent drawing on the pasted side would alter the original.
-   if(switching)els.sync.checked=false;
+
    // Ghost/reference overlays are purely optional; do not enable them here.
    // Otherwise the source can appear painted in the destination canvas.
    selection={x:dx,y:dy,w:Math.min(stamp.w,W-dx),h:Math.min(stamp.h,H-dy)};
@@ -330,28 +305,14 @@
     " · DRAG TO POSITION · UNDO AVAILABLE";
    return true;
   }
-  function pasteToView(copyCurrent=false){
-   const dest=DIR.indexOf(els.copyTarget.value);
-   if(dest<0)return;
-   if(copyCurrent)copySelection();
-   const stamp=currentClipboard();if(!stamp)return;
-   const sourceDir=DIR.indexOf(stamp.direction);
-   const mirror=els.autoMirror.checked&&sourceDir>=0&&
-    ((sourceDir===1||sourceDir===3)!==(dest===1||dest===3));
-   if(pasteSelection(mirror,dest)){
-    els.status.textContent=(copyCurrent?"COPIED & ":"")+"PASTED TO "+
-     DIR[dest].toUpperCase()+(mirror?" · AUTO MIRROR":" · ORIGINAL ORIENTATION")+
-     " · DRAG TO ADJUST, THEN APPLY FRAME";
-   }
-  }
   els.copy.onclick=copySelection;
   els.toolbarCopy.onclick=copySelection;
   els.paste.onclick=()=>pasteSelection(false);
   els.toolbarPaste.onclick=()=>pasteSelection(false);
   els.pasteMirror.onclick=()=>pasteSelection(true);
   els.toolbarPasteFlip.onclick=()=>pasteSelection(true);
-  els.copyToView.onclick=()=>pasteToView(true);
-  els.pasteToView.onclick=()=>pasteToView(false);
+
+
   function flipSelection(axis){
    saveHistory();const image=frameImage();
    replaceFrame(S.flip(image.data,W,H,selection,axis));
@@ -393,65 +354,15 @@
    ref=refs?refs[DIR[dir]]||null:ref;
    selection=null;moveStart=null;floatingPaste=null;
    // Changing angles always re-enters isolated view mode.
-   els.sync.checked=false;
-   els.copyTarget.value=DIR[dir^1];
+
    draw();updateHistory();
    if(els.status)els.status.textContent="LOADED "+DIR[dir].toUpperCase()+" VIEW · NATIVE PIXELS · OTHER ANGLES PROTECTED";
    if(typeof onDirectionChange==="function")onDirectionChange(DIR[dir]);
    return true;
   }
   els.dir.onchange=()=>switchDirection(els.dir.value);
-  const updateRef=()=>{
-   els.refOpacityLabel.textContent=els.refOpacity.value+"%";draw();
-  };
-  for(const el of [els.refView,els.refFlip,els.refOpacity,els.refX,els.refY])
-   el.addEventListener(el===els.refOpacity?"input":"change",updateRef);
   els.onion.onchange=draw;els.grid.onchange=draw;els.gridType.onchange=draw;
   els.headOpacity.oninput=()=>{els.headOpacityLabel.textContent=els.headOpacity.value+"%";draw()};
-  els.sync.onchange=()=>{
-   updateHistory();
-   els.status.textContent=els.sync.checked?
-    "WARNING · SYNC ON: DRAWING WILL ALSO CHANGE OTHER VIEWS · UNCHECK FOR INDEPENDENT EDITS":
-    "VIEW-ONLY EDITING · OTHER DIRECTIONS ARE PROTECTED";
-  };
-  els.syncExisting.onclick=()=>{
-   if(!source)return;
-   const native=document.createElement("canvas");native.width=W;native.height=H*4;
-   const nativeContext=native.getContext("2d",{willReadFrequently:true});
-   nativeContext.drawImage(source,0,0,W,H*4);
-   const before=nativeContext.getImageData(0,dir*H,W,H).data;
-   const after=ctx.getImageData(0,dir*H,W,H).data;
-   const changed=[];
-   for(let i=0;i<W*H;i++){
-    const p=i*4;
-    if(before[p+3]===0)continue; // Preserve every original opposite silhouette.
-    if(before[p]!==after[p]||before[p+1]!==after[p+1]||
-       before[p+2]!==after[p+2]||before[p+3]!==after[p+3])changed.push(i);
-   }
-   if(!changed.length){
-    els.status.textContent="NO EXISTING SOURCE-PIXEL DIFFERENCES IN "+DIR[dir].toUpperCase();
-    return;
-   }
-   saveHistory();
-   let count=0;
-   for(let target=0;target<DIR.length;target++){
-    if(target===dir)continue;
-    const output=ctx.getImageData(0,target*H,W,H),data=output.data;
-    for(const index of changed){
-     const x=mirroredX(index%W,dir,target),y=Math.floor(index/W),
-      from=index*4,to=(y*W+x)*4;
-     if(data[to+3]===0)continue;
-     if(after[from+3]===0)data[to+3]=0;
-     else{
-      data[to]=after[from];data[to+1]=after[from+1];data[to+2]=after[from+2];
-     }
-     count++;
-    }
-    ctx.putImageData(output,0,target*H);
-   }
-   draw();updateHistory();
-   els.status.textContent="SYNCED "+count+" EXISTING PIXELS · 4 DIRECTIONS · NATIVE SILHOUETTES KEPT";
-  };
   els.undo.onclick=()=>historyStep(history,redo);
   els.redo.onclick=()=>historyStep(redo,history);
   els.close.onclick=()=>{overlay.hidden=true};
@@ -466,17 +377,17 @@
     dirty=false;updateHistory();overlay.hidden=true;
    }
   };
-  els.restore.onclick=()=>{
+  els.erase.onclick=()=>{
+    // Only current direction/frame, others stay byte-for-byte unchanged.
+    if(!bone)return;
+    saveHistory();ctx.clearRect(0,dir*H,W,H);
+    selection=null;floatingPaste=null;draw();updateHistory();
+    els.status.textContent="ERASED "+DIR[dir].toUpperCase()+" FRAME · UNDO TO RESTORE · APPLY FRAME TO SAVE";
+   };
+   els.restore.onclick=()=>{
    if(!source)return;
    saveHistory();ctx.clearRect(0,0,W,H*4);ctx.drawImage(source,0,0);
    draw();els.status.textContent="RESTORED ORIGINAL SOURCE · APPLY TO COMMIT";
-  };
-  els.export.onclick=()=>{
-   atlas.toBlob(blob=>{
-    if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement("a");
-    a.href=url;a.download="mahluk-plane-"+bone+"-4dir.png";a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),1500);
-   },"image/png");
   };
   function capture(e){try{canvas.setPointerCapture(e.pointerId)}catch{}}
   function release(e){try{canvas.releasePointerCapture(e.pointerId)}catch{}}
@@ -601,15 +512,13 @@
    bone=id;dir=Math.max(0,DIR.indexOf(direction));source=originalAtlas||null;
    refs=referenceImages||null;ref=refs?.[DIR[dir]]||referenceImage||null;
    history=[];redo=[];dirty=false;active=null;selection=null;moveStart=null;floatingPaste=null;
-   els.sync.checked=false; // Always start every edit in isolated-view mode.
-   els.refView.value="off"; // Reference ghost is opt-in, not actual pixels.
-   els.refOpacity.value="40";els.refOpacityLabel.textContent="40%";
-   els.refFlip.checked=true;els.refX.value="0";els.refY.value="0";
-   ctx.clearRect(0,0,W,H*4);
+
+   els.onion.checked=true; // Reference always matches active selected character + direction.
+    ctx.clearRect(0,0,W,H*4);ctx.clearRect(0,0,W,H*4);
    if(initialAtlas)ctx.drawImage(initialAtlas,0,0,W,H*4);
    else if(source)ctx.drawImage(source,0,0,W,H*4);
    els.heading.textContent="PIXEL EDITOR / "+id.replaceAll("_"," ").toUpperCase();
-   els.dir.value=DIR[dir];els.copyTarget.value=DIR[dir^1];
+   els.dir.value=DIR[dir];
    selectTool("pencil");overlay.hidden=false;
    draw();zoomFit();updateHistory();
    canvas.focus({preventScroll:true});
