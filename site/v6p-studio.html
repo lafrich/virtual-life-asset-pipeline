@@ -706,6 +706,9 @@ async function save(){
     rigSystem:"v6p",
     faceId:state.faceId||"",
     v6p:Object.assign({},state.ch),
+     // Universal motions can re-render the same body pose in different garments.
+     assetParts:Object.fromEntries(Object.entries(S.get(state.characterId)?.parts||{}).filter(([part,png])=>
+      window.V6PCustomWear?.isCustomPart(part)&&typeof png==="string"&&png.startsWith("data:image/png;base64,"))),
     hairStyle:state.ch.hair,
     clothesColor:state.ch.top==="custom"?"custom":state.ch.topColor
   };
