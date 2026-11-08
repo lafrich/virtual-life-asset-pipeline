@@ -15,11 +15,11 @@ function published(){try{const v=JSON.parse(localStorage.getItem("mahluk-2-libra
 function add(sel,value,name,disabled=false){const o=document.createElement("option");o.value=value;o.textContent=name;o.disabled=disabled;sel.append(o)}
 function refresh(){
  const choice=source.value,current=list.value;source.replaceChildren();list.replaceChildren();
- add(source,"base:male","MALE BASE · standard outfit / no hair");
- add(source,"base:female","FEMALE BASE · standard outfit / no hair");
+ add(source,"base:male","Genesis Male Nude");
+ add(source,"base:female","Genesis Female Nude");
  add(list,"","Choose an existing character…");
- add(list,"base:male","[TEMPLATE] Male Base");
- add(list,"base:female","[TEMPLATE] Female Base");
+ add(list,"base:male","[TEMPLATE] Genesis Male Nude");
+ add(list,"base:female","[TEMPLATE] Genesis Female Nude");
  const seen=new Set();
  for(const row of S.list()){
   add(source,"draft:"+row.id,row.name+" · "+row.status);
@@ -34,7 +34,7 @@ function refresh(){
  if([...list.options].some(o=>o.value===current))list.value=current;
 }
 function sourceData(value){
- if(value.startsWith("base:"))return {gender:value.slice(5)};
+ if(value.startsWith("base:"))return {gender:value.slice(5),genesis:true};
  const id=value.split(":")[1],draft=S.get(id),saved=published().find(x=>x.id===id);
  if(draft)return {from:id,gender:draft.gender,name:draft.name};
  if(saved)return {gender:saved.base==="female"?"female":"male",appearance:saved.v6p,
@@ -91,8 +91,11 @@ function updateMasterCount(){
 async function open(id){
  if(!id){status("Choose a character");return}
  stop();
- if(id.startsWith("base:")){await H.useBase(id.slice(5));S.select("");
-  status("Preview "+id.slice(5)+" base. Click ADD NEW CHARACTER to create an editable copy.");await preview();return}
+ if(id.startsWith("base:")){const gender=id.slice(5);
+  root.V6PGenesisBase.get(gender);
+  // Source is an approved Genesis template; never persist/modify this immutable record.
+  await H.useBase(gender);S.select("");
+  status("Genesis "+gender+" template · ADD NEW CHARACTER creates an editable copy.");await preview();return}
  let row=S.get(id);
  if(!row){
   const saved=published().find(x=>x.id===id);
@@ -108,13 +111,15 @@ async function newCharacter(){
  const name=root.prompt("Character name",template.name?template.name+" Copy":
   template.gender==="female"?"New Female Character":"New Male Character");
  if(!name)return;
+ if(template.genesis)root.V6PGenesisBase.get(template.gender);
  let row=S.create({name,gender:template.gender,from:template.from});
- if(template.appearance)row=S.update(row.id,{appearance:template.appearance,faceId:template.faceId});
+ if(template.genesis)row=root.V6PGenesisBase.install(S,row.id,template.gender);
+ else if(template.appearance)row=S.update(row.id,{appearance:template.appearance,faceId:template.faceId});
  await open(row.id);
 }
 async function generate(){
  if(state.busy)return;const info=H.get(),id=info.id;
- if(!id||!S.get(id))return genStatus("ADD NEW CHARACTER first (Male/Female Base or database copy).");
+ if(!id||!S.get(id))return genStatus("ADD NEW CHARACTER first (Genesis Male/Female or database copy).");
  state.busy=true;$("generate-character").disabled=true;stop();
  try{
   S.update(id,{appearance:info.ch,faceId:info.faceId,name:info.name});
