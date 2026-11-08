@@ -11,12 +11,12 @@ const OPTIONAL=Object.freeze(["base/fx","base/body_front","base/body_front_f"]);
 const BANDS=Object.freeze({
  squat:{start:0,frames:6,ms:140,type:"loop",status:"draft_inactive",emosi:true,
   keys:Object.freeze(["standing","descending1","descending2","bottom_hold","ascending1","ascending2"])},
- pushup:{start:4,frames:6,ms:160,type:"loop",status:"authored",emosi:false,
+ pushup:{start:4,frames:6,ms:160,type:"loop",status:"retired_incompatible",emosi:false,
   keys:Object.freeze(["plank_high","lowering_1","lowering_2","bottom","rising_1","rising_2"])},
- yoga_sphinx_idle:{start:8,frames:4,ms:500,type:"loop",status:"authored",emosi:false},
- yoga_puppy_idle:{start:12,frames:4,ms:500,type:"loop",status:"authored",emosi:false},
- hip_shake:{start:16,frames:6,ms:125,type:"loop",status:"authored",emosi:true},
- yoga_happy_baby_idle:{start:20,frames:4,ms:500,type:"loop",status:"authored",emosi:false}
+ yoga_sphinx_idle:{start:8,frames:4,ms:500,type:"loop",status:"retired_incompatible",emosi:false},
+ yoga_puppy_idle:{start:12,frames:4,ms:500,type:"loop",status:"retired_incompatible",emosi:false},
+ hip_shake:{start:16,frames:6,ms:125,type:"loop",status:"retired_incompatible",emosi:true},
+ yoga_happy_baby_idle:{start:20,frames:4,ms:500,type:"loop",status:"retired_incompatible",emosi:false}
 });
 const INACTIVE=Object.freeze(["squat","jumping_jack","guard_jab","yoga_warrior","lie_supine"]);
 const PILOT_PARTS=Object.freeze([
@@ -27,14 +27,14 @@ const PILOT_PARTS=Object.freeze([
  "shoes/nude","shoes/nude_f",
  "pants/nude","pants/nude_f"
 ]);
-const SEMESTA_ACT_CLIPS=Object.freeze(["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]);
+const SEMESTA_ACT_CLIPS=Object.freeze([]); // five former stock activities retired from the new Genesis motion path
 const BACKLOG=Object.freeze([
  "crawl — planned floor locomotion clip; not authored",
  "crawl_idle — planned floor idle; not authored",
  "horse-riding — moving animation synced to a mount reference when one exists; not authored"
 ]);
 function bandOf(id){return BANDS[id]||null;}
-function isPlayable(id){const b=BANDS[id];return !!(b&&b.status==="authored");}
+function isPlayable(id){const b=BANDS[id];return !!(b&&b.status==="authored");} // All legacy activity bands retired
 function cellOrigin(bandStart,dir,frame){
  const di=DIRS.indexOf(dir);
  if(di<0)throw Error("Unknown direction "+dir);
