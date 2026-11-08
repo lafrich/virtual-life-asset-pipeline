@@ -17,14 +17,14 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
    try{
     await page.goto(ROOT+'/mahluk-hidup.html?tab=animation&legacyCloud=1',{waitUntil:'domcontentloaded',timeout:45000});
     const inner=page.frameLocator('#motion-frame');
-    await inner.locator('#animation-home:not([hidden])').waitFor({timeout:65000});
+    await inner.locator('#home:not([hidden])').waitFor({timeout:65000});
     const metrics=await page.evaluate(()=>{
      const bounds=id=>{const r=document.getElementById(id).getBoundingClientRect();
       return {x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom}};
      return {workspace:bounds('workspace'),view:bounds('animation-view'),
       pane:bounds('motion-pane'),frame:bounds('motion-frame'),footer:bounds('status')};
     });
-    const btn=await inner.locator('#animation-start-new').boundingBox();
+    const btn=await inner.locator('#start-create').boundingBox();
     const clickTarget=btn&&await page.evaluate(({x,y})=>{
       const node=document.elementFromPoint(x,y);
       return {id:node?.id||'',tag:node?.tagName||'',className:typeof node?.className==='string'?node.className:''};
@@ -42,7 +42,7 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
     let scrolled=0;
     if(isMobile){
      if(scroll.height>scroll.client+40){
-      await inner.locator('#animation-start-new').hover();
+      await inner.locator('#start-create').hover();
       await page.mouse.wheel(0,500);
       await page.waitForTimeout(180);
       scrolled=await inner.locator('body').evaluate(()=>document.scrollingElement.scrollTop);
@@ -50,29 +50,27 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
      }else{
       // A tall phone may fit the whole Home gallery; it must not be
       // artificially scrollable just to satisfy the shorter-phone test.
-      assert.equal(scroll.overflowY,'auto');
-      assert.ok((await inner.locator('#animation-start-new').boundingBox()).height>30);
+      assert.ok(['auto','visible'].includes(scroll.overflowY));
+      assert.ok((await inner.locator('#start-create').boundingBox()).height>30);
      }
     }
-    await inner.locator('#animation-start-new').click();
-    await inner.locator('#animation-setup:not([hidden])').waitFor();
+    await inner.locator('#start-create').click();
+    await inner.locator('#setup:not([hidden])').waitFor();
     await inner.locator('#setup-name').fill('Mobile Screen Test');
-    // The old #gender control is deliberately hidden; choose the real Genesis source.
-    await inner.locator('#source-character').selectOption('base:female');
     await inner.locator('#template').selectOption('sit');
-    await inner.locator('#setup-create').click();
-    await inner.locator('#animation-workspace:not([hidden])').waitFor({timeout:65000});
+    await inner.locator('#setup-continue').click();
+    await inner.locator('#editor:not([hidden])').waitFor({timeout:65000});
     await inner.locator('#stage').waitFor({state:'visible',timeout:65000});
     const editorHeight=await inner.locator('body').evaluate(()=>document.scrollingElement.scrollHeight);
     assert.ok(editorHeight>metrics.frame.height+60,'Editor content should scroll on mobile');
-    await inner.locator('#save').scrollIntoViewIfNeeded();
-    assert.equal(await inner.locator('#save').isVisible(),true,'Save Online inaccessible beneath mobile editor');
-    await inner.locator('#animation-editor-back').click();
+    await inner.locator('#save-cloud').scrollIntoViewIfNeeded();
+    assert.equal(await inner.locator('#save-cloud').isVisible(),true,'Save Online inaccessible beneath mobile editor');
+    await inner.locator('#back-home').click();
     await inner.locator('#animation-home:not([hidden])').waitFor();
     assert.deepEqual(errors,[],'Browser errors');
     console.log('PASS viewport Animation '+viewport.width+'×'+viewport.height+
      ' iframe='+Math.round(metrics.frame.height)+'px scroll='+Math.round(scrolled)+
-     ' Gallery→Setup→Frame Editor→Back');
+     ' Python Home→Setup→Anatomy Editor→Back');
    }catch(err){
     console.error('MOBILE LAYOUT ERROR '+viewport.width+'×'+viewport.height,err);
     await page.screenshot({path:'/tmp/mahluk-mobile-animation-'+viewport.width+'.png',fullPage:true}).catch(()=>{});

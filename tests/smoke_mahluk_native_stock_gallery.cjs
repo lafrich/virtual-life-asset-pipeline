@@ -8,11 +8,11 @@ const alpha=canvas=>{const d=canvas.getContext('2d').getImageData(0,0,64,112).da
  const page=await browser.newPage({viewport:{width:1280,height:900}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  try{
-  await page.goto(root+'/mahluk-animation-studio.html?embedded=1',{waitUntil:'domcontentloaded',timeout:45000});
+  // The removed six-cutout editor must not be needed to inspect approved stock.
+  await page.goto(root+'/v6p-studio.html',{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(()=>window.V6PClipStore,null,{timeout:45000});
   const clips=await page.evaluate(async()=>{await window.V6PClipStore.loadBundled();return window.V6PClipStore.list().map(c=>c.id)});
-  assert.deepEqual(clips,[],'Non-native animations must be deleted, not hidden');
-  await page.goto(root+'/v6p-studio.html',{waitUntil:'domcontentloaded',timeout:45000});
+  assert.deepEqual(clips,[],'Non-native animations must be absent');
   await page.waitForFunction(()=>window.V6PCharacterHost&&window.__v6pStudio?.ready,null,{timeout:45000});
   for(const gender of ['male','female']){
    await page.evaluate(async g=>{await window.V6PCharacterHost.useBase(g)},gender);

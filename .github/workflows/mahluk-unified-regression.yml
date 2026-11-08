@@ -121,7 +121,12 @@ jobs:
           mkdir -p /tmp/character-wizard-root
           ln -s "$PWD/site" /tmp/character-wizard-root/virtual-life-asset-pipeline
           python3 -m http.server 4173 --bind 127.0.0.1 -d /tmp/character-wizard-root >/tmp/character-wizard-server.log 2>&1 &
-          # Test actual Punch pixels and 4-way browser rendering before ancillary UI.
+          # Native Python preview uses the real, untouched V6B source and study data.
+          mkdir -p site/genesis-native-source/tools site/genesis-native-source/study site/genesis-native-source/live/chars
+          cp chars-iso/v6b/tools/live_v6b.py site/genesis-native-source/tools/
+          cp chars-iso/v6b/study/ref_*.npy site/genesis-native-source/study/
+          cp chars-iso/v6b/live/chars/ichsan.json chars-iso/v6b/live/chars/noor.json site/genesis-native-source/live/chars/
+          # Test original native idle/walk frames and new Animation browser flow.
           node tests/smoke_mahluk_native_stock_gallery.cjs
           node tests/smoke_mahluk_cloud_startup.cjs
           node tests/smoke_mahluk_drive_backup_restore.cjs
