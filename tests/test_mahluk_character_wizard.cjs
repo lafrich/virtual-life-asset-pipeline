@@ -48,7 +48,8 @@ test('Character Pixel Editor stays in Character tab and can return without losin
  const hub=read('site/mahluk-hub.js'),shell=read('site/mahluk-hidup.html'),pixel=read('site/pixel-editor.js');
  assert.match(shell,/id="character-pixel-overlay"/);
  assert.match(shell,/id="character-pixel-back"/);
- assert.match(hub,/if\(target\.searchParams\.get\("character"\)\)/);
+ // A motion coming from Animation must stay in Animation; character edits stay here.
+  assert.match(hub,/target\.searchParams\.get\("character"\)&&target\.searchParams\.get\("from"\)!=="animation"/);
  assert.match(hub,/async function closeCharacterPixel\(\)/);
  assert.match(hub,/VirtualLifePixelEditor\?\.flush\?\.\(\)/);
  assert.match(hub,/\$\("character-pixel-back"\)\.onclick/);
