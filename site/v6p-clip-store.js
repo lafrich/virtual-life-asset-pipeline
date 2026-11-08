@@ -7,6 +7,58 @@ const FORMAT="v6p-act-clips-store-v1";
 const RETIRED_STOCK_IDS=Object.freeze(["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]);
 const RETIRED=new Set(RETIRED_STOCK_IDS.flatMap(id=>[id,"clip_"+id]));
 const BUILTIN_IDS=Object.freeze([]);
+const bundled=new Map();
+let bundlePromise=null;
+function universalContract(){
+ return root?.V6PUniversalMotionContract||
+  (typeof require==="function"?require("./v6p-universal-motion-contract.js"):null);
+}
+// GitHub Pages cannot enumerate a directory. index.json is the only motion
+// asset registry; new motions change JSON files, never editor dropdown code.
+async function loadBundled(){
+ if(bundlePromise)return bundlePromise;
+ bundlePromise=(async()=>{
+  const request=typeof root?.fetch==="function"?root.fetch.bind(root):
+   typeof fetch==="function"?fetch:null;
+  if(!request)throw Error("JSON asset loading unavailable");
+  const response=await request("./motion-packs/index.json",{cache:"no-store"});
+  if(!response.ok)throw Error("Motion registry unavailable: "+response.status);
+  const index=await response.json();
+  if(index?.format!=="genesis-v6b-motion-registry-v1"||
+     !Array.isArray(index.files)||index.files.length>150)
+   throw Error("Invalid Genesis motion registry");
+  const C=universalContract(),A=contract(),next=new Map();
+  if(!C||!A)throw Error("Genesis motion contract not loaded");
+  for(const name of index.files){
+   if(typeof name!=="string"||!/^(?:clp|clip)_[a-z0-9_]+\.motion\.json$/.test(name))
+    throw Error("Invalid Genesis motion asset path");
+   const result=await request("./motion-packs/"+name,{cache:"no-store"});
+   if(!result.ok)throw Error("Missing motion asset "+name+": "+result.status);
+   const data=await result.json();
+   if(!/^(?:clp|clip)_[a-z0-9_]{3,70}$/.test(String(data?.id||""))||
+      name!==data.id+".motion.json"||isRetired(data.id)||next.has(data.id))
+    throw Error("Invalid, duplicate, or retired motion ID: "+name);
+   if(!Array.isArray(data.frames)||data.frames.some(f=>
+      !/^[a-z0-9_]{1,32}$/.test(String(f?.key||""))))
+    throw Error("Invalid frame keys: "+name);
+   const status=data.status==="stock"?"stock":"draft";
+   const motion=C.make({sourceAction:data.sourceAction,frames:data.frames,
+    tracks:data.tracks,status});
+   const category=String(data.category||"motions").toLowerCase();
+   if(!/^[a-z][a-z0-9_]{0,31}$/.test(category))
+    throw Error("Invalid motion category: "+name);
+   const manifest={...A.emptyManifest({id:data.id,name:data.name,
+      frames:data.frames,loop:data.loop!==false,requiredParts:[]}),
+     source:C.FORMAT,category,reviewCandidate:status!=="stock",motion};
+   C.validateManifest(manifest);
+   next.set(data.id,{manifest,layers:{},origin:"bundled",
+    saveStatus:status==="stock"?"stock":"review"});
+  }
+  bundled.clear();for(const [id,row] of next)bundled.set(id,row);
+  return [...bundled.keys()];
+ })();
+ try{return await bundlePromise}catch(e){bundlePromise=null;throw e}
+}
 function isRetired(id){return RETIRED.has(String(id||""))}
 function builtinBand(id){return String(id||"").replace(/^clip_/,"")}
 function isBuiltin(_id){return false}
@@ -70,13 +122,14 @@ function normalizeId(id){return id;}
 function get(id){
  id=normalizeId(id);
  if(isRetired(id))return null;
- const row=read().clips[id];
+ const row=read().clips[id]||bundled.get(id);
  if(!row)return null;
  return recordFromStore(id,row);
 }
 function list(){
  const store=read();
- return Object.keys(store.clips).filter(id=>!isRetired(id)).map(id=>recordFromStore(id,store.clips[id]));
+ const ids=new Set([...bundled.keys(),...Object.keys(store.clips)]);
+ return [...ids].filter(id=>!isRetired(id)).map(id=>recordFromStore(id,store.clips[id]||bundled.get(id)));
 }
 function create(opts){
  const A=contract();
@@ -91,6 +144,7 @@ function create(opts){
 function updateManifest(id,patch){
  id=normalizeId(id);
  const rec=get(id); if(!rec)throw Error("Unknown clip "+id);
+ if(rec.origin==="bundled")throw Error("Bundled stock is read-only; use MODIFY to make a new draft");
  const manifest={...rec.manifest,...patch,id:rec.manifest.id};
  if(patch&&Array.isArray(patch.frames))manifest.frames=patch.frames.map(f=>({key:String(f.key||"f0").slice(0,32),ms:Math.max(40,Math.min(800,Number(f.ms)||140))}));
  const store=read();
@@ -106,6 +160,7 @@ function setLayer(id,part,dataUrl,meta){
  if(typeof dataUrl!=="string"||dataUrl.indexOf("data:image/png;base64,")!==0)throw Error("Layer must be a PNG data URL");
  if(dataUrl.length>9000000)throw Error("Activity sheet too large for localStorage");
  const rec=get(id); if(!rec)throw Error("Unknown clip "+id);
+ if(rec.origin==="bundled")throw Error("Bundled motion is read-only; use MODIFY");
  const store=read();
  const row=store.clips[id]||{manifest:rec.manifest,layers:{},origin:rec.origin,saveStatus:"local"};
  row.layers=row.layers||{};row.layers[part]=dataUrl;
@@ -117,6 +172,7 @@ function setLayer(id,part,dataUrl,meta){
 function replaceLayers(id,layers){
  id=normalizeId(id);
  const rec=get(id); if(!rec)throw Error("Unknown clip "+id);
+ if(rec.origin==="bundled")throw Error("Bundled motion is read-only; use MODIFY");
  const store=read();
  const row=store.clips[id]||{manifest:rec.manifest,layers:{},origin:rec.origin};
  row.layers=layers&&typeof layers==="object"?layers:{};
@@ -143,6 +199,7 @@ function markDrive(id,info){
 function remove(id){
  id=normalizeId(id);
  if(isRetired(id))throw Error("Retired legacy stock cannot be created or modified");
+ if(bundled.has(id))throw Error("Bundled motion cannot be removed");
  const store=read();delete store.clips[id];write(store);
 }
 function compatibility(rec){
@@ -172,7 +229,7 @@ function galleryEntry(rec){
 }
 function galleryEntries(){return list().map(galleryEntry);}
 return Object.freeze({
- KEY,FORMAT,BUILTIN_IDS,RETIRED_STOCK_IDS,isRetired,get,list,create,updateManifest,setLayer,replaceLayers,importCloudRecord,layerUrl,hasLayer,markDrive,remove,
+ KEY,FORMAT,BUILTIN_IDS,RETIRED_STOCK_IDS,isRetired,loadBundled,get,list,create,updateManifest,setLayer,replaceLayers,importCloudRecord,layerUrl,hasLayer,markDrive,remove,
  compatibility,galleryEntry,galleryEntries
 });
 });
