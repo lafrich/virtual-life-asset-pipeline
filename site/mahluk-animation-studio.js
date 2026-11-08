@@ -143,6 +143,36 @@ async function refreshCloud(){
   $("animation-home-note").textContent="ONLINE DATABASE · "+items.length+" animations loaded";
  }catch(error){$("animation-home-note").textContent="Cloud load failed: "+error.message}
 }
+async function ensureBundledReviewPunch(){
+ // Review package shipped with the application. Does not modify native Idle,
+ // Walk, approved activity stock, or any existing user/Drive animation record.
+ const file="./motion-packs/clp_standing_punch.motion.json";
+ const response=await fetch(file,{cache:"no-store"});
+ if(!response.ok)throw Error("Bundled Standing Punch unavailable: "+response.status);
+ const data=await response.json();
+ if(data.format!==Contract.FORMAT||data.id!=="clp_standing_punch"||data.sourceAction!=="idle")
+  throw Error("Standing Punch motion pack is not a canonical V6B Idle derivative");
+ if(!Array.isArray(data.frames)||!Array.isArray(data.tracks?.se))throw Error("Invalid Standing Punch track");
+ const motion=Contract.make({sourceAction:data.sourceAction,frames:data.frames,
+  tracks:data.tracks,status:"draft"});
+ const existing=Store.get(data.id);
+ if(existing)return; // preserve any already imported/modified version.
+ const clip=Store.create({id:data.id,name:data.name,frames:data.frames,
+  loop:data.loop!==false,requiredParts:[]});
+ const saved=Store.updateManifest(clip.id,{name:data.name,frames:data.frames,
+  loop:data.loop!==false,requiredParts:[],source:Contract.FORMAT,
+  motion,reviewCandidate:true});
+ Contract.validateManifest(saved.manifest);
+ const meta=db();
+ if(!Object.hasOwn(meta,data.id)){
+  meta[data.id]={id:data.id,name:data.name,gender:"male",sourceId:"base:male",
+   stockReference:"",template:"idle",frames:deep(data.frames),
+   loop:data.loop!==false,tracks:deep(data.tracks),approval:"review",
+   updated:new Date().toISOString()};
+  putDb(meta);
+ }
+ if(state.screen==="home")listClips();
+}
 function records(){return Object.keys(db()).length}
 function freshPose(){const p={};for(const name of PARTS){const [x,y]=ANCHORS[name];p[name]={x:0,y:0,angle:0,ax:x,ay:y}}return p}
 function pose(dir=state.dir,index=state.frame){
@@ -286,7 +316,7 @@ function listClips(){
    const title=document.createElement("strong"),info=document.createElement("small");
    title.textContent=official?(STOCK_TITLES[clip.manifest.band]||clip.name.toUpperCase()):clip.name;
    info.textContent=clip.manifest.frames.length+" FRAMES · "+
-    (official?"APPROVED NATIVE STOCK":drafts[clip.id]?"EDITABLE ANIMATION":"USER PIXEL CLIP");
+    (official?"APPROVED NATIVE STOCK":clip.manifest.reviewCandidate?"REVIEW · IDLE-BASED MOTION":drafts[clip.id]?"EDITABLE ANIMATION":"USER PIXEL CLIP");
    b.append(title,info);b.onclick=()=>void open(clip.id);
    const modify=document.createElement("button");modify.className="modify-motion";
    modify.textContent="✎ MODIFY · SPRITE + ANCHOR";
@@ -575,7 +605,10 @@ root.addEventListener("message",e=>{
   void loadSource().catch(error=>say(error.message,true));
  }
 });
-fillSources();show("home");void refreshCloud();updateProperty();
+fillSources();show("home");updateProperty();
+ void refreshCloud().then(()=>ensureBundledReviewPunch()).catch(error=>{
+  $("animation-home-note").textContent="Standing Punch review import: "+error.message;
+ });
 const returnMotion=new URLSearchParams(location.search).get("motion");
 if(returnMotion&&Store.get(returnMotion)&&db()[returnMotion])
  void open(returnMotion).catch(e=>say("Animation return failed: "+e.message,true));
