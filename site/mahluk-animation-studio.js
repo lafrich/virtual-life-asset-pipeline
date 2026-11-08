@@ -195,7 +195,7 @@ async function loadSource(){
  const sheet=await setSource();
  if(rev!==state.revision)return;
  state.sheet=sheet;state.images.clear();
- state.stockGuides.clear();
+ state.stockGuides.clear();render(); // Character appears before optional stock guide finishes.
  const clip=state.stockReference&&Store.get(state.stockReference);
  if(clip?.origin==="pilot"&&A.isPlayable(clip.manifest.band)){
   // The approved stock is a visual motion guide, NOT a substitute for
