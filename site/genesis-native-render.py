@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 import live_v6b as native
 
-BASE = Path(__file__).resolve().parents[1]
+BASE = Path(native.ROOT)
 CONFIG = {"male": "ichsan", "female": "noor"}
 FRAME = (64, 112)
 DIRS = ("se", "sw", "ne", "nw")
