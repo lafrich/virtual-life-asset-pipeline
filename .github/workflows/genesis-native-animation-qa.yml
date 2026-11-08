@@ -1,0 +1,37 @@
+name: Genesis Native Animation — Renderer and Import QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/genesis-native-*.js"
+      - "site/genesis-native-render.py"
+      - "site/mahluk-animation-native.*"
+      - "tests/test_genesis_native_*"
+      - "chars-iso/v6b/tools/live_v6b.py"
+      - ".github/workflows/genesis-native-animation-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m pip install numpy pillow
+      - name: Native V6B original pixel renderer
+        run: |
+          python -m py_compile site/genesis-native-render.py
+          python tests/test_genesis_native_renderer.py
+      - name: Interchange contract, editor and Worker syntax
+        run: |
+          node --check site/genesis-native-python-contract.js
+          node --check site/genesis-native-worker.js
+          node --check site/mahluk-animation-native.js
+          node tests/test_genesis_native_python_contract.cjs
+          test -s site/mahluk-animation-native.html
