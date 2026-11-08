@@ -190,6 +190,16 @@ async function saveCloud(){
   saved=true;updateActions();message("CLOUD VERIFIED · "+data.name+" · Python source saved · NOT installed into game");
  }catch(error){message("Cloud save failed: "+error.message,true)}
 }
+async function reloadGenesisMaster(){
+ if(!notifyOnline())return;
+ try{
+  const count=Master.cloudRows(await bridge().listOnline("genesis"));
+  if(count){
+   frameCache.clear();
+   if(draft)requestRender();
+  }
+ }catch(error){message("Genesis master cloud sync: "+error.message,true)}
+}
 async function gallery(){
  const token=++galleryRevision;
  const area=$("gallery");area.replaceChildren();
@@ -307,9 +317,9 @@ STAGE.addEventListener("pointermove",e=>{
 for(const type of ["pointerup","pointercancel"])STAGE.addEventListener(type,()=>{dragging=null});
 root.addEventListener("message",e=>{
  if(e.origin!==location.origin)return;
- if(e.data?.type==="mahluk:cloud-connected")void gallery();
+ if(e.data?.type==="mahluk:cloud-connected"){void gallery();void reloadGenesisMaster()}
  if(e.data?.type==="mahluk:select-motion"&&e.data?.id){void gallery()}
- if(e.data?.type==="genesis:master-overwritten"){frameCache.clear();genesisSheets.clear();if(draft)requestRender()}
+ if(e.data?.type==="genesis:master-overwritten"){frameCache.clear();genesisSheets.clear();void reloadGenesisMaster();if(draft)requestRender()}
 });
 root.addEventListener("pagehide",stop);
 root.addEventListener("storage",e=>{if(e.key===Master.KEY){frameCache.clear();genesisSheets.clear();if(draft)requestRender()}});
