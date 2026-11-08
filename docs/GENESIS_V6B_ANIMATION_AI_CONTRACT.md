@@ -112,7 +112,7 @@ Follow the contract precisely. Reject a physically impossible or underspecified 
 
 - Universal source motion schema: \`site/v6p-universal-motion-contract.js\`
 - Per-appearance layer renderer: \`site/v6p-universal-motion.js\`
-- Animation preview, AI JSON import, Draft, Stock button: \`site/mahluk-animation-studio.js\`
+- Animation preview, AI JSON import, Draft, Stock button: \`site/mahluk-animation-native.js\`
 - Stock/draft clip persistence: \`site/v6p-clip-store.js\`
 - Action scene motion playback: \`site/mahluk-action-editor.js\`
 - Character publication and compiled legacy clips: \`site/v6p-studio.html\`, \`site/vlhub-characters-publish.js\`

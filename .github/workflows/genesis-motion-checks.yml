@@ -10,7 +10,7 @@ on:
       - 'site/v6p-activity-contract.js'
       - 'site/v6p-clip-store.js'
       - 'site/v6p-compositor.js'
-      - 'site/mahluk-animation-studio.js'
+      - 'site/mahluk-animation-native.js'
       - '.github/workflows/genesis-motion-checks.yml'
   workflow_dispatch:
 
@@ -32,7 +32,7 @@ jobs:
           node --check site/v6p-activity-contract.js
           node --check site/v6p-clip-store.js
           node --check site/v6p-compositor.js
-          node --check site/mahluk-animation-studio.js
+          node --check site/mahluk-animation-native.js
       - name: Genesis contract tests
         run: |
           node tools/test-genesis-motion-contract.cjs

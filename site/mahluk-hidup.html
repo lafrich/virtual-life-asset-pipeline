@@ -40,10 +40,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .pane-header button{padding:4px 7px}
 .pane-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mobile-panel-tabs{display:none}
-#animation-pixel-overlay{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;background:#c6d4e7}
-#animation-pixel-overlay[hidden]{display:none!important}
-#animation-pixel-toolbar{display:flex;align-items:center;gap:12px;padding:6px 10px;background:linear-gradient(90deg,#144687,#5785bf);color:white}
-#animation-pixel-toolbar button{background:#e9f1fd;color:#1e477a}
 #status strong{color:#1b4780}
 #status-msg{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 #help{color:#183e79}
@@ -97,18 +93,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
  </section>
  <section class="view" id="animation-view" role="tabpanel" aria-label="Animation editor">
   <div id="motion-pane">
-   <iframe id="motion-frame" class="frame" title="Animation Database — create, setup, frame editor, preview, gallery" loading="lazy"></iframe>
+   <iframe id="motion-frame" class="frame" title="Genesis V6B Animation — Import Python, Create New, native preview, cloud" loading="lazy"></iframe>
   </div>
-  <div id="animation-pixel-overlay" hidden aria-label="Animation frame pixel correction">
-   <div id="animation-pixel-toolbar"><button type="button" id="animation-pixel-back">← BACK TO ANIMATION</button>
-    <strong>PIXEL CORRECTION · SELECTED ANIMATION ONLY</strong></div>
-   <iframe id="pixel-frame" class="frame" title="Pixel correction for selected animation" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
-  </div>
-  <button type="button" id="new-clip" hidden>NEW CLIP</button>
-  <button type="button" id="pixel-full" hidden>PIXEL FULL</button>
-  <button type="button" id="view-library" hidden>ANIMATION</button>
-  <button type="button" id="view-paint" hidden>PIXEL</button>
- </section>
+</section>
 </div>
 <footer id="status"><strong>V6P · 64×112 · 4 VIEWS</strong><span id="status-msg">Source editors preserved · separate databases are not overwritten</span><span id="help">DRIVE ONLINE · GITHUB STOCK</span></footer>
 </main>
@@ -116,7 +103,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <script src="/virtual-office/shared/hub-registry.js?v=mahluk-unified-1"></script>
 <script src="./v6p-published-archive.js?v=quota-idb-20261108"></script>
 <script src="./mahluk-hub-drive.js?v=quota-idb-20261108"></script>
-<script src="./mahluk-hub.js?v=idle-pivot-v2"></script>
+<script src="./mahluk-hub.js?v=genesis-python-default-v2"></script>
 <script src="./cloud-first-universal.js?v=nondestructive-20261108"></script>
 <script src="./cloud-first-startup.js?v=nondestructive-20261108"></script>
 <script src="./cloud-first-mahluk-entry.js?v=nondestructive-20261108"></script>

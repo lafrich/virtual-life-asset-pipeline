@@ -271,7 +271,7 @@ function galleryEntry(rec){
   updatedAt:rec.updatedAt||"",
   compatibility:compatibility(rec),
   openUrl:rec.manifest?.motion?.format==="genesis-v6b-universal-motion-v1"?
-   "./mahluk-animation-studio.html?motion="+encodeURIComponent(rec.id):
+   "./mahluk-animation-native.html?motion="+encodeURIComponent(rec.id):
    "./pixel-editor.html?source=v6p&project="+encodeURIComponent(rec.id),
   manifest:rec.manifest,frameMs:rec.frameMs
  };

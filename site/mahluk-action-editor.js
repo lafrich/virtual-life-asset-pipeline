@@ -404,7 +404,7 @@ function wire(){
  $("edit-motion").onclick=()=>{
   const m=current();if(!m)return;
   if(root.parent!==root&&root.parent.VLMahlukWorkspace)root.parent.VLMahlukWorkspace.show("animation");
-  else location.href="./mahluk-animation-studio.html";
+  else location.href="./mahluk-animation-native.html";
  };
  $("new").onclick=()=>{fillForm(blank());show("choose")};
  $("duplicate").onclick=()=>{const row=readForm();fillForm({...row,id:"action_"+Date.now().toString(36),name:row.name+" Copy"});show("editor")};

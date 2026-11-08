@@ -907,7 +907,7 @@ if($("new-clip")) $("new-clip").addEventListener("click",()=>{
   // One motion authoring entrypoint: never start a parallel clip editor here.
   if(window.parent&&window.parent!==window&&window.parent.VLMahlukWorkspace)
    window.parent.VLMahlukWorkspace.show("animation");
-  else location.href="./mahluk-animation-studio.html";
+  else location.href="./mahluk-animation-native.html";
 });
 if($("tab-btn-appearance")) $("tab-btn-appearance").addEventListener("click",()=>showStudioTab("appearance"));
 if($("tab-btn-gallery")) $("tab-btn-gallery").addEventListener("click",()=>showStudioTab("gallery"));

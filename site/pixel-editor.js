@@ -1515,7 +1515,7 @@ async function backToCaller(){
  try{await window.VirtualLifePixelEditor?.flush?.()}catch(error){
   status("Save failed: "+error.message,true);return;
  }
- const destination=fromAnimation?"./mahluk-animation-studio.html":"./v6p-studio.html";
+ const destination=fromAnimation?"./mahluk-animation-native.html":"./v6p-studio.html";
  location.href=fromAnimation?destination+"?motion="+encodeURIComponent(params.get("motion")||""):destination;
 }
 async function recolorCustomWear(){

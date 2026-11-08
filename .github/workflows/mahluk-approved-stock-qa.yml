@@ -44,4 +44,4 @@ jobs:
           node --check site/v6p-compositor.js
           node --check site/v6p-clip-store.js
           node --check site/mahluk-action-editor.js
-          node --check site/mahluk-animation-studio.js
+          node --check site/mahluk-animation-native.js

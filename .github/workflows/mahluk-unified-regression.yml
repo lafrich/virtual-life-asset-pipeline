@@ -71,7 +71,7 @@ jobs:
           node --check site/genesis-native-worker.js
           node --check site/mahluk-animation-native.js
           node --check site/mahluk-action-editor.js
-          node --check site/mahluk-animation-studio.js
+          node --check site/mahluk-animation-native.js
           node --check site/v6p-custom-wear.js
           node --check site/v6p-character-store.js
           node --check site/v6p-character-workflow.js

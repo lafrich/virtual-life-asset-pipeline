@@ -7,9 +7,8 @@ const URLS=Object.freeze({
  emotion:"/virtual-office/emotion-studio/",
  character:"./v6p-studio.html?embedded=1&rev=idle-pivot-v2",
  action:"./mahluk-action-editor.html?embedded=1",
- animation:"./mahluk-animation-studio.html?embedded=1&rev=idle-pivot-v2"
+ animation:"./mahluk-animation-native.html?embedded=1&rev=genesis-python-v2"
 });
-const NATIVE_ANIMATION=new URLSearchParams(location.search).get("animationEditor")==="native";
 const FRAMES=Object.freeze({
  emotion:"emotion-frame",character:"character-frame",action:"action-frame",
  animation:"motion-frame"
@@ -66,58 +65,35 @@ function show(name){
  tab=name;
  document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===tab)));
  document.querySelectorAll(".view").forEach(p=>p.classList.toggle("active",p.id===tab+"-view"));
- loadFrame(FRAMES[tab],tab==="animation"&&NATIVE_ANIMATION?
-  "./mahluk-animation-native.html?embedded=1&rev=genesis-python-v1":URLS[tab]);
+ loadFrame(FRAMES[tab],URLS[tab]);
  announceOnline(FRAMES[tab]);
- if(tab==="character"){
-  const pixel=$("pixel-frame");
-  try{
-   const pending=pixel?.contentWindow?.VirtualLifePixelEditor?.flush?.();
-   Promise.resolve(pending).then(refreshCharacter,refreshCharacter);
-  }catch{refreshCharacter()}
- }
+ if(tab==="character")refreshCharacter();
  if(tab==="animation")setPane();
  const u=new URL(location.href);u.searchParams.set("tab",tab);
  history.replaceState(null,"",u.pathname+u.search+u.hash);
  note({emotion:"EMOSI.EXE · emotion database and dialog lipsync are the original editor",
  character:"CHARACTER · Start → Base → Customize → Preview → Save",
  action:"ACTION EDITOR · situation binding is stored as a separate draft",
- animation:NATIVE_ANIMATION?
-  "ANIMATION · GENESIS V6B PYTHON TRIAL · source authoring and real native preview; install gated":
-  "ANIMATION · 4-direction frame-by-frame asset/anchor editor + Pixel Editor"}[tab]);
+ animation:"ANIMATION · GENESIS V6B PYTHON · Import / Create / Native Preview · Install gated"}[tab]);
 }
 function openEditor(value){
- const url=fixedUrl(value),target=new URL(url);
- if(target.searchParams.get("character")&&target.searchParams.get("from")!=="animation"){
-  show("character");
-  const frame=$("character-pixel-frame");
-  frame.src=url;
-  $("character-pixel-overlay").hidden=false;
-  note("Editing a character-local sprite · Back to Character preserves your wizard step");
-  return;
- }
- show("animation");
- const frame=$("pixel-frame");frame.src=url;frame.dataset.loaded="1";
- $("animation-pixel-overlay").hidden=false;
- note("Editing animation pixels · Back returns to the Animation flow");
+ const url=fixedUrl(value);
+ // Clothing pixels remain scoped to Character; old Animation pixel editor removed.
+ show("character");
+ $("character-pixel-frame").src=url;
+ $("character-pixel-overlay").hidden=false;
+ note("Editing a character-local sprite · Back returns to Character");
 }
 async function closeCharacterPixel(){
  const overlay=$("character-pixel-overlay");
  if(!overlay||overlay.hidden)return;
- const frame=$("character-pixel-frame");
- try{await frame?.contentWindow?.VirtualLifePixelEditor?.flush?.()}
+ try{await $("character-pixel-frame")?.contentWindow?.VirtualLifePixelEditor?.flush?.()}
  catch(error){note("Pixel save failed: "+error.message);return}
  overlay.hidden=true;show("character");
 }
 async function closeAnimationPixel(){
- const overlay=$("animation-pixel-overlay");
- if(!overlay||overlay.hidden)return;
- try{await $("pixel-frame")?.contentWindow?.VirtualLifePixelEditor?.flush?.()}
- catch(error){note("Animation pixel save failed: "+error.message);return}
- overlay.hidden=true;show("animation");
- const motion=$("motion-frame");
- try{motion?.contentWindow?.postMessage({type:"mahluk:refresh-animation"},ORIGIN)}catch{}
- note("Back to Sprite + Anchor · Character/Custom Wear corrections saved");
+ // Legacy Pixel Editor backlink safely closes through Character.
+ await closeCharacterPixel();
 }
 function refreshCharacter(){
  const el=$("character-frame");try{el?.contentWindow?.postMessage({type:"mahluk:refresh-character"},ORIGIN)}catch{}
@@ -125,22 +101,16 @@ function refreshCharacter(){
 function newClip(){
   // Only the Motion Editor creates animations. Pixel Editor edits Custom Wear.
   show("animation");
-  note("CREATE ANIMATION or IMPORT AI MOTION.JSON; no separate Pixel Clip pipeline.");
+  note("IMPORT PYTHON or CREATE NEW in Genesis Native Animation.");
 }
 function openFull(){
- const url=tab==="animation"&&!$("animation-pixel-overlay").hidden?$("pixel-frame").src:tab==="animation"?$("motion-frame").src:
-  $(FRAMES[tab]).src||new URL(URLS[tab],location.href).href;
+ const url=$(FRAMES[tab]).src||new URL(URLS[tab],location.href).href;
  // Explicit user click only; OAuth/clipboard/phone fallback can run in a top-level window.
  window.open(url,"_blank","noopener,noreferrer");
 }
 function bind(){
  for(const btn of document.querySelectorAll("[data-tab]"))btn.onclick=()=>show(btn.dataset.tab);
- $("view-library").onclick=()=>setPane();
- $("view-paint").onclick=()=>setPane();
- $("new-clip").onclick=newClip;
  $("character-pixel-back").onclick=()=>void closeCharacterPixel();
- $("animation-pixel-back").onclick=()=>void closeAnimationPixel();
- $("pixel-full").onclick=()=>window.open($("pixel-frame").src,"_blank","noopener,noreferrer");
  $("open-separate").onclick=openFull;
  window.addEventListener("message",e=>{
   if(e.origin!==ORIGIN||!e.data||typeof e.data!=="object")return;
@@ -173,7 +143,7 @@ function bind(){
    try{note("Restoring verified Mahluk snapshot…");const info=await drive.restore();
     note("RESTORE COMPLETE · "+info.keys+" record groups · reload editors to use restored changes");
     // Reload editors only after restore, to avoid stale in-memory state.
-    for(const id of ["character-frame","action-frame","motion-frame","pixel-frame"]){
+    for(const id of ["character-frame","action-frame","motion-frame"]){
      const f=$(id);if(f?.dataset.loaded==="1"&&f.src)f.contentWindow.location.reload();
     }
    }catch(e){note("Restore failed: "+e.message)}
