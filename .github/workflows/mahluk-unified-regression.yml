@@ -14,6 +14,7 @@ on:
     paths:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
+      - "site/genesis-native-python-contract.js"
       - "site/cloud-first-*.js"
       - "site/v6p-character-*.js"
       - "site/v6p-pixel-source.js"
@@ -41,6 +42,7 @@ on:
       - "tests/smoke_mahluk_character_quota.cjs"
       - "tests/test_mahluk_stock_gallery.cjs"
       - "tests/test_mahluk_universal_motion.cjs"
+      - "tests/test_genesis_native_python_contract.cjs"
       - "site/v6p-universal-motion*.js"
       - "site/motion-packs/**"
       - "site/vlhub-characters-publish.js"
@@ -62,6 +64,7 @@ jobs:
         run: |
           node --check site/mahluk-hub.js
           node --check site/mahluk-hub-drive.js
+          node --check site/genesis-native-python-contract.js
           node --check site/mahluk-action-editor.js
           node --check site/mahluk-animation-studio.js
           node --check site/v6p-custom-wear.js
@@ -85,6 +88,7 @@ jobs:
         run: |
           node tests/test_v6p_activity_contract.cjs
           node tests/test_v6p_clip_store.cjs
+          node tests/test_genesis_native_python_contract.cjs
           node tests/test_mahluk_stock_gallery.cjs
           node --test tests/test_mahluk_universal_motion.cjs
           test ! -e site/mahluk-motion-library.html
