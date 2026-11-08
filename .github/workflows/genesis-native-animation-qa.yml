@@ -37,7 +37,7 @@ jobs:
           test -s site/mahluk-animation-native.html
   browser-native:
     needs: native-python
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
