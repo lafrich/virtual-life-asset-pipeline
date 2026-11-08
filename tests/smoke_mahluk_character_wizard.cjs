@@ -30,7 +30,8 @@ async function run(){
   assert.equal(await page.locator('#hair').inputValue(),'none');
   assert.equal(await page.locator('#top').inputValue(),'custom');
   assert.equal(await page.locator('#pants').inputValue(),'custom');
-  assert.equal(await page.locator('#shoes').inputValue(),'custom');
+  assert.equal(await page.locator('#shoes').inputValue(),'shoes',
+   'The unpainted Genesis custom shoe layer is barefoot; new characters must start dressed');
   const approved=await page.evaluate(()=>{
    const S=window.V6PCharacterStore,row=S.get(window.V6PCharacterHost.get().id);
    return {source:window.V6PGenesisBase?.get('female')?.name,
@@ -38,6 +39,8 @@ async function run(){
   });
   assert.equal(approved.source,'Genesis Female Nude');
   assert.ok(approved.parts.includes('top/custom_f')&&approved.parts.includes('pants/custom_f'));
+  assert.ok(approved.parts.includes('shoes/custom_f'),
+   'Original editable Genesis barefoot pixels must be preserved, not replaced by stock footwear');
   assert.equal(approved.face,'');
   console.log('[ok] FEMALE GENESIS BASE WITH EMOSI BLANK FACE CREATED');
   await page.locator('#wizard-part-nav [data-part=hair]').click();
