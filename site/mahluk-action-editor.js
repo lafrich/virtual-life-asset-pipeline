@@ -240,7 +240,10 @@ async function render(){
      img=await V.composeActivity(r.ch,r.action.manifest,state.frame%r.frames,m.dir);
      if(!img||img._disabled)return {m,error:img?._avail?.note||"Selected appearance has unsupported stock layers"};
    }else img=await getImage(r.url);
-   return {m,entry,r,img};
+   const correction=frameEdit(m,state.phase,motionFor(m),m.dir,state.frame%r.frames);
+   let override=null;
+   if(correction)try{override=await getImage(correction)}catch{}
+   return {m,entry,r,img,override};
   }catch(e){return {m,error:e.message}}
  }));
  if(token!==state.token||state.screen!=="editor")return;
@@ -256,8 +259,7 @@ async function render(){
      s.r.layout==="base"?V.ROWS[s.r.action.id]+di:di;
     ctx.drawImage(s.img,n*64,origin*112,64,112,px,py,64,112);
    }
-   const png=frameEdit(m,state.phase,motionFor(m),m.dir,state.frame%s.r.frames);
-   if(png)try{ctx.drawImage(await getImage(png),px,py,64,112)}catch{}
+   if(s.override)ctx.drawImage(s.override,px,py,64,112);
   }else{ctx.fillStyle="#b15b60";ctx.fillRect(px,py,64,112)}
   if(m.instance===state.active){ctx.lineWidth=2;ctx.strokeStyle="#2463b4";ctx.strokeRect(x-2,y-2,100,172);
    ctx.fillStyle="#10467f";ctx.fillRect(x,y-17,Math.min(165,Math.max(85,(s.entry?.name||"CHARACTER").length*7)),16);
@@ -363,6 +365,8 @@ async function editActionFrame(){
    const corrected=frameEdit(m,phase,motion,DIRS[i],index);
    if(corrected)try{h.drawImage(await getImage(corrected),0,i*112)}catch{}
   }
+  if(state.screen!=="editor"||current()?.instance!==session.instance||
+     state.phase!==phase||state.frame!==index||motionFor(m,phase)!==motion)return;
   framePixelSession={...session,base};
   if(!framePixelEditor){
    const overlay=$("pixelOverlay");
