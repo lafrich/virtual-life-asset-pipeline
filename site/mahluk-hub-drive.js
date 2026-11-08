@@ -100,7 +100,7 @@ async function eraseOnlineAnimationRecords(){
   if(page)q.set("pageToken",page);
   const batch=await (await api(API+"?"+q)).json();
   for(const file of batch.files||[]){
-   if(!/^animation__[-a-z0-9_]{2,80}\\.json$/.test(file.name||""))continue;
+   if(!/^animation__[-a-z0-9_]{2,80}\.json$/.test(file.name||""))continue;
    await api(API+"/"+encodeURIComponent(file.id),{method:"DELETE"});
    deleted.push(file.name);
   }
