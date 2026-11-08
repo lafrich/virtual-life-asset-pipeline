@@ -34,7 +34,7 @@ const alpha=canvas=>{const d=canvas.getContext('2d').getImageData(0,0,64,112).da
   // No extra preview UI: the Character Wizard already owns qa-animation/all-views.
   await page.goto(root+'/v6p-studio.html',{waitUntil:'domcontentloaded',timeout:45000});
   await page.waitForFunction(()=>window.V6PCharacterHost&&window.__v6pStudio?.ready,null,{timeout:45000});
-  await page.locator('#qa-animation option[value="motion:clp_standing_punch"]').waitFor({timeout:30000});
+  await page.locator('#qa-animation option[value="motion:clp_standing_punch"]').waitFor({state:'attached',timeout:30000});
   await page.evaluate(async()=>{await window.V6PCharacterHost.useBase('male');
    await window.V6PCharacterHost.qa('motion:clp_standing_punch',2)});
   for(const dir of ['se','sw','ne','nw']){
@@ -96,7 +96,7 @@ const alpha=canvas=>{const d=canvas.getContext('2d').getImageData(0,0,64,112).da
   }
 
   await page.goto(root+'/mahluk-action-editor.html',{waitUntil:'domcontentloaded',timeout:45000});
-  await page.locator('#phase-loop option[value="clip:clp_standing_punch"]').waitFor({timeout:45000});
+  await page.locator('#phase-loop option[value="clip:clp_standing_punch"]').waitFor({state:'attached',timeout:45000});
   console.log('[ok] Existing Action Editor also auto-detects bundled JSON Punch');
   assert.deepEqual(errors,[]);
  }finally{await browser.close()}
