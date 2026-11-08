@@ -1503,6 +1503,23 @@ async function syncEmosiOpen(){
  const ov=$("pixelOverlay"); if(ov) ov.hidden=false;
  if($("pixelDirection")) $("pixelDirection").value=state.dir;
 }
+async function backToCaller(){
+ const params=new URLSearchParams(location.search),fromAnimation=params.get("from")==="animation";
+ try{
+  if(emosiEditor?.isOpen?.())pullEmosiIntoState();
+  if(!state.loading)saveCurrent();
+ }catch(error){status("Pixel save failed: "+error.message,true);return;}
+ const hub=window.parent!==window&&window.parent.VLMahlukWorkspace;
+ if(hub){
+  const close=fromAnimation?hub.closeAnimationPixel:hub.closeCharacterPixel;
+  if(typeof close==="function"){await close();return;}
+ }
+ try{await window.VirtualLifePixelEditor?.flush?.()}catch(error){
+  status("Save failed: "+error.message,true);return;
+ }
+ const destination=fromAnimation?"./mahluk-animation-studio.html":"./v6p-studio.html";
+ location.href=fromAnimation?destination+"?motion="+encodeURIComponent(params.get("motion")||""):destination;
+}
 function bootEmosiEditor(){
  if(emosiEditor||!window.MH2PlanePixelEditor) return;
  const overlay=$("pixelOverlay"),canvas=$("pixelCanvas");
@@ -1515,14 +1532,8 @@ function bootEmosiEditor(){
   onDirectionChange:onSpriteAngleChanged
  });
  const closeBtn=$("pixelClose");
- if(closeBtn) closeBtn.onclick=()=>{
-  try{pullEmosiIntoState();saveCurrent();}catch{}
-  if(window.parent!==window&&window.parent.VLMahlukWorkspace){
-   if(window.parent.VLMahlukWorkspace.closeCharacterPixel)void window.parent.VLMahlukWorkspace.closeCharacterPixel();
-   else window.parent.VLMahlukWorkspace.show("character");
-  }
-  else location.href="./v6p-studio.html";
- };
+ if(closeBtn)closeBtn.onclick=()=>void backToCaller();
+ if($("pixel-back"))$("pixel-back").onclick=e=>{e.preventDefault();void backToCaller();};
  // The shared Pixel Editor is the source of truth for angle changes.
  // Its onDirectionChange callback selects the matching actual sprite row.
  // Do not set state.dir alone: that leaves the old frame visible on return.
