@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="./mahluk-emosi-chrome.css?v=v6p-emosi-tidy-phonefit-20261107">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script defer src="./emotion-studio/shared-pixel-selection.js?v=v6p-emosi-editor-20261107"></script>
-<script defer src="./emotion-studio/shared-pixel-editor.js?v=v6p-emosi-editor-20261107"></script>
+<script defer src="./emotion-studio/shared-pixel-editor.js?v=animation-clean-pixel-v4-20261108"></script>
 <script defer src="./pixel-edit-core.js?v=wand-selection-v1-20261103"></script>
 <script defer src="./master-parts.js?v=master-parts-1"></script>
 <script defer src="./v6p-part-catalog.js?v=custom-wear-stock-20261108"></script>
@@ -24,18 +24,17 @@
 <script defer src="./v6p-compositor.js?v=custom-wear-stock-20261108"></script>
 <script defer src="./v6p-custom-wear.js?v=rear-visible-v3-20261108"></script>
 <script defer src="./drive-sync.js?v=v6p-copy-paste-20261107"></script>
-<script defer src="./pixel-editor.js?v=rear-visible-v3-20261108"></script>
+<script defer src="./pixel-editor.js?v=animation-clean-pixel-v4-20261108"></script>
 <script defer src="./mahluk-emosi-chrome.js?v=v6p-emosi-tidy-20261107"></script>
 </head>
 <body class="emotion-window mahluk-emosi-page">
 <div class="mahluk-chrome" aria-label="Mahluk sheet and clip controls">
  <div class="mahluk-menubar">
-  <a class="mahluk-back" href="./v6p-studio.html" onclick="try{if(parent!==window&&parent.VLMahlukWorkspace){event.preventDefault();parent.VLMahlukWorkspace.show('character')}}catch(e){}">← CHARACTER</a>
+  <a class="mahluk-back" id="pixel-back" href="./v6p-studio.html">← BACK</a>
   <strong id="canvas-title">MAHLUK / PIXEL EDITOR</strong>
   <span id="frame-dirty">SOURCE PIXELS</span>
   <span class="mahluk-menubar-actions">
    <button type="button" class="mahluk-drawer-btn" data-drawer="source" aria-expanded="false" aria-controls="drawer-source">SOURCE</button>
-   <button type="button" class="mahluk-drawer-btn" data-drawer="overlay" aria-expanded="false" aria-controls="drawer-overlay" id="mahluk-overlay-btn" hidden>REF</button>
    <button type="button" class="mahluk-drawer-btn" data-drawer="save" aria-expanded="false" aria-controls="drawer-save">SAVE</button>
   </span>
   <span id="editor-status" class="status" role="status">LOADING ORIGINAL PIXELS…</span>
@@ -85,26 +84,14 @@
   <p id="master-status" class="mahluk-note">V6P frames edit through Emosi’s native 64×112 pixel editor. Four directions ride in one atlas.</p>
  </div>
 
- <div class="mahluk-drawer" id="drawer-overlay" hidden>
-  <div class="overlay-actions" id="overlay-actions" hidden>
-   <strong>REFERENCE OVERLAY · LOCKED CHARACTER · NEVER EXPORTED</strong>
-   <label><input type="checkbox" id="overlay-on" checked> SHOW BODY</label>
-   <label>OPACITY <output id="overlay-alpha-value">42%</output>
-    <input id="overlay-alpha" type="range" min="0" max="90" value="42" step="1"></label>
-   <label><input type="checkbox" id="overlay-pivot" checked> PIVOT 32,100</label>
-   <span id="overlay-info">Acuan karakter untuk frame dan arah ini</span>
-  </div>
+ <!-- Internal frame state only: navigation belongs in Animation or Character, never this Pixel Editor. -->
+ <div id="mahluk-part-frames" hidden aria-hidden="true">
+  <select id="action"></select><select id="direction"></select>
+  <button type="button" id="prev-frame" hidden></button>
+  <button type="button" id="next-frame" hidden></button>
+  <input id="frame" type="range" min="0" max="0" value="0" hidden>
+  <span id="frame-label" hidden></span>
  </div>
-
- <div class="mahluk-frame-row" id="mahluk-part-frames">
-  <label>ANIMATION <select id="action" aria-label="Action"></select></label>
-  <button type="button" id="prev-frame">◀</button>
-  <span id="frame-label">FRAME 1 / 1</span>
-  <button id="autofit-outfit" type="button" hidden title="Approximate fit from current painted frame to other animations in this view. Check and correct each pose.">↻ AUTO-FIT POSES</button>
-  <button type="button" id="next-frame">▶</button>
-  <label class="mahluk-timeline">TIMELINE <input id="frame" type="range" min="0" max="0" value="0"></label>
- </div>
-
  <div class="clip-actions mahluk-clip-row" id="clip-actions" hidden>
   <strong class="mahluk-sr">CLIP TIMELINE · ACTIVITY SHEET 384×2688 · STOCK 44-ROW SHEETS UNTOUCHED</strong>
   <button type="button" id="clip-play">▶ PLAY</button>
@@ -172,49 +159,14 @@
      <button data-pixel-swatch="#5b718d" style="--swatch:#5b718d" title="Blue"></button>
      <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
     </div>
-    <label class="check"><input type="checkbox" id="pixelSync"> SYNC BRUSH · ALL 4 VIEWS (OPTIONAL)</label>
-    <button id="pixelSyncExisting" type="button" title="Transfer this view\u0027s existing pixel changes to other camera directions while preserving each native silhouette">↻ SYNC CURRENT EDITS TO 4 VIEWS</button>
-    <p class="hint">DEFAULT: EDIT ACTIVE VIEW ONLY. SE, SW, NE &amp; NW stay independent. Turn on Sync Brush only if you intentionally want pencil, eraser and fill edits to affect other views.</p>
-    <div class="pixel-reference-controls">
-     <div class="sectionhead">VIEW OVERLAY / REDRAW GUIDE</div>
-     <label>REFERENCE PLANE
-      <select id="pixelReferenceView">
-       <option value="off">OFF / NO OVERLAY</option>
-       <option value="se">SE · FRONT RIGHT</option>
-       <option value="sw">SW · FRONT LEFT</option>
-       <option value="ne">NE · BACK RIGHT</option>
-       <option value="nw">NW · BACK LEFT</option>
-      </select>
-     </label>
-     <label class="check"><input id="pixelReferenceFlip" type="checkbox" checked> AUTO MIRROR REFERENCE</label>
-     <label>OPACITY <input id="pixelReferenceOpacity" type="range" min="5" max="85" step="5" value="40"><span id="pixelReferenceOpacityLabel">40%</span></label>
-     <label>REF OFFSET X <input id="pixelReferenceX" type="number" min="-32" max="32" value="0" step="1"></label>
-     <label>REF OFFSET Y <input id="pixelReferenceY" type="number" min="-56" max="56" value="0" step="1"></label>
-     <p class="hint">Colored ghost overlay shows the selected source view over the active drawing view. For aligning and redrawing only; it is NEVER saved in the PNG.</p>
-    </div>
+
+    <p class="hint">Edit only the selected view; the character reference follows this side.</p>
     <div class="pixel-selection-controls">
      <div class="sectionhead">SELECTION / TRANSFORM</div>
      <div class="plane-buttons pixel-clipboard-actions">
       <button id="pixelCopySelection" type="button" title="Copy selected RGBA pixels from active view / Ctrl+C">⧉ COPY</button>
       <button id="pixelPasteSelection" type="button" title="Paste to active view without changing other views / Ctrl+V">▣ PASTE</button>
       <button id="pixelPasteMirrored" type="button" title="Paste flipped horizontally, at mirrored X position / Ctrl+Shift+V">⇆ PASTE FLIP</button>
-     </div>
-     <div class="pixel-copy-to-view">
-      <div class="sectionhead">COPY PIXELS TO ANOTHER VIEW</div>
-      <label>DESTINATION VIEW
-       <select id="pixelCopyTarget" aria-label="Destination camera view for copied pixels">
-        <option value="se">SE · FRONT RIGHT</option>
-        <option value="sw">SW · FRONT LEFT</option>
-        <option value="ne">NE · BACK RIGHT</option>
-        <option value="nw">NW · BACK LEFT</option>
-       </select>
-      </label>
-      <label class="check"><input id="pixelCopyAutoMirror" type="checkbox" checked> AUTO MIRROR OPPOSITE SIDE</label>
-      <div class="plane-buttons">
-       <button id="pixelCopyToView" type="button" title="Copy selected pixels directly to the chosen view">⧉ COPY → VIEW</button>
-       <button id="pixelPasteToView" type="button" title="Paste saved clipboard onto the chosen view">▣ PASTE → VIEW</button>
-      </div>
-      <p class="hint">Select an area on SE/SW/NE/NW, then Copy → View. The target opens automatically for pixel-level adjustment. Only this frame is modified.</p>
      </div>
      <label class="check"><input id="pixelPasteReplace" type="checkbox"> REPLACE TRANSPARENT PIXELS (erase under transparent source)</label>
      <p class="hint" id="pixelClipboardInfo" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</p>
@@ -223,8 +175,8 @@
      <div class="plane-buttons"><button id="pixelDeleteSelection" type="button">⌫ DELETE PIXELS</button></div>
      <p class="hint" id="pixelSelectionInfo">No selection. Select rectangle, then Move Pixels or Flip.</p>
     </div>
-    <label class="check"><input type="checkbox" id="pixelOnion" checked> HUMAN MALE BASE HEAD OVERLAY</label>
-    <label class="male-guide-range">MALE HEAD OPACITY <input id="pixelMaleOpacity" type="range" min="5" max="100" step="5" value="55"><span id="pixelMaleOpacityLabel">55%</span></label>
+    <label class="check"><input type="checkbox" id="pixelOnion" checked> SELECTED CHARACTER REFERENCE · CURRENT VIEW</label>
+    <label class="male-guide-range">REFERENCE OPACITY <input id="pixelMaleOpacity" type="range" min="5" max="100" step="5" value="35"><span id="pixelMaleOpacityLabel">35%</span></label>
     <div class="pixel-grid-controls">
      <label class="check"><input type="checkbox" id="pixelGrid" checked> GRID MODE</label>
      <label>GRID SIZE <select id="pixelGridType"><option value="1">1 × 1 PX</option><option value="8">8 × 8 PX</option><option value="16">16 × 16 PX</option></select></label>
@@ -239,8 +191,10 @@
     </div>
     <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
     <p class="hint">Edits work at native 64 × 112, across four directions. Pencil/eraser can be dragged with mouse or touch. Source planes and rig transforms remain separate.</p>
-    <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
-    <button id="pixelExport">↓ EXPORT 4-DIR PNG</button>
+    <div class="plane-buttons">
+     <button id="pixelEraseCanvas" type="button" title="Erase this direction/frame only; Undo restores it">⌫ ERASE CANVAS</button>
+     <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
+    </div>
    </aside>
   </div>
   <footer class="pixel-dialog-foot">
