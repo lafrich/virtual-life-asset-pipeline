@@ -6,7 +6,8 @@ const KEY="mahluk-action-situations-v1",FORMAT="mahluk-situation-database-v1";
 const DIRS=["se","sw","ne","nw"],PHASES=["enter","loop","exit"],$=id=>document.getElementById(id);
 const V=root.V6PCompositor,Store=root.V6PClipStore;
 const state={rows:[],selected:null,cast:[],active:"",phase:"loop",frame:0,playing:false,timer:null,
- cache:new Map(),sheets:new Map(),token:0,drag:null,screen:"home",message:""};
+ cache:new Map(),sheets:new Map(),token:0,drag:null,screen:"home",message:"",
+ camera:{zoom:1,x:0,y:0,grid:false},pointers:new Map(),pinch:null};
 function safeId(s){return /^[a-z][a-z0-9_]{1,47}$/.test(s||"")}
 function status(s,err=false){$("status").textContent=s;$("status").classList.toggle("err",err)}
 function load(){
@@ -147,12 +148,47 @@ function drawObject(ctx){
  else if(key==="door")ctx.strokeRect(16,12,32,88);
  ctx.restore();
 }
+const SCENE_W=576,SCENE_H=400,ACTOR_W=96,ACTOR_H=168;
+function viewport(p){
+ const cam=state.camera;
+ return {x:(p.x-cam.x)/cam.zoom,y:(p.y-cam.y)/cam.zoom};
+}
+function eventCoords(e){
+ const canvas=e.currentTarget,rect=canvas.getBoundingClientRect();
+ return {x:(e.clientX-rect.left)*canvas.width/rect.width,
+   y:(e.clientY-rect.top)*canvas.height/rect.height};
+}
+function zoomAt(value,anchor={x:SCENE_W/2,y:SCENE_H/2}){
+ const cam=state.camera,z=Math.max(.5,Math.min(4,Math.round(value*4)/4));
+ const prev=viewport(anchor);cam.zoom=z;
+ cam.x=Math.round(anchor.x-prev.x*z);cam.y=Math.round(anchor.y-prev.y*z);
+ $("scene-zoom").value=String(z*100);
+ $("scene-zoom-value").textContent=Math.round(z*100)+"%";
+ void render();
+}
+function drawGrid(ctx){
+ if(!state.camera.grid)return;
+ ctx.save();ctx.beginPath();ctx.strokeStyle="#8299b26b";ctx.lineWidth=1/state.camera.zoom;
+ for(let x=0;x<=SCENE_W;x+=16){ctx.moveTo(x,0);ctx.lineTo(x,SCENE_H)}
+ for(let y=0;y<=SCENE_H;y+=16){ctx.moveTo(0,y);ctx.lineTo(SCENE_W,y)}
+ ctx.stroke();ctx.restore();
+}
+function worldTransform(ctx){
+ ctx.setTransform(state.camera.zoom,0,0,state.camera.zoom,Math.round(state.camera.x),Math.round(state.camera.y));
+ ctx.imageSmoothingEnabled=false;
+}
 function paintBackground(ctx){
- const {width:w,height:h}=ctx.canvas;ctx.clearRect(0,0,w,h);
+ const {width:w,height:h}=ctx.canvas;
+ ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);
  ctx.fillStyle="#e3ebf2";ctx.fillRect(0,0,w,h);
- ctx.fillStyle="#c7d9b9";ctx.fillRect(0,h-54,w,54);
+ ctx.save();worldTransform(ctx);
+ ctx.fillStyle="#e3ebf2";ctx.fillRect(0,0,SCENE_W,SCENE_H);
+ ctx.fillStyle="#c7d9b9";ctx.fillRect(0,SCENE_H-54,SCENE_W,54);
  const prop=document.createElement("canvas");prop.width=64;prop.height=112;drawObject(prop.getContext("2d"));
- ctx.imageSmoothingEnabled=false;ctx.drawImage(prop,246,95,92,158);
+ // Nearest-neighbor sprites only. Fractional 1.5x enlargement made pixels
+ // uneven; a native 64x112 sprite stays 1:1 at 100% scene zoom.
+ ctx.drawImage(prop,246,95,64,112);
+ drawGrid(ctx);ctx.restore();
 }
 async function render(){
  if(state.screen!=="editor")return;
@@ -176,22 +212,25 @@ async function render(){
    return {m,entry,r,img};
   }catch(e){return {m,error:e.message}}
  }));
- if(token!==state.token||state.screen!=="editor")return;paintBackground(ctx);
+ if(token!==state.token||state.screen!=="editor")return;
+ paintBackground(ctx);ctx.save();worldTransform(ctx);
  for(const s of sprites){
   const m=s.m,di=Math.max(0,DIRS.indexOf(m.dir)),x=m.x,y=m.y;
+  const px=x+16,py=y+56;
   if(s.img&&s.r){
    if(s.r.layout==="activity-native"){
-     ctx.drawImage(s.img,0,0,64,112,x,y,96,168);
-     continue;
+     ctx.drawImage(s.img,0,0,64,112,px,py,64,112);
+   }else{
+    const n=state.frame%s.r.frames,origin=s.r.layout==="activity"?(Number(s.r.action.manifest.bandStart)||0)+di:
+     s.r.layout==="base"?V.ROWS[s.r.action.id]+di:di;
+    ctx.drawImage(s.img,n*64,origin*112,64,112,px,py,64,112);
    }
-   const n=state.frame%s.r.frames,origin=s.r.layout==="activity"?(Number(s.r.action.manifest.bandStart)||0)+di:
-    s.r.layout==="base"?V.ROWS[s.r.action.id]+di:di;
-   ctx.drawImage(s.img,n*64,origin*112,64,112,x,y,96,168);
-  }else{ctx.fillStyle="#b15b60";ctx.fillRect(x,y,96,168)}
+  }else{ctx.fillStyle="#b15b60";ctx.fillRect(px,py,64,112)}
   if(m.instance===state.active){ctx.lineWidth=2;ctx.strokeStyle="#2463b4";ctx.strokeRect(x-2,y-2,100,172);
    ctx.fillStyle="#10467f";ctx.fillRect(x,y-17,Math.min(165,Math.max(85,(s.entry?.name||"CHARACTER").length*7)),16);
    ctx.fillStyle="white";ctx.font="11px Tahoma";ctx.fillText(s.entry?.name||"CHARACTER",x+3,y-5)}
  }
+ ctx.restore();
 }
 function drawCast(){
  const host=$("cast-list");host.replaceChildren();
@@ -319,23 +358,58 @@ function wire(){
  $("prev").onclick=()=>{stop();state.frame=Math.max(0,state.frame-1);void render()};
  $("next").onclick=()=>{stop();state.frame=Math.min((ref()?.frames||1)-1,state.frame+1);void render()};
  $("frame").oninput=()=>{stop();state.frame=Number($("frame").value)||0;void render()};
- $("action-canvas").addEventListener("pointerdown",e=>{
-  const canvas=e.currentTarget,box=canvas.getBoundingClientRect();
-  const x=(e.clientX-box.left)*canvas.width/box.width,y=(e.clientY-box.top)*canvas.height/box.height;
-  const hit=[...state.cast].reverse().find(m=>x>=m.x&&x<=m.x+96&&y>=m.y&&y<=m.y+168);
-  if(!hit)return;state.active=hit.instance;drawCast();state.drag={id:hit.instance,dx:x-hit.x,dy:y-hit.y};
-  canvas.setPointerCapture(e.pointerId);void render();
+ $("scene-zoom").oninput=()=>zoomAt(Number($("scene-zoom").value)/100);
+ $("scene-zoom-in").onclick=()=>zoomAt(state.camera.zoom+.25);
+ $("scene-zoom-out").onclick=()=>zoomAt(state.camera.zoom-.25);
+ $("scene-fit").onclick=()=>{state.camera.x=0;state.camera.y=0;zoomAt(1)};
+ $("scene-grid").onchange=()=>{state.camera.grid=$("scene-grid").checked;void render()};
+ const stage=$("action-canvas");
+ stage.addEventListener("wheel",e=>{
+  e.preventDefault();
+  zoomAt(state.camera.zoom+(e.deltaY<0?.25:-.25),eventCoords(e));
+ },{passive:false});
+ stage.addEventListener("pointerdown",e=>{
+  const p=eventCoords(e),w=viewport(p);
+  state.pointers.set(e.pointerId,p);
+  if(state.pointers.size===2){
+   const [a,b]=[...state.pointers.values()];
+   state.pinch={distance:Math.hypot(b.x-a.x,b.y-a.y),zoom:state.camera.zoom};
+   state.drag=null;
+  }else{
+   const hit=[...state.cast].reverse().find(m=>w.x>=m.x&&w.x<=m.x+ACTOR_W&&w.y>=m.y&&w.y<=m.y+ACTOR_H);
+   if(hit){state.active=hit.instance;drawCast();
+    state.drag={type:"actor",id:hit.instance,dx:w.x-hit.x,dy:w.y-hit.y};
+   }else state.drag={type:"pan",x:p.x,y:p.y,ox:state.camera.x,oy:state.camera.y};
+  }
+  stage.setPointerCapture(e.pointerId);void render();
  });
- $("action-canvas").addEventListener("pointermove",e=>{
+ stage.addEventListener("pointermove",e=>{
+  const p=eventCoords(e);
+  if(state.pointers.has(e.pointerId))state.pointers.set(e.pointerId,p);
+  if(state.pointers.size>=2&&state.pinch){
+   const [a,b]=[...state.pointers.values()],distance=Math.hypot(b.x-a.x,b.y-a.y);
+   const center={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+   zoomAt(state.pinch.zoom*distance/Math.max(1,state.pinch.distance),center);
+   return;
+  }
   if(!state.drag)return;
-  const canvas=e.currentTarget,box=canvas.getBoundingClientRect();
-  const x=(e.clientX-box.left)*canvas.width/box.width,y=(e.clientY-box.top)*canvas.height/box.height;
-  const m=state.cast.find(v=>v.instance===state.drag.id);if(!m)return;
-  m.x=Math.max(0,Math.min(480,Math.round(x-state.drag.dx)));
-  m.y=Math.max(0,Math.min(232,Math.round(y-state.drag.dy)));
-  syncControls();void render();
+  if(state.drag.type==="pan"){
+   state.camera.x=Math.round(state.drag.ox+p.x-state.drag.x);
+   state.camera.y=Math.round(state.drag.oy+p.y-state.drag.y);
+  }else{
+   const m=state.cast.find(v=>v.instance===state.drag.id);if(!m)return;
+   const w=viewport(p);
+   m.x=Math.max(0,Math.min(SCENE_W-ACTOR_W,Math.round(w.x-state.drag.dx)));
+   m.y=Math.max(0,Math.min(SCENE_H-ACTOR_H,Math.round(w.y-state.drag.dy)));
+   syncControls();
+  }
+  void render();
  });
- for(const t of ["pointerup","pointercancel"])$("action-canvas").addEventListener(t,()=>{state.drag=null});
+ for(const t of ["pointerup","pointercancel"])stage.addEventListener(t,e=>{
+  state.pointers.delete(e.pointerId);
+  if(state.pointers.size<2)state.pinch=null;
+  state.drag=null;
+ });
  document.addEventListener("visibilitychange",()=>{if(document.hidden)stop()});
  home();
 }
