@@ -7,10 +7,9 @@ const URLS=Object.freeze({
  emotion:"/virtual-office/emotion-studio/",
  character:"./v6p-studio.html?embedded=1&rev=idle-pivot-v2",
  action:"./mahluk-action-editor.html?embedded=1",
- animation:new URLSearchParams(location.search).get("animationEditor")==="native"?
-  "./mahluk-animation-native.html?embedded=1&rev=genesis-python-v1":
-  "./mahluk-animation-studio.html?embedded=1&rev=idle-pivot-v2"
+ animation:"./mahluk-animation-studio.html?embedded=1&rev=idle-pivot-v2"
 });
+const NATIVE_ANIMATION=new URLSearchParams(location.search).get("animationEditor")==="native";
 const FRAMES=Object.freeze({
  emotion:"emotion-frame",character:"character-frame",action:"action-frame",
  animation:"motion-frame"
@@ -67,7 +66,8 @@ function show(name){
  tab=name;
  document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===tab)));
  document.querySelectorAll(".view").forEach(p=>p.classList.toggle("active",p.id===tab+"-view"));
- loadFrame(FRAMES[tab],URLS[tab]);
+ loadFrame(FRAMES[tab],tab==="animation"&&NATIVE_ANIMATION?
+  "./mahluk-animation-native.html?embedded=1&rev=genesis-python-v1":URLS[tab]);
  announceOnline(FRAMES[tab]);
  if(tab==="character"){
   const pixel=$("pixel-frame");
@@ -82,7 +82,7 @@ function show(name){
  note({emotion:"EMOSI.EXE · emotion database and dialog lipsync are the original editor",
  character:"CHARACTER · Start → Base → Customize → Preview → Save",
  action:"ACTION EDITOR · situation binding is stored as a separate draft",
- animation:URLS.animation.includes("animation-native")?
+ animation:NATIVE_ANIMATION?
   "ANIMATION · GENESIS V6B PYTHON TRIAL · source authoring and real native preview; install gated":
   "ANIMATION · 4-direction frame-by-frame asset/anchor editor + Pixel Editor"}[tab]);
 }
