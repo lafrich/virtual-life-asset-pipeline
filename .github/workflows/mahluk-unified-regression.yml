@@ -32,6 +32,7 @@ on:
       - "tests/smoke_mahluk_back_gallery.cjs"
       - "tests/smoke_mahluk_custom_wear.cjs"
       - "tests/smoke_mahluk_action_animation_flows.cjs"
+      - "tests/smoke_mahluk_mobile_animation_layout.cjs"
       - "tests/smoke_mahluk_native_stock_gallery.cjs"
       - "tests/smoke_mahluk_drive_backup_restore.cjs"
       - "tests/smoke_mahluk_character_quota.cjs"
@@ -102,6 +103,7 @@ jobs:
           node tests/smoke_mahluk_drive_backup_restore.cjs
           node tests/smoke_mahluk_character_quota.cjs
           node tests/smoke_mahluk_action_animation_flows.cjs
+          node tests/smoke_mahluk_mobile_animation_layout.cjs
           node tests/smoke_mahluk_native_stock_gallery.cjs
           node tests/smoke_mahluk_custom_wear.cjs
           node tests/smoke_mahluk_custom_wear_roundtrip.cjs
