@@ -42,7 +42,7 @@ test('Preview actually generates frame data, reviews four directions, and correc
  assert.match(wizard,/await H\.publish\(\)/);
  assert.match(wizard,/if\(!saved\|\|!saved\.id\)throw Error/);
  assert.match(html,/async publish\(\)\{return await save\(\)\}/);
- assert.match(html,/return result\.record;/);
+ assert.ok(html.includes('return {...result.record,storageMode:result.stored'), 'Save must communicate published archive storage mode to wizard');
 });
 test('Character Pixel Editor stays in Character tab and can return without losing wizard state',()=>{
  const hub=read('site/mahluk-hub.js'),shell=read('site/mahluk-hidup.html'),pixel=read('site/pixel-editor.js');
