@@ -51,13 +51,47 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await page.waitForFunction(()=>!!window.VLMahlukHubDrive&&!!window.google?.accounts?.oauth2);
   await page.locator('#drive-connect').click();
   await page.locator('#drive-connect').getByText('CONNECTED').waitFor({timeout:15000});
+  // The Action Editor intentionally has no stock male/female mannequins.
+  // Create two *draft clones* of the approved Genesis templates in the
+  // Character workspace first. This is all mock Drive + isolated test RAM;
+  // neither the immutable base artwork nor any real account is modified.
+  await page.evaluate(()=>window.VLMahlukWorkspace.show('character'));
+  const initialCharacter=page.frameLocator('#character-frame');
+  await initialCharacter.locator('body.wizard-ready').waitFor({timeout:65000});
+  const genesisIds=await page.evaluate(()=>{
+   const w=document.getElementById('character-frame').contentWindow;
+   const store=w.V6PCharacterStore,base=w.V6PGenesisBase;
+   assertGenesisReady();
+   function assertGenesisReady(){
+    if(!store||!base||!base.get('male')||!base.get('female'))
+     throw Error('Approved Genesis templates unavailable');
+   }
+   return ['male','female'].map(gender=>{
+    const draft=store.create({name:'Action Test Genesis '+gender,gender});
+    const cloned=base.install(store,draft.id,gender);
+    if(cloned.faceId!==''||!Object.keys(cloned.parts||{}).some(p=>p.startsWith('top/custom')))
+     throw Error('Genesis draft missing custom layers or blank Emosi face');
+    return cloned.id;
+   });
+  });
+  assert.equal(genesisIds.length,2);
+  assert.notEqual(genesisIds[0],genesisIds[1]);
+
+  await page.evaluate(()=>window.VLMahlukWorkspace.show('action'));
   const a=page.frameLocator('#action-frame');
   await a.locator('#action-home:not([hidden])').waitFor({timeout:65000});
+  await a.locator('#refresh-actors').click();
+  const actorOptions=await a.locator('#choose-actor option').evaluateAll(options=>
+   options.map(o=>({value:o.value,label:o.textContent})));
+  assert.ok(genesisIds.every(id=>actorOptions.some(o=>o.value===id)),
+   'Both created Genesis actors must appear in Action: '+JSON.stringify(actorOptions));
+  assert.equal(actorOptions.some(o=>o.value.startsWith('base:')),false,
+   'Stock base mannequins must never be shown in Action');
   await a.locator('#action-start-new').click();
   await a.locator('#action-choose:not([hidden])').waitFor();
-  await a.locator('#choose-actor').selectOption('base:male');
+  await a.locator('#choose-actor').selectOption(genesisIds[0]);
   await a.locator('#choose-add').click();
-  await a.locator('#choose-actor').selectOption('base:female');
+  await a.locator('#choose-actor').selectOption(genesisIds[1]);
   await a.locator('#choose-add').click();
   assert.equal(await a.locator('#choose-cast-list button').count(),2);
   await a.locator('#choose-next').click();
@@ -86,6 +120,8 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   assert.match(await a.locator('#action-home-note').textContent(),/CLOUD VERIFIED/);
   const action=record('action');
   assert.ok(action&&action.actors.length===2,'Action not uploaded to Drive');
+  assert.deepEqual(action.actors.map(actor=>actor.characterId),genesisIds,
+   'Online action must reference the two real Genesis-derived character IDs');
   assert.equal(action.actors[1].loop,'native:talk');
   assert.ok(action.actors[1].x>149);
   assert.equal(await page.evaluate(()=>localStorage.getItem('mahluk-action-situations-v1')),null,
