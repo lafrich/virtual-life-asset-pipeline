@@ -114,6 +114,23 @@ async function eraseOnlineAnimationRecords(){
  }while(page);
  return deleted;
 }
+// Complete the 2026-11-09 legacy deletion only once per Drive database.
+// A cloud-side marker protects later native animations across browsers/devices.
+async function migrateLegacyAnimationsOnce(){
+ const parent=await cloudFolder(),marker="mahluk-animation-legacy-purge-done-v1.json";
+ if(await find(parent,marker,"application/json"))return [];
+ const deleted=await eraseOnlineAnimationRecords();
+ const created=await (await api(API+"?fields=id",{
+  method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({name:marker,mimeType:"application/json",parents:[parent]})
+ })).json();
+ if(!created?.id)throw Error("Cannot persist animation cleanup marker");
+ await api(UP+"/"+encodeURIComponent(created.id)+"?uploadType=media",{
+  method:"PATCH",headers:{"Content-Type":"application/json; charset=UTF-8"},
+  body:JSON.stringify({format:"mahluk-animation-legacy-purge-marker-v1",deleted:deleted.length})
+ });
+ return deleted;
+}
 async function loadRecord(kind,id){
  validCloud(kind,id);if(!connected())throw Error("Connect Google Drive first");
  const parent=await cloudFolder(),file=await find(parent,filename(kind,id),"application/json");
@@ -137,7 +154,7 @@ function connect(){
     token=r.access_token;expires=Date.now()+1000*(Number(r.expires_in)||3500);
     baseFolder="";savedFile="";recordFolder="";recordFolderPromise=null;
     // Migrate old animation records once; preserve future native-Python records.
-    void eraseOnlineAnimationRecords().then(()=>resolve(true)).catch(reject);
+    void migrateLegacyAnimationsOnce().then(()=>resolve(true)).catch(reject);
    },
    error_callback:e=>reject(Error(e?.message||e?.type||"Google popup closed"))
   }).requestAccessToken({prompt:""});}catch(e){reject(e)}
