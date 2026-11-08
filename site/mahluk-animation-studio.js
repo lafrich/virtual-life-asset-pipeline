@@ -245,10 +245,27 @@ function sourceCell(dir=state.dir,frame=state.frame){
  const out=V.extractFrame(sheet,action(),dir,frame%V.FRAMES[action()]);
  state.images.set(key,out);return out;
 }
-function partForPixel(x,y){
- if(y<44)return "head";
- if(y<80){if(x<23)return "arm_l";if(x>40)return "arm_r";return "torso"}
- return x<32?"leg_l":"leg_r";
+function anatomyBounds(pixels){
+ // Derive partition lines from this selected Character's actual alpha mask,
+ // not fixed male sprite coordinates. This is still a pixel cutout, NOT
+ // inverse-kinematics or independently authored arm/leg sheets.
+ let l=64,r=-1,t=112,b=-1;
+ for(let y=0;y<106;y++)for(let x=0;x<64;x++){
+  if(pixels[(y*64+x)*4+3]<96)continue;
+  l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y);
+ }
+ if(r<l)return null;
+ const center=(l+r)/2,height=b-t,width=r-l+1;
+ return {center,headEnd:t+height*.36,hipStart:t+height*.74,
+  armLeft:center-Math.max(6,width*.24),armRight:center+Math.max(6,width*.24)};
+}
+function partForPixel(x,y,bounds){
+ if(!bounds)return null;
+ if(y<bounds.headEnd)return "head";
+ if(y>=bounds.hipStart)return x<bounds.center?"leg_l":"leg_r";
+ if(x<bounds.armLeft)return "arm_l";
+ if(x>bounds.armRight)return "arm_r";
+ return "torso";
 }
 function hitTestPart(x,y){
  // Hit-test painted pixels AFTER their per-frame transforms, not a static
@@ -266,11 +283,15 @@ function hitTestPart(x,y){
  return null;
 }
 function segments(frame){
- const src=frame.getContext("2d").getImageData(0,0,64,112),ret={};
+ const src=frame.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112),ret={};
+ const bounds=anatomyBounds(src.data);
  for(const part of PARTS)ret[part]=canvas(64,112);
  const ctx={};for(const part of PARTS)ctx[part]=ret[part].getContext("2d").createImageData(64,112);
  for(let y=0;y<112;y++)for(let x=0;x<64;x++){
-  const pos=(y*64+x)*4,part=partForPixel(x,y);
+  const pos=(y*64+x)*4;
+  if(src.data[pos+3]===0)continue;
+  const part=partForPixel(x,y,bounds);
+  if(!part)continue;
   for(let k=0;k<4;k++)ctx[part].data[pos+k]=src.data[pos+k];
  }
  for(const part of PARTS)ret[part].getContext("2d").putImageData(ctx[part],0,0);
