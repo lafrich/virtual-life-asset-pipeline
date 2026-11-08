@@ -357,15 +357,34 @@ function createUserProject(type){
  return window.V6PProjectCatalog.create({type,name,placement:type==="accessory"?placement:null});
 }
 function lastStudioCharacter(){
+ const V=window.V6PCompositor;
+ if(!V)return null;
+ // A selected real Character takes priority over old cached male previews.
+ if(state.characterId){
+  const row=window.V6PCharacterStore?.get?.(state.characterId);
+  if(row)return V.norm({...row.appearance,gender:row.gender,body:row.gender,
+   characterId:row.id,face:"blank"});
+ }
  try{
   const raw=JSON.parse(localStorage.getItem(LAST_CH_KEY)||"null");
-  if(raw&&window.V6PCompositor) return window.V6PCompositor.norm(raw);
+  if(raw)return V.norm(raw);
  }catch{}
- return window.V6PCompositor?window.V6PCompositor.norm(window.V6PCompositor.DEF):null;
+ return V.norm(V.DEF);
+}
+function referenceLook(ch){
+ if(!ch)return null;
+ const part=state.v6pPart||"";
+ // Exclude the edited garment from the reference so erasing its pixels
+ // really looks erased; keep the real selected body's proportions/colors.
+ if(part.startsWith("top/"))return {...ch,top:"nude"};
+ if(part.startsWith("pants/"))return {...ch,pants:"nude"};
+ if(part.startsWith("shoes/"))return {...ch,shoes:"nude"};
+ if(part.startsWith("hair/"))return {...ch,hair:"none"};
+ return ch;
 }
 async function refreshOverlay(){
  const box=$("overlay-actions");
- const show=state.source==="v6p"&&(!!state.project||!!state.actClip)&&!!window.V6PCompositor;
+ const show=state.source==="v6p"&&(!!state.characterId||!!state.project||!!state.actClip)&&!!window.V6PCompositor;
  if(box)box.hidden=!show;
  if(!show){state.overlayCanvas=null;return;}
  try{
@@ -381,7 +400,7 @@ async function refreshOverlay(){
   }
   if(state.project&&state.project.type==="accessory")
    ch={...ch,accessories:(ch.accessories||[]).filter(id=>id!==state.project.id)};
-  const sheet=await window.V6PCompositor.sheet(ch);
+  const sheet=await window.V6PCompositor.sheet(referenceLook(ch));
   if(!sheet){state.overlayCanvas=null;if($("overlay-info"))$("overlay-info").textContent="Overlay gagal dimuat (aset karakter kurang)";return;}
   state.overlayCanvas=window.V6PCompositor.extractFrame(sheet,state.action,state.dir,state.frame);
   if($("overlay-info"))$("overlay-info").textContent="Acuan "+state.action.toUpperCase()+" / "+state.dir.toUpperCase()+" / F"+state.frame+" · opacity "+Math.round(state.overlayAlpha*100)+"% · tidak ikut PNG";
@@ -1389,7 +1408,7 @@ function pullEmosiIntoState(){
  }
 }
 async function directionReferences(){
- if(!state.overlayOn||!window.V6PCompositor||(!state.project&&!state.actClip))return null;
+ if(!state.overlayOn||!window.V6PCompositor||(!state.project&&!state.actClip&&!state.characterId))return null;
  const V=window.V6PCompositor,views={};
  let ch=lastStudioCharacter();
  if(!ch)return null;
@@ -1404,7 +1423,7 @@ async function directionReferences(){
   }else{
    if(state.project?.type==="accessory")
     ch={...ch,accessories:(ch.accessories||[]).filter(id=>id!==state.project.id)};
-   const sheet=await V.sheet(ch);
+   const sheet=await V.sheet(referenceLook(ch));
    if(sheet)for(const dir of DIRECTIONS)
     views[dir]=V.extractFrame(sheet,state.action,dir,state.frame);
   }
@@ -1478,7 +1497,7 @@ async function syncEmosiOpen(){
  const refs=await directionReferences();
  state.directionRefs=refs;
  const ref=(state.overlayOn&&refs)?refs[state.dir]||null:
-  (state.overlayOn&&state.overlayCanvas?state.overlayCanvas:(state.onionImage||null));
+  (state.overlayOn&&state.overlayCanvas?state.overlayCanvas:null);
  emosiEditor.open({id:String(id),initialAtlas:atlas,originalAtlas:orig,
   referenceImage:ref,referenceImages:refs,direction:state.dir});
  const ov=$("pixelOverlay"); if(ov) ov.hidden=false;
