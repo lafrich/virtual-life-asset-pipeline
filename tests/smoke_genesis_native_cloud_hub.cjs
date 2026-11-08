@@ -4,7 +4,7 @@
  */
 const assert=require("node:assert/strict");
 const {chromium}=require("playwright");
-const URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup.html?tab=animation&animationEditor=native&legacyCloud=1";
+const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup.html?tab=animation&animationEditor=native&legacyCloud=1";
 (async()=>{
  const files=new Map();let counter=0;
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
@@ -41,7 +41,7 @@ const URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup.html?t
   return reply({error:"unexpected Drive API",p,method},400);
  });
  try{
-  await page.goto(URL,{waitUntil:"domcontentloaded",timeout:45000});
+  await page.goto(TARGET_URL,{waitUntil:"domcontentloaded",timeout:45000});
   await page.waitForFunction(()=>!!window.VLMahlukHubDrive&&!!window.google?.accounts?.oauth2);
   await page.locator("#drive-connect").click();
   await page.locator("#drive-connect").getByText("CONNECTED").waitFor({timeout:25000});
