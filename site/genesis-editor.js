@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id),M=root.GenesisMasterRig,P=root.GenesisPu
  C=root.GenesisNativePythonContract,V=root.V6PCompositor;
 if(!M||!P||!C||!V){document.body.textContent="Genesis master dependencies missing";return}
 let gender="male",dir="se",mode="puppet",profile=M.load(gender),sheet=null,selected="head",pivot="head",
- maskPart="head",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0;
+ maskPart="head",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0,changeVersion=0;
 const stage=$("stage"),ctx=stage.getContext("2d"),srcCtx=$("source-preview").getContext("2d");
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null}catch{return null}};
 const show=(s,err=false)=>{$("status").textContent=s;$("status").classList.toggle("error",!!err)};
@@ -17,7 +17,7 @@ function setMode(m){
  $("preview-title").textContent=m==="puppet"?"ADJUST PUPPET / COORDINATES":"ADJUST SLICE / PIXEL MASK";
  paint();
 }
-function markEdited(){dirty=true;$("save").textContent="☁ SAVE · OVERWRITE "+gender.toUpperCase();paint()}
+function markEdited(){dirty=true;changeVersion++;$("save").textContent="☁ SAVE · OVERWRITE "+gender.toUpperCase();paint()}
 function jointInput(){
  const j=profile.joints[dir][selected],p=profile.pivots[dir][pivot];
  $("joint-name").value=selected;$("joint-x").value=j.x;$("joint-y").value=j.y;
@@ -74,7 +74,7 @@ async function reloadSheet(){
 }
 function changeGender(next){
  if(dirty&&!root.confirm("Discard unsaved Genesis "+gender+" edits?")){$("gender").value=gender;return}
- gender=next;profile=M.load(gender);dir="se";$("dir").value=dir;
+ gender=next;changeVersion++;profile=M.load(gender);dir="se";$("dir").value=dir;
  dirty=false;setFrame();jointInput();void reloadSheet();
 }
 function setFrame(){
@@ -126,9 +126,13 @@ function saveLocalBackup(){
 }
 async function loadCloud(){
  const b=bridge();if(!b?.isOnline?.())throw Error("Connect Drive in Mahluk toolbar");
- show("Loading two fixed Genesis master IDs from Drive…");
  if(dirty&&!root.confirm("Reload saved Genesis rig and discard unsaved edits?"))return;
+ const version=changeVersion,currentGender=gender;
+ show("Loading two fixed Genesis master IDs from Drive…");
  const rows=await b.listOnline("genesis");
+ if(version!==changeVersion||currentGender!==gender){
+  show("Cloud response ignored: you edited Genesis while it loaded. Save or reload explicitly.");return;
+ }
  const count=M.cloudRows(rows);
  profile=M.load(gender);dirty=false;jointInput();paint();
  show("Cloud master sync verified · "+count+" profile(s) · "+profile.id);
