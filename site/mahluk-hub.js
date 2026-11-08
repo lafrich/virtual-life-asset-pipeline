@@ -15,6 +15,33 @@ const FRAMES=Object.freeze({
 });
 const TAB_IDS=["emotion","character","action","animation"];
 let tab="character";
+const ephemeral=new Map();
+const draftStorage=Object.freeze({
+ getItem(key){
+  if(ephemeral.has(key))return ephemeral.get(key);
+  if(key==="vl-v6p-character-workflow-v1"){
+   const previous=localStorage.getItem(key);
+   if(previous!==null)ephemeral.set(key,previous);
+   return previous;
+  }
+  return localStorage.getItem(key);
+ },
+ setItem(key,value){ephemeral.set(key,String(value))},
+ removeItem(key){ephemeral.delete(key)},
+ key(n){return [...ephemeral.keys()][n]||null},
+ get length(){return ephemeral.size}
+});
+function announceOnline(target){
+ const frame=$(target);
+ try{
+  if(frame?.contentWindow&&window.VLMahlukHubDrive?.connected())
+   frame.contentWindow.postMessage({type:"mahluk:cloud-connected"},ORIGIN);
+ }catch{}
+}
+function announceAllOnline(){
+ for(const id of ["character-frame","action-frame","motion-frame"])
+  announceOnline(id);
+}
 function note(s){$("status-msg").textContent=String(s)}
 function fixedUrl(value){
  try{const u=new URL(value,location.href);if(u.origin!==ORIGIN)throw Error("Outside Mahluk origin");
@@ -25,6 +52,7 @@ function fixedUrl(value){
 }
 function loadFrame(id,url){
  const iframe=$(id);if(iframe&&!iframe.dataset.loaded){
+  iframe.addEventListener("load",()=>announceOnline(id));
   iframe.src=new URL(url,location.href).href;iframe.dataset.loaded="1";
  }
  return iframe;
@@ -36,6 +64,7 @@ function show(name){
  document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===tab)));
  document.querySelectorAll(".view").forEach(p=>p.classList.toggle("active",p.id===tab+"-view"));
  loadFrame(FRAMES[tab],URLS[tab]);
+ announceOnline(FRAMES[tab]);
  if(tab==="character"){
   const pixel=$("pixel-frame");
   try{
@@ -121,7 +150,8 @@ function bind(){
  if(drive){
   $("drive-connect").onclick=async()=>{
    try{note("Connecting Google Drive…");await drive.connect();$("drive-save").disabled=false;$("drive-load").disabled=false;
-    $("drive-connect").textContent="☁ CONNECTED";$("help").textContent="DRIVE READY";note("Google Drive connected · use BACKUP or RESTORE");
+    $("drive-connect").textContent="☁ CONNECTED";$("help").textContent="CLOUD ONLINE";
+    note("Online Drive connected · loading gallery from cloud");announceAllOnline();
    }catch(e){note("Drive connection failed: "+e.message)}
   };
   $("drive-save").onclick=async()=>{
@@ -147,6 +177,22 @@ async function syncDrive(){
  const result=await drive.backup();note("Drive verified · "+result.name);
  return result;
 }
-window.VLMahlukWorkspace=Object.freeze({show,openEditor,closeCharacterPixel,newClip,refreshCharacter,note,syncDrive});
+async function saveOnline(kind,id,record){
+ const drive=window.VLMahlukHubDrive;
+ if(!drive?.connected())throw Error("Connect Google Drive before Save Online. No data was saved.");
+ return drive.saveRecord(kind,id,record);
+}
+async function listOnline(kind){
+ const drive=window.VLMahlukHubDrive;
+ if(!drive?.connected())throw Error("Connect Google Drive first");
+ return drive.listRecords(kind);
+}
+async function loadOnline(kind,id){
+ const drive=window.VLMahlukHubDrive;
+ if(!drive?.connected())throw Error("Connect Google Drive first");
+ return drive.loadRecord(kind,id);
+}
+window.VLMahlukWorkspace=Object.freeze({show,openEditor,closeCharacterPixel,newClip,refreshCharacter,note,
+ syncDrive,saveOnline,listOnline,loadOnline,isOnline:()=>!!window.VLMahlukHubDrive?.connected(),draftStorage});
 bind();show(new URLSearchParams(location.search).get("tab")||"character");
 })();
