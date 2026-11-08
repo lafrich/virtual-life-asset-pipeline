@@ -119,7 +119,9 @@ function refreshCharacter(){
  const el=$("character-frame");try{el?.contentWindow?.postMessage({type:"mahluk:refresh-character"},ORIGIN)}catch{}
 }
 function newClip(){
- openEditor("./pixel-editor.html?source=v6p&new=clip&name=New%20Animation&from=animation");
+  // Only the Motion Editor creates animations. Pixel Editor edits Custom Wear.
+  show("animation");
+  note("CREATE ANIMATION or IMPORT AI MOTION.JSON; no separate Pixel Clip pipeline.");
 }
 function openFull(){
  const url=tab==="animation"&&!$("animation-pixel-overlay").hidden?$("pixel-frame").src:tab==="animation"?$("motion-frame").src:
