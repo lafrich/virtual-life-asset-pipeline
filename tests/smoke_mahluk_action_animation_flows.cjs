@@ -80,7 +80,8 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await page.evaluate(()=>window.VLMahlukWorkspace.show('action'));
   const a=page.frameLocator('#action-frame');
   await a.locator('#action-home:not([hidden])').waitFor({timeout:65000});
-  await a.locator('#refresh-actors').click();
+  // Actor options are populated on iframe startup from the shared draft RAM.
+  // The manual Refresh button is editor-only, so don't click it on Home.
   const actorOptions=await a.locator('#choose-actor option').evaluateAll(options=>
    options.map(o=>({value:o.value,label:o.textContent})));
   assert.ok(genesisIds.every(id=>actorOptions.some(o=>o.value===id)),
