@@ -309,7 +309,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
       <select id="studio-accessory"></select>
       <button type="button" id="edit-accessory">Edit di Pixel Editor</button>
       <button type="button" id="new-accessory">+ Aksesoris</button>
-      <button type="button" id="new-clip">+ Custom clip</button>
+      <button type="button" id="new-clip">→ Animation Editor</button>
     </div>
     <p class="note">Aksesoris adalah layer transparan buatanmu. Front = di atas rambut (seperti kacamata). Back = di belakang tubuh (seperti hair_back). Overlay acuan di editor tidak pernah ikut ke PNG.</p>
   </section>
@@ -904,12 +904,10 @@ if($("new-accessory")) $("new-accessory").addEventListener("click",()=>{
   routeToMahlukEditor(u.href);
 });
 if($("new-clip")) $("new-clip").addEventListener("click",()=>{
-  persistLastCh();
-  const u=new URL("./pixel-editor.html",location.href);
-  u.searchParams.set("source","v6p");u.searchParams.set("new","clip");
-  u.searchParams.set("name","Clip baru");
-  u.searchParams.set("action",state.action||"idle");u.searchParams.set("dir",state.dir||"se");
-  routeToMahlukEditor(u.href);
+  // One motion authoring entrypoint: never start a parallel clip editor here.
+  if(window.parent&&window.parent!==window&&window.parent.VLMahlukWorkspace)
+   window.parent.VLMahlukWorkspace.show("animation");
+  else location.href="./mahluk-animation-studio.html";
 });
 if($("tab-btn-appearance")) $("tab-btn-appearance").addEventListener("click",()=>showStudioTab("appearance"));
 if($("tab-btn-gallery")) $("tab-btn-gallery").addEventListener("click",()=>showStudioTab("gallery"));
