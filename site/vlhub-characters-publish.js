@@ -56,6 +56,12 @@ function v2Record(input){
   tracks:input.tracks||undefined,
   faceId:typeof input.faceId==="string"?input.faceId:"",
   v6p:input.v6p&&typeof input.v6p==="object"?input.v6p:null,
+   // Optional authored physical Custom Wear sheets travel with the character.
+   // Other native parts and approved Genesis bases remain immutable.
+   assetParts:input.assetParts&&typeof input.assetParts==="object"?
+    Object.fromEntries(Object.entries(input.assetParts).filter(([k,v])=>
+     /^(?:top\/custom(?:_back)?(?:_f)?|pants\/custom(?:_f)?|shoes\/custom(?:_f)?)$/.test(k)&&
+     typeof v==="string"&&v.startsWith("data:image/png;base64,"))):{},
   updated:new Date().toISOString()
  };
 }
