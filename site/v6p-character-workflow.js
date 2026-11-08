@@ -52,15 +52,20 @@ function allMotions(){
   add(qa,"anchor:"+motion.id,(motion.name||motion.id).toUpperCase()+" · ANCHOR");
   supported.add(motion.id);
  }
- for(const motion of root.V6PClipStore?.list()||[])if(!supported.has(motion.id)){
-  add(qa,"unmapped:"+motion.id,(motion.name||motion.id)+" · NO UNIVERSAL ANCHOR",true);
- }
+ // Use the same compiled Genesis motion path as Animation Studio; no second QA UI.
+ add(qa,"motion:clp_standing_punch","PUNCH / STANDING PUNCH · REVIEW");
+ for(const motion of root.V6PClipStore?.list()||[])
+  if(!supported.has(motion.id)&&motion.id!=="clp_standing_punch"&&
+     root.V6PUniversalMotionContract?.isUniversal(motion.manifest))
+   add(qa,"motion:"+motion.id,(motion.name||motion.id).toUpperCase()+" · MOTION");
  qa.value=[...qa.options].some(o=>o.value===previous)?previous:"idle";
 }
 function frames(){
  const id=qa.value;
  if(C.FRAMES[id])return C.FRAMES[id];
  if(id.startsWith("anchor:"))return R.anchorDatabase().find(x=>x.id===id.slice(7))?.frames.length||1;
+ if(id==="motion:clp_standing_punch")return root.V6PClipStore?.get("clp_standing_punch")?.manifest?.frames?.length||5;
+ if(id.startsWith("motion:"))return root.V6PClipStore?.get(id.slice(7))?.manifest?.frames?.length||1;
  return 1;
 }
 async function preview(){
@@ -143,7 +148,10 @@ function step(delta){stop();state.frame=(state.frame+delta+frames())%frames();pr
 function tick(){
  if(!state.playing)return;
  const clips=R.anchorDatabase(),entry=qa.value.startsWith("anchor:")?clips.find(x=>x.id===qa.value.slice(7)):null;
- const ms=entry?.frames?.[state.frame]?.ms||(qa.value==="walk"?140:240);
+ const ms=entry?.frames?.[state.frame]?.ms||(qa.value.startsWith("motion:")?
+   (root.V6PClipStore?.get(qa.value.slice(7))?.manifest?.frames?.[state.frame]?.ms||
+    (qa.value==="motion:clp_standing_punch"?[120,110,90,110,130][state.frame]:140)):
+    (qa.value==="walk"?140:240));
  state.timer=setTimeout(()=>{
   if(!state.playing)return;
   state.frame=(state.frame+1)%frames();preview();tick();
