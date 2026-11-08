@@ -9,7 +9,7 @@ assert.strictEqual(A.W,384);assert.strictEqual(A.H,2688);
 assert.deepStrictEqual(A.PIVOT,[32,100]);
 assert.deepStrictEqual(A.DIRS,["se","sw","ne","nw"]);
 assert.strictEqual(A.BANDS.squat.status,"draft_inactive");
-assert.strictEqual(A.BANDS.pushup.status,"authored");
+assert.strictEqual(A.BANDS.pushup.status,"retired_incompatible");
 assert.strictEqual(A.BANDS.pushup.start,4);
 assert.strictEqual(A.BANDS.pushup.frames,6);
 assert.strictEqual(A.BANDS.pushup.ms,160);
@@ -24,10 +24,10 @@ assert.strictEqual(A.BANDS.hip_shake.frames,6);
 assert.strictEqual(A.BANDS.yoga_happy_baby_idle.start,20);
 assert.ok(!A.BANDS.jumping_jack);
 assert.ok(A.INACTIVE.includes("squat"));
-assert.ok(A.isPlayable("pushup"));
+assert.ok(!A.isPlayable("pushup"));
 assert.ok(!A.isPlayable("squat"));
 for(const id of ["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]){
- assert.ok(A.isPlayable(id),"Native stock must be playable: "+id);
+ assert.ok(!A.isPlayable(id),"Retired stock must be inactive: "+id);
 }
 const nude=C.norm({body:"male",gender:"male",top:"nude",pants:"nude",shoes:"nude",face:"blank"});
 assert.strictEqual(nude.top,"nude");assert.strictEqual(nude.pants,"nude");assert.strictEqual(nude.shoes,"nude");
@@ -55,7 +55,7 @@ assert.match(no.note,/no auto-strip/);
 
 assert.deepStrictEqual(C.ROWS,{walk:0,idle:4,talk:8,sit:12,sit_type:16,sleep:20,tired:24,swim:28,float:32,lie:36,perch:40});
 assert.strictEqual(Object.keys(C.ROWS).length*4,44);
-assert.ok(A.SEMESTA_ACT_CLIPS.includes("pushup"));
+assert.deepStrictEqual(A.SEMESTA_ACT_CLIPS,[]);
 assert.ok(!A.SEMESTA_ACT_CLIPS.includes("squat"));
 
 const html=fs.readFileSync(path.join(__dirname,"../site/pixel-editor.html"),"utf8");
@@ -64,6 +64,6 @@ assert.match(html,/v6p-clip-store\.js/);
 assert.match(html,/id="clip-play"/);
 assert.match(html,/id="clip-strip"/);
 const pub=fs.readFileSync(path.join(__dirname,"../site/vlhub-characters-publish.js"),"utf8");
-assert.match(pub,/pushup\|yoga_sphinx_idle/);
+assert.match(pub,/const CLIP_CONSUMED=/);
 assert.doesNotMatch(pub,/jumping_jack/);
 console.log("test_v6p_activity_contract: ok");
