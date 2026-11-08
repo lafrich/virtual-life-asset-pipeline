@@ -35,9 +35,11 @@ You are an animation author for the established *Namanya Juga Hidup* Genesis V6B
 | \`leg_l\` | 25 | 84 |
 | \`leg_r\` | 39 | 84 |
 | \`torso\` | 32 | 60 |
-| \`arm_l\` | 20 | 54 |
-| \`arm_r\` | 44 | 54 |
+| \`arm_l\` | 25 | 61 |
+| \`arm_r\` | 39 | 61 |
 | \`head\` | 32 | 35 |
+
+**Calibrated view-specific Idle arm pivots:** In rear directions ne/nw, both arms have ay=65. In sw/nw, arm_r has ax=38. These values are measured from the complete Genesis Male/Female Idle F0 layered silhouette, not the sparse base/body exposed-skin PNG. Obsolete guesses (20,54) and (44,54) must not be used for new Idle-derived motions. Sit/lie/sleep require independent visual calibration.
 
 Each part in each frame in each direction MUST contain all five numeric fields:
 \`{"x":0,"y":0,"angle":0,"ax":32,"ay":60}\`, with the correct part's anchor by default. The \`x\` and \`y\` positions are integer pixel offsets relative to that anchor; \`angle\` is degrees; \`ax\` and \`ay\` are pixel coordinates. Motion authoring should ordinarily keep default anchors fixed across frames. Allowed validation bounds: \`x,y ∈ [-128,128]\`, \`angle ∈ [-180,180]\`, \`ax ∈ [0,63]\`, \`ay ∈ [0,111]\`.
@@ -63,8 +65,8 @@ The file root MUST contain exactly the necessary data fields below. \`tracks\` M
         "leg_l": {"x": 0, "y": 0, "angle": 0, "ax": 25, "ay": 84},
         "leg_r": {"x": 0, "y": 0, "angle": 0, "ax": 39, "ay": 84},
         "torso": {"x": 0, "y": 0, "angle": 0, "ax": 32, "ay": 60},
-        "arm_l": {"x": 0, "y": -2, "angle": -20, "ax": 20, "ay": 54},
-        "arm_r": {"x": 0, "y": -7, "angle": 35, "ax": 44, "ay": 54},
+        "arm_l": {"x": 0, "y": -2, "angle": -20, "ax": 25, "ay": 61},
+        "arm_r": {"x": 0, "y": -7, "angle": 35, "ax": 39, "ay": 61},
         "head": {"x": 0, "y": 0, "angle": -4, "ax": 32, "ay": 35}
       }
     ],
