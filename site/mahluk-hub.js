@@ -14,7 +14,7 @@ const FRAMES=Object.freeze({
  animation:"motion-frame"
 });
 const TAB_IDS=["emotion","character","action","animation"];
-let tab="character",mobilePane="library";
+let tab="character";
 function note(s){$("status-msg").textContent=String(s)}
 function fixedUrl(value){
  try{const u=new URL(value,location.href);if(u.origin!==ORIGIN)throw Error("Outside Mahluk origin");
@@ -29,14 +29,7 @@ function loadFrame(id,url){
  }
  return iframe;
 }
-function setPane(pane){
- mobilePane=pane==="paint"?"paint":"library";
- const narrow=matchMedia("(max-width:850px)").matches;
- $("motion-pane").hidden=narrow&&mobilePane!=="library";
- $("paint-pane").hidden=narrow&&mobilePane!=="paint";
- $("view-library").setAttribute("aria-pressed",String(mobilePane==="library"));
- $("view-paint").setAttribute("aria-pressed",String(mobilePane==="paint"));
-}
+function setPane(){/* Animation is a single editor; no side-by-side pixel pane. */}
 function show(name){
  if(!TAB_IDS.includes(name))name="character";
  tab=name;
@@ -50,10 +43,7 @@ function show(name){
    Promise.resolve(pending).then(refreshCharacter,refreshCharacter);
   }catch{refreshCharacter()}
  }
- if(tab==="animation"){
-  loadFrame("pixel-frame","./pixel-editor.html?source=v6p&project=clip_pushup&embedded=1");
-  setPane(mobilePane);
- }
+ if(tab==="animation")setPane();
  const u=new URL(location.href);u.searchParams.set("tab",tab);
  history.replaceState(null,"",u.pathname+u.search+u.hash);
  note({emotion:"EMOSI.EXE · emotion database and dialog lipsync are the original editor",
@@ -71,9 +61,10 @@ function openEditor(value){
   note("Editing a character-local sprite · Back to Character preserves your wizard step");
   return;
  }
+ show("animation");
  const frame=$("pixel-frame");frame.src=url;frame.dataset.loaded="1";
- mobilePane="paint";show("animation");setPane("paint");
- note("Editing via original Pixel Editor · source assets preserved");
+ $("animation-pixel-overlay").hidden=false;
+ note("Editing animation pixels · Back returns to the Animation flow");
 }
 async function closeCharacterPixel(){
  const overlay=$("character-pixel-overlay");
@@ -83,6 +74,15 @@ async function closeCharacterPixel(){
  catch(error){note("Pixel save failed: "+error.message);return}
  overlay.hidden=true;show("character");
 }
+async function closeAnimationPixel(){
+ const overlay=$("animation-pixel-overlay");
+ if(!overlay||overlay.hidden)return;
+ try{await $("pixel-frame")?.contentWindow?.VirtualLifePixelEditor?.flush?.()}
+ catch(error){note("Animation pixel save failed: "+error.message);return}
+ overlay.hidden=true;
+ const motion=$("motion-frame");if(motion?.src)motion.contentWindow?.location?.reload?.();
+ note("Animation Gallery → Editor · pixel corrections saved");
+}
 function refreshCharacter(){
  const el=$("character-frame");try{el?.contentWindow?.postMessage({type:"mahluk:refresh-character"},ORIGIN)}catch{}
 }
@@ -90,17 +90,18 @@ function newClip(){
  openEditor("./pixel-editor.html?source=v6p&new=clip&name=New%20Animation");
 }
 function openFull(){
- const url=tab==="animation"&&mobilePane==="paint"?$("pixel-frame").src:tab==="animation"?$("motion-frame").src:
+ const url=tab==="animation"&&!$("animation-pixel-overlay").hidden?$("pixel-frame").src:tab==="animation"?$("motion-frame").src:
   $(FRAMES[tab]).src||new URL(URLS[tab],location.href).href;
  // Explicit user click only; OAuth/clipboard/phone fallback can run in a top-level window.
  window.open(url,"_blank","noopener,noreferrer");
 }
 function bind(){
  for(const btn of document.querySelectorAll("[data-tab]"))btn.onclick=()=>show(btn.dataset.tab);
- $("view-library").onclick=()=>setPane("library");
- $("view-paint").onclick=()=>setPane("paint");
+ $("view-library").onclick=()=>setPane();
+ $("view-paint").onclick=()=>setPane();
  $("new-clip").onclick=newClip;
  $("character-pixel-back").onclick=()=>void closeCharacterPixel();
+ $("animation-pixel-back").onclick=()=>void closeAnimationPixel();
  $("pixel-full").onclick=()=>window.open($("pixel-frame").src,"_blank","noopener,noreferrer");
  $("open-separate").onclick=openFull;
  window.addEventListener("message",e=>{
@@ -112,10 +113,10 @@ function bind(){
   }
   if(e.data.type==="mahluk:goto"&&TAB_IDS.includes(e.data.tab))show(e.data.tab);
   if(e.data.type==="mahluk:open-review"&&typeof e.data.id==="string"){
-   show("animation");setPane("library");$("motion-frame").contentWindow?.postMessage({type:"mahluk:select-motion",id:e.data.id},ORIGIN);
+   show("animation");$("motion-frame").contentWindow?.postMessage({type:"mahluk:select-motion",id:e.data.id},ORIGIN);
   }
  });
- matchMedia("(max-width:850px)").addEventListener("change",()=>setPane(mobilePane));
+ matchMedia("(max-width:850px)").addEventListener("change",()=>setPane());
  const drive=window.VLMahlukHubDrive;
  if(drive){
   $("drive-connect").onclick=async()=>{
