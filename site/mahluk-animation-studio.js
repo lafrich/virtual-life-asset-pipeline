@@ -194,7 +194,21 @@ async function loadSource(){
  const rev=++state.revision;
  const sheet=await setSource();
  if(rev!==state.revision)return;
- state.sheet=sheet;state.images.clear();render();
+ state.sheet=sheet;state.images.clear();
+ state.stockGuides.clear();
+ const clip=state.stockReference&&Store.get(state.stockReference);
+ if(clip?.origin==="pilot"&&A.isPlayable(clip.manifest.band)){
+  // The approved stock is a visual motion guide, NOT a substitute for
+  // the selected Character's clothes or a fabricated body-retarget.
+  const entries=[];
+  for(const dir of DIRS)for(let frame=0;frame<state.frames.length;frame++)
+   entries.push({dir,frame,p:nativeFrame(clip,state.gender,dir,frame%clip.manifest.frames.length).catch(()=>null)});
+  const images=await Promise.all(entries.map(x=>x.p));
+  if(rev!==state.revision)return;
+  for(let i=0;i<entries.length;i++)if(images[i])
+   state.stockGuides.set(entries[i].dir+"/"+entries[i].frame,images[i]);
+ }
+ render();
 }
 function updatePixelTargets(){
  const target=$("pixel-target");if(!target)return;
@@ -275,6 +289,8 @@ function bake(dir=state.dir,index=state.frame){
 }
 function render(){
  const miniature=bake(),w=384,h=672;screen.clearRect(0,0,w,h);screen.imageSmoothingEnabled=false;
+ const guide=state.stockGuides.get(state.dir+"/"+state.frame);
+ if(guide){screen.save();screen.globalAlpha=.26;screen.drawImage(guide,0,0,64,112,0,0,w,h);screen.restore();}
  screen.drawImage(miniature,0,0,64,112,0,0,w,h);
  const p=selected();screen.strokeStyle="#fff";screen.fillStyle="#2568dc";screen.lineWidth=1;
  const x=(p.ax+p.x)*6,y=(p.ay+p.y)*6;
@@ -283,7 +299,7 @@ function render(){
  $("animation-title").textContent=(state.name||"NEW ANIMATION")+" · "+state.dir.toUpperCase()+" F"+(state.frame+1);
  const source=characterSource();
  if($("source-label"))$("source-label").textContent=source.name+" · "+
-  (state.stockReference?"STOCK MOTION REFERENCE: "+state.stockReference+" · ":"")+
+  (state.stockReference?"GHOST STOCK GUIDE (NOT EXPORTED): "+state.stockReference+" · ":"")+
   "BODY / CUSTOM WEAR · "+state.dir.toUpperCase();
  if(document.activeElement!==$("animation-name-edit"))$("animation-name-edit").value=state.name;
  $("ms").value=state.frames[state.frame]?.ms||140;$("loop").checked=state.loop;
@@ -436,6 +452,7 @@ async function save(withDrive=false){
 function editPixels(){
  if(!db()[state.id])return say("Open an editable sprite + anchor animation first",true);
  let character=characterSource();
+ const requestedPart=$("pixel-target")?.value;
  if(!character.record){
   if(!Characters||!Genesis)return say("Character Editor source unavailable",true);
   const row=Characters.create({name:"Genesis "+state.gender.toUpperCase()+" · Animation Custom Wear",gender:state.gender});
@@ -443,6 +460,8 @@ function editPixels(){
   state.sourceId=row.id;fillSources();selectSource(row.id);
   const meta=db();meta[state.id]={...meta[state.id],sourceId:row.id};putDb(meta);
   character=characterSource();
+  if(requestedPart&&[...$("pixel-target").options].some(o=>o.value===requestedPart))
+   $("pixel-target").value=requestedPart;
   void loadSource().catch(error=>say(error.message,true));
  }
  const part=$("pixel-target")?.value;
