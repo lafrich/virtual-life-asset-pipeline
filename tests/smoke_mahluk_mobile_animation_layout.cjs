@@ -66,7 +66,7 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
     await inner.locator('#save-cloud').scrollIntoViewIfNeeded();
     assert.equal(await inner.locator('#save-cloud').isVisible(),true,'Save Online inaccessible beneath mobile editor');
     await inner.locator('#back-home').click();
-    await inner.locator('#animation-home:not([hidden])').waitFor();
+    await inner.locator('#home:not([hidden])').waitFor();
     assert.deepEqual(errors,[],'Browser errors');
     console.log('PASS viewport Animation '+viewport.width+'×'+viewport.height+
      ' iframe='+Math.round(metrics.frame.height)+'px scroll='+Math.round(scrolled)+
