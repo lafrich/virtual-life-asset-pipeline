@@ -37,11 +37,17 @@ async function init(){
 }
 onmessage=async event=>{
  const msg=event.data||{};
- if(msg.type!=="render")return;
+ if(msg.type!=="render"&&msg.type!=="renderBatch")return;
  try{
   await init();
   py.globals.set("GENESIS_RENDER_REQUEST",JSON.stringify(msg.request));
-  const src=py.runPython("import json; genesis_native_render.render(json.loads(GENESIS_RENDER_REQUEST))");
-  postMessage({type:"render",id:msg.id,src});
+  if(msg.type==="renderBatch"){
+   const images=py.runPython("import json; {d: genesis_native_render.render({**json.loads(GENESIS_RENDER_REQUEST), 'direction':d}) for d in genesis_native_render.DIRS}");
+   postMessage({type:"renderBatch",id:msg.id,images:images.toJs({dict_converter:Object.fromEntries})});
+   images.destroy();
+  }else{
+   const src=py.runPython("import json; genesis_native_render.render(json.loads(GENESIS_RENDER_REQUEST))");
+   postMessage({type:"render",id:msg.id,src});
+  }
  }catch(e){postMessage({type:"error",id:msg.id,message:String(e.message||e)})}
 };
