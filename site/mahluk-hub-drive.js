@@ -101,6 +101,12 @@ async function eraseOnlineAnimationRecords(){
   const batch=await (await api(API+"?"+q)).json();
   for(const file of batch.files||[]){
    if(!/^animation__[-a-z0-9_]{2,80}\.json$/.test(file.name||""))continue;
+   // Native Python animations are allowed to persist across future logins.
+   // The 2026-11-09 legacy purge must never delete newly installed assets.
+   const record=await (await api(API+"/"+encodeURIComponent(file.id)+"?alt=media")).json();
+   if(record?.format===CLOUD_FORMAT&&
+      record?.record?.format==="genesis-v6b-native-animation-v1"&&
+      typeof record.record.python==="string")continue;
    await api(API+"/"+encodeURIComponent(file.id),{method:"DELETE"});
    deleted.push(file.name);
   }
@@ -130,7 +136,7 @@ function connect(){
     if(r.error||!r.access_token){reject(Error(r.error_description||r.error||"Google Drive denied"));return}
     token=r.access_token;expires=Date.now()+1000*(Number(r.expires_in)||3500);
     baseFolder="";savedFile="";recordFolder="";recordFolderPromise=null;
-    // Permanently delete existing online animation records at the next login.
+    // Migrate old animation records once; preserve future native-Python records.
     void eraseOnlineAnimationRecords().then(()=>resolve(true)).catch(reject);
    },
    error_callback:e=>reject(Error(e?.message||e?.type||"Google popup closed"))
