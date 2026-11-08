@@ -80,16 +80,16 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await page.evaluate(()=>window.VLMahlukWorkspace.show('action'));
   const a=page.frameLocator('#action-frame');
   await a.locator('#action-home:not([hidden])').waitFor({timeout:65000});
-  // Actor options are populated on iframe startup from the shared draft RAM.
-  // The manual Refresh button is editor-only, so don't click it on Home.
+  // Action may already be open from the initial route, before Character
+  // created these drafts. The Choose screen must refresh against shared RAM.
+  await a.locator('#action-start-new').click();
+  await a.locator('#action-choose:not([hidden])').waitFor();
   const actorOptions=await a.locator('#choose-actor option').evaluateAll(options=>
    options.map(o=>({value:o.value,label:o.textContent})));
   assert.ok(genesisIds.every(id=>actorOptions.some(o=>o.value===id)),
    'Both created Genesis actors must appear in Action: '+JSON.stringify(actorOptions));
   assert.equal(actorOptions.some(o=>o.value.startsWith('base:')),false,
    'Stock base mannequins must never be shown in Action');
-  await a.locator('#action-start-new').click();
-  await a.locator('#action-choose:not([hidden])').waitFor();
   await a.locator('#choose-actor').selectOption(genesisIds[0]);
   await a.locator('#choose-add').click();
   await a.locator('#choose-actor').selectOption(genesisIds[1]);
