@@ -438,13 +438,17 @@ async function modifyClip(clip){
 function stop(){state.playing=false;clearTimeout(state.timer);$("play").textContent="▶ PLAY"}
 function tick(){if(!state.playing)return;const ms=state.frames[state.previewFrame]?.ms||140;
  state.timer=setTimeout(()=>{if(!state.playing)return;
-  if(state.previewFrame===state.frames.length-1&&!state.loop){stop();drawGif();return}
-  state.previewFrame=(state.previewFrame+1)%state.frames.length;drawGif();tick()
+  if(state.previewFrame===state.frames.length-1&&!state.loop){stop();render();return}
+  state.previewFrame=(state.previewFrame+1)%state.frames.length;
+  // Playing frame is the large editable sprite, not just the tiny GIF.
+  // Click-to-select must use exactly the frame currently visible.
+  state.frame=state.previewFrame;render();drawGif();tick();
  },ms);
 }
-function toggle(){if(state.playing){stop();return}
+function toggle(){if(state.playing){stop();render();return}
  if(!db()[state.id])return say("Open an editable animation first",true);
- state.previewFrame=0;state.playing=true;$("play").textContent="❚❚ PAUSE";drawGif();tick()}
+ state.previewFrame=state.frame;state.playing=true;$("play").textContent="❚❚ PAUSE";
+ render();drawGif();tick()}
 function changeFrame(n){stop();state.frame=Math.max(0,Math.min(state.frames.length-1,n));render()}
 function addFrame(duplicate){
  if(!db()[state.id])return say("New animation first",true);
@@ -564,6 +568,8 @@ $("pixel-target").onchange=updatePartShortcut;
 $("export").onclick=exportJSON;
 cv.addEventListener("pointerdown",e=>{
  if(!db()[state.id])return;
+ // Pause on the displayed playback frame before choosing a real body cutout.
+ if(state.playing){const playingFrame=state.previewFrame;stop();state.frame=playingFrame;}
  const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*64/r.width,y=(e.clientY-r.top)*112/r.height;
  if(!$("move-anchor").checked){
   const hit=hitTestPart(x,y);
