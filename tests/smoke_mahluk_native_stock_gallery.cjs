@@ -46,6 +46,7 @@ const alpha=canvas=>{const d=canvas.getContext('2d').getImageData(0,0,64,112).da
   // Pixel-level QA on the actual Genesis Idle F0 physical-layer cutouts.
   // Isolate the attacking arm for each direction to detect an invisible,
   // motionless or severely clipped punch, not merely a nonblank body.
+  const problems=[];
   for(const gender of ['male','female']){
    const armMetrics=await page.evaluate(async gender=>{
     const Host=window.V6PCharacterHost,M=window.V6PUniversalMotion,
@@ -67,34 +68,53 @@ const alpha=canvas=>{const d=canvas.getContext('2d').getImageData(0,0,64,112).da
        }))
       }
      }};
-     function stat(index){
-      const canvas=M.renderPrepared(isolated,dir,pack.manifest.motion.tracks[dir][index]);
+     function stats(canvas){
       const bytes=canvas.getContext('2d').getImageData(0,0,64,112).data;
-      let count=0,x=0,y=0;
+      let count=0,x=0,y=0,minX=64,maxX=-1,minY=112,maxY=-1;
       for(let row=0;row<112;row++)for(let col=0;col<64;col++){
        const a=bytes[(row*64+col)*4+3]/255;
-       if(a>.2){count+=a;x+=col*a;y+=row*a}
+       if(a>.2){count+=a;x+=col*a;y+=row*a;
+        minX=Math.min(minX,col);maxX=Math.max(maxX,col);
+        minY=Math.min(minY,row);maxY=Math.max(maxY,row);
+       }
       }
-      return {count,centerX:count?x/count:null,centerY:count?y/count:null};
+      return {count:+count.toFixed(1),centerX:count?+(x/count).toFixed(2):null,
+       centerY:count?+(y/count).toFixed(2):null,
+       bbox:[minX,minY,maxX,maxY]};
      }
-     measured[dir]={arm,guard:stat(0),impact:stat(3)};
+     function isolatedStat(index){
+      return stats(M.renderPrepared(isolated,dir,pack.manifest.motion.tracks[dir][index]));
+     }
+     const body=source.entries.find(e=>e.name==='base/body'+(gender==='female'?'_f':''));
+     const basePartStats=Object.fromEntries(['head','arm_l','arm_r','torso','leg_l','leg_r'].map(part=>
+      [part,body?.parts?.[part]?stats(body.parts[part]):null]));
+     const fullBody=document.createElement('canvas');fullBody.width=64;fullBody.height=112;
+     const g=fullBody.getContext('2d');
+     for(const item of Object.values(body?.parts||{}))g.drawImage(item,0,0);
+     const bytes=g.getImageData(0,0,64,112).data;
+     const bodyRows={};
+     for(const y of [30,35,40,45,50,55,60,65,70,75,80,85,90]){
+      const xs=[];for(let x=0;x<64;x++)if(bytes[(y*64+x)*4+3]>30)xs.push(x);
+      bodyRows[y]=xs.length?[xs[0],xs[xs.length-1],xs.length]:[];
+     }
+     measured[dir]={arm,guard:isolatedStat(0),impact:isolatedStat(3),
+      geometry:source.geometry,basePartStats,bodyRows};
     }
     return measured;
    },gender);
+   console.log('ACTUAL IDLE SEGMENTATION '+gender+' '+JSON.stringify(armMetrics));
    for(const [dir,m] of Object.entries(armMetrics)){
-    assert.ok(m.guard.count>8&&m.impact.count>8,
-     gender+' '+dir+' actual Idle arm missing from six-area mask: '+JSON.stringify(m));
+    if(m.guard.count<=8||m.impact.count<=8)
+     problems.push(gender+' '+dir+' actual arm missing: '+JSON.stringify(m));
     const forward=(m.impact.centerX-m.guard.centerX)*
      (dir==='se'||dir==='ne'?1:-1);
-    assert.ok(forward>7,
-     gender+' '+dir+' arm did not really punch forward: '+JSON.stringify({...m,forward}));
-    assert.ok(m.impact.count>=m.guard.count*.55,
-     gender+' '+dir+' fist clipped outside 64px sprite: '+JSON.stringify(m));
+    if(!(forward>7))
+     problems.push(gender+' '+dir+' punch arm does not move forward: '+forward);
+    if(m.impact.count<m.guard.count*.55)
+     problems.push(gender+' '+dir+' punch clipped: '+JSON.stringify(m));
    }
-   console.log('[ok] Measured actual '+gender+' Genesis Idle punch arm pixels: '+
-    JSON.stringify(armMetrics));
   }
-
+  assert.equal(problems.length,0,problems.join('\n'));
   await page.goto(root+'/mahluk-action-editor.html',{waitUntil:'domcontentloaded',timeout:45000});
   await page.locator('#phase-loop option[value="clip:clp_standing_punch"]').waitFor({state:'attached',timeout:45000});
   console.log('[ok] Existing Action Editor also auto-detects bundled JSON Punch');
