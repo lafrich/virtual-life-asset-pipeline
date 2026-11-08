@@ -1,0 +1,92 @@
+<!doctype html><html lang="id"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Genesis Editor · Male / Female Master</title>
+<style>
+:root{font:12px Tahoma,Arial,sans-serif;color:#213a5d;background:#b7c9de}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh}header{background:linear-gradient(90deg,#153b82,#6499d5);color:white;padding:12px;font-weight:bold}
+main{max-width:1230px;margin:auto;padding:10px;display:grid;grid-template-columns:minmax(205px,250px) minmax(310px,1fr) minmax(230px,270px);gap:10px}
+.panel{background:#e9eef3;border:2px ridge white;padding:10px;min-width:0}
+h2{font-size:13px;margin:0 0 9px;border-bottom:1px solid #9dadbc;padding:5px}
+label{display:block;font-size:11px;margin:9px 0;font-weight:bold}
+input,select,button{font:inherit;color:#1d3965;padding:7px;max-width:100%;border:1px solid #8297b3;background:white}
+input[type=number],select{width:100%}
+button{cursor:pointer;background:linear-gradient(#fff,#d4e5f7)}
+button[aria-pressed=true],button.primary{background:#b7d5ff;border-color:#3868af;font-weight:bold}
+button:disabled{opacity:.55;cursor:not-allowed}
+.action-row{display:flex;gap:5px;flex-wrap:wrap}
+.action-row>*{flex:1;min-width:75px}
+.note{color:#51657a;line-height:1.5;font-size:11px}
+#status{padding:9px;background:#dbe9f6;border:1px solid #8ea6c2;line-height:1.5;overflow-wrap:anywhere}
+#status.error{background:#ffdfdc}
+#source-preview,#stage{image-rendering:pixelated;border:1px solid #6c8199;background:repeating-conic-gradient(#ecf0f6 0 25%,#d1dcea 0 50%) 0 0/16px 16px}
+#source-preview{display:block;width:min(140px,100%);height:auto;margin:8px auto}
+#stage{display:block;width:min(350px,100%);aspect-ratio:64/112;height:auto;touch-action:none;margin:7px auto}
+#stage:focus-visible{outline:3px solid #e5a947}
+#joints{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:250px;overflow:auto}
+#joints button{font-size:10px;overflow-wrap:anywhere}
+#coords{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#template-time{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#legend{font-size:10px;line-height:1.55}
+[hidden]{display:none!important}
+@media(max-width:940px){main{grid-template-columns:240px 1fr}main>.panel:last-child{grid-column:1 / -1}}
+@media(max-width:650px){main{display:flex;flex-direction:column;padding:5px}.panel{padding:9px}#stage{width:min(270px,100%)}}
+</style></head><body>
+<header>▣ GENESIS EDITOR · FIXED TWO MASTER RIGS · NATIVE V6B</header>
+<main>
+<section class="panel">
+ <h2>MASTER · NOT NEW CHARACTER</h2>
+ <label>GENESIS MASTER<select id="gender"><option value="male">GENESIS MALE</option><option value="female">GENESIS FEMALE</option></select></label>
+ <p class="note">Stable master IDs: <code>genesis_male_nude</code> and <code>genesis_female_nude</code>. Save overwrites the selected rig profile at the same ID. Original artwork remains recoverable.</p>
+ <label>ANGLE / DIRECTION<select id="dir"><option value="se">SE · FRONT</option><option value="sw">SW · FRONT</option><option value="ne">NE · BACK</option><option value="nw">NW · BACK</option></select></label>
+ <div class="action-row"><button id="mode-puppet" aria-pressed="true">ADJUST PUPPET</button><button id="mode-slice" aria-pressed="false">ADJUST SLICE</button></div>
+ <h2>NATIVE COMPATIBILITY</h2>
+ <label>11 ORIGINAL ANIMATIONS<select id="native-action"></select></label>
+ <div id="template-time">
+  <label>FRAME<input id="native-frame" type="number" min="1" max="6" value="1"></label>
+  <label>TEST MOVEMENT (%)<input id="probe" type="range" min="-100" max="100" step="5" value="0"></label>
+ </div>
+ <div class="action-row"><button id="prev-frame">◀ FRAME</button><button id="play">▶ PLAY</button><button id="next-frame">FRAME ▶</button></div>
+ <h2>ORIGINAL NATIVE REFERENCE</h2>
+ <canvas id="source-preview" width="64" height="112" aria-label="Unchanged 11 animation original reference"></canvas>
+ <p class="note">Reference memakai Genesis Male/Female yang disetujui, bukan Ichsan/Noor. Emosi tetap layer paling depan di Character; Custom Wear ikut dalam atlas Genesis.</p>
+</section>
+<section class="panel">
+ <h2 id="preview-title">EDIT MASTER RIG / SLICE</h2>
+ <canvas id="stage" width="64" height="112" tabindex="0" aria-label="Editable Genesis puppet joints and pixel slice assignment"></canvas>
+ <p id="legend">Biru = slice terpilih; titik putih = sendi. Geser sendi di mode Puppet atau cat area di mode Slice. Mask 64×112 per arah, tidak mengubah sprite sumber.</p>
+ <div id="status" role="status">Loading approved Genesis bases…</div>
+ <div class="action-row"><button id="load-cloud">↻ LOAD MASTER CLOUD</button><button class="primary" id="save">☁ SAVE · OVERWRITE MASTER</button></div>
+ <div class="action-row"><button id="export">↓ BACKUP PROFILE.JSON</button><button id="reset">RESET THIS MASTER (UNSAVED)</button></div>
+ <p class="note">Save requires connected Google Drive and verification. It replaces the same Genesis master profile; it never creates another character, overwrites user Character data, or installs animation into gameplay.</p>
+</section>
+<section class="panel">
+ <section id="puppet-tools">
+  <h2>15 JOINTS · NATIVE PYTHON CONTRACT</h2>
+  <div id="joints"></div>
+  <label>SELECTED JOINT<input id="joint-name" readonly></label>
+  <div id="coords"><label>JOINT X<input id="joint-x" type="number" min="0" max="63"></label><label>JOINT Y<input id="joint-y" type="number" min="0" max="111"></label></div>
+  <h2>6 SLICE ROTATION PIVOTS</h2>
+  <label>PIECE<select id="pivot-name"></select></label>
+  <div id="coords"><label>PIVOT X<input id="pivot-x" type="number" min="0" max="63"></label><label>PIVOT Y<input id="pivot-y" type="number" min="0" max="111"></label></div>
+ </section>
+ <section id="slice-tools" hidden>
+  <h2>PAINT / FIX SLICE BOUNDARY</h2>
+  <label>SLICE / PART<select id="slice-part"></select></label>
+  <label>BRUSH SIZE (PIXELS)<input id="brush" type="range" min="1" max="7" step="2" value="3"></label>
+  <div class="action-row"><button id="mask-copy">COPY MASK</button><button id="mask-paste">PASTE MASK</button><button id="mask-flip">PASTE FLIP</button></div>
+  <p class="note">Painted pixels become the chosen body area. The color overlay is only an editing guide. SE/SW/NE/NW masks are independent.</p>
+  <p class="note">If a slice still breaks while sitting or lying down, inspect the native action in preview before saving. A single base mask cannot guarantee every extreme pose.</p>
+ </section>
+</section>
+</main>
+<script src="./genesis-source.js?v=genesis-editor-v1"></script>
+<script src="./v6p-character-store.js?v=genesis-editor-v1"></script>
+<script src="./genesis-base-bridge.js?v=genesis-editor-v1"></script>
+<script src="./v6p-part-catalog.js?v=genesis-editor-v1"></script>
+<script src="./v6p-part-overrides.js?v=genesis-editor-v1"></script>
+<script src="./v6p-compositor.js?v=genesis-editor-v1"></script>
+<script src="./genesis-native-python-contract.js?v=genesis-editor-v1"></script>
+<script src="./genesis-master-rig.js?v=genesis-editor-v1"></script>
+<script src="./genesis-puppet-renderer.js?v=genesis-editor-v1"></script>
+<script src="./genesis-editor.js?v=1"></script>
+</body></html>
