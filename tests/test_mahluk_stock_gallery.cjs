@@ -36,29 +36,65 @@ test('retired five-band activity stock is unavailable, and custom clips stay int
  const persist=JSON.parse(localStorage.getItem('vl-v6p-act-clips-v1'));
  assert.equal(Object.keys(persist.clips).length,1);
 });
-test('Standing Punch is a complete idle-derived 5-frame four-direction review package',()=>{
- const data=JSON.parse(read('site/motion-packs/clp_standing_punch.motion.json'));
- assert.equal(data.id,'clp_standing_punch');
- assert.equal(data.sourceAction,'idle');
- assert.equal(data.frames.length,5);
- const motion=C.make({sourceAction:data.sourceAction,frames:data.frames,tracks:data.tracks,status:'draft'});
- assert.equal(C.validate(motion,data.frames),true);
- for(const dir of C.DIRS)assert.equal(data.tracks[dir].length,5);
- const studio=read('site/mahluk-animation-studio.js'),html=read('site/mahluk-animation-studio.html');
- assert.match(studio,/clp_standing_punch\.motion\.json/);
- assert.match(studio,/category:"punch"/);
- assert.match(studio,/clipCategory\(/);
- assert.match(html,/animation-category/);
+test('single JSON registry contains valid Idle-derived Punch and auto-discovers new motions',async()=>{
+ const index=JSON.parse(read('site/motion-packs/index.json'));
+ assert.equal(index.format,'genesis-v6b-motion-registry-v1');
+ assert.ok(index.files.includes('clp_standing_punch.motion.json'));
+ const entries=Object.fromEntries(index.files.map(filename=>[
+  './motion-packs/'+filename,JSON.parse(read('site/motion-packs/'+filename))
+ ]));
+ entries['./motion-packs/index.json']=index;
+ const make=()=>{
+  const local=new Map();
+  const window={
+   localStorage:{getItem:k=>local.get(k)||null,setItem:(k,v)=>local.set(k,String(v))},
+   V6PActivityContract:A,V6PUniversalMotionContract:C,
+   fetch:async url=>({ok:!!entries[url],status:entries[url]?200:404,
+    json:async()=>JSON.parse(JSON.stringify(entries[url]))})
+  };
+  const context={window,module:{exports:{}},Map,Set,Date,JSON,Object,Array,String,Number,RegExp};
+  vm.runInNewContext(read('site/v6p-clip-store.js'),context);
+  return {Store:context.module.exports,local};
+ };
+ const {Store}=make();
+ assert.equal(Store.list().length,0,'No hardcoded package injected before asset discovery');
+ await Store.loadBundled();
+ const punch=Store.get('clp_standing_punch');
+ assert.equal(punch.origin,'bundled');
+ assert.equal(punch.manifest.category,'punch');
+ assert.equal(punch.manifest.frames.length,5);
+ assert.equal(punch.manifest.motion.sourceAction,'idle');
+ assert.equal(C.validateManifest(punch.manifest),true);
+ assert.throws(()=>Store.updateManifest(punch.id,{name:'overwrite'}),/read-only/);
+ assert.equal(Store.get('clip_pushup'),null);
+ const kick=JSON.parse(read('site/motion-packs/clp_standing_punch.motion.json'));
+ kick.id='clp_test_kick';kick.name='Test Kick';kick.category='kick';
+ entries['./motion-packs/clp_test_kick.motion.json']=kick;
+ index.files.push('clp_test_kick.motion.json');
+ const {Store:other}=make();await other.loadBundled();
+ assert.equal(other.list().length,2);
+ assert.equal(other.get('clp_test_kick').manifest.category,'kick');
+ assert.equal(other.get('clp_standing_punch').manifest.category,'punch');
 });
-test('existing Character Preview 4-view QA exposes Punch and renders through universal Genesis',()=>{
- const h=read('site/v6p-studio.html'),wizard=read('site/v6p-character-wizard.js'),
-  workflow=read('site/v6p-character-workflow.js');
- assert.match(wizard,/motion:clp_standing_punch/);
- assert.match(workflow,/motion:clp_standing_punch/);
- assert.match(h,/getQaMotion\(/);
- assert.match(h,/M\.renderPrepared\(/);
- assert.match(h,/partOverrides:existing\?\.parts\|\|base\?\.parts/);
- assert.match(h,/V\.extractFrame\(state\.sheet,action,cv\.dataset\.qaDir,state\.frame\)/);
+test('Animation, Character and Action use same dynamic registry with no Punch-specific ID cases',()=>{
+ const studio=read('site/mahluk-animation-studio.js'),html=read('site/mahluk-animation-studio.html'),
+  character=read('site/v6p-studio.html'),wizard=read('site/v6p-character-wizard.js'),
+  workflow=read('site/v6p-character-workflow.js'),action=read('site/mahluk-action-editor.js'),
+  store=read('site/v6p-clip-store.js');
+ for(const file of [studio,wizard,workflow,action])assert.match(file,/loadBundled\(/,
+  'Every editor must load the shared JSON registry');
+ assert.match(store,/motion-packs\/index\.json/);
+ assert.match(studio,/clipCategory\(clip\)/);
+ assert.match(studio,/category\.replaceAll\("_"," "\)\.toUpperCase\(\)/);
+ assert.match(wizard,/for\(const rec of root\.V6PClipStore\?\.list\(\)\|\|\[\]\)/);
+ assert.match(character,/getQaMotion\(/);
+ assert.match(character,/M\.renderPrepared\(/);
+ assert.match(character,/partOverrides:existing\?\.parts\|\|base\?\.parts/);
+ assert.match(action,/Store\?\.list\(\)/);
+ assert.match(html,/animation-category/);
+ for(const file of [studio,wizard,workflow,character,action])
+  assert.doesNotMatch(file,/motion:clp_standing_punch|clp_standing_punch\.motion\.json/,
+   'Editor must not contain an individually hardcoded animation asset');
 });
 test('approved V6B native compositor retains original Idle and Walk rows',()=>{
  const V=require('../site/v6p-compositor.js');
