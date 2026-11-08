@@ -15,7 +15,7 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
    await page.route('https://accounts.google.com/gsi/client',r=>r.fulfill({status:200,
     contentType:'text/javascript',body:'window.google={accounts:{oauth2:{initTokenClient(){return {requestAccessToken(){}}}}}};'}));
    try{
-    await page.goto(ROOT+'/mahluk-hidup.html?tab=animation',{waitUntil:'domcontentloaded',timeout:45000});
+    await page.goto(ROOT+'/mahluk-hidup.html?tab=animation&legacyCloud=1',{waitUntil:'domcontentloaded',timeout:45000});
     const inner=page.frameLocator('#motion-frame');
     await inner.locator('#animation-home:not([hidden])').waitFor({timeout:65000});
     const metrics=await page.evaluate(()=>{
