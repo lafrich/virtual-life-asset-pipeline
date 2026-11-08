@@ -8,7 +8,7 @@ const STAGE=$("stage"),ctx=STAGE.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 let draft=null,dir="se",frame=0,gender="male",joint="hand_near",angle="elbow_near";
 let preview=null,rendered=false,timer=0,playing=false,worker=null,serial=0,editVersion=0;
-let frameCache=new Map(),dragging=null,verifiedSrc="",saved=false;
+let frameCache=new Map(),dragging=null,verifiedSrc="",saved=false,cacheKey="";
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null;}catch{return null}};
 const clone=x=>JSON.parse(JSON.stringify(x));
 function message(text,error=false){$("status").textContent=text;$("status").classList.toggle("error",!!error)}
@@ -78,6 +78,8 @@ function paint(){
 function requestRender(){
  if(!draft)return;
  const key=[editVersion,gender,dir,frame].join("|");
+ cacheKey=key;
+ rendered=false;verifiedSrc="";updateActions();
  if(frameCache.has(key)){showImage(frameCache.get(key));return}
  if(!worker){
   try{
@@ -88,7 +90,7 @@ function requestRender(){
     if(m.type==="ready"){message("Python generator ready · rendering original native code layers");return}
     if(m.id!==serial)return;
     if(m.type==="error"){preview=null;rendered=false;updateActions();paint();message("Python preview failed: "+m.message,true);return}
-    if(m.type==="render"){frameCache.set(key,m.src);showImage(m.src)}
+    if(m.type==="render"){frameCache.set(cacheKey,m.src);showImage(m.src)}
    };
    worker.onerror=e=>{message("Python worker error: "+e.message,true);rendered=false;updateActions()};
   }catch(error){message("Cannot start native Python worker: "+error.message,true);return}
