@@ -70,7 +70,11 @@ const digest=s=>crypto.createHash('sha256').update(s).digest('hex');
   assert.ok(remote);
   const original=JSON.parse(remote.content);
   assert.equal(original.sha256,digest(JSON.stringify(original.payload)));
-  for(const [k,v] of Object.entries(dummy))assert.deepEqual(JSON.parse(original.payload.local[k]),v);
+  const removed=new Set(['vl-v6p-act-clips-v1','vl-mahluk-animation-anchor-poses-v1']);
+  for(const [k,v] of Object.entries(dummy)){
+   if(removed.has(k))assert.equal(original.payload.local[k],undefined,'Deleted animation must not enter backup: '+k);
+   else assert.deepEqual(JSON.parse(original.payload.local[k]),v);
+  }
   assert.deepEqual(original.payload.emotions.map(x=>x.id),['test_emotion']);
   console.log('PASS Drive mock: connect, upload, checksum, all workspace keys and Emosi IndexedDB');
   tamper=true;
@@ -93,10 +97,13 @@ const digest=s=>crypto.createHash('sha256').update(s).digest('hex');
   const download=page.waitForEvent('download',{timeout:30000});
   const info=await page.evaluate(()=>VLMahlukHubDrive.restore());
   const recovery=await download;assert.match(recovery.suggestedFilename(),/^mahluk-before-restore-/);
-  assert.ok(info.keys>=Object.keys(dummy).length);
+  assert.ok(info.keys>=Object.keys(dummy).length-removed.size);
   const after=await page.evaluate(keys=>Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)])),
    [...Object.keys(dummy),'vl-v6p-project-catalog-v1']);
-  for(const [k,v] of Object.entries(dummy))assert.deepEqual(JSON.parse(after[k]),v);
+  for(const [k,v] of Object.entries(dummy)){
+   if(removed.has(k))assert.equal(after[k],null,'Restore resurrected deleted animation: '+k);
+   else assert.deepEqual(JSON.parse(after[k]),v);
+  }
   assert.equal(after['vl-v6p-project-catalog-v1'],null);
   const emotions=await page.evaluate(async()=>{
    const db=await new Promise((resolve,reject)=>{
