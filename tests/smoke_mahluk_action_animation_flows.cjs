@@ -158,7 +158,7 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await a.locator('#pixelOverlay:not([hidden])').waitFor({timeout:55000});
   const reopened=await a.locator('#pixelCanvas').evaluate(canvas=>{
    // Drawing surface is scaled, but its source atlas remains true 64x112.
-   const data=canvas.getContext('2d').getImageData(20*6,50*6,1,1).data;
+   const data=canvas.getContext('2d').getImageData(20*6+3,50*6+3,1,1).data;
    return Array.from(data);
   });
   assert.ok(reopened[0]>=200&&reopened[2]>=150,
