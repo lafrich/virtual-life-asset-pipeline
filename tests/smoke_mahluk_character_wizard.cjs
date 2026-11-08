@@ -30,8 +30,8 @@ async function run(){
   assert.equal(await page.locator('#hair').inputValue(),'none');
   assert.equal(await page.locator('#top').inputValue(),'custom');
   assert.equal(await page.locator('#pants').inputValue(),'custom');
-  assert.equal(await page.locator('#shoes').inputValue(),'shoes',
-   'The unpainted Genesis custom shoe layer is barefoot; new characters must start dressed');
+  assert.equal(await page.locator('#shoes').inputValue(),'custom',
+   'Genesis Nude must retain its original custom barefoot sheet until explicitly dressed');
   const approved=await page.evaluate(()=>{
    const S=window.V6PCharacterStore,row=S.get(window.V6PCharacterHost.get().id);
    return {source:window.V6PGenesisBase?.get('female')?.name,
