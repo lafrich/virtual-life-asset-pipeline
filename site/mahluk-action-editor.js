@@ -4,7 +4,8 @@
 (function(root){"use strict";
 const KEY="mahluk-action-situations-v1",FORMAT="mahluk-situation-database-v1";
 const DIRS=["se","sw","ne","nw"],PHASES=["enter","loop","exit"],$=id=>document.getElementById(id);
-const V=root.V6PCompositor,Store=root.V6PClipStore;
+const V=root.V6PCompositor,Store=root.V6PClipStore,
+ Motion=root.V6PUniversalMotion,MotionContract=root.V6PUniversalMotionContract;
 const state={rows:[],selected:null,cast:[],active:"",phase:"loop",frame:0,playing:false,timer:null,
  cache:new Map(),sheets:new Map(),token:0,drag:null,screen:"home",message:"",onlineCharacters:[],
  camera:{zoom:1,x:0,y:0,grid:false},pointers:new Map(),pinch:null};
@@ -103,8 +104,8 @@ function refreshActors(){
 }
 function actor(id=current()?.characterId||$("actor").value){
  const local=root.V6PCharacterStore?.get(id),published=realCharacters().find(x=>x.id===id);
- if(local)return {id,name:local.name,ch:{...local.appearance,characterId:id},clips:published?.clips||{}};
- if(published)return {id,name:published.name,ch:published.v6p?{...published.v6p,characterId:id}:null,clips:published.clips||{}};
+ if(local)return {id,name:local.name,ch:{...local.appearance,characterId:id},clips:published?.clips||{},assetParts:local.parts||published?.assetParts||{},assetVersion:local.revision||0};
+ if(published)return {id,name:published.name,ch:published.v6p?{...published.v6p,characterId:id}:null,clips:published.clips||{},assetParts:published.assetParts||{},assetVersion:published.updated||""};
  const female=id==="base:female";
  return {id,name:female?"Female Base":"Male Base",
   ch:V?.norm({...V.previewAppearance(female?"female":"male"),hair:"none",top:"tee",pants:"trousers",shoes:"shoes",face:"blank"}),clips:{}};
@@ -125,6 +126,12 @@ function refFor(entry,value){
  if(value?.startsWith("clip:")){
   const id=value.slice(5),published=publishedClip(entry,id);if(published)return published;
   const clip=Store?.get(id);if(!clip)return null;
+   if(Motion&&MotionContract?.isUniversal(clip.manifest)&&entry.ch){
+    try{MotionContract.validateManifest(clip.manifest)}catch{return null}
+    return {frames:clip.manifest.frames.length,frameMs:clip.manifest.frames.map(x=>x.ms),
+     loop:clip.manifest.loop!==false,layout:"universal",action:clip,ch:entry.ch,
+     assetParts:entry.assetParts||{},assetVersion:entry.assetVersion||0};
+   }
   // Canonical stock uses the same compositor, color keys and character appearance as Idle/Walk.
   if(clip.origin==="pilot"&&Store.hasLayer(id,"base/body")&&entry.ch){
     const base=/^base:(male|female)$/.test(entry.id||"");
@@ -214,7 +221,10 @@ async function render(){
    let img;if(r.layout==="base"){
     const key=JSON.stringify(r.ch);if(!state.sheets.has(key))state.sheets.set(key,V.sheet(r.ch,null,""));
     img=await state.sheets.get(key);
-   }else if(r.layout==="activity-native"){
+   }else if(r.layout==="universal"){
+      img=await Motion.render(r.ch,r.action.manifest,state.frame%r.frames,m.dir,{
+       partOverrides:r.assetParts,sourceKey:"action:"+entry.id+":"+r.assetVersion});
+    }else if(r.layout==="activity-native"){
      img=await V.composeActivity(r.ch,r.action.manifest,state.frame%r.frames,m.dir);
      if(!img||img._disabled)return {m,error:img?._avail?.note||"Selected appearance has unsupported stock layers"};
    }else img=await getImage(r.url);
@@ -227,7 +237,7 @@ async function render(){
   const m=s.m,di=Math.max(0,DIRS.indexOf(m.dir)),x=m.x,y=m.y;
   const px=x+16,py=y+56;
   if(s.img&&s.r){
-   if(s.r.layout==="activity-native"){
+   if(s.r.layout==="activity-native"||s.r.layout==="universal"){
      ctx.drawImage(s.img,0,0,64,112,px,py,64,112);
    }else{
     const n=state.frame%s.r.frames,origin=s.r.layout==="activity"?(Number(s.r.action.manifest.bandStart)||0)+di:
@@ -331,7 +341,9 @@ function refreshOptions(){
  const options=[{value:"",label:"— NONE —"}];
  for(const id of ["idle","walk","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"])
   options.push({value:"native:"+id,label:"NATIVE / "+id.toUpperCase()});
- for(const c of Store?.list()||[])options.push({value:"clip:"+c.id,label:(c.origin==="pilot"?"STOCK / ":"USER / ")+c.name.toUpperCase()+" · "+c.manifest.frames.length+" FR"});
+ for(const c of Store?.list()||[])options.push({value:"clip:"+c.id,
+  label:(MotionContract?.isUniversal(c.manifest)?MotionContract.isStock(c.manifest)?"STOCK / ":"MOTION DRAFT / ":
+   c.origin==="pilot"?"STOCK / ":"USER / ")+c.name.toUpperCase()+" · "+c.manifest.frames.length+" FR"});
  for(const phase of PHASES){
   const select=$("phase-"+phase);select.replaceChildren();
   for(const item of options){const o=document.createElement("option");o.value=item.value;o.textContent=item.label;select.append(o)}
