@@ -724,7 +724,7 @@ async function save(){
    (result.unsupportedBySemestaClips?.length?" · "+result.unsupportedBySemestaClips.length+" require separate Semesta runtime support":"")+
    (adapted.warnings.length?" · "+adapted.warnings.join("; "):""));
   syncDbg();
-  return result.record;
+  return {...result.record,storageMode:result.stored||"localStorage"};
 }
 function reload(){
   let id=state.lastId;
@@ -939,6 +939,6 @@ window.V6PCharacterHost=Object.freeze({
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
-<script src="./v6p-character-wizard.js?v=rear-visible-v3-20261108"></script>
+<script src="./v6p-character-wizard.js?v=quota-idb-20261108"></script>
 </body>
 </html>

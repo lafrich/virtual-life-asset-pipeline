@@ -18,7 +18,13 @@ function published(){
   if(Array.isArray(data))local=data.filter(x=>x&&x.id&&x.v6p);
  }catch{}
  const merged=new Map(local.map(x=>[x.id,x]));
- for(const row of archivedRows)merged.set(row.id,row);
+ for(const row of archivedRows){
+  const original=merged.get(row.id);
+  // Prefer newly published complete legacy frames over a previous archive.
+  if(original&&Object.values(original.clips||{}).some(c=>typeof c.sheet==="string"&&c.sheet.startsWith("data:image/")))
+   continue;
+  merged.set(row.id,row);
+ }
  return [...merged.values()];
 }
 async function refreshArchive(){
@@ -308,7 +314,10 @@ async function forward(){
     if(!saved||!saved.id)throw Error("Save did not return a valid character record.");
     state.saved=true;fillLists();$("wizard-save-success").textContent="✓ "+name+" saved to Character Database.";
     $("wizard-save-success").classList.add("visible");
-    $("wizard-save-confirm").textContent="Saved character ID: "+saved.id+". Use MAHLUK BACKUP for cross-device access.";
+    $("wizard-save-confirm").textContent="Saved character ID: "+saved.id+
+      (saved.storageMode==="indexeddb"
+       ?". Full PNG animations archived in browser IndexedDB; old Semesta readers may need an updated character bridge."
+       :". Use MAHLUK BACKUP for cross-device access.");
     notice("Character saved successfully.");
    }catch(e){notice("Save failed: "+e.message,true)}
    finally{state.busy=false;updateNext();storeStep()}
