@@ -38,7 +38,10 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 .flow-screen{max-width:950px;margin:14px auto;padding:17px;background:#e9e9e4;border:2px ridge #fff;box-shadow:0 3px 12px #445c7455}
 .flow-screen h1{font-size:18px;margin:0 0 12px}
 .flow-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.flow-actions button{min-height:82px;text-align:left;padding:13px;font-weight:bold}
+.flow-actions button,.flow-actions a{min-height:82px;text-align:left;padding:13px;font-weight:bold}
+.flow-actions a{display:block;text-decoration:none;color:var(--ink);border:1px solid #3f72b0;background:linear-gradient(#eaf5ff,#bcd8f5);font:inherit;font-weight:bold}
+.flow-actions a:focus-visible{outline:2px solid #2364af;outline-offset:2px}
+.flow-actions a:hover{background:#c6e2ff}
 .flow-actions small{display:block;font-weight:normal;margin-top:6px}
 #animations{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;max-height:none}
 .animation-category{grid-column:1/-1;margin:14px 0 2px;padding:6px 8px;border-bottom:2px solid #7d91a6;font-size:13px;letter-spacing:.04em}
@@ -60,7 +63,7 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  #header{gap:8px;align-items:center;flex-wrap:wrap;padding:6px 9px;font-size:11px}
  #header span{max-width:100%;overflow-wrap:anywhere}
  .flow-actions{grid-template-columns:1fr}
- .flow-actions button{min-height:62px;padding:10px 12px}
+ .flow-actions button,.flow-actions a{min-height:62px;padding:10px 12px}
  .flow-screen{margin:6px;padding:11px;width:calc(100% - 12px);max-width:none}
  .flow-screen h1{font-size:16px}
  #layout{display:flex;flex-direction:column;min-height:0;padding:6px;gap:7px}
@@ -77,8 +80,9 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 <section class="flow-screen" id="animation-home">
  <h1>ANIMATION DATABASE</h1>
  <div class="flow-actions">
-  <button id="animation-start-new">＋ CREATE ANIMATION<small>Make a new motion from a starting pose</small></button>
-  <button id="animation-start-gallery">▦ GALLERY ANIMATION<small>Preview or modify approved and saved motions</small></button>
+  <a id="animation-import-python" href="./mahluk-hidup.html?tab=animation&amp;animationEditor=native" target="_top">↑ IMPORT PYTHON<small>Open Genesis native Python trial · upload .py and preview. Install to gameplay is not yet active.</small></a>
+  <button id="animation-start-new">＋ CREATE ANIMATION<small>Legacy editor; create Python motion in the Genesis trial</small></button>
+  <button id="animation-start-gallery">▦ GALLERY ANIMATION<small>Preview existing approved and saved motions</small></button>
  </div>
  <h2>GALLERY · ANIMATIONS</h2>
  <label>ANIMATE CHARACTER <select id="gallery-character" aria-label="Choose Genesis or an existing Character"></select></label>
