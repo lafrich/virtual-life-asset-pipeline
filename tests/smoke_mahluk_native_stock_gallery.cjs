@@ -41,7 +41,10 @@ const alpha=canvas=>{const d=canvas.getContext('2d').getImageData(0,0,64,112).da
    const count=await page.locator('[data-qa-dir="'+dir+'"]').evaluate(alpha);
    assert.ok(count>20,'Character QA Punch invisible: '+dir);
   }
-  assert.deepEqual(errors,[]);
   console.log('[ok] Existing Character Preview QA renders Punch in all four directions');
+  await page.goto(root+'/mahluk-action-editor.html',{waitUntil:'domcontentloaded',timeout:45000});
+  await page.locator('#phase-loop option[value="clip:clp_standing_punch"]').waitFor({timeout:45000});
+  console.log('[ok] Existing Action Editor also auto-detects bundled JSON Punch');
+  assert.deepEqual(errors,[]);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
