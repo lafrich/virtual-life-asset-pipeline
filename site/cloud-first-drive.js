@@ -75,7 +75,9 @@
   }
   async function upload(incoming){
    const row=U.validate(incoming),dir=await appFolder(row.app),filename=name(row);
-   const existing=(await query(dir,filename,"application/json"))[0]||null;
+   const matches=await query(dir,filename,"application/json");
+   if(matches.length>1)throw Error("Duplicate cloud filenames; resolve the conflict manually: "+filename);
+   const existing=matches[0]||null;
    const hash=await U.hash(row.data),key=recKey(row);
    if(existing){
     const previous=await readFile(existing,row.app);
@@ -89,13 +91,19 @@
    const envelope=JSON.stringify({format:STORE_FORMAT,row,sha256:hash});
    let id=existing?.id;
    if(!id){
-    const f=await request(API+"?fields=id",{method:"POST",
-     headers:{"Content-Type":"application/json"},
-     body:JSON.stringify({name:filename,mimeType:"application/json",parents:[dir]})});
-    id=(await f.json()).id;
+    // Atomic multipart creation avoids leaving empty JSON files on failed upload.
+    const boundary="cf_"+Math.random().toString(36).slice(2);
+    const metadata=JSON.stringify({name:filename,mimeType:"application/json",parents:[dir]});
+    const body=new Blob(["--"+boundary+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n",
+     metadata,"\r\n--"+boundary+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n",
+     envelope,"\r\n--"+boundary+"--"],{type:"multipart/related; boundary="+boundary});
+    const result=await request(UP+"?uploadType=multipart&fields=id",{method:"POST",
+     headers:{"Content-Type":"multipart/related; boundary="+boundary},body});
+    id=(await result.json()).id;
+   }else{
+    await request(UP+"/"+encodeURIComponent(id)+"?uploadType=media",{method:"PATCH",
+     headers:{"Content-Type":"application/json; charset=UTF-8"},body:envelope});
    }
-   await request(UP+"/"+encodeURIComponent(id)+"?uploadType=media",{method:"PATCH",
-    headers:{"Content-Type":"application/json; charset=UTF-8"},body:envelope});
    const data=await readFile({id,name:filename},row.app);
    if(await U.hash(data.data)!==hash)throw Error("Drive upload readback differs: "+key);
    const after=(await query(dir,filename,"application/json"))[0];
