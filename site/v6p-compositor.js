@@ -71,14 +71,18 @@ function cmap(ch){ const hm=P.hair[ch.hairColor], sk=P.skin[ch.skin], tc=ch.topC
   const M=new Map(); for(const code in K){ const k=hx(K[code]), v=m[code]; if(v==null) continue; const c=typeof v==='string'?hx(v):v; M.set((k[0]<<16)|(k[1]<<8)|k[2],(255<<24)|(c[2]<<16)|(c[1]<<8)|c[0]); } return M; }
 function files(ch,fs){
   const sh=ch.shoes, fa=ch.facial, b=ch.body==='female'?'_f':'';
+  // A stock shoe atlas can be obscured by later custom-pants pixels on
+  // different action frames. Only the mixed Custom Wear + stock combination
+  // moves shoes over pants; preserve native order for all other outfits.
+  const shoe="shoes/"+sh+b, pants="pants/"+ch.pants+b;
+  const footwear=ch.pants==="custom"&&sh!=="custom"?[pants,shoe]:[shoe,pants];
   const blank=ch.face==='blank';
   const faceKey=blank?'blank':(fs||'baked');
   return [
     ch.hair==='none'?null:'hair/'+ch.hair+'_back',
     'base/body'+b,
     'top/'+ch.top+'_back'+b,
-    'shoes/'+sh+b,
-    'pants/'+ch.pants+b,
+    ...footwear,
     (sh==='boots'||sh==='hightops')?'shoes/'+sh+'_over'+b:null,
     'top/'+ch.top+b,
     'base/body_front'+b,
