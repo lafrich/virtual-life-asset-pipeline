@@ -5,14 +5,24 @@
 const FORMAT="genesis-v6b-universal-motion-v1";
 const DIRS=Object.freeze(["se","sw","ne","nw"]);
 const PARTS=Object.freeze(["leg_l","leg_r","torso","arm_l","arm_r","head"]);
-const ANCHORS=Object.freeze({leg_l:[25,84],leg_r:[39,84],torso:[32,60],arm_l:[20,54],arm_r:[44,54],head:[32,35]});
+// The six-area V6B Idle reference is the full layered silhouette, not the
+// sparse base/body exposed-skin layer. These arm pivots were calibrated against
+// actual Male/Female SE/SW/NE/NW Idle F0 pixels in Chromium.
+const ANCHORS=Object.freeze({leg_l:[25,84],leg_r:[39,84],torso:[32,60],arm_l:[25,61],arm_r:[39,61],head:[32,35]});
 const SOURCE_ACTIONS=Object.freeze(["idle","sit","lie","sleep"]);
 const MAX_FRAMES=6, MIN_MS=40,MAX_MS=800;
-function pose(){
- const parts={};for(const p of PARTS){const a=ANCHORS[p];parts[p]={x:0,y:0,angle:0,ax:a[0],ay:a[1]}}return parts;
+function pose(dir="se"){
+ const parts={};for(const p of PARTS){const a=ANCHORS[p];parts[p]={x:0,y:0,angle:0,ax:a[0],ay:a[1]}}
+ // Back view shoulders sit 4px lower in actual Genesis Idle F0. Preserve
+ // side-specific root pixels so arms rotate about their own shoulder seam.
+ if(dir==="ne"||dir==="nw"){
+  parts.arm_l.ay=65;parts.arm_r.ay=65;
+ }
+ if(dir==="sw"||dir==="nw")parts.arm_r.ax=38;
+ return parts;
 }
 function tracks(count=4){
- const out={};for(const dir of DIRS)out[dir]=Array.from({length:count},pose);return out;
+ const out={};for(const dir of DIRS)out[dir]=Array.from({length:count},()=>pose(dir));return out;
 }
 function clone(value){return JSON.parse(JSON.stringify(value))}
 function assert(condition,message){if(!condition)throw Error("GENESIS MOTION: "+message)}
