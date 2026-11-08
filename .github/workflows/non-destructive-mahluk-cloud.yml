@@ -1,0 +1,17 @@
+name: Non-destructive Mahluk Cloud Startup
+on:
+  push:
+    branches: [feature/nondestructive-cloud-entry-20261108]
+  workflow_dispatch:
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Cloud-first Mahluk startup and import safety
+        run: node --test tests/cloud-first-mahluk-entry.test.cjs
+      - name: Original Mahluk regression suite
+        run: node --test tests/test_mahluk_unified_workspace.cjs tests/smoke_mahluk_drive_backup_restore.cjs tests/smoke_mahluk_character_wizard.cjs tests/smoke_mahluk_action_animation_flows.cjs
