@@ -617,9 +617,11 @@ root.addEventListener("message",e=>{
  }
 });
 fillSources();show("home");updateProperty();
- void refreshCloud().then(()=>ensureBundledReviewPunch()).catch(error=>{
+ // Bundled review motion must never wait for Drive sync/auth: render it locally first.
+ void ensureBundledReviewPunch().catch(error=>{
   $("animation-home-note").textContent="Standing Punch review import: "+error.message;
  });
+ void refreshCloud();
 const returnMotion=new URLSearchParams(location.search).get("motion");
 if(returnMotion&&Store.get(returnMotion)&&db()[returnMotion])
  void open(returnMotion).catch(e=>say("Animation return failed: "+e.message,true));
