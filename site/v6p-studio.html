@@ -218,7 +218,7 @@ body.wizard-ready .banner,body.wizard-ready #character-flow,body.wizard-ready #t
  <section id="wizard-save" class="wizard-screen" hidden>
   <h2>Save your character</h2><p class="wizard-sub">Check the name and save the character with its generated animation sprites into the character database.</p>
   <div id="wizard-save-pane"><label for="char-name">CHARACTER NAME</label><div id="wizard-name-slot"></div>
-   <div class="wizard-save-note">Your character and animation frames will be saved to the local character library. Back up from the MAHLUK toolbar to use the same edits on another device.</div>
+   <div class="wizard-save-note">Character and animation frames are saved directly to Google Drive Online Database. Connect Drive in the MAHLUK toolbar before you save. Backup is optional; published game assets still require GitHub publication. use the same edits on another device.</div>
    <div id="wizard-save-confirm">Ready to save.</div><p id="wizard-save-success" role="status"></p>
    <div id="wizard-backup-slot"></div>
   </div>
@@ -696,7 +696,7 @@ async function save(){
   const sprite=V.extractFrame(state.sheet,"idle","se",0).toDataURL("image/png");
   const tooBig=Object.values(clips).some(c=>c.sheet.length>1250000)||sprite.length>1250000;
   if(tooBig){ setStatus("Export exceeded Semesta 1.25MB clip limit",true); return; }
-  const result=await window.VLHubCharactersPublish.publishAsync({
+  const input={
     id:state.characterId||state.lastId||undefined,
     name:$("char-name").value||"V6P Preview",
     gender:state.ch.body,
@@ -706,7 +706,16 @@ async function save(){
     v6p:Object.assign({},state.ch),
     hairStyle:state.ch.hair,
     clothesColor:state.ch.top==="custom"?"custom":state.ch.topColor
-  });
+  };
+  const cloud=window.parent!==window&&window.parent.VLMahlukWorkspace;
+  let result;
+  if(cloud){
+   if(!cloud.isOnline?.())throw Error("Connect Google Drive in MAHLUK toolbar before Save Online. Your edits remain open.");
+   const record=window.VLHubCharactersPublish.v2Record(input);
+   const receipt=await cloud.saveOnline("character",record.id,record);
+   if(!receipt.verified)throw Error("Drive did not verify this save");
+   result={ok:true,id:record.id,record,stored:"drive"};
+  }else result=await window.VLHubCharactersPublish.publishAsync(input);
   if(!result.ok){ setStatus("Save failed: "+result.error,true); return; }
   state.lastId=result.id;
   let draftWarning="";
@@ -719,6 +728,7 @@ async function save(){
   }
   try{ localStorage.setItem(LAST_KEY,result.id); }catch(_e){}
   setStatus("SAVED "+result.id+" · "+Object.keys(clips).length+" native/anchor animation clips in character database"+
+    (result.stored==="drive"?" · CLOUD VERIFIED: GOOGLE DRIVE":"")+
     (result.stored==="indexeddb"?" · FULL SPRITES: INDEXEDDB; older Semesta clients need compatibility sync":"")+
     draftWarning+
    (result.unsupportedBySemestaClips?.length?" · "+result.unsupportedBySemestaClips.length+" require separate Semesta runtime support":"")+
@@ -939,6 +949,6 @@ window.V6PCharacterHost=Object.freeze({
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
-<script src="./v6p-character-wizard.js?v=quota-idb-20261108"></script>
+<script src="./v6p-character-wizard.js?v=online-first-20261108"></script>
 </body>
 </html>

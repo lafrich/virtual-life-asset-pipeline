@@ -11,7 +11,7 @@ const state={step:"home",mode:"new",category:"body",frame:0,playing:false,timer:
 let previewRevision=0;
 function notice(str,err){const el=$("wizard-notice");el.textContent=String(str||"");el.style.color=err?"#a52d26":"#506780";}
 function result(str,err){const el=$("generate-result");el.textContent=str;el.style.color=err?"#aa312a":"#506780";}
-let archivedRows=[];
+let archivedRows=[],cloudRows=[];
 function published(){
  let local=[];
  try{const data=JSON.parse(localStorage.getItem("mahluk-2-library-v1")||"[]");
@@ -25,7 +25,16 @@ function published(){
    continue;
   merged.set(row.id,row);
  }
+ for(const row of cloudRows)if(row?.id&&row.v6p)merged.set(row.id,row);
  return [...merged.values()];
+}
+async function refreshCloud(){
+ const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
+ if(!bridge?.isOnline?.())return;
+ try{
+  cloudRows=await bridge.listOnline("character");
+  fillLists();
+ }catch(error){notice("Cloud gallery: "+error.message,true)}
 }
 async function refreshArchive(){
  try{
@@ -312,12 +321,17 @@ async function forward(){
     S.update(info.id,{name,appearance:info.ch,faceId:info.faceId});
     const saved=await H.publish();
     if(!saved||!saved.id)throw Error("Save did not return a valid character record.");
-    state.saved=true;fillLists();$("wizard-save-success").textContent="✓ "+name+" saved to Character Database.";
+    state.saved=true;
+    if(saved.storageMode==="drive")await refreshCloud();
+    fillLists();$("wizard-save-success").textContent="✓ "+name+
+      (saved.storageMode==="drive"?" saved to Google Drive Online Database.":" saved to Character Database.");
     $("wizard-save-success").classList.add("visible");
     $("wizard-save-confirm").textContent="Saved character ID: "+saved.id+
-      (saved.storageMode==="indexeddb"
-       ?". Full PNG animations archived in browser IndexedDB; old Semesta readers may need an updated character bridge."
-       :". Use MAHLUK BACKUP for cross-device access.");
+      (saved.storageMode==="drive"
+       ?". Drive upload verified. Connect Drive on another device to load this character."
+       :saved.storageMode==="indexeddb"
+        ?". Full PNG animations archived in browser IndexedDB; old Semesta readers may need an updated character bridge."
+        :". Use MAHLUK BACKUP for cross-device access.");
     notice("Character saved successfully.");
    }catch(e){notice("Save failed: "+e.message,true)}
    finally{state.busy=false;updateNext();storeStep()}
@@ -409,8 +423,11 @@ async function restore(){
 }
 arrangeLegacyControls();selectFixPart();bind();
 showHomeTab("start");
+root.addEventListener("message",e=>{
+ if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected")void refreshCloud();
+});
 root.addEventListener("mahluk:published-archive",()=>void refreshArchive());
-void refreshArchive();
+void refreshArchive();void refreshCloud();
 root.addEventListener("mahluk:character-ready",()=>void restore().catch(e=>notice("Wizard load: "+e.message,true)));
 if(root.__v6pStudio?.ready)void restore().catch(e=>notice("Wizard load: "+e.message,true));
 })(window);
