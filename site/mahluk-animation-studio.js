@@ -246,7 +246,7 @@ function render(){
 function drawGif(){
  const dest=$("gif-preview");if(!dest)return;
  const c=dest.getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);
- if(!state.sheet)return;
+ if(!state.rig)return;
  c.drawImage(bake(state.dir,state.previewFrame%Math.max(1,state.frames.length)),0,0);
  $("gif-preview-note").textContent="PREVIEW · "+state.dir.toUpperCase()+" · "+(state.previewFrame%state.frames.length+1)+"/"+state.frames.length+
   " · "+(state.loop?"LOOP":"ONCE");
