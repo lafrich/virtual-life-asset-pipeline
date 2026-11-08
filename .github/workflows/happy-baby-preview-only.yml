@@ -7,6 +7,12 @@ on:
     paths:
       - 'tools/render_happy_baby_review.py'
       - '.github/workflows/happy-baby-preview-only.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tools/render_happy_baby_review.py'
+      - '.github/workflows/happy-baby-preview-only.yml'
 
 permissions:
   contents: write
@@ -19,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          ref: preview/genesis-happy-baby-20261108
       - name: Install Python and native-image dependencies
         uses: actions/setup-python@v5
         with:
