@@ -94,7 +94,7 @@
 
    els.clipboardInfo.textContent=available?
     "READY · "+(saved.bone||"PLANE").toUpperCase()+" / "+(saved.direction||"SE").toUpperCase()+
-    " · "+saved.w+"×"+saved.h+" PX · COPY BETWEEN VIEWS / PARTS":
+    " · "+saved.w+"×"+saved.h+" PX · ACTIVE VIEW CLIPBOARD":
     "CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)";
   }
   const controls=[...overlay.querySelectorAll("[data-pixel-tool]")];
@@ -267,16 +267,18 @@
    }))}catch{/* Copy still works in this editor when browser storage is unavailable. */}
    updateClipboardInfo();
    els.status.textContent="COPIED "+clipboard.w+"×"+clipboard.h+" PIXELS · "+
-    bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · SWITCH VIEW THEN PASTE";
+    bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · PASTE INTO CURRENT VIEW";
   }
   // A true four-view transfer: the copied region is saved once and can be
   // composited directly on any native direction, with automatic opposite-angle
   // mirroring. No on-screen canvas resizing, no overlay pixels in the export.
-  function pasteSelection(mirror=false,targetDir=dir){
+  function pasteSelection(mirror=false){const targetDir=dir;
    const stamp=currentClipboard();
    if(!stamp){els.status.textContent="NO COPIED PIXELS · SELECT + COPY FIRST";return false;}
-   if(!Number.isInteger(targetDir)||targetDir<0||targetDir>=DIR.length)return false;
-   const fromView=DIR.indexOf(stamp.direction),switching=targetDir!==dir;
+   if(stamp.direction!==DIR[dir]){
+     els.status.textContent="PASTE ONLY IN CURRENT VIEW · COPY FROM "+DIR[dir].toUpperCase()+" FIRST";return false;
+    }
+   const switching=false;
    const destX=selection&&!switching?selection.x:(mirror?W-stamp.x-stamp.w:stamp.x);
    const destY=selection&&!switching?selection.y:stamp.y;
    const dx=clamp(destX,0,W-1),dy=clamp(destY,0,H-1);
@@ -385,11 +387,14 @@
     els.status.textContent="ERASED "+DIR[dir].toUpperCase()+" FRAME · UNDO TO RESTORE · APPLY FRAME TO SAVE";
    };
    els.restore.onclick=()=>{
-   if(!source)return;
-   saveHistory();ctx.clearRect(0,0,W,H*4);ctx.drawImage(source,0,0);
-   draw();els.status.textContent="RESTORED ORIGINAL SOURCE · APPLY TO COMMIT";
-  };
-  function capture(e){try{canvas.setPointerCapture(e.pointerId)}catch{}}
+    if(!source)return;
+    saveHistory();
+    // Only reset the current 64x112 direction; never reset the other three.
+    const original=source.getContext("2d",{willReadFrequently:true}).getImageData(0,dir*H,W,H);
+    ctx.putImageData(original,0,dir*H);
+    draw();els.status.textContent="RESTORED "+DIR[dir].toUpperCase()+" SOURCE · OTHER VIEWS PRESERVED";
+   };
+   function capture(e){try{canvas.setPointerCapture(e.pointerId)}catch{}}
   function release(e){try{canvas.releasePointerCapture(e.pointerId)}catch{}}
   canvas.addEventListener("pointerdown",e=>{
    if(!bone||e.button>1)return;
