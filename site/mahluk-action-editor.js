@@ -353,9 +353,15 @@ function refreshOptions(){
  const options=[{value:"",label:"— NONE —"}];
  for(const id of ["idle","walk","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"])
   options.push({value:"native:"+id,label:"NATIVE / "+id.toUpperCase()});
- for(const c of Store?.list()||[])options.push({value:"clip:"+c.id,
-  label:(MotionContract?.isUniversal(c.manifest)?MotionContract.isStock(c.manifest)?"STOCK / ":"MOTION DRAFT / ":
-   c.origin==="pilot"?"STOCK / ":"USER / ")+c.name.toUpperCase()+" · "+c.manifest.frames.length+" FR"});
+ for(const c of Store?.list()||[]){
+  const universal=MotionContract?.isUniversal(c.manifest);
+  if(universal){try{MotionContract.validateManifest(c.manifest)}catch{continue}}
+  const category=universal?String(c.manifest.category||"motion").toUpperCase()+" / ":"USER / ";
+  options.push({value:"clip:"+c.id,
+   label:category+c.name.toUpperCase()+(universal?
+    MotionContract.isStock(c.manifest)?" · STOCK":" · REVIEW":" · LEGACY")+
+    " · "+c.manifest.frames.length+" FR"});
+ }
  for(const phase of PHASES){
   const select=$("phase-"+phase);select.replaceChildren();
   for(const item of options){const o=document.createElement("option");o.value=item.value;o.textContent=item.label;select.append(o)}
@@ -369,6 +375,9 @@ function exportData(){
 }
 function wire(){
  state.rows=load();refreshActors();refreshOptions();
+ // The same registry is used by Animation and Character, independent of Drive.
+ void Store?.loadBundled?.().then(()=>refreshOptions()).catch(error=>
+  status("Motion registry: "+error.message,true));
  $("action-start-new").onclick=()=>{state.cast=[];state.active="";fillForm(blank());show("choose")};
  $("action-start-gallery").onclick=()=>home();
  $("action-start-modify").onclick=()=>{$("action-home-heading").textContent="MODIFY · SELECT AN ACTION BELOW";
