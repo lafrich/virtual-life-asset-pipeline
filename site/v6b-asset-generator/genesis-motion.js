@@ -81,8 +81,13 @@
      const next=C.create({name,gender,template,frameCount:frames,ms:duration,loop:$("loop").checked});
      if($("gif").files?.[0])next.source.filename=$("gif").files[0].name;
      status("Loading native Genesis "+gender+" from Mahluk assets…");
-     const appearance=V.norm({...V.DEF,body:gender,gender,hair:"none",skin:"light",
-       top:"nude",pants:"nude",shoes:"nude",face:"blank",glasses:"none",facial:"none"});
+     // Read the official Genesis Source published from Mahluk Drive backup.
+     // Custom Wear contains the Genesis nude artwork and must not be replaced
+     // with legacy V6P top/nude, pants/nude or shoes/nude parts.
+     const genesis=root.V6PGenesisBase?.get(gender);
+     if(!genesis?.parts)throw Error("Approved Genesis "+gender+" not available");
+     const appearance=V.norm({...genesis.appearance,
+       body:gender,gender,face:"blank",hair:"none",characterId:genesis.sourceId});
      const nextSheet=await V.sheet(appearance,null,"");
      if(serial!==revision)return;
      if(!nextSheet)throw Error("Genesis native sprite missing: "+(V.missing||[]).join(", "));
