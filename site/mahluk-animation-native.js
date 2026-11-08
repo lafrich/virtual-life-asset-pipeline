@@ -193,7 +193,15 @@ async function gallery(){
   area.textContent="Connect Google Drive from Mahluk Hidup before loading saved native Python animations.";return
  }
  try{
-  const rows=(await bridge().listOnline("animation")).filter(r=>r?.format===C.FORMAT&&r?.python);
+  // Duplicate cloud files may exist after earlier Drive migrations. Show one
+  // validated source per stable animation ID, preferring the newest save.
+  const raw=(await bridge().listOnline("animation")).filter(r=>r?.format===C.FORMAT&&r?.python);
+  const unique=new Map();
+  for(const row of raw){
+   const prior=unique.get(row.id);
+   if(!prior||String(row.savedAt||"")>=String(prior.savedAt||""))unique.set(row.id,row);
+  }
+  const rows=[...unique.values()];
   for(const data of rows){
    try{C.fromPython(data.python)}catch{continue}
    const b=document.createElement("button");const label=document.createElement("strong");
