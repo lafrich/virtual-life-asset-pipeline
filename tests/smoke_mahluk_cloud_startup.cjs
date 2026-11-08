@@ -43,7 +43,7 @@ const sha=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex')
  try{
   await page.goto('http://127.0.0.1:4173/virtual-life-asset-pipeline/mahluk-hidup.html',
    {waitUntil:'domcontentloaded',timeout:30000});
-  await page.waitForFunction(()=>!!window.MahlukCloudEntry);
+  await page.waitForFunction(()=>!!window.MahlukCloudEntry&&!!window.google?.accounts?.oauth2);
   assert.equal(await page.evaluate(()=>window.MahlukCloudEntry.gate.isReady()),false);
   await page.evaluate(()=>localStorage.setItem('cloud-test-untouched','safe'));
   await page.getByRole('button',{name:/SYNC FROM DRIVE/i}).click();
@@ -52,7 +52,7 @@ const sha=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex')
   assert.equal(await page.locator('[aria-label="Cloud startup"]').count(),0);
   console.log('PASS: Drive sync gates editor and preserves browser data');
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>!!window.MahlukCloudEntry);
+  await page.waitForFunction(()=>!!window.MahlukCloudEntry&&!!window.google?.accounts?.oauth2);
   const data={id:'mh2_test',name:'Mock Character',v6p:{base:'male'}};
   const rec={app:'mahluk',kind:'character',id:data.id,data,sha256:sha(data)};
   const body={format:'membangun-universal-v1',version:1,sourceApp:'mahluk',records:[rec]};
