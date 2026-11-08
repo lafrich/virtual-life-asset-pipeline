@@ -230,12 +230,20 @@ function updatePixelTargets(){
  }
  selectPixelTargetByBody();
 }
-function selectPixelTargetByBody(){
+function selectPixelTargetByBody(foot=false){
  const el=$("pixel-target");if(!el||!el.options.length)return;
- const preferred=state.part==="head"?"base/body":state.part.startsWith("arm")||state.part==="torso"?"top/":
-  "pants/";
+ const preferred=foot?"shoes/":state.part==="head"?"base/body":
+  state.part.startsWith("arm")||state.part==="torso"?"top/":"pants/";
  const match=[...el.options].find(o=>o.value.startsWith(preferred));
  if(match)el.value=match.value;
+ updatePartShortcut();
+}
+function updatePartShortcut(){
+ const control=$("part-edit-shortcut");if(!control)return;
+ const target=$("pixel-target");
+ control.hidden=state.screen!=="editor"||!target?.value;
+ if($("part-edit-label"))$("part-edit-label").textContent=state.part.toUpperCase().replaceAll("_"," ")+" · "+
+  (target?.selectedOptions?.[0]?.textContent||target?.value||"");
 }
 function action(){return V.ROWS[state.template]!=null?state.template:"idle"}
 function sourceCell(dir=state.dir,frame=state.frame){
@@ -336,6 +344,7 @@ function drawGif(){
 }
 function show(screen){
  stop();nativeStop();state.screen=screen;
+ if($("part-edit-shortcut"))$("part-edit-shortcut").hidden=true;
  $("animation-home").hidden=screen!=="home";$("animation-setup").hidden=screen!=="setup";
  $("animation-workspace").hidden=screen!=="editor";
  $("animation-stock-preview").hidden=screen!=="stock";
@@ -543,17 +552,21 @@ $("play").onclick=toggle;$("prev").onclick=()=>changeFrame(state.frame-1);$("nex
 $("add-frame").onclick=()=>addFrame(false);$("duplicate").onclick=()=>addFrame(true);
 $("remove-frame").onclick=()=>{if(state.frames.length<2)return say("At least one frame is required",true);
  for(const d of DIRS)state.tracks[d]?.splice(state.frame,1);state.frames.splice(state.frame,1);state.frame=Math.max(0,state.frame-1);render()};
-$("open-pixel").onclick=editPixels;$("export").onclick=exportJSON;
+$("open-pixel").onclick=editPixels;
+$("part-edit-now").onclick=editPixels;
+$("pixel-target").onchange=updatePartShortcut;
+$("export").onclick=exportJSON;
 cv.addEventListener("pointerdown",e=>{
  if(!db()[state.id])return;
  const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*64/r.width,y=(e.clientY-r.top)*112/r.height;
  if(!$("move-anchor").checked){
   const hit=hitTestPart(x,y);
   if(!hit)return;
-  state.part=hit;selectPixelTargetByBody();
+  state.part=hit;selectPixelTargetByBody(y>=95&&hit.startsWith("leg"));
  }
  state.drag={x,y,point:deep(selected()),anchor:$("move-anchor").checked};cv.setPointerCapture(e.pointerId);render();
 });
+cv.addEventListener("dblclick",()=>{if(db()[state.id])editPixels()});
 cv.addEventListener("pointermove",e=>{
  if(!state.drag)return;
  const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*64/r.width,y=(e.clientY-r.top)*112/r.height;
