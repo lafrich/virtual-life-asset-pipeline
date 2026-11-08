@@ -306,21 +306,31 @@ function listClips(){
  const drafts=db();
  for(const clip of rows){
   const official=clip.origin==="pilot"&&A.isPlayable(clip.manifest.band);
-  const b=document.createElement("button");b.classList.toggle("active",state.id===clip.id);
-  b.dataset.clip=clip.id;
-  const title=document.createElement("strong"),info=document.createElement("small");
-  title.textContent=official?(STOCK_TITLES[clip.manifest.band]||clip.name.toUpperCase()):clip.name;
-  info.textContent=clip.manifest.frames.length+" FRAMES · "+
-   (official?"APPROVED NATIVE STOCK · PLAY":drafts[clip.id]?"EDITABLE USER ANIMATION":"USER PIXEL CLIP");
-  b.append(title,info);b.onclick=()=>void open(clip.id);holder.append(b);
- }
- if(!rows.length)holder.textContent="No animations yet";
+  const card=document.createElement("div");card.className="clip-card";
+   const b=document.createElement("button");b.classList.toggle("active",state.id===clip.id);
+   b.dataset.clip=clip.id;
+   const title=document.createElement("strong"),info=document.createElement("small");
+   title.textContent=official?(STOCK_TITLES[clip.manifest.band]||clip.name.toUpperCase()):clip.name;
+   info.textContent=clip.manifest.frames.length+" FRAMES · "+
+    (official?"APPROVED NATIVE STOCK":drafts[clip.id]?"EDITABLE ANIMATION":"USER PIXEL CLIP");
+   b.append(title,info);b.onclick=()=>void open(clip.id);
+   const modify=document.createElement("button");modify.className="modify-motion";
+   modify.textContent="✎ MODIFY · SPRITE + ANCHOR";
+   modify.dataset.modify=clip.id;
+   modify.onclick=()=>void modifyClip(clip).catch(e=>{
+    $("animation-home-note").textContent="Could not modify: "+e.message;});
+   card.append(b,modify);holder.append(card);
+  }
+  if(!rows.length)holder.textContent="No animations yet";
 }
 function setMeta(rec){
  state.id=rec.id;state.name=rec.name;state.gender=rec.gender;state.template=rec.template;
+ state.sourceId=rec.sourceId||("base:"+rec.gender);
+ if(!characterOptions().some(x=>x.id===state.sourceId))state.sourceId="base:"+rec.gender;
+ state.stockReference=rec.stockReference||"";
  state.frames=deep(rec.frames);state.loop=rec.loop!==false;state.tracks=deep(rec.tracks||{});
  state.frame=0;state.dir="se";state.part="head";
- $("gender").value=state.gender;$("template").value=state.template;
+ selectSource(state.sourceId);$("template").value=state.template;
  $("animation-name-edit").value=state.name;
 }
 async function open(id){
@@ -329,10 +339,7 @@ async function open(id){
  if(clip.origin==="pilot"&&A.isPlayable(clip.manifest.band)){
   nativeOpen(clip);return;
  }
- if(!meta){
-  state.id=id;state.name=clip.name;
-  editPixels();return;
- }
+ if(!meta){await modifyClip(clip);return;}
  setMeta(meta);show("editor");await loadSource();
  say("LOADED "+meta.name+" · editable all 4 directions / "+state.frames.length+" frames");
 }
