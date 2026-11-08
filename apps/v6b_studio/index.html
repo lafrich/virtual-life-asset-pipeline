@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1459af">
+  <title>V6B Generator Studio — Membangun</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-window">
+    <header class="titlebar">
+      <div class="title-name"><span class="app-icon">✳</span><strong>V6B GENERATOR STUDIO</strong><span>.EXE</span></div>
+      <div class="window-buttons" aria-hidden="true"><i>—</i><i>□</i><i>×</i></div>
+    </header>
+    <nav class="menu" aria-label="Application menu">
+      <a href="https://lafrich.github.io/virtual-life-asset-pipeline/" target="_blank" rel="noopener">Mahluk Hidup</a>
+      <span class="separator"></span>
+      <a href="https://github.com/lafrich/virtual-life-asset-pipeline/tree/main/chars-iso/v6b" target="_blank" rel="noopener">Original V6B Source</a>
+      <span class="menu-spacer"></span>
+      <span class="menu-tag">PIXEL ART ENGINE · 64 × 112</span>
+    </nav>
+    <div class="subbar">
+      <span class="lamp"></span><strong>NATIVE GENERATOR</strong>
+      <span>4 DIRECTIONS</span>
+      <span>11 EMOTIONS</span>
+      <span>44 ROWS</span>
+      <span class="subbar-right">LOCAL WORKSPACE / NON-DESTRUCTIVE</span>
+    </div>
+    <main class="workspace">
+      <aside class="inspector">
+        <div class="section-title"><strong>01 / CHARACTER SETUP</strong></div>
+        <div class="fields">
+          <label>Character name<input id="name" type="text" maxlength="48" value="new_character" placeholder="character_name"></label>
+          <label>Starting reference<select id="template">
+            <option value="ichsan">ICHSAN / V6B SOURCE</option>
+            <option value="noor">NOOR / V6B SOURCE</option>
+          </select></label>
+        </div>
+        <div class="section-title"><strong>02 / HEAD & FACE</strong></div>
+        <div class="fields two">
+          <label>Hair model<select id="hair_style">
+            <option value="mid">Mid-length</option><option value="wavy">Wavy</option><option value="long">Long</option>
+          </select></label>
+          <label>Fringe<select id="fringe">
+            <option value="curtain">Curtain</option><option value="bangs">Bangs</option><option value="swept">Swept</option>
+          </select></label>
+          <label>Hair color<input id="hair_color" type="color" value="#2a3242"></label>
+          <label>Skin tone<input id="skin_color" type="color" value="#f1d3b5"></label>
+        </div>
+        <div class="check-grid">
+          <label><input id="glasses" type="checkbox" checked> Glasses</label>
+          <label><input id="lashes" type="checkbox"> Eyelashes</label>
+          <label><input id="mustache" type="checkbox"> Mustache</label>
+          <label><input id="stubble" type="checkbox"> Stubble</label>
+        </div>
+        <div class="fields"><label>Glasses type<select id="glasses_shape">
+          <option value="round">Round</option><option value="square">Square</option>
+        </select></label></div>
+        <div class="section-title"><strong>03 / WARDROBE</strong></div>
+        <div class="fields two">
+          <label>Top model<select id="shirt_kind">
+            <option value="tee">T-shirt</option><option value="graphic">Graphic tee</option><option value="shirt">Shirt + tie</option><option value="cardigan">Cardigan</option>
+          </select></label>
+          <label>Top color<input id="shirt_color" type="color" value="#2a3242"></label>
+          <label>Outer color<input id="outer_color" type="color" value="#454b5b"></label>
+          <label>Pants<select id="pants_kind">
+            <option value="trousers">Trousers</option><option value="baggy">Baggy</option>
+          </select></label>
+          <label>Pants color<input id="pants_color" type="color" value="#3a4458"></label>
+          <label>Shoes color<input id="shoes_color" type="color" value="#5a412f"></label>
+        </div>
+        <div class="check-grid">
+          <label><input id="cardigan_dots" type="checkbox"> Outer print</label>
+          <label><input id="rips" type="checkbox"> Ripped pants</label>
+        </div>
+        <div class="inspector-bottom">
+          <button class="action primary" id="build" type="button">✳ GENERATE CHARACTER</button>
+          <button class="action" id="import" type="button">IMPORT CONFIG .JSON</button>
+          <input id="file-input" type="file" accept=".json,application/json" hidden>
+          <p class="hint">Runs the real <code>live_v6b.py</code> engine. No sprite repainting or asset replacement.</p>
+        </div>
+      </aside>
+      <section class="viewer">
+        <div class="viewer-header">
+          <div><strong id="sprite-title">UNTITLED.SPR</strong><small id="revision">SOURCE / V6B NATIVE</small></div>
+          <span id="status-label" class="status-label">READY TO BUILD</span>
+        </div>
+        <div class="viewer-topbar">
+          <label>ANIMATION<select id="action">
+            <option value="idle">IDLE</option><option value="walk">WALK</option><option value="talk">TALK</option>
+            <option value="sit">SIT</option><option value="sit_type">SIT TYPE</option><option value="sleep">SLEEP</option>
+            <option value="tired">TIRED</option><option value="swim">SWIM</option><option value="float">FLOAT</option>
+            <option value="lie">LIE</option><option value="perch">PERCH</option>
+          </select></label>
+          <label>EMOTION<select id="expression">
+            <option value="neutral">NEUTRAL</option><option value="smile">SMILE</option><option value="happy">HAPPY</option>
+            <option value="sad">SAD</option><option value="angry">ANGRY</option><option value="surprised">SURPRISED</option>
+            <option value="embarrassed">EMBARRASSED</option><option value="blink">BLINK</option><option value="sleepy">SLEEPY</option>
+            <option value="talk_open">TALK OPEN</option><option value="talk_closed">TALK CLOSED</option>
+          </select></label>
+          <button id="play" class="action compact" type="button" aria-pressed="true">Ⅱ PAUSE</button>
+        </div>
+        <div class="stage">
+          <div class="stage-grid">
+            <div class="sprite-card"><span>SE / FRONT RIGHT</span><canvas id="view-se" width="64" height="112"></canvas></div>
+            <div class="sprite-card"><span>SW / FRONT LEFT</span><canvas id="view-sw" width="64" height="112"></canvas></div>
+            <div class="sprite-card"><span>NE / BACK RIGHT</span><canvas id="view-ne" width="64" height="112"></canvas></div>
+            <div class="sprite-card"><span>NW / BACK LEFT</span><canvas id="view-nw" width="64" height="112"></canvas></div>
+          </div>
+          <div class="floor-note">V6B NATIVE PIXEL GRID · NEAREST NEIGHBOR · PIVOT [32, 100]</div>
+        </div>
+        <div class="timeline">
+          <div class="timeline-head"><strong>ANIMATION FRAMES</strong><span id="frame-label">FRAME 01 / 04</span></div>
+          <div class="frame-markers" id="frame-markers"></div>
+        </div>
+        <div class="export-bar">
+          <button id="save-png" class="action" type="button" disabled>EXPORT FULL SPRITESHEET .PNG</button>
+          <button id="save-json" class="action" type="button" disabled>EXPORT SOURCE .JSON</button>
+          <span class="export-note">384 × 4928 PX / 6 × 44 GRID</span>
+        </div>
+      </section>
+    </main>
+    <footer class="statusbar"><span id="message" role="status">Configure your character, then select Generate.</span><span>V6B / ORIGINAL PYTHON ENGINE</span></footer>
+  </div>
+</body>
+</html>
