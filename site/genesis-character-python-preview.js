@@ -25,7 +25,7 @@ function register(data,origin="manual"){
 function importFile(source){
  return register(Contract.fromPython(source),"manual");
 }
-function setCloud(rows){
+function setCloud(rows,{preferCloud=false}={}){
  const accepted=[];
  const candidates=Array.isArray(rows)?rows:[];
  for(const row of candidates){
@@ -36,8 +36,9 @@ function setCloud(rows){
   }catch{/* Ignore incompatible cloud data, never execute source. */}
  }
  // Prefer latest valid Drive record if duplicates were created previously.
- accepted.sort((a,b)=>a.updated.localeCompare(b.updated));
- const fresh=new Map(accepted.map(x=>[x.data.id,x.data]));
+ accepted.sort((a,b)=>b.updated.localeCompare(a.updated));
+ const fresh=new Map();
+ for(const row of accepted)if(!fresh.has(row.data.id))fresh.set(row.data.id,row.data);
  for(const id of cloudIds){
   const existing=records.get(id);
   if(existing?.origin==="cloud")records.delete(id);
@@ -45,7 +46,7 @@ function setCloud(rows){
  cloudIds.clear();
  for(const data of fresh.values()){
   const existing=records.get(data.id);
-  if(existing?.origin==="manual")continue;
+  if(existing?.origin==="manual"&&!preferCloud)continue;
   register(data,"cloud");cloudIds.add(data.id);
  }
  return [...fresh.values()];
