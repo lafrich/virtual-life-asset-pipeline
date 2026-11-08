@@ -52,7 +52,8 @@ const ROOT='http://127.0.0.1:4173/virtual-life-asset-pipeline';
     await inner.locator('#animation-start-new').click();
     await inner.locator('#animation-setup:not([hidden])').waitFor();
     await inner.locator('#setup-name').fill('Mobile Screen Test');
-    await inner.locator('#gender').selectOption('female');
+    // The old #gender control is deliberately hidden; choose the real Genesis source.
+    await inner.locator('#source-character').selectOption('base:female');
     await inner.locator('#template').selectOption('sit');
     await inner.locator('#setup-create').click();
     await inner.locator('#animation-workspace:not([hidden])').waitFor({timeout:65000});
