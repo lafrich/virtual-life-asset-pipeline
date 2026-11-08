@@ -341,6 +341,10 @@ async function create(from,sourceClip=null){
  const initial=sourceClip?deep(sourceClip.manifest.frames):
   from?deep(state.frames):Array.from({length:Math.min(6,V.FRAMES[template]||4)},(_,i)=>({key:"f"+i,ms:140}));
  const clip=Store.create({name,frames:initial,requiredParts:["base/body"]});
+ // A modified Punch stays under Punch; a modified Kick stays under Kick.
+ const category=sourceClip?.manifest?.category||
+  (from?Store.get(state.id)?.manifest?.category:null);
+ if(category)Store.updateManifest(clip.id,{category,source:Contract.FORMAT});
  const row={id:clip.id,name,gender,sourceId,template,frames:deep(initial),
   stockReference:sourceClip?.origin==="pilot"?sourceClip.id:from?state.stockReference:"",
   loop:sourceClip?sourceClip.manifest.loop!==false:from?state.loop:true,
