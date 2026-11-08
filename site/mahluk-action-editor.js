@@ -6,7 +6,7 @@ const KEY="mahluk-action-situations-v1",FORMAT="mahluk-situation-database-v1";
 const DIRS=["se","sw","ne","nw"],PHASES=["enter","loop","exit"],$=id=>document.getElementById(id);
 const V=root.V6PCompositor,Store=root.V6PClipStore;
 const state={rows:[],selected:null,cast:[],active:"",phase:"loop",frame:0,playing:false,timer:null,
- cache:new Map(),sheets:new Map(),token:0,drag:null,screen:"home",message:"",
+ cache:new Map(),sheets:new Map(),token:0,drag:null,screen:"home",message:"",onlineCharacters:[],
  camera:{zoom:1,x:0,y:0,grid:false},pointers:new Map(),pinch:null};
 function safeId(s){return /^[a-z][a-z0-9_]{1,47}$/.test(s||"")}
 function status(s,err=false){$("status").textContent=s;$("status").classList.toggle("err",err)}
@@ -78,9 +78,13 @@ function addCast(characterId,choosing=false){
  void render();
 }
 function realCharacters(){
- try{const rows=JSON.parse(localStorage.getItem("mahluk-2-library-v1")||"[]");
-  return Array.isArray(rows)?rows.filter(x=>x?.id&&x.clips&&Object.keys(x.clips).length):[]}
- catch{return []}
+ let rows=[];
+ try{const saved=JSON.parse(localStorage.getItem("mahluk-2-library-v1")||"[]");
+  if(Array.isArray(saved))rows=saved.filter(x=>x?.id&&x.clips&&Object.keys(x.clips).length)
+ }catch{}
+ const combined=new Map(rows.map(x=>[x.id,x]));
+ for(const row of state.onlineCharacters)if(row?.id)combined.set(row.id,row);
+ return [...combined.values()];
 }
 function refreshActors(){
  for(const name of ["actor","choose-actor"]){
@@ -292,7 +296,12 @@ async function refreshCloud(){
  const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
  if(!bridge?.isOnline?.())return;
  try{
-  const rows=await bridge.listOnline("action");
+  const [rows,characters,motions]=await Promise.all([
+    bridge.listOnline("action"),bridge.listOnline("character"),bridge.listOnline("animation")
+  ]);
+  state.onlineCharacters=characters;
+  for(const clip of motions)try{Store.importCloudRecord(clip)}catch{}
+  refreshActors();refreshOptions();
   const combined=new Map(state.rows.map(x=>[x.id,x]));
   for(const row of rows)if(row?.id&&safeId(row.id))combined.set(row.id,row);
   state.rows=[...combined.values()];
