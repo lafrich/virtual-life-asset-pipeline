@@ -5,9 +5,9 @@ const $=id=>document.getElementById(id);
 const ORIGIN=location.origin;
 const URLS=Object.freeze({
  emotion:"/virtual-office/emotion-studio/",
- character:"./v6p-studio.html?embedded=1&rev=punch-qa-v2",
+ character:"./v6p-studio.html?embedded=1&rev=punch-qa-v3",
  action:"./mahluk-action-editor.html?embedded=1",
- animation:"./mahluk-animation-studio.html?embedded=1&rev=punch-qa-v2"
+ animation:"./mahluk-animation-studio.html?embedded=1&rev=punch-qa-v3"
 });
 const FRAMES=Object.freeze({
  emotion:"emotion-frame",character:"character-frame",action:"action-frame",
