@@ -176,7 +176,7 @@ function init(api){
   const id=$("set-emotion-source").value;
   const entry=catalog.get(id)||assets[id];
   if(!entry||!compatible(entry))return say("Choose a compatible Emosi.exe entry",true);
-  const start=Math.max(0,Math.min(state.frames.length-1,Number($("set-emotion-start").value)||0));
+  const start=Math.max(0,Math.min(state.frames.length-1,(Number($("set-emotion-start").value)||1)-1));
   const length=Math.max(1,Math.min(state.frames.length-start,Number($("set-emotion-length").value)||1));
   assets[id]=clone(entry);
   cues.push({id,start,length});
@@ -199,10 +199,10 @@ function init(api){
  function placeAtFrame(){return cues.filter(c=>state.frame>=c.start&&state.frame<c.start+c.length).length}
  function renderUi(){
   $("set-animation-state").textContent="Motion "+state.template.toUpperCase()+" · "+state.frames.length+" frames";
-  $("set-emotion-start").max=Math.max(0,state.frames.length-1);
+  $("set-emotion-start").max=state.frames.length;
   $("set-emotion-length").max=state.frames.length;
   if(document.activeElement!==$("set-emotion-start"))
-   $("set-emotion-start").value=state.frame;
+   $("set-emotion-start").value=state.frame+1;
   $("set-emotion-count").textContent=cues.length+" placements · "+placeAtFrame()+" on current frame";
   paintCues();viewNote();
  }
