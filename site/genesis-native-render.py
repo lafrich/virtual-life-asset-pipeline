@@ -105,10 +105,11 @@ def redraw_arm_if_moved(L, p, side, long_sleeve):
 
 def reshape_leg(a, p, leg, split, key):
     """Pixel-by-pixel leg displacement on native pants/shoe code arrays."""
+    hip = delta(p,"hip_"+leg)
     knee = delta(p,"knee_"+leg)
     foot = delta(p,"foot_"+leg)
     kangle = p["angles"]["knee_"+leg]
-    if knee==(0,0) and foot==(0,0) and kangle==0:
+    if hip==(0,0) and knee==(0,0) and foot==(0,0) and kangle==0:
         return a
     out=a.copy()
     part = native.empty()
@@ -119,13 +120,45 @@ def reshape_leg(a, p, leg, split, key):
                 out[y,x]=""
     for y in range(49,native.CH):
         progress = min(1.0,max(0.0,(y-49)/20))
-        dx = round(knee[0]*min(1,progress*1.9) + (foot[0]+round(math.sin(math.radians(kangle))*3)) * max(0,(progress-.5)*2))
-        dy = round(knee[1]*min(1,progress*1.9) + foot[1]*max(0,(progress-.5)*2))
+        dx = round(hip[0]*(1-progress) + knee[0]*min(1,progress*1.9) + (foot[0]+round(math.sin(math.radians(kangle))*3))*max(0,(progress-.5)*2))
+        dy = round(hip[1]*(1-progress) + knee[1]*min(1,progress*1.9) + foot[1]*max(0,(progress-.5)*2))
         for x in range(native.CW):
             if part[y,x]:
                 xx, yy = x+dx, y+dy
                 if 0<=xx<native.CW and 0<=yy<native.CH:out[yy,xx]=part[y,x]
     return out
+
+def warp_head_layers(L, p, torso_shift=(0,0)):
+    """Warp native pixel-code head contours at original 1:1 pixel resolution.
+    This preserves code layers and is not a separate cutout-sprite runtime.
+    """
+    hdx, hdy = delta(p,"head")
+    ndx, ndy = delta(p,"neck")
+    dx = hdx + int(round(ndx/2)) + torso_shift[0]
+    dy = hdy + int(round(ndy/2)) + torso_shift[1]
+    angle = p["angles"]["head"]
+    if not (dx or dy or angle):
+        return
+    theta = math.radians(angle)
+    cosine, sine = math.cos(theta), math.sin(theta)
+    cx, cy = 32-native.FX, 44-native.FY
+    for key in ("hair_back","hair_front","body","face","brows","acc_head"):
+        if key not in L:continue
+        src=L[key]
+        # The original facial/head contour occupies the upper 20–22 code rows.
+        limit=20 if key=="body" else 24
+        out=src.copy()
+        out[:limit]=""
+        for y in range(min(limit,native.CH)):
+            for x in range(native.CW):
+                code=src[y,x]
+                if not code:continue
+                vx,vy=x-cx,y-cy
+                nx=int(round(cx+cosine*vx-sine*vy+dx))
+                ny=int(round(cy+sine*vx+cosine*vy+dy))
+                if 0<=nx<native.CW and 0<=ny<native.CH:
+                    out[ny,nx]=code
+        L[key]=out
 
 def frame_png(data, gender, direction, frame):
     p = validate(data, gender, direction, frame)
@@ -154,6 +187,7 @@ def frame_png(data, gender, direction, frame):
             P[key]=reshape_leg(P[key],p,leg,gap,key)
     faces,brows,glasses = native.face_layer("neutral",C,view,glasses=False)
     P["face"],P["brows"],P["acc_head"]=faces,brows,glasses
+    warp_head_layers(P,p,(torso_dx,torso_dy))
     # Same 19-layer z-order and original 64x112 framing.
     composite=Image.new("RGBA",FRAME)
     for k in native.ORDER:
