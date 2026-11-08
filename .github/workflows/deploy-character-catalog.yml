@@ -232,6 +232,10 @@ jobs:
           python -c 'from PIL import Image; from pathlib import Path; p=Path("_site/assets/street_vehicles"); assert Image.open(p/"cars/bus_transjakarta_se.png").mode=="RGBA"; assert Image.open(p/"riders/gojek_se.png").mode=="RGBA"; print("Street vehicle originals published for Semesta")'
       - name: Check built site files
         run: |
+          # All motion JSON assets must ship in Pages or the old 11-only list returns.
+          test -s _site/motion-packs/index.json
+          test -s _site/motion-packs/clp_standing_punch.motion.json
+          python -m json.tool _site/motion-packs/index.json > /dev/null
           test -s _site/emosi-bridge.js
           test -s _site/index.html
           test -s _site/media/original-rig/manifest.json
