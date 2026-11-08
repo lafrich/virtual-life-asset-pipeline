@@ -70,7 +70,17 @@ test('Animation Studio opens stock through native composer, not editable anchor 
   assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(js,/V\.composeActivity\(/);
  assert.match(js,/nativeOpen\(clip\);return/);
+ assert.match(js,/function modifyClip\(clip\)/);
+ assert.match(js,/create\(false,clip\)/);
  assert.match(js,/function nativeTick\(/);
+ assert.match(html,/id="gallery-character"/);
+ assert.match(html,/id="source-character"/);
+ assert.match(html,/id="pixel-target"/);
+ assert.doesNotMatch(html,/id="animation-start-pose"/);
+ assert.match(js,/Genesis\.get\(gender\)/);
+ assert.match(js,/source\.record\.appearance|record\.appearance/);
+ assert.match(js,/function hitTestPart\(/);
+ assert.match(js,/function anatomyBounds\(/);
  assert.doesNotMatch(js,/mahluk-motion-library\.html/);
 });
 test('Action Editor sources native stock, never rejected Grok review',()=>{
