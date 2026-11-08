@@ -41,6 +41,7 @@ const {chromium}=require('playwright');
     return Array.from(pixels).some((x,i)=>i%4===3&&x>0);
    });
   },null,{timeout:150000});
+  const previous=await page.locator('canvas[data-qa-dir=se]').evaluate(c=>c.toDataURL());
   const imgs=await page.evaluate(()=>[...document.querySelectorAll('canvas[data-qa-dir]')].map(c=>c.toDataURL()));
   assert.equal(imgs.length,4);
   assert.notEqual(imgs[0],imgs[2],'Native Python front/back should not be identical');
@@ -50,6 +51,26 @@ const {chromium}=require('playwright');
   assert.equal(appearance.hairColor,'pink');
   await page.locator('#qa-next').click();
   assert.match(await page.locator('#qa-frame-label').textContent(),/FRAME 2 \/ 2/);
+  await page.locator('#wizard-back').click();
+  await page.locator('#wizard-customize:not([hidden])').waitFor();
+  await page.locator('#wizard-part-nav [data-part=hair]').click();
+  await page.locator('#hair').selectOption('long');
+  await page.locator('#hairColor').selectOption('navy');
+  await page.locator('#wizard-next').click();
+  await page.locator('#wizard-preview:not([hidden])').waitFor({timeout:65000});
+  // Explicitly reselect the imported file, not a legacy/default native action.
+  const pythonOption=await page.locator('#qa-animation option[value^="python:"]').first().getAttribute('value');
+  await page.locator('#qa-animation').selectOption(pythonOption);
+  await page.waitForFunction(()=>{
+   const s=document.querySelector('#qa-animation')?.value;
+   return s?.startsWith('python:')&&document.querySelector('#qa-python-status')?.textContent?.includes('GENESIS CHARACTER');
+  });
+  await page.waitForFunction(old=>{
+   const canvas=document.querySelector('canvas[data-qa-dir=se]');
+   return canvas&&canvas.toDataURL()!==old;
+  },previous,{timeout:45000});
+  const changed=await page.locator('canvas[data-qa-dir=se]').evaluate(c=>c.toDataURL());
+  assert.notEqual(changed,previous,'Changing Character hair failed to affect Python preview');
   await page.locator('canvas[data-qa-dir=se]').click();
   assert.match(await page.locator('#qa-python-status').textContent(),/protected/);
   assert.deepEqual(errors,[]);

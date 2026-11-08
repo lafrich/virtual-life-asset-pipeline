@@ -75,6 +75,19 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   await genesis.locator("#stage").waitFor({timeout:65000});
   await genesis.locator("#joint-x").fill("35");
   await genesis.locator("#joint-x").press("Tab");
+  // All 11 original native animations must remain non-empty under this rig.
+  const nativeActions=["walk","idle","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"];
+  const options=await genesis.locator("#native-action option").allTextContents();
+  assert.equal(options.length,11,"Native animation template count changed");
+  for(const action of nativeActions){
+   await genesis.locator("#native-action").selectOption(action);
+   const visible=await genesis.locator("#source-preview").evaluate(c=>{
+    const p=c.getContext("2d").getImageData(0,0,64,112).data;
+    return p.some((value,index)=>index%4===3&&value>0);
+   });
+   assert.equal(visible,true,"Missing original Genesis native "+action);
+  }
+  await genesis.locator("#native-action").selectOption("idle");
   await genesis.locator("#mode-slice").click();
   await genesis.locator("#slice-part").selectOption("arm_l");
   const b=await genesis.locator("#stage").boundingBox();
@@ -87,6 +100,11 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   let rig=JSON.parse(masters[0].content).record;
   assert.equal(rig.id,"genesis_male_nude");
   assert.equal(rig.joints.se.head.x,35);
+  const masks=await genesis.locator("#stage").evaluate(()=>{
+   const M=window.GenesisMasterRig;
+   return M.decode(M.load('male').masks.se)[30*64+32];
+  });
+  assert.equal(masks,3,"Edited native slice must be stored as left-arm mask");
   await genesis.locator("#mode-puppet").click();
   await genesis.locator("#joint-x").fill("36");
   await genesis.locator("#joint-x").press("Tab");
