@@ -115,6 +115,34 @@ const alpha=canvas=>{const d=canvas.getContext('2d').getImageData(0,0,64,112).da
    }
   }
   assert.equal(problems.length,0,problems.join('\n'));
+  // Visual QA sheet is emitted only to CI logs; it adds no in-app preview UI.
+  // Columns: Male five poses, Female five poses. Rows: SE/SW/NE/NW.
+  const contact=await page.evaluate(async()=>{
+   const M=window.V6PUniversalMotion,H=window.V6PCharacterHost,
+    G=window.V6PGenesisBase,Store=window.V6PClipStore;
+   const man=Store.get('clp_standing_punch').manifest;
+   const sheet=document.createElement('canvas');sheet.width=640;sheet.height=448;
+   const ctx=sheet.getContext('2d');ctx.imageSmoothingEnabled=false;
+   for(let y=0;y<448;y+=8)for(let x=0;x<640;x+=8){
+    ctx.fillStyle=(x/8+y/8)%2?'#edf2f8':'#ffffff';
+    ctx.fillRect(x,y,8,8);
+   }
+   for(const [gi,gender]of ['male','female'].entries()){
+    await H.useBase(gender);
+    const rig=await M.prepare(H.get().ch,'idle',{
+     partOverrides:G.get(gender).parts,sourceKey:'contact-'+gender
+    });
+    for(const [di,dir]of ['se','sw','ne','nw'].entries())
+     for(let fi=0;fi<man.frames.length;fi++)
+      ctx.drawImage(M.renderPrepared(rig,dir,man.motion.tracks[dir][fi]),
+       (gi*5+fi)*64,di*112);
+   }
+   return sheet.toDataURL('image/png').split(',')[1];
+  });
+  console.log('PUNCH_CONTACT_START '+contact.length);
+  for(let i=0;i<contact.length;i+=3000)
+   console.log('PUNCH_CONTACT_PART '+(i/3000)+' '+contact.slice(i,i+3000));
+  console.log('PUNCH_CONTACT_END');
   await page.goto(root+'/mahluk-action-editor.html',{waitUntil:'domcontentloaded',timeout:45000});
   await page.locator('#phase-loop option[value="clip:clp_standing_punch"]').waitFor({state:'attached',timeout:45000});
   console.log('[ok] Existing Action Editor also auto-detects bundled JSON Punch');
