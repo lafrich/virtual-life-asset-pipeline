@@ -53,7 +53,7 @@ test('Character Pixel Editor stays in Character tab and can return without losin
  assert.match(hub,/async function closeCharacterPixel\(\)/);
  assert.match(hub,/VirtualLifePixelEditor\?\.flush\?\.\(\)/);
  assert.match(hub,/\$\("character-pixel-back"\)\.onclick/);
- assert.match(pixel,/VLMahlukWorkspace\.closeCharacterPixel/);
+ assert.match(pixel,/hub\.closeAnimationPixel:hub\.closeCharacterPixel/);
  assert.match(wizard,/storeStep\(\);H\.edit/);
 });
 test('unmodified Animation / Action editors are still separate, while Face is routed to Emosi',()=>{
