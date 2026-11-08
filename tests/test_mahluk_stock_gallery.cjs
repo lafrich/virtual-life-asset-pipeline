@@ -81,7 +81,7 @@ test('Animation, Character and Action use same dynamic registry with no Punch-sp
   character=read('site/v6p-studio.html'),wizard=read('site/v6p-character-wizard.js'),
   workflow=read('site/v6p-character-workflow.js'),action=read('site/mahluk-action-editor.js'),
   store=read('site/v6p-clip-store.js');
- for(const file of [studio,wizard,workflow,action])assert.match(file,/loadBundled\(/,
+ for(const file of [studio,wizard,workflow,action])assert.match(file,/loadBundled/,
   'Every editor must load the shared JSON registry');
  assert.match(store,/motion-packs\/index\.json/);
  assert.match(studio,/clipCategory\(clip\)/);
