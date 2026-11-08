@@ -157,9 +157,9 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await m.locator('#play').click();
   await m.locator('#save').click();
   await m.locator('#animation-home:not([hidden])').waitFor({timeout:45000});
-  assert.match(await m.locator('#animation-home-note').textContent(),/CLOUD VERIFIED/);
+  assert.match(await m.locator('#animation-home-note').textContent(),/DRAFT SAVED.*DRIVE VERIFIED/);
   const anim=record('animation');
-  assert.ok(anim?.clip?.layers?.['base/body']?.startsWith('data:image/png;base64,'));
+  assert.ok(anim?.clip?.layers?.['preview/composite']?.startsWith('data:image/png;base64,'));
   assert.equal(anim.meta.gender,'female');assert.equal(anim.meta.template,'sit');
   assert.equal(anim.meta.tracks.ne[1].head.x,3);
   assert.equal(await page.evaluate(()=>localStorage.getItem('vl-v6p-act-clips-v1')),null,
