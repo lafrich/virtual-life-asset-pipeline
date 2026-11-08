@@ -932,6 +932,29 @@ async function boot(){
   if(window.V6PAssetGallery) window.V6PAssetGallery.mount();
   syncDbg();
 }
+// The existing Character QA consumes the same reviewed motion pack as Animation.
+const qaMotionCache=new Map();
+async function getQaMotion(id){
+ if(qaMotionCache.has(id))return qaMotionCache.get(id);
+ const pending=(async()=>{
+  const C=window.V6PUniversalMotionContract;
+  let manifest=window.V6PClipStore?.get(id)?.manifest;
+  if(!C?.isUniversal(manifest)){
+   if(id!=="clp_standing_punch")throw Error("Motion not installed: "+id);
+   const res=await fetch("./motion-packs/clp_standing_punch.motion.json",{cache:"no-store"});
+   if(!res.ok)throw Error("Standing Punch package unavailable: "+res.status);
+   const d=await res.json();
+   if(d.id!==id||d.format!==C.FORMAT)throw Error("Punch format mismatch");
+   const motion=C.make({sourceAction:d.sourceAction,frames:d.frames,tracks:d.tracks,status:"draft"});
+   manifest={id:d.id,name:d.name,frames:d.frames,loop:d.loop,dirs:[...C.DIRS],
+    sheet:{cell:[64,112],pivot:[32,100]},motion};
+  }
+  C.validateManifest(manifest);
+  return manifest;
+ })();
+ qaMotionCache.set(id,pending);
+ try{return await pending}catch(e){qaMotionCache.delete(id);throw e}
+}
 window.V6PCharacterHost=Object.freeze({
  get(){return {id:state.characterId,ch:{...state.ch},faceId:state.faceId,name:$("char-name").value,action:state.action,dir:state.dir,frame:state.frame}},
  frame(action="idle",dir="se",n=0){
@@ -953,6 +976,24 @@ window.V6PCharacterHost=Object.freeze({
  async qa(action,frame=0){
   if(!state.sheet)return;
   const all=[...document.querySelectorAll("[data-qa-dir]")];
+  if(String(action||"").startsWith("motion:")){
+   const id=String(action).slice(7),manifest=await getQaMotion(id);
+   const M=window.V6PUniversalMotion;
+   if(!M)throw Error("Universal Genesis renderer not loaded");
+   const existing=state.characterId&&window.V6PCharacterStore?.get(state.characterId);
+   const base=!existing?window.V6PGenesisBase?.get(state.ch.body):null;
+   const rig=await M.prepare({...state.ch,characterId:state.characterId},
+    manifest.motion.sourceAction,{partOverrides:existing?.parts||base?.parts||{},
+     sourceKey:"qa:"+state.characterId+":"+id});
+   const index=Math.min(Math.max(0,frame),manifest.frames.length-1);
+   for(const cv of all){
+    const ctx=cv.getContext("2d");ctx.imageSmoothingEnabled=false;
+    ctx.clearRect(0,0,64,112);
+    ctx.drawImage(M.renderPrepared(rig,cv.dataset.qaDir,
+     manifest.motion.tracks[cv.dataset.qaDir][index]),0,0);
+   }
+   return;
+  }
   const anchorId=String(action||"").startsWith("anchor:")?String(action).slice(7):"";
   const anchor=anchorId&&window.V6PCharacterRetarget?.anchorDatabase().find(x=>x.id===anchorId);
   if(anchor){
@@ -974,7 +1015,7 @@ window.V6PCharacterHost=Object.freeze({
   }
  },
  edit(kind,dir,action,frame=0){
-  if(String(action).startsWith("anchor:")){
+  if(String(action).startsWith("anchor:")||String(action).startsWith("motion:")){
    setStatus("Custom anchor motion: edit its motion frames in ANIMATION tab. Native V6P corrections are editable here.",true);return;
   }
   state.dir=dir;state.action=action;state.frame=frame;
@@ -984,6 +1025,6 @@ window.V6PCharacterHost=Object.freeze({
 boot().then(()=>window.dispatchEvent(new Event("mahluk:character-ready"))).catch(e=>setStatus(String(e),true));
 })();
 </script>
-<script src="./v6p-character-wizard.js?v=online-first-20261108"></script>
+<script src="./v6p-character-wizard.js?v=punch-qa-v1"></script>
 </body>
 </html>
