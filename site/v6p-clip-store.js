@@ -9,6 +9,55 @@ const RETIRED=new Set(RETIRED_STOCK_IDS.flatMap(id=>[id,"clip_"+id]));
 const BUILTIN_IDS=Object.freeze([]);
 const bundled=new Map();
 let bundlePromise=null;
+// Owner-requested one-time deletion of EVERY non-native authored animation.
+// This removes storage bytes, including legacy drafts, not merely gallery rows.
+const NATIVE_ACTIONS=new Set(["walk","idle","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"]);
+const PURGE_KEY="mahluk-native-animation-purge-20261109-v1";
+function purgeNonNativeAnimations(){
+ try{
+  const disk=root?.localStorage;
+  if(!disk||disk.getItem(PURGE_KEY)==="1")return;
+  disk.removeItem(KEY);
+  disk.removeItem("vl-mahluk-animation-anchor-poses-v1");
+  const lib=disk.getItem("mahluk-2-library-v1");
+  if(lib){
+   const rows=JSON.parse(lib);
+   if(Array.isArray(rows)){
+    for(const row of rows){
+     if(!row||typeof row!=="object")continue;
+     if(row.clips&&typeof row.clips==="object")
+      row.clips=Object.fromEntries(Object.entries(row.clips).filter(([id])=>NATIVE_ACTIONS.has(id)));
+     if(Array.isArray(row.sharedBaseRig?.actions))
+      row.sharedBaseRig.actions=row.sharedBaseRig.actions.filter(id=>NATIVE_ACTIONS.has(id));
+    }
+    disk.setItem("mahluk-2-library-v1",JSON.stringify(rows));
+   }
+  }
+  const saved=disk.getItem("mahluk-action-situations-v1");
+  if(saved){
+   const data=JSON.parse(saved);
+   if(Array.isArray(data?.items)){
+    for(const row of data.items){
+     for(const actor of [row,...(Array.isArray(row?.actors)?row.actors:[])]){
+      if(!actor||typeof actor!=="object")continue;
+      for(const phase of ["enter","loop","exit"])
+       if(typeof actor[phase]==="string"&&/^(?:clip:|motion:|grok:)/.test(actor[phase]))
+        actor[phase]=phase==="loop"?"native:idle":"";
+     }
+    }
+    disk.setItem("mahluk-action-situations-v1",JSON.stringify(data));
+   }
+  }
+  // The Mahluk shell has a separate session RAM draft store.
+  const draft=root?.parent?.VLMahlukWorkspace?.draftStorage;
+  draft?.removeItem?.(KEY);draft?.removeItem?.("vl-mahluk-animation-anchor-poses-v1");
+  disk.setItem(PURGE_KEY,"1");
+ }catch(error){
+  // Unset marker allows retry; no Emosi keys are touched.
+  try{root?.console?.warn?.("Native-only animation cleanup pending",error)}catch{}
+ }
+}
+purgeNonNativeAnimations();
 function universalContract(){
  return root?.V6PUniversalMotionContract||
   (typeof require==="function"?require("./v6p-universal-motion-contract.js"):null);

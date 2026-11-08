@@ -90,6 +90,24 @@ async function listRecords(kind){
  }
  return rows;
 }
+async function eraseOnlineAnimationRecords(){
+ const parent=await cloudFolder(),deleted=[];let page="";
+ do{
+  const q=new URLSearchParams({
+   q:"'"+quoted(parent)+"' in parents and name contains 'animation__' and mimeType = 'application/json' and trashed = false",
+   fields:"nextPageToken,files(id,name)",pageSize:"1000"
+  });
+  if(page)q.set("pageToken",page);
+  const batch=await (await api(API+"?"+q)).json();
+  for(const file of batch.files||[]){
+   if(!/^animation__[-a-z0-9_]{2,80}\\.json$/.test(file.name||""))continue;
+   await api(API+"/"+encodeURIComponent(file.id),{method:"DELETE"});
+   deleted.push(file.name);
+  }
+  page=batch.nextPageToken||"";
+ }while(page);
+ return deleted;
+}
 async function loadRecord(kind,id){
  validCloud(kind,id);if(!connected())throw Error("Connect Google Drive first");
  const parent=await cloudFolder(),file=await find(parent,filename(kind,id),"application/json");
@@ -111,7 +129,9 @@ function connect(){
    callback:r=>{
     if(r.error||!r.access_token){reject(Error(r.error_description||r.error||"Google Drive denied"));return}
     token=r.access_token;expires=Date.now()+1000*(Number(r.expires_in)||3500);
-    baseFolder="";savedFile="";recordFolder="";recordFolderPromise=null;resolve(true);
+    baseFolder="";savedFile="";recordFolder="";recordFolderPromise=null;
+    // Permanently delete existing online animation records at the next login.
+    void eraseOnlineAnimationRecords().then(()=>resolve(true)).catch(reject);
    },
    error_callback:e=>reject(Error(e?.message||e?.type||"Google popup closed"))
   }).requestAccessToken({prompt:""});}catch(e){reject(e)}
@@ -179,11 +199,27 @@ async function restoreIdb(entries){
   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error("Emotion database restore failed"));
  })}finally{database.close()}
 }
+const ERASED_ANIMATION_KEYS=new Set(["vl-v6p-act-clips-v1","vl-mahluk-animation-anchor-poses-v1"]);
+const NATIVE_CLIPS=new Set(["walk","idle","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"]);
+function keepNativeClips(row){
+ if(!row||typeof row!=="object")return row;
+ const out={...row};
+ if(out.clips&&typeof out.clips==="object")
+  out.clips=Object.fromEntries(Object.entries(out.clips).filter(([id])=>NATIVE_CLIPS.has(id)));
+ if(Array.isArray(out.sharedBaseRig?.actions))
+  out.sharedBaseRig={...out.sharedBaseRig,actions:out.sharedBaseRig.actions.filter(id=>NATIVE_CLIPS.has(id))};
+ return out;
+}
 function localKeys(){
  const data={};
- for(const key of KEYS){const raw=localStorage.getItem(key);if(raw!==null){
-  JSON.parse(raw);data[key]=raw;
- }}
+ for(const key of KEYS){
+  if(ERASED_ANIMATION_KEYS.has(key))continue;
+  const raw=localStorage.getItem(key);
+  if(raw===null)continue;
+  const parsed=JSON.parse(raw);
+  data[key]=key==="mahluk-2-library-v1"&&Array.isArray(parsed)?
+   JSON.stringify(parsed.map(keepNativeClips)):raw;
+ }
  return data;
 }
 function validatePayload(payload){
@@ -208,7 +244,7 @@ async function hash(str){
 }
 async function collect(){
  const local=localKeys(),emotions=await snapshotIdb();
- const archived=await (root.V6PPublishedArchive?.list?.()||Promise.resolve([]));
+ const archived=(await (root.V6PPublishedArchive?.list?.()||Promise.resolve([]))).map(keepNativeClips);
  const payload={format:KIND,savedAt:new Date().toISOString(),local,emotions,archived};
  validatePayload(payload);
  const json=JSON.stringify(payload);
@@ -260,10 +296,17 @@ async function restore(){
  try{
   for(const key of KEYS)if(!Object.prototype.hasOwnProperty.call(payload.local,key))
    localStorage.removeItem(key);
-  for(const [key,raw] of Object.entries(payload.local))localStorage.setItem(key,raw);
+  for(const [key,raw] of Object.entries(payload.local)){
+   if(ERASED_ANIMATION_KEYS.has(key))continue;
+   if(key==="mahluk-2-library-v1"){
+    const rows=JSON.parse(raw);
+    localStorage.setItem(key,JSON.stringify(Array.isArray(rows)?rows.map(keepNativeClips):rows));
+   }else localStorage.setItem(key,raw);
+  }
+  for(const key of ERASED_ANIMATION_KEYS)localStorage.removeItem(key);
   await restoreIdb(payload.emotions);
   if(Array.isArray(payload.archived)&&root.V6PPublishedArchive?.replace)
-   await root.V6PPublishedArchive.replace(payload.archived);
+   await root.V6PPublishedArchive.replace(payload.archived.map(keepNativeClips));
  }catch(error){
   // Restore is all-or-nothing for localStorage; IndexedDB uses one transaction.
   // This rollback is best effort for an already-full browser quota.
