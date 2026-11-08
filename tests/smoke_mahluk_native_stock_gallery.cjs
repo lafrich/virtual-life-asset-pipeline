@@ -61,9 +61,10 @@ const ids=['pushup','yoga_sphinx_idle','yoga_puppy_idle','hip_shake','yoga_happy
   },null,{timeout:45000});
   const targets=await page.locator('#pixel-target option').evaluateAll(
    all=>all.map(option=>option.value));
-  for(const part of ['base/body_f','top/custom_f','pants/custom_f','shoes/custom_f'])
+  for(const part of ['top/custom_f','pants/custom_f','shoes/custom_f'])
    assert.ok(targets.includes(part),'Missing real Genesis Female sprite part '+part);
-  await page.locator('#parts [data-part="torso"]').click();
+  assert.ok(!targets.includes('base/body_f'),'Body Genesis must be read-only in animation-specific Pixel Editor');
+   await page.locator('#parts [data-part="torso"]').click();
   assert.equal(await page.locator('#pixel-target').inputValue(),'top/custom_f');
   assert.equal(await page.locator('#part-edit-now').isVisible(),true);
   await page.locator('#animation-editor-back').click();
