@@ -60,7 +60,7 @@ test('motion renderer reads physical layers and editor never bakes outfit pixels
  assert.match(animation,/Store\.setLayer\(state\.id,"preview\/composite"/);
  assert.match(action,/layout:"universal"/);
  assert.match(action,/Motion\.render\(/);
- assert.match(studio,/UC\.isStock\(row\.manifest\)/);
+ assert.match(studio,/UC\?\.isStock\(row\.manifest\)/);
 });
 test('UI preserves Pixel/Action UX, offers color edit and strict AI import without altering Emosi',()=>{
  const pixel=read('site/pixel-editor.html'),pixjs=read('site/pixel-editor.js'),
