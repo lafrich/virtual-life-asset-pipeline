@@ -49,12 +49,18 @@ async function test(){
   await page.locator('#character-pixel-back').click();
   await page.locator('#character-pixel-overlay').waitFor({state:'hidden',timeout:65000});
   const saved=await page.evaluate(()=>{
-   const selected=localStorage.getItem('vl-v6p-selected-character-v1');
-   const stored=JSON.parse(localStorage.getItem('vl-v6p-character-workflow-v1')||'{}');
+   // Working draft is deliberately shared in the parent app's RAM, not
+   // browser localStorage (which overflowed with large character sprites).
+   const memory=window.VLMahlukWorkspace.draftStorage;
+   const selected=memory.getItem('vl-v6p-selected-character-v1');
+   const stored=JSON.parse(memory.getItem('vl-v6p-character-workflow-v1')||'{}');
    const row=stored.items?.find(x=>x.id===selected);
-   return {row:!!row,front:row?.masters?.['top/shirt_f']||{},back:row?.masters?.['top/shirt_back_f']||{}};
+   return {row:!!row,front:row?.masters?.['top/shirt_f']||{},
+    back:row?.masters?.['top/shirt_back_f']||{},
+    localFullDraft:!!localStorage.getItem('vl-v6p-character-workflow-v1')};
   });
-  assert.ok(saved.row,'Missing draft after Pixel Editor Back');
+  assert.ok(saved.row,'Missing RAM working draft after Pixel Editor Back');
+  assert.equal(saved.localFullDraft,false,'Full draft should not be written to quota-limited localStorage');
   assert.ok(saved.back.ne,'NE pixel edit did not persist to physical back layer');
   assert.equal(saved.front.ne,undefined,'NE edit leaked into front layer');
   console.log('[ok] NE edit saved ONLY to top/shirt_back_f, not top/shirt_f');
