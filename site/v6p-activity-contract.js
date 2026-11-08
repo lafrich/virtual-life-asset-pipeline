@@ -16,34 +16,8 @@ const BANDS=Object.freeze({
  yoga_sphinx_idle:{start:8,frames:4,ms:500,type:"loop",status:"authored",emosi:false},
  yoga_puppy_idle:{start:12,frames:4,ms:500,type:"loop",status:"authored",emosi:false},
  hip_shake:{start:16,frames:6,ms:125,type:"loop",status:"authored",emosi:true},
- yoga_happy_baby_idle:{start:20,frames:4,ms:500,type:"loop",status:"authored",emosi:false},
- // Separate review-only variant sourced from approved Happy Baby Genesis-part pixels.
- // Uses the existing band at 20 without allocating/overwriting any sprite rows.
- yoga_happy_baby_rocking:{start:20,frames:6,ms:150,type:"loop",status:"review",emosi:false,
-  sourceBand:"yoga_happy_baby_idle",reference:"Pixel-Art Happy Baby Rocking Loop.gif"}
+ yoga_happy_baby_idle:{start:20,frames:4,ms:500,type:"loop",status:"authored",emosi:false}
 });
-// Reference GIF contains 6 × 150 ms = 900 ms. Middle pair lifts shoulder/hips,
-// final pair returns. Native source pixel sheets are never rewritten.
-// Each entry selects a real approved Happy Baby native frame; dy is a subtle
-// full-character lift above the *stationary* shadow, not a page zoom.
-const MOTION_RECIPES=Object.freeze({
- yoga_happy_baby_rocking:Object.freeze([
-  Object.freeze({sourceFrame:0,dx:0,dy:0}),
-  Object.freeze({sourceFrame:1,dx:0,dy:0}),
-  Object.freeze({sourceFrame:2,dx:1,dy:-2}),
-  Object.freeze({sourceFrame:3,dx:1,dy:-4}),
-  Object.freeze({sourceFrame:2,dx:0,dy:-2}),
-  Object.freeze({sourceFrame:1,dx:0,dy:0})
- ])
-});
-function motionAt(band,frame,dir){
- const seq=MOTION_RECIPES[band];
- if(!seq)return null;
- if(!Number.isInteger(frame)||frame<0||frame>=seq.length)throw Error("Invalid motion frame");
- if(!DIRS.includes(dir))throw Error("Invalid motion direction");
- const f=seq[frame],flip=(dir==="sw"||dir==="nw")?-1:1;
- return {sourceFrame:f.sourceFrame,dx:f.dx*flip,dy:f.dy};
-}
 const INACTIVE=Object.freeze(["squat","jumping_jack","guard_jab","yoga_warrior","lie_supine"]);
 const PILOT_PARTS=Object.freeze([
  "base/body","base/body_f","base/shadow",
@@ -143,7 +117,7 @@ function remapColumns(image,bandStart,nDirs,fromCols,toIndexOfFrom){
  return {data:out,width:w,height:h};
 }
 return Object.freeze({
- FORMAT,CONTRACT,W,H,COLS,ROWS,FW,FH,PIVOT,DIRS,MAX_FRAMES,OPTIONAL,BANDS,MOTION_RECIPES,motionAt,INACTIVE,PILOT_PARTS,SEMESTA_ACT_CLIPS,BACKLOG,
+ FORMAT,CONTRACT,W,H,COLS,ROWS,FW,FH,PIVOT,DIRS,MAX_FRAMES,OPTIONAL,BANDS,INACTIVE,PILOT_PARTS,SEMESTA_ACT_CLIPS,BACKLOG,
  bandOf,isPlayable,cellOrigin,mediaUrl,isOptional,defaultFrames,emptyManifest,pushupManifest,availability,remapColumns,copyCell
 });
 });

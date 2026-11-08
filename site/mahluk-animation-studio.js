@@ -11,8 +11,7 @@ const cv=$("stage"),screen=cv.getContext("2d"),state={id:"",name:"",gender:"male
 screen.imageSmoothingEnabled=false;
 const STOCK_TITLES=Object.freeze({pushup:"PUSH-UP",yoga_sphinx_idle:"YOGA SPHINX · IDLE",
  yoga_puppy_idle:"YOGA PUPPY DOG · IDLE",hip_shake:"HIP SHAKE",
- yoga_happy_baby_idle:"YOGA HAPPY BABY · IDLE",
- yoga_happy_baby_rocking:"YOGA HAPPY BABY · ROCKING (REVIEW)"});
+ yoga_happy_baby_idle:"YOGA HAPPY BABY · IDLE"});
 const nativeStock={clip:null,frame:0,playing:false,timer:0,revision:0,cache:new Map()};
 function nativeStop(){
  nativeStock.playing=false;clearTimeout(nativeStock.timer);
@@ -59,8 +58,7 @@ async function nativeDraw(){
   const pixels=ctx.getImageData(0,0,64,112).data;
   if(!pixels.some((v,i)=>i%4===3&&v>0))throw Error("Empty native stock frame");
   $("stock-status").textContent="READY · "+gender.toUpperCase()+" · "+dir.toUpperCase()+
-    " · FRAME "+(f+1)+"/"+clip.manifest.frames.length+
-    (clip.manifest.band==="yoga_happy_baby_rocking"?" · GENESIS REFERENCE DRAFT · PENDING REVIEW":" · APPROVED NATIVE STOCK");
+    " · FRAME "+(f+1)+"/"+clip.manifest.frames.length+" · APPROVED NATIVE STOCK";
  }catch(error){
   if(token!==nativeStock.revision||state.screen!=="stock")return;
   nativeStop();$("stock-status").textContent="UNAVAILABLE · "+error.message;
@@ -225,7 +223,7 @@ function setMeta(rec){
 async function open(id){
  stop();const clip=Store.get(id),meta=db()[id];
  if(!clip)return say("Missing animation "+id,true);
- if(clip.origin==="pilot"&&(A.isPlayable(clip.manifest.band)||clip.manifest.band==="yoga_happy_baby_rocking")){
+ if(clip.origin==="pilot"&&A.isPlayable(clip.manifest.band)){
   nativeOpen(clip);return;
  }
  if(!meta){
