@@ -8,7 +8,7 @@ const $=id=>document.getElementById(id),V=root.V6PCompositor,Store=root.V6PClipS
  Motion=root.V6PUniversalMotion,Contract=root.V6PUniversalMotionContract;
 if(!V||!Store||!A||!Motion||!Contract)return;
 const KEY="vl-mahluk-animation-anchor-poses-v1",PARTS=["leg_l","leg_r","torso","arm_l","arm_r","head"],DIRS=["se","sw","ne","nw"];
-const ANCHORS={head:[32,35],torso:[32,60],arm_l:[20,54],arm_r:[44,54],leg_l:[25,84],leg_r:[39,84]};
+// Pose creation delegates to V6PUniversalMotionContract: one authoritative Idle reference.
 const cv=$("stage"),screen=cv.getContext("2d"),state={id:"",name:"",gender:"male",template:"idle",frames:[{key:"f0",ms:140},{key:"f1",ms:140}],loop:true,
  dir:"se",frame:0,part:"head",tracks:{},sheet:null,rig:null,playing:false,timer:0,images:new Map(),drag:null,revision:0,previewFrame:0,screen:"home",
  sourceId:"base:male",sourceLook:null,stockReference:"",stockGuides:new Map()};
@@ -144,10 +144,10 @@ async function refreshCloud(){
  }catch(error){$("animation-home-note").textContent="Cloud load failed: "+error.message}
 }
 function records(){return Object.keys(db()).length}
-function freshPose(){const p={};for(const name of PARTS){const [x,y]=ANCHORS[name];p[name]={x:0,y:0,angle:0,ax:x,ay:y}}return p}
+function freshPose(dir=state.dir){return Contract.pose(dir)}
 function pose(dir=state.dir,index=state.frame){
  if(!state.tracks[dir])state.tracks[dir]=[];
- if(!state.tracks[dir][index])state.tracks[dir][index]=index?deep(state.tracks[dir][index-1]||freshPose()):freshPose();
+ if(!state.tracks[dir][index])state.tracks[dir][index]=index?deep(state.tracks[dir][index-1]||freshPose(dir)):freshPose(dir);
  return state.tracks[dir][index];
 }
 function selected(){return pose()[state.part]}
@@ -381,7 +381,7 @@ function addFrame(duplicate){
  if(state.frames.length>=6)return say("Current activity atlas supports max 6 frames. Use additional clips for longer actions.",true);
  const idx=state.frame+1,source=state.frames[state.frame];
  state.frames.splice(idx,0,{key:"f"+Date.now().toString(36).slice(-5),ms:source.ms});
- for(const d of DIRS){if(!state.tracks[d])state.tracks[d]=[];const copy=duplicate?deep(pose(d,state.frame)):freshPose();state.tracks[d].splice(idx,0,copy)}
+ for(const d of DIRS){if(!state.tracks[d])state.tracks[d]=[];const copy=duplicate?deep(pose(d,state.frame)):freshPose(d);state.tracks[d].splice(idx,0,copy)}
  state.frame=idx;render();
 }
 function ensureTracks(){for(const dir of DIRS)for(let i=0;i<state.frames.length;i++)pose(dir,i)}
@@ -513,7 +513,7 @@ for(const id of ["rotation","px","py","ax","ay"]){
   if(!Number.isFinite(n))return;p[k]=Math.round(n);render()
  });
 }
-$("reset-transform").onclick=()=>{pose()[state.part]=freshPose()[state.part];render()};
+$("reset-transform").onclick=()=>{pose()[state.part]=freshPose(state.dir)[state.part];render()};
 $("gender").onchange=()=>{
  // Preserve old setup automation and imported flows while this legacy
  // control is hidden behind the new Based Character picker.
