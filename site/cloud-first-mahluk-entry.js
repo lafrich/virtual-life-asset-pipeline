@@ -4,6 +4,14 @@
  */
 (function(root){"use strict";
  function init(){
+  // Recovery-only compatibility route for the previous workspace and its tests.
+  // No storage is modified by selecting legacy mode.
+  if(new URLSearchParams(root.location?.search||"").get("legacyCloud")==="1"){
+   for(const id of ["drive-save","drive-load"]){
+    const btn=document.getElementById(id);if(btn){btn.hidden=false;btn.style.display="";}
+   }
+   return;
+  }
   const U=root.MembangunUniversal,Gate=root.MembangunCloudStartup,D=root.VLMahlukHubDrive;
   if(!U||!Gate||!D)throw Error("Mahluk cloud modules not ready");
   const KINDS=["character","action","animation"];
