@@ -236,6 +236,21 @@ function partForPixel(x,y){
  if(y<80){if(x<23)return "arm_l";if(x>40)return "arm_r";return "torso"}
  return x<32?"leg_l":"leg_r";
 }
+function hitTestPart(x,y){
+ // Hit-test painted pixels AFTER their per-frame transforms, not a static
+ // body-coordinate guess. The original per-character mask stays immutable.
+ const source=sourceCell();if(!source)return null;
+ const pieces=segments(source),trans=pose();
+ const hit=canvas(64,112),g=hit.getContext("2d",{willReadFrequently:true});
+ for(const name of PARTS.slice().reverse()){
+  const part=trans[name];g.clearRect(0,0,64,112);
+  g.save();g.translate(part.ax+part.x,part.ay+part.y);
+  g.rotate(part.angle*Math.PI/180);g.drawImage(pieces[name],-part.ax,-part.ay);g.restore();
+  if(g.getImageData(Math.max(0,Math.min(63,Math.floor(x))),Math.max(0,Math.min(111,Math.floor(y))),1,1).data[3]>24)
+   return name;
+ }
+ return null;
+}
 function segments(frame){
  const src=frame.getContext("2d").getImageData(0,0,64,112),ret={};
  for(const part of PARTS)ret[part]=canvas(64,112);
@@ -266,6 +281,10 @@ function render(){
  screen.beginPath();screen.arc(x,y,5,0,Math.PI*2);screen.fill();screen.stroke();
  screen.beginPath();screen.moveTo(x-12,y);screen.lineTo(x+12,y);screen.moveTo(x,y-12);screen.lineTo(x,y+12);screen.stroke();
  $("animation-title").textContent=(state.name||"NEW ANIMATION")+" · "+state.dir.toUpperCase()+" F"+(state.frame+1);
+ const source=characterSource();
+ if($("source-label"))$("source-label").textContent=source.name+" · "+
+  (state.stockReference?"STOCK MOTION REFERENCE: "+state.stockReference+" · ":"")+
+  "BODY / CUSTOM WEAR · "+state.dir.toUpperCase();
  if(document.activeElement!==$("animation-name-edit"))$("animation-name-edit").value=state.name;
  $("ms").value=state.frames[state.frame]?.ms||140;$("loop").checked=state.loop;
  updateProperty();paintStrip();if(!state.playing)drawGif();
@@ -442,7 +461,7 @@ function exportJSON(){const data=db()[state.id];if(!data)return say("No saved po
  link.href=url;link.download=state.id+".animation.json";document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 for(const name of PARTS){const b=document.createElement("button");b.dataset.part=name;b.textContent=name.replaceAll("_"," ").toUpperCase();
- b.style.cssText="width:100%;display:block;margin:4px 0";b.onclick=()=>{state.part=name;render()};$("parts").append(b)}
+ b.style.cssText="width:100%;display:block;margin:4px 0";b.onclick=()=>{state.part=name;selectPixelTargetByBody();render()};$("parts").append(b)}
 for(const id of ["rotation","px","py","ax","ay"]){
  const input=$(id);input.addEventListener("input",()=>{
   if(!db()[state.id])return;
@@ -451,22 +470,25 @@ for(const id of ["rotation","px","py","ax","ay"]){
  });
 }
 $("reset-transform").onclick=()=>{pose()[state.part]=freshPose()[state.part];render()};
-$("gender").onchange=()=>{if(!db()[state.id])return;state.gender=$("gender").value;loadSource()};
+$("gender").onchange=()=>{if(!db()[state.id])return;selectSource("base:"+$("gender").value);
+ void loadSource().catch(e=>say(e.message,true))};
 $("template").onchange=()=>{if(!db()[state.id])return;state.template=$("template").value;state.images.clear();render()};
 $("view").onchange=()=>{stop();state.dir=$("view").value;render()};
 $("ms").onchange=()=>{state.frames[state.frame].ms=Math.max(40,Math.min(800,Number($("ms").value)||140));render()};
 $("loop").onchange=()=>{state.loop=$("loop").checked};
 $("stock-back").onclick=()=>home();
-$("stock-gender").onchange=()=>{nativeStop();void nativeDraw()};
+$("stock-gender").onchange=()=>{selectSource("base:"+$("stock-gender").value);nativeStop();void nativeDraw()};
 $("stock-dir").onchange=()=>{nativeStop();void nativeDraw()};
 $("stock-play").onclick=nativeToggle;
 $("stock-prev").onclick=()=>{if(!nativeStock.clip)return;nativeStop();
  nativeStock.frame=(nativeStock.frame-1+nativeStock.clip.manifest.frames.length)%nativeStock.clip.manifest.frames.length;void nativeDraw()};
 $("stock-next").onclick=()=>{if(!nativeStock.clip)return;nativeStop();
  nativeStock.frame=(nativeStock.frame+1)%nativeStock.clip.manifest.frames.length;void nativeDraw()};
-$("stock-edit-pixels").onclick=()=>{if(nativeStock.clip){state.id=nativeStock.clip.id;editPixels()}};
-$("animation-start-new").onclick=()=>{$("setup-name").value="";$("template").value="idle";show("setup")};
-$("animation-start-pose").onclick=()=>{$("setup-name").value="";show("setup")};
+$("stock-edit-pixels").onclick=()=>{if(nativeStock.clip)void modifyClip(nativeStock.clip).catch(e=>say(e.message,true))};
+$("animation-start-new").onclick=()=>{$("setup-name").value="";$("template").value="idle";
+ $("source-character").value=$("gallery-character").value||"base:male";show("setup")};
+$("gallery-character").onchange=e=>selectSource(e.target.value);
+$("source-character").onchange=e=>selectSource(e.target.value);
 $("animation-start-gallery").onclick=()=>home();
 $("setup-back").onclick=()=>home();
 $("setup-create").onclick=()=>create(false).catch(e=>{$("animation-home-note").textContent=e.message;
@@ -485,7 +507,11 @@ $("open-pixel").onclick=editPixels;$("export").onclick=exportJSON;
 cv.addEventListener("pointerdown",e=>{
  if(!db()[state.id])return;
  const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*64/r.width,y=(e.clientY-r.top)*112/r.height;
- if(!$("move-anchor").checked)state.part=partForPixel(x,y);
+ if(!$("move-anchor").checked){
+  const hit=hitTestPart(x,y);
+  if(!hit)return;
+  state.part=hit;selectPixelTargetByBody();
+ }
  state.drag={x,y,point:deep(selected()),anchor:$("move-anchor").checked};cv.setPointerCapture(e.pointerId);render();
 });
 cv.addEventListener("pointermove",e=>{
@@ -499,7 +525,13 @@ cv.addEventListener("pointermove",e=>{
 cv.addEventListener("pointerup",()=>{state.drag=null});cv.addEventListener("pointercancel",()=>{state.drag=null});
 window.addEventListener("pagehide",()=>{stop();nativeStop()});
 root.addEventListener("message",e=>{
- if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected")void refreshCloud();
+ if(e.origin!==location.origin)return;
+ if(e.data?.type==="mahluk:cloud-connected")void refreshCloud();
+ if(e.data?.type==="mahluk:refresh-animation"){
+  fillSources();V.clearCache?.();
+  void loadSource().catch(error=>say(error.message,true));
+ }
 });
-show("home");void refreshCloud();updateProperty();loadSource().catch(e=>say(e.message,true));
+fillSources();show("home");void refreshCloud();updateProperty();
+loadSource().catch(e=>say(e.message,true));
 })(window);
