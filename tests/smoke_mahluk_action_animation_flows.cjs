@@ -116,6 +116,18 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   assert.equal(await a.locator('#scene-zoom-value').textContent(),'100%');
   assert.equal(Number(await a.locator('#offset-x').inputValue()),offset);
   console.log('PASS Action zoom, Fit, grid, native pixel preview and drag remain independent');
+  // Native frame is copied to the same pixel editing engine as Emosi.
+  // Only actor 2, LOOP/native:talk/SE/F0 receives the correction.
+  await a.locator('#edit-motion').click();
+  await a.locator('#pixelOverlay:not([hidden])').waitFor({timeout:55000});
+  await a.locator('#pixelTitle').getByText(/ACTION TEST GENESIS FEMALE.*F1/i).waitFor({timeout:15000});
+  await a.locator('#pixelColor').fill('#ff00f0');
+  const pixelBox=await a.locator('#pixelCanvas').boundingBox();
+  assert.ok(pixelBox,'Action scene pixel editor canvas missing');
+  await page.mouse.click(pixelBox.x+pixelBox.width*20/64,pixelBox.y+pixelBox.height*50/112);
+  await a.locator('#pixelApply').click();
+  await a.locator('#pixelOverlay[hidden]').waitFor({timeout:15000});
+  assert.match(await a.locator('#status').textContent(),/FRAME EDIT APPLIED/);
   await a.locator('#save').click();
   await a.locator('#action-home:not([hidden])').waitFor({timeout:30000});
   assert.match(await a.locator('#action-home-note').textContent(),/CLOUD VERIFIED/);
@@ -124,11 +136,34 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   assert.deepEqual(action.actors.map(actor=>actor.characterId),genesisIds,
    'Online action must reference the two real Genesis-derived character IDs');
   assert.equal(action.actors[1].loop,'native:talk');
+  assert.equal(Object.keys(action.actors[0].frameEdits||{}).length,0,'Other actor frame was modified');
+  const editedFrame=action.actors[1].frameEdits?.['loop|native:talk|se|f0'];
+  assert.match(editedFrame||'',/^data:image\/png;base64,/,'Edited Action frame not saved in scene');
+  const corrected=await page.evaluate(async png=>{
+   const img=new Image();img.src=png;await img.decode();
+   const cv=document.createElement('canvas');cv.width=64;cv.height=112;
+   const g=cv.getContext('2d');g.drawImage(img,0,0);
+   return Array.from(g.getImageData(20,50,1,1).data);
+  },editedFrame);
+  assert.deepEqual(corrected,[255,0,240,255],'Painted magenta pixel not preserved in Action');
+
   assert.ok(action.actors[1].x>149);
   assert.equal(await page.evaluate(()=>localStorage.getItem('mahluk-action-situations-v1')),null,
    'Action full payload was persisted to localStorage despite Cloud Save');
   await a.locator('#action-gallery button').filter({hasText:'Two Character Dialogue'}).click();
   await a.locator('#action-workspace:not([hidden])').waitFor();
+  // Pixel corrections must still be editable when the action is reopened.
+  await a.locator('#cast-list button').nth(1).click();
+  await a.locator('#edit-motion').click();
+  await a.locator('#pixelOverlay:not([hidden])').waitFor({timeout:55000});
+  const reopened=await a.locator('#pixelCanvas').evaluate(canvas=>{
+   // Drawing surface is scaled, but its source atlas remains true 64x112.
+   const data=canvas.getContext('2d').getImageData(20*6,50*6,1,1).data;
+   return Array.from(data);
+  });
+  assert.ok(reopened[0]>=200&&reopened[2]>=150,
+   'Previously saved magenta frame not restored in editor: '+reopened);
+  await a.locator('#pixelClose').click();
   await a.locator('#save').click();
   await a.locator('#action-home:not([hidden])').waitFor();
   console.log('PASS Action Create / Multi-cast / Drag / Save Online / Gallery / Modify');
