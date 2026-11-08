@@ -5,7 +5,7 @@ const KEY="vl-v6p-act-clips-v1";
 const FORMAT="v6p-act-clips-store-v1";
 // Canonical preallocated activities are listed in Mahluk alongside Idle/Walk.
 // Reserved slots are visible for planning but never playable until authored.
-const BUILTIN_IDS=["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle","yoga_happy_baby_rocking"];
+const BUILTIN_IDS=["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"];
 function builtinBand(id){return id.startsWith("clip_")?id.slice(5):id;}
 function isBuiltin(id){return BUILTIN_IDS.includes(builtinBand(id));}
 function contract(){return (root&&root.V6PActivityContract)||(typeof require==="function"?require("./v6p-activity-contract.js"):null);}
@@ -129,7 +129,7 @@ function layerUrl(id,part){
  id=normalizeId(id);
  const rec=get(id);
  if(rec&&rec.layers&&rec.layers[part])return rec.layers[part];
- if(isBuiltin(id) && (contract().isPlayable(builtinBand(id)) || builtinBand(id)==="yoga_happy_baby_rocking") &&
+ if(isBuiltin(id) && contract().isPlayable(builtinBand(id)) &&
     (contract().PILOT_PARTS.indexOf(part)>=0 || part==="base/fx"))
    return contract().mediaUrl(part);
  return null;
