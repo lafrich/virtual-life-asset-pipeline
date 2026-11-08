@@ -1,13 +1,15 @@
-/* Persistence for activity-contract clips + per-layer 384×2688 sheets.
-   Built-in approved activity layers come from media/v6p-act/; user edits are local overrides. */
+/* Persistence for user-authored clips and universal V6B motion tracks.
+   Retired incompatible five-band legacy stock is no longer part of active Mahluk. */
 (function(root,factory){"use strict";const api=factory(root);if(typeof module==="object"&&module.exports)module.exports=api;if(root)root.V6PClipStore=api;})(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){"use strict";
 const KEY="vl-v6p-act-clips-v1";
 const FORMAT="v6p-act-clips-store-v1";
-// Canonical preallocated activities are listed in Mahluk alongside Idle/Walk.
-// Reserved slots are visible for planning but never playable until authored.
-const BUILTIN_IDS=["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"];
-function builtinBand(id){return id.startsWith("clip_")?id.slice(5):id;}
-function isBuiltin(id){return BUILTIN_IDS.includes(builtinBand(id));}
+// Retired five-band stock: never re-create it from previous browser/Drive records.
+const RETIRED_STOCK_IDS=Object.freeze(["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"]);
+const RETIRED=new Set(RETIRED_STOCK_IDS.flatMap(id=>[id,"clip_"+id]));
+const BUILTIN_IDS=Object.freeze([]);
+function isRetired(id){return RETIRED.has(String(id||""))}
+function builtinBand(id){return String(id||"").replace(/^clip_/,"")}
+function isBuiltin(_id){return false}
 function contract(){return (root&&root.V6PActivityContract)||(typeof require==="function"?require("./v6p-activity-contract.js"):null);}
 function storage(){try{return root?.parent?.VLMahlukWorkspace?.draftStorage||root?.localStorage}catch{return null}}
 function empty(){return {format:FORMAT,clips:{}};}
@@ -18,10 +20,10 @@ function read(){
   const obj=JSON.parse(raw);
   if(!obj||obj.format!==FORMAT||!obj.clips||typeof obj.clips!=="object")return empty();
   let removed=false;
-  // Only rejected Grok REVIEW imports are retired; never touch approved
-  // built-in V6P clips or user-created animations.
+  // Remove retired legacy stock while retaining every other user-owned clip.
   for(const [id,row] of Object.entries(obj.clips)){
-   if(id.startsWith("clp_grok_")||row?.manifest?.source==="grok-stock-animation-v1"){
+   if(isRetired(id)||isRetired(row?.manifest?.id)||
+      id.startsWith("clp_grok_")||row?.manifest?.source==="grok-stock-animation-v1"){
     delete obj.clips[id];removed=true;
    }
   }
@@ -39,19 +41,16 @@ function write(store){
 function now(){return new Date().toISOString();}
 function recordFromStore(id,row){
  const A=contract();
- const band=builtinBand(id);
-  const builtin=isBuiltin(id);
-  const fallback=builtin?A.emptyManifest({id,name:band.replaceAll("_"," "),band,requiredParts:A.PILOT_PARTS.slice()}):A.emptyManifest({id,name:id});
- // Legacy four-frame Push-up overrides must never mask the approved six-frame stock.
- const stale=builtin&&row?.manifest?.frames?.length&&row.manifest.frames.length!==fallback.frames.length;
- const stored=stale?null:row;
- const manifest=stored&&stored.manifest?{...fallback,...stored.manifest,frames:(stored.manifest.frames||fallback.frames).map(f=>({key:f.key,ms:f.ms}))}:fallback;
+ const fallback=A.emptyManifest({id,name:id});
+ const stored=row||null;
+ const manifest=stored?.manifest?{...fallback,...stored.manifest,
+  frames:(stored.manifest.frames||fallback.frames).map(f=>({key:f.key,ms:f.ms}))}:fallback;
  return {
-  id,type:"clip",origin:row&&row.origin||(builtin?"pilot":"user"),
+  id,type:"clip",origin:row&&row.origin||"user",
   name:manifest.name,
   manifest,
   layers:stored&&stored.layers&&typeof stored.layers==="object"?stored.layers:{},
-  saveStatus:row&&row.saveStatus||(builtin?(A.isPlayable(band)?"stock":"review"):"local"),
+  saveStatus:row&&row.saveStatus||"local",
   driveFile:row&&row.driveFile||null,
   updatedAt:row&&row.updatedAt||"",
   thumbDataUrl:row&&row.thumbDataUrl||"",
@@ -60,30 +59,30 @@ function recordFromStore(id,row){
 }
 function importCloudRecord(rec){
  if(!rec||!rec.id||!rec.clip||!rec.clip.manifest||!rec.meta)throw Error("Invalid cloud animation record");
+ if(isRetired(rec.id)||isRetired(rec.clip.manifest.id))return null;
  const store=read();
  store.clips[rec.id]={manifest:rec.clip.manifest,layers:rec.clip.layers||{},
   origin:"user",saveStatus:"drive",updatedAt:rec.meta.updated||new Date().toISOString()};
  write(store);
  return get(rec.id);
 }
-function normalizeId(id){
- return BUILTIN_IDS.includes(id)?"clip_"+id:id;
-}
+function normalizeId(id){return id;}
 function get(id){
  id=normalizeId(id);
+ if(isRetired(id))return null;
  const row=read().clips[id];
- if(!row&&!isBuiltin(id))return null;
+ if(!row)return null;
  return recordFromStore(id,row);
 }
 function list(){
  const store=read();
- const ids=new Set([...BUILTIN_IDS.map(id=>"clip_"+id),...Object.keys(store.clips)]);
- return [...ids].map(id=>recordFromStore(id,store.clips[id]));
+ return Object.keys(store.clips).filter(id=>!isRetired(id)).map(id=>recordFromStore(id,store.clips[id]));
 }
 function create(opts){
  const A=contract();
  const man=A.emptyManifest(opts||{});
- if(get(man.id)&&man.id!=="clip_pushup")throw Error("Clip id exists");
+ if(isRetired(man.id))throw Error("Retired legacy stock ID cannot be used");
+ if(get(man.id))throw Error("Clip id exists");
  const store=read();
  store.clips[man.id]={manifest:man,layers:{},origin:"user",saveStatus:"local",updatedAt:now()};
  write(store);
@@ -98,7 +97,7 @@ function updateManifest(id,patch){
  const row=store.clips[id]||{layers:{},origin:rec.origin};
  row.manifest=manifest;row.updatedAt=now();
  if(rec.origin==="pilot")row.origin="pilot";
- if(row.saveStatus!=="drive")row.saveStatus=isBuiltin(id)&&!Object.keys(row.layers||{}).length?"stock":"local";
+ if(row.saveStatus!=="drive")row.saveStatus="local";
  store.clips[id]=row;write(store);
  return get(id);
 }
@@ -129,9 +128,6 @@ function layerUrl(id,part){
  id=normalizeId(id);
  const rec=get(id);
  if(rec&&rec.layers&&rec.layers[part])return rec.layers[part];
- if(isBuiltin(id) && contract().isPlayable(builtinBand(id)) &&
-    (contract().PILOT_PARTS.indexOf(part)>=0 || part==="base/fx"))
-   return contract().mediaUrl(part);
  return null;
 }
 function hasLayer(id,part){return !!layerUrl(id,part);}
@@ -146,7 +142,7 @@ function markDrive(id,info){
 }
 function remove(id){
  id=normalizeId(id);
- if(isBuiltin(id))throw Error("Cannot delete a built-in activity");
+ if(isRetired(id))throw Error("Retired legacy stock cannot be created or modified");
  const store=read();delete store.clips[id];write(store);
 }
 function compatibility(rec){
@@ -154,29 +150,29 @@ function compatibility(rec){
  if(!man)return "Custom clip";
  const n=(man.frames||[]).length;
  const ms=(man.frames||[]).map(f=>f.ms).join(",");
- const extra=isBuiltin(man.id)?(
-    contract().isPlayable(man.band)?
-      "Built-in native Mahluk activity · V6P keyed part sheets":
-      "Reserved activity · REVIEW ONLY · not playable yet"
-  ):"User clip · activity sheet 384×2688 · painted frames only · no auto-strip";
+ const extra=man.motion?.format==="genesis-v6b-universal-motion-v1"?
+  "Universal Genesis V6B motion · per-character appearance":
+  "User legacy pixel clip · requires review";
  return n+" frame(s) · "+(man.loop?"loop":"once")+" · ms ["+ms+"] · "+extra;
 }
 function galleryEntry(rec){
  return {
-  id:rec.id,type:"clip",origin:rec.origin==="pilot"?"built-in":"user",
+  id:rec.id,type:"clip",origin:"user",
   name:rec.name,part:null,placement:null,
   sheetDataUrl:"",thumbDataUrl:rec.thumbDataUrl||"",
   paintedActions:[rec.manifest&&rec.manifest.band||"custom"],
   saveStatus:rec.saveStatus,driveFile:rec.driveFile||null,
   updatedAt:rec.updatedAt||"",
   compatibility:compatibility(rec),
-  openUrl:"./pixel-editor.html?source=v6p&project="+encodeURIComponent(rec.id),
+  openUrl:rec.manifest?.motion?.format==="genesis-v6b-universal-motion-v1"?
+   "./mahluk-animation-studio.html?motion="+encodeURIComponent(rec.id):
+   "./pixel-editor.html?source=v6p&project="+encodeURIComponent(rec.id),
   manifest:rec.manifest,frameMs:rec.frameMs
  };
 }
 function galleryEntries(){return list().map(galleryEntry);}
 return Object.freeze({
- KEY,FORMAT,BUILTIN_IDS,get,list,create,updateManifest,setLayer,replaceLayers,importCloudRecord,layerUrl,hasLayer,markDrive,remove,
+ KEY,FORMAT,BUILTIN_IDS,RETIRED_STOCK_IDS,isRetired,get,list,create,updateManifest,setLayer,replaceLayers,importCloudRecord,layerUrl,hasLayer,markDrive,remove,
  compatibility,galleryEntry,galleryEntries
 });
 });
