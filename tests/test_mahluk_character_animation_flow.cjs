@@ -62,7 +62,11 @@ test('animation editor is genuinely frame by frame with asset anchors',()=>{
  const h=read('site/mahluk-animation-studio.html'),js=read('site/mahluk-animation-studio.js');
  for(const id of ['stage','frame-strip','rotation','ax','ay','add-frame','duplicate','save','template','gender'])
   assert.ok(h.includes('id="'+id+'"'),id);
- assert.match(js,/function bake\(/);assert.match(js,/c\.rotate\(r\)/);
+ assert.match(js,/function bake\(/);
+  const renderer=read('site/v6p-universal-motion.js');
+  assert.match(renderer,/g\.rotate\(angle\*Math\.PI\/180\)/);
+  assert.match(js,/Motion\.renderPrepared\(/);
+  assert.match(renderer,/drawPiece\(g,item\.parts\[p\],pose,p\)/);
  assert.doesNotMatch(js,/Store\.setLayer\(state\.id,"base\/body"/);
   assert.match(js,/Store\.setLayer\(state\.id,"preview\/composite"/);
  assert.match(js,/requiredParts:\[\]/);
