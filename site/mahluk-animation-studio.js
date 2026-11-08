@@ -323,7 +323,7 @@ async function create(from,sourceClip=null){
  if(!name)throw Error("Enter an activity name before editing");
  const sourceId=from?state.sourceId:$("source-character").value||$("gallery-character").value||"base:male";
  const chosen=characterSource(sourceId),gender=chosen.gender;
- const template=from?state.template:$("template").value;
+ const template=sourceClip?.manifest?.motion?.sourceAction||(from?state.template:$("template").value);
  if(!["male","female"].includes(gender)||!["idle","sit","lie","sleep"].includes(template))
   throw Error("Choose Genesis / Character and a supported starting pose");
  const initial=sourceClip?deep(sourceClip.manifest.frames):
@@ -331,14 +331,15 @@ async function create(from,sourceClip=null){
  const clip=Store.create({name,frames:initial,requiredParts:["base/body"]});
  const row={id:clip.id,name,gender,sourceId,template,frames:deep(initial),
   stockReference:sourceClip?.origin==="pilot"?sourceClip.id:from?state.stockReference:"",
-  loop:sourceClip?sourceClip.manifest.loop!==false:from?state.loop:true,tracks:from?deep(state.tracks):{}};
+  loop:sourceClip?sourceClip.manifest.loop!==false:from?state.loop:true,
+  tracks:sourceClip?.manifest?.motion?.tracks?deep(sourceClip.manifest.motion.tracks):from?deep(state.tracks):{}};
  const data=db();data[row.id]=row;putDb(data);
  await open(row.id);
  say("EDITABLE COPY · "+name+" · "+chosen.name+" · original clip protected. Pose changes move this character's composited pixels.");
 }
 async function modifyClip(clip){
  if(!clip)return;
- if(db()[clip.id]){await open(clip.id);return;}
+ if(db()[clip.id]&&!Contract.isStock(clip.manifest)){await open(clip.id);return;}
  if($("gallery-character")?.value)selectSource($("gallery-character").value);
  $("source-character").value=state.sourceId;
  $("template").value="idle";
@@ -451,6 +452,34 @@ function editPixels(){
   root.parent.VLMahlukWorkspace.openEditor(url.href);
  else location.href=url.href;
 }
+async function importUniversalJson(file){
+ if(!file)return;
+ if(file.size>200000)throw Error("Motion JSON exceeds 200 KB (no embedded sprite pixels allowed)");
+ const data=JSON.parse(await file.text());
+ if(data?.format!==Contract.FORMAT)throw Error("Not a Genesis V6B universal motion JSON");
+ const id=String(data.id||"");
+ const name=String(data.name||"").trim().slice(0,80);
+ if(!name)throw Error("Motion name required");
+ if(!/^(?:clp|clip)_[a-z0-9_]{3,70}$/.test(id))throw Error("Invalid motion ID");
+ if(Store.get(id))throw Error("Motion ID already exists; open it with MODIFY to protect existing stock");
+ const frames=data.frames;
+ if(!Array.isArray(frames)||frames.length<1||frames.length>Contract.MAX_FRAMES)
+  throw Error("Motion requires 1–6 frames");
+ if(frames.some(f=>typeof f.key!=="string"||!/^[a-z0-9_]{1,32}$/.test(f.key)))
+  throw Error("Every frame requires a safe lowercase key");
+ const motion=Contract.make({sourceAction:data.sourceAction||"idle",frames,
+  tracks:data.tracks,status:"draft"});
+ const fresh=Store.create({id,name,frames,loop:data.loop!==false,requiredParts:[]});
+ const rec=Store.updateManifest(fresh.id,{frames,loop:data.loop!==false,requiredParts:[],
+  motion,source:Contract.FORMAT});
+ Contract.validateManifest(rec.manifest);
+ const all=db();all[id]={id,name,gender:"male",sourceId:"base:male",
+  stockReference:"",template:motion.sourceAction,frames:deep(frames),loop:data.loop!==false,
+  tracks:deep(motion.tracks),approval:"draft",updated:new Date().toISOString()};
+ putDb(all);
+ await open(id);
+ say("IMPORTED "+name+" · UNIVERSAL MOTION · review every direction and submit stock");
+}
 function exportJSON(){const data=db()[state.id];if(!data)return say("No saved pose metadata",true);
  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");
  link.href=url;link.download=state.id+".animation.json";document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -509,6 +538,11 @@ $("open-pixel").onclick=editPixels;
 $("part-edit-now").onclick=editPixels;
 $("pixel-target").onchange=updatePartShortcut;
 $("export").onclick=exportJSON;
+ $("import-motion").onclick=()=>$("import-motion-file").click();
+ $("import-motion-file").onchange=e=>{
+  const file=e.target.files?.[0];e.target.value="";
+  void importUniversalJson(file).catch(error=>say("IMPORT FAILED · "+error.message,true));
+ };
 cv.addEventListener("pointerdown",e=>{
  if(!db()[state.id])return;
  // Pause on the displayed playback frame before choosing a real body cutout.
