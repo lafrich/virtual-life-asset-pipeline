@@ -232,6 +232,20 @@ jobs:
           test -s _site/assets/street_vehicles/cars/bus_transjakarta_se.png
           test -s _site/assets/street_vehicles/riders/gojek_se.png
           python -c 'from PIL import Image; from pathlib import Path; p=Path("_site/assets/street_vehicles"); assert Image.open(p/"cars/bus_transjakarta_se.png").mode=="RGBA"; assert Image.open(p/"riders/gojek_se.png").mode=="RGBA"; print("Street vehicle originals published for Semesta")'
+      - name: Publish exact original V6B Python and semantic reference arrays for native animation preview
+        run: |
+          set -euo pipefail
+          mkdir -p _site/genesis-native-source/tools _site/genesis-native-source/study _site/genesis-native-source/live/chars
+          cp chars-iso/v6b/tools/live_v6b.py _site/genesis-native-source/tools/
+          cp chars-iso/v6b/study/ref_*.npy _site/genesis-native-source/study/
+          cp chars-iso/v6b/live/chars/ichsan.json chars-iso/v6b/live/chars/noor.json _site/genesis-native-source/live/chars/
+          test -s _site/genesis-native-source/study/ref_sem.npy
+          test -s _site/genesis-native-source/tools/live_v6b.py
+          python -m py_compile site/genesis-native-render.py
+          python tests/test_genesis_native_renderer.py
+          node --check site/genesis-native-worker.js
+          node --check site/mahluk-animation-native.js
+          node --check site/genesis-native-python-contract.js
       - name: Check built site files
         run: |
           # Native-only: all 11 original action rows stay; no bundled custom motion.

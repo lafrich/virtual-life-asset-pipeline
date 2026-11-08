@@ -15,6 +15,9 @@ on:
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
       - "site/genesis-native-python-contract.js"
+      - "site/genesis-native-worker.js"
+      - "site/mahluk-animation-native.js"
+      - "site/mahluk-animation-native.html"
       - "site/cloud-first-*.js"
       - "site/v6p-character-*.js"
       - "site/v6p-pixel-source.js"
@@ -65,6 +68,8 @@ jobs:
           node --check site/mahluk-hub.js
           node --check site/mahluk-hub-drive.js
           node --check site/genesis-native-python-contract.js
+          node --check site/genesis-native-worker.js
+          node --check site/mahluk-animation-native.js
           node --check site/mahluk-action-editor.js
           node --check site/mahluk-animation-studio.js
           node --check site/v6p-custom-wear.js
