@@ -68,6 +68,40 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   await again.locator("#gallery button").filter({hasText:"Cloud Native Test"}).waitFor({timeout:35000});
   const file=[...files.values()].find(x=>x.name==="mahluk-animation-legacy-purge-done-v1.json");
   assert.ok(file,"Cloud-side legacy migration marker missing");
+  // Consume the *same* saved Python source from Character's existing QA dropdown.
+  await page.evaluate(()=>window.VLMahlukWorkspace.show("character"));
+  const character=page.frameLocator("#character-frame");
+  await character.locator("body.wizard-ready").waitFor({timeout:65000});
+  await character.locator("#wizard-start-new").click();
+  await character.locator("#workflow-source").selectOption("base:male");
+  await character.locator("#wizard-next").click();
+  await character.locator("#wizard-customize:not([hidden])").waitFor({timeout:65000});
+  await character.locator("#wizard-next").click();
+  await character.locator("#wizard-preview:not([hidden])").waitFor({timeout:65000});
+  await character.locator("#qa-from-database").click();
+  await character.locator("#qa-animation").evaluate((s,id)=>new Promise((resolve,reject)=>{
+   const began=Date.now();
+   const check=()=>{if(s.value==="python:"+id)resolve();
+    else if(Date.now()-began>45000)reject(Error("Saved Python not shown in Character QA selector: "+s.value));
+    else setTimeout(check,150)};
+   check();
+  }),saved.id);
+  await character.locator("#qa-python-status").getByText(/Custom Wear/).waitFor({timeout:45000});
+  await character.locator("#qa-animation").evaluate((sel,id)=>{
+   if(sel.value!=="python:"+id)throw Error("Wrong Python source selected");
+  },saved.id);
+  const renderOk=await character.locator("canvas[data-qa-dir]").evaluateAll(async canvases=>{
+   const end=Date.now()+150000;
+   while(Date.now()<end){
+    if(canvases.length===4&&canvases.every(c=>{
+     const data=c.getContext("2d").getImageData(0,0,64,112).data;
+     return Array.from(data).some((v,i)=>i%4===3&&v>0);
+    }))return true;
+    await new Promise(r=>setTimeout(r,200));
+   }
+   return false;
+  });
+  assert.equal(renderOk,true,"Character From Database did not render 4 original Python views");
   assert.deepEqual(errors,[]);
   console.log("PASS Mahluk trial route → native Python preview → cloud verified save → gallery reload");
  }catch(e){
