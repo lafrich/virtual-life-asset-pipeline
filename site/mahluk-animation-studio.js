@@ -161,7 +161,7 @@ async function ensureBundledReviewPunch(){
   loop:data.loop!==false,requiredParts:[]});
  const saved=Store.updateManifest(clip.id,{name:data.name,frames:data.frames,
   loop:data.loop!==false,requiredParts:[],source:Contract.FORMAT,
-  motion,reviewCandidate:true});
+  motion,category:"punch",reviewCandidate:true});
  Contract.validateManifest(saved.manifest);
  const meta=db();
  if(!Object.hasOwn(meta,data.id)){
@@ -300,15 +300,26 @@ function paintStrip(){
   b.setAttribute("aria-pressed",String(state.frame===i));b.onclick=()=>{stop();state.frame=i;render()};host.append(b);
  }
 }
+function clipCategory(clip){
+ if(clip.manifest?.category==="punch"||clip.id==="clp_standing_punch")return "punch";
+ if(clip.origin==="pilot"&&A.isPlayable(clip.manifest.band))return "stock";
+ return "other";
+}
 function listClips(){
  const holder=$("animations");holder.replaceChildren();
- const rows=Store.list().sort((a,b)=>{
-   const sa=a.origin==="pilot"&&A.isPlayable(a.manifest.band)?0:1;
-   const sb=b.origin==="pilot"&&A.isPlayable(b.manifest.band)?0:1;
-   return sa-sb;
- });
+ const order={stock:0,punch:1,other:2};
+ const rows=Store.list().sort((a,b)=>order[clipCategory(a)]-order[clipCategory(b)]);
  const drafts=db();
+ let previousCategory="";
  for(const clip of rows){
+  const category=clipCategory(clip);
+  if(category!==previousCategory){
+   const heading=document.createElement("h3");
+   heading.className="animation-category";
+   heading.textContent=category==="stock"?"STOCK · APPROVED":category==="punch"?"PUNCH":"OTHER ANIMATIONS";
+   holder.append(heading);
+   previousCategory=category;
+  }
   const official=clip.origin==="pilot"&&A.isPlayable(clip.manifest.band);
   const card=document.createElement("div");card.className="clip-card";
    const b=document.createElement("button");b.classList.toggle("active",state.id===clip.id);
