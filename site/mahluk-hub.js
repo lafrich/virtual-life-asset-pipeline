@@ -7,13 +7,14 @@ const URLS=Object.freeze({
  emotion:"/virtual-office/emotion-studio/",
  character:"./v6p-studio.html?embedded=1&rev=idle-pivot-v2",
  action:"./mahluk-action-editor.html?embedded=1",
- animation:"./mahluk-animation-native.html?embedded=1&rev=genesis-python-v2"
+ animation:"./mahluk-animation-native.html?embedded=1&rev=genesis-master-v1",
+ genesis:"./genesis-editor.html?embedded=1&rev=two-master-v1"
 });
 const FRAMES=Object.freeze({
  emotion:"emotion-frame",character:"character-frame",action:"action-frame",
- animation:"motion-frame"
+ animation:"motion-frame",genesis:"genesis-frame"
 });
-const TAB_IDS=["emotion","character","action","animation"];
+const TAB_IDS=["emotion","character","action","animation","genesis"];
 let tab="character";
 const ephemeral=new Map();
 const SESSION_KEYS=new Set(["vl-v6p-character-workflow-v1","vl-v6p-selected-character-v1",
@@ -41,7 +42,7 @@ function announceOnline(target){
  }catch{}
 }
 function announceAllOnline(){
- for(const id of ["character-frame","action-frame","motion-frame"])
+ for(const id of ["character-frame","action-frame","motion-frame","genesis-frame"])
   announceOnline(id);
 }
 function note(s){$("status-msg").textContent=String(s)}
@@ -74,7 +75,8 @@ function show(name){
  note({emotion:"EMOSI.EXE · emotion database and dialog lipsync are the original editor",
  character:"CHARACTER · Start → Base → Customize → Preview → Save",
  action:"ACTION EDITOR · situation binding is stored as a separate draft",
- animation:"ANIMATION · GENESIS V6B PYTHON · Import / Create / Native Preview · Install gated"}[tab]);
+ animation:"ANIMATION · GENESIS MALE/FEMALE · 11 native templates · Python four directions",
+ genesis:"GENESIS EDITOR · Edit Male/Female masters, native slice mask + puppet; overwrite the same ID"}[tab]);
 }
 function openEditor(value){
  const url=fixedUrl(value);
@@ -116,6 +118,12 @@ function bind(){
   if(e.origin!==ORIGIN||!e.data||typeof e.data!=="object")return;
   // Only permitted from our own embedded application frames.
   if(!Array.from(document.querySelectorAll("iframe")).some(f=>f.contentWindow===e.source))return;
+  if(e.data.type==="genesis:master-overwritten"&&["male","female"].includes(e.data.gender)){
+   for(const id of ["motion-frame","character-frame"]){
+    try{$(id)?.contentWindow?.postMessage({type:"genesis:master-overwritten",gender:e.data.gender},ORIGIN)}catch{}
+   }
+   note("Genesis master "+e.data.gender+" overwritten in Drive; editors will reload this profile");
+  }
   if(e.data.type==="mahluk:open-editor"&&typeof e.data.url==="string"){
    try{openEditor(e.data.url)}catch(error){note("Editor link rejected: "+error.message)}
   }

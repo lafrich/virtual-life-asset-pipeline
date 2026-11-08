@@ -101,7 +101,12 @@ let GEN=0;
 const IM={};
 const img=(src,characterId)=>{
   const local=(characterId&&root?.V6PCharacterStore?.getPart(characterId,src))||null;
-  const override=local||(typeof root!=="undefined"&&root&&root.V6PPartOverrides&&root.V6PPartOverrides.urlFor(src))||null;
+  // The two immutable Genesis source character IDs are NOT user drafts.
+  // Their approved physical Custom Wear PNGs come from genesis-source.js.
+  // Never substitute a generic stock garment when viewing a Genesis master.
+  const genesis=characterId&&Object.values(root?.VLGenesisSource?.bases||{}).find(base=>base.sourceId===characterId);
+  const approved=genesis?.parts?.[src]||null;
+  const override=local||approved||(typeof root!=="undefined"&&root&&root.V6PPartOverrides&&root.V6PPartOverrides.urlFor(src))||null;
   const key=(characterId||'')+'|'+(override||src)+'#'+GEN;
   return IM[key]||(IM[key]=new Promise(res=>{
     const i=new Image();
