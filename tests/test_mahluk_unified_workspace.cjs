@@ -15,7 +15,8 @@ test('one MAHLUK HIDUP.EXE landing page contains the four requested editors',()=
  assert.match(js,/mahluk-action-editor\.html\?embedded=1/);
  assert.match(js,/mahluk-animation-studio\.html\?embedded=1/);
  assert.match(read("site/mahluk-animation-studio.html"),/ANCHOR/);
- assert.match(js,/pixel-editor\.html\?source=v6p/);
+ assert.match(js,/function newClip\(\)/);
+  assert.doesNotMatch(js,/new=clip&name=New%20Animation/);
  assert.match(read('site/index.html'),/mahluk-hidup\.html/);
  assert.doesNotMatch(js,/localStorage\.clear\(/);
 });
