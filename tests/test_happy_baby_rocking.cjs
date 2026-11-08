@@ -6,7 +6,7 @@ const A=require("../site/v6p-activity-contract.js");
 const official=["pushup","yoga_sphinx_idle","yoga_puppy_idle","hip_shake","yoga_happy_baby_idle"];
 assert.equal(A.BANDS.yoga_happy_baby_rocking,undefined,"Preview must not be active stock before user approval");
 assert.equal(A.isPlayable("yoga_happy_baby_rocking"),false);
-assert.equal(A.BANDS.yoga_happy_baby_idle.status,"authored");
+assert.equal(A.BANDS.yoga_happy_baby_idle.status,"retired_incompatible");
 assert.equal(A.BANDS.yoga_happy_baby_idle.frames,4);
 assert.equal(A.BANDS.yoga_happy_baby_idle.ms,500);
 assert.equal(fs.existsSync(path.join(root,"assets/animation_stock/yoga_happy_baby_rocking.reference.json")),false);
@@ -16,6 +16,6 @@ const ctx={window:{localStorage:locals,V6PActivityContract:A},module:{exports:{}
 vm.runInNewContext(storeText,ctx);
 const store=ctx.module.exports;
 assert.equal(store.get("yoga_happy_baby_rocking"),null);
-assert.equal(store.list().length,official.length);
-for(const id of official){assert.ok(store.get(id));assert.equal(A.isPlayable(id),true);}
+assert.equal(store.list().length,0);
+for(const id of official){assert.equal(store.get(id),null);assert.equal(A.isPlayable(id),false);}
 console.log("PASS: Happy Baby Rocking not in Mahluk stock until user reviews preview");
