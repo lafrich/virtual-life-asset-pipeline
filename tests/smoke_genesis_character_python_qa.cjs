@@ -1,6 +1,6 @@
 'use strict';
 /* Character Wizard Python QA smoke. Uses real Chromium + original V6B Python
- * raster (via Pyodide), not mocked pixel data. No game install or Drive writes.
+ * rasterized on the actual Genesis source + Custom Wear, not mocked pixels. No game install or Drive writes.
  */
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
@@ -30,7 +30,7 @@ const {chromium}=require('playwright');
    name:'character_qa.py',mimeType:'text/x-python',buffer:Buffer.from(source,'utf8')
   });
   await page.waitForFunction(()=>document.querySelector('#qa-animation')?.value.startsWith('python:')&&
-   document.querySelector('#qa-python-status')?.textContent?.includes('DIAGNOSTIC'),null,{timeout:30000});
+   document.querySelector('#qa-python-status')?.textContent?.includes('GENESIS CHARACTER PYTHON PREVIEW'),null,{timeout:30000});
   await page.waitForFunction(()=>{
    const cs=[...document.querySelectorAll('canvas[data-qa-dir]')];
    return cs.length===4&&cs.every(c=>{

@@ -185,7 +185,7 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await m.locator('#joint-list button[data-joint=hand_near]').click();
   await m.locator('#joint-x').fill('29');
   await m.locator('#joint-x').press('Tab');
-  await m.locator('#status').getByText(/NATIVE PYTHON PREVIEW/).waitFor({timeout:150000});
+  await m.locator('#status').getByText(/GENESIS MASTER PUPPET PREVIEW/).waitFor({timeout:150000});
   await m.locator('#save-cloud').click();
   await m.locator('#status').getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
   const anim=record('animation');

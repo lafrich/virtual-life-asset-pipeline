@@ -66,7 +66,8 @@ test('Genesis Python Animation replaces the cutout editor with native pose sourc
   assert.ok(h.includes('id="'+id+'"'),id);
  assert.match(js,/C\.fromPython/);
  assert.match(js,/C\.toPython/);
- assert.match(js,/genesis-native-worker\.js/);
+ assert.match(js,/GenesisPuppetRenderer/);
+ assert.match(js,/GenesisPoseClipboard/);
  assert.match(hub,/animation:"\.\/mahluk-animation-native\.html/);
  assert.doesNotMatch(hub,/mahluk-animation-studio/);
  assert.doesNotMatch(js,/V6PUniversalMotion|drawPiece\(/);

@@ -4,16 +4,17 @@ const path=require('node:path'),root=path.resolve(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 test('one MAHLUK HIDUP.EXE landing page contains the four requested editors',()=>{
  const html=read('site/mahluk-hidup.html'),js=read('site/mahluk-hub.js');
- for(const tab of ['emotion','character','action','animation']){
+ for(const tab of ['emotion','character','action','animation','genesis']){
   assert.ok(html.includes('data-tab="'+tab+'"'),tab);
   assert.ok(html.includes('id="'+tab+'-view"'),tab);
  }
- for(const frame of ['emotion-frame','character-frame','action-frame','motion-frame'])
+ for(const frame of ['emotion-frame','character-frame','action-frame','motion-frame','genesis-frame'])
   assert.ok(html.includes('id="'+frame+'"'),frame);
  assert.match(js,/\/virtual-office\/emotion-studio\//);
  assert.match(js,/v6p-studio\.html\?embedded=1/);
  assert.match(js,/mahluk-action-editor\.html\?embedded=1/);
  assert.match(js,/mahluk-animation-native\.html\?embedded=1/);
+ assert.match(js,/genesis-editor\.html\?embedded=1/);
  assert.match(read("site/mahluk-animation-native.html"),/id="start-import"/);
  assert.match(js,/function newClip\(\)/);
   assert.doesNotMatch(js,/new=clip&name=New%20Animation/);

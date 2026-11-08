@@ -6,6 +6,10 @@ on:
       - "site/genesis-native-*.js"
       - "site/genesis-native-render.py"
       - "site/genesis-character-python-preview.js"
+      - "site/genesis-master-rig.js"
+      - "site/genesis-puppet-renderer.js"
+      - "site/genesis-pose-clipboard.js"
+      - "site/genesis-editor.*"
       - "site/v6p-character-wizard.js"
       - "site/v6p-studio.html"
       - "tests/smoke_genesis_character_python_qa.cjs"
@@ -40,6 +44,11 @@ jobs:
           node --check site/genesis-native-worker.js
           node --check site/mahluk-animation-native.js
           node --check site/genesis-character-python-preview.js
+          node --check site/genesis-master-rig.js
+          node --check site/genesis-puppet-renderer.js
+          node --check site/genesis-pose-clipboard.js
+          node --check site/genesis-editor.js
+          node tests/test_genesis_master_rig.cjs
           node --check site/v6p-character-wizard.js
           node tests/test_genesis_native_python_contract.cjs
           test -s site/mahluk-animation-native.html

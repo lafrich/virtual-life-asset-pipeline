@@ -244,6 +244,11 @@ jobs:
           python -m py_compile site/genesis-native-render.py
           python tests/test_genesis_native_renderer.py
           node --check site/genesis-native-worker.js
+          node --check site/genesis-master-rig.js
+          node --check site/genesis-puppet-renderer.js
+          node --check site/genesis-pose-clipboard.js
+          node --check site/genesis-editor.js
+          node tests/test_genesis_master_rig.cjs
           node --check site/mahluk-animation-native.js
           node --check site/genesis-native-python-contract.js
       - name: Check built site files

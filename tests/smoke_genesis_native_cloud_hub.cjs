@@ -51,7 +51,7 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   await a.locator("#setup-name").fill("Cloud Native Test");
   await a.locator("#setup-continue").click();
   await a.locator("#editor:not([hidden])").waitFor();
-  await a.locator("#status").getByText(/NATIVE PYTHON PREVIEW/).waitFor({timeout:150000});
+  await a.locator("#status").getByText(/GENESIS MASTER PUPPET PREVIEW/).waitFor({timeout:150000});
   await a.locator("#save-cloud").click();
   await a.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:30000});
   const actual=[...files.values()].find(x=>x.name.startsWith("animation__anim_"));
