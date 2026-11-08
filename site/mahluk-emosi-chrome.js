@@ -6,17 +6,11 @@ function closeDrawers(){
   document.querySelectorAll(".mahluk-drawer-btn").forEach((btn) => btn.setAttribute("aria-expanded", "false"));
 }
 function syncChrome(){
-  const overlay = $("overlay-actions");
-  const overlayBtn = $("mahluk-overlay-btn");
-  if (overlayBtn && overlay) overlayBtn.hidden = overlay.hasAttribute("hidden");
   const clip = $("clip-actions");
   document.body.classList.toggle("is-clip", !!(clip && !clip.hasAttribute("hidden")));
   const partFrames = $("mahluk-part-frames");
   if (partFrames) partFrames.hidden = !!(clip && !clip.hasAttribute("hidden"));
-  if (overlay && overlay.hasAttribute("hidden") && $("drawer-overlay") && !$("drawer-overlay").hidden) {
-    $("drawer-overlay").hidden = true;
-    if (overlayBtn) overlayBtn.setAttribute("aria-expanded", "false");
-  }
+
 }
 function init(){
   document.querySelectorAll(".mahluk-drawer-btn").forEach((btn) => {
@@ -34,7 +28,7 @@ function init(){
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeDrawers();
   });
-  ["overlay-actions", "clip-actions"].forEach((id) => {
+  ["clip-actions"].forEach((id) => {
     const el = $(id);
     if (!el) return;
     new MutationObserver(syncChrome).observe(el, {attributes: true, attributeFilter: ["hidden"]});
