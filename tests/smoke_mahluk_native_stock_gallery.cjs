@@ -48,6 +48,26 @@ const ids=['pushup','yoga_sphinx_idle','yoga_puppy_idle','hip_shake','yoga_happy
   }
   const grok=await page.evaluate(()=>window.V6PClipStore.list().filter(c=>/grok/i.test(c.id)||c.manifest?.source==='grok-stock-animation-v1').length);
   assert.equal(grok,0,'Rejected Grok animations leaked into active stock');
+
+  // Gallery MODIFY must enter Sprite + Anchor, never an unscoped blank Pixel
+  // Editor, using the chosen Genesis Female's actual original Custom Wear.
+  await page.locator('#gallery-character').selectOption('base:female');
+  await page.locator('#animations button[data-modify="clip_pushup"]').click();
+  await page.locator('#animation-workspace:not([hidden])').waitFor({timeout:45000});
+  await page.waitForFunction(()=>{
+   const select=document.getElementById('pixel-target');
+   const source=document.getElementById('source-label');
+   return select?.options.length>0&&source?.textContent.includes('GENESIS FEMALE');
+  },null,{timeout:45000});
+  const targets=await page.locator('#pixel-target option').evaluateAll(
+   all=>all.map(option=>option.value));
+  for(const part of ['base/body_f','top/custom_f','pants/custom_f','shoes/custom_f'])
+   assert.ok(targets.includes(part),'Missing real Genesis Female sprite part '+part);
+  await page.locator('#parts [data-part="torso"]').click();
+  assert.equal(await page.locator('#pixel-target').inputValue(),'top/custom_f');
+  assert.equal(await page.locator('#part-edit-now').isVisible(),true);
+  await page.locator('#animation-editor-back').click();
+  await page.locator('#animation-home:not([hidden])').waitFor();
   assert.deepEqual(errors,[]);
   console.log('PASS 5 approved native stock x 2 bases x 4 dirs, native playback, no Grok review');
  }finally{await browser.close()}
