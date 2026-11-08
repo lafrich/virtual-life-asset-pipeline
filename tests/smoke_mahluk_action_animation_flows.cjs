@@ -133,6 +133,29 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await m.locator('#animation-home:not([hidden])').waitFor({timeout:30000});
   console.log('PASS Animation Create / Female base / Sitting idle / NE keyframe / Loop / Save Online');
 
+  // Character uses the same cloud-first Save, including custom character sheets.
+  await page.evaluate(()=>window.VLMahlukWorkspace.show('character'));
+  const ch=page.frameLocator('#character-frame');
+  await ch.locator('body.wizard-ready').waitFor({timeout:65000});
+  await ch.locator('#wizard-home:not([hidden])').waitFor({timeout:65000});
+  await ch.locator('#wizard-start-new').click();
+  await ch.locator('#workflow-source').selectOption('base:male');
+  await ch.locator('#wizard-next').click();
+  await ch.locator('#wizard-customize:not([hidden])').waitFor({timeout:65000});
+  await ch.locator('#wizard-next').click();
+  await ch.locator('#wizard-preview:not([hidden])').waitFor({timeout:65000});
+  await ch.locator('#wizard-next').click();
+  await ch.locator('#wizard-save:not([hidden])').waitFor({timeout:65000});
+  await ch.locator('#char-name').fill('Cloud Saved Male');
+  await ch.locator('#wizard-next').click();
+  await ch.locator('#wizard-save-success.visible').waitFor({timeout:65000});
+  const published=record('character');
+  assert.equal(published?.name,'Cloud Saved Male');
+  assert.ok(published.clips?.walk?.sheet?.startsWith('data:image/png;base64,'));
+  assert.equal(await page.evaluate(()=>localStorage.getItem('mahluk-2-library-v1')),null,
+    'Character was saved in browser localStorage instead of Drive');
+  console.log('PASS Character Save Online with complete native animation sheets in Drive');
+
   // New browser load must fetch the online database, not reuse the in-page RAM.
   await page.reload({waitUntil:'domcontentloaded'});
   await page.locator('#drive-connect').click();
@@ -146,6 +169,11 @@ const root='http://127.0.0.1:4173/virtual-life-asset-pipeline';
   await page.evaluate(()=>window.VLMahlukWorkspace.show('animation'));
   const againAnim=page.frameLocator('#motion-frame');
   await againAnim.locator('#animations button').filter({hasText:'Test Sitting Activity'}).waitFor({timeout:30000});
+  await page.evaluate(()=>window.VLMahlukWorkspace.show('character'));
+  const freshCh=page.frameLocator('#character-frame');
+  await freshCh.locator('body.wizard-ready').waitFor({timeout:65000});
+  await freshCh.locator('#wizard-tab-gallery').click();
+  await freshCh.locator('#wizard-gallery-grid').getByText('Cloud Saved Male').waitFor({timeout:30000});
   assert.deepEqual(errors,[]);
   console.log('PASS Reload from Google Drive cloud database; no local browser copy required');
  }catch(error){
