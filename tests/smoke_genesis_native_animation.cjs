@@ -29,7 +29,7 @@ const url="http://127.0.0.1:4173/mahluk-animation-native.html";
   await page.locator("#setup-count").fill("4");
   await page.locator("#setup-continue").click();
   await page.locator("#editor:not([hidden])").waitFor();
-  await page.waitForFunction(()=>document.querySelector("#status")?.textContent?.includes("NATIVE PYTHON PREVIEW"),{timeout:120000});
+  await page.waitForFunction(()=>document.querySelector("#status")?.textContent?.includes("NATIVE PYTHON PREVIEW"),null,{timeout:120000});
   const first=await page.evaluate(()=>window.nativeOutputs.at(-1));
   assert.ok(first?.startsWith("data:image/png;base64,"),"Pyodide did not provide native PNG");
   await page.locator("#joint-list button[data-joint=hand_near]").click();
@@ -37,7 +37,7 @@ const url="http://127.0.0.1:4173/mahluk-animation-native.html";
   await page.locator("#joint-y").fill("60");
   await page.locator("#joint-y").press("Tab");
   await page.waitForFunction(()=>window.nativeOutputs.length>=2&&
-   document.querySelector("#status")?.textContent?.includes("NATIVE PYTHON PREVIEW"),{timeout:120000});
+   document.querySelector("#status")?.textContent?.includes("NATIVE PYTHON PREVIEW"),null,{timeout:120000});
   const second=await page.evaluate(()=>window.nativeOutputs.at(-1));
   assert.notEqual(second,first,"Moving an anatomical joint did not change rendered original Python pixels");
   const downloadPromise=page.waitForEvent("download");
