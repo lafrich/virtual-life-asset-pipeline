@@ -8,7 +8,7 @@ async function test(){
  const errors=[];
  page.on('pageerror',e=>errors.push(String(e)));
  try{
-  await page.goto(URL+'/mahluk-hidup.html?tab=character',{waitUntil:'domcontentloaded',timeout:45000});
+  await page.goto(URL+'/mahluk-hidup.html?tab=character&legacyCloud=1',{waitUntil:'domcontentloaded',timeout:45000});
   const ch=page.frameLocator('#character-frame');
   await ch.locator('body.wizard-ready').waitFor({timeout:65000});
   await ch.locator('#wizard-start-new').click();
