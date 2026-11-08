@@ -936,8 +936,11 @@ async function boot(){
 async function getQaMotion(id){
  const Store=window.V6PClipStore,C=window.V6PUniversalMotionContract;
  if(!Store||!C)throw Error("Genesis motion database not loaded");
- await Store.loadBundled();
- const manifest=Store.get(id)?.manifest;
+ let manifest=Store.get(id)?.manifest;
+ if(!C.isUniversal(manifest)){
+  await Store.loadBundled();
+  manifest=Store.get(id)?.manifest;
+ }
  if(!C.isUniversal(manifest))throw Error("Missing universal Genesis motion: "+id);
  C.validateManifest(manifest);
  return manifest;
