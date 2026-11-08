@@ -208,8 +208,7 @@ body.mahluk-emosi-page .mahluk-clip-row #clip-prev-f {
   flex: none !important;
 }
 .mahluk-save-bar { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
-.overlay-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.overlay-actions[hidden] { display: none !important; }
+
 
 /* Dialog fills leftover viewport — same idea as Emosi’s fullscreen overlay. */
 body.mahluk-emosi-page #pixelOverlay,
