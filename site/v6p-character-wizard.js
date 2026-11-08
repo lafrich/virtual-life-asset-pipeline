@@ -267,18 +267,21 @@ function motionChoices(){
  const select=$("qa-animation"),keep=select.value;select.replaceChildren();
  for(const action of C.ACTIONS)opt(select,action,action.replace(/_/g," ").toUpperCase());
  for(const item of R.anchorDatabase())opt(select,"anchor:"+item.id,(item.name||item.id)+" · CUSTOM");
-  // PUNCH is an Idle-based Genesis universal motion, not a legacy activity.
-  opt(select,"motion:clp_standing_punch","PUNCH / STANDING PUNCH · REVIEW");
-  for(const rec of root.V6PClipStore?.list()||[])
-   if(root.V6PUniversalMotionContract?.isUniversal(rec.manifest)&&rec.id!=="clp_standing_punch")
-    opt(select,"motion:"+rec.id,(rec.name||rec.id).toUpperCase()+" · MOTION");
+ // No individually registered motion IDs. Every validated asset appears here.
+ const UC=root.V6PUniversalMotionContract;
+ for(const rec of root.V6PClipStore?.list()||[]){
+  if(!UC?.isUniversal(rec.manifest))continue;
+  try{UC.validateManifest(rec.manifest)}catch{continue}
+  const category=String(rec.manifest.category||"motion").replaceAll("_"," ").toUpperCase();
+  opt(select,"motion:"+rec.id,category+" / "+rec.name.toUpperCase()+
+   (UC.isStock(rec.manifest)?" · STOCK":" · REVIEW"));
+ }
  if([...select.options].some(x=>x.value===keep))select.value=keep;else select.value="idle";
 }
 function numFrames(){
  const action=$("qa-animation").value;
- if(action==="motion:clp_standing_punch")return root.V6PClipStore?.get("clp_standing_punch")?.manifest?.frames?.length||5;
-  if(action.startsWith("motion:"))return root.V6PClipStore?.get(action.slice(7))?.manifest?.frames?.length||1;
-  return C.FRAMES[action]||R.anchorDatabase().find(x=>"anchor:"+x.id===action)?.frames.length||1;
+ if(action.startsWith("motion:"))return root.V6PClipStore?.get(action.slice(7))?.manifest?.frames?.length||1;
+ return C.FRAMES[action]||R.anchorDatabase().find(x=>"anchor:"+x.id===action)?.frames.length||1;
 }
 async function preview(){
  const stamp=++previewRevision;
@@ -357,13 +360,14 @@ function back(){
 }
 function tick(){
  if(!state.playing)return;
- const clip=R.anchorDatabase().find(x=>"anchor:"+x.id===$("qa-animation").value);
  const selected=$("qa-animation").value;
-  const ms=clip?.frames[state.frame]?.ms||(selected.startsWith("motion:")?
-   (root.V6PClipStore?.get(selected.slice(7))?.manifest?.frames?.[state.frame]?.ms||
-    (selected==="motion:clp_standing_punch"?[120,110,90,110,130][state.frame]:140)):
-    (selected==="walk"?140:240));
- state.timer=setTimeout(()=>{if(!state.playing)return;state.frame=(state.frame+1)%numFrames();void preview();tick()},Math.min(800,Math.max(40,ms)));
+ const clip=R.anchorDatabase().find(x=>"anchor:"+x.id===selected);
+ const motionFrame=selected.startsWith("motion:")?
+  root.V6PClipStore?.get(selected.slice(7))?.manifest?.frames?.[state.frame]:null;
+ const ms=motionFrame?.ms||clip?.frames[state.frame]?.ms||(selected==="walk"?140:240);
+ state.timer=setTimeout(()=>{if(!state.playing)return;
+  state.frame=(state.frame+1)%numFrames();void preview();tick();
+ },Math.min(800,Math.max(40,ms)));
 }
 function selectFixPart(){
  const host=$("all-views");
@@ -444,6 +448,9 @@ root.addEventListener("message",e=>{
 });
 root.addEventListener("mahluk:published-archive",()=>void refreshArchive());
 void refreshArchive();void refreshCloud();
+// Registry loads independently of Character Host and Drive.
+void root.V6PClipStore?.loadBundled?.().then(()=>motionChoices()).catch(error=>
+ notice("Motion registry: "+error.message,true));
 root.addEventListener("mahluk:character-ready",()=>void restore().catch(e=>notice("Wizard load: "+e.message,true)));
 if(root.__v6pStudio?.ready)void restore().catch(e=>notice("Wizard load: "+e.message,true));
 })(window);
