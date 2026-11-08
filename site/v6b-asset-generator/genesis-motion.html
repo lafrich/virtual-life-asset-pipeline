@@ -65,6 +65,19 @@ footer{padding:9px 13px;background:#f0f5fc;border-top:1px solid #c0d0e1}
 <footer>64×112 px · pivot (32,100) · SE / SW / NE / NW · 6-column activity sheet · REVIEW ONLY</footer>
 </div>
 <script src="v6p-part-catalog.js"></script>
+<script src="genesis-source.js"></script>
+<script src="genesis-base-bridge.js"></script>
+<script>
+// Isolated read-only adapter: use the exact approved Genesis custom part sheets
+// without touching Mahluk CharacterStore or browser storage.
+window.V6PCharacterStore=Object.freeze({
+ getPart(id,path){
+  for(const base of Object.values(window.VLGenesisSource?.bases||{}))
+   if(base.sourceId===id)return base.parts?.[path]||null;
+  return null;
+ }
+});
+</script>
 <script src="v6p-compositor.js"></script>
 <script src="v6b-asset-generator/genesis-motion-contract.js"></script>
 <script src="v6b-asset-generator/genesis-motion.js"></script>
