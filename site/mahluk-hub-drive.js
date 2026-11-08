@@ -18,7 +18,7 @@ const KEYS=[
 ];
 const DB="emotion-studio-local-v1",STORE="emotion-assets";
 const byteLimit=25*1024*1024;
-let token="",expires=0,baseFolder="",savedFile="",recordFolder="";
+let token="",expires=0,baseFolder="",savedFile="",recordFolder="",recordFolderPromise=null;
 const CLOUD_FORMAT="mahluk-online-record-v1";
 const CLOUD_TYPES=new Set(["character","action","animation"]);
 function validCloud(kind,id){
@@ -27,10 +27,20 @@ function validCloud(kind,id){
 }
 async function cloudFolder(){
  if(recordFolder)return recordFolder;
- const main=await createFolder("root","Membangun");
- const mahluk=await createFolder(main,"Mahluk Hidup");
- recordFolder=await createFolder(mahluk,"Online Database");
- return recordFolder;
+ // All editors can request their galleries simultaneously. Without a
+ // single-flight promise, each request may create its own duplicate Drive
+ // folder and the Gallery appears empty on reload.
+ if(!recordFolderPromise){
+  recordFolderPromise=(async()=>{
+   const main=await createFolder("root","Membangun");
+   const mahluk=await createFolder(main,"Mahluk Hidup");
+   return createFolder(mahluk,"Online Database");
+  })();
+ }
+ try{
+  recordFolder=await recordFolderPromise;
+  return recordFolder;
+ }finally{recordFolderPromise=null}
 }
 function filename(kind,id){validCloud(kind,id);return kind+"__"+id+".json"}
 async function saveRecord(kind,id,record){
@@ -101,7 +111,7 @@ function connect(){
    callback:r=>{
     if(r.error||!r.access_token){reject(Error(r.error_description||r.error||"Google Drive denied"));return}
     token=r.access_token;expires=Date.now()+1000*(Number(r.expires_in)||3500);
-    baseFolder="";savedFile="";recordFolder="";resolve(true);
+    baseFolder="";savedFile="";recordFolder="";recordFolderPromise=null;resolve(true);
    },
    error_callback:e=>reject(Error(e?.message||e?.type||"Google popup closed"))
   }).requestAccessToken({prompt:""});}catch(e){reject(e)}
