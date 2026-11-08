@@ -256,12 +256,129 @@ async function render(){
      s.r.layout==="base"?V.ROWS[s.r.action.id]+di:di;
     ctx.drawImage(s.img,n*64,origin*112,64,112,px,py,64,112);
    }
+   const png=frameEdit(m,state.phase,motionFor(m),m.dir,state.frame%s.r.frames);
+   if(png)try{ctx.drawImage(await getImage(png),px,py,64,112)}catch{}
   }else{ctx.fillStyle="#b15b60";ctx.fillRect(px,py,64,112)}
   if(m.instance===state.active){ctx.lineWidth=2;ctx.strokeStyle="#2463b4";ctx.strokeRect(x-2,y-2,100,172);
    ctx.fillStyle="#10467f";ctx.fillRect(x,y-17,Math.min(165,Math.max(85,(s.entry?.name||"CHARACTER").length*7)),16);
    ctx.fillStyle="white";ctx.font="11px Tahoma";ctx.fillText(s.entry?.name||"CHARACTER",x+3,y-5)}
  }
  ctx.restore();
+}
+/* A per-scene image correction only. Pixel edits never stamp into Genesis
+ * character sheets, Custom Wear, clip store, animation registry or gameplay. */
+const ACTION_FRAME_LIMIT=96,DIR_FRAME_W=64,DIR_FRAME_H=112;
+let framePixelEditor=null,framePixelSession=null;
+function frameEditKey(phase,motion,dir,index){
+ return phase+"|"+motion+"|"+dir+"|f"+index;
+}
+function frameEdit(m,phase,motion,dir,index){
+ const value=m?.frameEdits?.[frameEditKey(phase,motion,dir,index)];
+ return typeof value==="string"&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(value)&&
+  value.length<=120000?value:null;
+}
+function motionFor(m,phase=state.phase){
+ return m[phase]||"native:idle";
+}
+async function spriteFrame(entry,r,dir,index){
+ const out=document.createElement("canvas");out.width=DIR_FRAME_W;out.height=DIR_FRAME_H;
+ const g=out.getContext("2d",{willReadFrequently:true});g.imageSmoothingEnabled=false;
+ let img;
+ if(r.layout==="base"){
+  const key=JSON.stringify(r.ch);
+  if(!state.sheets.has(key))state.sheets.set(key,V.sheet(r.ch,null,""));
+  img=await state.sheets.get(key);
+ }else if(r.layout==="universal"){
+  const emosi=await faceForActor(entry);
+  img=await Motion.render(r.ch,r.action.manifest,index%r.frames,dir,{
+   partOverrides:r.assetParts,sourceKey:"action:"+entry.id+":"+entry.assetVersion,emosi});
+ }else if(r.layout==="activity-native"){
+  img=await V.composeActivity(r.ch,r.action.manifest,index%r.frames,dir);
+  if(!img||img._disabled)throw Error(img?._avail?.note||"Native sprite unavailable");
+ }else img=await getImage(r.url);
+ if(r.layout==="activity-native"||r.layout==="universal"){
+  g.drawImage(img,0,0,64,112,0,0,64,112);
+ }else{
+  const di=DIRS.indexOf(dir),n=index%r.frames;
+  const origin=r.layout==="activity"?(Number(r.action.manifest.bandStart)||0)+di:
+   r.layout==="base"?V.ROWS[r.action.id]+di:di;
+  g.drawImage(img,n*64,origin*112,64,112,0,0,64,112);
+ }
+ const pixels=g.getImageData(0,0,64,112).data;
+ if(!pixels.some((v,i)=>i%4===3&&v>0))throw Error("Animation frame has no visible pixels");
+ return out;
+}
+function sameFramePixels(a,b,dirIndex){
+ const g=a.getContext("2d",{willReadFrequently:true});
+ const h=b.getContext("2d",{willReadFrequently:true});
+ const x=g.getImageData(0,dirIndex*112,64,112).data;
+ const y=h.getImageData(0,dirIndex*112,64,112).data;
+ return x.every((v,i)=>v===y[i]);
+}
+function saveActionFramePixels(){
+ const s=framePixelSession;
+ if(!s||!framePixelEditor)return false;
+ const m=state.cast.find(x=>x.instance===s.instance);
+ if(!m){status("Actor no longer exists in Action",true);return false}
+ const paint=framePixelEditor.getAtlas(),base=s.base;
+ const edits={...(m.frameEdits||{})};
+ for(let i=0;i<DIRS.length;i++){
+  const dir=DIRS[i],key=frameEditKey(s.phase,s.motion,dir,s.frame);
+  if(sameFramePixels(paint,base,i)){delete edits[key];continue}
+  const cell=document.createElement("canvas");cell.width=64;cell.height=112;
+  cell.getContext("2d").drawImage(paint,0,i*112,64,112,0,0,64,112);
+  const png=cell.toDataURL("image/png");
+  if(png.length>120000){status("Pixel frame PNG exceeds safe Action record limit",true);return false}
+  edits[key]=png;
+ }
+ if(Object.keys(edits).length>ACTION_FRAME_LIMIT){
+  status("Action frame limit reached (96 edited frames per actor)",true);return false;
+ }
+ m.frameEdits=edits;
+ framePixelSession=null;
+ status("FRAME EDIT APPLIED · "+s.motion+" / F"+(s.frame+1)+" · SAVE ACTION ONLINE to keep it");
+ void render();
+ return true;
+}
+async function editActionFrame(){
+ stop();
+ if(!root.MH2PlanePixelEditor){status("Shared Emosi Pixel Editor unavailable",true);return}
+ const m=current();
+ if(!m){status("Choose a character before editing Action frames",true);return}
+ const phase=state.phase,motion=motionFor(m,phase),index=state.frame;
+ if(!m[phase]){status("Select an animation for this character and phase first",true);return}
+ const entry=actor(m.characterId),r=refFor(entry,motion);
+ if(!r){status("Selected animation cannot produce an editable native frame",true);return}
+ const session={instance:m.instance,phase,motion,frame:index,dir:m.dir};
+ $("edit-motion").disabled=true;
+ try{
+  const rows=await Promise.all(DIRS.map(dir=>spriteFrame(entry,r,dir,index)));
+  if(state.screen!=="editor"||current()?.instance!==session.instance||
+     state.phase!==phase||state.frame!==index||motionFor(m,phase)!==motion)return;
+  const base=document.createElement("canvas");base.width=64;base.height=448;
+  const initial=document.createElement("canvas");initial.width=64;initial.height=448;
+  const g=base.getContext("2d"),h=initial.getContext("2d");
+  for(let i=0;i<4;i++){
+   g.drawImage(rows[i],0,i*112);h.drawImage(rows[i],0,i*112);
+   const corrected=frameEdit(m,phase,motion,DIRS[i],index);
+   if(corrected)try{h.drawImage(await getImage(corrected),0,i*112)}catch{}
+  }
+  framePixelSession={...session,base};
+  if(!framePixelEditor){
+   const overlay=$("pixelOverlay");
+   framePixelEditor=root.MH2PlanePixelEditor.create({
+    overlay,canvas:$("pixelCanvas"),
+    onApply:saveActionFramePixels,onSaveDefault:saveActionFramePixels,
+    onRestore:()=>{},onDirectionChange:()=>{}
+   });
+  }
+  framePixelEditor.open({
+   id:entry.name+" / "+phase+" / "+motion+" / F"+(index+1),
+   initialAtlas:initial,originalAtlas:base,direction:m.dir
+  });
+  $("pixelStatus").textContent="ACTION FRAME "+(index+1)+" · changes only this scene / actor";
+ }catch(e){status("FRAME PIXEL EDITOR FAILED: "+e.message,true)}
+ finally{$("edit-motion").disabled=false}
 }
 function drawCast(){
  const host=$("cast-list");host.replaceChildren();
@@ -401,11 +518,7 @@ function wire(){
   m.x=Math.max(0,Math.min(480,Math.round(Number($("offset-x").value)||0)));
   m.y=Math.max(0,Math.min(232,Math.round(Number($("offset-y").value)||0)));void render()};
  $("save").onclick=()=>void save();$("action-save-sync").onclick=()=>void save();
- $("edit-motion").onclick=()=>{
-  const m=current();if(!m)return;
-  if(root.parent!==root&&root.parent.VLMahlukWorkspace)root.parent.VLMahlukWorkspace.show("animation");
-  else location.href="./mahluk-animation-native.html";
- };
+ $("edit-motion").onclick=()=>void editActionFrame();
  $("new").onclick=()=>{fillForm(blank());show("choose")};
  $("duplicate").onclick=()=>{const row=readForm();fillForm({...row,id:"action_"+Date.now().toString(36),name:row.name+" Copy"});show("editor")};
  $("delete").onclick=()=>{if(!state.selected||!root.confirm("Delete this local action draft?"))return;
