@@ -4,12 +4,13 @@
    Custom Wear as the source. Approved stock stays read-only. */
 (function(root){"use strict";
 const $=id=>document.getElementById(id),V=root.V6PCompositor,Store=root.V6PClipStore,A=root.V6PActivityContract,
- Characters=root.V6PCharacterStore,Genesis=root.V6PGenesisBase;
-if(!V||!Store||!A)return;
+ Characters=root.V6PCharacterStore,Genesis=root.V6PGenesisBase,
+ Motion=root.V6PUniversalMotion,Contract=root.V6PUniversalMotionContract;
+if(!V||!Store||!A||!Motion||!Contract)return;
 const KEY="vl-mahluk-animation-anchor-poses-v1",PARTS=["leg_l","leg_r","torso","arm_l","arm_r","head"],DIRS=["se","sw","ne","nw"];
 const ANCHORS={head:[32,35],torso:[32,60],arm_l:[20,54],arm_r:[44,54],leg_l:[25,84],leg_r:[39,84]};
 const cv=$("stage"),screen=cv.getContext("2d"),state={id:"",name:"",gender:"male",template:"idle",frames:[{key:"f0",ms:140},{key:"f1",ms:140}],loop:true,
- dir:"se",frame:0,part:"head",tracks:{},sheet:null,playing:false,timer:0,images:new Map(),drag:null,revision:0,previewFrame:0,screen:"home",
+ dir:"se",frame:0,part:"head",tracks:{},sheet:null,rig:null,playing:false,timer:0,images:new Map(),drag:null,revision:0,previewFrame:0,screen:"home",
  sourceId:"base:male",sourceLook:null,stockReference:"",stockGuides:new Map()};
 screen.imageSmoothingEnabled=false;
 const STOCK_TITLES=Object.freeze({pushup:"PUSH-UP",yoga_sphinx_idle:"YOGA SPHINX · IDLE",
@@ -156,50 +157,26 @@ function updateProperty(){
  document.querySelectorAll("[data-part]").forEach(b=>b.classList.toggle("active",b.dataset.part===state.part));
 }
 function canvas(w,h){const out=document.createElement("canvas");out.width=w;out.height=h;return out}
-function imageFor(url){
- return new Promise((resolve,reject)=>{
-  const img=new Image();img.onload=()=>resolve(img);
-  img.onerror=()=>reject(Error("Selected Genesis sprite source could not load"));img.src=url;
- });
-}
 async function setSource(){
- const selected=characterSource();
- const gender=selected.gender;
- if(selected.record){
-  const record=selected.record;
-  const look=V.norm({...record.appearance,body:gender,gender,characterId:record.id,face:"blank"});
-  const result=await V.sheet(look,null,"");
-  if(!result)throw Error("Selected Character parts missing; repair in Character tab");
-  state.sourceLook=look;
-  return result;
+ const chosen=characterSource(),gender=chosen.gender;
+ if(chosen.record){
+  const record=chosen.record;
+  state.sourceLook=V.norm({...record.appearance,body:gender,gender,characterId:record.id,face:"blank"});
+  return Motion.prepare(state.sourceLook,action(),{sourceKey:record.id});
  }
- if(!Genesis)throw Error("Genesis Male/Female sources not loaded");
- const base=Genesis.get(gender),suffix=gender==="female"?"_f":"";
- const look=V.norm({...base.appearance,gender,body:gender,hair:"none",top:"nude",pants:"nude",shoes:"nude",face:"blank",glasses:"none",facial:"none"});
- const native=await V.sheet(look,null,"");
- if(!native)throw Error("Original Genesis body sheet missing");
- const out=canvas(384,4928),g=out.getContext("2d");
- g.imageSmoothingEnabled=false;g.drawImage(native,0,0);
- // Original exact Genesis Custom Wear. Never rasterize it into an unrelated
- // starter outfit; stage transforms use this *character's* composed pixels.
- for(const part of ["top/custom_back"+suffix,"shoes/custom"+suffix,"pants/custom"+suffix,"top/custom"+suffix]){
-  const url=base.parts?.[part];
-  if(!url)throw Error("Missing Genesis source layer "+part);
-  g.drawImage(await imageFor(url),0,0);
- }
- state.sourceLook=V.norm({...base.appearance,body:gender,gender,top:"custom",pants:"custom",shoes:"custom",face:"blank"});
- return out;
+ const base=Genesis.get(gender);
+ state.sourceLook=V.norm({...base.appearance,body:gender,gender,face:"blank",hair:"none",
+  glasses:"none",facial:"none",characterId:""});
+ return Motion.prepare(state.sourceLook,action(),{sourceKey:"approved:"+gender,partOverrides:base.parts});
 }
 async function loadSource(){
- const rev=++state.revision;
- const sheet=await setSource();
+ const rev=++state.revision;state.rig=null;Motion.clearCache();
+ const rig=await setSource();
  if(rev!==state.revision)return;
- state.sheet=sheet;state.images.clear();
- state.stockGuides.clear();render(); // Character appears before optional stock guide finishes.
+ state.rig=rig;state.sheet=null;state.images.clear();
+ state.stockGuides.clear();render();
  const clip=state.stockReference&&Store.get(state.stockReference);
  if(clip?.origin==="pilot"&&A.isPlayable(clip.manifest.band)){
-  // The approved stock is a visual motion guide, NOT a substitute for
-  // the selected Character's clothes or a fabricated body-retarget.
   const entries=[];
   for(const dir of DIRS)for(let frame=0;frame<state.frames.length;frame++)
    entries.push({dir,frame,p:nativeFrame(clip,state.gender,dir,frame%clip.manifest.frames.length).catch(()=>null)});
@@ -216,13 +193,10 @@ function updatePixelTargets(){
  // Re-read the draft after every Character edit to avoid stale appearance.
  const look=source.record?.appearance||Genesis?.get?.(source.gender)?.appearance||{};
  const f=source.gender==="female"?"_f":"";
- const options=[
-  ["base/body"+f,"BODY / SKIN"],
-  ["top/"+(look.top||"custom")+f,"TOP / CUSTOM WEAR"],
-  ["pants/"+(look.pants||"custom")+f,"PANTS / CUSTOM WEAR"],
-  ["shoes/"+(look.shoes||"custom")+f,"SHOES / CUSTOM WEAR"]
- ];
- if(look.hair&&look.hair!=="none")options.push(["hair/"+look.hair+"_front","HAIR"]);
+ const options=[];
+ for(const kind of ["top","pants","shoes"])if(look[kind]==="custom")
+  options.push([kind+"/custom"+f,kind.toUpperCase()+" / CUSTOM WEAR"]);
+ // Body and native sprite sources are read-only in this editor.
  target.replaceChildren();
  for(const [part,name] of options){
   if(!root.V6PPartCatalog?.isPart(part))continue;
@@ -232,7 +206,7 @@ function updatePixelTargets(){
 }
 function selectPixelTargetByBody(foot=false){
  const el=$("pixel-target");if(!el||!el.options.length)return;
- const preferred=foot?"shoes/":state.part==="head"?"base/body":
+ const preferred=foot?"shoes/":state.part==="head"?"":
   state.part.startsWith("arm")||state.part==="torso"?"top/":"pants/";
  const match=[...el.options].find(o=>o.value.startsWith(preferred));
  if(match)el.value=match.value;
@@ -241,80 +215,15 @@ function selectPixelTargetByBody(foot=false){
 function updatePartShortcut(){
  const control=$("part-edit-shortcut");if(!control)return;
  const target=$("pixel-target");
- control.hidden=state.screen!=="editor"||!target?.value;
+ control.hidden=state.screen!=="editor"||state.part==="head"||!target?.value;
  if($("part-edit-label"))$("part-edit-label").textContent=state.part.toUpperCase().replaceAll("_"," ")+" · "+
   (target?.selectedOptions?.[0]?.textContent||target?.value||"");
 }
 function action(){return V.ROWS[state.template]!=null?state.template:"idle"}
-function sourceCell(dir=state.dir,frame=state.frame){
- const key=dir+"/"+frame+"/"+state.template+"/"+state.sourceId;
- if(state.images.has(key))return state.images.get(key);
- const sheet=state.sheet;if(!sheet)return null;
- const out=V.extractFrame(sheet,action(),dir,frame%V.FRAMES[action()]);
- state.images.set(key,out);return out;
-}
-function anatomyBounds(pixels){
- // Derive partition lines from this selected Character's actual alpha mask,
- // not fixed male sprite coordinates. This is still a pixel cutout, NOT
- // inverse-kinematics or independently authored arm/leg sheets.
- let l=64,r=-1,t=112,b=-1;
- for(let y=0;y<106;y++)for(let x=0;x<64;x++){
-  if(pixels[(y*64+x)*4+3]<96)continue;
-  l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y);
- }
- if(r<l)return null;
- const center=(l+r)/2,height=b-t,width=r-l+1;
- return {center,headEnd:t+height*.36,hipStart:t+height*.74,
-  armLeft:center-Math.max(6,width*.24),armRight:center+Math.max(6,width*.24)};
-}
-function partForPixel(x,y,bounds){
- if(!bounds)return null;
- if(y<bounds.headEnd)return "head";
- if(y>=bounds.hipStart)return x<bounds.center?"leg_l":"leg_r";
- if(x<bounds.armLeft)return "arm_l";
- if(x>bounds.armRight)return "arm_r";
- return "torso";
-}
-function hitTestPart(x,y){
- // Hit-test painted pixels AFTER their per-frame transforms, not a static
- // body-coordinate guess. The original per-character mask stays immutable.
- const source=sourceCell();if(!source)return null;
- const pieces=segments(source),trans=pose();
- const hit=canvas(64,112),g=hit.getContext("2d",{willReadFrequently:true});
- for(const name of PARTS.slice().reverse()){
-  const part=trans[name];g.clearRect(0,0,64,112);
-  g.save();g.translate(part.ax+part.x,part.ay+part.y);
-  g.rotate(part.angle*Math.PI/180);g.drawImage(pieces[name],-part.ax,-part.ay);g.restore();
-  if(g.getImageData(Math.max(0,Math.min(63,Math.floor(x))),Math.max(0,Math.min(111,Math.floor(y))),1,1).data[3]>24)
-   return name;
- }
- return null;
-}
-function segments(frame){
- const src=frame.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112),ret={};
- const bounds=anatomyBounds(src.data);
- for(const part of PARTS)ret[part]=canvas(64,112);
- const ctx={};for(const part of PARTS)ctx[part]=ret[part].getContext("2d").createImageData(64,112);
- for(let y=0;y<112;y++)for(let x=0;x<64;x++){
-  const pos=(y*64+x)*4;
-  if(src.data[pos+3]===0)continue;
-  const part=partForPixel(x,y,bounds);
-  if(!part)continue;
-  for(let k=0;k<4;k++)ctx[part].data[pos+k]=src.data[pos+k];
- }
- for(const part of PARTS)ret[part].getContext("2d").putImageData(ctx[part],0,0);
- return ret;
-}
+// One physical-layer renderer handles Genesis, clothing and future motion.
+function hitTestPart(x,y){return state.rig?Motion.hitTest(state.rig,state.dir,pose(),x,y):null}
 function bake(dir=state.dir,index=state.frame){
- const img=sourceCell(dir,index),out=canvas(64,112);if(!img)return out;
- const c=out.getContext("2d");c.imageSmoothingEnabled=false;
- const pieces=segments(img),trans=pose(dir,index);
- for(const part of PARTS){
-  const p=trans[part],r=p.angle*Math.PI/180;
-  c.save();c.translate(p.ax+p.x,p.ay+p.y);c.rotate(r);
-  c.drawImage(pieces[part],-p.ax,-p.ay);c.restore();
- }
- return out;
+ return state.rig?Motion.renderPrepared(state.rig,dir,pose(dir,index),{frameIndex:index}):canvas(64,112);
 }
 function render(){
  const miniature=bake(),w=384,h=672;screen.clearRect(0,0,w,h);screen.imageSmoothingEnabled=false;
@@ -329,7 +238,7 @@ function render(){
  const source=characterSource();
  if($("source-label"))$("source-label").textContent=source.name+" · "+
   (state.stockReference?"GHOST STOCK GUIDE (NOT EXPORTED): "+state.stockReference+" · ":"")+
-  "BODY / CUSTOM WEAR · "+state.dir.toUpperCase();
+  "GENESIS POSE / CUSTOM WEAR · "+state.dir.toUpperCase();
  if(document.activeElement!==$("animation-name-edit"))$("animation-name-edit").value=state.name;
  $("ms").value=state.frames[state.frame]?.ms||140;$("loop").checked=state.loop;
  updateProperty();paintStrip();if(!state.playing)drawGif();
@@ -458,33 +367,66 @@ function addFrame(duplicate){
  for(const d of DIRS){if(!state.tracks[d])state.tracks[d]=[];const copy=duplicate?deep(pose(d,state.frame)):freshPose();state.tracks[d].splice(idx,0,copy)}
  state.frame=idx;render();
 }
-async function save(withDrive=false){
- if(!db()[state.id])return say("New animation first",true);
+function ensureTracks(){for(const dir of DIRS)for(let i=0;i<state.frames.length;i++)pose(dir,i)}
+function hasPixels(frame){
+ const data=frame.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+ for(let i=3;i<data.length;i+=4)if(data[i]>12)return true;
+ return false;
+}
+async function validateStock(motion){
+ for(const gender of ["male","female"]){
+  const base=Genesis.get(gender);
+  const ch=V.norm({...base.appearance,gender,body:gender,hair:"none",face:"blank",characterId:""});
+  const rig=await Motion.prepare(ch,motion.sourceAction,{
+   sourceKey:"validation:"+gender,partOverrides:base.parts});
+  for(const dir of DIRS)for(let i=0;i<state.frames.length;i++){
+   if(!hasPixels(Motion.renderPrepared(rig,dir,motion.tracks[dir][i])))
+    throw Error("Empty Genesis pose: "+gender+" "+dir+" F"+(i+1));
+  }
+ }
+ for(const dir of DIRS)for(let i=0;i<state.frames.length;i++)
+  if(!hasPixels(bake(dir,i)))throw Error("Empty selected appearance pose "+dir+" F"+(i+1));
+}
+async function save(publishStock=false){
+ if(!db()[state.id])return say("Create or modify a motion first",true);
  state.name=$("animation-name-edit").value.trim().slice(0,80);
- if(!state.name)throw Error("Enter an activity name");
- if(!state.sheet)await loadSource();if(!state.sheet)throw Error("Base pixels missing");
- const atlas=canvas(384,2688),a=atlas.getContext("2d");a.imageSmoothingEnabled=false;
- for(let d=0;d<4;d++)for(let f=0;f<state.frames.length;f++)
-  a.drawImage(bake(DIRS[d],f),f*64,d*112);
- Store.updateManifest(state.id,{name:state.name,frames:deep(state.frames),loop:state.loop,requiredParts:["base/body"]});
- Store.setLayer(state.id,"base/body",atlas.toDataURL("image/png"),{thumbDataUrl:bake("se",0).toDataURL("image/png")});
- const all=db();all[state.id]={id:state.id,name:state.name,gender:state.gender,sourceId:state.sourceId,
-  stockReference:state.stockReference,template:state.template,
-  frames:deep(state.frames),loop:state.loop,tracks:deep(state.tracks),updated:new Date().toISOString()};
- putDb(all);
- try{root.VLHub?.publish("animations",{source:"mahluk-animation-studio",id:state.id,status:"draft"})}catch{}
+ if(!state.name)throw Error("Enter an animation name");
  const bridge=root.parent!==root&&root.parent?.VLMahlukWorkspace;
- if(!bridge?.isOnline?.())throw Error("Connect Google Drive in MAHLUK toolbar before Save Online");
- const rec=Store.get(state.id),meta=all[state.id];
- const receipt=await bridge.saveOnline("animation",state.id,{
-  id:state.id,meta,clip:{manifest:rec.manifest,
-   layers:{"base/body":atlas.toDataURL("image/png")}}
- });
- if(!receipt.verified)throw Error("Cloud animation verification failed");
- home("CLOUD VERIFIED · "+state.name+" · "+state.frames.length+" frames × 4 directions");
+ if(!bridge?.isOnline?.())throw Error("Connect Google Drive before saving or submitting");
+ if(!state.rig)await loadSource();
+ if(!state.rig)throw Error("Genesis rig missing");
+ ensureTracks();
+ const motion=Contract.make({sourceAction:action(),frames:state.frames,tracks:state.tracks,
+  status:publishStock?"stock":"draft"});
+ const atlas=canvas(384,2688),g=atlas.getContext("2d");g.imageSmoothingEnabled=false;
+ for(let d=0;d<4;d++)for(let f=0;f<state.frames.length;f++)
+  g.drawImage(bake(DIRS[d],f),f*64,d*112);
+ if(publishStock){
+  say("VALIDATING · MALE/FEMALE · FOUR DIRECTIONS · EVERY FRAME");
+  await validateStock(motion);
+ }
+ const rec0=Store.updateManifest(state.id,{name:state.name,frames:deep(state.frames),
+  loop:state.loop,requiredParts:[],motion,source:Contract.FORMAT});
+ Contract.validateManifest(rec0.manifest);
+ // Only an appearance-bound preview; universal motion data remains the source of truth.
+ Store.setLayer(state.id,"preview/composite",atlas.toDataURL("image/png"),{
+  thumbDataUrl:bake("se",0).toDataURL("image/png")});
+ const all=db();all[state.id]={id:state.id,name:state.name,gender:state.gender,sourceId:state.sourceId,
+  stockReference:state.stockReference,template:state.template,frames:deep(state.frames),
+  loop:state.loop,tracks:deep(state.tracks),approval:publishStock?"stock":"draft",
+  updated:new Date().toISOString()};
+ putDb(all);
+ const rec=Store.get(state.id),receipt=await bridge.saveOnline("animation",state.id,{
+  id:state.id,meta:all[state.id],clip:{manifest:rec.manifest,layers:rec.layers}});
+ if(!receipt.verified)throw Error("Cloud motion verification failed");
+ try{root.VLHub?.publish("animations",{id:state.id,status:publishStock?"stock":"draft",
+  source:Contract.FORMAT})}catch{}
+ home((publishStock?"STOCK SUBMITTED":"DRAFT SAVED")+" · "+state.name+
+  " · "+state.frames.length+" FRAMES × 4 DIRECTIONS · DRIVE VERIFIED");
 }
 function editPixels(){
- if(!db()[state.id])return say("Open an editable sprite + anchor animation first",true);
+ if(!db()[state.id])return say("Open a motion first",true);
+ if(state.part==="head")return say("Edit the expression in EMOSI.EXE. Genesis body is locked.",true);
  let character=characterSource();
  const requestedPart=$("pixel-target")?.value;
  if(!character.record){
@@ -499,7 +441,7 @@ function editPixels(){
   void loadSource().catch(error=>say(error.message,true));
  }
  const part=$("pixel-target")?.value;
- if(!part||!root.V6PPartCatalog?.isPart(part))return say("Select a real Character part or Custom Wear first",true);
+ if(!part||!root.V6PCustomWear?.isCustomPart(part)||!root.V6PPartCatalog?.isPart(part))return say("Select a real Character part or Custom Wear first",true);
  const url=new URL("./pixel-editor.html",location.href);
  url.searchParams.set("source","v6p");url.searchParams.set("character",character.record.id);
  url.searchParams.set("part",part);url.searchParams.set("dir",state.dir);
@@ -531,7 +473,7 @@ $("gender").onchange=()=>{
  if(state.screen==="editor"&&db()[state.id])
   void loadSource().catch(e=>say(e.message,true));
 };
-$("template").onchange=()=>{if(!db()[state.id])return;state.template=$("template").value;state.images.clear();render()};
+$("template").onchange=()=>{if(!db()[state.id])return;state.template=$("template").value;state.images.clear();void loadSource().catch(e=>say(e.message,true))};
 $("view").onchange=()=>{stop();state.dir=$("view").value;render()};
 $("ms").onchange=()=>{state.frames[state.frame].ms=Math.max(40,Math.min(800,Number($("ms").value)||140));render()};
 $("loop").onchange=()=>{state.loop=$("loop").checked};
@@ -557,6 +499,7 @@ $("new").onclick=()=>{$("setup-name").value="";show("setup")};
 $("copy").onclick=()=>create(true).catch(e=>say(e.message,true));
 $("animation-name-edit").oninput=()=>{state.name=$("animation-name-edit").value;$("animation-title").textContent=state.name||"NEW ANIMATION"};
 $("save").onclick=()=>save(false).catch(e=>say(e.message,true));
+ $("submit-stock").onclick=()=>save(true).catch(e=>say("STOCK SUBMIT FAILED · "+e.message,true));
 $("animation-save-sync").onclick=()=>save(true).catch(e=>say(e.message,true));
 $("play").onclick=toggle;$("prev").onclick=()=>changeFrame(state.frame-1);$("next").onclick=()=>changeFrame(state.frame+1);
 $("add-frame").onclick=()=>addFrame(false);$("duplicate").onclick=()=>addFrame(true);
@@ -593,7 +536,7 @@ root.addEventListener("message",e=>{
  if(e.origin!==location.origin)return;
  if(e.data?.type==="mahluk:cloud-connected")void refreshCloud();
  if(e.data?.type==="mahluk:refresh-animation"){
-  fillSources();V.clearCache?.();
+  fillSources();V.clearCache?.();Motion.clearCache();
   void loadSource().catch(error=>say(error.message,true));
  }
 });
