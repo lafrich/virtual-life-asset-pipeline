@@ -1,13 +1,15 @@
 /* Mahluk Genesis V6B Python Animation Editor.
- * Anatomical source authoring, no six-piece sprite cutout renderer.
+ * Declarative native Python poses on approved Genesis sources. Editable puppet\n * masks are stored only in the two stable Genesis master IDs.
  */
 (function(root){"use strict";
-const C=root.GenesisNativePythonContract,$=id=>document.getElementById(id);
+const C=root.GenesisNativePythonContract,$=id=>document.getElementById(id),
+ Master=root.GenesisMasterRig,Puppet=root.GenesisPuppetRenderer,Clipboard=root.GenesisPoseClipboard;
 if(!C){document.body.textContent="Genesis native contract unavailable";return;}
 const STAGE=$("stage"),ctx=STAGE.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 let draft=null,dir="se",frame=0,gender="male",joint="hand_near",angle="elbow_near";
-let preview=null,rendered=false,timer=0,playing=false,worker=null,serial=0,editVersion=0;
+let preview=null,rendered=false,timer=0,playing=false,serial=0,editVersion=0;
+let copied=null;const genesisSheets=new Map();
 let frameCache=new Map(),dragging=null,verifiedSrc="",saved=false,cacheKey="",galleryRevision=0;
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null;}catch{return null}};
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -25,7 +27,7 @@ function updateActions(){
 function begin(data){
  draft=C.validate(data);dir="se";frame=0;gender="male";joint="hand_near";angle="elbow_near";
  preview=null;rendered=false;verifiedSrc="";saved=false;frameCache.clear();editVersion++;
- show("editor");message("Starting original native V6B Python preview…");requestRender();
+ show("editor");message("Starting Genesis master puppet preview…");requestRender();
 }
 function newFromSetup(){
  try{
@@ -38,7 +40,7 @@ async function fromFile(file){
  if(!file)return;
  if(!/\.py$/i.test(file.name)||file.size>200000)throw Error("Upload a Genesis native .py file under 200 KB");
  const data=C.fromPython(await file.text());
- begin(data);message("Imported "+file.name+". Rendering native Python for preview…");
+ begin(data);message("Imported "+file.name+". Rendering with approved Genesis master…");
 }
 function current(){return draft.poses[dir][frame]}
 function setEdited(){
@@ -75,29 +77,30 @@ function paint(){
  }
  ctx.restore();
 }
+async function renderGenesis(){
+ const action=draft.template,model=Master.load(gender);
+ if(!genesisSheets.has(gender))genesisSheets.set(gender,Puppet.genesisSheet(gender));
+ const sheet=await genesisSheets.get(gender);
+ const canvas=Puppet.render({sheet,template:action,direction:dir,
+  frame,pose:clone(current()),profile:model});
+ return canvas.toDataURL("image/png");
+}
 function requestRender(){
  if(!draft)return;
- const key=[editVersion,gender,dir,frame].join("|");
- cacheKey=key;
- rendered=false;verifiedSrc="";updateActions();
+ const id=++serial,key=[editVersion,gender,dir,frame].join("|");
+ cacheKey=key;rendered=false;verifiedSrc="";updateActions();
  if(frameCache.has(key)){showImage(frameCache.get(key));return}
- if(!worker){
-  try{
-   worker=new Worker("./genesis-native-worker.js?v=1");
-   worker.onmessage=e=>{
-    const m=e.data||{};
-    if(m.type==="status"){message(m.text);return}
-    if(m.type==="ready"){message("Python generator ready · rendering original native code layers");return}
-    if(m.id!==serial)return;
-    if(m.type==="error"){preview=null;rendered=false;updateActions();paint();message("Python preview failed: "+m.message,true);return}
-    if(m.type==="render"){frameCache.set(cacheKey,m.src);showImage(m.src)}
-   };
-   worker.onerror=e=>{message("Python worker error: "+e.message,true);rendered=false;updateActions()};
-  }catch(error){message("Cannot start native Python worker: "+error.message,true);return}
- }
- const id=++serial;
- preview=null;paint();message("Rendering native V6B · "+gender.toUpperCase()+" · "+dir.toUpperCase()+" · frame "+(frame+1));
- worker.postMessage({type:"render",id,request:{data:clone(draft),gender,direction:dir,frame}});
+ preview=null;paint();
+ message("Rendering "+gender.toUpperCase()+" GENESIS MASTER · "+dir.toUpperCase()+" · frame "+(frame+1));
+ void renderGenesis().then(src=>{
+  if(id!==serial)return;
+  frameCache.set(key,src);showImage(src);
+ }).catch(error=>{
+  if(id!==serial)return;
+  rendered=false;verifiedSrc="";updateActions();paint();
+  genesisSheets.delete(gender);
+  message("Genesis puppet preview failed: "+error.message,true);
+ });
 }
 function showImage(src){
  const img=new Image(),expected=serial;
@@ -105,10 +108,10 @@ function showImage(src){
   if(expected!==serial)return;
   preview=img;rendered=true;verifiedSrc=src;
   paint();updateActions();
-  message("NATIVE PYTHON PREVIEW · "+gender.toUpperCase()+" · "+dir.toUpperCase()+
-   " · FRAME "+(frame+1)+"/"+draft.frames.length+" · source preview, NOT installed");
+  message("GENESIS MASTER PUPPET PREVIEW · "+gender.toUpperCase()+" · "+dir.toUpperCase()+
+   " · FRAME "+(frame+1)+"/"+draft.frames.length+" · native template + Python joint pose · NOT installed");
  };
- img.onerror=()=>{rendered=false;updateActions();message("Native Python returned an unreadable PNG",true)};
+ img.onerror=()=>{rendered=false;updateActions();message("Genesis native renderer returned an unreadable PNG",true)};
  img.src=src;
 }
 function stop(){playing=false;clearTimeout(timer);$("play").textContent="▶ PLAY"}
@@ -251,6 +254,32 @@ $("angle-slider").onchange=e=>reviseAngle(e.target.value);
 $("angle-number").onchange=e=>reviseAngle(e.target.value);
 $("reset-joint").onclick=()=>{current().joints[joint]=clone(C.pose().joints[joint]);setEdited()};
 $("reset-frame").onclick=()=>{draft.poses[dir][frame]=C.pose();setEdited()};
+function copyPose(all=false){
+ if(!draft)return;
+ copied={all,from:dir,items:all?clone(draft.poses[dir]):[clone(current())]};
+ message("COPIED "+(all?"ALL "+draft.frames.length+" FRAMES":"F"+(frame+1))+" · "+dir.toUpperCase()+" · select target direction");
+}
+function pastePose(flip=false,all=false){
+ if(!draft||!copied)return message("COPY a Python pose first",true);
+ if(all&&!copied.all)return message("COPY ALL FRAMES before PASTE ALL",true);
+ try{
+  if(all){
+   draft.poses[dir]=Clipboard.pasteDirection(copied.items,draft.poses[dir],{mirrored:flip});
+  }else{
+   const source=copied.items[copied.all?Math.min(frame,copied.items.length-1):0];
+   draft.poses[dir][frame]=Clipboard.paste(source,flip);
+  }
+  setEdited();
+  message("PASTED "+(all?"ALL FRAMES":"F"+(frame+1))+(flip?" · FLIPPED":"")+
+   " · "+copied.from.toUpperCase()+" → "+dir.toUpperCase());
+ }catch(e){message("Paste failed: "+e.message,true)}
+}
+$("pose-copy").onclick=()=>copyPose(false);
+$("pose-paste").onclick=()=>pastePose(false,false);
+$("pose-paste-flip").onclick=()=>pastePose(true,false);
+$("pose-copy-all").onclick=()=>copyPose(true);
+$("pose-paste-all").onclick=()=>pastePose(false,true);
+$("pose-paste-all-flip").onclick=()=>pastePose(true,true);
 $("export-python").onclick=exportPython;
 $("save-cloud").onclick=()=>void saveCloud();
 $("prev-frame").onclick=()=>{stop();frame=Math.max(0,frame-1);rebuild();requestRender()};
@@ -280,7 +309,9 @@ root.addEventListener("message",e=>{
  if(e.origin!==location.origin)return;
  if(e.data?.type==="mahluk:cloud-connected")void gallery();
  if(e.data?.type==="mahluk:select-motion"&&e.data?.id){void gallery()}
+ if(e.data?.type==="genesis:master-overwritten"){frameCache.clear();genesisSheets.clear();if(draft)requestRender()}
 });
-root.addEventListener("pagehide",()=>{stop();worker?.terminate()});
+root.addEventListener("pagehide",stop);
+root.addEventListener("storage",e=>{if(e.key===Master.KEY){frameCache.clear();genesisSheets.clear();if(draft)requestRender()}});
 show("home");
 })(window);

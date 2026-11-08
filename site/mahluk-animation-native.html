@@ -78,7 +78,7 @@ h2{font-size:14px}
   <div class="panel">
    <h2>SOURCE / FRAMES</h2>
    <label>NAME<input type="text" id="animation-name" maxlength="80"></label>
-   <label>PREVIEW CHARACTER<select id="gender"><option value="male">MALE · native diagnostic</option><option value="female">FEMALE · native diagnostic</option></select></label>
+   <label>PREVIEW CHARACTER<select id="gender"><option value="male">GENESIS MALE · master</option><option value="female">GENESIS FEMALE · master</option></select></label>
    <p class="hint">Native Python source preview currently uses original Ichsan/Noor generator configurations. This is not yet a Custom Wear compatibility test.</p>
    <label>TEMPLATE<input type="text" id="template-label" readonly></label>
    <label>FRAME DURATION (ms)<input type="number" id="frame-ms" min="40" max="1200"></label>
@@ -87,16 +87,16 @@ h2{font-size:14px}
    <h2>EXPORT / CLOUD</h2>
    <div class="actions"><button id="export-python">↓ EXPORT PYTHON</button><button id="save-cloud" class="primary" disabled>☁ SAVE PYTHON TO CLOUD</button></div>
    <button id="install" disabled>INSTALL TO SYSTEM — NOT YET VERIFIED</button>
-   <p class="hint">Install stays locked until arbitrary Custom Wear, both Genesis bases, and gameplay registry have passed native end-to-end validation.</p>
+   <p class="hint">Master rig changes are previewed on Genesis Male/Female. Install remains locked until gameplay and independent Character Custom Wear validation pass.</p>
   </div>
   <div class="panel">
-   <h2>ORIGINAL V6B PIXEL RENDER PREVIEW</h2>
+   <h2>GENESIS V6B MASTER PUPPET PREVIEW</h2>
    <div id="direction-buttons"></div>
    <div id="canvas-wrap"><canvas id="stage" width="64" height="112" aria-label="Native Python pose preview and draggable anatomical landmarks"></canvas></div>
    <div id="timeline"></div>
    <div class="actions"><button id="prev-frame">◀ FRAME</button><button id="play">▶ PLAY</button><button id="next-frame">FRAME ▶</button></div>
    <div id="status" role="status">Select an animation to start native Python rendering.</div>
-   <p class="hint">Dots and connecting lines are editor-only joint guides. The character pixels underneath are rendered by original V6B Python, not rotated sprite cutouts.</p>
+   <p class="hint">Puppet mask and joint overlays use the approved Genesis native 11-action sprite sheets. Custom Wear stays on the Genesis layers. Pose coordinates follow the same declarative Python contract; source assets are never overwritten.</p>
   </div>
   <div class="panel">
    <h2>ANATOMICAL COORDINATES</h2>
@@ -110,11 +110,24 @@ h2{font-size:14px}
    <label>ANATOMICAL ANGLE<select id="angle-select"></select></label>
    <input type="range" id="angle-slider" min="-180" max="180" step="1" value="0">
    <label>ANGLE DEGREES<input id="angle-number" type="number" min="-180" max="180" value="0"></label>
+   <h2>COPY / PASTE COORDINATES</h2>
+   <div class="actions"><button id="pose-copy">COPY FRAME</button><button id="pose-paste">PASTE FRAME</button><button id="pose-paste-flip">PASTE FLIP</button></div>
+   <div class="actions"><button id="pose-copy-all">COPY ALL FRAMES</button><button id="pose-paste-all">PASTE ALL</button><button id="pose-paste-all-flip">PASTE ALL FLIP</button></div>
+   <p class="hint">After Copy, select another SE / SW / NE / NW angle, then Paste or Paste Flip. Only joint coordinates and angles are copied; frame timing stays the same.</p>
    <div class="actions"><button id="reset-joint">RESET SELECTED</button><button id="reset-frame">RESET FRAME</button></div>
    <div id="notice">Draft coordinates are recorded as Python source. Rendering and installation are separate verification steps.</div>
   </div>
  </div>
 </section>
-<script src="./genesis-native-python-contract.js?v=1"></script>
-<script src="./mahluk-animation-native.js?v=1"></script>
+<script src="./genesis-source.js?v=genesis-master-v1"></script>
+<script src="./v6p-part-catalog.js?v=genesis-master-v1"></script>
+<script src="./v6p-character-store.js?v=genesis-master-v1"></script>
+<script src="./genesis-base-bridge.js?v=genesis-master-v1"></script>
+<script src="./v6p-part-overrides.js?v=genesis-master-v1"></script>
+<script src="./v6p-compositor.js?v=genesis-master-v1"></script>
+<script src="./genesis-native-python-contract.js?v=genesis-master-v1"></script>
+<script src="./genesis-master-rig.js?v=genesis-master-v1"></script>
+<script src="./genesis-puppet-renderer.js?v=genesis-master-v1"></script>
+<script src="./genesis-pose-clipboard.js?v=genesis-master-v1"></script>
+<script src="./mahluk-animation-native.js?v=genesis-master-v1"></script>
 </body></html>
