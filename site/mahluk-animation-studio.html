@@ -119,7 +119,7 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
 <h2>SPRITE + ANCHOR</h2>
  <p class="hint" id="source-label">GENESIS MALE NUDE · pose preview</p>
  <div class="row"><button id="new">＋ NEW</button><button id="copy">⧉ DUPLICATE</button></div>
- <p class="hint">Move body cutouts and anchors. Tap a visible region on the current frame to select it; clothing pixels move with their source character.</p>
+ <p class="hint">Move universal Genesis pose anchors. Body and clothing render as separate layers for each preview appearance.</p>
  <label>PIXEL TARGET<select id="pixel-target" aria-label="Selected editable sprite layer"></select></label>
  <div class="row"><button id="open-pixel">✎ EDIT SELECTED SPRITE</button><button id="export">↓ POSE JSON</button></div>
  <p class="hint">Pixel Editor opens the real selected character part or Custom Wear sheet at the current direction/frame. No unscoped blank canvas.</p>
@@ -137,14 +137,14 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <label style="flex:1"><input id="loop" type="checkbox" checked> LOOP</label></div>
  <div id="frame-strip" aria-label="Frame by frame timeline"></div>
  <div class="row"><button id="add-frame">＋ FRAME</button><button id="duplicate">DUP FRAME</button><button id="remove-frame">✕ FRAME</button></div>
- <div class="flow-toolbar"><button id="save" style="background:#c2dcff">☁ SAVE ANIMATION ONLINE</button>
+ <div class="flow-toolbar"><button id="save" style="background:#c2dcff">☁ SAVE DRAFT ONLINE</button><button id="submit-stock" type="button" style="background:#c0e6c9">✓ VALIDATE & SUBMIT STOCK</button>
  <button id="animation-save-sync" hidden>☁ SAVE ONLINE</button></div>
- <p id="status" role="status">Use Save Animation Online to store frames in Google Drive. Native GitHub stock remains protected.</p>
+ <p id="status" role="status">SAVE DRAFT stores an editable motion. SUBMIT STOCK validates Male/Female and all four directions. Approved V6B stock is not overwritten.</p>
 </section>
 <aside id="properties" class="panel"><h2>LOOP PREVIEW · GIF-STYLE</h2>
  <canvas id="gif-preview" width="64" height="112" aria-label="Animated frame loop preview"></canvas>
  <p id="gif-preview-note" class="hint">Animated preview uses the edited frames; select PLAY to run the loop.</p>
- <h2>BODY CUTOUT / ANCHOR</h2>
+ <h2>GENESIS POSE / ANCHOR</h2>
  <div id="parts"></div>
  <label><input id="move-anchor" type="checkbox"> MOVE ANCHOR (drag on canvas)</label>
  <label>ROTATION <output id="rotation-label">0°</output><input id="rotation" type="range" min="-180" max="180" value="0"></label>
@@ -152,12 +152,13 @@ label{display:flex;flex-direction:column;gap:4px;margin:8px 0;font-size:10px;fon
  <div class="row"><label>ANCHOR X<input id="ax" type="number" min="0" max="63" value="32"></label><label>ANCHOR Y<input id="ay" type="number" min="0" max="111" value="60"></label></div>
  <div class="row"><button id="reset-transform">RESET PART</button></div>
  <p class="hint">Pilih bagian tubuh di frame, lalu drag untuk geser; aktifkan Move Anchor untuk mengubah titik putar. Cutout dibuat dari sprite karakter aktif, termasuk Custom Wear yang terlihat.</p>
- <p class="hint">Ini cutout piksel enam area, bukan tulang 3D atau skinning otomatis. Untuk pose ekstrem, cek overlap dan pilih sprite bagian yang perlu diperbaiki. Original Genesis dan stock tetap aman.</p>
+ <p class="hint">Rig piksel 2D enam area. Periksa koreksi sprite untuk pose ekstrem. Original Genesis dan stock tetap aman.</p>
 </aside>
 </main></div>
 <script src="./v6p-part-catalog.js"></script><script src="./v6p-part-overrides.js"></script><script src="./v6p-character-store.js"></script>
 <script src="./genesis-source.js?v=genesis-only-20261108"></script><script src="./genesis-base-bridge.js?v=genesis-footwear-v2"></script>
 <script src="./v6p-activity-contract.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-clip-store.js?v=v6p-stock-approved-20261108"></script><script src="./v6p-compositor.js?v=v6p-stock-approved-20261108"></script>
+<script src="./v6p-custom-wear.js?v=rear-visible-v3-20261108"></script><script src="./v6p-universal-motion-contract.js?v=universal-v1"></script><script src="./v6p-universal-motion.js?v=universal-v1"></script>
 <script src="/virtual-office/shared/hub-registry.js"></script>
-<script src="./mahluk-animation-studio.js?v=animation-character-first-v4-20261108"></script>
+<script src="./mahluk-animation-studio.js?v=universal-motion-v1"></script>
 </body></html>
