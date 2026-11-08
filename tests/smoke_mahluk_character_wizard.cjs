@@ -28,8 +28,18 @@ async function run(){
   await page.locator('#wizard-customize:not([hidden])').waitFor({timeout:65000});
   assert.equal(await page.locator('#body').inputValue(),'female');
   assert.equal(await page.locator('#hair').inputValue(),'none');
-  assert.equal(await page.locator('#top').inputValue(),'tee');
-  console.log('[ok] FEMALE BASE WITH NATIVE OUTFIT CREATED');
+  assert.equal(await page.locator('#top').inputValue(),'custom');
+  assert.equal(await page.locator('#pants').inputValue(),'custom');
+  assert.equal(await page.locator('#shoes').inputValue(),'custom');
+  const approved=await page.evaluate(()=>{
+   const S=window.V6PCharacterStore,row=S.get(window.V6PCharacterHost.get().id);
+   return {source:window.V6PGenesisBase?.get('female')?.name,
+    parts:Object.keys(row?.parts||{}),face:row?.faceId};
+  });
+  assert.equal(approved.source,'Genesis Female Nude');
+  assert.ok(approved.parts.includes('top/custom_f')&&approved.parts.includes('pants/custom_f'));
+  assert.equal(approved.face,'');
+  console.log('[ok] FEMALE GENESIS BASE WITH EMOSI BLANK FACE CREATED');
   await page.locator('#wizard-part-nav [data-part=hair]').click();
   assert.equal(await page.locator('#wizard-part-hair').isVisible(),true);
   await page.locator('#hair').selectOption('short');
