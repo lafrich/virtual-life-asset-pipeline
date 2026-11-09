@@ -26,6 +26,7 @@ on:
       - 'site/vlhub-characters-publish.js'
       - 'site/v6p-compositor.js'
       - 'tests/test_lgr_retirement.cjs'
+      - 'tests/test_lgr_cloud_safety.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
       - '.github/workflows/genesis-workbench-qa.yml'
   pull_request:
@@ -54,6 +55,7 @@ on:
       - 'site/vlhub-characters-publish.js'
       - 'site/v6p-compositor.js'
       - 'tests/test_lgr_retirement.cjs'
+      - 'tests/test_lgr_cloud_safety.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
 jobs:
   syntax-contract:
@@ -71,6 +73,7 @@ jobs:
           node --check site/vlhub-characters-publish.js
           node --check site/v6p-compositor.js
           node tests/test_lgr_retirement.cjs
+          node tests/test_lgr_cloud_safety.cjs
       - name: HTML / UI integration contract
         run: |
           node <<'NODE'
