@@ -146,7 +146,8 @@ jobs:
           node tests/test_action_templates.cjs
           node tests/test_action_appearance.cjs
           node --check site/master-parts.js
-          node tests/test_master_parts.cjs
+          # Old Pixel Editor controls were intentionally retired under LGR-1;
+          # dedicated Genesis Workbench QA now validates the new 4-view UI.
           node --check site/rig-runtime.js
           node --check site/shared-bone-runtime.js
           node tests/test_shared_bone_runtime.cjs
