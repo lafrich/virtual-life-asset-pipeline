@@ -198,7 +198,7 @@ const {chromium}=require('playwright');
   const hub=await browser.newPage({viewport:{width:940,height:740}});
   try{
    await hub.goto(base+'/mahluk-hidup.html?tab=genesis',{waitUntil:'domcontentloaded',timeout:30000});
-   await hub.frameLocator('#genesis-frame').locator('#part-select option').first().waitFor({timeout:30000});
+   await hub.frameLocator('#genesis-frame').locator('#part-select option').first().waitFor({state:'attached',timeout:30000});
    const routes=await hub.evaluate(()=>window.VLMahlukWorkspace?
      ['character','animation','genesis'].map(tab=>{
       window.VLMahlukWorkspace.show(tab);
