@@ -6,6 +6,7 @@ if(!M||!P||!C||!V){document.body.textContent="Genesis master dependencies missin
 let gender="male",dir="se",mode="puppet",profile=M.load(gender),sheet=null,selected="head",pivot="head",
  maskPart="head",sliceTool="select",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0,changeVersion=0,
  pixelEditor=null,pixelSession=null,pixelOpening=false;
+const verifiedCloud={male:false,female:false};
 const stage=$("stage"),viewport=$("stage-viewport"),ctx=stage.getContext("2d"),srcCtx=$("source-preview").getContext("2d");
 let zoom=4,zoomFit=true,pan=false;
 function cursor(){
@@ -38,6 +39,13 @@ function setPan(value){
 }
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null}catch{return null}};
 const show=(s,err=false)=>{$("status").textContent=s;$("status").classList.toggle("error",!!err)};
+function sourceLabel(){
+ const info=M.inspect(gender);
+ if(info.source==="invalid")return "LOCAL CACHE INVALID · "+info.error+" · do not overwrite";
+ if(verifiedCloud[gender])return "DRIVE SYNCED · saved "+(profile.updated||"unknown time");
+ if(info.source==="local")return "LOCAL CACHE (NOT VERIFIED AGAINST DRIVE) · saved "+(profile.updated||"unknown time");
+ return "DEFAULT GENESIS (NOT YOUR LAST CLOUD SAVE) · CONNECT DRIVE and LOAD MASTER";
+}
 const val=(x,min,max)=>Math.max(min,Math.min(max,Math.round(Number(x)||0)));
 function stop(){clearTimeout(playTimer);playTimer=0;$("play").textContent="▶ PLAY"}
 function setMode(m){
@@ -111,7 +119,7 @@ async function reloadSheet(){
  try{
   const next=await P.genesisSheet(gender);
   if(serial!==revision)return;
-  sheet=next;paint();show("GENESIS "+gender.toUpperCase()+" · fixed master "+M.IDS[gender]+" · source: approved Genesis, not a sample character.");
+  sheet=next;paint();show("GENESIS "+gender.toUpperCase()+" · "+sourceLabel(),M.inspect(gender).source==="invalid");
  }catch(e){if(serial===revision){sheet=null;show("GENESIS SOURCE FAILED: "+e.message,true)}}
 }
 function changeGender(next){
@@ -191,35 +199,84 @@ function saveLocalBackup(){
 }
 async function loadCloud(){
  const b=bridge();if(!b?.isOnline?.())throw Error("Connect Drive in Mahluk toolbar");
- if(dirty&&!root.confirm("Reload saved Genesis rig and discard unsaved edits?"))return;
+ if(working)return;
+ if(dirty&&!root.confirm("Unsaved edits exist. Export backup before replacing them from Drive. Reload saved master?"))return;
  const version=changeVersion,currentGender=gender;
- show("Loading two fixed Genesis master IDs from Drive…");
+ show("READING LAST SAVED MASTER FROM DRIVE · no writes…");
  const rows=await b.listOnline("genesis");
- if(version!==changeVersion||currentGender!==gender){
-  show("Cloud response ignored: you edited Genesis while it loaded. Save or reload explicitly.");return;
+ if(version!==changeVersion||currentGender!==gender||working||dirty){
+  show("DRIVE LOAD CANCELLED · edits on screen were preserved. Save backup before reloading.");return;
+ }
+ // Do not silently substitute the built-in default when Drive has no record.
+ const active=rows.filter(x=>x?.id===M.IDS[gender])
+  .sort((a,b)=>String(b.updated).localeCompare(String(a.updated)))[0];
+ if(!active){
+  verifiedCloud[gender]=false;
+  show("NO "+M.IDS[gender]+" RECORD ON DRIVE · "+sourceLabel()+
+   " · No data was changed.",true);
+  return;
+ }
+ const local=M.inspect(gender);
+ if(local.source==="invalid"){
+  show("LOCAL GENESIS CACHE INVALID · "+local.error+
+   " · export or recover it before loading Drive. Nothing overwritten.",true);
+  return;
+ }
+ if(M.newerThan(local.row,active)){
+  verifiedCloud[gender]=false;
+  show("LOCAL GENESIS SAVED REVISION IS NEWER THAN DRIVE ("+
+   (local.row.updated||"unknown time")+") · kept local. Export backup before any overwrite.",true);
+  return;
  }
  const count=M.cloudRows(rows);
+ verifiedCloud[gender]=true;
  Pixel?.clearPreview(gender);V.clearCache();
- profile=M.load(gender);dirty=false;jointInput();void reloadSheet();
- paint();
- show("Cloud master sync verified · "+count+" profile(s) · "+profile.id);
+ profile=M.load(gender);dirty=false;jointInput();
+ await reloadSheet();
+ show("LOADED FROM DRIVE · "+profile.id+" · saved "+(profile.updated||"unknown time")+
+  " · "+count+" master(s) synced · original slicing restored.");
 }
 async function saveMaster(){
  if(working)return;const b=bridge();
- if(!b?.isOnline?.())return show("Connect Google Drive in Mahluk toolbar before overwriting Genesis master.",true);
+ if(!b?.isOnline?.())return show("CONNECT DRIVE FIRST · this is "+sourceLabel()+". Nothing overwritten.",true);
  try{
   working=true;$("save").disabled=true;
-  const valid=M.validate({...profile,updated:new Date().toISOString()});
-  if(!root.confirm("OVERWRITE existing "+valid.id+" rig at the SAME ID? Original source sprites are preserved."))return;
-  show("Overwriting "+valid.id+" rig profile in cloud and verifying…");
+  const version=changeVersion,genderAtSave=gender,prior=M.validate(profile);
+  const valid=M.validate({...prior,updated:new Date().toISOString()});
+  show("CHECKING EXISTING DRIVE MASTER BEFORE OVERWRITE…");
+  const remote=await b.loadOnline("genesis",valid.id);
+  if(remote){
+   const verified=M.validate(remote);
+   if(prior.updated!==verified.updated){
+    show("SAVE BLOCKED · DRIVE HAS A DIFFERENT MASTER REVISION (saved "+
+     (verified.updated||"unknown time")+"). Your current slicing was NOT overwritten. "+
+     "Export BACKUP PROFILE.JSON, then LOAD MASTER CLOUD to compare.",true);
+    return;
+   }
+  }
+  if(!root.confirm("OVERWRITE "+valid.id+" ("+(remote?"existing cloud version":"first cloud record")+
+   ") with these exact current joints, slices and pixel edits?"))return;
+  show("WRITING "+valid.id+" TO DRIVE · verifying read-back…");
   const receipt=await b.saveOnline("genesis",valid.id,valid);
-  if(!receipt?.verified)throw Error("Cloud did not verify overwrite");
-  M.apply(valid);Pixel?.clearPreview(gender);profile=valid;dirty=false;paint();
-  V.clearCache();
+  if(!receipt?.verified)throw Error("Drive read-back did not verify Save");
+  verifiedCloud[genderAtSave]=true;
+  if(version!==changeVersion||genderAtSave!==gender){
+   show("CLOUD VERIFIED · snapshot saved to Drive, but newer unsaved edits remain on screen. "+
+    "Save again to include them.",true);
+   return;
+  }
+  try{
+   M.apply(valid);Pixel?.clearPreview(gender);profile=valid;dirty=false;paint();V.clearCache();
+  }catch(localError){
+   show("CLOUD VERIFIED · "+valid.id+" saved at "+valid.updated+
+    ", but local cache failed: "+localError.message+". Reconnect Drive to reload.",true);
+   return;
+  }
   $("save").textContent="✓ MASTER OVERWRITTEN · "+gender.toUpperCase();
-  show("CLOUD VERIFIED · "+valid.id+" overwritten (not new character). Python and Animation use this Genesis master after reload.");
+  show("CLOUD VERIFIED · "+valid.id+" · saved "+valid.updated+
+   " · same-ID master overwritten. Reopen after connecting Drive to restore exactly this revision.");
   try{root.parent?.postMessage({type:"genesis:master-overwritten",gender:valid.gender,id:valid.id},root.location.origin)}catch{}
- }catch(error){show("MASTER NOT OVERWRITTEN: "+error.message,true)}
+ }catch(error){show("MASTER SAVE FAILED: "+error.message+" · current edits remain on screen.",true)}
  finally{working=false;$("save").disabled=false}
 }
 function refreshPixelParts(){
@@ -359,8 +416,17 @@ $("reset").onclick=()=>{
 };
 $("save").onclick=()=>void saveMaster();
 $("load-cloud").onclick=()=>void loadCloud().catch(e=>show(e.message,true));
-root.addEventListener("message",e=>{if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected"&&!dirty)void loadCloud().catch(()=>{})});
+root.addEventListener("message",e=>{
+ if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected"&&!dirty)
+  void loadCloud().catch(error=>show("DRIVE LOAD FAILED: "+error.message+
+   " · local/default shown, not the verified last save.",true));
+});
 root.addEventListener("pagehide",stop);
 $("native-action").value="idle";$("pivot-name").value="head";$("slice-part").value="head";
-refreshPixelParts();setZoom(fittedZoom(),{fit:true});setMode("puppet");jointInput();void reloadSheet();
+refreshPixelParts();setZoom(fittedZoom(),{fit:true});setMode("puppet");jointInput();
+void reloadSheet().then(()=>{
+ // A previously connected parent can exist before the iframe subscribes.
+ if(bridge()?.isOnline?.()&&!dirty)void loadCloud().catch(error=>
+  show("DRIVE LOAD FAILED: "+error.message+" · "+sourceLabel(),true));
+});
 })(window);
