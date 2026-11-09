@@ -29,7 +29,7 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 #frames-info{font-size:11px;white-space:normal}#mode-hint{margin-top:8px}
 #pose-parts button{min-width:100%;text-align:left;margin:2px 0;padding:5px}
 #motion-list,#character-list{width:100%}
-#animation-controls{padding:7px 0}#python-file,#import-wear{width:100%}
+#animation-controls{padding:7px 0}#python-file,#import-layer{width:100%}
 .small{font-size:10px}#python-note{font-size:11px;line-height:1.5}
 @media(max-width:950px){#page{grid-template-columns:1fr 1fr}#page>.panel:last-child{grid-column:1/-1}}
 @media(max-width:650px){#page{display:flex;flex-direction:column;padding:4px;gap:5px}#page>.panel{width:100%}
@@ -47,11 +47,10 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 <h2>THE TWO FIXED MASTER BASES</h2>
 <label>BASE BODY<select id="master-gender"><option value="male">LAFRICH MALE</option><option value="female">LAFRICH FEMALE</option></select></label>
 <p class="note">Dua ID tetap: <b>lafrich_male</b> dan <b>lafrich_female</b>. Source V6B hanya seed visual sekali, bukan sistem motion lama.</p>
-<h2>BODY PIECE · DIRECT PIXEL EDITOR</h2>
-<label>BODY PIECE<select id="part-select"></select></label>
-<div class="row"><button id="edit-piece" class="active">✎ EDIT SELECTED BODY PIECE</button><button id="seed-v6b">↻ RESTORE FULL BODY</button></div>
-<p class="note">Gambar hanya potongan tubuh yang dipilih pada SE / SW / NE / NW. Pixel tambahan ikut assigned ke slice bagian ini; pixel potongan lain tidak dihapus. Atur ulang Slice/Pivot jika bentuk atau sendi berubah.</p>
+<label>ART LAYER<select id="master-layer"></select></label>
+<div class="row"><button id="edit-master" class="active">✎ EDIT 4 VIEWS</button><button id="seed-v6b">V6B STYLE SEED</button></div>
 <h2>RIGGING / 10 PIECES</h2>
+<label>BODY PIECE<select id="part-select"></select></label>
 <div class="row"><button id="tool-rig" aria-pressed="true">✣ PIVOTS</button><button id="tool-mask" aria-pressed="false">▣ SLICES</button></div>
 <div id="pivot-controls">
 <label>PIVOT X<input type="number" id="pivot-x" min="0" max="63"></label>
@@ -76,8 +75,7 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 <h2>CUSTOM WEAR · FOUR VIEW</h2>
 <label>WEAR LAYER<select id="wear-layer"></select></label>
 <div class="row"><button id="edit-wear" class="active">✎ EDIT WEAR</button></div>
-<label>IMPORT WEAR PNG · SELECTED LAYER + VIEW (64×112)<input type="file" id="import-wear" accept="image/png"></label>
-<p class="note">Baju, celana, sepatu, rambut, dan aksesori dibuat di CHARACTER / WEAR. Layer wear hanya milik Character, tidak mengubah Lafrich Master. Tiap arah mengikuti slicing dan pivot tubuh saat dianimasikan.</p>
+<p class="note">Wear adalah layer per arah yang mengikuti transformasi bahu, siku, pinggul, dan lutut bersama tubuh.</p>
 <h2>EMOSI.EXE · FRONTMOST</h2>
 <label>FACE / EMOTION<select id="face-select"><option value="">BLANK / NONE</option></select></label>
 <div class="row"><button id="refresh-faces">↻ REFRESH EMOSI</button><button id="open-emosi">↗ EMOSI.EXE</button></div>
@@ -117,6 +115,9 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 <div class="mode-card" data-card="master">
 <h2>BODY HIERARCHY</h2><div id="hierarchy"></div>
 <p class="note">Lengan atas → lengan bawah (siku). Paha → betis (lutut). Tiap sisi berdiri sendiri. Kepala mengikuti torso. Pivot dan slice tersimpan empat arah.</p>
+<h2>IMPORT PIXEL ART</h2>
+<label>IMPORT 64×112 PNG FOR SELECTED LAYER + VIEW<input type="file" id="import-layer" accept="image/png"></label>
+<p class="note">Mengganti layer yang dipilih hanya di tampak aktif. Bukan mengubah ukuran kanvas, ID, atau file animasi.</p>
 </div>
 <div class="mode-card" data-card="character" hidden>
 <h2>CHARACTER VIEW</h2><div id="wear-info" class="note">Pilih pakaian, edit keempat arah, lalu uji pada animasi Python.</div>
@@ -223,8 +224,8 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 <script src="./emotion-studio/emotion-library.js?v=lafrich-puppet-1"></script>
 <script src="./emosi-bridge.js?v=lafrich-puppet-1"></script>
 <script src="./emotion-studio/shared-pixel-selection.js?v=lafrich-puppet-1"></script>
-<script src="./emotion-studio/shared-pixel-editor.js?v=lafrich-paste-fix-2"></script>
-<script src="./lafrich-puppet-core.js?v=lafrich-piece-editor-1"></script>
-<script src="./lafrich-puppet-renderer.js?v=lafrich-nude-body-restore-2"></script>
-<script src="./lafrich-puppet-studio.js?v=lafrich-nude-body-restore-2"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=lafrich-puppet-1"></script>
+<script src="./lafrich-puppet-core.js?v=lafrich-puppet-10parts"></script>
+<script src="./lafrich-puppet-renderer.js?v=lafrich-puppet-10parts"></script>
+<script src="./lafrich-puppet-studio.js?v=lafrich-puppet-10parts"></script>
 </body></html>
