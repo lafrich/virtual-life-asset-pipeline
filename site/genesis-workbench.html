@@ -27,7 +27,7 @@ label.field{display:block;font-size:11px;font-weight:bold;margin:8px 0}
 label.field input,label.field select{display:block;width:100%;padding:7px;margin-top:4px;border:1px solid var(--edge);background:white}
 .btnrow{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:7px 0}.btnrow>*{flex:1;min-width:60px}
 .section{display:none}.section.active{display:block}
-#part-navigation{border:1px solid #a7bbd1;background:#e1eaf5;padding:7px;margin:8px 0}#part-navigation .btnrow{flex-wrap:nowrap}#part-navigation select{min-width:0;flex:2;width:100%;padding:5px}#part-navigation button{padding:6px 3px;min-width:48px}#all-parts{margin:5px 0}#all-parts summary{cursor:pointer;font-size:11px;font-weight:bold}#bodyparts{display:grid;grid-template-columns:1fr;gap:2px;margin-top:6px}#review-matrix{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;margin-top:6px}#review-matrix button{font-size:9px;min-width:0;padding:3px 1px}#review-matrix button[aria-pressed=true]{background:#c5efd9;border-color:#278d5c}#review-matrix button.current{outline:2px solid #3d73c2}#rig-review-message,#test-review-message{font-size:11px;font-weight:bold}#test-scrub{width:100%}#bodyparts button{text-align:left;padding:6px 7px}
+#draft-management{border:1px solid #a7bbd1;background:#eaf2fa;padding:8px;margin:7px 0}#draft-management summary{font-size:11px;cursor:pointer;font-weight:bold}#draft-management .btnrow button{font-size:10px}#draft-management select{width:100%;max-width:100%}#part-navigation{border:1px solid #a7bbd1;background:#e1eaf5;padding:7px;margin:8px 0}#part-navigation .btnrow{flex-wrap:nowrap}#part-navigation select{min-width:0;flex:2;width:100%;padding:5px}#part-navigation button{padding:6px 3px;min-width:48px}#all-parts{margin:5px 0}#all-parts summary{cursor:pointer;font-size:11px;font-weight:bold}#bodyparts{display:grid;grid-template-columns:1fr;gap:2px;margin-top:6px}#review-matrix{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;margin-top:6px}#review-matrix button{font-size:9px;min-width:0;padding:3px 1px}#review-matrix button[aria-pressed=true]{background:#c5efd9;border-color:#278d5c}#review-matrix button.current{outline:2px solid #3d73c2}#rig-review-message,#test-review-message{font-size:11px;font-weight:bold}#test-scrub{width:100%}#bodyparts button{text-align:left;padding:6px 7px}
 #bodyparts .parent{font-size:9px;color:#6c7e94}
 #views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px 0}
 #views button{padding:5px 2px;min-width:0;font-size:10px}
@@ -75,6 +75,14 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <p id="part-progress">Review: 0 / 40 part-angle combinations</p>
    <div id="review-matrix" aria-label="Rig review completion by angle and part"></div>
   </section>
+  <details id="draft-management">
+   <summary>☁ DRAFT BACKUP · IMPORT · REVISION HISTORY</summary>
+   <div class="btnrow"><button id="cloud-draft">☁ SAVE DRAFT VERSION</button><button id="import-draft">↑ IMPORT JSON</button></div>
+   <input id="draft-file" type="file" accept=".json,application/json" hidden>
+   <div class="btnrow"><button id="refresh-drafts">↻ REFRESH CLOUD REVISIONS</button><button id="load-cloud-draft">↓ RESTORE SELECTED</button></div>
+   <label class="field">SAVED CLOUD DRAFT VERSIONS<select id="draft-revisions"><option value="">Connect Drive to browse revisions</option></select></label>
+   <p>Accessible at every stage. Each Drive draft gets a new immutable file, so other devices cannot silently overwrite it.</p>
+  </details>
   <section class="section active" data-panel="pixel">
    <h2>BODY PART PIXEL EDITOR</h2>
    <p>Setiap body part punya piksel independen di keempat sudut. Edit satu bagian tanpa menimpa area bagian lain.</p>
@@ -99,7 +107,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <h2>03 · PROCEDURAL BINDING</h2>
    <p>Binding mengunci mask, 10-piece parent hierarchy, dan pivot 4-angle dalam satu kontrak data. Animasi menyimpan transform Python, bukan sprite frame-by-frame.</p>
    <button id="make-binding" class="active">⛓ BIND PIVOT + SLICES</button>
-   <div class="btnrow"><button id="export-python" disabled>↓ BINDING .PY</button><button id="export-json" disabled>↓ MASTER .JSON</button></div>
+   <div class="btnrow"><button id="export-python" disabled>↓ BINDING .PY</button><button id="export-json" disabled>↓ BINDING .JSON</button></div>
    <button id="bind-next" disabled>TEST BINDING →</button>
   </section>
   <section class="section" data-panel="test">
@@ -118,10 +126,6 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <p>Master tidak memakai database karakter atau animasi sebelumnya.</p>
    <button id="save-master" class="active">✓ SAVE LAFRICH GENESIS MASTER</button>
    <div class="btnrow"><button id="cloud-master">☁ SAVE MASTER TO DRIVE</button><button id="load-cloud">↓ LOAD MASTER</button></div>
-   <h3>DRAFT SAFETY · CROSS-DEVICE</h3>
-   <div class="btnrow"><button id="cloud-draft">☁ SAVE DRAFT VERSION</button><button id="load-cloud-draft">↓ RESTORE CLOUD DRAFT</button></div>
-   <div class="btnrow"><button id="import-draft">↑ IMPORT DRAFT JSON</button><input id="draft-file" type="file" accept=".json,application/json" hidden></div>
-   <p>Cloud draft saves create separate revision files. Existing drafts and approved masters are never automatically overwritten.</p>
    <div class="btnrow"><button id="download-master">↓ DOWNLOAD .JSON</button><button id="download-binding">↓ DOWNLOAD .PY</button></div>
    <p>Master Male dan Female disimpan terpisah. Editor karakter dan database animasi dapat memakai kontrak ini sebagai source.</p>
   </section>
