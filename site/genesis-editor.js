@@ -215,7 +215,7 @@ async function saveMaster(){
   const receipt=await b.saveOnline("genesis",valid.id,valid);
   if(!receipt?.verified)throw Error("Cloud did not verify overwrite");
   M.apply(valid);Pixel?.clearPreview(gender);profile=valid;dirty=false;paint();
-  V.clearCache();void reloadSheet();
+  V.clearCache();
   $("save").textContent="✓ MASTER OVERWRITTEN · "+gender.toUpperCase();
   show("CLOUD VERIFIED · "+valid.id+" overwritten (not new character). Python and Animation use this Genesis master after reload.");
   try{root.parent?.postMessage({type:"genesis:master-overwritten",gender:valid.gender,id:valid.id},root.location.origin)}catch{}

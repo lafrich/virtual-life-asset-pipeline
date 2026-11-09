@@ -8,6 +8,7 @@ on:
       - "site/genesis-character-python-preview.js"
       - "site/genesis-master-rig.js"
       - "site/genesis-puppet-renderer.js"
+      - "site/genesis-master-pixels.js"
       - "site/genesis-pose-clipboard.js"
       - "site/genesis-editor.*"
       - "site/v6p-character-wizard.js"
@@ -47,6 +48,7 @@ jobs:
           node --check site/genesis-character-python-preview.js
           node --check site/genesis-master-rig.js
           node --check site/genesis-puppet-renderer.js
+          node --check site/genesis-master-pixels.js
           node --check site/genesis-pose-clipboard.js
           node --check site/genesis-editor.js
           node tests/test_genesis_master_rig.cjs

@@ -183,6 +183,51 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   await genesis.locator("#stage").click({position:{x:b.width*32/64,y:b.height*30/112}});
   await genesis.locator("#save").click();
   await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
+  // Reuse Emosi's existing pixel editor on an actual Genesis Custom Wear
+  // native source layer. Apply modifies in-memory master only; Save overwrites
+  // the same cloud master ID and not a standalone Character record.
+  await genesis.locator("#pixel-part").selectOption("top/custom");
+  await genesis.locator("#native-action").selectOption("idle");
+  await genesis.locator("#native-frame").fill("1");
+  await genesis.locator("#pixel-open").click();
+  await genesis.locator("#pixelOverlay:not([hidden])").waitFor({timeout:30000});
+  await genesis.locator("#pixelColor").fill("#ff00ff");
+  await genesis.locator("#pixelGrid").uncheck();
+  await genesis.locator("#pixelOnion").uncheck();
+  const pc=await genesis.locator("#pixelCanvas").evaluate(c=>{
+   const b=c.getBoundingClientRect();
+   return {w:b.width,h:b.height};
+  });
+  await genesis.locator("#pixelCanvas").click({position:{
+   x:Math.floor(pc.w*10.5/64),y:Math.floor(pc.h*20.5/112)
+  }});
+  await genesis.locator("#pixelApply").click();
+  await genesis.locator("#pixelOverlay").waitFor({state:"hidden",timeout:30000});
+  await genesis.locator("#save").click();
+  await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
+  let sourceSaved=JSON.parse([...files.values()]
+   .find(x=>x.name==="genesis__genesis_male_nude.json").content).record;
+  const cellKey="top/custom|idle|se|0";
+  assert.ok(sourceSaved.pixelFrames?.[cellKey]?.startsWith("data:image/png;base64,"),
+   "Genesis Pixel Editor did not persist to the selected native source layer");
+  const editedCell=await genesis.locator("#stage").evaluate(async(c,src)=>{
+   const im=new Image();im.src=src;await im.decode();
+   const off=document.createElement("canvas");off.width=64;off.height=112;
+   off.getContext("2d").drawImage(im,0,0);
+   return [...off.getContext("2d").getImageData(10,20,1,1).data];
+  },sourceSaved.pixelFrames[cellKey]);
+  assert.deepEqual(editedCell,[255,0,255,255],"Edited Genesis source cell must retain exact magenta RGBA");
+  await genesis.locator("#pixel-open").click();
+  await genesis.locator("#pixelOverlay:not([hidden])").waitFor({timeout:30000});
+  await genesis.locator("#pixelGrid").uncheck();
+  await genesis.locator("#pixelOnion").uncheck();
+  const reopened=await genesis.locator("#pixelCanvas").evaluate(c=>{
+   const x=Math.floor((10.5)*c.width/64),y=Math.floor((20.5)*c.height/112);
+   return [...c.getContext("2d").getImageData(x,y,1,1).data];
+  });
+  assert.deepEqual(reopened,[255,0,255,255],"Genesis pixel correction did not reopen");
+  await genesis.locator("#pixelClose").click();
+  // The other Genesis gender remains independent.
   await genesis.locator("#mode-puppet").click();
   await genesis.locator("#joint-x").fill("36");
   await genesis.locator("#joint-x").press("Tab");

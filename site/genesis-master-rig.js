@@ -1,5 +1,5 @@
 /* Genesis master profiles, strictly limited to the two original approved bases.
- * Stable IDs remain unchanged. This stores editable rig/masks, NOT new characters
+ * Stable IDs remain unchanged. Stores rig, mask and layer pixel corrections; NOT new characters
  * and NOT an executable animation. The original Genesis source PNGs stay intact.
  */
 (function(root,factory){"use strict";const api=factory(root);if(typeof module==="object"&&module.exports)module.exports=api;if(root)root.GenesisMasterRig=api;})(typeof window!=="undefined"?window:null,function(root){
