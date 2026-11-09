@@ -28,11 +28,16 @@ test("Old standalone Emotion Studio app is retired and redirects to Emosi.exe",(
 });
 test("Mahluk Hidup bridge loads Emosi.exe local and Drive database, never old published catalog",()=>{
  const js=read("site/emosi-bridge.js");
- const studio=read("site/v6p-studio.html");
+ const studio=read("site/genesis-workbench.html");
+ const retired=read("site/v6p-studio.html");
  assert.match(js,/emotion-studio-local-v1/);
  assert.match(js,/D\.loadAll\(/);
  assert.doesNotMatch(js,/U\.loadCatalog\(/);
  assert.match(js,/source:"emosi"/);
  assert.match(studio,/emosi-bridge\.js/);
+ assert.match(studio,/nav-emotion/);
+ assert.match(studio,/emotion-frame/);
+ assert.match(retired,/LEGACY ROUTE INACTIVE/);
+ assert.doesNotMatch(retired,/<script\\b/i);
  assert.doesNotMatch(studio,/v6b-reset-studio\.html/);
 });
