@@ -14,7 +14,7 @@ const MASTER_KEY="vl-lafrich-genesis-approved-masters-v1";
 const MASTER_FORMAT="lafrich-genesis-master-v1",BIND_FORMAT="lafrich-genesis-binding-v1";
 const cv=() => R.rgba(64,112),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const clone=C.clone;
-let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5;
+let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5,activeLayer="body";
 let drafts={},source={},preparedCache=new Map(),rev=0,paintDrag=null,renderRequest=0;
 let pixelEditor=null,pixelSession=null,maskCopied=null,maskUndo=[],maskRedo=[];
 let faceEntries=[],faceImage=null,faceId="",page="workshop",testPose=null;
@@ -71,31 +71,32 @@ async function canvasFromData(data){
  return c;
 }
 async function sourceCanvases(g){
+ // Composite physical source layers only for references and Python neutral export;
+ // keep skin/body, top, trousers, shoes and hair independently editable in rig.
  source[g]={};
- for(const d of DIR)source[g][d]=await canvasFromData(drafts[g].rig.layers.body[d]);
-}
-async function seed(g){
- // Only original approved source; never create an invented male/female placeholder.
- const original=root.VLGenesisSource?.bases?.[SOURCE[g]];
- if(!original||original.gender!==g||original.faceSource!=="emosi.exe")
-  throw Error("Frozen V6B "+SOURCE[g]+" source not found");
- const native=await R.seedFromV6B(g),m=C.master(g);
- const canvases={};
+ const files=drafts[g].rig.layers;
  for(const d of DIR){
   const c=cv(),g2=c.getContext("2d",{willReadFrequently:true});
   g2.imageSmoothingEnabled=false;
-  const files=R.resolveLayers(native,null,d);
-  let drawn=0;
   for(const layer of C.LAYERS){
-   const img=await R.loadPng(files[layer]);if(!img)continue;
-   g2.drawImage(img,0,0);drawn++;
+   const png=files[layer]?.[d],img=await R.loadPng(png);
+   if(img)g2.drawImage(img,0,0);
   }
-  if(!drawn)throw Error("V6B source for "+g+" "+d+" has no layers");
-  m.layers.body[d]=c.toDataURL("image/png");
-  canvases[d]=c;
+  source[g][d]=c;
  }
- drafts[g]={rig:C.validateMaster(m),bound:null,approved:false,saved:false,edited:new Date().toISOString()};
- source[g]=canvases;
+}
+async function seed(g){
+ const original=root.VLGenesisSource?.bases?.[SOURCE[g]];
+ if(!original||original.gender!==g||original.faceSource!=="emosi.exe")
+  throw Error("Frozen V6B "+SOURCE[g]+" source not found");
+ // Preserve every V6B physical layer. A flattened source would prevent
+ // independent skin/garment customization in future Character Editor.
+ const originalLayers=await R.seedFromV6B(g);
+ const rig=C.validateMaster(originalLayers);
+ if(!DIR.every(d=>Boolean(rig.layers.body[d])))
+  throw Error("V6B missing a physical body layer");
+ drafts[g]={rig,bound:null,approved:false,saved:false,edited:new Date().toISOString()};
+ await sourceCanvases(g);
  R.clearCache();flushCache();persistDraft();
 }
 async function ensure(g){
@@ -218,7 +219,7 @@ function buildPartButtons(){
  }
 }
 function syncControls(){
- $("gender").value=gender;
+ $("gender").value=gender;$("art-layer").value=activeLayer;
  $("pivot-x").value=master()?.pivots?.[dir]?.[selected]?.x??32;
  $("pivot-y").value=master()?.pivots?.[dir]?.[selected]?.y??50;
  $("selection-details").textContent=labels[selected]+" · "+dir.toUpperCase();
@@ -312,54 +313,67 @@ function channel(v){return cv().getContext("2d",{willReadFrequently:true})}
 async function openPixels(){
  if(step!=="pixel")return switchStep("pixel");
  if(!P)throw Error("Original pixel editor engine missing");
+ const layer=activeLayer;
  const atlas=document.createElement("canvas");atlas.width=64;atlas.height=448;
  const a=atlas.getContext("2d",{willReadFrequently:true}),refs={};
- const idx=PARTS.indexOf(selected);
+ const idx=PARTS.indexOf(selected),originals={};
  for(let i=0;i<4;i++){
-  const d=DIR[i],src=source[gender][d],raw=src.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
+  const d=DIR[i],src=await canvasFromData(master().layers[layer]?.[d]);
+  originals[d]=src.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
+  const raw=src.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
   const mask=C.decode(master().masks[d]);
   for(let k=0;k<C.N;k++)if(mask[k]!==idx)raw.data.fill(0,k*4,k*4+4);
-  a.putImageData(raw,0,i*112);refs[d]=src;
+  a.putImageData(raw,0,i*112);refs[d]=source[gender][d];
  }
  if(!pixelEditor){
   pixelEditor=P.create({overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
    onApply:applyPixels,onSaveDefault:applyPixels,onRestore:()=>{}});
  }
- pixelSession={gender,selected};
- pixelEditor.open({id:"LAFRICH GENESIS "+gender.toUpperCase()+" / "+selected,
+ pixelSession={gender,selected,layer,originals};
+ pixelEditor.open({id:"LAFRICH GENESIS "+gender.toUpperCase()+" / "+selected+" / "+layer,
   initialAtlas:atlas,originalAtlas:atlas,referenceImages:refs,direction:dir});
- status("Pixel editing "+labels[selected]+" · independent SE/SW/NE/NW. APPLY commits all four angles.");
+ status("Pixel editing "+labels[selected]+" / "+layer+" · SE/SW/NE/NW with original selection tools.");
 }
 function applyPixels(){
- if(!pixelSession||pixelSession.gender!==gender||pixelSession.selected!==selected){
+ if(!pixelSession||pixelSession.gender!==gender||
+    pixelSession.selected!==selected||pixelSession.layer!==activeLayer){
   status("Pixel editing context changed; source not modified",true);return false;
  }
  try{
-  const atl=pixelEditor.getAtlas(),g=atl.getContext("2d",{willReadFrequently:true});
-  const next={};
-  const idx=PARTS.indexOf(selected);
+  const atlas=pixelEditor.getAtlas(),g=atlas.getContext("2d",{willReadFrequently:true});
+  const next={},idx=PARTS.indexOf(selected),layer=activeLayer;
+  // Draw into the selected layer only. Every other physical appearance layer
+  // stays pixel-exact, allowing independent future skin/clothing edits.
   for(let di=0;di<4;di++){
-   const d=DIR[di],src=source[gender][d],s=src.getContext("2d",{willReadFrequently:true});
-   const old=s.getImageData(0,0,64,112),edited=g.getImageData(0,di*112,64,112);
-   const mask=C.decode(master().masks[d]);
-   const image=old.data,part=edited.data;
+   const d=DIR[di];
+   const oldCtx=cv().getContext("2d",{willReadFrequently:true});
+   // Restore full physical layer snapshot, not only the selected slice.
+   const original=pixelSession.originals[d];
+   oldCtx.putImageData(original,0,0);
+   const old=oldCtx.getImageData(0,0,64,112),edited=g.getImageData(0,di*112,64,112);
+   const mask=C.decode(master().masks[d]),pixels=old.data,part=edited.data;
    for(let k=0;k<C.N;k++){
     const p=k*4;
-    if(mask[k]===idx){image.fill(0,p,p+4);mask[k]=255}
+    if(mask[k]===idx) pixels.fill(0,p,p+4);
     if(part[p+3]){
-     image.set(part.subarray(p,p+4),p);mask[k]=idx;
+     pixels.set(part.subarray(p,p+4),p);
+     mask[k]=idx;
     }
    }
-   const c=cv();c.getContext("2d").putImageData(old,0,0);
-   next[d]={canvas:c,mask:C.encode(mask),png:c.toDataURL("image/png")};
+   oldCtx.putImageData(old,0,0);
+   next[d]={mask:C.encode(mask),png:oldCtx.canvas.toDataURL("image/png")};
   }
   for(const d of DIR){
-   source[gender][d]=next[d].canvas;
-   master().layers.body[d]=next[d].png;
+   master().layers[layer][d]=next[d].png;
    master().masks[d]=next[d].mask;
   }
-  R.clearCache();pixelSession=null;makeDirty();syncControls();
-  status("APPLIED "+labels[selected]+" · 4 direction pixels saved as a draft; binding invalidated.");
+  R.clearCache();
+  pixelSession=null;
+  // Rebuild composite so slice coverage and Python neutral export reflect
+  // the revised physical layers without baking garments into body pixels.
+  void sourceCanvases(gender).then(()=>{makeDirty();syncControls();
+   status("APPLIED "+labels[selected]+" / "+layer+" · 4 original layer angles updated.");
+  }).catch(e=>status("Composite rebuild failed: "+e.message,true));
   return true;
  }catch(e){status("Pixel editor Apply failed: "+e.message,true);return false}
 }
@@ -395,7 +409,7 @@ async function makeBinding(){
    hierarchy:{parts:[...PARTS],parents:clone(C.PARENTS),drawOrder:[...C.DRAW_ORDER]},
    views:Object.fromEntries(DIR.map(d=>[d,{
     pivots:clone(m.pivots[d]),maskBase64:m.masks[d],
-    spritePng:m.layers.body[d],coverage:report.counts[d].visible
+    spritePng:source[gender][d].toDataURL("image/png"),coverage:report.counts[d].visible
    }])),
    rig:clone(m),pythonEngine:"genesis_procedural_runtime.py",
    createdAt:new Date().toISOString()
@@ -493,7 +507,7 @@ function setup(){
   const g=e.target.value;
   if(!SOURCE[g])return;
   try{
-   gender=g;dir="se";selected="head";maskUndo=[];maskRedo=[];faceId="";faceImage=null;
+   gender=g;dir="se";selected="head";activeLayer="body";maskUndo=[];maskRedo=[];faceId="";faceImage=null;
    await ensure(g);syncControls();flushCache();void refreshFace();
   }catch(err){status("V6B source error: "+err.message,true)}
  };
@@ -502,6 +516,7 @@ function setup(){
   try{await seed(gender);step="pixel";syncControls();status("Restored ORIGINAL V6B "+gender+"; previous approved master left untouched.")}catch(e){status(e.message,true)}
  };
  $("save-draft").onclick=()=>{persistDraft();download("genesis_"+gender+"_draft.json",JSON.stringify(record(),null,2));status("Editable draft exported and saved locally (NOT approved).")};
+ $("art-layer").onchange=()=>{activeLayer=$("art-layer").value;status("Editing layer "+activeLayer+" · body part "+labels[selected])};
  $("pixel-next").onclick=()=>switchStep("rig");
  $("rig-next").onclick=()=>switchStep("bind");
  $("edit-pixels").onclick=()=>void openPixels().catch(e=>status(e.message,true));
