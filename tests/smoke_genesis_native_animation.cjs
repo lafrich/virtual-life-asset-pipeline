@@ -32,7 +32,8 @@ const url="http://127.0.0.1:4173/mahluk-animation-native.html";
   await page.locator('#pose-copy').click();
   await page.locator('#direction-buttons button').filter({hasText:'SW'}).click();
   await page.locator('#pose-paste-flip').click();
-  await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('PASTED'),null,{timeout:25000});
+  // Paste mutates pose synchronously. The renderer immediately overwrites
+  // the transient "PASTED" status, so verify actual exported coordinates below.
   await page.locator('#pose-copy-all').click();
   await page.locator('#direction-buttons button').filter({hasText:'NE'}).click();
   await page.locator('#pose-paste-all').click();
