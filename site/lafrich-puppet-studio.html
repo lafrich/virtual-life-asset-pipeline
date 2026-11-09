@@ -47,10 +47,17 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 <h2>THE TWO FIXED MASTER BASES</h2>
 <label>BASE BODY<select id="master-gender"><option value="male">LAFRICH MALE</option><option value="female">LAFRICH FEMALE</option></select></label>
 <p class="note">Dua ID tetap: <b>lafrich_male</b> dan <b>lafrich_female</b>. Source V6B hanya seed visual sekali, bukan sistem motion lama.</p>
-<label>ART LAYER<select id="master-layer"></select></label>
-<div class="row"><button id="edit-master" class="active">✎ EDIT 4 VIEWS</button><button id="seed-v6b">V6B STYLE SEED</button></div>
-<h2>RIGGING / 10 PIECES</h2>
+<h2>BODY PIECE · DIRECT PIXEL EDITOR</h2>
 <label>BODY PIECE<select id="part-select"></select></label>
+<div class="row"><button id="edit-piece" class="active">✎ EDIT SELECTED BODY PIECE</button><button id="seed-v6b">V6B STYLE SEED</button></div>
+<p class="note">Gambar hanya potongan tubuh yang dipilih pada SE / SW / NE / NW. Pixel tambahan ikut assigned ke slice bagian ini; pixel potongan lain tidak dihapus. Atur ulang Slice/Pivot jika bentuk atau sendi berubah.</p>
+<details>
+ <summary style="cursor:pointer;font-weight:bold;padding:7px;background:#d9e5f2">ADVANCED · ART LAYERS (HAIR / WEAR / ACCESSORY)</summary>
+ <p class="note">Art Layer menyimpan bahan gambar yang terpisah. Body Piece menentukan potongan yang bergerak. Gunakan opsi lanjutan ini jika perlu mengedit seluruh layer rambut, pakaian, atau aksesori.</p>
+ <label>ART LAYER<select id="master-layer"></select></label>
+ <div class="row"><button id="edit-master">✎ EDIT FULL ART LAYER</button></div>
+</details>
+<h2>RIGGING / 10 PIECES</h2>
 <div class="row"><button id="tool-rig" aria-pressed="true">✣ PIVOTS</button><button id="tool-mask" aria-pressed="false">▣ SLICES</button></div>
 <div id="pivot-controls">
 <label>PIVOT X<input type="number" id="pivot-x" min="0" max="63"></label>
@@ -225,7 +232,7 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 <script src="./emosi-bridge.js?v=lafrich-puppet-1"></script>
 <script src="./emotion-studio/shared-pixel-selection.js?v=lafrich-puppet-1"></script>
 <script src="./emotion-studio/shared-pixel-editor.js?v=lafrich-paste-fix-2"></script>
-<script src="./lafrich-puppet-core.js?v=lafrich-puppet-10parts"></script>
+<script src="./lafrich-puppet-core.js?v=lafrich-piece-editor-1"></script>
 <script src="./lafrich-puppet-renderer.js?v=lafrich-puppet-10parts"></script>
-<script src="./lafrich-puppet-studio.js?v=lafrich-paste-fix-2"></script>
+<script src="./lafrich-puppet-studio.js?v=lafrich-piece-editor-1"></script>
 </body></html>
