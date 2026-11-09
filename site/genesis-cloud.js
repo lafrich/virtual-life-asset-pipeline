@@ -113,7 +113,6 @@ async function load(id){
  if(outer.schema!=="lafrich-genesis-cloud-v1"||outer.id!==id||
   outer.sha256!==await hash(JSON.stringify(outer.master)))throw Error("Genesis cloud integrity error");
  validate(id,outer.master);
- baselines.set(id,outer.sha256);
  return outer.master;
 }
 async function createAndWrite(parentId,name,data){
@@ -126,6 +125,11 @@ async function createAndWrite(parentId,name,data){
   method:"PATCH",headers:{"Content-Type":"application/json; charset=UTF-8"},body:data
  });
  return created.id;
+}
+async function acknowledgeLoadedMaster(id,master){
+ validate(id,master);
+ // Called only AFTER the user confirms a cloud master replaces their draft.
+ baselines.set(id,await hash(JSON.stringify(master)));
 }
 async function save(id,master){
  validate(id,master);
@@ -156,6 +160,7 @@ async function save(id,master){
  const verified=await load(id);
  if(!verified||await hash(JSON.stringify(verified))!==newSha)
   throw Error("Drive read-back does not match this exact master upload");
+ baselines.set(id,newSha);
  return {id,fileId:file.id,verified:true,historyPreserved:true};
 }
 const DRAFT_FORMAT="lgr-1-cloud-draft-v1";
@@ -220,5 +225,5 @@ async function loadDraft(id,fileId){
  validateDraft(id,value.record);
  return {record:value.record,name:file.name,fileId:file.id};
 }
-root.VLGenesisCloud=Object.freeze({connect,connected,save,load,saveDraft,listDrafts,loadDraft});
+root.VLGenesisCloud=Object.freeze({connect,connected,save,load,acknowledgeLoadedMaster,saveDraft,listDrafts,loadDraft});
 })(window);
