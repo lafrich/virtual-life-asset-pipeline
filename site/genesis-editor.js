@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),M=root.GenesisMasterRig,P=root.GenesisPu
 if(!M||!P||!C||!V){document.body.textContent="Genesis master dependencies missing";return}
 let gender="male",dir="se",mode="puppet",profile=M.load(gender),sheet=null,selected="head",pivot="head",
  maskPart="head",sliceTool="select",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0,changeVersion=0,
- pixelEditor=null,pixelSession=null,pixelOpening=false;
+ pixelEditor=null,pixelSession=null,pixelOpening=false,appearanceClipboard=null;
 const verifiedCloud={male:false,female:false};
 const stage=$("stage"),viewport=$("stage-viewport"),ctx=stage.getContext("2d"),srcCtx=$("source-preview").getContext("2d");
 let zoom=4,zoomFit=true,pan=false;
@@ -127,7 +127,7 @@ function changeGender(next){
  if(pixelEditor?.isOpen()){pixelEditor.close();pixelSession=null}
  Pixel?.clearPreview(gender);
  gender=next;changeVersion++;profile=M.load(gender);dir="se";$("dir").value=dir;
- refreshPixelParts();
+ refreshPixelParts();appearanceClipboard=null;updateAppearanceControls();
  dirty=false;setFrame();jointInput();void reloadSheet();
 }
 function setFrame(){
@@ -294,13 +294,21 @@ function applyPixelSource(){
  if(!session||!pixelEditor||session.gender!==gender)return false;
  try{
   const previous=M.validate(profile),source=session.source;
-  const frames=Pixel.updatedFrames(session.gender,session.part,session.action,session.frame,
-   pixelEditor.getAtlas(),source.clean,previous,source.nativeOriginal);
-  const next=M.validate({...previous,pixelFrames:frames});
+  let next;
+  if(session.scope==="master"){
+   const appearanceMaster=Pixel.updatedAppearance(session.gender,session.part,
+    pixelEditor.getAtlas(),source.clean,previous,source.nativeOriginal);
+   next=M.validate({...previous,appearanceMaster});
+  }else{
+   const pixelFrames=Pixel.updatedFrames(session.gender,session.part,session.action,session.frame,
+    pixelEditor.getAtlas(),source.clean,previous,source.nativeOriginal);
+   next=M.validate({...previous,pixelFrames});
+  }
   profile=next;Pixel.preview(gender,profile);pixelSession=null;
   V.clearCache();markEdited();void reloadSheet();
-  show("PIXEL EDIT APPLIED · "+session.part+" / "+session.action.toUpperCase()+
-   " / FRAME "+(session.frame+1)+" · SAVE · OVERWRITE MASTER to sync Drive");
+  show("PIXELS APPLIED TO "+(session.scope==="master"?"4-VIEW APPEARANCE · ALL 11 ANIMATIONS":
+   session.action.toUpperCase()+" / FRAME "+(session.frame+1))+
+   " · "+session.part+" · SAVE · OVERWRITE MASTER to sync Drive");
   return true;
  }catch(e){show("GENESIS PIXEL SAVE REJECTED: "+e.message,true);return false}
 }
@@ -310,15 +318,17 @@ async function openPixelEditor(){
   show("Genesis source or shared Pixel Editor is not ready",true);return;
  }
  const session={
-  gender,dir,part:$("pixel-part").value,action:$("native-action").value,
+  gender,dir,scope:$("pixel-scope").value,part:$("pixel-part").value,action:$("native-action").value,
   frame:Math.max(0,Number($("native-frame").value)-1),version:changeVersion
  };
  if(!session.part)return show("Choose the source part to edit",true);
  pixelOpening=true;$("pixel-open").disabled=true;$("pixel-open-side").disabled=true;
  try{
-  const source=await Pixel.atlases(session.gender,session.part,session.action,session.frame,profile);
+  const source=await Pixel.atlases(session.gender,session.part,session.action,session.frame,
+   profile,{master:session.scope==="master"});
   if(session.gender!==gender||session.dir!==dir||session.version!==changeVersion||
-   session.action!==$("native-action").value||session.part!==$("pixel-part").value||
+   session.action!==$("native-action").value||session.scope!==$("pixel-scope").value||
+   session.part!==$("pixel-part").value||
    session.frame!==Math.max(0,Number($("native-frame").value)-1))return;
   const references={};
   for(const d of Pixel.DIRS)
@@ -331,14 +341,90 @@ async function openPixelEditor(){
   }
   pixelSession={...session,source};
   pixelEditor.open({
-   id:session.gender+" / "+session.part+" / "+session.action+" / F"+(session.frame+1),
+   id:session.gender+" / "+session.part+" / "+(session.scope==="master"?"APPEARANCE 4 VIEW":
+     session.action+" / F"+(session.frame+1)),
    initialAtlas:source.edited,originalAtlas:source.clean,
    referenceImages:references,direction:session.dir
   });
   $("pixelStatus").textContent="GENESIS "+session.gender.toUpperCase()+" · SOURCE "+session.part+
-   " · F"+(session.frame+1)+" · APPLY then OVERWRITE MASTER";
+   " · "+(session.scope==="master"?"4 VIEW MASTER → 11 NATIVE ANIMATIONS":
+     session.action.toUpperCase()+" FRAME "+(session.frame+1)+" ONLY")+
+   " · APPLY then SAVE · OVERWRITE MASTER";
  }catch(e){show("PIXEL EDITOR FAILED: "+e.message,true)}
  finally{pixelOpening=false;$("pixel-open").disabled=false;$("pixel-open-side").disabled=false}
+}
+function currentAppearanceKey(){
+ return Pixel.appearanceKey($("pixel-part").value,dir);
+}
+function updateAppearanceControls(){
+ const master=$("pixel-scope").value==="master";
+ $("pixel-open").textContent=master?"▦ MASTER APPEARANCE · 4 VIEWS":"▦ FRAME PIXEL CORRECTION";
+ $("pixel-open-side").textContent=master?"✎ EDIT APPEARANCE 4 VIEW":"✎ CORRECT CURRENT FRAME";
+ $("appearance-copy").disabled=!master;
+ $("appearance-paste").disabled=!master||!appearanceClipboard;
+ $("appearance-paste-flip").disabled=!master||!appearanceClipboard;
+ $("appearance-clear").disabled=!master;
+ $("frame-clear").disabled=master;
+}
+function previewPixelChange(next,notice){
+ profile=M.validate(next);Pixel.preview(gender,profile);V.clearCache();
+ markEdited();void reloadSheet().then(()=>show(notice+" · UNSAVED · SAVE · OVERWRITE MASTER"));
+}
+async function copyAppearanceView(){
+ if($("pixel-scope").value!=="master")return;
+ try{
+  const part=$("pixel-part").value;
+  const source=await Pixel.atlases(gender,part,"idle",0,profile,{master:true});
+  const index=Pixel.DIRS.indexOf(dir);
+  const frame=Pixel.split(source.edited,index);
+  appearanceClipboard={part,gender,dir,png:frame.toDataURL("image/png")};
+  updateAppearanceControls();
+  show("COPIED "+part+" · "+dir.toUpperCase()+" · choose another view, then PASTE or PASTE FLIP");
+ }catch(e){show("Cannot copy 4-view source: "+e.message,true)}
+}
+async function pasteAppearanceView(flip=false){
+ const stamp=appearanceClipboard;
+ if(!stamp||stamp.gender!==gender||stamp.part!==$("pixel-part").value){
+  show("Copy the same Genesis source part first; cannot paste from another master/part.",true);return;
+ }
+ if(pixelOpening||working)return;
+ pixelOpening=true;
+ try{
+  const atDir=dir,atGender=gender,atPart=stamp.part,version=changeVersion;
+  const source=await Pixel.atlases(atGender,atPart,"idle",0,profile,{master:true});
+  const image=await new Promise((resolve,reject)=>{
+   const im=new Image();im.onload=()=>resolve(im);
+   im.onerror=()=>reject(Error("Copied master pixels are unreadable"));im.src=stamp.png;
+  });
+  if(version!==changeVersion||atGender!==gender||atDir!==dir||atPart!==$("pixel-part").value){
+   show("Paste cancelled because source or direction changed.",true);return;
+  }
+  const index=Pixel.DIRS.indexOf(atDir);
+  const cv=source.edited,g=cv.getContext("2d"),y=index*112;
+  g.clearRect(0,y,64,112);
+  if(flip){g.save();g.translate(64,y);g.scale(-1,1);g.drawImage(image,0,0);g.restore()}
+  else g.drawImage(image,0,y);
+  const appearanceMaster=Pixel.updatedAppearance(gender,atPart,cv,source.clean,profile,source.nativeOriginal);
+  previewPixelChange({...profile,appearanceMaster},
+   (flip?"PASTE FLIP":"PASTE")+" · "+stamp.dir.toUpperCase()+" → "+atDir.toUpperCase()+
+   " · inherited across all 11 native actions");
+ }catch(error){show("Genesis Appearance paste failed: "+error.message,true)}
+ finally{pixelOpening=false}
+}
+function clearAppearanceView(){
+ const key=currentAppearanceKey();
+ if(!profile.appearanceMaster?.[key]){show("No Master Appearance edit for "+key);return}
+ if(!root.confirm("Clear UNSAVED Master Appearance edit for "+key+"? Per-frame corrections stay untouched."))return;
+ const appearanceMaster={...profile.appearanceMaster};delete appearanceMaster[key];
+ previewPixelChange({...profile,appearanceMaster},"CLEARED 4-VIEW APPEARANCE "+key);
+}
+function clearFrameCorrection(){
+ const key=Pixel.key($("pixel-part").value,$("native-action").value,dir,
+  Math.max(0,Number($("native-frame").value)-1));
+ if(!profile.pixelFrames?.[key]){show("No frame correction for "+key);return}
+ if(!root.confirm("Clear UNSAVED pixel correction for "+key+"? Master Appearance remains unchanged."))return;
+ const pixelFrames={...profile.pixelFrames};delete pixelFrames[key];
+ previewPixelChange({...profile,pixelFrames},"CLEARED FRAME CORRECTION "+key);
 }
 for(const action of C.TEMPLATES){
  const option=document.createElement("option");option.value=action;option.textContent=action.toUpperCase();$("native-action").append(option);
@@ -355,6 +441,13 @@ $("mode-puppet").onclick=()=>setMode("puppet");
 $("mode-slice").onclick=()=>setMode("slice");
 $("pixel-open").onclick=()=>void openPixelEditor();
 $("pixel-open-side").onclick=()=>void openPixelEditor();
+$("pixel-scope").onchange=updateAppearanceControls;
+$("pixel-part").onchange=updateAppearanceControls;
+$("appearance-copy").onclick=()=>void copyAppearanceView();
+$("appearance-paste").onclick=()=>void pasteAppearanceView(false);
+$("appearance-paste-flip").onclick=()=>void pasteAppearanceView(true);
+$("appearance-clear").onclick=clearAppearanceView;
+$("frame-clear").onclick=clearFrameCorrection;
 $("zoom-out").onclick=()=>setZoom(zoom-1);
 $("zoom-in").onclick=()=>setZoom(zoom+1);
 $("zoom").oninput=e=>setZoom(e.target.value);
@@ -423,7 +516,7 @@ root.addEventListener("message",e=>{
 });
 root.addEventListener("pagehide",stop);
 $("native-action").value="idle";$("pivot-name").value="head";$("slice-part").value="head";
-refreshPixelParts();setZoom(fittedZoom(),{fit:true});setMode("puppet");jointInput();
+refreshPixelParts();updateAppearanceControls();setZoom(fittedZoom(),{fit:true});setMode("puppet");jointInput();
 void reloadSheet().then(()=>{
  // A previously connected parent can exist before the iframe subscribes.
  if(bridge()?.isOnline?.()&&!dirty)void loadCloud().catch(error=>
