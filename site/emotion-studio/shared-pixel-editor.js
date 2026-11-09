@@ -41,7 +41,7 @@
   const code=/^#[\da-f]{6}$/i.test(hex)?hex:"#18151b";
   return [parseInt(code.slice(1,3),16),parseInt(code.slice(3,5),16),parseInt(code.slice(5,7),16),255];
  }
- function create({overlay,canvas,reference,onApply,onSaveDefault,onRestore,onDirectionChange}){
+ function create({overlay,canvas,reference,onApply,onSaveDefault,onRestore,onDirectionChange,allowCrossViewPaste=false}){
   const els={
    heading:overlay.querySelector("#pixelTitle"),dir:overlay.querySelector("#pixelDirection"),
    color:overlay.querySelector("#pixelColor"),size:overlay.querySelector("#pixelSize"),
@@ -275,10 +275,12 @@
   function pasteSelection(mirror=false){const targetDir=dir;
    const stamp=currentClipboard();
    if(!stamp){els.status.textContent="NO COPIED PIXELS · SELECT + COPY FIRST";return false;}
-   if(stamp.direction!==DIR[dir]){
+   if(!allowCrossViewPaste&&stamp.direction!==DIR[dir]){
      els.status.textContent="PASTE ONLY IN CURRENT VIEW · COPY FROM "+DIR[dir].toUpperCase()+" FIRST";return false;
     }
-   const switching=false;
+   // A selection belongs to its original view. When transferring to another
+   // view, position from the stamp rather than reusing the old selection box.
+   const switching=stamp.direction!==DIR[dir];
    const destX=selection&&!switching?selection.x:(mirror?W-stamp.x-stamp.w:stamp.x);
    const destY=selection&&!switching?selection.y:stamp.y;
    const dx=clamp(destX,0,W-1),dy=clamp(destY,0,H-1);
