@@ -397,7 +397,7 @@ async function makeBinding(){
     pivots:clone(m.pivots[d]),maskBase64:m.masks[d],
     spritePng:m.layers.body[d],coverage:report.counts[d].visible
    }])),
-   rig:clone(m),pythonEngine:"genesis-procedural-runtime.py",
+   rig:clone(m),pythonEngine:"genesis_procedural_runtime.py",
    createdAt:new Date().toISOString()
   };
   record().bound=out;record().approved=false;record().saved=false;
@@ -424,7 +424,7 @@ function toPython(b){
  const value=JSON.stringify(b).replace(/'''/g,"");
  return "# LAFRICH GENESIS MASTER · four-angle / 10-piece / no baked face\n"+
   "# Machine-readable Python source. Motion is computed from time + transforms,\n"+
-  "# NOT stored as rendered frame-by-frame sprites. Use genesis-procedural-runtime.py.\n"+
+  "# NOT stored as rendered frame-by-frame sprites. Use genesis_procedural_runtime.py.\n"+
   "import json\nLAFRICH_GENESIS = json.loads(r'''"+value+"''')\n";
 }
 function exportPython(){try{
