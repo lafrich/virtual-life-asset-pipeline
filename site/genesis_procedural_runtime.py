@@ -33,6 +33,12 @@ def validate(binding: dict) -> dict:
         raise ValueError("Invalid master ID")
     if binding.get("sourceId") != "genesis_" + binding["gender"] + "_nude":
         raise ValueError("Only approved V6B Genesis sources are permitted")
+    reviews = binding.get("reviewed", {})
+    if not isinstance(reviews, dict) or any(
+        reviews.get(direction + "|" + part) is not True
+        for direction in DIRECTIONS for part in PARTS
+    ):
+        raise ValueError("LGR-1 requires manual review of all 40 part-angle combinations")
     hierarchy = binding.get("hierarchy", {})
     if tuple(hierarchy.get("parts", ())) != PARTS:
         raise ValueError("Genesis needs all 10 ordered body parts")
@@ -140,6 +146,7 @@ def matrices(binding: dict, direction: str, pose: dict):
         raise ValueError("Unknown direction")
     pivots = binding["views"][direction]["pivots"]
     parents = binding["hierarchy"]["parents"]
+    placements = binding.get("rig", {}).get("placements", {}).get(direction, {})
     out = {}
     for part in PARTS:
         chain, node = [], part
@@ -149,7 +156,9 @@ def matrices(binding: dict, direction: str, pose: dict):
         mat = identity()
         for bone in chain:
             transform = pose.get(bone, {})
-            dx, dy = float(transform.get("x", 0)), float(transform.get("y", 0))
+            fitted = placements.get(bone, {"x": 0, "y": 0})
+            dx = float(transform.get("x", 0)) + float(fitted.get("x", 0))
+            dy = float(transform.get("y", 0)) + float(fitted.get("y", 0))
             angle = float(transform.get("a", 0))
             if not all(math.isfinite(v) for v in (dx, dy, angle)):
                 raise ValueError("Non-finite procedural pose")
