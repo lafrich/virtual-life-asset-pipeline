@@ -19,6 +19,164 @@ let drafts={},source={},preparedCache=new Map(),rev=0,paintDrag=null,renderReque
 let pixelEditor=null,pixelSession=null,maskCopied=null,partCopied=null,isolated=false,maskUndo=[],maskRedo=[];
 let faceEntries=[],faceImage=null,faceId="",page="workshop",sourcePending=Promise.resolve();
 let playing=false,playTick=0,playFrame=0,motionTime=0,rigPreviewTimer=0;
+let unassignedClusters=[],activeUnassigned=-1,unassignedUndo=null;
+function scanUnassignedClusters(){
+ // A pixel is a problem only if VISIBLE in the composited source and unowned
+ // in the per-angle slice mask. Transparent pixels do not need rig ownership.
+ if(!master()||!source[gender])return [];
+ const found=[];
+ for(const d of DIR){
+  const composite=source[gender][d];
+  if(!composite)continue;
+  const alpha=composite.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+  const mask=C.decode(master().masks[d]);
+  const active=new Uint8Array(C.N),visited=new Uint8Array(C.N);
+  for(let k=0;k<C.N;k++)if(mask[k]===255&&alpha[k*4+3]>0)active[k]=1;
+  for(let start=0;start<C.N;start++){
+   if(!active[start]||visited[start])continue;
+   const queue=[start],pixels=[];visited[start]=1;
+   let minX=63,minY=111,maxX=0,maxY=0;
+   for(let i=0;i<queue.length;i++){
+    const index=queue[i],x=index%64,y=Math.floor(index/64);
+    pixels.push(index);minX=Math.min(minX,x);maxX=Math.max(maxX,x);
+    minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+    // 8-neighbor grouping treats diagonally touching stray pixels as one cluster.
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+     if(!dx&&!dy)continue;
+     const nx=x+dx,ny=y+dy;
+     if(nx<0||nx>=64||ny<0||ny>=112)continue;
+     const n=ny*64+nx;
+     if(active[n]&&!visited[n]){visited[n]=1;queue.push(n)}
+    }
+   }
+   found.push({dir:d,pixels,count:pixels.length,minX,minY,maxX,maxY});
+  }
+ }
+ return found;
+}
+function selectedUnassigned(){return unassignedClusters[activeUnassigned]||null}
+function updateUnassignedUI(){
+ const choice=$("unassigned-clusters");
+ if(!choice)return;
+ choice.replaceChildren();
+ const total=unassignedClusters.reduce((n,c)=>n+c.count,0);
+ for(let i=0;i<unassignedClusters.length;i++){
+  const c=unassignedClusters[i];
+  choice.add(new Option(c.dir.toUpperCase()+" · "+c.count+
+   " px · x "+c.minX+"–"+c.maxX+", y "+c.minY+"–"+c.maxY,String(i)));
+ }
+ if(!unassignedClusters.length)choice.add(new Option("No unassigned pixels found",""));
+ const valid=activeUnassigned>=0&&activeUnassigned<unassignedClusters.length;
+ choice.value=valid?String(activeUnassigned):"";
+ const current=selectedUnassigned();
+ $("unassigned-detail").textContent=total===0?
+  "✓ No visible unassigned pixels found across four directions.":
+  total+" visible unassigned pixels in "+unassignedClusters.length+" clusters across "+
+  DIR.filter(d=>unassignedClusters.some(c=>c.dir===d)).map(d=>d.toUpperCase()).join(", ")+
+  (current?" · HIGHLIGHT: "+current.dir.toUpperCase()+" / "+current.count+" px":"");
+ $("next-unassigned").disabled=!unassignedClusters.length;
+ $("remove-stray-group").disabled=!current;
+ $("remove-strays-angle").disabled=!unassignedClusters.some(c=>c.dir===dir);
+ $("undo-stray-delete").disabled=!unassignedUndo||unassignedUndo.gender!==gender;
+}
+function focusUnassignedIssue(index){
+ if(!unassignedClusters.length){activeUnassigned=-1;updateUnassignedUI();return}
+ activeUnassigned=((index%unassignedClusters.length)+unassignedClusters.length)%unassignedClusters.length;
+ const group=selectedUnassigned();
+ dir=group.dir;
+ if(step!=="rig")switchStep("rig");else syncControls();
+ setZoom(Math.max(zoom,9));updateUnassignedUI();void renderAll();
+ root.requestAnimationFrame(()=>{
+  if(activeUnassigned<0||selectedUnassigned()!==group)return;
+  const wrap=$("stagewrap");
+  const centerX=(group.minX+group.maxX+1)/2*zoom;
+  const centerY=(group.minY+group.maxY+1)/2*zoom;
+  wrap.scrollLeft=Math.max(0,centerX-wrap.clientWidth/2);
+  wrap.scrollTop=Math.max(0,centerY-wrap.clientHeight/2);
+ });
+ status("FOUND "+group.count+" visible unassigned pixels at "+group.dir.toUpperCase()+
+  " / x "+group.minX+"–"+group.maxX+", y "+group.minY+"–"+group.maxY+
+  ". Delete only if these are unwanted source pixels.");
+}
+async function findUnassignedPixels(){
+ await sourcePending;
+ unassignedClusters=scanUnassignedClusters();
+ activeUnassigned=unassignedClusters.length?0:-1;
+ updateUnassignedUI();
+ if(unassignedClusters.length)focusUnassignedIssue(0);
+ else status("CLEAN · no visible unassigned pixels in any of 4 angles.");
+ return unassignedClusters;
+}
+function paintUnassignedFocus(destination,d){
+ const issue=selectedUnassigned();
+ if(!issue||issue.dir!==d||step!=="rig")return;
+ const image=destination.createImageData(64,112);
+ for(const k of issue.pixels){
+  const off=k*4;
+  image.data[off]=255;image.data[off+1]=227;image.data[off+2]=23;image.data[off+3]=208;
+ }
+ const marker=cv(),mctx=marker.getContext("2d");
+ mctx.putImageData(image,0,0);
+ destination.drawImage(marker,0,0);
+ destination.save();destination.strokeStyle="#ffdf00";destination.lineWidth=1;
+ destination.strokeRect(issue.minX-1.5,issue.minY-1.5,
+  issue.maxX-issue.minX+3,issue.maxY-issue.minY+3);
+ destination.restore();
+}
+async function eraseUnassignedStrays(allInAngle=false){
+ await sourcePending;
+ const chosen=selectedUnassigned(),targetDir=allInAngle?dir:chosen?.dir;
+ if(!targetDir)throw Error("Use FIND UNASSIGNED first");
+ // Rescan so a stale result can never erase a pixel that was assigned meanwhile.
+ const current=scanUnassignedClusters().filter(c=>c.dir===targetDir);
+ const matching=allInAngle?current:current.filter(c=>c.pixels.includes(chosen?.pixels[0]));
+ const pixelIndices=[...new Set(matching.flatMap(c=>c.pixels))];
+ if(!pixelIndices.length){
+  await findUnassignedPixels();throw Error("Issue changed; scan updated, nothing deleted");
+ }
+ const count=pixelIndices.length;
+ if(!confirm("DELETE "+count+" visible unassigned source pixel(s) in "+
+  targetDir.toUpperCase()+"? This ERASES artwork in ALL affected physical layers "+
+  "at those exact coordinates. It will NOT assign any part, change pivots, or "+
+  "reset your 40/40 reviews. Undo available until the page is reloaded."))return;
+ const g=gender,r=record(),rig=r.rig;
+ const original=Object.fromEntries(C.LAYERS.map(layer=>[layer,rig.layers[layer]?.[targetDir]||null]));
+ const changed={};let layerHits=0;
+ for(const layer of C.LAYERS){
+  const old=original[layer];if(!old)continue;
+  const surface=await canvasFromData(old),context=surface.getContext("2d",{willReadFrequently:true});
+  const data=context.getImageData(0,0,64,112);let hits=0;
+  for(const k of pixelIndices){
+   if(data.data[k*4+3]===0)continue;
+   data.data.fill(0,k*4,k*4+4);hits++;
+  }
+  if(hits){context.putImageData(data,0,0);changed[layer]=surface.toDataURL("image/png");layerHits+=hits}
+ }
+ if(gender!==g||record()!==r)throw Error("Current character changed; retry cleanup");
+ if(!layerHits)throw Error("No source artwork pixels matched; nothing deleted");
+ unassignedUndo={gender:g,dir:targetDir,layers:original};
+ for(const [layer,png] of Object.entries(changed))rig.layers[layer][targetDir]=png;
+ R.clearCache();sourcePending=sourceCanvases(g);await sourcePending;
+ makeDirty(); // Only the source artwork changes, NOT masks/pivots/previous QA receipts.
+ await findUnassignedPixels();
+ status("REMOVED "+count+" stray pixels from "+targetDir.toUpperCase()+
+  " ("+layerHits+" artwork-layer pixels cleared). 40 part/angle reviews preserved."+
+  " Undo remains available.");
+}
+async function undoUnassignedRemoval(){
+ const entry=unassignedUndo;if(!entry||entry.gender!==gender)return;
+ await sourcePending;
+ const rig=master();
+ for(const layer of C.LAYERS){
+  if(entry.layers[layer])rig.layers[layer][entry.dir]=entry.layers[layer];
+  else delete rig.layers[layer]?.[entry.dir];
+ }
+ unassignedUndo=null;
+ R.clearCache();sourcePending=sourceCanvases(gender);await sourcePending;
+ makeDirty();await findUnassignedPixels();
+ status("UNDO COMPLETE · original artwork restored in "+entry.dir.toUpperCase()+
+  ". No slicing/pivot reviews changed.");
+}
 function scheduleRigPreview(){
  if(rigPreviewTimer)return;
  rigPreviewTimer=root.setTimeout(()=>{rigPreviewTimer=0;flushCache()},85);
@@ -247,7 +405,7 @@ async function renderAll(){
    }
    if(currentStep==="pixel"||currentStep==="rig"){
     maskHighlight(o,d,m);
-    if(currentStep==="rig")showPivot(o,d,m);
+    if(currentStep==="rig"){showPivot(o,d,m);paintUnassignedFocus(o,d);}
    }
    const view=$("thumb-"+d);
    if(view){const vc=view.getContext("2d");vc.imageSmoothingEnabled=false;vc.clearRect(0,0,64,112);vc.drawImage(out,0,0)}
@@ -305,6 +463,7 @@ function selectPart(part){
  selected=part;syncControls();void renderAll();
 }
 function syncControls(){
+ updateUnassignedUI();
  $("gender").value=gender;$("art-layer").value=activeLayer;
  $("part-select").value=selected;
  const done=reviewCount();
@@ -355,7 +514,11 @@ function syncControls(){
 }
 function switchAngle(d){
  if(!DIR.includes(d))return;
- dir=d;syncControls();void renderAll();
+ dir=d;
+ if(selectedUnassigned()?.dir!==d){
+  activeUnassigned=unassignedClusters.findIndex(c=>c.dir===d);
+ }
+ syncControls();void renderAll();
 }
 function switchStep(next){
  if(!STEPS.includes(next))return;
@@ -554,7 +717,12 @@ async function makeBinding(){
   }
   const report=await audit();
   if(report.errors.length){
-   status("Cannot bind: "+report.errors.slice(0,3).join("; ")+(report.errors.length>3?"…":""),true);
+   if(DIR.some(d=>report.counts[d]?.unassigned)){
+    unassignedClusters=scanUnassignedClusters();activeUnassigned=-1;
+    updateUnassignedUI();
+   }
+   status("Cannot bind: "+report.errors.slice(0,3).join("; ")+(report.errors.length>3?"…":"")+
+    (unassignedClusters.length?" · Use FIND VISIBLE UNASSIGNED PIXELS to locate/erase stray artwork.":""),true);
    $("binding-result").textContent=report.errors.join(" · ");
    return;
   }
@@ -750,6 +918,7 @@ function setup(){
   if(!SOURCE[g])return;
   try{
    gender=g;dir="se";selected="head";activeLayer="body";maskUndo=[];maskRedo=[];faceId="";faceImage=null;
+   unassignedClusters=[];activeUnassigned=-1;unassignedUndo=null;
    await ensure(g);
    stopPlayback();motionTime=0;
    if(step==="save"&&!record()?.approved)step=record()?.bound?"test":"pixel";
@@ -776,6 +945,15 @@ function setup(){
  $("rig-erase").onclick=()=>{tool="erase";syncControls()};
  $("rig-pan").onclick=()=>{tool="pan";syncControls();status("PAN MODE · drag canvas to scroll without editing anatomy")};
  $("rig-isolate").onclick=()=>{isolated=!isolated;syncControls();void renderAll()};
+ $("find-unassigned").onclick=()=>void findUnassignedPixels().catch(e=>status("Find unassigned: "+e.message,true));
+ $("find-unassigned-from-bind").onclick=()=>void findUnassignedPixels().catch(e=>status("Find unassigned: "+e.message,true));
+ $("next-unassigned").onclick=()=>focusUnassignedIssue(activeUnassigned+1);
+ $("unassigned-clusters").onchange=()=>{
+  if($("unassigned-clusters").value!=="")focusUnassignedIssue(Number($("unassigned-clusters").value))
+ };
+ $("remove-stray-group").onclick=()=>void eraseUnassignedStrays(false).catch(e=>status("Remove stray: "+e.message,true));
+ $("remove-strays-angle").onclick=()=>void eraseUnassignedStrays(true).catch(e=>status("Remove angle strays: "+e.message,true));
+ $("undo-stray-delete").onclick=()=>void undoUnassignedRemoval().catch(e=>status("Undo stray: "+e.message,true));
  $("copy-part-slice").onclick=()=>{
   partCopied={mask:master().masks[dir],part:selected,direction:dir};
   status("Copied ONLY "+labels[selected]+" from "+dir.toUpperCase());

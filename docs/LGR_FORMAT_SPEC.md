@@ -77,3 +77,18 @@ The authoring workflow was audited and rebuilt to remove the previous loop of ha
 - `tests/test_genesis_procedural_runtime.py` checks procedural geometry, parent transforms, per-part placements, and all 40 QA receipts.
 - `tests/test_lgr_cloud_safety.cjs` simulates two independent devices, stale-master conflicts, immutable draft versions and recoverable previous masters without accessing the user's Drive.
 - `.github/workflows/genesis-workbench-qa.yml` launches Chromium and checks artist navigation, premature-bind rejection, 40 reviews, pivot-change invalidation, procedural motion playback, four-angle approval, approved master local storage, and strict Drive validation.
+
+## Finding and clearing unassigned stray artwork (November 10, 2026)
+
+The same source alpha and slice-mask contract drives both the Bind audit and a new artist-facing **Find Unassigned Pixels** panel in stage 02 (Pivot & Slicing), also reachable from the failed Bind stage. For each SE/SW/NE/NW direction:
+
+- A pixel is problematic only when its **composited RGBA alpha is visible** and its 10-part mask index is **255 (unassigned)**. Fully transparent background never needs a body-part assignment.
+- The scanner groups those coordinates into **8-connected clusters**, lists their angle, count and bounding coordinates, highlights the active group in yellow over the red unassigned overlay, zooms to it and supports Next Issue.
+- **If the visible pixel belongs to a limb**, use Slice Paint and select its correct body part. If it is **unwanted stray artwork**, select that cluster and click **Delete Highlighted Stray Group**. No arbitrary limb assignment is made.
+- Cleanup requires an explicit confirmation and zeros only the RGBA pixels of the selected unassigned cluster in all present physical source layers at those coordinates. A separate **Delete All Unassigned in Current Angle** is available, still with confirmation. The mask bytes and part pivots are never edited by cleanup.
+- Cleanup rebuilds the source composite, invalidates a previously generated binding/approval, persists the editable draft, and rescans. It **does not invalidate the existing 40 manual part×angle review receipts**, because their assigned pixels and joint transforms were untouched.
+- **Undo Delete** restores all affected source layers for the latest cleanup until the page is reloaded. For permanent recoverability, the artist can export a draft JSON or save a versioned cloud draft before cleanup.
+- All deletion paths recompute the current unassigned mask+alpha before applying any change; a stale UI selection cannot blindly delete pixels reassigned since the scan.
+- Test coverage includes a synthetic visible-but-unassigned source pixel, the Find/Highlight/Erase flow, verification of transparent source with unmodified mask, successful Bind with original 40 receipts, and Undo restoring the original pixel.
+
+This is **source-art cleanup**, not a workaround that classifies unwanted background noise as a body part.

@@ -230,6 +230,76 @@ jobs:
               });
               assert(/Google Drive connection is missing|Google Drive connection is missing or expired/.test(cloudValidation),
                 'Canonical master unexpectedly failed strict LGR-1 validation: '+cloudValidation);
+              // Regression: a stray pixel is visible but is intentionally NOT part of
+              // anatomy. Find -> delete the source RGBA pixel -> Undo restores it.
+              // No old 40/40 reviewed part-angle receipts should be lost.
+              const strayIndex=await page.evaluate(async()=>{
+                const key='vl-lafrich-genesis-workbench-drafts-v1';
+                const store=JSON.parse(localStorage.getItem(key));
+                const rig=store.drafts.female.rig,part='body',direction='ne';
+                const img=new Image();img.src=rig.layers[part][direction];await img.decode();
+                const surface=document.createElement('canvas');
+                surface.width=64;surface.height=112;
+                const ctx=surface.getContext('2d');ctx.drawImage(img,0,0);
+                const colors=ctx.getImageData(0,0,64,112).data;
+                const mask=window.LafrichPuppetCore.decode(rig.masks[direction]);
+                const index=Array.from({length:64*112},(_,i)=>i).find(i=>
+                  colors[i*4+3]>0&&mask[i]!==255);
+                if(index===undefined)throw Error('No visible source pixel for fixture');
+                mask[index]=255;rig.masks[direction]=window.LafrichPuppetCore.encode(mask);
+                store.drafts.female.bound=null;store.drafts.female.approved=false;
+                store.drafts.female.saved=false;
+                localStorage.setItem(key,JSON.stringify(store));
+                return index;
+              });
+              await page.reload({waitUntil:'domcontentloaded'});
+              await page.locator('#viewdetail').filter({hasText:'MALE'}).waitFor({timeout:60000});
+              await page.locator('#gender').selectOption('female');
+              await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
+              await page.locator('[data-step="rig"]').click();
+              await page.locator('#find-unassigned').click();
+              await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
+                textContent?.includes('1 visible unassigned pixels'));
+              const highlighted=await page.locator('#unassigned-detail').textContent();
+              assert(highlighted.includes('NE')&&highlighted.includes('1 visible'),
+                'Find Unassigned missed synthetic unassigned pixel '+strayIndex+': '+highlighted);
+              assert(await page.locator('#remove-stray-group').isEnabled(),
+                'Missing targeted cleanup button');
+              await page.locator('#remove-stray-group').click();
+              await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
+                textContent?.includes('No visible unassigned pixels'));
+              const clean=await page.evaluate(async(index)=>{
+                const key='vl-lafrich-genesis-workbench-drafts-v1';
+                const draft=JSON.parse(localStorage.getItem(key)).drafts.female;
+                const img=new Image();img.src=draft.rig.layers.body.ne;await img.decode();
+                const c=document.createElement('canvas');c.width=64;c.height=112;
+                const g=c.getContext('2d');g.drawImage(img,0,0);
+                return {alpha:g.getImageData(0,0,64,112).data[index*4+3],
+                  checks:Object.values(draft.reviewed).filter(Boolean).length,
+                  mask:window.LafrichPuppetCore.decode(draft.rig.masks.ne)[index]};
+              },strayIndex);
+              assert.equal(clean.alpha,0,'Delete Stray left visible source pixel');
+              assert.equal(clean.mask,255,'Cleanup secretly assigned a body part');
+              assert.equal(clean.checks,40,'Cleanup incorrectly cleared prior 40-part reviews');
+              await page.locator('#rig-next').click();
+              await page.locator('#make-binding').click();
+              await page.waitForFunction(()=>document.querySelector('#binding-result')?.
+                textContent?.startsWith('BOUND'),null,{timeout:15000});
+              assert((await page.locator('#binding-result').textContent()).startsWith('BOUND'),
+                'After stray deletion the existing 40/40 review should allow a clean bind');
+              await page.locator('[data-step="rig"]').click();
+              await page.locator('#undo-stray-delete').click();
+              await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
+                textContent?.includes('1 visible unassigned pixels'));
+              const restored=await page.evaluate(async index=>{
+                const key='vl-lafrich-genesis-workbench-drafts-v1';
+                const draft=JSON.parse(localStorage.getItem(key)).drafts.female;
+                const img=new Image();img.src=draft.rig.layers.body.ne;await img.decode();
+                const c=document.createElement('canvas');c.width=64;c.height=112;
+                const g=c.getContext('2d');g.drawImage(img,0,0);
+                return g.getImageData(0,0,64,112).data[index*4+3];
+              },strayIndex);
+              assert(restored>0,'Undo did not restore original stray artwork');
               if(errors.length)throw Error('Browser errors: '+errors.join(' | '));
               console.log(JSON.stringify({browser:'OK',pixelCount,partCount:10,
                 femaleSwitched:true,bindingResult:info.slice(0,180),approved:actual.female.id}));
