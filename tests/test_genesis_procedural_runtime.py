@@ -27,6 +27,8 @@ def fixture():
         "format": "lafrich-genesis-binding-v1",
         "id": "lafrich_genesis_male", "sourceId": "genesis_male_nude",
         "gender": "male", "faceSource": "emosi.exe",
+        "rigFormat": "LGR-1",
+        "reviewed": {d + "|" + p: True for d in runtime.DIRECTIONS for p in parts},
         "hierarchy": {"parts": list(parts), "parents": parents,
                       "drawOrder": list(parts)},
         "views": {d: {"pivots": {p: {"x": 32, "y": 50} for p in parts},
@@ -94,6 +96,26 @@ class GenesisRigTests(unittest.TestCase):
         self.assertAlmostEqual(p0["leg_near_upper"]["a"],0)
         self.assertGreater(p1["leg_near_upper"]["a"], 20)
         self.assertEqual(set(p1),set(runtime.PARTS))
+
+    def test_unreviewed_part_angle_rejected(self):
+        m = fixture()
+        del m["reviewed"]["sw|head"]
+        with self.assertRaisesRegex(ValueError,"40 part-angle"):
+            runtime.validate(m)
+
+    def test_placements_match_js_affine_hierarchy(self):
+        m = fixture()
+        m["rig"] = {"placements": {"se": {
+            "torso": {"x": 4, "y": 1},
+            "arm_near_upper": {"x": 3, "y": -2},
+            "arm_near_lower": {"x": 2, "y": 1},
+        }}}
+        pose = runtime.zero_pose()
+        mat = runtime.matrices(m, "se", pose)
+        x, y = runtime.map_point(mat["arm_near_lower"], 32, 50)
+        self.assertEqual((x, y), (41, 50))
+        x, y = runtime.map_point(mat["head"], 32, 50)
+        self.assertEqual((x, y), (36, 51))
 
     def test_matrix_inverse(self):
         a = runtime.compose(runtime.translate(3,4),runtime.rotate(21))
