@@ -39,6 +39,33 @@ test('four independent pixel masks use new upper/lower parts; unselect removes o
  assert.equal(Core.decode(Core.validateMaster(c).masks.se)[20*64+31],255);
  assert.notEqual(c.masks.se,c.masks.sw);
 });
+test('Body Piece editor isolates each native slice, preserving unrelated parts and four-view master IDs',()=>{
+ const master=Core.master('male');
+ const nativeMask=Core.decode(master.masks.se),piece='arm_near_lower';
+ const chosen=Core.PARTS.indexOf(piece),head=Core.PARTS.indexOf('head');
+ const at=(x,y)=>y*64+x,original=new Uint8ClampedArray(Core.N*4);
+ const elbow=at(20,76),headPixel=at(32,35),newPixel=at(25,76);
+ assert.equal(nativeMask[elbow],chosen);assert.equal(nativeMask[headPixel],head);
+ original.set([160,60,30,255],elbow*4);
+ original.set([8,90,120,255],headPixel*4);
+ const onlyPiece=Core.piecePixels(original,nativeMask,piece);
+ assert.deepEqual(Array.from(onlyPiece.slice(elbow*4,elbow*4+4)),[160,60,30,255]);
+ assert.deepEqual(Array.from(onlyPiece.slice(headPixel*4,headPixel*4+4)),[0,0,0,0]);
+ // Erase a forearm pixel and paint a new pixel where another piece was
+ // previously sliced. Only the deliberate new pixel is reassigned.
+ const edit=new Uint8ClampedArray(onlyPiece);
+ edit.fill(0,elbow*4,elbow*4+4);
+ edit.set([240,10,40,255],newPixel*4);
+ const result=Core.applyPiecePixels(original,edit,nativeMask,piece);
+ assert.deepEqual(Array.from(result.pixels.slice(elbow*4,elbow*4+4)),[0,0,0,0]);
+ assert.deepEqual(Array.from(result.pixels.slice(headPixel*4,headPixel*4+4)),[8,90,120,255]);
+ assert.equal(result.mask[newPixel],chosen);
+ assert.equal(result.mask[headPixel],head);
+ assert.equal(original[elbow*4],160,'original layer stays immutable');
+ assert.equal(nativeMask[newPixel],Core.PARTS.indexOf('torso'),'original slice stays immutable');
+ assert.equal(Core.validateMaster(master).id,'lafrich_male');
+ for(const dir of Core.DIRS)assert.equal(Core.decode(master.masks[dir]).length,Core.N);
+});
 test('new Python motion has only one blank, unsaved authoring frame; no eleven installed animations',()=>{
  const source=Core.motion('Hand Wave');
  assert.equal(source.frames.length,1);assert.equal(source.id,'');
