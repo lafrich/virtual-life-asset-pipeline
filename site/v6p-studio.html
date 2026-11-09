@@ -963,6 +963,10 @@ window.V6PCharacterHost=Object.freeze({
   return V.extractFrame(state.sheet,action,dir,Math.max(0,Math.min(V.FRAMES[action]-1,n)));
  },
  async publish(){return await save()},
+ async refreshMaster(){
+  V.clearCache();
+  await rebuild();
+ },
  async open(record){
   state.characterId=record?.id||"";state.lastId=record?.status==="saved"?record.id:"";
   state.ch=V.norm({...record?.appearance,characterId:state.characterId});state.faceId=record?.faceId||"";

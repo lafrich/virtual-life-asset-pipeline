@@ -412,7 +412,10 @@ async function refreshGenesisMasterFromCloud(){
  if(!b?.isOnline?.())return;
  try{
   const count=root.GenesisMasterRig?.cloudRows(await b.listOnline("genesis"))||0;
-  if(count&&$("qa-animation")?.value.startsWith("python:")&&state.step==="preview")void preview();
+  if(count){
+   await H.refreshMaster?.();
+   if($("qa-animation")?.value.startsWith("python:")&&state.step==="preview")void preview();
+  }
  }catch(error){notice("Genesis rig cloud sync: "+error.message,true)}
 }
 async function loadPythonFromDatabase(selectFirst=true){
@@ -550,8 +553,11 @@ root.addEventListener("message",e=>{
  }
 });
 root.addEventListener("storage",e=>{
- if(e.key===root.GenesisMasterRig?.KEY&&$("qa-animation")?.value.startsWith("python:"))
-  void preview();
+ if(e.key===root.GenesisMasterRig?.KEY){
+  void H.refreshMaster?.().then(()=>{
+   if($("qa-animation")?.value.startsWith("python:"))void preview();
+  }).catch(error=>notice("Genesis master reload: "+error.message,true));
+ }
 });
 root.addEventListener("mahluk:character-ready",()=>void restore().catch(e=>notice("Wizard load: "+e.message,true)));
 if(root.__v6pStudio?.ready)void restore().catch(e=>notice("Wizard load: "+e.message,true));

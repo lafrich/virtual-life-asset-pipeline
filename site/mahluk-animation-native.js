@@ -195,7 +195,8 @@ async function reloadGenesisMaster(){
  try{
   const count=Master.cloudRows(await bridge().listOnline("genesis"));
   if(count){
-   frameCache.clear();
+   frameCache.clear();genesisSheets.clear();
+   root.V6PCompositor?.clearCache?.();
    if(draft)requestRender();
   }
  }catch(error){message("Genesis master cloud sync: "+error.message,true)}
@@ -319,9 +320,17 @@ root.addEventListener("message",e=>{
  if(e.origin!==location.origin)return;
  if(e.data?.type==="mahluk:cloud-connected"){void gallery();void reloadGenesisMaster()}
  if(e.data?.type==="mahluk:select-motion"&&e.data?.id){void gallery()}
- if(e.data?.type==="genesis:master-overwritten"){frameCache.clear();genesisSheets.clear();void reloadGenesisMaster();if(draft)requestRender()}
+ if(e.data?.type==="genesis:master-overwritten"){
+  frameCache.clear();genesisSheets.clear();root.V6PCompositor?.clearCache?.();
+  void reloadGenesisMaster();if(draft)requestRender()
+ }
 });
 root.addEventListener("pagehide",stop);
-root.addEventListener("storage",e=>{if(e.key===Master.KEY){frameCache.clear();genesisSheets.clear();if(draft)requestRender()}});
+root.addEventListener("storage",e=>{
+ if(e.key===Master.KEY){
+  frameCache.clear();genesisSheets.clear();root.V6PCompositor?.clearCache?.();
+  if(draft)requestRender()
+ }
+});
 show("home");
 })(window);
