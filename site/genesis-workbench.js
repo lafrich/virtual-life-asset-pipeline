@@ -544,7 +544,7 @@ function setup(){
  $("nav-emotion").onclick=()=>showPage("emotion");
  $("fullscreen").onclick=()=>root.open(location.href,"_blank","noopener,noreferrer");
  $("zoom-out").onclick=()=>setZoom(zoom-1);$("zoom-in").onclick=()=>setZoom(zoom+1);
- $("zoom-fit").onclick=()=>{const v=$("stagewrap");setZoom(Math.max(2,Math.min(14,Math.floor(Math.min((v.clientWidth-20)/64,(v.clientHeight-20)/112))))};
+ $("zoom-fit").onclick=()=>{const v=$("stagewrap");const fit=Math.floor(Math.min((v.clientWidth-20)/64,(v.clientHeight-20)/112));setZoom(clamp(fit,2,14));};
  $("zoom").oninput=()=>setZoom($("zoom").value);
  $("stagewrap").addEventListener("wheel",e=>{if(page!=="workshop")return;e.preventDefault();setZoom(zoom+(e.deltaY<0?1:-1))},{passive:false});
  canvas.addEventListener("pointerdown",e=>{
