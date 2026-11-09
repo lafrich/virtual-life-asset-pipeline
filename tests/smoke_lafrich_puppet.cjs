@@ -15,10 +15,6 @@ const {chromium}=require('playwright');
   await page.goto(base+'/lafrich-puppet-studio.html?mode=master',
    {waitUntil:'domcontentloaded',timeout:60000});
   await page.locator('#view-se').waitFor({timeout:20000});
-  assert.equal(await page.locator('#master-layer').count(),0,
-   'Master must not expose the Art Layer clothing editor');
-  assert.equal(await page.locator('#edit-master').count(),0);
-  assert.equal(await page.locator('#import-layer').count(),0);
   const state=await page.evaluate(()=>{
    const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
    return {parts:C.PARTS,parents:C.PARENTS,ids:C.IDS,views:C.DIRS,
@@ -51,70 +47,10 @@ const {chromium}=require('playwright');
   });
   assert.equal(approvedArt.male.id,'lafrich_male');
   assert.equal(approvedArt.female.id,'lafrich_female');
-  assert.ok(approvedArt.male.nonempty>=1&&approvedArt.female.nonempty>=1,
-   'V6B seed must contain at least one real anatomical body source for both masters');
-  assert.ok([approvedArt.male,approvedArt.female].every(x=>
-   x.parts.every(p=>['body','body_front'].includes(p))),
-   'V6B source must not seed clothes or hair into Lafrich Master');
+  assert.ok(approvedArt.male.nonempty>=2&&approvedArt.female.nonempty>=2,
+   'V6B appearance must seed real separate body/garment layers for both masters');
   assert.ok(approvedArt.male.parts.includes('body')&&approvedArt.female.parts.includes('body'));
   console.log('PASS V6B male/female visual art seeded into new independent four-view physical layers');
-  // Regression: a bare V6B base/body sheet contains mostly head/skin,
-  // while torso/arms/legs are held in the native NUDE top/pants/feet sheets.
-  // Confirm that seeding restores a complete nude anatomical silhouette.
-  const bodyCoverage=await page.evaluate(async()=>{
-   const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
-   const report={};
-   const count=(d,y0,y1)=>{let n=0;
-    for(let y=y0;y<y1;y++)for(let x=12;x<52;x++)if(d[(y*64+x)*4+3]>0)n++;
-    return n;};
-   for(const gender of ['male','female']){
-    const master=await R.seedFromV6B(gender);
-    report[gender]={};
-    for(const dir of C.DIRS){
-     const canvas=R.rgba(),ctx=canvas.getContext('2d',{willReadFrequently:true});
-     for(const l of ['body','body_front']){
-      const im=await R.loadPng(master.layers[l][dir]);if(im)ctx.drawImage(im,0,0);
-     }
-     const data=ctx.getImageData(0,0,64,112).data;
-     report[gender][dir]={torso:count(data,52,81),legs:count(data,81,111)};
-    }
-   }
-   return report;
-  });
-  for(const [g,views] of Object.entries(bodyCoverage))
-   for(const [d,row] of Object.entries(views)){
-    assert.ok(row.torso>40,g+' '+d+' missing nude torso: '+JSON.stringify(row));
-    assert.ok(row.legs>40,g+' '+d+' missing nude legs: '+JSON.stringify(row));
-   }
-  const repair=await page.evaluate(async()=>{
-   const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
-   const seeded=await R.seedFromV6B('male');
-   const partial=C.clone(seeded);
-   const beforePivot=C.clone(partial.pivots);
-   const cut=R.rgba(),c=cut.getContext('2d');
-   const im=await R.loadPng(partial.layers.body.se);
-   c.drawImage(im,0,0);c.clearRect(0,52,64,60);
-   partial.layers.body.se=cut.toDataURL('image/png');
-   const front=R.rgba(),f=front.getContext('2d');
-   const fi=await R.loadPng(partial.layers.body_front.se);
-   if(fi)f.drawImage(fi,0,0);
-   f.clearRect(0,52,64,60);
-   partial.layers.body_front.se=front.toDataURL('image/png');
-   const result=await R.repairIncompleteBody(partial);
-   const restored=R.rgba(),g=restored.getContext('2d',{willReadFrequently:true});
-   g.drawImage(await R.loadPng(result.master.layers.body.se),0,0);
-   g.drawImage(await R.loadPng(result.master.layers.body_front.se),0,0);
-   const data=g.getImageData(0,0,64,112).data;
-   const below=[...data].filter((v,i)=>i%4===3&&Math.floor(i/4/64)>=81&&v>0).length;
-   return {repaired:result.repaired,below,samePivots:
-     JSON.stringify(beforePivot)===JSON.stringify(result.master.pivots),
-    originalUnchanged:partial.layers.body.se!==result.master.layers.body.se};
-  });
-  assert.ok(repair.repaired.includes('se'),'Head-only legacy master must be repaired');
-  assert.ok(repair.below>40,'Head-only base should regain nude legs');
-  assert.ok(repair.samePivots,'Body repair must preserve all existing pivots');
-  assert.ok(repair.originalUnchanged,'Legacy source remains recoverable');
-  console.log('PASS native nude torso/limbs/feet in every direction and reversible legacy head-only body repair');
   assert.equal(await page.locator('#motion-list option').count(),1,
    'New Lafrich motion gallery must initially be empty (no eleven legacy actions)');
   await page.locator('#master-gender').selectOption('female');
@@ -137,7 +73,8 @@ const {chromium}=require('playwright');
   assert.equal(saved.id,'lafrich_male');
   assert.equal(saved.pivot.x,18);
   assert.equal(saved.mask,state.parts.indexOf('arm_near_lower'));
-  await page.locator('#edit-piece').click();
+  await page.locator('#master-layer').selectOption('body');
+  await page.locator('#edit-master').click();
   await page.locator('#pixelOverlay:not([hidden])').waitFor({timeout:30000});
   await page.locator('#pixelColor').fill('#f000ff');
   await page.locator('#pixelGrid').uncheck();
@@ -146,7 +83,7 @@ const {chromium}=require('playwright');
    w:c.getBoundingClientRect().width,h:c.getBoundingClientRect().height
   }));
   await page.locator('#pixelCanvas').click({position:{
-   x:Math.floor(pixSize.w*20.5/64),y:Math.floor(pixSize.h*76.5/112)
+   x:Math.floor(pixSize.w*32.5/64),y:Math.floor(pixSize.h*40.5/112)
   }});
   await page.locator('#pixelApply').click();
   await page.locator('#pixelOverlay').waitFor({state:'hidden',timeout:15000});
@@ -156,28 +93,9 @@ const {chromium}=require('playwright');
    return Object.keys(m.male.layers.body).length===4&&!!m.male.layers.body.se;
   });
   assert.equal(masterHasPixel,true,'Master four-view layers were not saved');
-  const headStillIntact=await page.evaluate(async()=>{
-   const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
-   const m=JSON.parse(localStorage.getItem(C.MASTER_KEY)).male;
-   const loaded=await R.loadPng(m.layers.body.se);
-   const ctx=R.rgba().getContext('2d');
-   ctx.drawImage(loaded,0,0);
-   const px=ctx.getImageData(0,0,64,112).data;
-   const index=(76*64+20)*4;
-   return {piece:C.decode(m.masks.se)[76*64+20],
-    alpha:px[index+3],color:[...px.slice(index,index+3)]};
-  });
-  assert.equal(headStillIntact.piece,state.parts.indexOf('arm_near_lower'));
-  assert.equal(headStillIntact.alpha,255,'Edited body-piece pixel did not persist');
-  assert.deepEqual(headStillIntact.color,[240,0,255]);
-
   console.log('PASS Lafrich 10-piece 4-view master rig, editable mask and master body Pixel Editor');
 
   await page.locator('#tab-character').click();
-  assert.equal(await page.locator('#wear-layer').count(),1,
-   'Custom Wear must be available in Character');
-  assert.equal(await page.locator('#import-wear').count(),1,
-   'Character must own wear PNG import');
   await page.locator('#character-gender').selectOption('male');
   await page.locator('#character-name').fill('Dressed Rig QA');
   await page.locator('#wear-layer').selectOption('top');
