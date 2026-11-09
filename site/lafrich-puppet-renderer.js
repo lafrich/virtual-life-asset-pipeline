@@ -27,9 +27,11 @@
  function resolveLayers(master,ch,dir){
   const Cc=C(),layers={};
   for(const part of Cc.LAYERS){
-   const base=master.layers?.[part]?.[dir];
-   const custom=ch&&Cc.WEAR.includes(part)?ch.wear?.[part]?.[dir]:null;
-   layers[part]=custom||base||"";
+   // Only anatomical source belongs to Lafrich Master. Legacy saved master
+   // wear bytes are preserved in the record for recovery, but never rendered.
+   // Every garment, hairstyle and accessory is now Character-owned.
+   layers[part]=Cc.WEAR.includes(part)?
+    (ch?.wear?.[part]?.[dir]||""):(master.layers?.[part]?.[dir]||"");
   }
   return layers;
  }
@@ -109,11 +111,9 @@
   if(!V)throw Error("V6B preview unavailable (used once only for visual seed)");
   const approved={...b.appearance,characterId:b.sourceId,face:"blank"};
   const f=gender==="female"?"_f":"";
-  const sources={
-   body:"base/body"+f,body_front:"base/body_front"+f,
-   top:"top/custom"+f,top_back:"top/custom_back"+f,
-   pants:"pants/custom"+f,shoes:"shoes/custom"+f
-  };
+  // Seed nude anatomical references only. Wear/hair/accessories are created
+  // and saved in Character, not in the shared Lafrich male/female master.
+  const sources={body:"base/body"+f,body_front:"base/body_front"+f};
   const m=Cc.master(gender);
   let count=0;
   for(const [layer,source] of Object.entries(sources)){
@@ -131,15 +131,8 @@
    }
    count++;
   }
-  if(count<3){
-   // Source-sheet fallback preserves art without ever importing stock motions.
-   const atlas=await V.sheet(approved,null,"");
-   if(!atlas)throw Error("V6B source art missing: "+(V.missing||[]).join(", "));
-   for(const d of Cc.DIRS){
-    const out=V.extractFrame(atlas,"idle",d,0);
-    m.layers.body[d]=out.toDataURL("image/png");
-   }
-  }
+  if(!m.layers.body?.se||count<1)
+   throw Error("Approved V6B nude anatomical body source missing; refusing to seed clothing into Lafrich Master");
   return Cc.validateMaster(m);
  }
  return Object.freeze({rgba,clearCache,resolveLayers,loadPng,prepare,partPath,transform,render,seedFromV6B});
