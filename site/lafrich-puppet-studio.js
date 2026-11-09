@@ -282,6 +282,7 @@ async function openPixelEditor(target){
   if(!editor){
    editor=root.MH2PlanePixelEditor.create({
     overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
+    allowCrossViewPaste:true,
     onApply:()=>applyPixel(),onSaveDefault:()=>applyPixel(),onRestore:()=>{}
    });
   }
