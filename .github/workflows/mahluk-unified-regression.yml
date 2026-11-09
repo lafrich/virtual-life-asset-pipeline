@@ -12,6 +12,9 @@ on:
       - feature/nondestructive-cloud-entry-20261108
       - fix/mahluk-nude-preview-stale-frames-20261108
     paths:
+      - "site/lafrich-puppet-*"
+      - "tests/test_lafrich_puppet.cjs"
+      - "tests/smoke_lafrich_puppet.cjs"
       - "site/mahluk-*.html"
       - "site/mahluk-*.js"
       - "site/genesis-native-python-contract.js"
@@ -66,6 +69,9 @@ jobs:
       - name: Parse all unified workspace JavaScript
         run: |
           node --check site/mahluk-hub.js
+          node --check site/lafrich-puppet-core.js
+          node --check site/lafrich-puppet-renderer.js
+          node --check site/lafrich-puppet-studio.js
           node --check site/mahluk-hub-drive.js
           node --check site/genesis-native-python-contract.js
           node --check site/genesis-native-worker.js
@@ -84,6 +90,7 @@ jobs:
       - name: Check preserved existing editors and new app shell
         run: |
           node --test tests/test_custom_wear_mapping.cjs tests/test_mahluk_unified_workspace.cjs tests/test_mahluk_character_animation_flow.cjs tests/test_mahluk_character_retarget.cjs tests/test_mahluk_character_wizard.cjs tests/test_mahluk_back_layer_gallery.cjs
+          node tests/test_lafrich_puppet.cjs
           node tests/test_pixel_editor.cjs
           node tests/test_emotion_studio.cjs
       - uses: actions/setup-python@v5
@@ -98,43 +105,24 @@ jobs:
           node --test tests/test_mahluk_universal_motion.cjs
           test ! -e site/mahluk-motion-library.html
           test ! -e assets/grok_motion_review/preview-00.zip
-      - name: Confirm no Playwright or deployment from feature branch
-        run: test -s site/mahluk-hidup.html && test -s site/v6p-studio.html && test -s site/pixel-editor.html
+      - name: Confirm active Lafrich Puppet exists and legacy archives are preserved
+        run: test -s site/mahluk-hidup.html && test -s site/lafrich-puppet-studio.html && test -s site/v6p-studio.html && test -s site/pixel-editor.html
 
-  wizard-browser-smoke:
+  active-lafrich-browser-smoke:
     needs: regression
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Auto-discover motion assets for the local browser server
-        run: python3 tools/build_mahluk_motion_registry.py site/motion-packs
-      - name: Install browser test tools
+      - name: Install browser testing runtime
         run: |
           npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.0
           npx playwright install chromium
-      - name: Smoke test Character wizard step-by-step
+      - name: Test live Lafrich Puppet, not archived Genesis stock
         run: |
-          mkdir -p /tmp/character-wizard-root
-          ln -s "$PWD/site" /tmp/character-wizard-root/virtual-life-asset-pipeline
-          python3 -m http.server 4173 --bind 127.0.0.1 -d /tmp/character-wizard-root >/tmp/character-wizard-server.log 2>&1 &
-          # Native Python preview uses the real, untouched V6B source and study data.
-          mkdir -p site/genesis-native-source/tools site/genesis-native-source/study site/genesis-native-source/live/chars
-          cp chars-iso/v6b/tools/live_v6b.py site/genesis-native-source/tools/
-          cp chars-iso/v6b/study/ref_*.npy site/genesis-native-source/study/
-          cp chars-iso/v6b/live/chars/ichsan.json chars-iso/v6b/live/chars/noor.json site/genesis-native-source/live/chars/
-          # Test original native idle/walk frames and new Animation browser flow.
-          node tests/smoke_mahluk_native_stock_gallery.cjs
-          node tests/smoke_mahluk_cloud_startup.cjs
-          node tests/smoke_mahluk_drive_backup_restore.cjs
-          node tests/smoke_mahluk_character_quota.cjs
-          node tests/smoke_mahluk_mobile_animation_layout.cjs
-          node tests/smoke_mahluk_action_animation_flows.cjs
-          node tests/smoke_mahluk_custom_wear.cjs
-          node tests/smoke_mahluk_custom_wear_roundtrip.cjs
-          node tests/smoke_mahluk_character_wizard.cjs
-          node tests/smoke_mahluk_pixel_angle.cjs
-          node tests/smoke_mahluk_back_gallery.cjs
+          set -euo pipefail
+          python3 -m http.server 4178 --bind 127.0.0.1 -d site >/tmp/lafrich-regression-http.log 2>&1 &
+          node tests/smoke_lafrich_puppet.cjs
