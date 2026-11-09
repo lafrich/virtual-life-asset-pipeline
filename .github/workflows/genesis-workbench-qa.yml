@@ -1,0 +1,50 @@
+name: Genesis Workbench QA
+on:
+  push:
+    paths:
+      - 'site/genesis-workbench.*'
+      - 'site/genesis-cloud.js'
+      - 'site/genesis_procedural_runtime.py'
+      - 'site/mahluk-hidup.html'
+      - 'tests/test_genesis_procedural_runtime.py'
+      - '.github/workflows/genesis-workbench-qa.yml'
+  pull_request:
+    paths:
+      - 'site/genesis-workbench.*'
+      - 'site/genesis-cloud.js'
+      - 'site/genesis_procedural_runtime.py'
+      - 'site/mahluk-hidup.html'
+      - 'tests/test_genesis_procedural_runtime.py'
+jobs:
+  syntax-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check site/genesis-workbench.js
+          node --check site/genesis-cloud.js
+          node --check site/lafrich-puppet-core.js
+          node --check site/lafrich-puppet-renderer.js
+      - name: HTML / UI integration contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('assert');
+          const html=fs.readFileSync('site/genesis-workbench.html','utf8');
+          const script=fs.readFileSync('site/genesis-workbench.js','utf8');
+          const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+          const missing=[...script.matchAll(/\$\("([^"]+)"\)/g)].map(m=>m[1])
+            .filter(id=>!ids.includes(id));
+          assert.deepStrictEqual(missing,[], 'Missing DOM controls: '+missing.join(', '));
+          assert.strictEqual(ids.length,new Set(ids).size,'Duplicate HTML IDs');
+          for(const id of ['pixelApply','pixelCanvas','pixelDirection','nav-emotion','seed','bind-next','approve-binding','save-master'])
+            assert(ids.includes(id),'Missing required control '+id);
+          assert(html.includes('./genesis-cloud.js'),'Dedicated Drive module not loaded');
+          assert(!html.includes('./mahluk-hub.js'),'Legacy workspace accidentally active');
+          assert(!html.includes('./lafrich-puppet-studio.js'),'Legacy character/animation app accidentally active');
+          console.log('Workbench UI contracts and original pixel editor controls: OK');
+          NODE
+      - name: Python continuous rig tests
+        run: |
+          python3 -m py_compile site/genesis_procedural_runtime.py
+          python3 -m unittest discover -s tests -p 'test_genesis_procedural_runtime.py' -v
