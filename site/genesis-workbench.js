@@ -18,7 +18,14 @@ let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5,acti
 let drafts={},source={},preparedCache=new Map(),rev=0,paintDrag=null,renderRequest=0;
 let pixelEditor=null,pixelSession=null,maskCopied=null,partCopied=null,isolated=false,maskUndo=[],maskRedo=[];
 let faceEntries=[],faceImage=null,faceId="",page="workshop",sourcePending=Promise.resolve();
-let playing=false,playTick=0,playFrame=0,motionTime=0;
+let playing=false,playTick=0,playFrame=0,motionTime=0,rigPreviewTimer=0;
+function scheduleRigPreview(){
+ if(rigPreviewTimer)return;
+ rigPreviewTimer=root.setTimeout(()=>{rigPreviewTimer=0;flushCache()},85);
+}
+function cancelRigPreview(){
+ if(rigPreviewTimer){root.clearTimeout(rigPreviewTimer);rigPreviewTimer=0}
+}
 const reviewKey=(direction,part)=>direction+"|"+part;
 function reviewCount(){
  const r=record();
@@ -387,14 +394,16 @@ function maskPaint(p,erase){
     mask[y*64+x]=erase?255:idx;
    }
  m.masks[dir]=C.encode(mask);
- flushCache();
+ scheduleRigPreview();
 }
-function setPivot(x,y){
+function setPivot(x,y,commit=true){
  const p=master().pivots[dir][selected];
- p.x=clamp(Math.round(x),0,63);p.y=clamp(Math.round(y),0,111);
- if(record()?.reviewed)delete record().reviewed[reviewKey(dir,selected)];
- if(record())record().testedAngles={};
- makeDirty();syncControls();
+ const nx=clamp(Math.round(x),0,63),ny=clamp(Math.round(y),0,111);
+ if(p.x===nx&&p.y===ny)return;
+ p.x=nx;p.y=ny;
+ if(commit)invalidateReviews(dir,[selected]);
+ else scheduleRigPreview(); // Drag preview only; no multi-MB localStorage writes per pointermove.
+ syncControls();
 }
 function bindMaskCopy(flipped){
  if(!maskCopied){status("Copy a mask first",true);return}
@@ -877,7 +886,7 @@ function setup(){
   }
   const p=coords(e);snapshot();
   paintDrag={id:e.pointerId,last:"",direction:dir,dirtyParts:new Set([selected])};
-  if(tool==="pivot"){setPivot(p.x,p.y)}
+  if(tool==="pivot"){setPivot(p.x,p.y,false)}
   else maskPaint(p,tool==="erase");
  });
  canvas.addEventListener("pointermove",e=>{
@@ -889,13 +898,14 @@ function setup(){
   }
   const p=coords(e),key=p.x+"|"+p.y;
   if(paintDrag.last===key)return;paintDrag.last=key;
-  if(tool==="pivot")setPivot(p.x,p.y);
+  if(tool==="pivot")setPivot(p.x,p.y,false);
   else maskPaint(p,tool==="erase");
  });
  const end=e=>{
   if(paintDrag?.id!==e.pointerId)return;
   const changed=paintDrag;paintDrag=null;
   if(changed.pan)return;
+  cancelRigPreview();
   if(changed.direction===dir)invalidateReviews(dir,[...changed.dirtyParts]);
   else invalidateReviews();
   syncControls();
