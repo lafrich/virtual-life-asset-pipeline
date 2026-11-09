@@ -35,7 +35,7 @@ jobs:
           ! grep -q 'animation:"./mahluk-animation-native.html' site/mahluk-hub.js
   browser:
     needs: unit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

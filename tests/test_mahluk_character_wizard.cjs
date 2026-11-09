@@ -57,11 +57,12 @@ test('Character Pixel Editor stays in Character tab and can return without losin
  assert.match(pixel,/hub\.closeAnimationPixel:hub\.closeCharacterPixel/);
  assert.match(wizard,/storeStep\(\);H\.edit/);
 });
-test('unmodified Animation / Action editors are still separate, while Face is routed to Emosi',()=>{
+test('Emosi remains available while active Character/Animation/Action are routed to Lafrich Puppet',()=>{
  assert.match(html,/window\.parent\.VLMahlukWorkspace\.show\("emotion"\)/);
  const hub=read('site/mahluk-hub.js');
- assert.match(hub,/action:"\.\/mahluk-action-editor\.html/);
- assert.match(hub,/animation:"\.\/mahluk-animation-native\.html/);
+ assert.match(hub,/action:"\.\/lafrich-puppet-studio\.html\?embedded=1&mode=animation/);
+ assert.match(hub,/animation:"\.\/lafrich-puppet-studio\.html\?embedded=1&mode=animation/);
+ assert.match(hub,/character:"\.\/lafrich-puppet-studio\.html\?embedded=1&mode=character/);
 });
 test('all modified browser JavaScript and inline studio scripts parse',()=>{
  for(const file of ['site/v6p-character-wizard.js','site/mahluk-hub.js','site/pixel-editor.js'])
