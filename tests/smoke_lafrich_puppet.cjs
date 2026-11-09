@@ -73,8 +73,7 @@ const {chromium}=require('playwright');
   assert.equal(saved.id,'lafrich_male');
   assert.equal(saved.pivot.x,18);
   assert.equal(saved.mask,state.parts.indexOf('arm_near_lower'));
-  await page.locator('#master-layer').selectOption('body');
-  await page.locator('#edit-master').click();
+  await page.locator('#edit-piece').click();
   await page.locator('#pixelOverlay:not([hidden])').waitFor({timeout:30000});
   await page.locator('#pixelColor').fill('#f000ff');
   await page.locator('#pixelGrid').uncheck();
@@ -83,7 +82,7 @@ const {chromium}=require('playwright');
    w:c.getBoundingClientRect().width,h:c.getBoundingClientRect().height
   }));
   await page.locator('#pixelCanvas').click({position:{
-   x:Math.floor(pixSize.w*32.5/64),y:Math.floor(pixSize.h*40.5/112)
+   x:Math.floor(pixSize.w*20.5/64),y:Math.floor(pixSize.h*76.5/112)
   }});
   await page.locator('#pixelApply').click();
   await page.locator('#pixelOverlay').waitFor({state:'hidden',timeout:15000});
@@ -93,6 +92,21 @@ const {chromium}=require('playwright');
    return Object.keys(m.male.layers.body).length===4&&!!m.male.layers.body.se;
   });
   assert.equal(masterHasPixel,true,'Master four-view layers were not saved');
+  const headStillIntact=await page.evaluate(async()=>{
+   const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
+   const m=JSON.parse(localStorage.getItem(C.MASTER_KEY)).male;
+   const loaded=await R.loadPng(m.layers.body.se);
+   const ctx=R.rgba().getContext('2d');
+   ctx.drawImage(loaded,0,0);
+   const px=ctx.getImageData(0,0,64,112).data;
+   const index=(76*64+20)*4;
+   return {piece:C.decode(m.masks.se)[76*64+20],
+    alpha:px[index+3],color:[...px.slice(index,index+3)]};
+  });
+  assert.equal(headStillIntact.piece,state.parts.indexOf('arm_near_lower'));
+  assert.equal(headStillIntact.alpha,255,'Edited body-piece pixel did not persist');
+  assert.deepEqual(headStillIntact.color,[240,0,255]);
+
   console.log('PASS Lafrich 10-piece 4-view master rig, editable mask and master body Pixel Editor');
 
   await page.locator('#tab-character').click();
