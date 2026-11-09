@@ -309,6 +309,18 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   });
   assert.ok(inherit.changed>=1&&inherit.blue>=1,
     "Master Appearance did not inherit to a different native action (WALK)");
+  const composed=await genesis.locator("#stage").evaluate(async()=>{
+    const V=window.V6PCompositor,P=window.GenesisMasterPixel;
+    const look=window.GenesisPuppetRenderer.genesisAppearance("male");
+    const src=await V.img("top/custom",look.characterId);
+    const [layer]=await P.decorateLayers(["top/custom"],[src],look);
+    const base=V.extractFrame(src,"walk","se",0).getContext("2d").getImageData(0,0,64,112).data;
+    const result=V.extractFrame(layer,"walk","se",0).getContext("2d").getImageData(0,0,64,112).data;
+    let changed=0;
+    for(let i=0;i<result.length;i++)if(result[i]!==base[i])changed++;
+    return changed;
+  });
+  assert.ok(composed>0,"Native layered compositor ignored inherited Master Appearance");
   // Copy/Paste Flip a complete view intentionally, without modifying any
   // other direction or the separate female master.
   await genesis.locator("#appearance-copy").click();
