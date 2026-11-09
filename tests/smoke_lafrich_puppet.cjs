@@ -56,6 +56,8 @@ const {chromium}=require('playwright');
   await page.locator('#master-gender').selectOption('female');
   await page.locator('#master-gender').selectOption('male');
   await page.locator('#part-select').selectOption('arm_near_lower');
+  assert.equal(await page.locator('#tool-move').getAttribute('aria-pressed'),'true');
+  await page.locator('#tool-rig').click();
   await page.locator('#pivot-x').fill('18');
   await page.locator('#pivot-x').press('Tab');
   await page.locator('#tool-mask').click();
@@ -73,6 +75,59 @@ const {chromium}=require('playwright');
   assert.equal(saved.id,'lafrich_male');
   assert.equal(saved.pivot.x,18);
   assert.equal(saved.mask,state.parts.indexOf('arm_near_lower'));
+  // Move Piece must move actual cut art through the puppet while keeping
+  // PNGs, slicing and joint coordinates unchanged.
+  await page.locator('#tool-move').click();
+  const origin=await page.evaluate(()=>{
+   const C=window.LafrichPuppetCore;
+   const m=JSON.parse(localStorage.getItem(C.MASTER_KEY)).male;
+   return {mask:m.masks.se,body:m.layers.body.se,pivot:m.pivots.se.arm_near_lower};
+  });
+  const dragBounds=await page.locator('#canvas').boundingBox();
+  const fromX=dragBounds.x+(20.5/64)*dragBounds.width;
+  const fromY=dragBounds.y+(76.5/112)*dragBounds.height;
+  await page.mouse.move(fromX,fromY);
+  await page.mouse.down();
+  await page.mouse.move(fromX+3*dragBounds.width/64,fromY,{steps:5});
+  await page.mouse.up();
+  await page.locator('#save-master-local').click();
+  const moved=await page.evaluate(()=>{
+   const C=window.LafrichPuppetCore;
+   const m=JSON.parse(localStorage.getItem(C.MASTER_KEY)).male;
+   return {position:m.placements.se.arm_near_lower,
+    otherDirection:m.placements.sw.arm_near_lower,
+    mask:m.masks.se,body:m.layers.body.se,pivot:m.pivots.se.arm_near_lower};
+  });
+  assert.deepEqual(moved.position,{x:3,y:0},'Move Piece drag did not change rest placement');
+  assert.deepEqual(moved.otherDirection,{x:0,y:0},'Move Piece must not modify SW/NW/NE');
+  assert.equal(moved.body,origin.body,'Move Piece must not re-encode original PNG');
+  assert.equal(moved.mask,origin.mask,'Move Piece must not overwrite slicing');
+  assert.deepEqual(moved.pivot,origin.pivot,'Move Piece must not alter elbow pivot');
+  const movedPixels=await page.evaluate(async()=>{
+   const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
+   const master=C.master('male'),ch=C.character('male');
+   const art=(x,y,color)=>{
+    const cv=R.rgba(),ctx=cv.getContext('2d');ctx.fillStyle=color;
+    ctx.fillRect(x,y,1,1);return cv.toDataURL('image/png');
+   };
+   master.layers.body.se=art(20,77,'#ff0022');
+   ch.wear.top.se=art(21,77,'#0022ff');
+   const raw=R.render(await R.prepare(master,ch,'se'),C.blankPose());
+   master.placements.se.arm_near_upper={x:4,y:0};
+   const shifted=R.render(await R.prepare(master,ch,'se'),C.blankPose());
+   const rgb=(cv,x,y)=>[...cv.getContext('2d').getImageData(x,y,1,1).data];
+   return {beforeBody:rgb(raw,20,77),beforeWear:rgb(raw,21,77),
+    afterBody:rgb(shifted,24,77),afterWear:rgb(shifted,25,77),
+    oldSpot:rgb(shifted,20,77)};
+  });
+  assert.deepEqual(movedPixels.beforeBody,[255,0,34,255]);
+  assert.deepEqual(movedPixels.beforeWear,[0,34,255,255]);
+  assert.deepEqual(movedPixels.afterBody,[255,0,34,255],
+   'Body pixel must follow upper arm movement');
+  assert.deepEqual(movedPixels.afterWear,[0,34,255,255],
+   'Wear pixel must follow same moved puppet');
+  assert.equal(movedPixels.oldSpot[3],0,'Source pixel must move, not duplicate');
+  console.log('PASS actual drag Master Move Piece and native body/wear renderer movement');
   await page.locator('#master-layer').selectOption('body');
   await page.locator('#edit-master').click();
   await page.locator('#pixelOverlay:not([hidden])').waitFor({timeout:30000});
