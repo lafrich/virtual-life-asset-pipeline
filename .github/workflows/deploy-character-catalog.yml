@@ -344,6 +344,10 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    # Pages backend occasionally stays in syncing_files >10 minutes even after
+    # build and artifact upload have succeeded. Allow enough time for backend
+    # synchronization before canceling an otherwise valid release.
+    timeout-minutes: 40
     needs: build
     environment:
       name: github-pages
@@ -407,3 +411,7 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          # deploy-pages defaults to a 600000-ms (10 min) limit, which canceled
+          # a valid LGR-1 deployment during a long GitHub Pages syncing_files.
+          timeout: 1800000
+          reporting_interval: 10000
