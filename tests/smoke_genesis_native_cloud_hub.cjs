@@ -187,6 +187,9 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   // native source layer. Apply modifies in-memory master only; Save overwrites
   // the same cloud master ID and not a standalone Character record.
   await genesis.locator("#pixel-part").selectOption("top/custom");
+  // Existing single-frame editing must remain opt-in after Master Appearance
+  // becomes the primary Pixel Editor scope.
+  await genesis.locator("#pixel-scope").selectOption("frame");
   await genesis.locator("#native-action").selectOption("idle");
   await genesis.locator("#native-frame").fill("1");
   await genesis.locator("#pixel-open").click();
