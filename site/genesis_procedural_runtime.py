@@ -159,10 +159,12 @@ def matrices(binding: dict, direction: str, pose: dict):
         out[part] = mat
     return out
 
-def render(binding: dict, direction: str, pose: dict):
+def render(binding: dict, direction: str, pose: dict, layer_overrides: dict | None = None):
     """Render nearest-neighbor pixel pieces using Pillow, if available.
 
-    This method uses 64x112 source PNG and 10 masks; no frame atlas is required.
+    Uses 64x112 source pixels and 10 masks; no frame atlas is required.
+    Optionally replaces individual body/skin, clothing, hair and accessories
+    before slicing so clothing inherits the same hierarchical rotations.
     Face is intentionally excluded: Emosi.exe must be composited separately.
     """
     try:
@@ -171,10 +173,30 @@ def render(binding: dict, direction: str, pose: dict):
         raise RuntimeError("Rendering requires Pillow; pure geometry functions do not") from exc
     validate(binding)
     v = binding["views"][direction]
-    raw = base64.b64decode(v["spritePng"].split(",", 1)[1])
-    original = Image.open(io.BytesIO(raw)).convert("RGBA")
-    if original.size != (W, H):
-        raise ValueError("Source PNG has invalid dimensions")
+    layer_order = ("hair_back", "body", "pants", "shoes", "top_back",
+                   "top", "body_front", "hair_front", "accessory")
+    if layer_overrides is None:
+        raw = base64.b64decode(v["spritePng"].split(",", 1)[1])
+        original = Image.open(io.BytesIO(raw)).convert("RGBA")
+        if original.size != (W, H):
+            raise ValueError("Source PNG has invalid dimensions")
+    else:
+        if not isinstance(layer_overrides, dict) or any(
+                k not in layer_order for k in layer_overrides):
+            raise ValueError("Only known Genesis physical layers can be overridden")
+        original = Image.new("RGBA", (W, H))
+        base_layers = binding.get("rig", {}).get("layers", {})
+        for layer in layer_order:
+            png = layer_overrides.get(layer, base_layers.get(layer, {}).get(direction))
+            if not png:
+                continue
+            if not isinstance(png, str) or not png.startswith("data:image/png;base64,"):
+                raise ValueError("Invalid physical layer PNG " + layer)
+            raw = base64.b64decode(png.split(",", 1)[1], validate=True)
+            image = Image.open(io.BytesIO(raw)).convert("RGBA")
+            if image.size != (W, H):
+                raise ValueError("Physical layer must be exactly 64x112")
+            original = Image.alpha_composite(original, image)
     source = original.load()
     mask = base64.b64decode(v["maskBase64"], validate=True)
     result = Image.new("RGBA", (W,H))
