@@ -106,15 +106,39 @@
  }
  async function seedFromV6B(gender){
   const V=root?.V6PCompositor,Cc=C(),b=seededPreviewSource(gender);
-  if(!V)throw Error("V6B preview is unavailable (used only once to seed a new puppet)");
+  if(!V)throw Error("V6B preview unavailable (used once only for visual seed)");
   const approved={...b.appearance,characterId:b.sourceId,face:"blank"};
-  const atlas=await V.sheet(approved,null,"");
-  if(!atlas)throw Error("V6B preview not ready: "+V.missing?.join(", "));
+  const f=gender==="female"?"_f":"";
+  const sources={
+   body:"base/body"+f,body_front:"base/body_front"+f,
+   top:"top/custom"+f,top_back:"top/custom_back"+f,
+   pants:"pants/custom"+f,shoes:"shoes/custom"+f
+  };
   const m=Cc.master(gender);
-  for(const d of Cc.DIRS){
-   const source=V.extractFrame(atlas,"idle",d,0);
-   const dest=rgba(),ctx=dest.getContext("2d");ctx.drawImage(source,0,0);
-   m.layers.body[d]=dest.toDataURL("image/png");
+  let count=0;
+  for(const [layer,source] of Object.entries(sources)){
+   const atlas=await V.img(source,b.sourceId);
+   if(!atlas)continue;
+   for(const d of Cc.DIRS){
+    const frame=V.extractFrame(atlas,"idle",d,0);
+    const out=rgba(),ctx=out.getContext("2d",{willReadFrequently:true});
+    if(source.startsWith("base/")){
+     // V6B body atlas uses palette keys, not direct pixel colors.
+     const raw=frame.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
+     ctx.putImageData(V.keysToDisplay(raw,approved),0,0);
+    }else ctx.drawImage(frame,0,0);
+    m.layers[layer][d]=out.toDataURL("image/png");
+   }
+   count++;
+  }
+  if(count<3){
+   // Source-sheet fallback preserves art without ever importing stock motions.
+   const atlas=await V.sheet(approved,null,"");
+   if(!atlas)throw Error("V6B source art missing: "+(V.missing||[]).join(", "));
+   for(const d of Cc.DIRS){
+    const out=V.extractFrame(atlas,"idle",d,0);
+    m.layers.body[d]=out.toDataURL("image/png");
+   }
   }
   return Cc.validateMaster(m);
  }
