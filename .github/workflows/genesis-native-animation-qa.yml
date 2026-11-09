@@ -9,6 +9,7 @@ on:
       - "site/genesis-master-rig.js"
       - "site/genesis-puppet-renderer.js"
       - "site/genesis-master-pixels.js"
+      - "site/genesis-appearance-transfer.js"
       - "site/genesis-pose-clipboard.js"
       - "site/genesis-editor.*"
       - "site/v6p-character-wizard.js"
@@ -18,6 +19,7 @@ on:
       - "site/mahluk-hub.js"
       - "tests/test_genesis_native_*"
       - "tests/test_genesis_master_rig.cjs"
+      - "tests/test_genesis_appearance_transfer.cjs"
       - "tests/smoke_genesis_native*.cjs"
       - "chars-iso/v6b/tools/live_v6b.py"
       - ".github/workflows/genesis-native-animation-qa.yml"
@@ -49,6 +51,8 @@ jobs:
           node --check site/genesis-master-rig.js
           node --check site/genesis-puppet-renderer.js
           node --check site/genesis-master-pixels.js
+          node --check site/genesis-appearance-transfer.js
+          node tests/test_genesis_appearance_transfer.cjs
           node --check site/genesis-pose-clipboard.js
           node --check site/genesis-editor.js
           node tests/test_genesis_master_rig.cjs

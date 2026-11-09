@@ -16,6 +16,15 @@ test('only two stable original Genesis master IDs; 15 joints 6 pivots 4 exact sl
   assert.equal(M.decode(row.masks[dir]).length,64*112);
  }
  assert.notEqual(male.id,female.id);
+ assert.deepEqual(male.appearanceMaster,{});
+ const withAppearance=M.initial("male");
+ withAppearance.appearanceMaster["base/body|se"]="data:image/png;base64,iVBORw0KGgo=";
+ withAppearance.pixelFrames["base/body|walk|se|0"]="data:image/png;base64,iVBORw0KGgo=";
+ const roundTrip=M.validate(withAppearance);
+ assert.equal(roundTrip.appearanceMaster["base/body|se"],withAppearance.appearanceMaster["base/body|se"]);
+ assert.equal(roundTrip.pixelFrames["base/body|walk|se|0"],withAppearance.pixelFrames["base/body|walk|se|0"]);
+ assert.throws(()=>M.validate({...male,appearanceMaster:{"face/m_blank|se":"data:image/png;base64,AA=="}}),/Genesis Master/);
+ assert.throws(()=>M.validate({...male,appearanceMaster:{"base/body|bad":"data:image/png;base64,AA=="}}),/Genesis Master/);
  assert.throws(()=>M.validate({...male,id:'mh2_old_draft'}),/Genesis Master/);
  assert.throws(()=>M.initial('noor'),/Genesis Master/);
 });
