@@ -117,6 +117,8 @@ jobs:
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:1500,height:1000}});
             const errors=[];
+            // Some physically occluded limbs require an explicit review confirmation.
+            page.on('dialog',async dialog=>{await dialog.accept()});
             page.on('pageerror',e=>errors.push(e.message));
             page.on('console',m=>{if(m.type()==='error'&&!/accounts.google.com|favicon.ico/.test(m.text()))errors.push(m.text())});
             try{
