@@ -150,7 +150,8 @@ function maskHighlight(destination,d,rig){
   if(mask[k]===idx){image.data[p]=39;image.data[p+1]=126;image.data[p+2]=239;image.data[p+3]=83;}
   else if(step==="pixel"){image.data[p]=51;image.data[p+1]=61;image.data[p+2]=80;image.data[p+3]=30;}
  }
- destination.putImageData(image,0,0);
+ const overlay=cv();overlay.getContext("2d").putImageData(image,0,0);
+ destination.drawImage(overlay,0,0);
 }
 function showPivot(destination,d,rig){
  const p=rig.pivots[d][selected];
