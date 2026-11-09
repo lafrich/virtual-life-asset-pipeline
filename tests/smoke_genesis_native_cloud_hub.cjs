@@ -119,7 +119,7 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   const unselectSave=JSON.parse([...files.values()]
    .find(row=>row.name==="genesis__genesis_male_nude.json").content).record;
   assert.equal(unselectSave.masks.se.length>9000,true);
-  const unselectDecoded=await genesis.locator("#stage").evaluate(mask=>{
+  const unselectDecoded=await genesis.locator("#stage").evaluate((canvas,mask)=>{
    return window.GenesisMasterRig.decode(mask)[30*64+32];
   },unselectSave.masks.se);
   assert.equal(unselectDecoded,255,"UNSELECT must save as unassigned, not clear Genesis pixels");
