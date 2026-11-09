@@ -20,11 +20,11 @@ function read(){try{const v=JSON.parse(storage()?.getItem(KEY)||"null");
  return v?.format===FORMAT&&Array.isArray(v.items)?
   v.items.filter(x=>x&&ID.test(x.id)).slice(0,150).map(row=>({...row,appearance:migrateAppearance(row.appearance)})):[];
  }catch{return []}}
-function write(items){if(!storage())throw Error("Local storage unavailable");storage().setItem(KEY,JSON.stringify({format:FORMAT,items}));try{root?.VLHub?.publish("characters",{source:"mahluk-character-workflow",count:items.length})}catch{}}
+function write(items){throw Error("Legacy V6P Character Store is READ-ONLY under LGR-1.");if(!storage())throw Error("Local storage unavailable");storage().setItem(KEY,JSON.stringify({format:FORMAT,items}));try{root?.VLHub?.publish("characters",{source:"mahluk-character-workflow",count:items.length})}catch{}}
 function list(){return read().map(x=>({...x,parts:undefined,partCount:Object.keys(x.parts||{}).length}))}
 function get(id){return ID.test(id)?read().find(x=>x.id===id)||null:null}
 function selected(){try{return storage()?.getItem(SELECTED)||""}catch{return ""}}
-function select(id){if(id&&!get(id))throw Error("Unknown character "+id);if(id)storage().setItem(SELECTED,id);else storage().removeItem(SELECTED)}
+function select(id){throw Error("Legacy V6P character selection retired; use LGR-1.");if(id&&!get(id))throw Error("Unknown character "+id);if(id)storage().setItem(SELECTED,id);else storage().removeItem(SELECTED)}
 function freshId(){return "mh2_"+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function starter(gender){return {body:gender==="female"?"female":"male",gender:gender==="female"?"female":"male",
  hair:"none",hairColor:"black",skin:"light",top:"tee",topColor:"white",pants:"trousers",pantsColor:"slate",shoes:"shoes",shoesColor:"black",glasses:"none",facial:"none",face:"blank",accessories:[]}}
