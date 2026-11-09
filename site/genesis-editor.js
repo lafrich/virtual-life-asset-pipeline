@@ -1,10 +1,11 @@
 /* Two existing Genesis masters only: puppet/slice authoring and cloud overwrite. */
 (function(root){"use strict";
 const $=id=>document.getElementById(id),M=root.GenesisMasterRig,P=root.GenesisPuppetRenderer,
- C=root.GenesisNativePythonContract,V=root.V6PCompositor;
+ C=root.GenesisNativePythonContract,V=root.V6PCompositor,Pixel=root.GenesisMasterPixel;
 if(!M||!P||!C||!V){document.body.textContent="Genesis master dependencies missing";return}
 let gender="male",dir="se",mode="puppet",profile=M.load(gender),sheet=null,selected="head",pivot="head",
- maskPart="head",sliceTool="select",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0,changeVersion=0;
+ maskPart="head",sliceTool="select",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0,changeVersion=0,
+ pixelEditor=null,pixelSession=null,pixelOpening=false;
 const stage=$("stage"),viewport=$("stage-viewport"),ctx=stage.getContext("2d"),srcCtx=$("source-preview").getContext("2d");
 let zoom=4,zoomFit=true,pan=false;
 function cursor(){
@@ -115,7 +116,10 @@ async function reloadSheet(){
 }
 function changeGender(next){
  if(dirty&&!root.confirm("Discard unsaved Genesis "+gender+" edits?")){$("gender").value=gender;return}
+ if(pixelEditor?.isOpen()){pixelEditor.close();pixelSession=null}
+ Pixel?.clearPreview(gender);
  gender=next;changeVersion++;profile=M.load(gender);dir="se";$("dir").value=dir;
+ refreshPixelParts();
  dirty=false;setFrame();jointInput();void reloadSheet();
 }
 function setFrame(){
@@ -195,7 +199,9 @@ async function loadCloud(){
   show("Cloud response ignored: you edited Genesis while it loaded. Save or reload explicitly.");return;
  }
  const count=M.cloudRows(rows);
- profile=M.load(gender);dirty=false;jointInput();paint();
+ Pixel?.clearPreview(gender);V.clearCache();
+ profile=M.load(gender);dirty=false;jointInput();void reloadSheet();
+ paint();
  show("Cloud master sync verified · "+count+" profile(s) · "+profile.id);
 }
 async function saveMaster(){
@@ -208,12 +214,74 @@ async function saveMaster(){
   show("Overwriting "+valid.id+" rig profile in cloud and verifying…");
   const receipt=await b.saveOnline("genesis",valid.id,valid);
   if(!receipt?.verified)throw Error("Cloud did not verify overwrite");
-  M.apply(valid);profile=valid;dirty=false;paint();
+  M.apply(valid);Pixel?.clearPreview(gender);profile=valid;dirty=false;paint();
+  V.clearCache();void reloadSheet();
   $("save").textContent="✓ MASTER OVERWRITTEN · "+gender.toUpperCase();
   show("CLOUD VERIFIED · "+valid.id+" overwritten (not new character). Python and Animation use this Genesis master after reload.");
   try{root.parent?.postMessage({type:"genesis:master-overwritten",gender:valid.gender,id:valid.id},root.location.origin)}catch{}
  }catch(error){show("MASTER NOT OVERWRITTEN: "+error.message,true)}
  finally{working=false;$("save").disabled=false}
+}
+function refreshPixelParts(){
+ const select=$("pixel-part"),keep=select.value;
+ select.replaceChildren();
+ for(const part of Pixel?.parts(gender)||[]){
+  const option=document.createElement("option");
+  option.value=part;option.textContent=part.toUpperCase().replaceAll("/"," / ");
+  select.append(option);
+ }
+ if([...select.options].some(o=>o.value===keep))select.value=keep;
+}
+function applyPixelSource(){
+ const session=pixelSession;
+ if(!session||!pixelEditor||session.gender!==gender)return false;
+ try{
+  const previous=M.validate(profile),source=session.source;
+  const frames=Pixel.updatedFrames(session.gender,session.part,session.action,session.frame,
+   pixelEditor.getAtlas(),source.clean,previous,source.nativeOriginal);
+  const next=M.validate({...previous,pixelFrames:frames});
+  profile=next;Pixel.preview(gender,profile);pixelSession=null;
+  V.clearCache();markEdited();void reloadSheet();
+  show("PIXEL EDIT APPLIED · "+session.part+" / "+session.action.toUpperCase()+
+   " / FRAME "+(session.frame+1)+" · SAVE · OVERWRITE MASTER to sync Drive");
+  return true;
+ }catch(e){show("GENESIS PIXEL SAVE REJECTED: "+e.message,true);return false}
+}
+async function openPixelEditor(){
+ if(pixelOpening||working)return;
+ if(!sheet||!Pixel||!root.MH2PlanePixelEditor){
+  show("Genesis source or shared Pixel Editor is not ready",true);return;
+ }
+ const session={
+  gender,dir,part:$("pixel-part").value,action:$("native-action").value,
+  frame:Math.max(0,Number($("native-frame").value)-1),version:changeVersion
+ };
+ if(!session.part)return show("Choose the source part to edit",true);
+ pixelOpening=true;$("pixel-open").disabled=true;$("pixel-open-side").disabled=true;
+ try{
+  const source=await Pixel.atlases(session.gender,session.part,session.action,session.frame,profile);
+  if(session.gender!==gender||session.dir!==dir||session.version!==changeVersion||
+   session.action!==$("native-action").value||session.part!==$("pixel-part").value||
+   session.frame!==Math.max(0,Number($("native-frame").value)-1))return;
+  const references={};
+  for(const d of Pixel.DIRS)
+   references[d]=P.nativeFrame(sheet,session.action,d,session.frame);
+  if(!pixelEditor){
+   pixelEditor=root.MH2PlanePixelEditor.create({
+    overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
+    onApply:applyPixelSource,onSaveDefault:applyPixelSource,onRestore:()=>{},onDirectionChange:()=>{}
+   });
+  }
+  pixelSession={...session,source};
+  pixelEditor.open({
+   id:session.gender+" / "+session.part+" / "+session.action+" / F"+(session.frame+1),
+   initialAtlas:source.edited,originalAtlas:source.clean,
+   referenceImages:references,direction:session.dir
+  });
+  $("pixelStatus").textContent="GENESIS "+session.gender.toUpperCase()+" · SOURCE "+session.part+
+   " · F"+(session.frame+1)+" · APPLY then OVERWRITE MASTER";
+ }catch(e){show("PIXEL EDITOR FAILED: "+e.message,true)}
+ finally{pixelOpening=false;$("pixel-open").disabled=false;$("pixel-open-side").disabled=false}
 }
 for(const action of C.TEMPLATES){
  const option=document.createElement("option");option.value=action;option.textContent=action.toUpperCase();$("native-action").append(option);
@@ -228,6 +296,8 @@ $("gender").onchange=e=>changeGender(e.target.value);
 $("dir").onchange=e=>{dir=e.target.value;jointInput();paint()};
 $("mode-puppet").onclick=()=>setMode("puppet");
 $("mode-slice").onclick=()=>setMode("slice");
+$("pixel-open").onclick=()=>void openPixelEditor();
+$("pixel-open-side").onclick=()=>void openPixelEditor();
 $("zoom-out").onclick=()=>setZoom(zoom-1);
 $("zoom-in").onclick=()=>setZoom(zoom+1);
 $("zoom").oninput=e=>setZoom(e.target.value);
@@ -284,12 +354,13 @@ $("mask-flip").onclick=()=>{
 $("export").onclick=saveLocalBackup;
 $("reset").onclick=()=>{
  if(!root.confirm("Reset unsaved rig of "+gender+" to original defaults? Cloud master will not change until Save."))return;
- profile=M.initial(gender);markEdited();jointInput();paint();
+ profile=M.initial(gender);Pixel?.preview(gender,profile);V.clearCache();
+ markEdited();jointInput();void reloadSheet();
 };
 $("save").onclick=()=>void saveMaster();
 $("load-cloud").onclick=()=>void loadCloud().catch(e=>show(e.message,true));
 root.addEventListener("message",e=>{if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected"&&!dirty)void loadCloud().catch(()=>{})});
 root.addEventListener("pagehide",stop);
 $("native-action").value="idle";$("pivot-name").value="head";$("slice-part").value="head";
-setZoom(fittedZoom(),{fit:true});setMode("puppet");jointInput();void reloadSheet();
+refreshPixelParts();setZoom(fittedZoom(),{fit:true});setMode("puppet");jointInput();void reloadSheet();
 })(window);
