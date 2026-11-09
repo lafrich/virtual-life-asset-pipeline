@@ -85,7 +85,19 @@ jobs:
               const tools=['pixelCopySelection','pixelPasteSelection','pixelPasteMirrored','pixelFlipH','pixelFlipV','pixelUndo','pixelRedo','pixelSelectAll'];
               for(const id of tools)assert(await page.locator('#'+id).count()===1,'Missing pixel tool '+id);
               await page.locator('#pixelDirection').selectOption('nw');
-              await page.locator('#pixelClose').click();
+              const initial=await page.evaluate(()=>{
+                const saved=JSON.parse(localStorage.getItem('vl-lafrich-genesis-workbench-drafts-v1'));
+                return saved.drafts.male.rig.layers.top.se;
+              });
+              await page.locator('#pixelApply').click();
+              await page.waitForFunction(()=>
+                document.querySelector('#statusmsg')?.textContent?.includes('APPLIED '),
+                null,{timeout:30000});
+              const retained=await page.evaluate(()=>{
+                const saved=JSON.parse(localStorage.getItem('vl-lafrich-genesis-workbench-drafts-v1'));
+                return saved.drafts.male.rig.layers.top.se;
+              });
+              assert.strictEqual(retained,initial,'Editing skin accidentally changed shirt layer');
               await page.locator('#gender').selectOption('female');
               await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
               await page.locator('#pixel-next').click();
