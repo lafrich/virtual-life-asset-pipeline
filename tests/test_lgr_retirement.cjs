@@ -65,6 +65,13 @@ const cloudWorld={localStorage:noWrites};
 vm.runInNewContext(read("site/drive-sync.js"),{window:cloudWorld});
 assert.ok(cloudWorld.MembangunCloudDrive,"Shared Semesta Drive adapter remains exported");
 assert.match(read("site/v6p-compositor.js"),/const legacyOverride=genesis\?null:/);
+const v6pWorld={localStorage:noWrites};
+vm.runInNewContext(read("site/v6p-part-overrides.js"),{window:v6pWorld});
+assert.throws(()=>v6pWorld.V6PPartOverrides.clear(),/READ-ONLY|read-only/);
+vm.runInNewContext(read("site/v6p-character-store.js"),{window:v6pWorld});
+assert.throws(()=>v6pWorld.V6PCharacterStore.create({name:"Legacy"}),/READ-ONLY|read-only/);
+assert.throws(()=>v6pWorld.V6PCharacterStore.select(""),/retired/);
+
 assert.match(read("site/genesis-workbench.js"),/RIG_FORMAT="LGR-1"/);
 assert.match(read("site/genesis-cloud.js"),/Wrong V6B rig base/);
 const storageKeys=["vl-lafrich-genesis-workbench-drafts-v1","vl-lafrich-genesis-approved-masters-v1"];
