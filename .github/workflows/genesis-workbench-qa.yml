@@ -96,9 +96,22 @@ jobs:
               await page.locator('#make-binding').click();
               await page.waitForTimeout(500);
               const info=await page.locator('#binding-result').textContent();
-              assert(!/Binding belum dibuat/.test(info),'Binding action did nothing');
+              assert(/^BOUND/.test(info),'Binding failed: '+info);
+              await page.locator('#bind-next').click();
+              assert(await page.locator('[data-panel="test"]').isVisible(),'Test binding stage inaccessible');
+              await page.locator('#test-preset').selectOption('walk');
+              await page.locator('#test-angle').fill('25');
+              await page.locator('#approve-binding').click();
+              assert(await page.locator('[data-panel="save"]').isVisible(),'Approval did not open Save Master');
+              await page.locator('#save-master').click();
+              const saved=await page.locator('#master-details').textContent();
+              assert(saved.includes('MASTER SAVED'),'Master not persisted: '+saved);
+              const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')));
+              assert(actual?.female?.id==='lafrich_genesis_female','Canonical Female Genesis Master missing from database');
+              assert(actual.female.binding.views.se.spritePng.startsWith('data:image/png;base64,'),'Python neutral source absent');
               if(errors.length)throw Error('Browser errors: '+errors.join(' | '));
-              console.log(JSON.stringify({browser:'OK',pixelCount,partCount:10,femaleSwitched:true,bindingResult:info.slice(0,240)}));
+              console.log(JSON.stringify({browser:'OK',pixelCount,partCount:10,
+                femaleSwitched:true,bindingResult:info.slice(0,180),approved:actual.female.id}));
             } finally {await browser.close()}
           })().catch(e=>{console.error(e);process.exitCode=1})
           NODE
