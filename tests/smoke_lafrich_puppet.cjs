@@ -25,6 +25,32 @@ const {chromium}=require('playwright');
   assert.equal(state.ids.male,'lafrich_male');
   assert.equal(state.ids.female,'lafrich_female');
   assert.equal(await page.locator('#views button').count(),4);
+  // Seed from the approved V6B drawings once, then use only independent
+  // Lafrich layers and authored motions (never the V6B stock action atlas).
+  const approvedArt=await page.evaluate(async()=>{
+   const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
+   const output={};
+   for(const gender of ['male','female']){
+    const m=await R.seedFromV6B(gender);
+    let nonempty=0,parts=[];
+    for(const layer of C.LAYERS){
+     const png=m.layers[layer].se;if(!png)continue;
+     const im=await R.loadPng(png);
+     const cv=R.rgba(),ctx=cv.getContext('2d',{willReadFrequently:true});
+     ctx.drawImage(im,0,0);const data=ctx.getImageData(0,0,64,112).data;
+     const filled=data.some((v,i)=>i%4===3&&v>0);
+     if(filled){nonempty++;parts.push(layer)}
+    }
+    output[gender]={id:m.id,nonempty,parts};
+   }
+   return output;
+  });
+  assert.equal(approvedArt.male.id,'lafrich_male');
+  assert.equal(approvedArt.female.id,'lafrich_female');
+  assert.ok(approvedArt.male.nonempty>=2&&approvedArt.female.nonempty>=2,
+   'V6B appearance must seed real separate body/garment layers for both masters');
+  assert.ok(approvedArt.male.parts.includes('body')&&approvedArt.female.parts.includes('body'));
+  console.log('PASS V6B male/female visual art seeded into new independent four-view physical layers');
   assert.equal(await page.locator('#motion-list option').count(),1,
    'New Lafrich motion gallery must initially be empty (no eleven legacy actions)');
   await page.locator('#master-gender').selectOption('female');
@@ -169,5 +195,22 @@ const {chromium}=require('playwright');
   }));
   assert.deepEqual(mobile,{scrollX:true,scrollY:true,native:[64,112]});
   console.log('PASS mobile portrait Lafrich editor zoom 1200% / scrolling; native frame dimensions preserved');
+  const hub=await browser.newPage({viewport:{width:940,height:740}});
+  try{
+   await hub.goto(base+'/mahluk-hidup.html?tab=genesis',{waitUntil:'domcontentloaded',timeout:30000});
+   await hub.frameLocator('#genesis-frame').locator('#part-select option').first().waitFor({timeout:30000});
+   const routes=await hub.evaluate(()=>window.VLMahlukWorkspace?
+     ['character','animation','genesis'].map(tab=>{
+      window.VLMahlukWorkspace.show(tab);
+      const id={character:'character-frame',animation:'motion-frame',genesis:'genesis-frame'}[tab];
+      return document.getElementById(id).src;
+     }):[]);
+   assert.equal(routes.length,3);
+   assert.ok(routes.every(url=>url.includes('lafrich-puppet-studio.html')),
+    'All three active Mahluk editor routes must use Lafrich Puppet, not old stock');
+   assert.ok(routes[0].includes('mode=character')&&routes[1].includes('mode=animation')&&
+    routes[2].includes('mode=master'));
+   console.log('PASS Mahluk host routes Character, Animation and Genesis Master to Lafrich Puppet');
+  }finally{await hub.close()}
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
