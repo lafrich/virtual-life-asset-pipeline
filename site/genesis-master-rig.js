@@ -48,7 +48,7 @@
   if(!IDS[gender])fail("male or female required");
   const mask=maskDefault();
   return {
-   format:FORMAT,id:IDS[gender],gender,version:1,updated:"",pixelFrames:{},
+   format:FORMAT,id:IDS[gender],gender,version:1,updated:"",pixelFrames:{},appearanceMaster:{},
    joints:Object.fromEntries(DIRS.map(d=>[d,clone(JOINTS)]).map(([d,v])=>
     [d,Object.fromEntries(Object.entries(v).map(([k,xy])=>[k,{x:xy[0],y:xy[1]}]))])),
    pivots:Object.fromEntries(DIRS.map(d=>[d,Object.fromEntries(Object.entries(PIVOTS).map(([k,xy])=>[k,{x:xy[0],y:xy[1]}]))])),
@@ -58,7 +58,7 @@
  function validate(row){
   if(!row||row.format!==FORMAT||!Object.keys(IDS).includes(row.gender)||row.id!==IDS[row.gender])fail("only two stable Genesis master IDs are permitted");
   if(row.version!==1)fail("unsupported rig version");
-  const out={format:FORMAT,id:row.id,gender:row.gender,version:1,updated:typeof row.updated==="string"?row.updated:"",pixelFrames:{},joints:{},pivots:{},masks:{}};
+  const out={format:FORMAT,id:row.id,gender:row.gender,version:1,updated:typeof row.updated==="string"?row.updated:"",pixelFrames:{},appearanceMaster:{},joints:{},pivots:{},masks:{}};
   for(const d of DIRS){
    const joints=row.joints?.[d],pivots=row.pivots?.[d];
    if(!joints||Object.keys(joints).sort().join()!=Object.keys(JOINTS).sort().join())fail("all 15 native joints required for "+d);
@@ -88,6 +88,22 @@
     fail("Invalid Genesis source pixel correction: "+key);
    total+=png.length;if(total>3000000)fail("Source edits exceed safe master size");
    out.pixelFrames[key]=png;
+  }
+  // Four-view per-source-part master appearance: 64×112 native PNG per
+  // selected layer and view, kept separate from precise frame corrections.
+  const masters=Object.entries(row.appearanceMaster||{});
+  if(masters.length>80)fail("Too many Genesis appearance view masters");
+  let masterBytes=0;
+  for(const [key,png] of masters){
+   const [part,dir,...extra]=key.split("|");
+   if(extra.length||!part||
+    !/^(?:base\/(?:body|body_f|body_front|body_front_f)|(?:top|pants|shoes)\/[a-z_]+|hair\/[a-z_]+)$/.test(part)||
+    !DIRS.includes(dir)||typeof png!=="string"||
+    !/^data:image\/png;base64,[a-z0-9+/]+=*$/i.test(png)||png.length>120000)
+    fail("Invalid 4-view Master Appearance: "+key);
+   masterBytes+=png.length;
+   if(masterBytes>2000000)fail("4-view appearance PNGs exceed 2 MB");
+   out.appearanceMaster[key]=png;
   }
   return out;
  }
