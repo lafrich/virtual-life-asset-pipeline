@@ -371,7 +371,11 @@ function maskPaint(p,erase){
  const half=Math.floor(size/2);
  for(let y=Math.max(0,p.y-half);y<=Math.min(111,p.y+half);y++)
   for(let x=Math.max(0,p.x-half);x<=Math.min(63,p.x+half);x++)
-   mask[y*64+x]=erase?255:idx;
+   {
+    const previous=mask[y*64+x];
+    if(paintDrag?.dirtyParts&&previous!==255)paintDrag.dirtyParts.add(PARTS[previous]);
+    mask[y*64+x]=erase?255:idx;
+   }
  m.masks[dir]=C.encode(mask);
  flushCache();
 }
@@ -431,6 +435,7 @@ function applyPixels(){
  try{
   const atlas=pixelEditor.getAtlas(),g=atlas.getContext("2d",{willReadFrequently:true});
   const next={},idx=PARTS.indexOf(selected),layer=activeLayer;
+  let expandCount=0,stealCount=0;
   // Draw into the selected layer only. Every other physical appearance layer
   // stays pixel-exact, allowing independent future skin/clothing edits.
   for(let di=0;di<4;di++){
@@ -445,6 +450,7 @@ function applyPixels(){
     const p=k*4;
     if(mask[k]===idx) pixels.fill(0,p,p+4);
     if(part[p+3]){
+     if(mask[k]!==idx){expandCount++;if(pixels[p+3])stealCount++}
      pixels.set(part.subarray(p,p+4),p);
      mask[k]=idx;
     }
@@ -452,6 +458,9 @@ function applyPixels(){
    oldCtx.putImageData(old,0,0);
    next[d]={mask:C.encode(mask),png:oldCtx.canvas.toDataURL("image/png")};
   }
+  if(expandCount&&!confirm("Your pixel edit expands this part's slice ownership by "+expandCount+
+    " pixels across 4 angles. "+stealCount+" pixels are already painted in this physical layer."+
+    " Confirm changing the rig masks as well? Cancel keeps the original rig unchanged."))return false;
   for(const d of DIR){
    master().layers[layer][d]=next[d].png;
    master().masks[d]=next[d].mask;
@@ -640,9 +649,20 @@ function setup(){
  for(const field of ["x","y"])$("pivot-"+field).onchange=()=>{
   snapshot();setPivot(Number($("pivot-x").value),Number($("pivot-y").value));
  };
- $("copy-slice").onclick=()=>{maskCopied=master().masks[dir];status("Copied complete "+dir.toUpperCase()+" slice map")};
- $("paste-slice").onclick=()=>bindMaskCopy(false);
- $("flip-slice").onclick=()=>bindMaskCopy(true);
+ $("copy-slice").onclick=()=>{
+  maskCopied=master().masks[dir];
+  status("Copied WHOLE "+dir.toUpperCase()+" slice map. Pasting will replace every part's mask.");
+ };
+ $("paste-slice").onclick=()=>{
+  if(!maskCopied||!confirm("Replace the ENTIRE "+dir.toUpperCase()+
+    " 10-part mask with the copied mask? All reviews of this angle will reset."))return;
+  bindMaskCopy(false);
+ };
+ $("flip-slice").onclick=()=>{
+  if(!maskCopied||!confirm("Replace the ENTIRE "+dir.toUpperCase()+
+    " mask with a horizontally flipped copy (near/far swapped)? All reviews of this angle will reset."))return;
+  bindMaskCopy(true);
+ };
  $("mark-reviewed").onclick=()=>{
   if(!master()?.pivots?.[dir]?.[selected])return status("Pivot missing",true);
   const mask=C.decode(master().masks[dir]);
@@ -711,7 +731,7 @@ function setup(){
  canvas.addEventListener("pointerdown",e=>{
   if(step!=="rig"||e.button!==0)return;
   const p=coords(e);snapshot();canvas.setPointerCapture?.(e.pointerId);
-  paintDrag={id:e.pointerId,last:""};
+  paintDrag={id:e.pointerId,last:"",direction:dir,dirtyParts:new Set([selected])};
   if(tool==="pivot"){setPivot(p.x,p.y)}
   else maskPaint(p,tool==="erase");
  });
@@ -724,7 +744,10 @@ function setup(){
  });
  const end=e=>{
   if(paintDrag?.id!==e.pointerId)return;
-  paintDrag=null;makeDirty();syncControls();
+  const changed=paintDrag;paintDrag=null;
+  if(changed.direction===dir)invalidateReviews(dir,[...changed.dirtyParts]);
+  else invalidateReviews();
+  syncControls();
  };
  for(const k of ["pointerup","pointercancel","lostpointercapture"])canvas.addEventListener(k,end);
  setZoom(5);
