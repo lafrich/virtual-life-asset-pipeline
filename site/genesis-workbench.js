@@ -573,6 +573,9 @@ function validatedBinding(){
     (b.rigFormat!==undefined&&b.rigFormat!==RIG_FORMAT)||b.sourceId!==SOURCE[gender])
   throw Error("Genesis binding missing / invalid");
  C.validateMaster(b.rig);
+ for(const d of DIR)for(const part of PARTS)
+  if(b.reviewed?.[reviewKey(d,part)]!==true)
+   throw Error("Binding must include 40 verified part/angle reviews: missing "+d+" / "+part);
  for(const d of DIR)if(!b.views?.[d]||!b.views[d].spritePng)throw Error("Missing "+d+" binding");
  return b;
 }
