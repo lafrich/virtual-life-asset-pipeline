@@ -250,6 +250,29 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   await genesis.locator("#gender").selectOption("female");
   assert.equal(await genesis.locator("#joint-x").inputValue(),"32","Male changes leaked into Female master");
   console.log("PASS Genesis master rig/slice + cloud overwrite + independent female source");
+  // Simulate reopening from a fresh browser with NO Genesis local cache.
+  // It must show DEFAULT unambiguously until Drive reconnects, then restore
+  // the exact last saved 15-joint/mask/source-pixel revision from Drive.
+  await page.evaluate(()=>localStorage.removeItem("vl-genesis-master-rig-v1"));
+  await page.reload({waitUntil:"domcontentloaded"});
+  await page.evaluate(()=>window.VLMahlukWorkspace.show("genesis"));
+  const reopenedGenesis=page.frameLocator("#genesis-frame");
+  await reopenedGenesis.locator("#status").getByText(/DEFAULT GENESIS/).waitFor({timeout:65000});
+  await page.locator("#drive-connect").click();
+  await page.locator("#drive-connect").getByText("CONNECTED").waitFor({timeout:25000});
+  await reopenedGenesis.locator("#status").getByText(/LOADED FROM DRIVE/).waitFor({timeout:65000});
+  await reopenedGenesis.locator("#gender").selectOption("male");
+  assert.equal(await reopenedGenesis.locator("#joint-x").inputValue(),"36",
+   "Genesis reopen failed to restore latest cloud joint revision");
+  const restore=await reopenedGenesis.locator("#stage").evaluate(()=>{
+   const M=window.GenesisMasterRig,row=M.load("male");
+   return {selected:M.decode(row.masks.se)[30*64+32],
+    px:!!row.pixelFrames?.["top/custom|idle|se|0"],updated:row.updated};
+  });
+  assert.equal(restore.selected,3,"Genesis reopen failed to restore last saved slicing");
+  assert.equal(restore.px,true,"Genesis reopen lost Pixel Editor custom source edit");
+  assert.equal(restore.updated,rig.updated,"Genesis reloaded an old saved revision");
+  console.log("PASS fresh browser default clearly labeled → verified Drive restore of exact last master");
   // Consume the *same* saved Python source from Character's existing QA dropdown.
   await page.evaluate(()=>window.VLMahlukWorkspace.show("character"));
   const character=page.frameLocator("#character-frame");
