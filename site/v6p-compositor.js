@@ -100,13 +100,14 @@ let LAST_MISSING=[];
 let GEN=0;
 const IM={};
 const img=(src,characterId)=>{
-  const local=(characterId&&root?.V6PCharacterStore?.getPart(characterId,src))||null;
-  // The two immutable Genesis source character IDs are NOT user drafts.
-  // Their approved physical Custom Wear PNGs come from genesis-source.js.
-  // Never substitute a generic stock garment when viewing a Genesis master.
+  // LGR-1 Genesis sources are frozen. Legacy per-character drafts and
+  // V6P local/Drive overrides MUST NOT contaminate the approved original.
   const genesis=characterId&&Object.values(root?.VLGenesisSource?.bases||{}).find(base=>base.sourceId===characterId);
   const approved=genesis?.parts?.[src]||null;
-  const override=local||approved||(typeof root!=="undefined"&&root&&root.V6PPartOverrides&&root.V6PPartOverrides.urlFor(src))||null;
+  const local=genesis?null:((characterId&&root?.V6PCharacterStore?.getPart(characterId,src))||null);
+  const legacyOverride=genesis?null:
+    ((typeof root!=="undefined"&&root&&root.V6PPartOverrides&&root.V6PPartOverrides.urlFor(src))||null);
+  const override=approved||local||legacyOverride||null;
   const key=(characterId||'')+'|'+(override||src)+'#'+GEN;
   return IM[key]||(IM[key]=new Promise(res=>{
     const i=new Image();
