@@ -17,7 +17,7 @@ const clone=C.clone;
 let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5,activeLayer="body";
 let drafts={},source={},preparedCache=new Map(),rev=0,paintDrag=null,renderRequest=0;
 let pixelEditor=null,pixelSession=null,maskCopied=null,maskUndo=[],maskRedo=[];
-let faceEntries=[],faceImage=null,faceId="",page="workshop",testPose=null;
+let faceEntries=[],faceImage=null,faceId="",page="workshop",sourcePending=Promise.resolve();
 const canvas=$("stage"),ctx=canvas.getContext("2d",{willReadFrequently:true});
 const labels={head:"KEPALA / HEAD",torso:"TORSO",arm_near_upper:"LENGAN DEPAN · ATAS",
  arm_near_lower:"LENGAN DEPAN · BAWAH",arm_far_upper:"LENGAN BELAKANG · ATAS",
@@ -164,6 +164,7 @@ function showPivot(destination,d,rig){
  destination.stroke();destination.restore();
 }
 async function renderAll(){
+ await sourcePending.catch(()=>{});
  if(!master()||page!=="workshop")return;
  const token=++renderRequest,currentGender=gender,currentStep=step,m=activeRig(),po=pose();
  let face=null;
@@ -369,15 +370,20 @@ function applyPixels(){
   }
   R.clearCache();
   pixelSession=null;
-  // Rebuild composite so slice coverage and Python neutral export reflect
-  // the revised physical layers without baking garments into body pixels.
-  void sourceCanvases(gender).then(()=>{makeDirty();syncControls();
-   status("APPLIED "+labels[selected]+" / "+layer+" · 4 original layer angles updated.");
+  const appliedGender=gender,appliedPart=selected;
+  // Invalidate approved/bound data IMMEDIATELY. Binding waits for the
+  // full composite to rebuild so it never exports stale source sprites.
+  sourcePending=sourceCanvases(appliedGender);
+  makeDirty();syncControls();
+  void sourcePending.then(()=>{
+   flushCache();syncControls();
+   status("APPLIED "+labels[appliedPart]+" / "+layer+" · 4 independent source angles updated.");
   }).catch(e=>status("Composite rebuild failed: "+e.message,true));
   return true;
  }catch(e){status("Pixel editor Apply failed: "+e.message,true);return false}
 }
 async function audit(){
+ await sourcePending;
  const m=C.validateMaster(master()),errors=[],counts={},globalCoverage=Array(PARTS.length).fill(0);
  for(const d of DIR){
   const mask=C.decode(m.masks[d]),raw=source[gender][d].getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
