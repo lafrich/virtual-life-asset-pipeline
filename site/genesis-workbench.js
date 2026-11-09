@@ -327,6 +327,7 @@ function syncControls(){
  $("rig-pivot").setAttribute("aria-pressed",String(tool==="pivot"));
  $("rig-paint").setAttribute("aria-pressed",String(tool==="paint"));
  $("rig-erase").setAttribute("aria-pressed",String(tool==="erase"));
+ $("rig-pan").setAttribute("aria-pressed",String(tool==="pan"));
  $("rig-isolate").setAttribute("aria-pressed",String(isolated));
  $("export-python").disabled=!record()?.bound;
  $("export-json").disabled=!record()?.bound;
@@ -764,6 +765,7 @@ function setup(){
  $("rig-pivot").onclick=()=>{tool="pivot";syncControls()};
  $("rig-paint").onclick=()=>{tool="paint";syncControls()};
  $("rig-erase").onclick=()=>{tool="erase";syncControls()};
+ $("rig-pan").onclick=()=>{tool="pan";syncControls();status("PAN MODE · drag canvas to scroll without editing anatomy")};
  $("rig-isolate").onclick=()=>{isolated=!isolated;syncControls();void renderAll()};
  $("copy-part-slice").onclick=()=>{
   partCopied={mask:master().masks[dir],part:selected,direction:dir};
@@ -866,13 +868,25 @@ function setup(){
  $("stagewrap").addEventListener("wheel",e=>{if(page!=="workshop")return;e.preventDefault();setZoom(zoom+(e.deltaY<0?1:-1))},{passive:false});
  canvas.addEventListener("pointerdown",e=>{
   if(step!=="rig"||e.button!==0)return;
-  const p=coords(e);snapshot();canvas.setPointerCapture?.(e.pointerId);
+  canvas.setPointerCapture?.(e.pointerId);
+  if(tool==="pan"){
+   const wrap=$("stagewrap");
+   paintDrag={id:e.pointerId,pan:true,x:e.clientX,y:e.clientY,
+    left:wrap.scrollLeft,top:wrap.scrollTop};
+   return;
+  }
+  const p=coords(e);snapshot();
   paintDrag={id:e.pointerId,last:"",direction:dir,dirtyParts:new Set([selected])};
   if(tool==="pivot"){setPivot(p.x,p.y)}
   else maskPaint(p,tool==="erase");
  });
  canvas.addEventListener("pointermove",e=>{
   if(!paintDrag||paintDrag.id!==e.pointerId||step!=="rig")return;
+  if(paintDrag.pan){
+   $("stagewrap").scrollLeft=paintDrag.left-(e.clientX-paintDrag.x);
+   $("stagewrap").scrollTop=paintDrag.top-(e.clientY-paintDrag.y);
+   return;
+  }
   const p=coords(e),key=p.x+"|"+p.y;
   if(paintDrag.last===key)return;paintDrag.last=key;
   if(tool==="pivot")setPivot(p.x,p.y);
@@ -881,6 +895,7 @@ function setup(){
  const end=e=>{
   if(paintDrag?.id!==e.pointerId)return;
   const changed=paintDrag;paintDrag=null;
+  if(changed.pan)return;
   if(changed.direction===dir)invalidateReviews(dir,[...changed.dirtyParts]);
   else invalidateReviews();
   syncControls();
