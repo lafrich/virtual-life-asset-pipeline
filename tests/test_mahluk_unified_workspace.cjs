@@ -2,7 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const path=require('node:path'),root=path.resolve(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
-test('one MAHLUK HIDUP.EXE landing page contains the four requested editors',()=>{
+test('MAHLUK shell routes to Lafrich Puppet, preserving Emosi and archived legacy documents',()=>{
  const html=read('site/mahluk-hidup.html'),js=read('site/mahluk-hub.js');
  for(const tab of ['emotion','character','action','animation','genesis']){
   assert.ok(html.includes('data-tab="'+tab+'"'),tab);
@@ -11,11 +11,13 @@ test('one MAHLUK HIDUP.EXE landing page contains the four requested editors',()=
  for(const frame of ['emotion-frame','character-frame','action-frame','motion-frame','genesis-frame'])
   assert.ok(html.includes('id="'+frame+'"'),frame);
  assert.match(js,/\/virtual-office\/emotion-studio\//);
- assert.match(js,/v6p-studio\.html\?embedded=1/);
- assert.match(js,/mahluk-action-editor\.html\?embedded=1/);
- assert.match(js,/mahluk-animation-native\.html\?embedded=1/);
- assert.match(js,/genesis-editor\.html\?embedded=1/);
- assert.match(read("site/mahluk-animation-native.html"),/id="start-import"/);
+ for(const tab of ['character','animation','genesis']){
+  assert.match(js,new RegExp(tab+':"\\./lafrich-puppet-studio\\.html\\?embedded=1&mode='));
+ }
+ assert.doesNotMatch(js,/animation:"\.\/mahluk-animation-native\.html/);
+ assert.doesNotMatch(js,/character:"\.\/v6p-studio\.html/);
+ assert.match(read('site/lafrich-puppet-studio.html'),/10-PIECE HIERARCHICAL RIG/);
+ assert.match(read('site/mahluk-animation-native.html'),/id="start-import"/);
  assert.match(js,/function newClip\(\)/);
   assert.doesNotMatch(js,/new=clip&name=New%20Animation/);
  assert.match(read('site/index.html'),/mahluk-hidup\.html/);
@@ -41,7 +43,7 @@ test('original editor mechanics are left in place and route into the shell',()=>
   assert.ok(pixjs.includes(fn),fn+' must survive refactor');
  assert.ok(read('site/emosi-bridge.js').includes('VLMahlukEmosiBridge'));
 });
-test('unapproved Grok motions are not shipped; approved native stock gallery remains',()=>{
+test('legacy stock gallery remains archival; active Lafrich Puppet has no installed animations',()=>{
  const action=read('site/mahluk-action-editor.js');
  const animation=read('site/mahluk-animation-native.js');
  const html=read('site/mahluk-animation-native.html');
@@ -52,7 +54,12 @@ test('unapproved Grok motions are not shipped; approved native stock gallery rem
  assert.doesNotMatch(action,/grok-motion-preview/);
  assert.doesNotMatch(action,/GROK \/ /);
  assert.doesNotMatch(pipeline,/publish_grok_motion_review/);
- assert.match(animation,/GenesisNativePythonContract/);
+ assert.match(animation,/GenesisNativePythonContract/); // archived source still auditable
+ const active=require('../site/lafrich-puppet-core.js');
+ assert.equal(active.motion().frames.length,1);
+ assert.equal(active.motion().id,'');
+ assert.equal(active.PARTS.length,10);
+ assert.doesNotMatch(read('site/mahluk-hub.js'),/animation:"\.\/mahluk-animation-native\.html/);
  assert.match(html,/id="start-import"/);
  assert.match(html,/id="start-create"/);
  assert.equal(fs.existsSync(path.join(root,'site/mahluk-animation-studio.js')),false);

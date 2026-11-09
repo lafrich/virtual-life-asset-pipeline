@@ -58,7 +58,7 @@ test('character wizard, female base, 4-view QA and pixel scope wired',()=>{
  assert.match(p,/V6PCharacterStore\.setPart/);assert.match(p,/autoFitCurrentDirection/);
  assert.match(h,/u\.searchParams\.set\("character",state\.characterId\)/);
 });
-test('Genesis Python Animation replaces the cutout editor with native pose source',()=>{
+test('old Genesis Python animation remains archived; Lafrich replaces the active source',()=>{
  const h=read('site/mahluk-animation-native.html'),js=read('site/mahluk-animation-native.js');
  const hub=read('site/mahluk-hub.js');
  for(const id of ['start-import','start-create','python-file','stage','timeline','joint-x',
@@ -68,7 +68,13 @@ test('Genesis Python Animation replaces the cutout editor with native pose sourc
  assert.match(js,/C\.toPython/);
  assert.match(js,/GenesisPuppetRenderer/);
  assert.match(js,/GenesisPoseClipboard/);
- assert.match(hub,/animation:"\.\/mahluk-animation-native\.html/);
+ assert.match(hub,/animation:"\.\/lafrich-puppet-studio\.html\?embedded=1&mode=animation/);
+ assert.match(hub,/genesis:"\.\/lafrich-puppet-studio\.html\?embedded=1&mode=master/);
+ assert.match(hub,/character:"\.\/lafrich-puppet-studio\.html\?embedded=1&mode=character/);
+ const active=read('site/lafrich-puppet-studio.html');
+ for(const id of ['master-gender','character-gender','wear-layer','pose-part','python-file','edit-master','edit-wear'])
+  assert.match(active,new RegExp('id="'+id+'"'));
+ assert.equal(require('../site/lafrich-puppet-core.js').PARTS.length,10);
  assert.doesNotMatch(hub,/mahluk-animation-studio/);
  assert.doesNotMatch(js,/V6PUniversalMotion|drawPiece\(/);
 });
