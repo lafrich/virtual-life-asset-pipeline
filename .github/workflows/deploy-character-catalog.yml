@@ -176,8 +176,21 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
-      - name: Discover and validate Mahluk JSON animation assets
+      - name: Keep legacy Mahluk motion registry permanently empty
         run: python tools/build_mahluk_motion_registry.py _site/motion-packs
+      - name: Verify LGR-1 public routes and blocked legacy sync
+        run: |
+          node tests/test_lgr_retirement.cjs
+          test -s _site/genesis-workbench.html
+          test -s _site/genesis-cloud.js
+          test -s _site/genesis-workbench.js
+          test -s _site/mahluk-hidup.html
+          ! grep -q '<script' _site/lafrich-puppet-studio.html
+          ! grep -q '<script' _site/genesis-editor.html
+          ! grep -q '<script' _site/mahluk-action-editor.html
+          ! grep -q '<script' _site/mahluk-animation-native.html
+          ! grep -q '<script' _site/v6p-studio.html
+          ! grep -q '<script' _site/pixel-editor.html
       - name: Render V6B Semesta rotating Earth launcher thumbnail
         run: |
           python tools/build_launcher_globe.py
