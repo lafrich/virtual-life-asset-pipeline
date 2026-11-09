@@ -343,38 +343,32 @@ jobs:
         with:
           name: character-stock-static-site
           path: _site
-      # GitHub Pages may retain an "in_progress" deployment after an Actions
-      # run has already failed. Cancel ONLY the two confirmed orphaned Pages
-      # deployment SHAs. Do not cancel the latest live deployment.
-      - name: Clear confirmed orphaned Pages deployment locks
+      # Legacy Pages deployment cleanup is best-effort. These are specific,
+      # historical orphan IDs, not current releases. A refused/expired cleanup
+      # request must not fail every future release before deploy-pages runs.
+      - name: Clear historical Pages locks (best effort)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           for STALE_DEPLOYMENT in \
             b290c907dff0fa7c8b787593c1146c0b307ca29f \
             b341e153568a47319285067f7119cde9bc80f634 \
-            4a65d875c5b5c018c65f94a8d2395f61a3d80f17
+            4a65d875c5b018c65f94a8d2395f61a3d80f17
           do
             URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/${STALE_DEPLOYMENT}/cancel"
-            STATUS=$(curl --silent --show-error --retry 2 --output /tmp/pages-cancel-response.json --write-out '%{http_code}' \
+            STATUS=$(curl --silent --show-error --max-time 15 --retry 2 --output /tmp/pages-cancel-response.json --write-out '%{http_code}' \
               --request POST \
               --header "Authorization: Bearer ${GH_TOKEN}" \
               --header "Accept: application/vnd.github+json" \
               --header "X-GitHub-Api-Version: 2022-11-28" \
-              "${URL}")
-            echo "Clear orphan ${STALE_DEPLOYMENT}: HTTP ${STATUS}"
-            if [[ "${STATUS}" == "204" || "${STATUS}" == "404" || "${STATUS}" == "409" ]]; then
-              echo "Orphan cleared or already absent."
-            else
-              cat /tmp/pages-cancel-response.json
-              echo "::error::Cannot clear confirmed stale Pages deployment (HTTP ${STATUS})."
-              exit 1
-            fi
+              "${URL}") || STATUS="network-error"
+            case "${STATUS}" in
+              204|404|409) echo "Historical Pages lock ${STALE_DEPLOYMENT}: HTTP ${STATUS}";;
+              *) echo "::warning::Skipping historical lock ${STALE_DEPLOYMENT}: ${STATUS}. Actual Pages deploy will report whether another lock remains.";;
+            esac
           done
-      # GitHub Pages releases a canceled deployment lock asynchronously.
-      # Give the Pages API a brief settling window before submitting the next build.
-      - name: Allow canceled Pages deployments to settle
+      - name: Allow Pages state to settle
         run: sleep 15
       - name: Configure Pages
         uses: actions/configure-pages@v5
