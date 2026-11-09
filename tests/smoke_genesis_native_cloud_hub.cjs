@@ -240,6 +240,91 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   });
   assert.deepEqual(reopened,[255,0,255,255],"Genesis pixel correction did not reopen");
   await genesis.locator("#pixelClose").click();
+
+  // Master Appearance is separate from per-frame edits, and is saved on the
+  // same male Genesis ID. Pick a native opaque pixel with a matching WALK
+  // counterpart rather than assuming where the art silhouette is located.
+  await genesis.locator("#pixel-scope").selectOption("master");
+  await genesis.locator("#pixel-part").selectOption("top/custom");
+  await genesis.locator("#dir").selectOption("se");
+  const masterSpot=await genesis.locator("#stage").evaluate(async()=>{
+    const V=window.V6PCompositor,T=window.GenesisAppearanceTransfer;
+    const src=window.VLGenesisSource.bases.genesis_male_nude;
+    const im=await V.img("top/custom",src.sourceId);
+    const idle=V.extractFrame(im,"idle","se",0).getContext("2d").getImageData(0,0,64,112).data;
+    const walk=V.extractFrame(im,"walk","se",0).getContext("2d").getImageData(0,0,64,112).data;
+    const a=T.bbox(idle),b=T.bbox(walk);
+    const dx=Math.round(b.cx-a.cx),dy=Math.round(b.cy-a.cy);
+    for(let y=30;y<94;y++)for(let x=14;x<50;x++){
+      const p=(y*64+x)*4;if(!idle[p+3])continue;
+      for(let oy=-4;oy<=4;oy++)for(let ox=-4;ox<=4;ox++){
+        const tx=x+dx+ox,ty=y+dy+oy;
+        if(tx<0||tx>=64||ty<0||ty>=112)continue;
+        const q=(ty*64+tx)*4;
+        if(idle[p]===walk[q]&&idle[p+1]===walk[q+1]&&idle[p+2]===walk[q+2]&&idle[p+3]===walk[q+3])
+          return {x,y};
+      }
+    }
+    return null;
+  });
+  assert.ok(masterSpot,"Cannot find a corresponding torso pixel between Genesis Idle and Walk");
+  await genesis.locator("#pixel-open").click();
+  await genesis.locator("#pixelOverlay:not([hidden])").waitFor({timeout:30000});
+  await genesis.locator("#pixelColor").fill("#22ccff");
+  await genesis.locator("#pixelGrid").uncheck();
+  await genesis.locator("#pixelOnion").uncheck();
+  const zoomed=await genesis.locator("#pixelCanvas").evaluate(c=>({
+    w:c.getBoundingClientRect().width,h:c.getBoundingClientRect().height
+  }));
+  await genesis.locator("#pixelCanvas").click({position:{
+    x:Math.floor(zoomed.w*(masterSpot.x+.5)/64),
+    y:Math.floor(zoomed.h*(masterSpot.y+.5)/112)
+  }});
+  await genesis.locator("#pixelApply").click();
+  await genesis.locator("#pixelOverlay").waitFor({state:"hidden",timeout:30000});
+  await genesis.locator("#save").click();
+  await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
+  let fourView=JSON.parse([...files.values()]
+   .find(x=>x.name==="genesis__genesis_male_nude.json").content).record;
+  assert.ok(fourView.appearanceMaster?.["top/custom|se"]?.startsWith("data:image/png;base64,"),
+    "Master Appearance did not save source 4-view PNG");
+  assert.equal(fourView.appearanceMaster["top/custom|sw"],undefined,
+    "Editing SE must NOT automatically overwrite the SW appearance");
+  assert.ok(fourView.pixelFrames?.["top/custom|idle|se|0"],
+    "Master Appearance must preserve the earlier single-frame correction");
+  const inherit=await genesis.locator("#stage").evaluate(async()=>{
+    const P=window.GenesisMasterPixel,V=window.V6PCompositor,M=window.GenesisMasterRig;
+    const source=window.VLGenesisSource.bases.genesis_male_nude;
+    const im=await V.img("top/custom",source.sourceId);
+    const original=V.extractFrame(im,"walk","se",0).getContext("2d").getImageData(0,0,64,112).data;
+    const inherited=await P.transferCell(im,"top/custom","walk","se",0,M.load("male"));
+    const result=inherited.getContext("2d").getImageData(0,0,64,112).data;
+    let changed=0,blue=0;
+    for(let i=0;i<result.length;i+=4){
+      if(original[i]!==result[i]||original[i+1]!==result[i+1]||
+       original[i+2]!==result[i+2]||original[i+3]!==result[i+3])changed++;
+      if(result[i]===34&&result[i+1]===204&&result[i+2]===255&&result[i+3]===255)blue++;
+    }
+    return {changed,blue};
+  });
+  assert.ok(inherit.changed>=1&&inherit.blue>=1,
+    "Master Appearance did not inherit to a different native action (WALK)");
+  // Copy/Paste Flip a complete view intentionally, without modifying any
+  // other direction or the separate female master.
+  await genesis.locator("#appearance-copy").click();
+  await genesis.locator("#dir").selectOption("sw");
+  await genesis.locator("#appearance-paste-flip").click();
+  await genesis.locator("#save").click();
+  await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
+  fourView=JSON.parse([...files.values()]
+   .find(x=>x.name==="genesis__genesis_male_nude.json").content).record;
+  assert.ok(fourView.appearanceMaster["top/custom|sw"],
+    "Paste Flip must save a distinct SW appearance view");
+  assert.equal(fourView.appearanceMaster["top/custom|ne"],undefined,
+    "Paste Flip must not alter unrelated NE appearance");
+  await genesis.locator("#dir").selectOption("se");
+  await genesis.locator("#pixel-scope").selectOption("frame");
+  console.log("PASS Master Appearance SE → native WALK, view Paste Flip, frame correction protected");
   // The other Genesis gender remains independent.
   await genesis.locator("#mode-puppet").click();
   await genesis.locator("#joint-x").fill("36");
