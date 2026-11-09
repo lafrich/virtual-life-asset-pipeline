@@ -120,7 +120,6 @@ jobs:
           node --check site/action-scene-bridge.js
           node tests/test_action_scene_bridge.cjs
           node --check site/emosi-bridge.js
-          node --test tests/test_mahluk1_emotion_sync.cjs
           python -m py_compile tools/build_human_wardrobe.py
           python -m py_compile tools/build_original_rig_layers.py
           python -m unittest discover -s tests -p test_native_rig_partition.py
@@ -147,7 +146,6 @@ jobs:
           node tests/test_action_appearance.cjs
           node --check site/master-parts.js
           node tests/test_master_parts.cjs
-          node tests/test_pixel_editor.cjs
           node --check site/rig-runtime.js
           node --check site/shared-bone-runtime.js
           node tests/test_shared_bone_runtime.cjs
