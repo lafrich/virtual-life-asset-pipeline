@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id),M=root.GenesisMasterRig,P=root.GenesisPu
  C=root.GenesisNativePythonContract,V=root.V6PCompositor;
 if(!M||!P||!C||!V){document.body.textContent="Genesis master dependencies missing";return}
 let gender="male",dir="se",mode="puppet",profile=M.load(gender),sheet=null,selected="head",pivot="head",
- maskPart="head",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0,changeVersion=0;
+ maskPart="head",sliceTool="select",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0,changeVersion=0;
 const stage=$("stage"),ctx=stage.getContext("2d"),srcCtx=$("source-preview").getContext("2d");
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null}catch{return null}};
 const show=(s,err=false)=>{$("status").textContent=s;$("status").classList.toggle("error",!!err)};
@@ -14,10 +14,20 @@ function setMode(m){
  mode=m;$("mode-puppet").setAttribute("aria-pressed",String(m==="puppet"));
  $("mode-slice").setAttribute("aria-pressed",String(m==="slice"));
  $("puppet-tools").hidden=m!=="puppet";$("slice-tools").hidden=m!=="slice";
+ stage.style.cursor=m==="slice"?(sliceTool==="unselect"?"not-allowed":"crosshair"):"default";
  $("preview-title").textContent=m==="puppet"?"ADJUST PUPPET / COORDINATES":"ADJUST SLICE / PIXEL MASK";
  paint();
 }
 function markEdited(){dirty=true;changeVersion++;$("save").textContent="☁ SAVE · OVERWRITE "+gender.toUpperCase();paint()}
+function selectSliceTool(tool){
+ if(tool!=="select"&&tool!=="unselect")return;
+ sliceTool=tool;
+ $("slice-select").setAttribute("aria-pressed",String(tool==="select"));
+ $("slice-unselect").setAttribute("aria-pressed",String(tool==="unselect"));
+ stage.style.cursor=mode==="slice"?(tool==="unselect"?"not-allowed":"crosshair"):"default";
+ show(tool==="unselect"?"UNSELECT tool · brush removes puppet slice assignments, not pixels":
+  "SELECT / PAINT tool · brush assigns pixels to "+maskPart.toUpperCase());
+}
 function jointInput(){
  const j=profile.joints[dir][selected],p=profile.pivots[dir][pivot];
  $("joint-name").value=selected;$("joint-x").value=j.x;$("joint-y").value=j.y;
@@ -46,6 +56,8 @@ function paint(){
  if(mode==="slice"){
   ctx.fillStyle="rgba(36,187,255,.32)";
   for(let i=0;i<mask.length;i++)if(mask[i]===partIndex)ctx.fillRect(i%64,(i/64)|0,1,1);
+  ctx.fillStyle="rgba(245,155,27,.42)";
+  for(let i=0;i<mask.length;i++)if(mask[i]===M.UNSELECTED)ctx.fillRect(i%64,(i/64)|0,1,1);
  }else{
   for(const [a,b] of [["head","neck"],["neck","torso"],["torso","hip_near"],["torso","hip_far"],
    ["shoulder_near","elbow_near"],["elbow_near","hand_near"],["shoulder_far","elbow_far"],["elbow_far","hand_far"],
@@ -92,7 +104,7 @@ function editPixel(point){
  const radius=Math.floor(size/2);
  for(let y=Math.max(0,point.y-radius);y<=Math.min(111,point.y+radius);y++)
  for(let x=Math.max(0,point.x-radius);x<=Math.min(63,point.x+radius);x++)
-  if(Math.hypot(x-point.x,y-point.y)<=radius+.3)mask[y*64+x]=idx;
+  if(Math.hypot(x-point.x,y-point.y)<=radius+.3)mask[y*64+x]=sliceTool==="unselect"?M.UNSELECTED:idx;
  profile.masks[dir]=M.encode(mask);markEdited();
 }
 stage.addEventListener("pointerdown",e=>{
@@ -186,13 +198,17 @@ for(const [id,axis] of [["pivot-x","x"],["pivot-y","y"]])$(id).onchange=e=>{
  profile.pivots[dir][pivot][axis]=val(e.target.value,0,axis==="x"?63:111);jointInput();markEdited();
 };
 $("slice-part").onchange=e=>{maskPart=e.target.value;paint()};
+$("slice-select").onclick=()=>selectSliceTool("select");
+$("slice-unselect").onclick=()=>selectSliceTool("unselect");
 $("mask-copy").onclick=()=>{clipboard=M.decode(profile.masks[dir]);show("MASK copied from "+dir.toUpperCase())};
 $("mask-paste").onclick=()=>{if(!clipboard)return show("Copy a mask first",true);profile.masks[dir]=M.encode(clipboard);markEdited()};
 $("mask-flip").onclick=()=>{
  if(!clipboard)return show("Copy a mask first",true);
  const reversed=new Uint8Array(7168);
  for(let y=0;y<112;y++)for(let x=0;x<64;x++){
-  const src=clipboard[y*64+(63-x)],part=M.PARTS[src];
+  const src=clipboard[y*64+(63-x)];
+  if(src===M.UNSELECTED){reversed[y*64+x]=M.UNSELECTED;continue}
+  const part=M.PARTS[src];
   const opposite=part==="arm_l"?"arm_r":part==="arm_r"?"arm_l":part==="leg_l"?"leg_r":part==="leg_r"?"leg_l":part;
   reversed[y*64+x]=M.PARTS.indexOf(opposite);
  }

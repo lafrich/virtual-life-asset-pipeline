@@ -26,6 +26,13 @@ test('per-direction masks encode exact pixels without touching source',()=>{
  const valid=M.validate(profile);
  assert.equal(M.decode(valid.masks.se)[30*64+32],M.PARTS.indexOf('torso'));
  assert.notEqual(valid.masks.se,valid.masks.sw,'Only edited direction changes');
+ const unselect=M.decode(valid.masks.se);
+ unselect[30*64+32]=M.UNSELECTED;
+ valid.masks.se=M.encode(unselect);
+ const changed=M.validate(valid);
+ assert.equal(M.decode(changed.masks.se)[30*64+32],255,'Unselect must survive validation and encoding');
+ assert.equal(M.decode(changed.masks.sw)[30*64+32],M.decode(valid.masks.sw)[30*64+32],
+  'Unselect must not affect other directions');
  const bad=M.initial('female');bad.masks.sw='AA==';
  assert.throws(()=>M.validate(bad),/Genesis Master/);
 });

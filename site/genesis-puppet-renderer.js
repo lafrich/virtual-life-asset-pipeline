@@ -47,11 +47,18 @@
   const raw=native.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
   const output=canvas(),ctx=output.getContext("2d");ctx.imageSmoothingEnabled=false;
   const chunks=model.PARTS.map(()=>new Uint8ClampedArray(raw.data.length));
+  const unselected=new Uint8ClampedArray(raw.data.length);
   for(let i=0;i<mask.length;i++){
    const off=i*4;
    if(raw.data[off+3]===0)continue;
-   chunks[mask[i]].set(raw.data.subarray(off,off+4),off);
+   // Unselected pixels remain visible at their native coordinates.
+   // They are excluded from all puppet transforms, not erased.
+   if(mask[i]===model.UNSELECTED)unselected.set(raw.data.subarray(off,off+4),off);
+   else chunks[mask[i]].set(raw.data.subarray(off,off+4),off);
   }
+  const stationary=canvas();
+  stationary.getContext("2d").putImageData(new ImageData(unselected,64,112),0,0);
+  ctx.drawImage(stationary,0,0);
   // Rear limbs first. Head/Emosi composite is deliberately drawn last.
   for(const part of ["leg_r","arm_r","leg_l","torso","arm_l","head"]){
    const idx=model.PARTS.indexOf(part),pix=chunks[idx];

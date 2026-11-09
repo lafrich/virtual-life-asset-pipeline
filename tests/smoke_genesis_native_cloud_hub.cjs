@@ -105,6 +105,28 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
    return M.decode(M.load('male').masks.se)[30*64+32];
   });
   assert.equal(masks,3,"Edited native slice must be stored as left-arm mask");
+  await genesis.locator("#slice-unselect").click();
+  assert.equal(await genesis.locator("#slice-unselect").getAttribute("aria-pressed"),"true");
+  await page.mouse.click(b.x+b.width*32/64,b.y+b.height*30/112);
+  const unselected=await genesis.locator("#stage").evaluate(()=>{
+   const M=window.GenesisMasterRig;
+   return M.decode(M.load('male').masks.se)[30*64+32];
+  });
+  // A modified profile is unsaved; check the editor profile via backup export
+  // after saving it to the same ID.
+  await genesis.locator("#save").click();
+  await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
+  const unselectSave=JSON.parse([...files.values()]
+   .find(row=>row.name==="genesis__genesis_male_nude.json").content).record;
+  assert.equal(unselectSave.masks.se.length>9000,true);
+  const unselectDecoded=await genesis.locator("#stage").evaluate(mask=>{
+   return window.GenesisMasterRig.decode(mask)[30*64+32];
+  },unselectSave.masks.se);
+  assert.equal(unselectDecoded,255,"UNSELECT must save as unassigned, not clear Genesis pixels");
+  await genesis.locator("#slice-select").click();
+  await page.mouse.click(b.x+b.width*32/64,b.y+b.height*30/112);
+  await genesis.locator("#save").click();
+  await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
   await genesis.locator("#mode-puppet").click();
   await genesis.locator("#joint-x").fill("36");
   await genesis.locator("#joint-x").press("Tab");

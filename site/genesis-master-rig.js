@@ -8,6 +8,9 @@
  const IDS=Object.freeze({male:"genesis_male_nude",female:"genesis_female_nude"});
  const DIRS=Object.freeze(["se","sw","ne","nw"]);
  const PARTS=Object.freeze(["leg_l","leg_r","torso","arm_l","arm_r","head"]);
+ // 255 = no puppet slice assigned. Pixels are preserved, rendered at their
+ // original position, and can be painted back into any slice later.
+ const UNSELECTED=255;
  const PIVOTS=Object.freeze({leg_l:[25,84],leg_r:[39,84],torso:[32,60],arm_l:[25,61],arm_r:[39,61],head:[32,35]});
  const JOINTS=Object.freeze({
   head:[32,44],neck:[32,53],torso:[32,67],
@@ -38,7 +41,7 @@
   let raw;try{raw=atob(base64)}catch{fail("invalid base64 mask")}
   if(raw.length!==7168)fail("mask dimensions must remain 64×112");
   const a=Uint8Array.from(raw,c=>c.charCodeAt(0));
-  if(a.some(b=>b>=PARTS.length))fail("unknown mask slice value");
+  if(a.some(b=>b>=PARTS.length&&b!==UNSELECTED))fail("unknown mask slice value");
   return a;
  }
  function initial(gender){
@@ -101,5 +104,5 @@
   }
   return count;
  }
- return Object.freeze({FORMAT,IDS,DIRS,PARTS,PIVOTS,JOINTS,KEY,initial,validate,encode,decode,load,apply,cloudRows});
+ return Object.freeze({FORMAT,IDS,DIRS,PARTS,UNSELECTED,PIVOTS,JOINTS,KEY,initial,validate,encode,decode,load,apply,cloudRows});
 });
