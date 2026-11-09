@@ -108,10 +108,18 @@ button:disabled{opacity:.55;cursor:not-allowed}
   <p class="note">If a slice still breaks while sitting or lying down, inspect the native action in preview before saving. A single base mask cannot guarantee every extreme pose.</p>
  </section>
  <section id="pixel-tools">
-  <h2>PIXEL EDIT · GENESIS SOURCE</h2>
+  <h2>MASTER APPEARANCE · 4 VIEW</h2>
+  <label>EDIT TYPE
+   <select id="pixel-scope">
+    <option value="master">MASTER APPEARANCE · SE/SW/NE/NW → 11 ANIMATIONS</option>
+    <option value="frame">FRAME CORRECTION · ONLY THIS ACTION + FRAME</option>
+   </select>
+  </label>
   <label>SOURCE PART<select id="pixel-part"></select></label>
-  <button type="button" id="pixel-open-side">✎ OPEN PIXEL EDITOR</button>
-  <p class="note">Edit bagian tubuh dan Custom Wear pada 11 animasi native. Arah/frame mengikuti preview di kiri; Emosi tetap di layer depan. Apply tidak langsung mengirim ke Drive.</p>
+  <button type="button" id="pixel-open-side" class="primary">✎ EDIT 4 VIEW APPEARANCE</button>
+  <div class="action-row"><button id="appearance-copy">COPY VIEW</button><button id="appearance-paste">PASTE VIEW</button><button id="appearance-paste-flip">PASTE FLIP</button></div>
+  <div class="action-row"><button id="appearance-clear">CLEAR MASTER VIEW</button><button id="frame-clear">CLEAR FRAME CORRECTION</button></div>
+  <p class="note" id="appearance-hint">Master Appearance memakai Idle F0 sebagai referensi bentuk per layer dan arah. Delta piksel diwariskan ke 11 animasi tanpa menempelkan seluruh sprite Idle. Bila pose ekstrem tidak cocok, koreksi khusus menggunakan Frame Correction. Emosi tetap paling depan. Apply terlebih dahulu, kemudian SAVE · OVERWRITE MASTER ke Drive.</p>
  </section>
 </section>
 </main>
@@ -200,8 +208,9 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <script src="./genesis-native-python-contract.js?v=genesis-editor-v1"></script>
 <script src="./genesis-master-rig.js?v=genesis-editor-v1"></script>
 <script src="./genesis-puppet-renderer.js?v=genesis-editor-v1"></script>
-<script src="./genesis-master-pixels.js?v=genesis-pixel-v1"></script>
+<script src="./genesis-appearance-transfer.js?v=genesis-appearance-v1"></script>
+<script src="./genesis-master-pixels.js?v=genesis-appearance-v1"></script>
 <script src="./emotion-studio/shared-pixel-selection.js?v=genesis-pixel-v1"></script>
 <script src="./emotion-studio/shared-pixel-editor.js?v=genesis-pixel-v1"></script>
-<script src="./genesis-editor.js?v=5-genesis-pixel"></script>
+<script src="./genesis-editor.js?v=6-appearance-master"></script>
 </body></html>
