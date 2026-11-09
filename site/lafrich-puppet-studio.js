@@ -489,11 +489,36 @@ function attach(){
  $("paint-mask").onclick=()=>maskTool("select");$("erase-mask").onclick=()=>maskTool("erase");
  $("pivot-x").onchange=e=>{const p=currentMaster().pivots[dir][selectedPart];p.x=Math.max(0,Math.min(63,Math.round(Number(e.target.value)||0)));masterChanged()};
  $("pivot-y").onchange=e=>{const p=currentMaster().pivots[dir][selectedPart];p.y=Math.max(0,Math.min(111,Math.round(Number(e.target.value)||0)));masterChanged()};
- $("copy-mask").onclick=()=>{copyMask=C.decode(currentMaster().masks[dir]);status("MASK COPIED · "+dir.toUpperCase())};
- $("paste-mask").onclick=()=>{if(!copyMask)return status("Copy mask first",true);
-  currentMaster().masks[dir]=C.encode(copyMask);masterChanged()};
- $("flip-mask").onclick=()=>{if(!copyMask)return status("Copy mask first",true);
-  currentMaster().masks[dir]=C.encode(flipMask(copyMask));masterChanged()};
+ // Copy only the selected piece. Never replace the complete 10-piece mask
+ // when pasting one arm/leg/head into another direction.
+ $("copy-mask").onclick=()=>{
+  copyMask={bytes:C.decode(currentMaster().masks[dir]),part:selectedPart,dir,gender};
+  status("SLICE COPIED · "+selectedPart.toUpperCase()+" / "+dir.toUpperCase()+
+   " · choose destination piece/view then PASTE or PASTE FLIP");
+ };
+ function pasteCopiedMask(mirror){
+  if(!copyMask)return status("Select a piece and COPY MASK first",true);
+  if(copyMask.gender!==gender)return status("Copied slice belongs to the other Lafrich master; COPY again",true);
+  const sourceIndex=parts.indexOf(copyMask.part),targetIndex=parts.indexOf(selectedPart);
+  if(sourceIndex<0||targetIndex<0)return status("Invalid source/target slice",true);
+  const result=C.decode(currentMaster().masks[dir]);
+  // Unassign the destination piece, leaving every other piece intact.
+  for(let i=0;i<result.length;i++)if(result[i]===targetIndex)result[i]=255;
+  let count=0;
+  for(let y=0;y<112;y++)for(let x=0;x<64;x++){
+   const from=y*64+x;
+   if(copyMask.bytes[from]!==sourceIndex)continue;
+   const to=y*64+(mirror?63-x:x);
+   result[to]=targetIndex;count++;
+  }
+  if(!count)return status("Copied slice contains no pixels",true);
+  currentMaster().masks[dir]=C.encode(result);masterChanged();
+  status((mirror?"PASTE FLIP":"PASTE")+" · "+copyMask.part.toUpperCase()+" / "+
+   copyMask.dir.toUpperCase()+" → "+selectedPart.toUpperCase()+" / "+
+   dir.toUpperCase()+" · "+count+" PIXELS · UNSAVED");
+ }
+ $("paste-mask").onclick=()=>pasteCopiedMask(false);
+ $("flip-mask").onclick=()=>pasteCopiedMask(true);
  $("edit-master").onclick=()=>void openPixelEditor(artLayer);
  $("edit-wear").onclick=()=>void openPixelEditor(wearLayer);
  $("seed-v6b").onclick=()=>void seedBase();
