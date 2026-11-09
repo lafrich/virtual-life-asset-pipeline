@@ -531,10 +531,10 @@ async function cloudLoad(all=false){
  }catch(error){status("Lafrich Cloud load failed: "+error.message,true)}
 }
 async function seedBase(){
- if(dirtyMaster[gender]&&!confirm("Discard current UNSAVED Lafrich "+gender+" art and seed V6B-style again?"))return;
- if(currentMaster().layers.body?.se&&!confirm("Replace current "+gender+" base art with V6B reference seed? Save a backup first."))return;
+ if(dirtyMaster[gender]&&!confirm("You have unsaved Lafrich "+gender+" edits. Restore full nude body pixels only? Slicing and pivots stay unchanged."))return;
+ if(currentMaster().layers.body?.se&&!confirm("Restore full nude "+gender+" body? Current body pixel drawing will be replaced. Slice/pivots and Character Wear stay unchanged. BACKUP JSON first."))return;
  try{
-  status("Seeding Lafrich "+gender+" from approved V6B pixel art. No old motion is imported.");
+  status("Restoring full nude Lafrich "+gender+" anatomy: head, torso, arms and legs. No outfit or old motion is imported.");
   const result=await R.seedFromV6B(gender),previous=currentMaster();
   masterModels[gender]=C.validateMaster({...previous,layers:{...previous.layers,
    body:result.layers.body,body_front:result.layers.body_front}});
