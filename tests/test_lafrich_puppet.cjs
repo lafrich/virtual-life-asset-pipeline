@@ -78,6 +78,36 @@ test('new Python motion has only one blank, unsaved authoring frame; no eleven i
  assert.throws(()=>Core.fromPython('import os\\nos.system("rm -rf /")'),/Lafrich Puppet/);
  assert.throws(()=>Core.fromPython('MOTION = __import__("os")'),/Lafrich Puppet/);
 });
+test('Only body artwork is rendered from Master; all wear layers belong to Character',()=>{
+ const m=Core.master('male'),c=Core.character('male');
+ const old='data:image/png;base64,aGVsbG8=';
+ const newWear='data:image/png;base64,d29ybGQ=';
+ // Legacy master clothing may still exist in backed-up records, but is not
+ // rendered and is not silently deleted by this migration.
+ m.layers.body.se=old;m.layers.top.se=old;m.layers.hair_front.se=old;
+ assert.equal(Runtime.resolveLayers(m,null,'se').body,old);
+ assert.equal(Runtime.resolveLayers(m,null,'se').top,'');
+ assert.equal(Runtime.resolveLayers(m,null,'se').hair_front,'');
+ assert.equal(Runtime.resolveLayers(m,c,'se').top,'');
+ c.wear.top.se=newWear;c.wear.hair_front.se=newWear;
+ assert.equal(Runtime.resolveLayers(m,c,'se').top,newWear);
+ assert.equal(Runtime.resolveLayers(m,c,'se').hair_front,newWear);
+ assert.equal(m.layers.top.se,old,'legacy saved clothing was preserved in original master data');
+ const checked=Core.validateMaster(m);
+ assert.equal(checked.layers.top.se,old,'legacy master bytes remain recoverable');
+});
+test('Master UI never exposes Art Layer clothing editor; Character owns wear import',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const base=path.join(__dirname,'../site');
+ const html=fs.readFileSync(path.join(base,'lafrich-puppet-studio.html'),'utf8');
+ const js=fs.readFileSync(path.join(base,'lafrich-puppet-studio.js'),'utf8');
+ assert.match(html,/id="edit-piece"/);
+ assert.doesNotMatch(html,/id="master-layer"|id="edit-master"|id="import-layer"/);
+ assert.match(html,/data-page="character"[\\s\\S]*id="wear-layer"/);
+ assert.match(html,/id="import-wear"/);
+ assert.match(js,/C\\.WEAR\\.includes\\(selectedLayer\\)/);
+ assert.doesNotMatch(js,/artLayer|\$\("master-layer"\)|\$\("edit-master"\)/);
+});
 test('Custom Wear selects character four-view images without mutating master',()=>{
  const c=Core.character('female');
  assert.ok(Core.WEAR.includes('top'));
