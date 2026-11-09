@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#174a96">
+<title>MAHLUK HIDUP.EXE — Lafrich Genesis Workshop</title>
+<link rel="stylesheet" href="./mahluk-action-frame-pixel.css?v=genesis-workbench-v1">
+<style>
+:root{font:12px Tahoma,"Segoe UI",Arial,sans-serif;color:#25344d;background:#97abc4;--dark:#153f82;--edge:#95a4b7;--panel:#e7ecf3}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;min-height:100%;overflow:hidden}
+body{background:#91a9c5}button,select,input{font:inherit;color:#1f3758}button{cursor:pointer;border:1px solid #869bb4;border-radius:2px;background:linear-gradient(#fff,#d5e2f1);padding:7px 9px}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #e5a52d;outline-offset:1px}
+button[aria-pressed=true],button[aria-selected=true],button.active{background:linear-gradient(#a7caff,#e6f0ff);border-color:#376ab1;color:#103a76;font-weight:bold}
+#app{height:100dvh;display:flex;flex-direction:column;border:2px solid #d8e8ff;min-height:0;background:#d7e1ed}
+.titlebar{display:flex;align-items:center;gap:10px;min-height:35px;padding:7px 11px;background:linear-gradient(90deg,#0b347b,#3174c0 75%,#8aafe0);color:#fff}
+.titlebar strong{font-size:13px;letter-spacing:.045em}.titlebar small{opacity:.85}.titlebar .winbuttons{margin-left:auto;display:flex;gap:3px}.titlebar .winbuttons span{background:#d8e7fc;color:#174177;padding:2px 6px;font-weight:bold}
+#topnav{display:flex;align-items:center;gap:7px;padding:6px 8px;border-bottom:1px solid #8da0b5;background:#edf1f7}
+#topnav .space{flex:1}#topnav button{min-width:116px}.small{font-size:10px;color:#596b81}
+#progress{display:flex;align-items:stretch;gap:4px;padding:7px 8px;border-bottom:1px solid #9babc0;background:#dbe6f4;overflow-x:auto}
+#progress button{min-width:139px;flex:1;white-space:nowrap;text-align:left}
+#progress button b{font-size:12px}.progress-index{display:inline-grid;place-items:center;border-radius:50%;background:#b7cadf;color:#184276;width:19px;height:19px;margin-right:5px}
+#progress button[aria-selected=true] .progress-index{background:#3065a9;color:#fff}
+#workspace{display:grid;grid-template-columns:minmax(205px,260px) minmax(330px,1fr) minmax(235px,290px);gap:8px;flex:1;min-height:0;padding:8px}
+.pane{background:#eef2f6;border:2px ridge white;min-width:0;min-height:0;overflow:auto;padding:10px}
+.pane h2{font-size:12px;margin:2px 0 9px;padding:5px 4px;border-bottom:1px solid #b6c2cf;background:#dde7f3}
+.pane h3{font-size:11px;margin:12px 0 5px}.pane p{font-size:11px;line-height:1.5;color:#596a7e;margin:7px 0}
+label.field{display:block;font-size:11px;font-weight:bold;margin:8px 0}
+label.field input,label.field select{display:block;width:100%;padding:7px;margin-top:4px;border:1px solid var(--edge);background:white}
+.btnrow{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:7px 0}.btnrow>*{flex:1;min-width:60px}
+.section{display:none}.section.active{display:block}
+#bodyparts{display:flex;flex-direction:column;gap:2px}#bodyparts button{text-align:left;padding:6px 7px}
+#bodyparts .parent{font-size:9px;color:#6c7e94}
+#views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px 0}
+#views button{padding:5px 2px;min-width:0;font-size:10px}
+#views canvas{display:block;height:125px;width:100%;object-fit:contain;image-rendering:pixelated}
+#stagewrap{height:min(64dvh,640px);min-height:300px;overflow:auto;border:1px solid #91a2b8;overscroll-behavior:contain;background:repeating-conic-gradient(#eaf0f7 0 25%,#d2deeb 0 50%) 0 0 / 20px 20px;display:flex;justify-content:center;align-items:flex-start}
+#stage{display:block;image-rendering:pixelated;touch-action:none;flex:none;cursor:crosshair}
+#stagebar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 7px}
+#stagebar input{flex:1;min-width:60px;max-width:220px}
+#viewer .detail{background:#dae6f3;border:1px solid #9aacc0;padding:7px;min-height:36px;font-size:10px;margin-top:8px}
+#status{display:flex;gap:10px;align-items:center;min-height:31px;padding:7px 10px;border-top:1px solid #91a4bf;background:#e5edf6;font-size:11px}
+#statusmsg{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#status.error{background:#ffe3e0}
+#emotionpanel{flex:1;min-height:0;display:none}#emotionpanel iframe{display:block;border:0;width:100%;height:100%;background:#e8eef4}
+#geometry-controls .field{margin:5px 0}#geometry-controls input{width:100%}
+#anatomy{font-size:10px;line-height:1.6;border:1px solid #b5c3d3;padding:7px;background:#f7fbff}
+#binding-result{background:#fff;border:1px solid #a3b5c9;padding:10px;word-break:break-word;font-size:11px;line-height:1.6}
+#testcontrols input{width:100%}
+#master-details{font-size:11px;line-height:1.7;padding:9px;border:1px solid #aebfd0;background:white}
+#save-master{font-weight:bold;padding:12px}
+[hidden]{display:none!important}
+@media(max-width:1000px){#workspace{grid-template-columns:195px minmax(240px,1fr)}#rightpane{grid-column:1/-1;max-height:180px}#stagewrap{height:45dvh}}
+@media(max-width:650px){#topnav button{min-width:80px}#workspace{display:flex;flex-direction:column;overflow-y:auto}#leftpane,#rightpane{overflow:visible;flex:none}#viewer{order:-1;flex:none}#stagewrap{height:42dvh;min-height:250px}#views canvas{height:68px}#progress button{min-width:120px}#progress button b{font-size:10px}.titlebar small{display:none}#rightpane{max-height:none}}
+</style>
+</head>
+<body>
+<div id="app">
+ <header class="titlebar"><strong>▣ MAHLUK HIDUP.EXE</strong><small>LAFRICH GENESIS · V6B 4-VIEW / PROCEDURAL RIG</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
+ <nav id="topnav"><button id="nav-workshop" aria-selected="true">◈ GENESIS WORKSHOP</button><button id="nav-emotion" aria-selected="false">☺ EMOSI.EXE</button><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
+ <nav id="progress" aria-label="Character Genesis creation stages">
+  <button data-step="pixel" aria-selected="true"><span class="progress-index">1</span><b>PIXEL EDITOR</b></button>
+  <button data-step="rig" aria-selected="false"><span class="progress-index">2</span><b>PIVOT &amp; SLICING</b></button>
+  <button data-step="bind" aria-selected="false"><span class="progress-index">3</span><b>BIND ANATOMY</b></button>
+  <button data-step="test" aria-selected="false"><span class="progress-index">4</span><b>CHECK BINDING</b></button>
+  <button data-step="save" aria-selected="false"><span class="progress-index">5</span><b>MASTER GENESIS</b></button>
+ </nav>
+ <main id="workspace">
+ <aside class="pane" id="leftpane">
+  <h2>01 · ORIGINAL V6B SOURCE</h2>
+  <label class="field">GENESIS BASE<select id="gender"><option value="male">MALE GENESIS (V6B)</option><option value="female">FEMALE GENESIS (V6B)</option></select></label>
+  <p>Frozen approved Genesis only. Faces are blank in the body source and come from Emosi.exe.</p>
+  <div class="btnrow"><button id="seed">↻ RESET TO V6B</button><button id="save-draft">↓ SAVE DRAFT</button></div>
+  <section class="section active" data-panel="pixel">
+   <h2>BODY PART PIXEL EDITOR</h2>
+   <p>Setiap body part punya piksel independen di keempat sudut. Edit satu bagian tanpa menimpa area bagian lain.</p>
+   <div id="bodyparts"></div>
+   <div class="btnrow"><button id="edit-pixels" class="active">✎ OPEN PIXEL EDITOR</button></div>
+   <p>Select, copy, paste, paste flip, move, erase, fill, color picker, grid, zoom, onion skin, undo, redo aktif dari editor sebelumnya.</p>
+   <button id="pixel-next" class="active">NEXT: PIVOT &amp; SLICE →</button>
+  </section>
+  <section class="section" data-panel="rig">
+   <h2>02 · CUT &amp; PIVOT PER ANGLE</h2>
+   <p>Mask slicing per-pixel menentukan bagian yang bergerak. Pivot pada koordinat asli PNG 64 × 112.</p>
+   <div class="btnrow"><button id="rig-pivot" aria-pressed="true">✣ PIVOT</button><button id="rig-paint" aria-pressed="false">▣ SLICE PAINT</button><button id="rig-erase" aria-pressed="false">⌫ UNASSIGN</button></div>
+   <div id="geometry-controls"><label class="field">PIVOT X (0–63)<input id="pivot-x" type="number" min="0" max="63"></label><label class="field">PIVOT Y (0–111)<input id="pivot-y" type="number" min="0" max="111"></label>
+   <label class="field">SLICE BRUSH SIZE<input id="mask-brush" type="range" min="1" max="9" value="3" step="2"></label></div>
+   <div class="btnrow"><button id="copy-slice">COPY MASK</button><button id="paste-slice">PASTE MASK</button><button id="flip-slice">PASTE FLIP</button></div>
+   <div class="btnrow"><button id="rig-undo">↶ UNDO</button><button id="rig-redo">↷ REDO</button></div>
+   <button id="rig-next" class="active">NEXT: BIND ANATOMY →</button>
+  </section>
+  <section class="section" data-panel="bind">
+   <h2>03 · PROCEDURAL BINDING</h2>
+   <p>Binding mengunci mask, 10-piece parent hierarchy, dan pivot 4-angle dalam satu kontrak data. Animasi menyimpan transform Python, bukan sprite frame-by-frame.</p>
+   <button id="make-binding" class="active">⛓ BIND PIVOT + SLICES</button>
+   <div class="btnrow"><button id="export-python" disabled>↓ BINDING .PY</button><button id="export-json" disabled>↓ MASTER .JSON</button></div>
+   <button id="bind-next" disabled>TEST BINDING →</button>
+  </section>
+  <section class="section" data-panel="test">
+   <h2>04 · INTERACTIVE BINDING TEST</h2>
+   <label class="field">TEST POSE<select id="test-preset"><option value="neutral">Neutral / T-pose check</option><option value="arms">Both Arms Raised</option><option value="walk">Walk / Contralateral</option><option value="crouch">Crouch / Bend Knees</option></select></label>
+   <div id="testcontrols"><label class="field">SELECTED PART ROTATION <input id="test-angle" type="range" min="-120" max="120" step="1" value="0"></label><label class="field">Δ X <input id="test-x" type="range" min="-32" max="32" value="0"></label><label class="field">Δ Y <input id="test-y" type="range" min="-32" max="32" value="0"></label></div>
+   <p>Uji tiap body part dan keempat angle. Wajah Emosi dirender mengikuti kepala, tetapi tidak dibakar ke source pixel.</p>
+   <div class="btnrow"><button id="edit-binding">← EDIT BINDING</button><button id="approve-binding" class="active">✓ BINDING OK</button></div>
+  </section>
+  <section class="section" data-panel="save">
+   <h2>05 · APPROVED MASTER</h2>
+   <p>Master tidak memakai database karakter atau animasi sebelumnya.</p>
+   <button id="save-master" class="active">✓ SAVE LAFRICH GENESIS MASTER</button>
+   <div class="btnrow"><button id="cloud-master">☁ SAVE TO DRIVE</button><button id="load-cloud">↓ LOAD FROM DRIVE</button></div>
+   <div class="btnrow"><button id="download-master">↓ DOWNLOAD .JSON</button><button id="download-binding">↓ DOWNLOAD .PY</button></div>
+   <p>Master Male dan Female disimpan terpisah. Editor karakter dan database animasi dapat memakai kontrak ini sebagai source.</p>
+  </section>
+ </aside>
+ <section class="pane" id="viewer">
+  <h2 id="preview-title">PIXEL EDITOR · SELECT A PART</h2>
+  <div id="stagebar"><button id="zoom-out">−</button><input id="zoom" type="range" min="2" max="14" value="5"><button id="zoom-in">＋</button><button id="zoom-fit">FIT</button><span id="zoom-label">500%</span></div>
+  <div id="stagewrap"><canvas id="stage" width="64" height="112" aria-label="Genesis 64 by 112 edit and binding preview"></canvas></div>
+  <div id="views" aria-label="Four independently editable angles"></div>
+  <div class="detail" id="viewdetail">64 × 112 PNG • SE / SW / NE / NW • select a body part</div>
+ </section>
+ <aside class="pane" id="rightpane">
+  <h2>ANATOMY · 10 PIECES</h2><div id="anatomy"></div>
+  <h2 id="side-title">SELECTED PART</h2><div id="selection-details">HEAD</div>
+  <h2>EMOSI.EXE · FACE ENGINE</h2>
+  <p>Database wajah tetap milik Emosi.exe. Tidak ada face-painting atau frame wajah manual di Python.</p>
+  <label class="field">PREVIEW EMOSI<select id="face"><option value="">Blank / no face</option></select></label>
+  <div class="btnrow"><button id="refresh-face">↻ REFRESH</button><button id="open-face">↗ OPEN EMOSI</button></div>
+  <div id="binding-result">Binding belum dibuat.</div>
+  <div id="master-details"></div>
+ </aside>
+ </main>
+ <div id="emotionpanel"><iframe id="emotion-frame" title="Emosi.exe original face and dialogue editor" src="about:blank" allow="clipboard-read; clipboard-write"></iframe></div>
+ <footer id="status"><b id="stage-label">GENESIS WORKSHOP</b><span id="statusmsg" role="status">Loading frozen Male and Female V6B bases…</span><span id="statuscloud">LOCAL DRAFT / DRIVE OPTIONAL</span></footer>
+</div>
+<div id="pixelOverlay" class="pixel-overlay action-frame-pixel genesis-source-pixel" hidden>
+ <section class="pixel-dialog" role="dialog" aria-modal="true" aria-labelledby="pixelTitle">
+  <header class="pixel-dialog-header"><strong id="pixelTitle">LAFRICH PUPPET · PIXEL EDITOR</strong><button id="pixelClose" title="Close editor">×</button></header>
+  <div class="pixel-toolbar">
+   <label>DIRECTION <select id="pixelDirection"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></label>
+   <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
+   <button data-pixel-tool="eraser">⌫ ERASER</button><button data-pixel-tool="select" title="Draw a rectangle around pixels to select them / S">▣ SELECT</button>
+   <button id="pixelToolbarCopy" class="pixel-quick-copy" type="button" title="Copy selection from current view / Ctrl+C">⧉ COPY</button>
+   <button id="pixelToolbarPaste" class="pixel-quick-paste" type="button" title="Paste pixels into current view / Ctrl+V">▣ PASTE</button>
+   <button id="pixelToolbarPasteFlip" class="pixel-quick-paste" type="button" title="Mirror and paste into current view / Ctrl+Shift+V">⇆ PASTE FLIP</button>
+   <button data-pixel-tool="move-pixels" title="Move selected pixels / M">✣ MOVE PIXELS</button>
+   <button data-pixel-tool="fill">▤ FILL</button>
+   <button data-pixel-tool="picker">◎ PICK</button><button data-pixel-tool="hand" title="Pan canvas by dragging / H">✥ HAND</button>
+   <label>COLOR <input id="pixelColor" type="color" value="#211d22"></label>
+   <label>SIZE <select id="pixelSize"><option value="1">1 PX</option><option value="2">2 PX</option><option value="3">3 PX</option><option value="5">5 PX</option></select></label>
+  </div>
+  <div class="pixel-workarea">
+   <div class="pixel-canvas-wrap" id="pixelCanvasWrap"><canvas id="pixelCanvas" tabindex="0" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time. Scroll to zoom, pinch to zoom on touch."></canvas></div>
+   <aside class="pixel-side">
+    <div class="sectionhead">PALETTE / SWATCHES</div>
+    <div class="pixel-swatches">
+     <button data-pixel-swatch="#1b1519" style="--swatch:#1b1519" title="Dark ink"></button>
+     <button data-pixel-swatch="#443330" style="--swatch:#443330" title="Shadow"></button>
+     <button data-pixel-swatch="#b97656" style="--swatch:#b97656" title="Skin shade"></button>
+     <button data-pixel-swatch="#e9a77c" style="--swatch:#e9a77c" title="Skin"></button>
+     <button data-pixel-swatch="#ffc99b" style="--swatch:#ffc99b" title="Highlight"></button>
+     <button data-pixel-swatch="#f4ece5" style="--swatch:#f4ece5" title="White"></button>
+     <button data-pixel-swatch="#5b718d" style="--swatch:#5b718d" title="Blue"></button>
+     <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
+    </div>
+
+    <p class="hint">Edit the chosen Genesis source part. Edits affect the selected Lafrich source layer. Emosi stays separate and frontmost.</p>
+    <div class="pixel-selection-controls">
+     <div class="sectionhead">SELECTION / TRANSFORM</div>
+     <div class="plane-buttons pixel-clipboard-actions">
+      <button id="pixelCopySelection" type="button" title="Copy selected RGBA pixels from active view / Ctrl+C">⧉ COPY</button>
+      <button id="pixelPasteSelection" type="button" title="Paste to active view without changing other views / Ctrl+V">▣ PASTE</button>
+      <button id="pixelPasteMirrored" type="button" title="Paste flipped horizontally, at mirrored X position / Ctrl+Shift+V">⇆ PASTE FLIP</button>
+     </div>
+     <label class="check"><input id="pixelPasteReplace" type="checkbox"> REPLACE TRANSPARENT PIXELS (erase under transparent source)</label>
+     <p class="hint" id="pixelClipboardInfo" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</p>
+     <div class="plane-buttons"><button id="pixelSelectAll" type="button">▣ SELECT ALL</button><button id="pixelDeselect" type="button">◇ DESELECT</button></div>
+     <div class="plane-buttons"><button id="pixelFlipH" type="button">⇆ FLIP H</button><button id="pixelFlipV" type="button">⇅ FLIP V</button></div>
+     <div class="plane-buttons"><button id="pixelDeleteSelection" type="button">⌫ DELETE PIXELS</button></div>
+     <p class="hint" id="pixelSelectionInfo">No selection. Select rectangle, then Move Pixels or Flip.</p>
+    </div>
+    <label class="check"><input type="checkbox" id="pixelOnion" checked> SELECTED CHARACTER REFERENCE · CURRENT VIEW</label>
+    <label class="male-guide-range">REFERENCE OPACITY <input id="pixelMaleOpacity" type="range" min="5" max="100" step="5" value="35"><span id="pixelMaleOpacityLabel">35%</span></label>
+    <div class="pixel-grid-controls">
+     <label class="check"><input type="checkbox" id="pixelGrid" checked> GRID MODE</label>
+     <label>GRID SIZE <select id="pixelGridType"><option value="1">1 × 1 PX</option><option value="8">8 × 8 PX</option><option value="16">16 × 16 PX</option></select></label>
+    </div>
+    <div class="pixel-zoom-controls">
+     <span>ZOOM</span>
+     <button id="pixelZoomOut" title="Zoom out (mouse wheel or pinch)">−</button>
+     <input id="pixelZoom" type="range" min="2" max="16" step="1" value="5" aria-label="Pixel canvas zoom">
+     <button id="pixelZoomIn" title="Zoom in (mouse wheel or pinch)">＋</button>
+     <button id="pixelZoomFit" title="Fit artwork to editor">FIT</button>
+     <span id="pixelZoomLabel">500%</span>
+    </div>
+    <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
+    <p class="hint">Edits affect only the selected Lafrich layer and view. Apply first, then SAVE MASTER / CHARACTER to sync Drive.</p>
+    <div class="plane-buttons">
+     <button id="pixelEraseCanvas" type="button" title="Erase this direction/frame only; Undo restores it">⌫ ERASE CANVAS</button>
+     <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
+    </div>
+   </aside>
+  </div>
+  <footer class="pixel-dialog-foot">
+   <span id="pixelStatus">LAFRICH PUPPET SOURCE · 64×112 RGBA</span>
+   <button id="pixelApply">APPLY TO LAFRICH</button>
+   <button id="pixelSaveDefault" class="primary">✓ APPLY TO LAFRICH</button>
+  </footer>
+ </section>
+</div>
+
+
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="./genesis-source.js?v=genesis-rebuild-1"></script>
+<script src="./v6p-character-store.js?v=genesis-rebuild-1"></script>
+<script src="./genesis-base-bridge.js?v=genesis-rebuild-1"></script>
+<script src="./v6p-part-catalog.js?v=genesis-rebuild-1"></script>
+<script src="./v6p-part-overrides.js?v=genesis-rebuild-1"></script>
+<script src="./v6p-compositor.js?v=genesis-rebuild-1"></script>
+<script src="./emotion-studio/emotion-library.js?v=genesis-rebuild-1"></script>
+<script src="./emosi-bridge.js?v=genesis-rebuild-1"></script>
+<script src="./emotion-studio/shared-pixel-selection.js?v=genesis-rebuild-1"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=genesis-rebuild-1"></script>
+<script src="./lafrich-puppet-core.js?v=genesis-rebuild-1"></script>
+<script src="./lafrich-puppet-renderer.js?v=genesis-rebuild-1"></script>
+<script src="./mahluk-hub-drive.js?v=genesis-rebuild-1"></script>
+<script src="./genesis-workbench.js?v=genesis-rebuild-1"></script>
+</body>
+</html>
