@@ -51,8 +51,10 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 <div class="row"><button id="edit-master" class="active">✎ EDIT 4 VIEWS</button><button id="seed-v6b">V6B STYLE SEED</button></div>
 <h2>RIGGING / 10 PIECES</h2>
 <label>BODY PIECE<select id="part-select"></select></label>
-<div class="row"><button id="tool-rig" aria-pressed="true">✣ PIVOTS</button><button id="tool-mask" aria-pressed="false">▣ SLICES</button></div>
-<div id="pivot-controls">
+<div class="row"><button id="tool-move" aria-pressed="true">✥ MOVE PIECE</button><button id="tool-rig" aria-pressed="false">✣ PIVOTS</button><button id="tool-mask" aria-pressed="false">▣ SLICES</button></div>
+<p class="note">MOVE PIECE: pilih Body Piece lalu drag di kanvas. Gambar tubuh, rambut/pakaian yang terikat, dan bagian anak ikut bergerak. Tidak memindahkan pixel asli atau mengganti mask. PIVOTS: atur titik sambungan saja. SLICES: atur kepemilikan pixel.</p>
+<div class="row"><button id="reset-placement">↶ RESET POSITION · SELECTED PIECE / VIEW</button></div>
+<div id="pivot-controls" hidden>
 <label>PIVOT X<input type="number" id="pivot-x" min="0" max="63"></label>
 <label>PIVOT Y<input type="number" id="pivot-y" min="0" max="111"></label>
 </div>
@@ -225,7 +227,7 @@ background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
 <script src="./emosi-bridge.js?v=lafrich-puppet-1"></script>
 <script src="./emotion-studio/shared-pixel-selection.js?v=lafrich-puppet-1"></script>
 <script src="./emotion-studio/shared-pixel-editor.js?v=lafrich-puppet-1"></script>
-<script src="./lafrich-puppet-core.js?v=lafrich-puppet-10parts"></script>
-<script src="./lafrich-puppet-renderer.js?v=lafrich-puppet-10parts"></script>
-<script src="./lafrich-puppet-studio.js?v=lafrich-puppet-10parts"></script>
+<script src="./lafrich-puppet-core.js?v=lafrich-piece-drag-1"></script>
+<script src="./lafrich-puppet-renderer.js?v=lafrich-piece-drag-1"></script>
+<script src="./lafrich-puppet-studio.js?v=lafrich-piece-drag-1"></script>
 </body></html>
