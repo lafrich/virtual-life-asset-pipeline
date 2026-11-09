@@ -77,16 +77,21 @@ function validate(id,master){
  const source="genesis_"+gender+"_nude",b=master?.binding;
  if(master?.format!=="lafrich-genesis-master-v1"||master.id!==id||
     master.gender!==gender||master.sourceId!==source||master.faceSource!=="emosi.exe"||
-    (master.rigFormat!==undefined&&master.rigFormat!=="LGR-1")||
+    master.rigFormat!=="LGR-1"||
     b?.format!=="lafrich-genesis-binding-v1"||b.id!==id||
     b.gender!==gender||b.sourceId!==source||b.faceSource!=="emosi.exe"||
-    (b.rigFormat!==undefined&&b.rigFormat!=="LGR-1")||
+    b.rigFormat!=="LGR-1"||
     b.originalNative!=="V6B")throw Error("Legacy/foreign master rejected: LGR-1 only");
  const core=root?.LafrichPuppetCore;
  if(!core?.validateMaster)throw Error("LGR-1 rig validator unavailable");
  const rig=core.validateMaster(b.rig);
  if(rig.id!==core.IDS[gender]||rig.gender!==gender)throw Error("Wrong V6B rig base");
  if(JSON.stringify(master).length>10000000)throw Error("Genesis master too large");
+ if(!Number.isFinite(Date.parse(master.approvedAt||"")))
+  throw Error("LGR-1 approval timestamp required");
+ for(const d of ["se","sw","ne","nw"])for(const part of core.PARTS)
+  if(b.reviewed?.[d+"|"+part]!==true)
+   throw Error("Unreviewed LGR-1 body part: "+d+" / "+part);
  const dirs=["se","sw","ne","nw"];
  if(b.frame?.width!==64||b.frame?.height!==112||
     JSON.stringify(b.frame.directions)!==JSON.stringify(dirs)||
