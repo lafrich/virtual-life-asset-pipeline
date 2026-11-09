@@ -268,16 +268,27 @@ function syncControls(){
  $("frame-duration").value=motion.frames[Math.min(frame,motion.frames.length-1)]?.ms||160;
  syncPivot();poseValues();
 }
-async function openPixelEditor(target){
+async function openPixelEditor(target,{piece=null}={}){
  if(editorBusy)return;
  const g=mode==="master"?gender:character.gender,layer=target;
+ if(piece&&(mode!=="master"||layer!=="body"||!parts.includes(piece)))
+  return status("Body-piece editing requires a valid Lafrich master body piece",true);
  editorBusy=true;
  try{
   const owner=mode==="master"?currentMaster().layers:character.wear;
   const atlas=R.rgba(64,448),g2=atlas.getContext("2d");
+  const originalPixels={},originalMasks={};
   for(let i=0;i<4;i++){
-   const img=await R.loadPng(owner[layer]?.[directions[i]]);
-   if(img)g2.drawImage(img,0,i*112);
+   const d=directions[i],img=await R.loadPng(owner[layer]?.[d]);
+   const cv=R.rgba(),v=cv.getContext("2d",{willReadFrequently:true});
+   if(img)v.drawImage(img,0,0);
+   if(piece){
+    const pixels=v.getImageData(0,0,64,112).data;
+    const maskText=currentMaster().masks[d];
+    originalPixels[d]=new Uint8ClampedArray(pixels);
+    originalMasks[d]=maskText;
+    g2.putImageData(new ImageData(C.piecePixels(pixels,C.decode(maskText),piece),64,112),0,i*112);
+   }else g2.drawImage(cv,0,i*112);
   }
   if(!editor){
    editor=root.MH2PlanePixelEditor.create({
@@ -286,16 +297,19 @@ async function openPixelEditor(target){
     onApply:()=>applyPixel(),onSaveDefault:()=>applyPixel(),onRestore:()=>{}
    });
   }
-  editorSession={mode,layer,gender:g,characterId:character.id||""};
   const references={};
   for(const d of directions){
    const prepared=await R.prepare(masterModels[g],mode==="master"?null:character,d,null);
    references[d]=R.render(prepared,C.blankPose());
   }
-  editor.open({id:(mode==="master"?"LAFRICH MASTER ":"LAFRICH WEAR ")+g+" / "+layer,
+  editorSession={mode,layer,piece,gender:g,characterId:character.id||"",
+   originalPixels,originalMasks};
+  editor.open({id:piece?"LAFRICH "+g.toUpperCase()+" · BODY PIECE "+piece.toUpperCase():
+    (mode==="master"?"LAFRICH MASTER ":"LAFRICH WEAR ")+g+" / "+layer,
    initialAtlas:atlas,originalAtlas:atlas,referenceImages:references,direction:dir});
-  status("PIXEL EDITOR OPEN · "+layer+" · Edit SE/SW/NE/NW · APPLY then SAVE "+mode.toUpperCase());
- }catch(error){status("Pixel Editor failed: "+error.message,true)}
+  status(piece?"BODY PIECE "+piece.toUpperCase()+" · Edit 4 views; newly painted pixels follow this piece's slice · APPLY then SAVE MASTER":
+   "PIXEL EDITOR OPEN · "+layer+" · Edit SE/SW/NE/NW · APPLY then SAVE "+mode.toUpperCase());
+ }catch(error){editorSession=null;status("Pixel Editor failed: "+error.message,true)}
  finally{editorBusy=false}
 }
 function applyPixel(){
@@ -306,15 +320,40 @@ function applyPixel(){
    throw Error("Source changed during editing; edits were not applied");
   const atlas=editor.getAtlas(),owner=mode==="master"?currentMaster().layers:character.wear;
   const next={...owner[scope.layer]};
-  for(let i=0;i<4;i++){
-   const cv=R.rgba(),g=cv.getContext("2d");
-   g.drawImage(atlas,0,i*112,64,112,0,0,64,112);
-   next[directions[i]]=cv.toDataURL("image/png");
+  if(scope.piece){
+   const current=currentMaster(),nextMasks={};
+   // Validate every direction before changing the live master. Existing
+   // pixels belonging to other pieces and all non-body layers are preserved.
+   for(let i=0;i<4;i++){
+    const d=directions[i];
+    if(current.masks[d]!==scope.originalMasks[d])
+     throw Error("Slice changed while editing "+d.toUpperCase()+"; reopen Body Piece editor");
+    const selected=atlas.getContext("2d",{willReadFrequently:true})
+     .getImageData(0,i*112,64,112).data;
+    const result=C.applyPiecePixels(scope.originalPixels[d],selected,
+     C.decode(scope.originalMasks[d]),scope.piece);
+    const cv=R.rgba();
+    cv.getContext("2d").putImageData(new ImageData(result.pixels,64,112),0,0);
+    next[d]=cv.toDataURL("image/png");
+    nextMasks[d]=C.encode(result.mask);
+   }
+   const validated=C.validateMaster({...current,
+    layers:{...current.layers,[scope.layer]:next},
+    masks:{...current.masks,...nextMasks}});
+   masterModels[gender]=validated;
+   masterChanged();
+  }else{
+   for(let i=0;i<4;i++){
+    const cv=R.rgba(),g=cv.getContext("2d");
+    g.drawImage(atlas,0,i*112,64,112,0,0,64,112);
+    next[directions[i]]=cv.toDataURL("image/png");
+   }
+   owner[scope.layer]=next;
+   mode==="master"?masterChanged():characterChanged();
   }
-  owner[scope.layer]=next;
-  mode==="master"?masterChanged():characterChanged();
   editorSession=null;
-  status("APPLIED TO "+scope.layer+" · FOUR VIEWS · "+(mode==="master"?"SAVE MASTER":"SAVE CHARACTER")+" to persist");
+  status("APPLIED · "+(scope.piece?"BODY PIECE "+scope.piece.toUpperCase():scope.layer.toUpperCase())+
+   " · FOUR VIEWS · "+(mode==="master"?"SAVE MASTER":"SAVE CHARACTER")+" to persist");
   return true;
  }catch(error){status("Pixel Apply failed: "+error.message,true);return false}
 }
@@ -520,6 +559,7 @@ function attach(){
  }
  $("paste-mask").onclick=()=>pasteCopiedMask(false);
  $("flip-mask").onclick=()=>pasteCopiedMask(true);
+ $("edit-piece").onclick=()=>void openPixelEditor("body",{piece:selectedPart});
  $("edit-master").onclick=()=>void openPixelEditor(artLayer);
  $("edit-wear").onclick=()=>void openPixelEditor(wearLayer);
  $("seed-v6b").onclick=()=>void seedBase();
