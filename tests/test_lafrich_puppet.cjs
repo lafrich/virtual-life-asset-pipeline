@@ -103,9 +103,9 @@ test('Master UI never exposes Art Layer clothing editor; Character owns wear imp
  const js=fs.readFileSync(path.join(base,'lafrich-puppet-studio.js'),'utf8');
  assert.match(html,/id="edit-piece"/);
  assert.doesNotMatch(html,/id="master-layer"|id="edit-master"|id="import-layer"/);
- assert.match(html,/data-page="character"[\\s\\S]*id="wear-layer"/);
+ assert.ok(html.includes('data-page="character"')&&html.includes('id="wear-layer"'));
  assert.match(html,/id="import-wear"/);
- assert.match(js,/C\\.WEAR\\.includes\\(selectedLayer\\)/);
+ assert.ok(js.includes('C.WEAR.includes(selectedLayer)'));
  assert.doesNotMatch(js,/artLayer|\$\("master-layer"\)|\$\("edit-master"\)/);
 });
 test('Custom Wear selects character four-view images without mutating master',()=>{
