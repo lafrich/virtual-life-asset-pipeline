@@ -1,4 +1,4 @@
-name: Genesis Native Animation — Renderer and Import QA
+name: ARCHIVE — V6B Genesis Reference QA (Not Active Lafrich Puppet)
 on:
   push:
     branches: [main]
@@ -16,7 +16,6 @@ on:
       - "site/v6p-studio.html"
       - "tests/smoke_genesis_character_python_qa.cjs"
       - "site/mahluk-animation-native.*"
-      - "site/mahluk-hub.js"
       - "tests/test_genesis_native_*"
       - "tests/test_genesis_master_rig.cjs"
       - "tests/test_genesis_appearance_transfer.cjs"
@@ -82,7 +81,4 @@ jobs:
           sleep 1
           node tests/smoke_genesis_native_animation.cjs
           node tests/smoke_genesis_character_python_qa.cjs
-          mkdir -p /tmp/mahluk-native-hub-root
-          ln -s "$PWD/site" /tmp/mahluk-native-hub-root/virtual-life-asset-pipeline
-          python3 -m http.server 4174 --bind 127.0.0.1 -d /tmp/mahluk-native-hub-root >/tmp/mahluk-native-hub-http.log 2>&1 &
-          node tests/smoke_genesis_native_cloud_hub.cjs
+          echo "Legacy V6B standalone reference QA passed; Lafrich Puppet is the active Mahluk editor."
