@@ -1,0 +1,129 @@
+name: Genesis Workbench QA
+on:
+  push:
+    paths:
+      - 'site/genesis-workbench.*'
+      - 'site/genesis-cloud.js'
+      - 'site/genesis_procedural_runtime.py'
+      - 'site/mahluk-hidup.html'
+      - 'tests/test_genesis_procedural_runtime.py'
+      - '.github/workflows/genesis-workbench-qa.yml'
+  pull_request:
+    paths:
+      - 'site/genesis-workbench.*'
+      - 'site/genesis-cloud.js'
+      - 'site/genesis_procedural_runtime.py'
+      - 'site/mahluk-hidup.html'
+      - 'tests/test_genesis_procedural_runtime.py'
+jobs:
+  syntax-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check site/genesis-workbench.js
+          node --check site/genesis-cloud.js
+          node --check site/lafrich-puppet-core.js
+          node --check site/lafrich-puppet-renderer.js
+      - name: HTML / UI integration contract
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),assert=require('assert');
+          const html=fs.readFileSync('site/genesis-workbench.html','utf8');
+          const script=fs.readFileSync('site/genesis-workbench.js','utf8');
+          const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+          const missing=[...script.matchAll(/\$\("([^"]+)"\)/g)].map(m=>m[1])
+            .filter(id=>!ids.includes(id));
+          assert.deepStrictEqual(missing,[], 'Missing DOM controls: '+missing.join(', '));
+          assert.strictEqual(ids.length,new Set(ids).size,'Duplicate HTML IDs');
+          for(const id of ['pixelApply','pixelCanvas','pixelDirection','nav-emotion','seed','bind-next','approve-binding','save-master'])
+            assert(ids.includes(id),'Missing required control '+id);
+          assert(html.includes('./genesis-cloud.js'),'Dedicated Drive module not loaded');
+          assert(!html.includes('./mahluk-hub.js'),'Legacy workspace accidentally active');
+          assert(!html.includes('./lafrich-puppet-studio.js'),'Legacy character/animation app accidentally active');
+          console.log('Workbench UI contracts and original pixel editor controls: OK');
+          NODE
+      - name: Python continuous rig tests
+        run: |
+          python3 -m py_compile site/genesis_procedural_runtime.py
+          python3 -m unittest discover -s tests -p 'test_genesis_procedural_runtime.py' -v
+
+  browser-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium browser harness
+        run: |
+          npm install --prefix /tmp/genesis-qa --no-save playwright@1.56.1
+          npx --yes --prefix /tmp/genesis-qa playwright install chromium
+      - name: Launch local static test + real browser
+        env:
+          NODE_PATH: /tmp/genesis-qa/node_modules
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-http.log 2>&1 &
+          node <<'NODE'
+          (async()=>{
+            const {chromium}=require('playwright'),assert=require('assert');
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1500,height:1000}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            page.on('console',m=>{if(m.type()==='error'&&!/accounts.google.com|favicon.ico/.test(m.text()))errors.push(m.text())});
+            try{
+              await page.goto('http://127.0.0.1:8765/site/genesis-workbench.html',{waitUntil:'domcontentloaded'});
+              await page.locator('#viewdetail').filter({hasText:'MALE'}).waitFor({timeout:60000});
+              const pixelCount=await page.locator('#stage').evaluate(c=>{
+                const d=c.getContext('2d').getImageData(0,0,64,112).data;
+                let count=0;for(let i=3;i<d.length;i+=4)if(d[i])count++;
+                return count;
+              });
+              assert(pixelCount>40,'Male frozen source did not render');
+              await page.locator('#edit-pixels').click();
+              await page.locator('#pixelOverlay').waitFor({state:'visible'});
+              const tools=['pixelCopySelection','pixelPasteSelection','pixelPasteMirrored','pixelFlipH','pixelFlipV','pixelUndo','pixelRedo','pixelSelectAll'];
+              for(const id of tools)assert(await page.locator('#'+id).count()===1,'Missing pixel tool '+id);
+              await page.locator('#pixelDirection').selectOption('nw');
+              const initial=await page.evaluate(()=>{
+                const saved=JSON.parse(localStorage.getItem('vl-lafrich-genesis-workbench-drafts-v1'));
+                return saved.drafts.male.rig.layers.top.se;
+              });
+              await page.locator('#pixelApply').click();
+              await page.waitForFunction(()=>
+                document.querySelector('#statusmsg')?.textContent?.includes('APPLIED '),
+                null,{timeout:30000});
+              const retained=await page.evaluate(()=>{
+                const saved=JSON.parse(localStorage.getItem('vl-lafrich-genesis-workbench-drafts-v1'));
+                return saved.drafts.male.rig.layers.top.se;
+              });
+              assert.strictEqual(retained,initial,'Editing skin accidentally changed shirt layer');
+              await page.locator('#gender').selectOption('female');
+              await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
+              await page.locator('#pixel-next').click();
+              assert(await page.locator('[data-panel="rig"]').isVisible(),'Rig stage inaccessible');
+              await page.locator('#pivot-x').fill('31');
+              await page.locator('#pivot-x').dispatchEvent('change');
+              await page.locator('#rig-next').click();
+              await page.locator('#make-binding').click();
+              await page.waitForTimeout(500);
+              const info=await page.locator('#binding-result').textContent();
+              assert(/^BOUND/.test(info),'Binding failed: '+info);
+              await page.locator('#bind-next').click();
+              assert(await page.locator('[data-panel="test"]').isVisible(),'Test binding stage inaccessible');
+              await page.locator('#test-preset').selectOption('walk');
+              await page.locator('#test-angle').fill('25');
+              await page.locator('#approve-binding').click();
+              assert(await page.locator('[data-panel="save"]').isVisible(),'Approval did not open Save Master');
+              await page.locator('#save-master').click();
+              const saved=await page.locator('#master-details').textContent();
+              assert(saved.includes('MASTER SAVED'),'Master not persisted: '+saved);
+              const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')));
+              assert(actual?.female?.id==='lafrich_genesis_female','Canonical Female Genesis Master missing from database');
+              assert(actual.female.binding.views.se.spritePng.startsWith('data:image/png;base64,'),'Python neutral source absent');
+              if(errors.length)throw Error('Browser errors: '+errors.join(' | '));
+              console.log(JSON.stringify({browser:'OK',pixelCount,partCount:10,
+                femaleSwitched:true,bindingResult:info.slice(0,180),approved:actual.female.id}));
+            } finally {await browser.close()}
+          })().catch(e=>{console.error(e);process.exitCode=1})
+          NODE
