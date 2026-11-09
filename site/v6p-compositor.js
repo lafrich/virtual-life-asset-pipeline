@@ -208,11 +208,15 @@ async function compose(ch,fs,emosi){
   const baseNames=names.filter(n=>!isFrontLayer(n));
   const frontNames=names.filter(isFrontLayer);
   const needed=baseNames.concat(frontNames).concat(['base/shadow','base/fx']);
-  const L=await Promise.all(needed.map(n=>img(n,ch.characterId)));
-  if(L.some(x=>!x)){
-    LAST_MISSING=needed.filter((_,i)=>!L[i]);
+  const raw=await Promise.all(needed.map(n=>img(n,ch.characterId)));
+  if(raw.some(x=>!x)){
+    LAST_MISSING=needed.filter((_,i)=>!raw[i]);
     return null;
   }
+  // Patch approved Genesis source layers at their original native cells.
+  // Emosi remains the final compositing step, above these source layers.
+  const L=root?.GenesisMasterPixel?.decorateLayers?
+    await root.GenesisMasterPixel.decorateLayers(needed,raw,ch):raw;
   LAST_MISSING=[];
   const extras=await loadAccessoryImages(ch);
   const fx=L.pop(), shd=L.pop();

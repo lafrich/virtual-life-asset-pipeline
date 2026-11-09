@@ -48,7 +48,7 @@
   if(!IDS[gender])fail("male or female required");
   const mask=maskDefault();
   return {
-   format:FORMAT,id:IDS[gender],gender,version:1,updated:"",
+   format:FORMAT,id:IDS[gender],gender,version:1,updated:"",pixelFrames:{},
    joints:Object.fromEntries(DIRS.map(d=>[d,clone(JOINTS)]).map(([d,v])=>
     [d,Object.fromEntries(Object.entries(v).map(([k,xy])=>[k,{x:xy[0],y:xy[1]}]))])),
    pivots:Object.fromEntries(DIRS.map(d=>[d,Object.fromEntries(Object.entries(PIVOTS).map(([k,xy])=>[k,{x:xy[0],y:xy[1]}]))])),
@@ -58,7 +58,7 @@
  function validate(row){
   if(!row||row.format!==FORMAT||!Object.keys(IDS).includes(row.gender)||row.id!==IDS[row.gender])fail("only two stable Genesis master IDs are permitted");
   if(row.version!==1)fail("unsupported rig version");
-  const out={format:FORMAT,id:row.id,gender:row.gender,version:1,updated:typeof row.updated==="string"?row.updated:"",joints:{},pivots:{},masks:{}};
+  const out={format:FORMAT,id:row.id,gender:row.gender,version:1,updated:typeof row.updated==="string"?row.updated:"",pixelFrames:{},joints:{},pivots:{},masks:{}};
   for(const d of DIRS){
    const joints=row.joints?.[d],pivots=row.pivots?.[d];
    if(!joints||Object.keys(joints).sort().join()!=Object.keys(JOINTS).sort().join())fail("all 15 native joints required for "+d);
@@ -73,6 +73,21 @@
     out.pivots[d][k]={x:p.x,y:p.y};
    }
    decode(row.masks?.[d]);out.masks[d]=row.masks[d];
+  }
+  const edits=Object.entries(row.pixelFrames||{});
+  if(edits.length>160)fail("Too many Genesis source pixel edits");
+  let total=0;
+  for(const [key,png] of edits){
+   const fields=key.split("|");
+   if(fields.length!==4)fail("Invalid Genesis pixel edit key");
+   const [part,action,dir,frame]=fields;
+   if(!/^(?:base\/(?:body|body_f|body_front|body_front_f)|(?:top|pants|shoes)\/[a-z_]+|hair\/[a-z_]+)$/.test(part)||
+    !["walk","idle","talk","sit","sit_type","sleep","tired","swim","float","lie","perch"].includes(action)||
+    !DIRS.includes(dir)||!/^(?:0|[1-9]\d?)$/.test(frame)||Number(frame)>5||
+    typeof png!=="string"||!/^data:image\/png;base64,[a-z0-9+/]+=*$/i.test(png)||png.length>120000)
+    fail("Invalid Genesis source pixel correction: "+key);
+   total+=png.length;if(total>3000000)fail("Source edits exceed safe master size");
+   out.pixelFrames[key]=png;
   }
   return out;
  }
