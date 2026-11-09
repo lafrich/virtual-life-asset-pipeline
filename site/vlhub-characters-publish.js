@@ -110,6 +110,7 @@ function isQuota(error){
   /quota.*exceed|exceed.*quota|storage.*full/i.test(String(error?.message||error||""));
 }
 async function publishAsync(input,env){
+ throw Error("MAHLUK LEGACY ASYNC PUBLISH RETIRED: LGR-1 only.");
  const store=(env&&env.localStorage)||(root&&root.localStorage);
  if(!store)return {ok:false,error:"localStorage unavailable"};
  try{return publish(input,env)}
