@@ -26,6 +26,7 @@ on:
       - 'site/vlhub-characters-publish.js'
       - 'site/v6p-compositor.js'
       - 'tests/test_lgr_retirement.cjs'
+      - 'tests/test_lgr_cloud_safety.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
       - '.github/workflows/genesis-workbench-qa.yml'
   pull_request:
@@ -54,6 +55,7 @@ on:
       - 'site/vlhub-characters-publish.js'
       - 'site/v6p-compositor.js'
       - 'tests/test_lgr_retirement.cjs'
+      - 'tests/test_lgr_cloud_safety.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
 jobs:
   syntax-contract:
@@ -71,6 +73,7 @@ jobs:
           node --check site/vlhub-characters-publish.js
           node --check site/v6p-compositor.js
           node tests/test_lgr_retirement.cjs
+          node tests/test_lgr_cloud_safety.cjs
       - name: HTML / UI integration contract
         run: |
           node <<'NODE'
@@ -114,6 +117,8 @@ jobs:
             const browser=await chromium.launch({headless:true});
             const page=await browser.newPage({viewport:{width:1500,height:1000}});
             const errors=[];
+            // Some physically occluded limbs require an explicit review confirmation.
+            page.on('dialog',async dialog=>{await dialog.accept()});
             page.on('pageerror',e=>errors.push(e.message));
             page.on('console',m=>{if(m.type()==='error'&&!/accounts.google.com|favicon.ico/.test(m.text()))errors.push(m.text())});
             try{
@@ -147,8 +152,41 @@ jobs:
               await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
               await page.locator('#pixel-next').click();
               assert(await page.locator('[data-panel="rig"]').isVisible(),'Rig stage inaccessible');
+              assert(await page.locator('#part-select').isVisible(),
+                'Body Part selector hidden on Pivot & Slicing');
+              // First, reject a bind when none of the 40 combinations has been reviewed.
+              await page.locator('#rig-next').click();
+              await page.locator('#make-binding').click();
+              assert((await page.locator('#binding-result').textContent()).includes('MANUAL QA INCOMPLETE'),
+                'Unreviewed mask wrongly passed binding');
+              await page.locator('[data-step="rig"]').click();
               await page.locator('#pivot-x').fill('31');
               await page.locator('#pivot-x').dispatchEvent('change');
+              // Complete all 10 parts in four directions without returning to Pixel Editor.
+              const partNames=await page.evaluate(()=>[...window.LafrichPuppetCore.PARTS]);
+              for(const d of ['se','sw','ne','nw']){
+                await page.locator('#views button[data-dir="'+d+'"]').click();
+                for(const part of partNames){
+                  await page.locator('#part-select').selectOption(part);
+                  await page.locator('#mark-reviewed').click();
+                }
+              }
+              assert((await page.locator('#part-progress').textContent()).includes('40 / 40'),
+                '40-part review matrix not complete');
+              // Adjusting a reviewed pivot MUST invalidate that part's review.
+              await page.locator('#pivot-x').fill('30');
+              await page.locator('#pivot-x').dispatchEvent('change');
+              assert((await page.locator('#part-progress').textContent()).includes('39 / 40'),
+                'Pivot correction did not invalidate previous rig QA');
+              await page.locator('#mark-reviewed').click();
+              assert((await page.locator('#part-progress').textContent()).includes('40 / 40'),
+                'Corrected part could not be re-reviewed');
+              await page.locator('#rig-isolate').click();
+              assert(await page.locator('#rig-isolate').getAttribute('aria-pressed')==='true',
+                'Isolate Body Part preview not active');
+              await page.locator('#rig-pan').click();
+              assert(await page.locator('#rig-pan').getAttribute('aria-pressed')==='true',
+                'No-edit pan mode not available');
               await page.locator('#rig-next').click();
               await page.locator('#make-binding').click();
               await page.waitForTimeout(500);
@@ -156,8 +194,23 @@ jobs:
               assert(/^BOUND/.test(info),'Binding failed: '+info);
               await page.locator('#bind-next').click();
               assert(await page.locator('[data-panel="test"]').isVisible(),'Test binding stage inaccessible');
+              assert(await page.locator('#part-select').isVisible(),
+                'Shared Body Part selector hidden during motion checks');
               await page.locator('#test-preset').selectOption('walk');
               await page.locator('#test-angle').fill('25');
+              await page.locator('#test-play').click();
+              await page.waitForTimeout(350);
+              const motionValue=Number(await page.locator('#test-scrub').inputValue());
+              assert(motionValue>0,'Motion scrub did not play');
+              await page.locator('#test-play').click();
+              // Approval must fail until all four angles are explicitly tested.
+              await page.locator('#approve-binding').click();
+              assert(await page.locator('[data-panel="test"]').isVisible(),
+                'Unverified four-angle motion approved');
+              for(const d of ['se','sw','ne','nw']){
+                await page.locator('#views button[data-dir="'+d+'"]').click();
+                await page.locator('#mark-angle-tested').click();
+              }
               await page.locator('#approve-binding').click();
               assert(await page.locator('[data-panel="save"]').isVisible(),'Approval did not open Save Master');
               await page.locator('#save-master').click();
@@ -165,6 +218,8 @@ jobs:
               assert(saved.includes('MASTER SAVED'),'Master not persisted: '+saved);
               const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')));
               assert(actual?.female?.id==='lafrich_genesis_female','Canonical Female Genesis Master missing from database');
+              assert(Object.keys(actual.female.binding.reviewed||{}).length===40,
+                'Approved binding did not preserve 40 part-angle review receipts');
               assert(actual.female.binding.views.se.spritePng.startsWith('data:image/png;base64,'),'Python neutral source absent');
               assert(actual.female.rigFormat==='LGR-1'&&actual.female.binding.rigFormat==='LGR-1',
                 'Missing LGR-1 format identifiers in approved master');

@@ -16,8 +16,47 @@ const cv=() => R.rgba(64,112),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const clone=C.clone;
 let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5,activeLayer="body";
 let drafts={},source={},preparedCache=new Map(),rev=0,paintDrag=null,renderRequest=0;
-let pixelEditor=null,pixelSession=null,maskCopied=null,maskUndo=[],maskRedo=[];
+let pixelEditor=null,pixelSession=null,maskCopied=null,partCopied=null,isolated=false,maskUndo=[],maskRedo=[];
 let faceEntries=[],faceImage=null,faceId="",page="workshop",sourcePending=Promise.resolve();
+let playing=false,playTick=0,playFrame=0,motionTime=0;
+const reviewKey=(direction,part)=>direction+"|"+part;
+function reviewCount(){
+ const r=record();
+ return DIR.reduce((n,d)=>n+PARTS.filter(part=>r?.reviewed?.[reviewKey(d,part)]).length,0);
+}
+function missingReviews(){
+ const r=record();
+ return DIR.flatMap(d=>PARTS.filter(part=>!r?.reviewed?.[reviewKey(d,part)]).map(part=>d.toUpperCase()+" / "+labels[part]));
+}
+function invalidateReviews(direction=null,parts=null){
+ const r=record();if(!r)return;
+ if(!direction)r.reviewed={};
+ else for(const part of parts||PARTS)delete r.reviewed?.[reviewKey(direction,part)];
+ r.testedAngles={};makeDirty();
+}
+function stopPlayback(){
+ playing=false;playTick=0;
+ const b=$("test-play");if(b)b.textContent="▶ PLAY PREVIEW";
+}
+function animatePlayback(now){
+ if(!playing)return;
+ if(step!=="test"||page!=="workshop"){stopPlayback();return}
+ if(!playTick)playTick=now;
+ if(now-playFrame>=95){
+  const speed=Number($("test-speed").value)||1;
+  motionTime=(motionTime+(now-playTick)*speed/1100)%1;
+  $("test-scrub").value=Math.round(motionTime*100);
+  playFrame=now;void renderAll();
+ }
+ playTick=now;
+ root.requestAnimationFrame(animatePlayback);
+}
+function togglePlayback(){
+ if(playing){stopPlayback();return}
+ if(!record()?.bound){status("Bind a rig before testing motion",true);return}
+ playing=true;playTick=0;playFrame=0;$("test-play").textContent="Ⅱ PAUSE PREVIEW";
+ root.requestAnimationFrame(animatePlayback);
+}
 const canvas=$("stage"),ctx=canvas.getContext("2d",{willReadFrequently:true});
 const labels={head:"KEPALA / HEAD",torso:"TORSO",arm_near_upper:"LENGAN DEPAN · ATAS",
  arm_near_lower:"LENGAN DEPAN · BAWAH",arm_far_upper:"LENGAN BELAKANG · ATAS",
@@ -44,7 +83,8 @@ function persistDraft(){
  try{
   const payload={format:"lafrich-genesis-draft-store-v1",drafts};
   localStorage.setItem(DRAFT_KEY,JSON.stringify(payload));
- }catch(error){status("Draft not saved locally: "+error.message+". Export a JSON backup.",true)}
+  return true;
+ }catch(error){status("LOCAL DRAFT SAVE FAILED: "+error.message+". Export or cloud-save a JSON backup.",true);return false}
 }
 function loadStored(){
  let s=null;
@@ -56,6 +96,8 @@ function loadStored(){
    try{
     const rig=C.validateMaster(x.rig);
     drafts[g]={rig,bound:x.bound?.format===BIND_FORMAT?x.bound:null,
+     reviewed:x.reviewed&&typeof x.reviewed==="object"?x.reviewed:{},
+     testedAngles:x.testedAngles&&typeof x.testedAngles==="object"?x.testedAngles:{},
      approved:!!x.approved&&!!x.bound,saved:!!x.saved,edited:String(x.edited||"")};
    }catch(e){status("Existing "+g+" draft invalid; preserved in storage: "+e.message,true)}
   }
@@ -95,7 +137,7 @@ async function seed(g){
  const rig=C.validateMaster(originalLayers);
  if(!DIR.every(d=>Boolean(rig.layers.body[d])))
   throw Error("V6B missing a physical body layer");
- drafts[g]={rig,bound:null,approved:false,saved:false,edited:new Date().toISOString()};
+ drafts[g]={rig,bound:null,reviewed:{},testedAngles:{},approved:false,saved:false,edited:new Date().toISOString()};
  await sourceCanvases(g);
  R.clearCache();flushCache();persistDraft();
 }
@@ -108,13 +150,18 @@ function pose(){
  const p=C.blankPose();
  if(step!=="test"&&step!=="save")return p;
  const preset=$("test-preset").value;
+ const phase=motionTime*2*Math.PI;
  if(preset==="arms"){
   p.arm_near_upper.a=-65;p.arm_far_upper.a=65;
   p.arm_near_lower.a=-23;p.arm_far_lower.a=23;
  }else if(preset==="walk"){
-  p.leg_near_upper.a=22;p.leg_far_upper.a=-22;
-  p.leg_near_lower.a=-18;p.leg_far_lower.a=25;
-  p.arm_near_upper.a=-20;p.arm_far_upper.a=20;
+  const swing=Math.sin(phase)*25;
+  p.leg_near_upper.a=swing;p.leg_far_upper.a=-swing;
+  p.leg_near_lower.a=-Math.max(0,swing)*.8;p.leg_far_lower.a=Math.max(0,swing)*.8;
+  p.arm_near_upper.a=-swing*.75;p.arm_far_upper.a=swing*.75;
+  p.torso.y=-Math.abs(Math.sin(phase))*1.6;
+ }else if(preset==="wave"){
+  p.arm_near_upper.a=-60;p.arm_near_lower.a=-26+Math.sin(phase)*26;
  }else if(preset==="crouch"){
   p.torso.y=7;p.torso.a=8;
   p.leg_near_upper.a=-37;p.leg_far_upper.a=37;
@@ -148,7 +195,8 @@ function maskHighlight(destination,d,rig){
  for(let k=0;k<mask.length;k++){
   if(raw[k*4+3]===0)continue;
   const p=k*4;
-  if(mask[k]===idx){image.data[p]=39;image.data[p+1]=126;image.data[p+2]=239;image.data[p+3]=83;}
+  if(mask[k]===255){image.data[p]=235;image.data[p+1]=47;image.data[p+2]=73;image.data[p+3]=160;}
+  else if(mask[k]===idx){image.data[p]=39;image.data[p+1]=126;image.data[p+2]=239;image.data[p+3]=83;}
   else if(step==="pixel"){image.data[p]=51;image.data[p+1]=61;image.data[p+2]=80;image.data[p+3]=30;}
  }
  const overlay=cv();overlay.getContext("2d").putImageData(image,0,0);
@@ -181,8 +229,15 @@ async function renderAll(){
    }
    const output=R.render(prepared,po);
    if(token!==renderRequest)return;
-   const out=cv(),o=out.getContext("2d");
+   const out=cv(),o=out.getContext("2d",{willReadFrequently:true});
    o.imageSmoothingEnabled=false;o.drawImage(output,0,0);
+   if(currentStep==="rig"&&isolated){
+    const data=o.getImageData(0,0,64,112),mask=C.decode(m.masks[d]);
+    const owner=PARTS.indexOf(selected);
+    for(let k=0;k<mask.length;k++)if(mask[k]!==owner)data.data[k*4+3]=
+     Math.min(data.data[k*4+3],28);
+    o.putImageData(data,0,0);
+   }
    if(currentStep==="pixel"||currentStep==="rig"){
     maskHighlight(o,d,m);
     if(currentStep==="rig")showPivot(o,d,m);
@@ -206,11 +261,30 @@ function buildAngleButtons(){
 }
 function buildPartButtons(){
  const el=$("bodyparts");el.replaceChildren();
+ const picker=$("part-select");picker.replaceChildren();
+ for(const part of PARTS)picker.add(new Option(labels[part],part));
+ picker.onchange=()=>selectPart(picker.value);
+ $("part-prev").onclick=()=>selectPart(PARTS[(PARTS.indexOf(selected)+PARTS.length-1)%PARTS.length]);
+ $("part-next").onclick=()=>selectPart(PARTS[(PARTS.indexOf(selected)+1)%PARTS.length]);
+ const matrix=$("review-matrix");matrix.replaceChildren();
+ const corner=document.createElement("span");corner.textContent="PART";matrix.append(corner);
+ for(const d of DIR){const head=document.createElement("b");head.textContent=d.toUpperCase();matrix.append(head)}
+ for(let i=0;i<PARTS.length;i++){
+  const part=PARTS[i],short=document.createElement("span");
+  short.textContent=String(i+1).padStart(2,"0");short.title=labels[part];matrix.append(short);
+  for(const d of DIR){
+   const b=document.createElement("button");
+   b.type="button";b.dataset.reviewDir=d;b.dataset.reviewPart=part;
+   b.title=labels[part]+" / "+d.toUpperCase()+" (click to navigate, not to approve)";
+   b.onclick=()=>{selectPart(part);switchAngle(d);if(step!=="rig")switchStep("rig")};
+   matrix.append(b);
+  }
+ }
  for(const part of PARTS){
   const b=document.createElement("button");
   b.type="button";b.dataset.part=part;b.innerHTML=(C.PARENTS[part]?"↳ ":"◆ ")+
    "<strong>"+labels[part]+"</strong> <span class='parent'>"+(C.PARENTS[part]||"ROOT")+"</span>";
-  b.onclick=()=>{selected=part;syncControls();void renderAll()};el.append(b);
+  b.onclick=()=>selectPart(part);el.append(b);
  }
  const anatomy=$("anatomy");anatomy.replaceChildren();
  for(const part of PARTS){
@@ -219,8 +293,27 @@ function buildPartButtons(){
   anatomy.append(line);
  }
 }
+function selectPart(part){
+ if(!PARTS.includes(part))return;
+ selected=part;syncControls();void renderAll();
+}
 function syncControls(){
  $("gender").value=gender;$("art-layer").value=activeLayer;
+ $("part-select").value=selected;
+ const done=reviewCount();
+ $("part-progress").textContent="RIG REVIEW: "+done+" / 40 combinations inspected";
+ $("rig-review-message").textContent=(record()?.reviewed?.[reviewKey(dir,selected)]?"✓ REVIEWED":"NOT REVIEWED")+
+  " · "+labels[selected]+" / "+dir.toUpperCase()+" · inspect and mark only when slice AND pivot are correct.";
+ $("mark-reviewed").textContent=record()?.reviewed?.[reviewKey(dir,selected)]?"✓ REVIEWED · MARK AGAIN":"✓ MARK PART / ANGLE REVIEWED";
+ for(const cell of document.querySelectorAll("#review-matrix button")){
+  const marked=!!record()?.reviewed?.[reviewKey(cell.dataset.reviewDir,cell.dataset.reviewPart)];
+  cell.textContent=marked?"✓":"·";cell.setAttribute("aria-pressed",String(marked));
+  cell.classList.toggle("current",cell.dataset.reviewDir===dir&&cell.dataset.reviewPart===selected);
+ }
+ $("mark-angle-tested").textContent=record()?.testedAngles?.[dir]?"✓ "+dir.toUpperCase()+" TESTED":"✓ MARK "+dir.toUpperCase()+" TESTED";
+ $("test-review-message").textContent="TESTED DIRECTIONS: "+DIR.filter(d=>record()?.testedAngles?.[d]).map(d=>d.toUpperCase()).join(", ")+
+  " ("+DIR.filter(d=>record()?.testedAngles?.[d]).length+"/4) · check neutral and animated poses in every direction";
+ $("test-play").textContent=playing?"Ⅱ PAUSE PREVIEW":"▶ PLAY PREVIEW";
  $("pivot-x").value=master()?.pivots?.[dir]?.[selected]?.x??32;
  $("pivot-y").value=master()?.pivots?.[dir]?.[selected]?.y??50;
  $("selection-details").textContent=labels[selected]+" · "+dir.toUpperCase();
@@ -234,6 +327,8 @@ function syncControls(){
  $("rig-pivot").setAttribute("aria-pressed",String(tool==="pivot"));
  $("rig-paint").setAttribute("aria-pressed",String(tool==="paint"));
  $("rig-erase").setAttribute("aria-pressed",String(tool==="erase"));
+ $("rig-pan").setAttribute("aria-pressed",String(tool==="pan"));
+ $("rig-isolate").setAttribute("aria-pressed",String(isolated));
  $("export-python").disabled=!record()?.bound;
  $("export-json").disabled=!record()?.bound;
  $("bind-next").disabled=!record()?.bound;
@@ -257,6 +352,7 @@ function switchAngle(d){
 }
 function switchStep(next){
  if(!STEPS.includes(next))return;
+ if(next!=="test")stopPlayback();
  if((next==="test"||next==="save")&&!record()?.bound){status("Bind all 4 views before checking",true);next="bind"}
  if(next==="save"&&!record()?.approved){status("Approve the binding in CHECK BINDING before saving master",true);next="test"}
  step=next;syncControls();void renderAll();
@@ -278,20 +374,26 @@ function applySnapshot(which,opposite){
  if(!which.length)return;
  opposite.push({dir,pivots:clone(master().pivots[dir]),mask:master().masks[dir]});
  const s=which.pop();master().pivots[s.dir]=s.pivots;master().masks[s.dir]=s.mask;
- dir=s.dir;makeDirty();syncControls();
+ dir=s.dir;invalidateReviews(s.dir);syncControls();
 }
 function maskPaint(p,erase){
  const m=master(),mask=C.decode(m.masks[dir]),idx=PARTS.indexOf(selected),size=Number($("mask-brush").value)||3;
  const half=Math.floor(size/2);
  for(let y=Math.max(0,p.y-half);y<=Math.min(111,p.y+half);y++)
   for(let x=Math.max(0,p.x-half);x<=Math.min(63,p.x+half);x++)
-   mask[y*64+x]=erase?255:idx;
+   {
+    const previous=mask[y*64+x];
+    if(paintDrag?.dirtyParts&&previous!==255)paintDrag.dirtyParts.add(PARTS[previous]);
+    mask[y*64+x]=erase?255:idx;
+   }
  m.masks[dir]=C.encode(mask);
  flushCache();
 }
 function setPivot(x,y){
  const p=master().pivots[dir][selected];
  p.x=clamp(Math.round(x),0,63);p.y=clamp(Math.round(y),0,111);
+ if(record()?.reviewed)delete record().reviewed[reviewKey(dir,selected)];
+ if(record())record().testedAngles={};
  makeDirty();syncControls();
 }
 function bindMaskCopy(flipped){
@@ -308,7 +410,30 @@ function bindMaskCopy(flipped){
   }
   dst[y*64+x]=v;
  }
- master().masks[dir]=C.encode(dst);makeDirty();syncControls();
+ master().masks[dir]=C.encode(dst);invalidateReviews(dir);syncControls();
+}
+function pasteCopiedPart(){
+ if(!partCopied)return status("COPY PART from a chosen source angle first",true);
+ if(partCopied.part!==selected&&!confirm(
+  "Copied "+labels[partCopied.part]+". Paste its mask as "+labels[selected]+" instead?"))return;
+ const sourceMask=C.decode(partCopied.mask),target=C.decode(master().masks[dir]);
+ const sourceIndex=PARTS.indexOf(partCopied.part),targetIndex=PARTS.indexOf(selected);
+ let overwrite=0;
+ for(let k=0;k<sourceMask.length;k++)if(sourceMask[k]===sourceIndex&&
+    target[k]!==255&&target[k]!==targetIndex)overwrite++;
+ if(overwrite&&!confirm(overwrite+" pixels are already assigned to OTHER body parts in "+dir.toUpperCase()+
+   ". Reassign them to "+labels[selected]+"?"))return;
+ snapshot();
+ const touched=new Set([selected]);
+ for(let k=0;k<target.length;k++)if(target[k]===targetIndex)target[k]=255;
+ for(let k=0;k<sourceMask.length;k++)if(sourceMask[k]===sourceIndex){
+  if(target[k]!==255)touched.add(PARTS[target[k]]);
+  target[k]=targetIndex;
+ }
+ master().masks[dir]=C.encode(target);
+ invalidateReviews(dir,[...touched]);syncControls();
+ status("Pasted only "+labels[selected]+" slice to "+dir.toUpperCase()+
+  " · "+touched.size+" affected part reviews reset.");
 }
 function channel(v){return cv().getContext("2d",{willReadFrequently:true})}
 async function openPixels(){
@@ -343,6 +468,7 @@ function applyPixels(){
  try{
   const atlas=pixelEditor.getAtlas(),g=atlas.getContext("2d",{willReadFrequently:true});
   const next={},idx=PARTS.indexOf(selected),layer=activeLayer;
+  let expandCount=0,stealCount=0;
   // Draw into the selected layer only. Every other physical appearance layer
   // stays pixel-exact, allowing independent future skin/clothing edits.
   for(let di=0;di<4;di++){
@@ -357,6 +483,7 @@ function applyPixels(){
     const p=k*4;
     if(mask[k]===idx) pixels.fill(0,p,p+4);
     if(part[p+3]){
+     if(mask[k]!==idx){expandCount++;if(pixels[p+3])stealCount++}
      pixels.set(part.subarray(p,p+4),p);
      mask[k]=idx;
     }
@@ -364,6 +491,9 @@ function applyPixels(){
    oldCtx.putImageData(old,0,0);
    next[d]={mask:C.encode(mask),png:oldCtx.canvas.toDataURL("image/png")};
   }
+  if(expandCount&&!confirm("Your pixel edit expands this part's slice ownership by "+expandCount+
+    " pixels across 4 angles. "+stealCount+" pixels are already painted in this physical layer."+
+    " Confirm changing the rig masks as well? Cancel keeps the original rig unchanged."))return false;
   for(const d of DIR){
    master().layers[layer][d]=next[d].png;
    master().masks[d]=next[d].mask;
@@ -374,7 +504,7 @@ function applyPixels(){
   // Invalidate approved/bound data IMMEDIATELY. Binding waits for the
   // full composite to rebuild so it never exports stale source sprites.
   sourcePending=sourceCanvases(appliedGender);
-  makeDirty();syncControls();
+  invalidateReviews();syncControls();
   void sourcePending.then(()=>{
    flushCache();syncControls();
    status("APPLIED "+labels[appliedPart]+" / "+layer+" · 4 independent source angles updated.");
@@ -406,6 +536,13 @@ async function audit(){
 }
 async function makeBinding(){
  try{
+  const missing=missingReviews();
+  if(missing.length){
+   status("Rig incomplete: "+missing.length+" part/angle combinations not reviewed. Start with "+missing[0],true);
+   $("binding-result").textContent="MANUAL QA INCOMPLETE · "+missing.length+"/40 missing: "+missing.slice(0,7).join(" · ")+
+    (missing.length>7?" ...":"");
+   return;
+  }
   const report=await audit();
   if(report.errors.length){
    status("Cannot bind: "+report.errors.slice(0,3).join("; ")+(report.errors.length>3?"…":""),true);
@@ -426,7 +563,8 @@ async function makeBinding(){
    rig:clone(m),pythonEngine:"genesis_procedural_runtime.py",
    createdAt:new Date().toISOString()
   };
-  record().bound=out;record().approved=false;record().saved=false;
+  out.reviewed=clone(record().reviewed);
+  record().bound=out;record().testedAngles={};record().approved=false;record().saved=false;
   persistDraft();syncControls();status("Pivots + slice maps bound for ALL FOUR views. Open CHECK BINDING.");
  }catch(e){status("Binding failed: "+e.message,true)}
 }
@@ -436,6 +574,9 @@ function validatedBinding(){
     (b.rigFormat!==undefined&&b.rigFormat!==RIG_FORMAT)||b.sourceId!==SOURCE[gender])
   throw Error("Genesis binding missing / invalid");
  C.validateMaster(b.rig);
+ for(const d of DIR)for(const part of PARTS)
+  if(b.reviewed?.[reviewKey(d,part)]!==true)
+   throw Error("Binding must include 40 verified part/angle reviews: missing "+d+" / "+part);
  for(const d of DIR)if(!b.views?.[d]||!b.views[d].spritePng)throw Error("Missing "+d+" binding");
  return b;
 }
@@ -463,8 +604,83 @@ function exportJson(){try{
  const b=validatedBinding();download(b.id+"_binding.json",JSON.stringify(b,null,2));
  }catch(e){status(e.message,true)}
 }
+async function restoreDraftRecord(data,label){
+ if(!data||typeof data!=="object")throw Error("Empty LGR-1 draft");
+ const target=data.rig?.gender;
+ if(!SOURCE[target])throw Error("Draft does not contain a valid Male/Female body");
+ const rig=C.validateMaster(data.rig);
+ if(target!==gender&&!confirm("This draft is "+target.toUpperCase()+
+   ". Switch from "+gender.toUpperCase()+" to restore it?"))return false;
+ const validBound=data.bound?.format===BIND_FORMAT&&
+  data.bound.id===MASTER_IDS[target]&&data.bound.gender===target&&
+  data.bound.sourceId===SOURCE[target]&&
+  JSON.stringify(C.validateMaster(data.bound.rig))===JSON.stringify(rig);
+ const reviewed={};
+ for(const d of DIR)for(const part of PARTS){
+  const key=reviewKey(d,part);
+  if(data.reviewed?.[key]===true)reviewed[key]=true;
+ }
+ const testedAngles=validBound?Object.fromEntries(DIR.filter(d=>data.testedAngles?.[d]===true).map(d=>[d,true])):{};
+ const approved=!!validBound&&!!data.approved&&DIR.every(d=>testedAngles[d]);
+ stopPlayback();gender=target;dir="se";selected="head";maskUndo=[];maskRedo=[];
+ faceId="";faceImage=null;motionTime=0;
+ drafts[target]={rig,bound:validBound?clone(data.bound):null,reviewed,testedAngles,
+  approved,saved:false,edited:String(data.edited||new Date().toISOString())};
+ await sourceCanvases(target);
+ R.clearCache();preparedCache.clear();rev++;renderRequest++;
+ step=approved?"save":validBound?"test":"rig";
+ const okay=persistDraft();syncControls();void renderAll();
+ status(label+" · "+target.toUpperCase()+" restored · "+
+  reviewCount()+"/40 rig checks · "+(okay?"local copy saved":"LOCAL STORAGE FULL: save another backup"),!okay);
+ return true;
+}
+async function importDraftFile(file){
+ try{
+  if(!file||file.size>12000000)throw Error("Draft JSON missing or exceeds 12 MB");
+  const json=JSON.parse(await file.text());
+  const data=json.format==="lgr-1-draft-v1"?json.record:
+   json.format==="lafrich-genesis-draft-store-v1"?json.drafts?.[gender]:json;
+  if(!data?.rig)throw Error("Unsupported LGR-1 draft JSON");
+  if(!confirm("Import "+(data.rig?.gender||"unknown")+" draft? This replaces the current editable draft, not the cloud master."))return;
+  await restoreDraftRecord(data,"IMPORTED JSON");
+ }catch(e){status("IMPORT FAILED: "+e.message,true)}
+}
+async function refreshDraftRevisions(){
+ const cloud=root.VLGenesisCloud;
+ if(!cloud?.connected())throw Error("Connect Google Drive first");
+ const versions=await cloud.listDrafts(MASTER_IDS[gender]);
+ const list=$("draft-revisions");list.replaceChildren();
+ if(!versions.length)list.add(new Option("No versions saved yet",""));
+ for(const v of versions){
+  const readable=v.createdTime?new Date(v.createdTime).toLocaleString():v.name;
+  list.add(new Option(readable+" · "+v.name.slice(-19),v.id));
+ }
+ return versions;
+}
+async function cloudSaveDraft(){
+ try{
+  const cloud=root.VLGenesisCloud;
+  if(!cloud?.connected())throw Error("CONNECT DRIVE first");
+  const v=await cloud.saveDraft(MASTER_IDS[gender],clone(record()));
+  await refreshDraftRevisions();
+  $("draft-revisions").value=v.fileId;
+  status("CLOUD DRAFT VERIFIED · immutable version "+v.name);
+ }catch(e){status("CLOUD DRAFT: "+e.message,true)}
+}
+async function cloudLoadDraft(){
+ try{
+  const cloud=root.VLGenesisCloud;
+  if(!cloud?.connected())throw Error("CONNECT DRIVE first");
+  const fileId=$("draft-revisions").value;
+  if(!fileId)throw Error("Select or refresh a saved cloud draft revision");
+  const data=await cloud.loadDraft(MASTER_IDS[gender],fileId);
+  if(!confirm("Restore cloud revision "+data.name+
+    "? Current unexported edits will be replaced. A cloud revision is never deleted."))return;
+  await restoreDraftRecord(data.record,"CLOUD DRAFT "+data.name);
+ }catch(e){status("RESTORE CLOUD DRAFT: "+e.message,true)}
+}
 function saveApproved(){
- if(!record().approved)return status("CHECK BINDING must be approved first",true);
+ if(!record().approved){status("CHECK BINDING must be approved first",true);return false}
  try{
   const v=toMaster();
   const all=JSON.parse(localStorage.getItem(MASTER_KEY)||"{}");
@@ -473,7 +689,8 @@ function saveApproved(){
   record().saved=true;persistDraft();syncControls();
   root.dispatchEvent(new CustomEvent("lafrich:genesis-master-saved",{detail:{gender,id:v.id}}));
   status("APPROVED MASTER SAVED · "+v.id+" · local database ready for Character Editor.");
- }catch(e){status("Master save failed: "+e.message,true)}
+  return true;
+ }catch(e){status("Master local save failed: "+e.message+". Cloud save may still be verified.",true);return false}
 }
 async function cloudSave(){
  try{
@@ -481,9 +698,10 @@ async function cloudSave(){
   const d=root.VLGenesisCloud;if(!d?.connected())throw Error("CONNECT DRIVE first");
   const v=toMaster();
   await d.save(v.id,v);
-  saveApproved();
+  const localOkay=saveApproved();
   $("statuscloud").textContent="DRIVE VERIFIED";
-  status("Drive read-back verified · "+v.id+" · canonical Genesis Master");
+  status("Drive read-back verified · "+v.id+" · canonical Genesis Master"+
+   (localOkay?"":" · browser local save failed, Drive copy is safe"),!localOkay);
  }catch(e){status("Cloud save: "+e.message,true)}
 }
 async function cloudLoad(){
@@ -493,8 +711,10 @@ async function cloudLoad(){
   if(!data)throw Error("No approved Genesis Master for "+gender+" on Drive");
   if(data.format!==MASTER_FORMAT||data.gender!==gender||data.id!==MASTER_IDS[gender]||
     data.binding?.format!==BIND_FORMAT)throw Error("Invalid Genesis cloud master");
-  if(!confirm("Replace current "+gender+" draft with this verified Drive master? Unsaved edits will be lost."))return;
+  if(!confirm("Replace current "+gender+" draft with this verified Drive master? Export current draft first. Unsaved edits will be lost."))return;
+  await d.acknowledgeLoadedMaster(data.id,data);
   drafts[gender]={rig:C.validateMaster(data.binding.rig),bound:data.binding,
+   reviewed:data.binding.reviewed||{},testedAngles:Object.fromEntries(DIR.map(d=>[d,true])),
    approved:true,saved:true,edited:data.approvedAt||""};
   await sourceCanvases(gender);persistDraft();flushCache();syncControls();renderAll();
   status("Verified Genesis Master loaded from Drive: "+data.id);
@@ -521,14 +741,23 @@ function setup(){
   if(!SOURCE[g])return;
   try{
    gender=g;dir="se";selected="head";activeLayer="body";maskUndo=[];maskRedo=[];faceId="";faceImage=null;
-   await ensure(g);syncControls();flushCache();void refreshFace();
+   await ensure(g);
+   stopPlayback();motionTime=0;
+   if(step==="save"&&!record()?.approved)step=record()?.bound?"test":"pixel";
+   if(step==="test"&&!record()?.bound)step="rig";
+   syncControls();flushCache();void refreshFace();
+   if(root.VLGenesisCloud?.connected())void refreshDraftRevisions().catch(()=>{});
   }catch(err){status("V6B source error: "+err.message,true)}
  };
  $("seed").onclick=async()=>{
   if(!confirm("Reset "+gender+" draft from the ORIGINAL frozen V6B source? This replaces all unsaved pixels, masks and binding."))return;
   try{await seed(gender);step="pixel";syncControls();status("Restored ORIGINAL V6B "+gender+"; previous approved master left untouched.")}catch(e){status(e.message,true)}
  };
- $("save-draft").onclick=()=>{persistDraft();download("genesis_"+gender+"_draft.json",JSON.stringify(record(),null,2));status("Editable draft exported and saved locally (NOT approved).")};
+ $("save-draft").onclick=()=>{
+  const okay=persistDraft();
+  download("genesis_"+gender+"_draft.json",JSON.stringify({format:"lgr-1-draft-v1",gender,record:record()},null,2));
+  status(okay?"Draft saved locally + JSON downloaded.":"Local browser storage FULL — only JSON backup was downloaded.",!okay);
+ };
  $("art-layer").onchange=()=>{activeLayer=$("art-layer").value;status("Editing layer "+activeLayer+" · body part "+labels[selected])};
  $("pixel-next").onclick=()=>switchStep("rig");
  $("rig-next").onclick=()=>switchStep("bind");
@@ -536,23 +765,71 @@ function setup(){
  $("rig-pivot").onclick=()=>{tool="pivot";syncControls()};
  $("rig-paint").onclick=()=>{tool="paint";syncControls()};
  $("rig-erase").onclick=()=>{tool="erase";syncControls()};
+ $("rig-pan").onclick=()=>{tool="pan";syncControls();status("PAN MODE · drag canvas to scroll without editing anatomy")};
+ $("rig-isolate").onclick=()=>{isolated=!isolated;syncControls();void renderAll()};
+ $("copy-part-slice").onclick=()=>{
+  partCopied={mask:master().masks[dir],part:selected,direction:dir};
+  status("Copied ONLY "+labels[selected]+" from "+dir.toUpperCase());
+ };
+ $("paste-part-slice").onclick=pasteCopiedPart;
  for(const field of ["x","y"])$("pivot-"+field).onchange=()=>{
   snapshot();setPivot(Number($("pivot-x").value),Number($("pivot-y").value));
  };
- $("copy-slice").onclick=()=>{maskCopied=master().masks[dir];status("Copied complete "+dir.toUpperCase()+" slice map")};
- $("paste-slice").onclick=()=>bindMaskCopy(false);
- $("flip-slice").onclick=()=>bindMaskCopy(true);
+ $("copy-slice").onclick=()=>{
+  maskCopied=master().masks[dir];
+  status("Copied WHOLE "+dir.toUpperCase()+" slice map. Pasting will replace every part's mask.");
+ };
+ $("paste-slice").onclick=()=>{
+  if(!maskCopied||!confirm("Replace the ENTIRE "+dir.toUpperCase()+
+    " 10-part mask with the copied mask? All reviews of this angle will reset."))return;
+  bindMaskCopy(false);
+ };
+ $("flip-slice").onclick=()=>{
+  if(!maskCopied||!confirm("Replace the ENTIRE "+dir.toUpperCase()+
+    " mask with a horizontally flipped copy (near/far swapped)? All reviews of this angle will reset."))return;
+  bindMaskCopy(true);
+ };
+ $("mark-reviewed").onclick=async()=>{
+  await sourcePending;
+  if(!master()?.pivots?.[dir]?.[selected])return status("Pivot missing",true);
+  const mask=C.decode(master().masks[dir]);
+  const rgba=source[gender][dir].getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+  let pixels=0;
+  for(let i=0;i<mask.length;i++)if(mask[i]===PARTS.indexOf(selected)&&rgba[i*4+3]>0)pixels++;
+  if(!pixels&&!confirm(labels[selected]+" has zero slice pixels in "+dir.toUpperCase()+
+    ". This is valid ONLY if fully occluded; confirm the pivot position and continue?"))return;
+  record().reviewed??={};
+  record().reviewed[reviewKey(dir,selected)]=true;
+  persistDraft();syncControls();status("Reviewed "+labels[selected]+" / "+dir.toUpperCase()+
+    " · "+reviewCount()+"/40. This is a manual anatomy check.");
+ };
+ $("clear-reviewed").onclick=()=>{
+  if(!confirm("Clear review for "+labels[selected]+" / "+dir.toUpperCase()+"?"))return;
+  delete record().reviewed?.[reviewKey(dir,selected)];record().testedAngles={};record().bound=null;record().approved=false;record().saved=false;
+  persistDraft();syncControls();
+ };
  $("rig-undo").onclick=()=>applySnapshot(maskUndo,maskRedo);
  $("rig-redo").onclick=()=>applySnapshot(maskRedo,maskUndo);
  $("make-binding").onclick=()=>void makeBinding();
  $("export-python").onclick=exportPython;
  $("export-json").onclick=exportJson;
  $("bind-next").onclick=()=>switchStep("test");
- $("test-preset").onchange=()=>void renderAll();
+ $("test-play").onclick=togglePlayback;
+ $("test-scrub").oninput=()=>{stopPlayback();motionTime=Number($("test-scrub").value)/100;void renderAll()};
+ $("test-speed").onchange=()=>{playTick=0};
+ $("test-preset").onchange=()=>{motionTime=0;$("test-scrub").value=0;void renderAll()};
  for(const id of ["test-angle","test-x","test-y"])$(id).oninput=()=>void renderAll();
  $("edit-binding").onclick=()=>{record().bound=null;record().approved=false;record().saved=false;
   persistDraft();switchStep("rig");status("Binding reopened. Edit pivots/slices and BIND again.")};
- $("approve-binding").onclick=()=>{try{validatedBinding();record().approved=true;persistDraft();
+ $("mark-angle-tested").onclick=()=>{
+  if(!record()?.bound)return status("Bind anatomy before marking angle tested",true);
+  record().testedAngles??={};record().testedAngles[dir]=true;
+  persistDraft();syncControls();status("Marked "+dir.toUpperCase()+" binding test passed.");
+ };
+ $("approve-binding").onclick=()=>{try{validatedBinding();
+   const missing=DIR.filter(d=>!record()?.testedAngles?.[d]);
+   if(missing.length)throw Error("Test and mark all 4 views before approval: "+missing.join(", "));
+   record().approved=true;stopPlayback();persistDraft();
    switchStep("save");status("BINDING APPROVED · save as canonical Lafrich Genesis Master");
   }catch(e){status(e.message,true)}};
  $("save-master").onclick=saveApproved;
@@ -560,9 +837,18 @@ function setup(){
  $("download-binding").onclick=exportPython;
  $("cloud-master").onclick=()=>void cloudSave();
  $("load-cloud").onclick=()=>void cloudLoad();
+ $("cloud-draft").onclick=()=>void cloudSaveDraft();
+ $("refresh-drafts").onclick=()=>void refreshDraftRevisions().then(v=>
+  status(v.length+" cloud draft versions found.")).catch(e=>status("Draft list: "+e.message,true));
+ $("load-cloud-draft").onclick=()=>void cloudLoadDraft();
+ $("import-draft").onclick=()=>$("draft-file").click();
+ $("draft-file").onchange=()=>{const file=$("draft-file").files?.[0];
+  $("draft-file").value="";if(file)void importDraftFile(file);
+ };
  $("connect-drive").onclick=async()=>{
   try{await root.VLGenesisCloud.connect();$("connect-drive").textContent="☁ CONNECTED";$("statuscloud").textContent="DRIVE CONNECTED";
-   status("Genesis cloud connected; no legacy animation or character records touched.");
+   await refreshDraftRevisions();
+   status("Genesis Drive connected · draft versions loaded · no legacy records touched.");
   }catch(e){status("Drive: "+e.message,true)}
  };
  $("face").onchange=()=>{faceId=$("face").value;faceImage=null;flushCache()};
@@ -570,20 +856,37 @@ function setup(){
  $("open-face").onclick=()=>showPage("emotion");
  $("nav-workshop").onclick=()=>showPage("workshop");
  $("nav-emotion").onclick=()=>showPage("emotion");
- $("fullscreen").onclick=()=>root.open(location.href,"_blank","noopener,noreferrer");
+ $("fullscreen").onclick=async()=>{
+  try{
+   if(document.fullscreenElement)await document.exitFullscreen();
+   else await document.documentElement.requestFullscreen();
+  }catch(e){status("Fullscreen unsupported in this browser: "+e.message,true)}
+ };
  $("zoom-out").onclick=()=>setZoom(zoom-1);$("zoom-in").onclick=()=>setZoom(zoom+1);
  $("zoom-fit").onclick=()=>{const v=$("stagewrap");const fit=Math.floor(Math.min((v.clientWidth-20)/64,(v.clientHeight-20)/112));setZoom(clamp(fit,2,14));};
  $("zoom").oninput=()=>setZoom($("zoom").value);
  $("stagewrap").addEventListener("wheel",e=>{if(page!=="workshop")return;e.preventDefault();setZoom(zoom+(e.deltaY<0?1:-1))},{passive:false});
  canvas.addEventListener("pointerdown",e=>{
   if(step!=="rig"||e.button!==0)return;
-  const p=coords(e);snapshot();canvas.setPointerCapture?.(e.pointerId);
-  paintDrag={id:e.pointerId,last:""};
+  canvas.setPointerCapture?.(e.pointerId);
+  if(tool==="pan"){
+   const wrap=$("stagewrap");
+   paintDrag={id:e.pointerId,pan:true,x:e.clientX,y:e.clientY,
+    left:wrap.scrollLeft,top:wrap.scrollTop};
+   return;
+  }
+  const p=coords(e);snapshot();
+  paintDrag={id:e.pointerId,last:"",direction:dir,dirtyParts:new Set([selected])};
   if(tool==="pivot"){setPivot(p.x,p.y)}
   else maskPaint(p,tool==="erase");
  });
  canvas.addEventListener("pointermove",e=>{
   if(!paintDrag||paintDrag.id!==e.pointerId||step!=="rig")return;
+  if(paintDrag.pan){
+   $("stagewrap").scrollLeft=paintDrag.left-(e.clientX-paintDrag.x);
+   $("stagewrap").scrollTop=paintDrag.top-(e.clientY-paintDrag.y);
+   return;
+  }
   const p=coords(e),key=p.x+"|"+p.y;
   if(paintDrag.last===key)return;paintDrag.last=key;
   if(tool==="pivot")setPivot(p.x,p.y);
@@ -591,7 +894,11 @@ function setup(){
  });
  const end=e=>{
   if(paintDrag?.id!==e.pointerId)return;
-  paintDrag=null;makeDirty();syncControls();
+  const changed=paintDrag;paintDrag=null;
+  if(changed.pan)return;
+  if(changed.direction===dir)invalidateReviews(dir,[...changed.dirtyParts]);
+  else invalidateReviews();
+  syncControls();
  };
  for(const k of ["pointerup","pointercancel","lostpointercapture"])canvas.addEventListener(k,end);
  setZoom(5);
@@ -599,6 +906,7 @@ function setup(){
 function showPage(next){
  page=next;
  const isEmotion=next==="emotion";
+ if(isEmotion)stopPlayback();
  $("workspace").hidden=isEmotion;$("progress").hidden=isEmotion;
  $("emotionpanel").style.display=isEmotion?"block":"none";
  $("nav-emotion").setAttribute("aria-selected",String(isEmotion));

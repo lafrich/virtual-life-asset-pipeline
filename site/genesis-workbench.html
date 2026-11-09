@@ -27,7 +27,7 @@ label.field{display:block;font-size:11px;font-weight:bold;margin:8px 0}
 label.field input,label.field select{display:block;width:100%;padding:7px;margin-top:4px;border:1px solid var(--edge);background:white}
 .btnrow{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:7px 0}.btnrow>*{flex:1;min-width:60px}
 .section{display:none}.section.active{display:block}
-#bodyparts{display:flex;flex-direction:column;gap:2px}#bodyparts button{text-align:left;padding:6px 7px}
+#draft-management{border:1px solid #a7bbd1;background:#eaf2fa;padding:8px;margin:7px 0}#draft-management summary{font-size:11px;cursor:pointer;font-weight:bold}#draft-management .btnrow button{font-size:10px}#draft-management select{width:100%;max-width:100%}#part-navigation{border:1px solid #a7bbd1;background:#e1eaf5;padding:7px;margin:8px 0}#part-navigation .btnrow{flex-wrap:nowrap}#part-navigation select{min-width:0;flex:2;width:100%;padding:5px}#part-navigation button{padding:6px 3px;min-width:48px}#all-parts{margin:5px 0}#all-parts summary{cursor:pointer;font-size:11px;font-weight:bold}#bodyparts{display:grid;grid-template-columns:1fr;gap:2px;margin-top:6px}#review-matrix{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;margin-top:6px}#review-matrix button{font-size:9px;min-width:0;padding:3px 1px}#review-matrix button[aria-pressed=true]{background:#c5efd9;border-color:#278d5c}#review-matrix button.current{outline:2px solid #3d73c2}#rig-review-message,#test-review-message{font-size:11px;font-weight:bold}#test-scrub{width:100%}#bodyparts button{text-align:left;padding:6px 7px}
 #bodyparts .parent{font-size:9px;color:#6c7e94}
 #views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px 0}
 #views button{padding:5px 2px;min-width:0;font-size:10px}
@@ -68,10 +68,24 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
   <label class="field">GENESIS BASE<select id="gender"><option value="male">MALE GENESIS (V6B)</option><option value="female">FEMALE GENESIS (V6B)</option></select></label>
   <p>Frozen approved Genesis only. Faces are blank in the body source and come from Emosi.exe.</p>
   <div class="btnrow"><button id="seed">↻ RESET TO V6B</button><button id="save-draft">↓ SAVE DRAFT</button></div>
+  <section id="part-navigation" class="shared-part-nav">
+   <h2>BODY PART · SHARED NAVIGATION</h2>
+   <div class="btnrow"><button id="part-prev" type="button" title="Previous body part">← PREV</button><select id="part-select" aria-label="Active body part"></select><button id="part-next" type="button" title="Next body part">NEXT →</button></div>
+   <details id="all-parts"><summary>SHOW ALL 10 BODY PARTS</summary><div id="bodyparts"></div></details>
+   <p id="part-progress">Review: 0 / 40 part-angle combinations</p>
+   <div id="review-matrix" aria-label="Rig review completion by angle and part"></div>
+  </section>
+  <details id="draft-management">
+   <summary>☁ DRAFT BACKUP · IMPORT · REVISION HISTORY</summary>
+   <div class="btnrow"><button id="cloud-draft">☁ SAVE DRAFT VERSION</button><button id="import-draft">↑ IMPORT JSON</button></div>
+   <input id="draft-file" type="file" accept=".json,application/json" hidden>
+   <div class="btnrow"><button id="refresh-drafts">↻ REFRESH CLOUD REVISIONS</button><button id="load-cloud-draft">↓ RESTORE SELECTED</button></div>
+   <label class="field">SAVED CLOUD DRAFT VERSIONS<select id="draft-revisions"><option value="">Connect Drive to browse revisions</option></select></label>
+   <p>Accessible at every stage. Each Drive draft gets a new immutable file, so other devices cannot silently overwrite it.</p>
+  </details>
   <section class="section active" data-panel="pixel">
    <h2>BODY PART PIXEL EDITOR</h2>
    <p>Setiap body part punya piksel independen di keempat sudut. Edit satu bagian tanpa menimpa area bagian lain.</p>
-   <div id="bodyparts"></div>
    <label class="field">EDIT PHYSICAL LAYER (KEEPS SKIN / CLOTHING SEPARATE)<select id="art-layer"><option value="body">BODY / SKIN</option><option value="body_front">BODY FRONT OVERLAY</option><option value="top">TOP / SHIRT</option><option value="top_back">TOP BACK</option><option value="pants">PANTS</option><option value="shoes">SHOES</option><option value="hair_back">HAIR BACK</option><option value="hair_front">HAIR FRONT</option><option value="accessory">ACCESSORY</option></select></label>
    <div class="btnrow"><button id="edit-pixels" class="active">✎ OPEN PIXEL EDITOR</button></div>
    <p>Select, copy, paste, paste flip, move, erase, fill, color picker, grid, zoom, onion skin, undo, redo aktif dari editor sebelumnya.</p>
@@ -80,32 +94,40 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
   <section class="section" data-panel="rig">
    <h2>02 · CUT &amp; PIVOT PER ANGLE</h2>
    <p>Mask slicing per-pixel menentukan bagian yang bergerak. Pivot pada koordinat asli PNG 64 × 112.</p>
-   <div class="btnrow"><button id="rig-pivot" aria-pressed="true">✣ PIVOT</button><button id="rig-paint" aria-pressed="false">▣ SLICE PAINT</button><button id="rig-erase" aria-pressed="false">⌫ UNASSIGN</button></div>
+   <div class="btnrow"><button id="rig-pivot" aria-pressed="true">✣ PIVOT</button><button id="rig-paint" aria-pressed="false">▣ SLICE PAINT</button><button id="rig-erase" aria-pressed="false">⌫ UNASSIGN</button><button id="rig-pan" aria-pressed="false" title="Drag the zoomed canvas without editing">✥ PAN</button></div>
+   <div class="btnrow"><button id="rig-isolate" aria-pressed="false" title="Hide all except the selected part">◉ ISOLATE SELECTED</button><button id="copy-part-slice">⧉ COPY PART</button><button id="paste-part-slice">▣ PASTE PART</button></div>
+   <p style="font-size:10px">BLUE = selected part · RED = visible unassigned pixels · isolate mode helps inspect inaccurate slice boundaries.</p>
    <div id="geometry-controls"><label class="field">PIVOT X (0–63)<input id="pivot-x" type="number" min="0" max="63"></label><label class="field">PIVOT Y (0–111)<input id="pivot-y" type="number" min="0" max="111"></label>
    <label class="field">SLICE BRUSH SIZE<input id="mask-brush" type="range" min="1" max="9" value="3" step="2"></label></div>
    <div class="btnrow"><button id="copy-slice">COPY MASK</button><button id="paste-slice">PASTE MASK</button><button id="flip-slice">PASTE FLIP</button></div>
    <div class="btnrow"><button id="rig-undo">↶ UNDO</button><button id="rig-redo">↷ REDO</button></div>
+   <div class="btnrow"><button id="mark-reviewed" class="active">✓ MARK THIS PART / ANGLE REVIEWED</button><button id="clear-reviewed">↺ CLEAR REVIEW</button></div>
+   <p id="rig-review-message">Choose each body part / angle, inspect pixel ownership and pivot, then mark reviewed. 40 combinations required before binding.</p>
    <button id="rig-next" class="active">NEXT: BIND ANATOMY →</button>
   </section>
   <section class="section" data-panel="bind">
    <h2>03 · PROCEDURAL BINDING</h2>
    <p>Binding mengunci mask, 10-piece parent hierarchy, dan pivot 4-angle dalam satu kontrak data. Animasi menyimpan transform Python, bukan sprite frame-by-frame.</p>
    <button id="make-binding" class="active">⛓ BIND PIVOT + SLICES</button>
-   <div class="btnrow"><button id="export-python" disabled>↓ BINDING .PY</button><button id="export-json" disabled>↓ MASTER .JSON</button></div>
+   <div class="btnrow"><button id="export-python" disabled>↓ BINDING .PY</button><button id="export-json" disabled>↓ BINDING .JSON</button></div>
    <button id="bind-next" disabled>TEST BINDING →</button>
   </section>
   <section class="section" data-panel="test">
    <h2>04 · INTERACTIVE BINDING TEST</h2>
-   <label class="field">TEST POSE<select id="test-preset"><option value="neutral">Neutral / T-pose check</option><option value="arms">Both Arms Raised</option><option value="walk">Walk / Contralateral</option><option value="crouch">Crouch / Bend Knees</option></select></label>
+   <label class="field">TEST POSE<select id="test-preset"><option value="neutral">Neutral / T-pose check</option><option value="arms">Both Arms Raised</option><option value="walk">Walk / Contralateral</option><option value="wave">Wave Hand</option><option value="crouch">Crouch / Bend Knees</option></select></label>
+   <div class="btnrow"><button id="test-play" type="button">▶ PLAY PREVIEW</button><label class="field" style="flex:1">MOTION SPEED<select id="test-speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label></div>
+   <label class="field">SCRUB TIME <input id="test-scrub" type="range" min="0" max="100" value="0"></label>
    <div id="testcontrols"><label class="field">SELECTED PART ROTATION <input id="test-angle" type="range" min="-120" max="120" step="1" value="0"></label><label class="field">Δ X <input id="test-x" type="range" min="-32" max="32" value="0"></label><label class="field">Δ Y <input id="test-y" type="range" min="-32" max="32" value="0"></label></div>
    <p>Uji tiap body part dan keempat angle. Wajah Emosi dirender mengikuti kepala, tetapi tidak dibakar ke source pixel.</p>
-   <div class="btnrow"><button id="edit-binding">← EDIT BINDING</button><button id="approve-binding" class="active">✓ BINDING OK</button></div>
+   <div class="btnrow"><button id="mark-angle-tested">✓ MARK ANGLE TESTED</button><button id="edit-binding">← EDIT BINDING</button></div>
+   <p id="test-review-message">Review neutral and moving poses in SE, SW, NE and NW before approval.</p>
+   <button id="approve-binding" class="active">✓ APPROVE ALL 4 ANGLES</button>
   </section>
   <section class="section" data-panel="save">
    <h2>05 · APPROVED MASTER</h2>
    <p>Master tidak memakai database karakter atau animasi sebelumnya.</p>
    <button id="save-master" class="active">✓ SAVE LAFRICH GENESIS MASTER</button>
-   <div class="btnrow"><button id="cloud-master">☁ SAVE TO DRIVE</button><button id="load-cloud">↓ LOAD FROM DRIVE</button></div>
+   <div class="btnrow"><button id="cloud-master">☁ SAVE MASTER TO DRIVE</button><button id="load-cloud">↓ LOAD MASTER</button></div>
    <div class="btnrow"><button id="download-master">↓ DOWNLOAD .JSON</button><button id="download-binding">↓ DOWNLOAD .PY</button></div>
    <p>Master Male dan Female disimpan terpisah. Editor karakter dan database animasi dapat memakai kontrak ini sebagai source.</p>
   </section>
