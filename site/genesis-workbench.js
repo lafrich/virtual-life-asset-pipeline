@@ -253,11 +253,30 @@ function buildAngleButtons(){
 }
 function buildPartButtons(){
  const el=$("bodyparts");el.replaceChildren();
+ const picker=$("part-select");picker.replaceChildren();
+ for(const part of PARTS)picker.add(new Option(labels[part],part));
+ picker.onchange=()=>selectPart(picker.value);
+ $("part-prev").onclick=()=>selectPart(PARTS[(PARTS.indexOf(selected)+PARTS.length-1)%PARTS.length]);
+ $("part-next").onclick=()=>selectPart(PARTS[(PARTS.indexOf(selected)+1)%PARTS.length]);
+ const matrix=$("review-matrix");matrix.replaceChildren();
+ const corner=document.createElement("span");corner.textContent="PART";matrix.append(corner);
+ for(const d of DIR){const head=document.createElement("b");head.textContent=d.toUpperCase();matrix.append(head)}
+ for(let i=0;i<PARTS.length;i++){
+  const part=PARTS[i],short=document.createElement("span");
+  short.textContent=String(i+1).padStart(2,"0");short.title=labels[part];matrix.append(short);
+  for(const d of DIR){
+   const b=document.createElement("button");
+   b.type="button";b.dataset.reviewDir=d;b.dataset.reviewPart=part;
+   b.title=labels[part]+" / "+d.toUpperCase()+" (click to navigate, not to approve)";
+   b.onclick=()=>{selectPart(part);switchAngle(d);if(step!=="rig")switchStep("rig")};
+   matrix.append(b);
+  }
+ }
  for(const part of PARTS){
   const b=document.createElement("button");
   b.type="button";b.dataset.part=part;b.innerHTML=(C.PARENTS[part]?"↳ ":"◆ ")+
    "<strong>"+labels[part]+"</strong> <span class='parent'>"+(C.PARENTS[part]||"ROOT")+"</span>";
-  b.onclick=()=>{selected=part;syncControls();void renderAll()};el.append(b);
+  b.onclick=()=>selectPart(part);el.append(b);
  }
  const anatomy=$("anatomy");anatomy.replaceChildren();
  for(const part of PARTS){
@@ -266,8 +285,27 @@ function buildPartButtons(){
   anatomy.append(line);
  }
 }
+function selectPart(part){
+ if(!PARTS.includes(part))return;
+ selected=part;syncControls();void renderAll();
+}
 function syncControls(){
  $("gender").value=gender;$("art-layer").value=activeLayer;
+ $("part-select").value=selected;
+ const done=reviewCount();
+ $("part-progress").textContent="RIG REVIEW: "+done+" / 40 combinations inspected";
+ $("rig-review-message").textContent=(record()?.reviewed?.[reviewKey(dir,selected)]?"✓ REVIEWED":"NOT REVIEWED")+
+  " · "+labels[selected]+" / "+dir.toUpperCase()+" · inspect and mark only when slice AND pivot are correct.";
+ $("mark-reviewed").textContent=record()?.reviewed?.[reviewKey(dir,selected)]?"✓ REVIEWED · MARK AGAIN":"✓ MARK PART / ANGLE REVIEWED";
+ for(const cell of document.querySelectorAll("#review-matrix button")){
+  const marked=!!record()?.reviewed?.[reviewKey(cell.dataset.reviewDir,cell.dataset.reviewPart)];
+  cell.textContent=marked?"✓":"·";cell.setAttribute("aria-pressed",String(marked));
+  cell.classList.toggle("current",cell.dataset.reviewDir===dir&&cell.dataset.reviewPart===selected);
+ }
+ $("mark-angle-tested").textContent=record()?.testedAngles?.[dir]?"✓ "+dir.toUpperCase()+" TESTED":"✓ MARK "+dir.toUpperCase()+" TESTED";
+ $("test-review-message").textContent="TESTED DIRECTIONS: "+DIR.filter(d=>record()?.testedAngles?.[d]).map(d=>d.toUpperCase()).join(", ")+
+  " ("+DIR.filter(d=>record()?.testedAngles?.[d]).length+"/4) · check neutral and animated poses in every direction";
+ $("test-play").textContent=playing?"Ⅱ PAUSE PREVIEW":"▶ PLAY PREVIEW";
  $("pivot-x").value=master()?.pivots?.[dir]?.[selected]?.x??32;
  $("pivot-y").value=master()?.pivots?.[dir]?.[selected]?.y??50;
  $("selection-details").textContent=labels[selected]+" · "+dir.toUpperCase();
@@ -456,6 +494,13 @@ async function audit(){
 }
 async function makeBinding(){
  try{
+  const missing=missingReviews();
+  if(missing.length){
+   status("Rig incomplete: "+missing.length+" part/angle combinations not reviewed. Start with "+missing[0],true);
+   $("binding-result").textContent="MANUAL QA INCOMPLETE · "+missing.length+"/40 missing: "+missing.slice(0,7).join(" · ")+
+    (missing.length>7?" ...":"");
+   return;
+  }
   const report=await audit();
   if(report.errors.length){
    status("Cannot bind: "+report.errors.slice(0,3).join("; ")+(report.errors.length>3?"…":""),true);
@@ -476,7 +521,8 @@ async function makeBinding(){
    rig:clone(m),pythonEngine:"genesis_procedural_runtime.py",
    createdAt:new Date().toISOString()
   };
-  record().bound=out;record().approved=false;record().saved=false;
+  out.reviewed=clone(record().reviewed);
+  record().bound=out;record().testedAngles={};record().approved=false;record().saved=false;
   persistDraft();syncControls();status("Pivots + slice maps bound for ALL FOUR views. Open CHECK BINDING.");
  }catch(e){status("Binding failed: "+e.message,true)}
 }
@@ -545,6 +591,7 @@ async function cloudLoad(){
     data.binding?.format!==BIND_FORMAT)throw Error("Invalid Genesis cloud master");
   if(!confirm("Replace current "+gender+" draft with this verified Drive master? Unsaved edits will be lost."))return;
   drafts[gender]={rig:C.validateMaster(data.binding.rig),bound:data.binding,
+   reviewed:data.binding.reviewed||{},testedAngles:Object.fromEntries(DIR.map(d=>[d,true])),
    approved:true,saved:true,edited:data.approvedAt||""};
   await sourceCanvases(gender);persistDraft();flushCache();syncControls();renderAll();
   status("Verified Genesis Master loaded from Drive: "+data.id);
@@ -578,7 +625,11 @@ function setup(){
   if(!confirm("Reset "+gender+" draft from the ORIGINAL frozen V6B source? This replaces all unsaved pixels, masks and binding."))return;
   try{await seed(gender);step="pixel";syncControls();status("Restored ORIGINAL V6B "+gender+"; previous approved master left untouched.")}catch(e){status(e.message,true)}
  };
- $("save-draft").onclick=()=>{persistDraft();download("genesis_"+gender+"_draft.json",JSON.stringify(record(),null,2));status("Editable draft exported and saved locally (NOT approved).")};
+ $("save-draft").onclick=()=>{
+  const okay=persistDraft();
+  download("genesis_"+gender+"_draft.json",JSON.stringify({format:"lgr-1-draft-v1",gender,record:record()},null,2));
+  status(okay?"Draft saved locally + JSON downloaded.":"Local browser storage FULL — only JSON backup was downloaded.",!okay);
+ };
  $("art-layer").onchange=()=>{activeLayer=$("art-layer").value;status("Editing layer "+activeLayer+" · body part "+labels[selected])};
  $("pixel-next").onclick=()=>switchStep("rig");
  $("rig-next").onclick=()=>switchStep("bind");
@@ -592,17 +643,44 @@ function setup(){
  $("copy-slice").onclick=()=>{maskCopied=master().masks[dir];status("Copied complete "+dir.toUpperCase()+" slice map")};
  $("paste-slice").onclick=()=>bindMaskCopy(false);
  $("flip-slice").onclick=()=>bindMaskCopy(true);
+ $("mark-reviewed").onclick=()=>{
+  if(!master()?.pivots?.[dir]?.[selected])return status("Pivot missing",true);
+  const mask=C.decode(master().masks[dir]);
+  const pixels=mask.reduce((n,v)=>n+Number(v===PARTS.indexOf(selected)),0);
+  if(!pixels&&!confirm(labels[selected]+" has zero slice pixels in "+dir.toUpperCase()+
+    ". This is valid ONLY if fully occluded; confirm the pivot position and continue?"))return;
+  record().reviewed??={};
+  record().reviewed[reviewKey(dir,selected)]=true;
+  persistDraft();syncControls();status("Reviewed "+labels[selected]+" / "+dir.toUpperCase()+
+    " · "+reviewCount()+"/40. This is a manual anatomy check.");
+ };
+ $("clear-reviewed").onclick=()=>{
+  if(!confirm("Clear review for "+labels[selected]+" / "+dir.toUpperCase()+"?"))return;
+  delete record().reviewed?.[reviewKey(dir,selected)];record().testedAngles={};record().bound=null;record().approved=false;record().saved=false;
+  persistDraft();syncControls();
+ };
  $("rig-undo").onclick=()=>applySnapshot(maskUndo,maskRedo);
  $("rig-redo").onclick=()=>applySnapshot(maskRedo,maskUndo);
  $("make-binding").onclick=()=>void makeBinding();
  $("export-python").onclick=exportPython;
  $("export-json").onclick=exportJson;
  $("bind-next").onclick=()=>switchStep("test");
- $("test-preset").onchange=()=>void renderAll();
+ $("test-play").onclick=togglePlayback;
+ $("test-scrub").oninput=()=>{stopPlayback();motionTime=Number($("test-scrub").value)/100;void renderAll()};
+ $("test-speed").onchange=()=>{playTick=0};
+ $("test-preset").onchange=()=>{motionTime=0;$("test-scrub").value=0;void renderAll()};
  for(const id of ["test-angle","test-x","test-y"])$(id).oninput=()=>void renderAll();
  $("edit-binding").onclick=()=>{record().bound=null;record().approved=false;record().saved=false;
   persistDraft();switchStep("rig");status("Binding reopened. Edit pivots/slices and BIND again.")};
- $("approve-binding").onclick=()=>{try{validatedBinding();record().approved=true;persistDraft();
+ $("mark-angle-tested").onclick=()=>{
+  if(!record()?.bound)return status("Bind anatomy before marking angle tested",true);
+  record().testedAngles??={};record().testedAngles[dir]=true;
+  persistDraft();syncControls();status("Marked "+dir.toUpperCase()+" binding test passed.");
+ };
+ $("approve-binding").onclick=()=>{try{validatedBinding();
+   const missing=DIR.filter(d=>!record()?.testedAngles?.[d]);
+   if(missing.length)throw Error("Test and mark all 4 views before approval: "+missing.join(", "));
+   record().approved=true;stopPlayback();persistDraft();
    switchStep("save");status("BINDING APPROVED · save as canonical Lafrich Genesis Master");
   }catch(e){status(e.message,true)}};
  $("save-master").onclick=saveApproved;
@@ -620,7 +698,12 @@ function setup(){
  $("open-face").onclick=()=>showPage("emotion");
  $("nav-workshop").onclick=()=>showPage("workshop");
  $("nav-emotion").onclick=()=>showPage("emotion");
- $("fullscreen").onclick=()=>root.open(location.href,"_blank","noopener,noreferrer");
+ $("fullscreen").onclick=async()=>{
+  try{
+   if(document.fullscreenElement)await document.exitFullscreen();
+   else await document.documentElement.requestFullscreen();
+  }catch(e){status("Fullscreen unsupported in this browser: "+e.message,true)}
+ };
  $("zoom-out").onclick=()=>setZoom(zoom-1);$("zoom-in").onclick=()=>setZoom(zoom+1);
  $("zoom-fit").onclick=()=>{const v=$("stagewrap");const fit=Math.floor(Math.min((v.clientWidth-20)/64,(v.clientHeight-20)/112));setZoom(clamp(fit,2,14));};
  $("zoom").oninput=()=>setZoom($("zoom").value);
@@ -649,6 +732,7 @@ function setup(){
 function showPage(next){
  page=next;
  const isEmotion=next==="emotion";
+ if(isEmotion)stopPlayback();
  $("workspace").hidden=isEmotion;$("progress").hidden=isEmotion;
  $("emotionpanel").style.display=isEmotion?"block":"none";
  $("nav-emotion").setAttribute("aria-selected",String(isEmotion));
