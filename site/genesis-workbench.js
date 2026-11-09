@@ -29,7 +29,7 @@ function status(s,error=false){
 }
 function record(){return drafts[gender]}
 function master(){return record()?.rig}
-function flushCache(){preparedCache.clear();R.clearCache();rev++;void renderAll()}
+function flushCache(){preparedCache.clear();rev++;void renderAll()}
 function makeDirty(){
  const r=record();if(!r)return;
  r.bound=null;r.approved=false;r.saved=false;r.edited=new Date().toISOString();
@@ -96,7 +96,7 @@ async function seed(g){
  }
  drafts[g]={rig:C.validateMaster(m),bound:null,approved:false,saved:false,edited:new Date().toISOString()};
  source[g]=canvases;
- flushCache();persistDraft();
+ R.clearCache();flushCache();persistDraft();
 }
 async function ensure(g){
  if(drafts[g]&&source[g])return;
@@ -358,7 +358,7 @@ function applyPixels(){
    master().layers.body[d]=next[d].png;
    master().masks[d]=next[d].mask;
   }
-  pixelSession=null;makeDirty();syncControls();
+  R.clearCache();pixelSession=null;makeDirty();syncControls();
   status("APPLIED "+labels[selected]+" · 4 direction pixels saved as a draft; binding invalidated.");
   return true;
  }catch(e){status("Pixel editor Apply failed: "+e.message,true);return false}
@@ -540,7 +540,6 @@ function setup(){
  $("face").onchange=()=>{faceId=$("face").value;faceImage=null;flushCache()};
  $("refresh-face").onclick=()=>void refreshFace();
  $("open-face").onclick=()=>showPage("emotion");
- $("open-separate")?.addEventListener("click",()=>{});
  $("nav-workshop").onclick=()=>showPage("workshop");
  $("nav-emotion").onclick=()=>showPage("emotion");
  $("fullscreen").onclick=()=>root.open(location.href,"_blank","noopener,noreferrer");
