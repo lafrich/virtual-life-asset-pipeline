@@ -18,6 +18,45 @@ let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5,acti
 let drafts={},source={},preparedCache=new Map(),rev=0,paintDrag=null,renderRequest=0;
 let pixelEditor=null,pixelSession=null,maskCopied=null,maskUndo=[],maskRedo=[];
 let faceEntries=[],faceImage=null,faceId="",page="workshop",sourcePending=Promise.resolve();
+let playing=false,playTick=0,playFrame=0,motionTime=0;
+const reviewKey=(direction,part)=>direction+"|"+part;
+function reviewCount(){
+ const r=record();
+ return DIR.reduce((n,d)=>n+PARTS.filter(part=>r?.reviewed?.[reviewKey(d,part)]).length,0);
+}
+function missingReviews(){
+ const r=record();
+ return DIR.flatMap(d=>PARTS.filter(part=>!r?.reviewed?.[reviewKey(d,part)]).map(part=>d.toUpperCase()+" / "+labels[part]));
+}
+function invalidateReviews(direction=null,parts=null){
+ const r=record();if(!r)return;
+ if(!direction)r.reviewed={};
+ else for(const part of parts||PARTS)delete r.reviewed?.[reviewKey(direction,part)];
+ r.testedAngles={};makeDirty();
+}
+function stopPlayback(){
+ playing=false;playTick=0;
+ const b=$("test-play");if(b)b.textContent="▶ PLAY PREVIEW";
+}
+function animatePlayback(now){
+ if(!playing)return;
+ if(step!=="test"||page!=="workshop"){stopPlayback();return}
+ if(!playTick)playTick=now;
+ if(now-playFrame>=95){
+  const speed=Number($("test-speed").value)||1;
+  motionTime=(motionTime+(now-playTick)*speed/1100)%1;
+  $("test-scrub").value=Math.round(motionTime*100);
+  playFrame=now;void renderAll();
+ }
+ playTick=now;
+ root.requestAnimationFrame(animatePlayback);
+}
+function togglePlayback(){
+ if(playing){stopPlayback();return}
+ if(!record()?.bound){status("Bind a rig before testing motion",true);return}
+ playing=true;playTick=0;playFrame=0;$("test-play").textContent="Ⅱ PAUSE PREVIEW";
+ root.requestAnimationFrame(animatePlayback);
+}
 const canvas=$("stage"),ctx=canvas.getContext("2d",{willReadFrequently:true});
 const labels={head:"KEPALA / HEAD",torso:"TORSO",arm_near_upper:"LENGAN DEPAN · ATAS",
  arm_near_lower:"LENGAN DEPAN · BAWAH",arm_far_upper:"LENGAN BELAKANG · ATAS",
@@ -44,7 +83,8 @@ function persistDraft(){
  try{
   const payload={format:"lafrich-genesis-draft-store-v1",drafts};
   localStorage.setItem(DRAFT_KEY,JSON.stringify(payload));
- }catch(error){status("Draft not saved locally: "+error.message+". Export a JSON backup.",true)}
+  return true;
+ }catch(error){status("LOCAL DRAFT SAVE FAILED: "+error.message+". Export or cloud-save a JSON backup.",true);return false}
 }
 function loadStored(){
  let s=null;
@@ -56,6 +96,8 @@ function loadStored(){
    try{
     const rig=C.validateMaster(x.rig);
     drafts[g]={rig,bound:x.bound?.format===BIND_FORMAT?x.bound:null,
+     reviewed:x.reviewed&&typeof x.reviewed==="object"?x.reviewed:{},
+     testedAngles:x.testedAngles&&typeof x.testedAngles==="object"?x.testedAngles:{},
      approved:!!x.approved&&!!x.bound,saved:!!x.saved,edited:String(x.edited||"")};
    }catch(e){status("Existing "+g+" draft invalid; preserved in storage: "+e.message,true)}
   }
@@ -95,7 +137,7 @@ async function seed(g){
  const rig=C.validateMaster(originalLayers);
  if(!DIR.every(d=>Boolean(rig.layers.body[d])))
   throw Error("V6B missing a physical body layer");
- drafts[g]={rig,bound:null,approved:false,saved:false,edited:new Date().toISOString()};
+ drafts[g]={rig,bound:null,reviewed:{},testedAngles:{},approved:false,saved:false,edited:new Date().toISOString()};
  await sourceCanvases(g);
  R.clearCache();flushCache();persistDraft();
 }
@@ -108,13 +150,18 @@ function pose(){
  const p=C.blankPose();
  if(step!=="test"&&step!=="save")return p;
  const preset=$("test-preset").value;
+ const phase=motionTime*2*Math.PI;
  if(preset==="arms"){
   p.arm_near_upper.a=-65;p.arm_far_upper.a=65;
   p.arm_near_lower.a=-23;p.arm_far_lower.a=23;
  }else if(preset==="walk"){
-  p.leg_near_upper.a=22;p.leg_far_upper.a=-22;
-  p.leg_near_lower.a=-18;p.leg_far_lower.a=25;
-  p.arm_near_upper.a=-20;p.arm_far_upper.a=20;
+  const swing=Math.sin(phase)*25;
+  p.leg_near_upper.a=swing;p.leg_far_upper.a=-swing;
+  p.leg_near_lower.a=-Math.max(0,swing)*.8;p.leg_far_lower.a=Math.max(0,swing)*.8;
+  p.arm_near_upper.a=-swing*.75;p.arm_far_upper.a=swing*.75;
+  p.torso.y=-Math.abs(Math.sin(phase))*1.6;
+ }else if(preset==="wave"){
+  p.arm_near_upper.a=-60;p.arm_near_lower.a=-26+Math.sin(phase)*26;
  }else if(preset==="crouch"){
   p.torso.y=7;p.torso.a=8;
   p.leg_near_upper.a=-37;p.leg_far_upper.a=37;
@@ -257,6 +304,7 @@ function switchAngle(d){
 }
 function switchStep(next){
  if(!STEPS.includes(next))return;
+ if(next!=="test")stopPlayback();
  if((next==="test"||next==="save")&&!record()?.bound){status("Bind all 4 views before checking",true);next="bind"}
  if(next==="save"&&!record()?.approved){status("Approve the binding in CHECK BINDING before saving master",true);next="test"}
  step=next;syncControls();void renderAll();
@@ -278,7 +326,7 @@ function applySnapshot(which,opposite){
  if(!which.length)return;
  opposite.push({dir,pivots:clone(master().pivots[dir]),mask:master().masks[dir]});
  const s=which.pop();master().pivots[s.dir]=s.pivots;master().masks[s.dir]=s.mask;
- dir=s.dir;makeDirty();syncControls();
+ dir=s.dir;invalidateReviews(s.dir);syncControls();
 }
 function maskPaint(p,erase){
  const m=master(),mask=C.decode(m.masks[dir]),idx=PARTS.indexOf(selected),size=Number($("mask-brush").value)||3;
@@ -292,6 +340,8 @@ function maskPaint(p,erase){
 function setPivot(x,y){
  const p=master().pivots[dir][selected];
  p.x=clamp(Math.round(x),0,63);p.y=clamp(Math.round(y),0,111);
+ if(record()?.reviewed)delete record().reviewed[reviewKey(dir,selected)];
+ if(record())record().testedAngles={};
  makeDirty();syncControls();
 }
 function bindMaskCopy(flipped){
@@ -308,7 +358,7 @@ function bindMaskCopy(flipped){
   }
   dst[y*64+x]=v;
  }
- master().masks[dir]=C.encode(dst);makeDirty();syncControls();
+ master().masks[dir]=C.encode(dst);invalidateReviews(dir);syncControls();
 }
 function channel(v){return cv().getContext("2d",{willReadFrequently:true})}
 async function openPixels(){
@@ -374,7 +424,7 @@ function applyPixels(){
   // Invalidate approved/bound data IMMEDIATELY. Binding waits for the
   // full composite to rebuild so it never exports stale source sprites.
   sourcePending=sourceCanvases(appliedGender);
-  makeDirty();syncControls();
+  invalidateReviews();syncControls();
   void sourcePending.then(()=>{
    flushCache();syncControls();
    status("APPLIED "+labels[appliedPart]+" / "+layer+" · 4 independent source angles updated.");
