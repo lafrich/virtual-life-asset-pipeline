@@ -15,6 +15,10 @@ const {chromium}=require('playwright');
   await page.goto(base+'/lafrich-puppet-studio.html?mode=master',
    {waitUntil:'domcontentloaded',timeout:60000});
   await page.locator('#view-se').waitFor({timeout:20000});
+  assert.equal(await page.locator('#master-layer').count(),0,
+   'Master must not expose the Art Layer clothing editor');
+  assert.equal(await page.locator('#edit-master').count(),0);
+  assert.equal(await page.locator('#import-layer').count(),0);
   const state=await page.evaluate(()=>{
    const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
    return {parts:C.PARTS,parents:C.PARENTS,ids:C.IDS,views:C.DIRS,
@@ -47,8 +51,11 @@ const {chromium}=require('playwright');
   });
   assert.equal(approvedArt.male.id,'lafrich_male');
   assert.equal(approvedArt.female.id,'lafrich_female');
-  assert.ok(approvedArt.male.nonempty>=2&&approvedArt.female.nonempty>=2,
-   'V6B appearance must seed real separate body/garment layers for both masters');
+  assert.ok(approvedArt.male.nonempty>=1&&approvedArt.female.nonempty>=1,
+   'V6B seed must contain at least one real anatomical body source for both masters');
+  assert.ok([approvedArt.male,approvedArt.female].every(x=>
+   x.parts.every(p=>['body','body_front'].includes(p))),
+   'V6B source must not seed clothes or hair into Lafrich Master');
   assert.ok(approvedArt.male.parts.includes('body')&&approvedArt.female.parts.includes('body'));
   console.log('PASS V6B male/female visual art seeded into new independent four-view physical layers');
   assert.equal(await page.locator('#motion-list option').count(),1,
@@ -110,6 +117,10 @@ const {chromium}=require('playwright');
   console.log('PASS Lafrich 10-piece 4-view master rig, editable mask and master body Pixel Editor');
 
   await page.locator('#tab-character').click();
+  assert.equal(await page.locator('#wear-layer').count(),1,
+   'Custom Wear must be available in Character');
+  assert.equal(await page.locator('#import-wear').count(),1,
+   'Character must own wear PNG import');
   await page.locator('#character-gender').selectOption('male');
   await page.locator('#character-name').fill('Dressed Rig QA');
   await page.locator('#wear-layer').selectOption('top');
