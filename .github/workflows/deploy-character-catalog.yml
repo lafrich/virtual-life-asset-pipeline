@@ -354,7 +354,7 @@ jobs:
           for STALE_DEPLOYMENT in \
             b290c907dff0fa7c8b787593c1146c0b307ca29f \
             b341e153568a47319285067f7119cde9bc80f634 \
-            4a65d875c5b018c65f94a8d2395f61a3d80f17
+            4a65d875c5b5c018c65f94a8d2395f61a3d80f17
           do
             URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/${STALE_DEPLOYMENT}/cancel"
             STATUS=$(curl --silent --show-error --max-time 15 --retry 2 --output /tmp/pages-cancel-response.json --write-out '%{http_code}' \
