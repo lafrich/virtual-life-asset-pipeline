@@ -6,6 +6,17 @@ on:
       - 'site/genesis-cloud.js'
       - 'site/genesis_procedural_runtime.py'
       - 'site/mahluk-hidup.html'
+      - 'site/lafrich-puppet-studio.html'
+      - 'site/genesis-editor.html'
+      - 'site/mahluk-action-editor.html'
+      - 'site/mahluk-animation-native.html'
+      - 'site/v6p-studio.html'
+      - 'site/pixel-editor.html'
+      - 'site/mahluk-hub-drive.js'
+      - 'site/drive-sync.js'
+      - 'site/vlhub-characters-publish.js'
+      - 'site/v6p-compositor.js'
+      - 'tests/test_lgr_retirement.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
       - '.github/workflows/genesis-workbench-qa.yml'
   pull_request:
@@ -14,6 +25,17 @@ on:
       - 'site/genesis-cloud.js'
       - 'site/genesis_procedural_runtime.py'
       - 'site/mahluk-hidup.html'
+      - 'site/lafrich-puppet-studio.html'
+      - 'site/genesis-editor.html'
+      - 'site/mahluk-action-editor.html'
+      - 'site/mahluk-animation-native.html'
+      - 'site/v6p-studio.html'
+      - 'site/pixel-editor.html'
+      - 'site/mahluk-hub-drive.js'
+      - 'site/drive-sync.js'
+      - 'site/vlhub-characters-publish.js'
+      - 'site/v6p-compositor.js'
+      - 'tests/test_lgr_retirement.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
 jobs:
   syntax-contract:
@@ -26,6 +48,11 @@ jobs:
           node --check site/genesis-cloud.js
           node --check site/lafrich-puppet-core.js
           node --check site/lafrich-puppet-renderer.js
+          node --check site/mahluk-hub-drive.js
+          node --check site/drive-sync.js
+          node --check site/vlhub-characters-publish.js
+          node --check site/v6p-compositor.js
+          node tests/test_lgr_retirement.cjs
       - name: HTML / UI integration contract
         run: |
           node <<'NODE'
