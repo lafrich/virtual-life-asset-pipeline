@@ -217,6 +217,16 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
    return [...off.getContext("2d").getImageData(10,20,1,1).data];
   },sourceSaved.pixelFrames[cellKey]);
   assert.deepEqual(editedCell,[255,0,255,255],"Edited Genesis source cell must retain exact magenta RGBA");
+  const sourcePreviewPixel=await genesis.locator("#source-preview").evaluate(async c=>{
+   for(let retry=0;retry<80;retry++){
+    const v=[...c.getContext("2d").getImageData(10,20,1,1).data];
+    if(v[0]===255&&v[1]===0&&v[2]===255&&v[3]===255)return v;
+    await new Promise(r=>setTimeout(r,100));
+   }
+   return [...c.getContext("2d").getImageData(10,20,1,1).data];
+  });
+  assert.deepEqual(sourcePreviewPixel,[255,0,255,255],
+   "Painted Custom Wear must appear in the actual Genesis native source preview");
   await genesis.locator("#pixel-open").click();
   await genesis.locator("#pixelOverlay:not([hidden])").waitFor({timeout:30000});
   await genesis.locator("#pixelGrid").uncheck();
