@@ -11,14 +11,13 @@ const directions=C.DIRS,parts=C.PARTS,storage=key=>{
 };
 const clone=C.clone;let mode="master",dir="se",gender="male",masterModels={male:C.master("male"),female:C.master("female")},
  characters={},motions={},character=C.character("male"),motion=C.motion(),frame=0,
- selectedPart="head",wearLayer="top",maskMode="select",tool="rig",
+ selectedPart="head",artLayer="body",wearLayer="top",maskMode="select",tool="rig",
  dirtyMaster={male:false,female:false},dirtyCharacter=false,dirtyMotion=false,
  cloudVerified={male:false,female:false},cloudStatus={},copyMask=null,copyPose=null,
  zoom=4,fit=true,pan=false,pointer=null,editor=null,editorSession=null,
  editorBusy=false,playing=false,timer=null,renderEpoch=0,sceneVersion=0,
  preparedCache=new Map(),faces=[],loadedFaceImages=new Map();
 const canvas=$("canvas"),ctx=canvas.getContext("2d"),viewport=$("viewport");
-const anatomyChecks=new WeakMap();
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null}catch{return null}};
 function status(msg,error=false){$("status").textContent=String(msg);$("status").classList.toggle("error",error)}
 function validGender(g){if(!C.IDS[g])throw Error("Invalid base");return g}
@@ -40,24 +39,6 @@ function localSave(key,data){
 }
 function masterChanged(){
  dirtyMaster[gender]=true;sceneVersion++;preparedCache.clear();R.clearCache();void refreshScene();
-}
-async function ensureAnatomy(g){
- const existing=masterModels[g];
- if(!existing?.layers?.body?.se||dirtyMaster[g])return;
- if(anatomyChecks.has(existing))return anatomyChecks.get(existing);
- const check=(async()=>{
-  try{
-   const result=await R.repairIncompleteBody(existing);
-   if(masterModels[g]!==existing||dirtyMaster[g]||!result.repaired.length)return;
-   // Recover preview in memory only; original local/cloud profiles stay
-   // unchanged until the user explicitly saves this restored anatomical body.
-   masterModels[g]=result.master;dirtyMaster[g]=true;
-   sceneVersion++;preparedCache.clear();R.clearCache();void refreshScene();
-   if(g===gender)status("FULL BODY RECOVERED · torso, arms and legs · "+
-    result.repaired.join("/").toUpperCase()+" · UNSAVED, verify and SAVE MASTER");
-  }catch(e){if(g===gender)status("Body source verification failed: "+e.message,true)}
- })();
- anatomyChecks.set(existing,check);return check;
 }
 function characterChanged(){
  dirtyCharacter=true;sceneVersion++;preparedCache.clear();void refreshScene();
@@ -85,7 +66,7 @@ function setGender(next){
  $("master-gender").value=next;
  character.gender=next;
  selectedPart="head";sceneVersion++;preparedCache.clear();
- syncControls();void refreshScene();void ensureAnatomy(next);
+ syncControls();void refreshScene();
 }
 function faceOptions(){
  const active=$("face-select"),keep=character.faceId;
@@ -263,6 +244,7 @@ function controlOptions(id,items,keep){
  if(items.some(i=>i[0]===keep))el.value=keep;
 }
 function syncControls(){
+ controlOptions("master-layer",C.LAYERS.map(x=>[x,x.toUpperCase().replaceAll("_"," ")]),artLayer);
  controlOptions("wear-layer",C.WEAR.map(x=>[x,x.toUpperCase().replaceAll("_"," ")]),wearLayer);
  controlOptions("part-select",parts.map(x=>[x,x.toUpperCase().replaceAll("_"," ")]),selectedPart);
  controlOptions("pose-part",parts.map(x=>[x,x.toUpperCase().replaceAll("_"," ")]),selectedPart);
@@ -286,50 +268,33 @@ function syncControls(){
  $("frame-duration").value=motion.frames[Math.min(frame,motion.frames.length-1)]?.ms||160;
  syncPivot();poseValues();
 }
-async function openPixelEditor(target,{piece=null}={}){
+async function openPixelEditor(target){
  if(editorBusy)return;
  const g=mode==="master"?gender:character.gender,layer=target;
- if(mode==="master"&&(!piece||layer!=="body"||!parts.includes(piece)))
-  return status("MASTER editing is limited to Body Piece, slicing, and pivots",true);
- if(mode==="character"&&(piece||!C.WEAR.includes(layer)))
-  return status("Clothing, hair, and accessories must be edited in CHARACTER / WEAR",true);
  editorBusy=true;
  try{
   const owner=mode==="master"?currentMaster().layers:character.wear;
   const atlas=R.rgba(64,448),g2=atlas.getContext("2d");
-  const originalPixels={},originalMasks={};
   for(let i=0;i<4;i++){
-   const d=directions[i],img=await R.loadPng(owner[layer]?.[d]);
-   const cv=R.rgba(),v=cv.getContext("2d",{willReadFrequently:true});
-   if(img)v.drawImage(img,0,0);
-   if(piece){
-    const pixels=v.getImageData(0,0,64,112).data;
-    const maskText=currentMaster().masks[d];
-    originalPixels[d]=new Uint8ClampedArray(pixels);
-    originalMasks[d]=maskText;
-    g2.putImageData(new ImageData(C.piecePixels(pixels,C.decode(maskText),piece),64,112),0,i*112);
-   }else g2.drawImage(cv,0,i*112);
+   const img=await R.loadPng(owner[layer]?.[directions[i]]);
+   if(img)g2.drawImage(img,0,i*112);
   }
   if(!editor){
    editor=root.MH2PlanePixelEditor.create({
     overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
-    allowCrossViewPaste:true,
     onApply:()=>applyPixel(),onSaveDefault:()=>applyPixel(),onRestore:()=>{}
    });
   }
+  editorSession={mode,layer,gender:g,characterId:character.id||""};
   const references={};
   for(const d of directions){
    const prepared=await R.prepare(masterModels[g],mode==="master"?null:character,d,null);
    references[d]=R.render(prepared,C.blankPose());
   }
-  editorSession={mode,layer,piece,gender:g,characterId:character.id||"",
-   originalPixels,originalMasks};
-  editor.open({id:piece?"LAFRICH "+g.toUpperCase()+" · BODY PIECE "+piece.toUpperCase():
-    (mode==="master"?"LAFRICH MASTER ":"LAFRICH WEAR ")+g+" / "+layer,
+  editor.open({id:(mode==="master"?"LAFRICH MASTER ":"LAFRICH WEAR ")+g+" / "+layer,
    initialAtlas:atlas,originalAtlas:atlas,referenceImages:references,direction:dir});
-  status(piece?"BODY PIECE "+piece.toUpperCase()+" · Edit 4 views; newly painted pixels follow this piece's slice · APPLY then SAVE MASTER":
-   "PIXEL EDITOR OPEN · "+layer+" · Edit SE/SW/NE/NW · APPLY then SAVE "+mode.toUpperCase());
- }catch(error){editorSession=null;status("Pixel Editor failed: "+error.message,true)}
+  status("PIXEL EDITOR OPEN · "+layer+" · Edit SE/SW/NE/NW · APPLY then SAVE "+mode.toUpperCase());
+ }catch(error){status("Pixel Editor failed: "+error.message,true)}
  finally{editorBusy=false}
 }
 function applyPixel(){
@@ -340,47 +305,19 @@ function applyPixel(){
    throw Error("Source changed during editing; edits were not applied");
   const atlas=editor.getAtlas(),owner=mode==="master"?currentMaster().layers:character.wear;
   const next={...owner[scope.layer]};
-  if(scope.piece){
-   const current=currentMaster(),nextMasks={};
-   // Validate every direction before changing the live master. Existing
-   // pixels belonging to other pieces and all non-body layers are preserved.
-   for(let i=0;i<4;i++){
-    const d=directions[i];
-    if(current.masks[d]!==scope.originalMasks[d])
-     throw Error("Slice changed while editing "+d.toUpperCase()+"; reopen Body Piece editor");
-    const selected=atlas.getContext("2d",{willReadFrequently:true})
-     .getImageData(0,i*112,64,112).data;
-    const result=C.applyPiecePixels(scope.originalPixels[d],selected,
-     C.decode(scope.originalMasks[d]),scope.piece);
-    const cv=R.rgba();
-    cv.getContext("2d").putImageData(new ImageData(result.pixels,64,112),0,0);
-    next[d]=cv.toDataURL("image/png");
-    nextMasks[d]=C.encode(result.mask);
-   }
-   const validated=C.validateMaster({...current,
-    layers:{...current.layers,[scope.layer]:next},
-    masks:{...current.masks,...nextMasks}});
-   masterModels[gender]=validated;
-   masterChanged();
-  }else{
-   for(let i=0;i<4;i++){
-    const cv=R.rgba(),g=cv.getContext("2d");
-    g.drawImage(atlas,0,i*112,64,112,0,0,64,112);
-    next[directions[i]]=cv.toDataURL("image/png");
-   }
-   owner[scope.layer]=next;
-   mode==="master"?masterChanged():characterChanged();
+  for(let i=0;i<4;i++){
+   const cv=R.rgba(),g=cv.getContext("2d");
+   g.drawImage(atlas,0,i*112,64,112,0,0,64,112);
+   next[directions[i]]=cv.toDataURL("image/png");
   }
+  owner[scope.layer]=next;
+  mode==="master"?masterChanged():characterChanged();
   editorSession=null;
-  status("APPLIED · "+(scope.piece?"BODY PIECE "+scope.piece.toUpperCase():scope.layer.toUpperCase())+
-   " · FOUR VIEWS · "+(mode==="master"?"SAVE MASTER":"SAVE CHARACTER")+" to persist");
+  status("APPLIED TO "+scope.layer+" · FOUR VIEWS · "+(mode==="master"?"SAVE MASTER":"SAVE CHARACTER")+" to persist");
   return true;
  }catch(error){status("Pixel Apply failed: "+error.message,true);return false}
 }
-async function importWearPng(file){
- if(mode!=="character")throw Error("Wear can only be imported in CHARACTER / WEAR");
- const selectedLayer=wearLayer,selectedDirection=dir,selectedCharacter=character;
- if(!C.WEAR.includes(selectedLayer))throw Error("Invalid Character wear layer");
+async function importPng(file){
  if(!file||file.type!=="image/png")throw Error("Choose PNG file");
  if(file.size>400000)throw Error("PNG is too large (400 KB maximum)");
  const data=await new Promise((resolve,reject)=>{
@@ -389,12 +326,7 @@ async function importWearPng(file){
  });
  const image=await R.loadPng(data);
  if(!image)throw Error("PNG did not decode");
- if(mode!=="character"||character!==selectedCharacter)
-  throw Error("Character changed while importing; no wear was replaced");
- character.wear[selectedLayer][selectedDirection]=data;
- characterChanged();
- status("IMPORTED CHARACTER WEAR · "+selectedLayer.toUpperCase()+" / "+
-  selectedDirection.toUpperCase()+" · SAVE CHARACTER to persist");
+ currentMaster().layers[artLayer][dir]=data;masterChanged();
 }
 function setMotionFrame(i){
  frame=Math.max(0,Math.min(motion.frames.length-1,i));
@@ -527,19 +459,16 @@ async function cloudLoad(all=false){
   localSave(C.MASTER_KEY,{...storage(C.MASTER_KEY),[gender]:next});cloudVerified[gender]=true;
   void refreshScene();syncControls();
   status("LAFRICH "+gender.toUpperCase()+" LOADED FROM DRIVE · last saved "+(next.updated||"unknown"));
-  await ensureAnatomy(gender);
  }catch(error){status("Lafrich Cloud load failed: "+error.message,true)}
 }
 async function seedBase(){
- if(dirtyMaster[gender]&&!confirm("You have unsaved Lafrich "+gender+" edits. Restore full nude body pixels only? Slicing and pivots stay unchanged."))return;
- if(currentMaster().layers.body?.se&&!confirm("Restore full nude "+gender+" body? Current body pixel drawing will be replaced. Slice/pivots and Character Wear stay unchanged. BACKUP JSON first."))return;
+ if(dirtyMaster[gender]&&!confirm("Discard current UNSAVED Lafrich "+gender+" art and seed V6B-style again?"))return;
+ if(currentMaster().layers.body?.se&&!confirm("Replace current "+gender+" base art with V6B reference seed? Save a backup first."))return;
  try{
-  status("Restoring full nude Lafrich "+gender+" anatomy: head, torso, arms and legs. No outfit or old motion is imported.");
-  const result=await R.seedFromV6B(gender),previous=currentMaster();
-  masterModels[gender]=C.validateMaster({...previous,layers:{...previous.layers,
-   body:result.layers.body,body_front:result.layers.body_front}});
-  masterChanged();
-  status("FULL NUDE BODY RESTORED · head, torso, arms, legs · 4 views · slicing and pivots preserved · UNSAVED");
+  status("Seeding Lafrich "+gender+" from approved V6B pixel art. No old motion is imported.");
+  const result=await R.seedFromV6B(gender);
+  masterModels[gender]=result;masterChanged();
+  status("V6B STYLE SEED LOADED · 4 directions · BODY art only · 10-piece Lafrich rig · UNSAVED");
  }catch(error){status("Seed failed: "+error.message,true)}
 }
 function attach(){
@@ -552,6 +481,7 @@ function attach(){
  }
  $("master-gender").onchange=e=>setGender(e.target.value);
  $("character-gender").onchange=()=>newCharacter();
+ $("master-layer").onchange=e=>{artLayer=e.target.value};
  $("wear-layer").onchange=e=>{wearLayer=e.target.value};
  $("part-select").onchange=e=>{selectedPart=e.target.value;syncPivot();void refreshScene()};
  $("pose-part").onchange=e=>{selectedPart=e.target.value;syncPivot();poseValues();void refreshScene()};
@@ -559,40 +489,15 @@ function attach(){
  $("paint-mask").onclick=()=>maskTool("select");$("erase-mask").onclick=()=>maskTool("erase");
  $("pivot-x").onchange=e=>{const p=currentMaster().pivots[dir][selectedPart];p.x=Math.max(0,Math.min(63,Math.round(Number(e.target.value)||0)));masterChanged()};
  $("pivot-y").onchange=e=>{const p=currentMaster().pivots[dir][selectedPart];p.y=Math.max(0,Math.min(111,Math.round(Number(e.target.value)||0)));masterChanged()};
- // Copy only the selected piece. Never replace the complete 10-piece mask
- // when pasting one arm/leg/head into another direction.
- $("copy-mask").onclick=()=>{
-  copyMask={bytes:C.decode(currentMaster().masks[dir]),part:selectedPart,dir,gender};
-  status("SLICE COPIED · "+selectedPart.toUpperCase()+" / "+dir.toUpperCase()+
-   " · choose destination piece/view then PASTE or PASTE FLIP");
- };
- function pasteCopiedMask(mirror){
-  if(!copyMask)return status("Select a piece and COPY MASK first",true);
-  if(copyMask.gender!==gender)return status("Copied slice belongs to the other Lafrich master; COPY again",true);
-  const sourceIndex=parts.indexOf(copyMask.part),targetIndex=parts.indexOf(selectedPart);
-  if(sourceIndex<0||targetIndex<0)return status("Invalid source/target slice",true);
-  const result=C.decode(currentMaster().masks[dir]);
-  // Unassign the destination piece, leaving every other piece intact.
-  for(let i=0;i<result.length;i++)if(result[i]===targetIndex)result[i]=255;
-  let count=0;
-  for(let y=0;y<112;y++)for(let x=0;x<64;x++){
-   const from=y*64+x;
-   if(copyMask.bytes[from]!==sourceIndex)continue;
-   const to=y*64+(mirror?63-x:x);
-   result[to]=targetIndex;count++;
-  }
-  if(!count)return status("Copied slice contains no pixels",true);
-  currentMaster().masks[dir]=C.encode(result);masterChanged();
-  status((mirror?"PASTE FLIP":"PASTE")+" · "+copyMask.part.toUpperCase()+" / "+
-   copyMask.dir.toUpperCase()+" → "+selectedPart.toUpperCase()+" / "+
-   dir.toUpperCase()+" · "+count+" PIXELS · UNSAVED");
- }
- $("paste-mask").onclick=()=>pasteCopiedMask(false);
- $("flip-mask").onclick=()=>pasteCopiedMask(true);
- $("edit-piece").onclick=()=>void openPixelEditor("body",{piece:selectedPart});
+ $("copy-mask").onclick=()=>{copyMask=C.decode(currentMaster().masks[dir]);status("MASK COPIED · "+dir.toUpperCase())};
+ $("paste-mask").onclick=()=>{if(!copyMask)return status("Copy mask first",true);
+  currentMaster().masks[dir]=C.encode(copyMask);masterChanged()};
+ $("flip-mask").onclick=()=>{if(!copyMask)return status("Copy mask first",true);
+  currentMaster().masks[dir]=C.encode(flipMask(copyMask));masterChanged()};
+ $("edit-master").onclick=()=>void openPixelEditor(artLayer);
  $("edit-wear").onclick=()=>void openPixelEditor(wearLayer);
  $("seed-v6b").onclick=()=>void seedBase();
- $("import-wear").onchange=e=>{const file=e.target.files?.[0];if(file)void importWearPng(file).catch(err=>status(err.message,true));e.target.value=""};
+ $("import-layer").onchange=e=>{const file=e.target.files?.[0];if(file)void importPng(file).catch(err=>status(err.message,true));e.target.value=""};
  $("save-master-local").onclick=()=>{try{saveLocalMaster()}catch(e){status(e.message,true)}};
  $("save-master-cloud").onclick=()=>void saveCloud("lafrich_master");
  $("load-master-cloud").onclick=()=>void cloudLoad();
@@ -737,19 +642,11 @@ async function initialize(){
  for(const g of ["male","female"]){
   if(masterModels[g].layers.body?.se)continue;
   try{const seed=await R.seedFromV6B(g);
-   if(!masterModels[g].layers.body?.se&&!dirtyMaster[g]){
-    const prior=masterModels[g];
-    masterModels[g]=C.validateMaster({...prior,layers:{...prior.layers,
-     body:seed.layers.body,body_front:seed.layers.body_front}});
-    sceneVersion++;preparedCache.clear();
-   }
+   if(!masterModels[g].layers.body?.se&&!dirtyMaster[g]){masterModels[g]=seed;sceneVersion++;preparedCache.clear();}
   }catch(error){status("V6B seed optional: "+error.message+" · paint or import 64×112 art",true)}
  }
  syncControls();void refreshScene();
- if(bridge()?.isOnline?.()){
-  await cloudLoad(false);void cloudLoad(true);void refreshFaces();
- }
- await Promise.all(["male","female"].map(g=>ensureAnatomy(g)));
+ if(bridge()?.isOnline?.()){void cloudLoad(false);void cloudLoad(true);void refreshFaces()}
 }
 void initialize().catch(e=>status("Lafrich Puppet startup failed: "+e.message,true));
 })(window);
