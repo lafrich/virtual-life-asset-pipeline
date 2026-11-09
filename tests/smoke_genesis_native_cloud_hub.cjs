@@ -230,6 +230,34 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   });
   assert.equal(renderOk,true,"Character From Database did not render 4 original Python views");
   assert.deepEqual(errors,[]);
+  // Mobile: the edit surface remains scrollable at high zoom, with controls
+  // inside the narrow viewport; native buffer stays 64x112.
+  const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  try{
+   await mobile.goto("http://127.0.0.1:4174/virtual-life-asset-pipeline/genesis-editor.html",
+    {waitUntil:"domcontentloaded",timeout:45000});
+   await mobile.locator("#zoom-fit").click();
+   await mobile.locator("#zoom").evaluate(input=>{
+    input.value="16";input.dispatchEvent(new Event("input",{bubbles:true}));
+   });
+   const mobileZoom=await mobile.locator("#stage-viewport").evaluate(v=>{
+    const c=document.querySelector("#stage");
+    return {width:c.getBoundingClientRect().width,height:c.getBoundingClientRect().height,
+     nativeWidth:c.width,nativeHeight:c.height,
+     scrollableX:v.scrollWidth>v.clientWidth,scrollableY:v.scrollHeight>v.clientHeight};
+   });
+   assert.deepEqual(mobileZoom,{width:1024,height:1792,nativeWidth:64,nativeHeight:112,
+    scrollableX:true,scrollableY:true});
+   await mobile.locator("#mode-slice").click();
+   await mobile.locator("#zoom-fit").click();
+   const fitted=await mobile.locator("#stage-viewport").evaluate(v=>{
+    const c=document.querySelector("#stage");
+    return c.getBoundingClientRect().width<=v.clientWidth&&
+     c.getBoundingClientRect().height<=v.clientHeight;
+   });
+   assert.equal(fitted,true,"Mobile Fit must show entire character");
+   console.log("PASS Mobile Genesis canvas 1600% zoom / scroll / Fit");
+  }finally{await mobile.close()}
   console.log("PASS Mahluk trial route → native Python preview → cloud verified save → gallery reload");
  }catch(e){
   console.error("CLOUD NATIVE QA FAILED",e.message);
