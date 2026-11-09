@@ -256,8 +256,11 @@ function syncControls(){
  }
  controlOptions("character-list",[["","SELECT CHARACTER"],...Object.values(characters).map(x=>[x.id,x.name+" / "+x.gender])],character.id);
  controlOptions("motion-list",[["","SELECT MOTION"],...Object.values(motions).map(x=>[x.id,x.name+" / "+x.frames.length+" frames"])],motion.id);
- controlOptions("character-motion",[["","BASE POSE"],...Object.values(motions).map(x=>[x.id,x.name])],"");
- controlOptions("preview-character",[["","BASE MASTER (NO WEAR)"],...Object.values(characters).filter(x=>x.gender===gender).map(x=>[x.id,x.name])],character.id);
+ const existingMotion=$("character-motion").value;
+ const existingPreview=$("preview-character").value;
+ controlOptions("character-motion",[["","BASE POSE"],...Object.values(motions).map(x=>[x.id,x.name])],existingMotion);
+ controlOptions("preview-character",[["","BASE MASTER (NO WEAR)"],...Object.values(characters).filter(x=>x.gender===gender).map(x=>[x.id,x.name])],
+  existingPreview||character.id);
  $("master-gender").value=gender;$("character-gender").value=character.gender;
  $("character-name").value=character.name;$("motion-name").value=motion.name;
  $("frame-index").value=Math.min(frame+1,motion.frames.length);
@@ -429,6 +432,9 @@ async function saveCloud(kind){
    characters[key]=record;localSave(C.CHARACTER_KEY,{...storage(C.CHARACTER_KEY),[key]:record});
   }else{motions[key]=record;localSave(C.MOTION_KEY,{...storage(C.MOTION_KEY),[key]:record})}
   status("CLOUD VERIFIED · "+kind+" / "+key+" · "+data.updated);
+  if(kind==="lafrich_master")try{
+   root.parent?.postMessage({type:"lafrich:master-saved",gender},location.origin);
+  }catch{}
  }catch(error){status("CLOUD SAVE FAILED · "+error.message+" · local edits unchanged",true)}
 }
 async function cloudLoad(all=false){
@@ -592,10 +598,37 @@ function attach(){
  });
  for(const type of ["pointerup","pointercancel"])canvas.addEventListener(type,()=>{pointer=null});
  root.addEventListener("message",e=>{
-  if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected"){
+  if(e.origin!==location.origin)return;
+  if(e.data?.type==="mahluk:cloud-connected"){
    if(!dirtyMaster[gender])void cloudLoad(false);
    void cloudLoad(true);void refreshFaces();
   }
+  if(e.data?.type==="lafrich:master-updated"&&!dirtyMaster[gender]){
+   const saved=storage(C.MASTER_KEY);
+   for(const g of ["male","female"])if(saved[g]&&!dirtyMaster[g])
+    try{masterModels[g]=C.validateMaster(saved[g])}catch{}
+   sceneVersion++;preparedCache.clear();R.clearCache();void refreshScene();
+   status("LAFRICH MASTER UPDATED · four views, clothing and motion preview refreshed");
+  }
+ });
+ // Every Mahluk tab uses a separate iframe. Sync only saved Lafrich data
+ // across tabs, never replace work-in-progress or revive legacy animations.
+ root.addEventListener("storage",e=>{
+  if(![C.MASTER_KEY,C.CHARACTER_KEY,C.MOTION_KEY].includes(e.key))return;
+  if(e.key===C.MASTER_KEY){
+   const source=storage(C.MASTER_KEY);let updated=false;
+   for(const g of ["male","female"])if(source[g]&&!dirtyMaster[g]){
+    try{masterModels[g]=C.validateMaster(source[g]);updated=true}catch{}
+   }
+   if(updated){sceneVersion++;preparedCache.clear();R.clearCache()}
+  }else if(e.key===C.CHARACTER_KEY){
+   for(const [id,row] of Object.entries(storage(C.CHARACTER_KEY)))
+    try{characters[id]=C.validateCharacter(row)}catch{}
+  }else{
+   for(const [id,row] of Object.entries(storage(C.MOTION_KEY)))
+    try{motions[id]=C.validateMotion(row)}catch{}
+  }
+  syncControls();void refreshScene();
  });
  root.addEventListener("pagehide",stop);
  if(root.ResizeObserver)new ResizeObserver(()=>{if(fit&&!pointer)setZoom(fitZoom(),true)}).observe(viewport);
