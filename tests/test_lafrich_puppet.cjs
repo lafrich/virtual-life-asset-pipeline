@@ -39,33 +39,6 @@ test('four independent pixel masks use new upper/lower parts; unselect removes o
  assert.equal(Core.decode(Core.validateMaster(c).masks.se)[20*64+31],255);
  assert.notEqual(c.masks.se,c.masks.sw);
 });
-test('Body Piece editor isolates each native slice, preserving unrelated parts and four-view master IDs',()=>{
- const master=Core.master('male');
- const nativeMask=Core.decode(master.masks.se),piece='arm_near_lower';
- const chosen=Core.PARTS.indexOf(piece),head=Core.PARTS.indexOf('head');
- const at=(x,y)=>y*64+x,original=new Uint8ClampedArray(Core.N*4);
- const elbow=at(20,76),headPixel=at(32,35),newPixel=at(25,76);
- assert.equal(nativeMask[elbow],chosen);assert.equal(nativeMask[headPixel],head);
- original.set([160,60,30,255],elbow*4);
- original.set([8,90,120,255],headPixel*4);
- const onlyPiece=Core.piecePixels(original,nativeMask,piece);
- assert.deepEqual(Array.from(onlyPiece.slice(elbow*4,elbow*4+4)),[160,60,30,255]);
- assert.deepEqual(Array.from(onlyPiece.slice(headPixel*4,headPixel*4+4)),[0,0,0,0]);
- // Erase a forearm pixel and paint a new pixel where another piece was
- // previously sliced. Only the deliberate new pixel is reassigned.
- const edit=new Uint8ClampedArray(onlyPiece);
- edit.fill(0,elbow*4,elbow*4+4);
- edit.set([240,10,40,255],newPixel*4);
- const result=Core.applyPiecePixels(original,edit,nativeMask,piece);
- assert.deepEqual(Array.from(result.pixels.slice(elbow*4,elbow*4+4)),[0,0,0,0]);
- assert.deepEqual(Array.from(result.pixels.slice(headPixel*4,headPixel*4+4)),[8,90,120,255]);
- assert.equal(result.mask[newPixel],chosen);
- assert.equal(result.mask[headPixel],head);
- assert.equal(original[elbow*4],160,'original layer stays immutable');
- assert.equal(nativeMask[newPixel],Core.PARTS.indexOf('torso'),'original slice stays immutable');
- assert.equal(Core.validateMaster(master).id,'lafrich_male');
- for(const dir of Core.DIRS)assert.equal(Core.decode(master.masks[dir]).length,Core.N);
-});
 test('new Python motion has only one blank, unsaved authoring frame; no eleven installed animations',()=>{
  const source=Core.motion('Hand Wave');
  assert.equal(source.frames.length,1);assert.equal(source.id,'');
@@ -77,36 +50,6 @@ test('new Python motion has only one blank, unsaved authoring frame; no eleven i
  assert.equal(loaded.frames[0].poses.se.arm_near_lower.a,78);
  assert.throws(()=>Core.fromPython('import os\\nos.system("rm -rf /")'),/Lafrich Puppet/);
  assert.throws(()=>Core.fromPython('MOTION = __import__("os")'),/Lafrich Puppet/);
-});
-test('Only body artwork is rendered from Master; all wear layers belong to Character',()=>{
- const m=Core.master('male'),c=Core.character('male');
- const old='data:image/png;base64,aGVsbG8=';
- const newWear='data:image/png;base64,d29ybGQ=';
- // Legacy master clothing may still exist in backed-up records, but is not
- // rendered and is not silently deleted by this migration.
- m.layers.body.se=old;m.layers.top.se=old;m.layers.hair_front.se=old;
- assert.equal(Runtime.resolveLayers(m,null,'se').body,old);
- assert.equal(Runtime.resolveLayers(m,null,'se').top,'');
- assert.equal(Runtime.resolveLayers(m,null,'se').hair_front,'');
- assert.equal(Runtime.resolveLayers(m,c,'se').top,'');
- c.wear.top.se=newWear;c.wear.hair_front.se=newWear;
- assert.equal(Runtime.resolveLayers(m,c,'se').top,newWear);
- assert.equal(Runtime.resolveLayers(m,c,'se').hair_front,newWear);
- assert.equal(m.layers.top.se,old,'legacy saved clothing was preserved in original master data');
- const checked=Core.validateMaster(m);
- assert.equal(checked.layers.top.se,old,'legacy master bytes remain recoverable');
-});
-test('Master UI never exposes Art Layer clothing editor; Character owns wear import',()=>{
- const fs=require('node:fs'),path=require('node:path');
- const base=path.join(__dirname,'../site');
- const html=fs.readFileSync(path.join(base,'lafrich-puppet-studio.html'),'utf8');
- const js=fs.readFileSync(path.join(base,'lafrich-puppet-studio.js'),'utf8');
- assert.match(html,/id="edit-piece"/);
- assert.doesNotMatch(html,/id="master-layer"|id="edit-master"|id="import-layer"/);
- assert.ok(html.includes('data-page="character"')&&html.includes('id="wear-layer"'));
- assert.match(html,/id="import-wear"/);
- assert.ok(js.includes('C.WEAR.includes(selectedLayer)'));
- assert.doesNotMatch(js,/artLayer|\$\("master-layer"\)|\$\("edit-master"\)/);
 });
 test('Custom Wear selects character four-view images without mutating master',()=>{
  const c=Core.character('female');

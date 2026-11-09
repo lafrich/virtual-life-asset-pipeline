@@ -27,11 +27,9 @@
  function resolveLayers(master,ch,dir){
   const Cc=C(),layers={};
   for(const part of Cc.LAYERS){
-   // Only anatomical source belongs to Lafrich Master. Legacy saved master
-   // wear bytes are preserved in the record for recovery, but never rendered.
-   // Every garment, hairstyle and accessory is now Character-owned.
-   layers[part]=Cc.WEAR.includes(part)?
-    (ch?.wear?.[part]?.[dir]||""):(master.layers?.[part]?.[dir]||"");
+   const base=master.layers?.[part]?.[dir];
+   const custom=ch&&Cc.WEAR.includes(part)?ch.wear?.[part]?.[dir]:null;
+   layers[part]=custom||base||"";
   }
   return layers;
  }
@@ -108,93 +106,41 @@
  }
  async function seedFromV6B(gender){
   const V=root?.V6PCompositor,Cc=C(),b=seededPreviewSource(gender);
-  if(!V)throw Error("V6B nude pixel source unavailable");
+  if(!V)throw Error("V6B preview unavailable (used once only for visual seed)");
   const approved={...b.appearance,characterId:b.sourceId,face:"blank"};
-  const suffix=gender==="female"?"_f":"";
-  // V6B's base/body is NOT the entire body. Original naked anatomy is
-  // distributed over nude top, nude pants, and nude feet atlases. These are
-  // anatomical pixels, not outfit/Custom Wear. Preserve original draw order.
-  const sources=[
-   ["base/body"+suffix,"body"],
-   ["top/nude_back"+suffix,"body"],
-   ["shoes/nude"+suffix,"body"],
-   ["pants/nude"+suffix,"body"],
-   ["top/nude"+suffix,"body"],
-   ["base/body_front"+suffix,"body_front"]
-  ];
-  const images=[];
-  for(const [part,layer] of sources){
-   // Always use the packaged immutable native nude assets: old per-character
-   // V6P overrides or saved clothing must never silently replace bare anatomy.
-   const sheet=await new Promise((resolve,reject)=>{
-    const im=new Image();
-    im.onload=()=>im.naturalWidth===V.W&&im.naturalHeight===V.H?
-     resolve(im):reject(Error("Unexpected nude atlas dimensions: "+part));
-    im.onerror=()=>reject(Error("Required native nude anatomy atlas missing: "+part));
-    im.src="./media/v6p/"+part+".png";
-   });
-   images.push({part,layer,sheet});
-  }
+  const f=gender==="female"?"_f":"";
+  const sources={
+   body:"base/body"+f,body_front:"base/body_front"+f,
+   top:"top/custom"+f,top_back:"top/custom_back"+f,
+   pants:"pants/custom"+f,shoes:"shoes/custom"+f
+  };
   const m=Cc.master(gender);
-  for(const d of Cc.DIRS){
-   const canvases={body:rgba(),body_front:rgba()};
-   for(const {sheet,layer} of images){
-    const frame=V.extractFrame(sheet,"idle",d,0);
-    const raw=frame.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
-    const display=rgba();
-    display.getContext("2d").putImageData(V.keysToDisplay(raw,approved),0,0);
-    canvases[layer].getContext("2d").drawImage(display,0,0);
+  let count=0;
+  for(const [layer,source] of Object.entries(sources)){
+   const atlas=await V.img(source,b.sourceId);
+   if(!atlas)continue;
+   for(const d of Cc.DIRS){
+    const frame=V.extractFrame(atlas,"idle",d,0);
+    const out=rgba(),ctx=out.getContext("2d",{willReadFrequently:true});
+    if(source.startsWith("base/")){
+     // V6B body atlas uses palette keys, not direct pixel colors.
+     const raw=frame.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
+     ctx.putImageData(V.keysToDisplay(raw,approved),0,0);
+    }else ctx.drawImage(frame,0,0);
+    m.layers[layer][d]=out.toDataURL("image/png");
    }
-   for(const [layer,cv] of Object.entries(canvases))
-    m.layers[layer][d]=cv.toDataURL("image/png");
+   count++;
+  }
+  if(count<3){
+   // Source-sheet fallback preserves art without ever importing stock motions.
+   const atlas=await V.sheet(approved,null,"");
+   if(!atlas)throw Error("V6B source art missing: "+(V.missing||[]).join(", "));
+   for(const d of Cc.DIRS){
+    const out=V.extractFrame(atlas,"idle",d,0);
+    m.layers.body[d]=out.toDataURL("image/png");
+   }
   }
   return Cc.validateMaster(m);
  }
- function coverage(pixels,upper,lower){
-  let count=0;
-  for(let y=upper;y<lower;y++)for(let x=12;x<52;x++)
-   if(pixels[(y*64+x)*4+3]>0)count++;
-  return count;
- }
- async function repairIncompleteBody(master){
-  const Cc=C(),validated=Cc.validateMaster(master);
-  // Repair only the legacy head-only/missing-torso seed. Do NOT replace a
-  // substantially populated hand-edited body, its rig, wear, masks or pivots.
-  const reference=await seedFromV6B(validated.gender);
-  const next=Cc.clone(validated),repaired=[];
-  for(const d of Cc.DIRS){
-   const getPixels=async(data)=>{
-    const cv=rgba(),ctx=cv.getContext("2d",{willReadFrequently:true});
-    const im=await loadPng(data);if(im)ctx.drawImage(im,0,0);
-    return {cv,ctx,data:ctx.getImageData(0,0,64,112).data};
-   };
-   const original=await getPixels(validated.layers.body[d]);
-   const front=await getPixels(validated.layers.body_front[d]);
-   const nude=await getPixels(reference.layers.body[d]);
-   const nudeFront=await getPixels(reference.layers.body_front[d]);
-   const merged=rgba(),g=merged.getContext("2d",{willReadFrequently:true});
-   g.drawImage(original.cv,0,0);g.drawImage(front.cv,0,0);
-   const visible=g.getImageData(0,0,64,112).data;
-   const ref=rgba(),f=ref.getContext("2d",{willReadFrequently:true});
-   f.drawImage(nude.cv,0,0);f.drawImage(nudeFront.cv,0,0);
-   const refPixels=f.getImageData(0,0,64,112).data;
-   const missingTorso=coverage(refPixels,52,81)>40&&
-    coverage(visible,52,81)<coverage(refPixels,52,81)*0.45;
-   const missingLegs=coverage(refPixels,81,111)>40&&
-    coverage(visible,81,111)<coverage(refPixels,81,111)*0.45;
-   if(!missingTorso&&!missingLegs)continue;
-   // Fill transparent anatomy ONLY, preserving all visible user pixels and
-   // all stored non-body layers. Do not auto-save this reversible repair.
-   const fill=rgba(),fillCtx=fill.getContext("2d");
-   fillCtx.drawImage(nude.cv,0,0);
-   fillCtx.globalCompositeOperation="source-over";
-   fillCtx.drawImage(original.cv,0,0);
-   next.layers.body[d]=fill.toDataURL("image/png");
-   if(!validated.layers.body_front[d])
-    next.layers.body_front[d]=reference.layers.body_front[d];
-   repaired.push(d);
-  }
-  return {master:Cc.validateMaster(next),repaired};
- }
- return Object.freeze({rgba,clearCache,resolveLayers,loadPng,prepare,partPath,transform,render,seedFromV6B,repairIncompleteBody});
+ return Object.freeze({rgba,clearCache,resolveLayers,loadPng,prepare,partPath,transform,render,seedFromV6B});
 });
