@@ -11,7 +11,7 @@ const directions=C.DIRS,parts=C.PARTS,storage=key=>{
 };
 const clone=C.clone;let mode="master",dir="se",gender="male",masterModels={male:C.master("male"),female:C.master("female")},
  characters={},motions={},character=C.character("male"),motion=C.motion(),frame=0,
- selectedPart="head",artLayer="body",wearLayer="top",maskMode="select",tool="rig",
+ selectedPart="head",artLayer="body",wearLayer="top",maskMode="select",tool="move",
  dirtyMaster={male:false,female:false},dirtyCharacter=false,dirtyMotion=false,
  cloudVerified={male:false,female:false},cloudStatus={},copyMask=null,copyPose=null,
  zoom=4,fit=true,pan=false,pointer=null,editor=null,editorSession=null,
@@ -141,22 +141,37 @@ async function refreshScene(){
   if(rev===renderEpoch)status("PUPPET PREVIEW ERROR: "+error.message,true);
  }
 }
+// The master preview uses the original unrotated puppet. Sum all ancestor
+// rest placements to align rig handles and slice overlays to moving pixels.
+function worldOffset(part){
+ let x=0,y=0;
+ for(const ancestor of R.partPath(part,C)){
+  const p=currentMaster().placements?.[dir]?.[ancestor];
+  if(p){x+=p.x;y+=p.y}
+ }
+ return {x,y};
+}
+function worldPivot(part){
+ const p=currentMaster().pivots[dir][part],shift=worldOffset(part);
+ return {x:p.x+shift.x,y:p.y+shift.y};
+}
 function drawRigGuides(){
- const m=currentMaster(),pivot=m.pivots[dir],mask=C.decode(m.masks[dir]);
+ const m=currentMaster(),mask=C.decode(m.masks[dir]);
  if(tool==="mask"){
   ctx.fillStyle="rgba(45,168,255,.42)";
-  const ix=parts.indexOf(selectedPart);
-  for(let i=0;i<mask.length;i++)if(mask[i]===ix)ctx.fillRect(i%64,(i/64)|0,1,1);
+  const ix=parts.indexOf(selectedPart),shift=worldOffset(selectedPart);
+  for(let i=0;i<mask.length;i++)if(mask[i]===ix)
+   ctx.fillRect(i%64+shift.x,((i/64)|0)+shift.y,1,1);
  }else{
   for(const part of parts){
-   const p=pivot[part];
+   const p=worldPivot(part);
    ctx.beginPath();ctx.arc(p.x+.5,p.y+.5,part===selectedPart?3:1.6,0,Math.PI*2);
    ctx.fillStyle=part===selectedPart?"#ff2e55":"#f9fafc";ctx.fill();
    ctx.strokeStyle="#154579";ctx.lineWidth=.7;ctx.stroke();
   }
   for(const part of parts){
    const parent=C.PARENTS[part];if(!parent)continue;
-   const a=pivot[parent],b=pivot[part];
+   const a=worldPivot(parent),b=worldPivot(part);
    ctx.beginPath();ctx.moveTo(a.x+.5,a.y+.5);ctx.lineTo(b.x+.5,b.y+.5);
    ctx.strokeStyle="#26bbe5";ctx.lineWidth=.8;ctx.stroke();
   }
@@ -179,7 +194,8 @@ function localPoint(e){
  return {x:Math.max(0,Math.min(63,Math.floor((e.clientX-r.left)*64/r.width))),
   y:Math.max(0,Math.min(111,Math.floor((e.clientY-r.top)*112/r.height)))};
 }
-function paintMask(p){
+function paintMask(point){
+ const shift=worldOffset(selectedPart),p={x:point.x-shift.x,y:point.y-shift.y};
  const mask=C.decode(currentMaster().masks[dir]),radius=Math.floor(Number($("brush").value)/2),
   index=parts.indexOf(selectedPart);let changed=false;
  for(let y=Math.max(0,p.y-radius);y<=Math.min(111,p.y+radius);y++)
@@ -198,9 +214,10 @@ function syncPivot(){
  $("part-select").value=selectedPart;$("pose-part").value=selectedPart;
 }
 function movePivot(p){
- const point=currentMaster().pivots[dir][selectedPart];
- if(point.x===p.x&&point.y===p.y)return;
- point.x=p.x;point.y=p.y;syncPivot();masterChanged();
+ const point=currentMaster().pivots[dir][selectedPart],shift=worldOffset(selectedPart);
+ const x=Math.max(0,Math.min(63,p.x-shift.x)),y=Math.max(0,Math.min(111,p.y-shift.y));
+ if(point.x===x&&point.y===y)return;
+ point.x=x;point.y=y;syncPivot();masterChanged();
 }
 function poseValues(){
  const p=currentPose()[selectedPart];
@@ -211,7 +228,9 @@ function changeDirection(d){
  dir=d;syncPivot();poseValues();void refreshScene();
 }
 function markDrawMode(t){
- tool=t;$("tool-rig").setAttribute("aria-pressed",String(t==="rig"));
+ if(!["move","rig","mask"].includes(t))return;
+ tool=t;$("tool-move").setAttribute("aria-pressed",String(t==="move"));
+ $("tool-rig").setAttribute("aria-pressed",String(t==="rig"));
  $("tool-mask").setAttribute("aria-pressed",String(t==="mask"));
  $("pivot-controls").hidden=t!=="rig";$("mask-controls").hidden=t!=="mask";
  void refreshScene();
@@ -485,7 +504,14 @@ function attach(){
  $("wear-layer").onchange=e=>{wearLayer=e.target.value};
  $("part-select").onchange=e=>{selectedPart=e.target.value;syncPivot();void refreshScene()};
  $("pose-part").onchange=e=>{selectedPart=e.target.value;syncPivot();poseValues();void refreshScene()};
+ $("tool-move").onclick=()=>markDrawMode("move");
  $("tool-rig").onclick=()=>markDrawMode("rig");$("tool-mask").onclick=()=>markDrawMode("mask");
+ $("reset-placement").onclick=()=>{
+  const p=currentMaster().placements[dir][selectedPart];
+  if(p.x===0&&p.y===0)return;
+  p.x=0;p.y=0;masterChanged();
+  status("RESET PIECE POSITION · "+selectedPart.toUpperCase()+" / "+dir.toUpperCase()+" · UNSAVED");
+ };
  $("paint-mask").onclick=()=>maskTool("select");$("erase-mask").onclick=()=>maskTool("erase");
  $("pivot-x").onchange=e=>{const p=currentMaster().pivots[dir][selectedPart];p.x=Math.max(0,Math.min(63,Math.round(Number(e.target.value)||0)));masterChanged()};
  $("pivot-y").onchange=e=>{const p=currentMaster().pivots[dir][selectedPart];p.y=Math.max(0,Math.min(111,Math.round(Number(e.target.value)||0)));masterChanged()};
@@ -571,7 +597,15 @@ function attach(){
    left:viewport.scrollLeft,top:viewport.scrollTop};}
   else if(mode==="master"){
    const p=localPoint(e);
-   pointer={id:e.pointerId,kind:tool};tool==="mask"?paintMask(p):movePivot(p);
+   if(tool==="move"){
+    const base=currentMaster().placements[dir][selectedPart];
+    pointer={id:e.pointerId,kind:"move",x:p.x,y:p.y,
+     base:{x:base.x,y:base.y},part:selectedPart,dir,gender};
+    status("MOVE "+selectedPart.toUpperCase()+" · drag to move artwork with rig; original PNG untouched");
+   }else{
+    pointer={id:e.pointerId,kind:tool};
+    tool==="mask"?paintMask(p):movePivot(p);
+   }
   }else if(mode==="animation"){
    const p=localPoint(e),pivot=masterModels[gender].pivots[dir][selectedPart],
     v=motion.frames[frame].poses[dir][selectedPart];
@@ -587,6 +621,16 @@ function attach(){
    viewport.scrollLeft=pointer.left+pointer.x-e.clientX;
    viewport.scrollTop=pointer.top+pointer.y-e.clientY;return;
   }
+  if(pointer.kind==="move"){
+   if(mode!=="master"||pointer.gender!==gender||pointer.dir!==dir)return;
+   const point=localPoint(e),offset=currentMaster().placements[dir][pointer.part];
+   const nextX=Math.max(-64,Math.min(64,pointer.base.x+point.x-pointer.x));
+   const nextY=Math.max(-112,Math.min(112,pointer.base.y+point.y-pointer.y));
+   if(offset.x!==nextX||offset.y!==nextY){
+    offset.x=nextX;offset.y=nextY;masterChanged();
+   }
+   return;
+  }
   if(pointer.kind==="pose"){
    const v=motion.frames[frame].poses[dir][selectedPart];
    v.x=Math.max(-64,Math.min(64,Math.round(pointer.start.x+(e.clientX-pointer.x)*pointer.scaleX)));
@@ -596,7 +640,12 @@ function attach(){
   if(mode!=="master")return;
   const p=localPoint(e);if(pointer.kind==="mask")paintMask(p);else movePivot(p);
  });
- for(const type of ["pointerup","pointercancel"])canvas.addEventListener(type,()=>{pointer=null});
+ for(const type of ["pointerup","pointercancel"])canvas.addEventListener(type,()=>{
+  if(pointer?.kind==="move"&&dirtyMaster[gender])
+   status("PIECE MOVED · "+pointer.part.toUpperCase()+" / "+pointer.dir.toUpperCase()+
+    " · PIXELS FOLLOW RIG · UNSAVED · SAVE MASTER TO KEEP");
+  pointer=null;
+ });
  root.addEventListener("message",e=>{
   if(e.origin!==location.origin)return;
   if(e.data?.type==="mahluk:cloud-connected"){
@@ -638,6 +687,7 @@ async function initialize(){
  setZoom(fitZoom(),true);
  const route=new URLSearchParams(location.search).get("mode");
  setMode(["master","character","animation"].includes(route)?route:"master");
+ markDrawMode("move");
  // Visual seed is authored in separate NEW masters; never write to old V6B.
  for(const g of ["male","female"]){
   if(masterModels[g].layers.body?.se)continue;
