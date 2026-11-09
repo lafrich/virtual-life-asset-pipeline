@@ -39,6 +39,55 @@ test('four independent pixel masks use new upper/lower parts; unselect removes o
  assert.equal(Core.decode(Core.validateMaster(c).masks.se)[20*64+31],255);
  assert.notEqual(c.masks.se,c.masks.sw);
 });
+test('Master Body Piece placement retains original images, slices, pivots and stable IDs',()=>{
+ const m=Core.master('male'),beforeMasks={...m.masks},beforePivots=JSON.stringify(m.pivots);
+ assert.equal(m.placements.se.arm_near_lower.x,0);
+ const legacy={...m};delete legacy.placements;
+ assert.equal(Core.validateMaster(legacy).placements.se.arm_near_lower.x,0,
+  'Old Lafrich masters must still open with neutral placement');
+ m.placements.se.arm_near_upper={x:4,y:-2};
+ m.placements.se.arm_near_lower={x:1,y:3};
+ const saved=Core.validateMaster(m);
+ assert.equal(saved.id,'lafrich_male');
+ assert.deepEqual(saved.placements.se.arm_near_upper,{x:4,y:-2});
+ assert.deepEqual(saved.placements.se.arm_near_lower,{x:1,y:3});
+ assert.equal(saved.placements.sw.arm_near_lower.x,0,
+  'Other camera directions must remain independent');
+ assert.deepEqual(saved.masks,beforeMasks,'Do not reslice art during a move');
+ assert.equal(JSON.stringify(saved.pivots),beforePivots,'Do not shift native pivot coordinates');
+ assert.deepEqual(saved.layers,m.layers,'Do not rewrite any PNG/Art Layer');
+ m.placements.se.arm_near_upper.x=65;
+ assert.throws(()=>Core.validateMaster(m),/Invalid body piece placement/);
+});
+test('Hierarchical rest placement moves body and wear through the SAME puppet transform',()=>{
+ const old=globalThis.LafrichPuppetCore;
+ globalThis.LafrichPuppetCore=Core;
+ try{
+  const master=Core.master('male');
+  master.placements.se.torso={x:3,y:-2};
+  master.placements.se.arm_near_upper={x:4,y:5};
+  master.placements.se.arm_near_lower={x:-1,y:6};
+  const prepared={master:Core.validateMaster(master),dir:'se'};
+  const trace=()=>{
+   const pos={x:0,y:0};
+   const ctx={translate(x,y){pos.x+=x;pos.y+=y},rotate(){}};
+   return {ctx,pos};
+  };
+  const t=trace();
+  Runtime.transform(t.ctx,prepared,Core.blankPose(),'arm_near_lower');
+  assert.deepEqual(t.pos,{x:6,y:9},'Upper-arm move must carry its forearm pixels');
+  const u=trace();
+  Runtime.transform(u.ctx,prepared,Core.blankPose(),'arm_far_lower');
+  assert.deepEqual(u.pos,{x:3,y:-2},'Far arm only follows common torso');
+  const animated=Core.blankPose();animated.arm_near_lower.x=2;animated.arm_near_lower.y=3;
+  const a=trace();
+  Runtime.transform(a.ctx,prepared,animated,'arm_near_lower');
+  assert.deepEqual(a.pos,{x:8,y:12},'Python animation adds to Master rest position');
+  const face=trace();
+  Runtime.transform(face.ctx,prepared,Core.blankPose(),'head');
+  assert.deepEqual(face.pos,{x:3,y:-2},'Emosi head follows moved torso');
+ }finally{globalThis.LafrichPuppetCore=old}
+});
 test('new Python motion has only one blank, unsaved authoring frame; no eleven installed animations',()=>{
  const source=Core.motion('Hand Wave');
  assert.equal(source.frames.length,1);assert.equal(source.id,'');
