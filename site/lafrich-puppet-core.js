@@ -96,6 +96,38 @@
   assert(total<6000000,"Master exceeds 6 MB; split assets across parts");
   return out;
  }
+ // Piece-scoped edits share the original source layer and native slice mask.
+ // IDs and master format remain unchanged.
+ function piecePixels(pixels,mask,part){
+  const index=PARTS.indexOf(part);
+  assert(index>=0,"Unknown body piece");
+  assert(pixels?.length===N*4&&mask?.length===N,"Invalid piece pixels or mask");
+  const out=new Uint8ClampedArray(N*4);
+  for(let i=0;i<N;i++)if(mask[i]===index){
+   const offset=i*4;out.set(pixels.subarray(offset,offset+4),offset);
+  }
+  return out;
+ }
+ function applyPiecePixels(original,edited,mask,part){
+  const index=PARTS.indexOf(part);
+  assert(index>=0,"Unknown body piece");
+  assert(original?.length===N*4&&edited?.length===N*4&&mask?.length===N,
+   "Invalid body piece edit or mask");
+  // Preserve every other piece's unedited source. Newly painted silhouette
+  // pixels become part of the moving piece (reassign the native slice).
+  const pixels=new Uint8ClampedArray(original),nextMask=new Uint8Array(mask);
+  let changed=0,reassigned=0;
+  for(let i=0;i<N;i++){
+   const off=i*4,selected=mask[i]===index,painted=edited[off+3]>0;
+   if(!selected&&!painted)continue;
+   if(painted&&!selected){nextMask[i]=index;reassigned++;}
+   if(pixels[off]!==edited[off]||pixels[off+1]!==edited[off+1]||
+    pixels[off+2]!==edited[off+2]||pixels[off+3]!==edited[off+3]){
+    pixels.set(edited.subarray(off,off+4),off);changed++;
+   }
+  }
+  return {pixels,mask:nextMask,changed,reassigned};
+ }
  function blankPose(){return Object.fromEntries(PARTS.map(p=>[p,{x:0,y:0,a:0}]))}
  function blankFrame(ms=160){return {ms,poses:Object.fromEntries(DIRS.map(d=>[d,blankPose()]))}}
  function motion(name="Untitled Motion"){
@@ -153,6 +185,6 @@
   return validateMotion(value);
  }
  return Object.freeze({W,H,N,DIRS,IDS,PARTS,PARENTS,DRAW_ORDER,LAYERS,WEAR,FORMAT,MOTION,CHARACTER,
-  MASTER_KEY,CHARACTER_KEY,MOTION_KEY,blankPose,blankFrame,master,validateMaster,
+  MASTER_KEY,CHARACTER_KEY,MOTION_KEY,piecePixels,applyPiecePixels,blankPose,blankFrame,master,validateMaster,
   motion,validateMotion,character,validateCharacter,encode,decode,clone,toPython,fromPython});
 });
