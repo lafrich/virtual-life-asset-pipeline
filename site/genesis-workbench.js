@@ -568,8 +568,83 @@ function exportJson(){try{
  const b=validatedBinding();download(b.id+"_binding.json",JSON.stringify(b,null,2));
  }catch(e){status(e.message,true)}
 }
+async function restoreDraftRecord(data,label){
+ if(!data||typeof data!=="object")throw Error("Empty LGR-1 draft");
+ const target=data.rig?.gender;
+ if(!SOURCE[target])throw Error("Draft does not contain a valid Male/Female body");
+ const rig=C.validateMaster(data.rig);
+ if(target!==gender&&!confirm("This draft is "+target.toUpperCase()+
+   ". Switch from "+gender.toUpperCase()+" to restore it?"))return false;
+ const validBound=data.bound?.format===BIND_FORMAT&&
+  data.bound.id===MASTER_IDS[target]&&data.bound.gender===target&&
+  data.bound.sourceId===SOURCE[target]&&
+  JSON.stringify(C.validateMaster(data.bound.rig))===JSON.stringify(rig);
+ const reviewed={};
+ for(const d of DIR)for(const part of PARTS){
+  const key=reviewKey(d,part);
+  if(data.reviewed?.[key]===true)reviewed[key]=true;
+ }
+ const testedAngles=validBound?Object.fromEntries(DIR.filter(d=>data.testedAngles?.[d]===true).map(d=>[d,true])):{};
+ const approved=!!validBound&&!!data.approved&&DIR.every(d=>testedAngles[d]);
+ stopPlayback();gender=target;dir="se";selected="head";maskUndo=[];maskRedo=[];
+ faceId="";faceImage=null;motionTime=0;
+ drafts[target]={rig,bound:validBound?clone(data.bound):null,reviewed,testedAngles,
+  approved,saved:false,edited:String(data.edited||new Date().toISOString())};
+ await sourceCanvases(target);
+ R.clearCache();preparedCache.clear();rev++;renderRequest++;
+ step=approved?"save":validBound?"test":"rig";
+ const okay=persistDraft();syncControls();void renderAll();
+ status(label+" · "+target.toUpperCase()+" restored · "+
+  reviewCount()+"/40 rig checks · "+(okay?"local copy saved":"LOCAL STORAGE FULL: save another backup"),!okay);
+ return true;
+}
+async function importDraftFile(file){
+ try{
+  if(!file||file.size>12000000)throw Error("Draft JSON missing or exceeds 12 MB");
+  const json=JSON.parse(await file.text());
+  const data=json.format==="lgr-1-draft-v1"?json.record:
+   json.format==="lafrich-genesis-draft-store-v1"?json.drafts?.[gender]:json;
+  if(!data?.rig)throw Error("Unsupported LGR-1 draft JSON");
+  if(!confirm("Import "+(data.rig?.gender||"unknown")+" draft? This replaces the current editable draft, not the cloud master."))return;
+  await restoreDraftRecord(data,"IMPORTED JSON");
+ }catch(e){status("IMPORT FAILED: "+e.message,true)}
+}
+async function refreshDraftRevisions(){
+ const cloud=root.VLGenesisCloud;
+ if(!cloud?.connected())throw Error("Connect Google Drive first");
+ const versions=await cloud.listDrafts(MASTER_IDS[gender]);
+ const list=$("draft-revisions");list.replaceChildren();
+ if(!versions.length)list.add(new Option("No versions saved yet",""));
+ for(const v of versions){
+  const readable=v.createdTime?new Date(v.createdTime).toLocaleString():v.name;
+  list.add(new Option(readable+" · "+v.name.slice(-19),v.id));
+ }
+ return versions;
+}
+async function cloudSaveDraft(){
+ try{
+  const cloud=root.VLGenesisCloud;
+  if(!cloud?.connected())throw Error("CONNECT DRIVE first");
+  const v=await cloud.saveDraft(MASTER_IDS[gender],clone(record()));
+  await refreshDraftRevisions();
+  $("draft-revisions").value=v.fileId;
+  status("CLOUD DRAFT VERIFIED · immutable version "+v.name);
+ }catch(e){status("CLOUD DRAFT: "+e.message,true)}
+}
+async function cloudLoadDraft(){
+ try{
+  const cloud=root.VLGenesisCloud;
+  if(!cloud?.connected())throw Error("CONNECT DRIVE first");
+  const fileId=$("draft-revisions").value;
+  if(!fileId)throw Error("Select or refresh a saved cloud draft revision");
+  const data=await cloud.loadDraft(MASTER_IDS[gender],fileId);
+  if(!confirm("Restore cloud revision "+data.name+
+    "? Current unexported edits will be replaced. A cloud revision is never deleted."))return;
+  await restoreDraftRecord(data.record,"CLOUD DRAFT "+data.name);
+ }catch(e){status("RESTORE CLOUD DRAFT: "+e.message,true)}
+}
 function saveApproved(){
- if(!record().approved)return status("CHECK BINDING must be approved first",true);
+ if(!record().approved){status("CHECK BINDING must be approved first",true);return false}
  try{
   const v=toMaster();
   const all=JSON.parse(localStorage.getItem(MASTER_KEY)||"{}");
@@ -578,7 +653,8 @@ function saveApproved(){
   record().saved=true;persistDraft();syncControls();
   root.dispatchEvent(new CustomEvent("lafrich:genesis-master-saved",{detail:{gender,id:v.id}}));
   status("APPROVED MASTER SAVED · "+v.id+" · local database ready for Character Editor.");
- }catch(e){status("Master save failed: "+e.message,true)}
+  return true;
+ }catch(e){status("Master local save failed: "+e.message+". Cloud save may still be verified.",true);return false}
 }
 async function cloudSave(){
  try{
@@ -586,9 +662,10 @@ async function cloudSave(){
   const d=root.VLGenesisCloud;if(!d?.connected())throw Error("CONNECT DRIVE first");
   const v=toMaster();
   await d.save(v.id,v);
-  saveApproved();
+  const localOkay=saveApproved();
   $("statuscloud").textContent="DRIVE VERIFIED";
-  status("Drive read-back verified · "+v.id+" · canonical Genesis Master");
+  status("Drive read-back verified · "+v.id+" · canonical Genesis Master"+
+   (localOkay?"":" · browser local save failed, Drive copy is safe"),!localOkay);
  }catch(e){status("Cloud save: "+e.message,true)}
 }
 async function cloudLoad(){
@@ -598,7 +675,8 @@ async function cloudLoad(){
   if(!data)throw Error("No approved Genesis Master for "+gender+" on Drive");
   if(data.format!==MASTER_FORMAT||data.gender!==gender||data.id!==MASTER_IDS[gender]||
     data.binding?.format!==BIND_FORMAT)throw Error("Invalid Genesis cloud master");
-  if(!confirm("Replace current "+gender+" draft with this verified Drive master? Unsaved edits will be lost."))return;
+  if(!confirm("Replace current "+gender+" draft with this verified Drive master? Export current draft first. Unsaved edits will be lost."))return;
+  await d.acknowledgeLoadedMaster(data.id,data);
   drafts[gender]={rig:C.validateMaster(data.binding.rig),bound:data.binding,
    reviewed:data.binding.reviewed||{},testedAngles:Object.fromEntries(DIR.map(d=>[d,true])),
    approved:true,saved:true,edited:data.approvedAt||""};
@@ -627,7 +705,12 @@ function setup(){
   if(!SOURCE[g])return;
   try{
    gender=g;dir="se";selected="head";activeLayer="body";maskUndo=[];maskRedo=[];faceId="";faceImage=null;
-   await ensure(g);syncControls();flushCache();void refreshFace();
+   await ensure(g);
+   stopPlayback();motionTime=0;
+   if(step==="save"&&!record()?.approved)step=record()?.bound?"test":"pixel";
+   if(step==="test"&&!record()?.bound)step="rig";
+   syncControls();flushCache();void refreshFace();
+   if(root.VLGenesisCloud?.connected())void refreshDraftRevisions().catch(()=>{});
   }catch(err){status("V6B source error: "+err.message,true)}
  };
  $("seed").onclick=async()=>{
@@ -708,9 +791,18 @@ function setup(){
  $("download-binding").onclick=exportPython;
  $("cloud-master").onclick=()=>void cloudSave();
  $("load-cloud").onclick=()=>void cloudLoad();
+ $("cloud-draft").onclick=()=>void cloudSaveDraft();
+ $("refresh-drafts").onclick=()=>void refreshDraftRevisions().then(v=>
+  status(v.length+" cloud draft versions found.")).catch(e=>status("Draft list: "+e.message,true));
+ $("load-cloud-draft").onclick=()=>void cloudLoadDraft();
+ $("import-draft").onclick=()=>$("draft-file").click();
+ $("draft-file").onchange=()=>{const file=$("draft-file").files?.[0];
+  $("draft-file").value="";if(file)void importDraftFile(file);
+ };
  $("connect-drive").onclick=async()=>{
   try{await root.VLGenesisCloud.connect();$("connect-drive").textContent="☁ CONNECTED";$("statuscloud").textContent="DRIVE CONNECTED";
-   status("Genesis cloud connected; no legacy animation or character records touched.");
+   await refreshDraftRevisions();
+   status("Genesis Drive connected · draft versions loaded · no legacy records touched.");
   }catch(e){status("Drive: "+e.message,true)}
  };
  $("face").onchange=()=>{faceId=$("face").value;faceImage=null;flushCache()};
