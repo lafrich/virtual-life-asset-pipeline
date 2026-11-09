@@ -124,8 +124,15 @@
   ];
   const images=[];
   for(const [part,layer] of sources){
-   const sheet=await V.img(part,part.startsWith("base/")?b.sourceId:null);
-   if(!sheet)throw Error("Required native nude anatomy atlas missing: "+part);
+   // Always use the packaged immutable native nude assets: old per-character
+   // V6P overrides or saved clothing must never silently replace bare anatomy.
+   const sheet=await new Promise((resolve,reject)=>{
+    const im=new Image();
+    im.onload=()=>im.naturalWidth===V.W&&im.naturalHeight===V.H?
+     resolve(im):reject(Error("Unexpected nude atlas dimensions: "+part));
+    im.onerror=()=>reject(Error("Required native nude anatomy atlas missing: "+part));
+    im.src="./media/v6p/"+part+".png";
+   });
    images.push({part,layer,sheet});
   }
   const m=Cc.master(gender);
