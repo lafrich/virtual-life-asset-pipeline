@@ -31,6 +31,8 @@
  const clone=a=>JSON.parse(JSON.stringify(a));
  function assert(ok,msg){if(!ok)throw Error("Lafrich Puppet: "+msg)}
  const isPoint=p=>p&&Number.isInteger(p.x)&&Number.isInteger(p.y)&&p.x>=0&&p.x<W&&p.y>=0&&p.y<H;
+ const isPlacement=p=>p&&Number.isInteger(p.x)&&Number.isInteger(p.y)&&
+  Math.abs(p.x)<=W&&Math.abs(p.y)<=H;
  // Pivots are in original 64×112 V6B coordinates and can be edited in four views.
  const coords=Object.freeze({torso:[32,66],head:[32,48],
   arm_near_upper:[22,62],arm_near_lower:[21,73],
@@ -73,7 +75,10 @@
   return {format:FORMAT,id:IDS[gender],gender,name:gender==="male"?"Lafrich Male":"Lafrich Female",
    version:1,updated:"",layers:Object.fromEntries(LAYERS.map(n=>[n,{}])),
    masks:Object.fromEntries(DIRS.map(d=>[d,maskDefault()])),
-   pivots:Object.fromEntries(DIRS.map(d=>[d,Object.fromEntries(PARTS.map(p=>[p,{x:coords[p][0],y:coords[p][1]}]))]))};
+   pivots:Object.fromEntries(DIRS.map(d=>[d,Object.fromEntries(PARTS.map(p=>[p,{x:coords[p][0],y:coords[p][1]}]))])),
+   // Additive/backward-compatible placement: pixel assets stay at native source
+   // coordinates, and the renderer moves each cut puppet piece with its joints.
+   placements:Object.fromEntries(DIRS.map(d=>[d,Object.fromEntries(PARTS.map(p=>[p,{x:0,y:0}]))]))};
  }
  function validateMaster(input){
   assert(input?.format===FORMAT&&IDS[input.gender]===input.id,"Only two stable Lafrich masters allowed");
@@ -91,6 +96,11 @@
     const point=input.pivots?.[d]?.[part];
     assert(isPoint(point),"Invalid pivot "+d+" / "+part);
     out.pivots[d][part]={x:point.x,y:point.y};
+    const placement=input.placements?.[d]?.[part];
+    if(placement!==undefined){
+     assert(isPlacement(placement),"Invalid body piece placement "+d+" / "+part);
+     out.placements[d][part]={x:placement.x,y:placement.y};
+    }
    }
   }
   assert(total<6000000,"Master exceeds 6 MB; split assets across parts");
