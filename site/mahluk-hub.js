@@ -5,10 +5,10 @@ const $=id=>document.getElementById(id);
 const ORIGIN=location.origin;
 const URLS=Object.freeze({
  emotion:"/virtual-office/emotion-studio/",
- character:"./lafrich-puppet-studio.html?embedded=1&mode=character&rev=lafrich-puppet-v1",
- action:"./lafrich-puppet-studio.html?embedded=1&mode=animation&rev=lafrich-puppet-v1",
- animation:"./lafrich-puppet-studio.html?embedded=1&mode=animation&rev=lafrich-puppet-v1",
- genesis:"./lafrich-puppet-studio.html?embedded=1&mode=master&rev=lafrich-puppet-v1"
+ character:"./lafrich-puppet-studio.html?embedded=1&mode=character&rev=lafrich-body-character-sep-1",
+ action:"./lafrich-puppet-studio.html?embedded=1&mode=animation&rev=lafrich-body-character-sep-1",
+ animation:"./lafrich-puppet-studio.html?embedded=1&mode=animation&rev=lafrich-body-character-sep-1",
+ genesis:"./lafrich-puppet-studio.html?embedded=1&mode=master&rev=lafrich-body-character-sep-1"
 });
 const FRAMES=Object.freeze({
  emotion:"emotion-frame",character:"character-frame",action:"action-frame",
