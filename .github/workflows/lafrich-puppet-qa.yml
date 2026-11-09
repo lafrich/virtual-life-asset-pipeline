@@ -1,0 +1,53 @@
+name: LAFRICH PUPPET — New Two-Master 10-Piece Rig QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/lafrich-puppet-*"
+      - "site/mahluk-hidup.html"
+      - "site/mahluk-hub.js"
+      - "site/mahluk-hub-drive.js"
+      - "tests/test_lafrich_puppet.cjs"
+      - "tests/smoke_lafrich_puppet.cjs"
+      - ".github/workflows/lafrich-puppet-qa.yml"
+  workflow_dispatch:
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate Lafrich Puppet new source and strict data contracts
+        run: |
+          set -euo pipefail
+          node --check site/lafrich-puppet-core.js
+          node --check site/lafrich-puppet-renderer.js
+          node --check site/lafrich-puppet-studio.js
+          node --check tests/smoke_lafrich_puppet.cjs
+          node tests/test_lafrich_puppet.cjs
+          test -s site/lafrich-puppet-studio.html
+          grep -q '10-PIECE HIERARCHICAL RIG' site/lafrich-puppet-studio.html
+          grep -q 'mode=master' site/mahluk-hub.js
+          grep -q 'mode=animation' site/mahluk-hub.js
+          grep -q 'mode=character' site/mahluk-hub.js
+          ! grep -q 'animation:"./mahluk-animation-native.html' site/mahluk-hub.js
+  browser:
+    needs: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install real browser
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Four-view authoring and dressed elbow/knee motion in real browser
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4178 --bind 127.0.0.1 -d site >/tmp/lafrich-puppet-http.log 2>&1 &
+          node tests/smoke_lafrich_puppet.cjs
