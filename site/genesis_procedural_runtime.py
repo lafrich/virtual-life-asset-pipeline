@@ -25,6 +25,8 @@ def validate(binding: dict) -> dict:
     """Validate all directions and the *existing* source and slice contract."""
     if not isinstance(binding, dict) or binding.get("format") != "lafrich-genesis-binding-v1":
         raise ValueError("Unsupported Genesis binding")
+    if binding.get("rigFormat", "LGR-1") != "LGR-1":
+        raise ValueError("Foreign rig format rejected: expected LGR-1")
     if binding.get("gender") not in ("male", "female"):
         raise ValueError("Invalid Genesis gender")
     if binding.get("id") != "lafrich_genesis_" + binding["gender"]:
