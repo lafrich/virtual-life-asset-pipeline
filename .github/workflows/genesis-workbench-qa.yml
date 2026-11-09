@@ -149,9 +149,15 @@ jobs:
               assert(await page.locator('[data-panel="rig"]').isVisible(),'Rig stage inaccessible');
               assert(await page.locator('#part-select').isVisible(),
                 'Body Part selector hidden on Pivot & Slicing');
-              // The old 1-click bind used to pass with an unreviewed, approximate mask.
-              // Go through all 10 parts in each of four directions without
-              // returning to Pixel Editor. Each review is explicit.
+              // First, reject a bind when none of the 40 combinations has been reviewed.
+              await page.locator('#rig-next').click();
+              await page.locator('#make-binding').click();
+              assert((await page.locator('#binding-result').textContent()).includes('MANUAL QA INCOMPLETE'),
+                'Unreviewed mask wrongly passed binding');
+              await page.locator('[data-step="rig"]').click();
+              await page.locator('#pivot-x').fill('31');
+              await page.locator('#pivot-x').dispatchEvent('change');
+              // Complete all 10 parts in four directions without returning to Pixel Editor.
               const partNames=await page.evaluate(()=>[...window.LafrichPuppetCore.PARTS]);
               for(const d of ['se','sw','ne','nw']){
                 await page.locator('#views button[data-dir="'+d+'"]').click();
@@ -162,13 +168,6 @@ jobs:
               }
               assert((await page.locator('#part-progress').textContent()).includes('40 / 40'),
                 '40-part review matrix not complete');
-              await page.locator('#rig-next').click();
-              await page.locator('#make-binding').click();
-              assert((await page.locator('#binding-result').textContent()).includes('MANUAL QA INCOMPLETE'),
-                'Unreviewed 10×4 masks wrongly passed binding');
-              await page.locator('[data-step="rig"]').click();
-              await page.locator('#pivot-x').fill('31');
-              await page.locator('#pivot-x').dispatchEvent('change');
               await page.locator('#rig-next').click();
               await page.locator('#make-binding').click();
               await page.waitForTimeout(500);
