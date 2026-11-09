@@ -8,7 +8,7 @@ const URLS=Object.freeze({
  character:"./v6p-studio.html?embedded=1&rev=idle-pivot-v2",
  action:"./mahluk-action-editor.html?embedded=1",
  animation:"./mahluk-animation-native.html?embedded=1&rev=genesis-master-v1",
- genesis:"./genesis-editor.html?embedded=1&rev=two-master-v1"
+ genesis:"./genesis-editor.html?embedded=1&rev=genesis-appearance-master-v2"
 });
 const FRAMES=Object.freeze({
  emotion:"emotion-frame",character:"character-frame",action:"action-frame",
