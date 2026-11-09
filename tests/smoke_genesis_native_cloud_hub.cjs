@@ -92,7 +92,7 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   await genesis.locator("#slice-part").selectOption("arm_l");
   const b=await genesis.locator("#stage").boundingBox();
   assert.ok(b,"Genesis slice canvas is missing");
-  await page.mouse.click(b.x+b.width*32/64,b.y+b.height*30/112);
+  await genesis.locator("#stage").click({position:{x:b.width*32/64,y:b.height*30/112}});
   await genesis.locator("#save").click();
   await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
   let masters=[...files.values()].filter(row=>row.name==="genesis__genesis_male_nude.json");
@@ -107,7 +107,7 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   assert.equal(masks,3,"Edited native slice must be stored as left-arm mask");
   await genesis.locator("#slice-unselect").click();
   assert.equal(await genesis.locator("#slice-unselect").getAttribute("aria-pressed"),"true");
-  await page.mouse.click(b.x+b.width*32/64,b.y+b.height*30/112);
+  await genesis.locator("#stage").click({position:{x:b.width*32/64,y:b.height*30/112}});
   const unselected=await genesis.locator("#stage").evaluate(()=>{
    const M=window.GenesisMasterRig;
    return M.decode(M.load('male').masks.se)[30*64+32];
@@ -124,7 +124,7 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   },unselectSave.masks.se);
   assert.equal(unselectDecoded,255,"UNSELECT must save as unassigned, not clear Genesis pixels");
   await genesis.locator("#slice-select").click();
-  await page.mouse.click(b.x+b.width*32/64,b.y+b.height*30/112);
+  await genesis.locator("#stage").click({position:{x:b.width*32/64,y:b.height*30/112}});
   await genesis.locator("#save").click();
   await genesis.locator("#status").getByText(/CLOUD VERIFIED/).waitFor({timeout:45000});
   await genesis.locator("#mode-puppet").click();
