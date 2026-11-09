@@ -16,7 +16,7 @@ const cv=() => R.rgba(64,112),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const clone=C.clone;
 let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5,activeLayer="body";
 let drafts={},source={},preparedCache=new Map(),rev=0,paintDrag=null,renderRequest=0;
-let pixelEditor=null,pixelSession=null,maskCopied=null,maskUndo=[],maskRedo=[];
+let pixelEditor=null,pixelSession=null,maskCopied=null,partCopied=null,isolated=false,maskUndo=[],maskRedo=[];
 let faceEntries=[],faceImage=null,faceId="",page="workshop",sourcePending=Promise.resolve();
 let playing=false,playTick=0,playFrame=0,motionTime=0;
 const reviewKey=(direction,part)=>direction+"|"+part;
@@ -195,7 +195,8 @@ function maskHighlight(destination,d,rig){
  for(let k=0;k<mask.length;k++){
   if(raw[k*4+3]===0)continue;
   const p=k*4;
-  if(mask[k]===idx){image.data[p]=39;image.data[p+1]=126;image.data[p+2]=239;image.data[p+3]=83;}
+  if(mask[k]===255){image.data[p]=235;image.data[p+1]=47;image.data[p+2]=73;image.data[p+3]=160;}
+  else if(mask[k]===idx){image.data[p]=39;image.data[p+1]=126;image.data[p+2]=239;image.data[p+3]=83;}
   else if(step==="pixel"){image.data[p]=51;image.data[p+1]=61;image.data[p+2]=80;image.data[p+3]=30;}
  }
  const overlay=cv();overlay.getContext("2d").putImageData(image,0,0);
@@ -228,8 +229,15 @@ async function renderAll(){
    }
    const output=R.render(prepared,po);
    if(token!==renderRequest)return;
-   const out=cv(),o=out.getContext("2d");
+   const out=cv(),o=out.getContext("2d",{willReadFrequently:true});
    o.imageSmoothingEnabled=false;o.drawImage(output,0,0);
+   if(currentStep==="rig"&&isolated){
+    const data=o.getImageData(0,0,64,112),mask=C.decode(m.masks[d]);
+    const owner=PARTS.indexOf(selected);
+    for(let k=0;k<mask.length;k++)if(mask[k]!==owner)data.data[k*4+3]=
+     Math.min(data.data[k*4+3],28);
+    o.putImageData(data,0,0);
+   }
    if(currentStep==="pixel"||currentStep==="rig"){
     maskHighlight(o,d,m);
     if(currentStep==="rig")showPivot(o,d,m);
@@ -319,6 +327,7 @@ function syncControls(){
  $("rig-pivot").setAttribute("aria-pressed",String(tool==="pivot"));
  $("rig-paint").setAttribute("aria-pressed",String(tool==="paint"));
  $("rig-erase").setAttribute("aria-pressed",String(tool==="erase"));
+ $("rig-isolate").setAttribute("aria-pressed",String(isolated));
  $("export-python").disabled=!record()?.bound;
  $("export-json").disabled=!record()?.bound;
  $("bind-next").disabled=!record()?.bound;
@@ -401,6 +410,29 @@ function bindMaskCopy(flipped){
   dst[y*64+x]=v;
  }
  master().masks[dir]=C.encode(dst);invalidateReviews(dir);syncControls();
+}
+function pasteCopiedPart(){
+ if(!partCopied)return status("COPY PART from a chosen source angle first",true);
+ if(partCopied.part!==selected&&!confirm(
+  "Copied "+labels[partCopied.part]+". Paste its mask as "+labels[selected]+" instead?"))return;
+ const sourceMask=C.decode(partCopied.mask),target=C.decode(master().masks[dir]);
+ const sourceIndex=PARTS.indexOf(partCopied.part),targetIndex=PARTS.indexOf(selected);
+ let overwrite=0;
+ for(let k=0;k<sourceMask.length;k++)if(sourceMask[k]===sourceIndex&&
+    target[k]!==255&&target[k]!==targetIndex)overwrite++;
+ if(overwrite&&!confirm(overwrite+" pixels are already assigned to OTHER body parts in "+dir.toUpperCase()+
+   ". Reassign them to "+labels[selected]+"?"))return;
+ snapshot();
+ const touched=new Set([selected]);
+ for(let k=0;k<target.length;k++)if(target[k]===targetIndex)target[k]=255;
+ for(let k=0;k<sourceMask.length;k++)if(sourceMask[k]===sourceIndex){
+  if(target[k]!==255)touched.add(PARTS[target[k]]);
+  target[k]=targetIndex;
+ }
+ master().masks[dir]=C.encode(target);
+ invalidateReviews(dir,[...touched]);syncControls();
+ status("Pasted only "+labels[selected]+" slice to "+dir.toUpperCase()+
+  " · "+touched.size+" affected part reviews reset.");
 }
 function channel(v){return cv().getContext("2d",{willReadFrequently:true})}
 async function openPixels(){
@@ -729,6 +761,12 @@ function setup(){
  $("rig-pivot").onclick=()=>{tool="pivot";syncControls()};
  $("rig-paint").onclick=()=>{tool="paint";syncControls()};
  $("rig-erase").onclick=()=>{tool="erase";syncControls()};
+ $("rig-isolate").onclick=()=>{isolated=!isolated;syncControls();void renderAll()};
+ $("copy-part-slice").onclick=()=>{
+  partCopied={mask:master().masks[dir],part:selected,direction:dir};
+  status("Copied ONLY "+labels[selected]+" from "+dir.toUpperCase());
+ };
+ $("paste-part-slice").onclick=pasteCopiedPart;
  for(const field of ["x","y"])$("pivot-"+field).onchange=()=>{
   snapshot();setPivot(Number($("pivot-x").value),Number($("pivot-y").value));
  };
@@ -746,10 +784,13 @@ function setup(){
     " mask with a horizontally flipped copy (near/far swapped)? All reviews of this angle will reset."))return;
   bindMaskCopy(true);
  };
- $("mark-reviewed").onclick=()=>{
+ $("mark-reviewed").onclick=async()=>{
+  await sourcePending;
   if(!master()?.pivots?.[dir]?.[selected])return status("Pivot missing",true);
   const mask=C.decode(master().masks[dir]);
-  const pixels=mask.reduce((n,v)=>n+Number(v===PARTS.indexOf(selected)),0);
+  const rgba=source[gender][dir].getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+  let pixels=0;
+  for(let i=0;i<mask.length;i++)if(mask[i]===PARTS.indexOf(selected)&&rgba[i*4+3]>0)pixels++;
   if(!pixels&&!confirm(labels[selected]+" has zero slice pixels in "+dir.toUpperCase()+
     ". This is valid ONLY if fully occluded; confirm the pivot position and continue?"))return;
   record().reviewed??={};
