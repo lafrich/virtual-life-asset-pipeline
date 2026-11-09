@@ -9,7 +9,19 @@
  "use strict";
  const W=64,H=112,N=W*H,DIRS=Object.freeze(["se","sw","ne","nw"]);
  const IDS=Object.freeze({male:"lafrich_male",female:"lafrich_female"});
- const PARTS=Object.freeze(["leg_far","arm_far","torso","leg_near","arm_near","head"]);
+ // Hierarchical anatomy: forearms rotate around elbows and calves around knees.
+ // These are actual independent masks; they are not stretched single limbs.
+ const PARTS=Object.freeze(["leg_far_upper","leg_far_lower","arm_far_upper","arm_far_lower",
+  "torso","leg_near_upper","leg_near_lower","arm_near_upper","arm_near_lower","head"]);
+ const PARENTS=Object.freeze({
+  torso:null,head:"torso",
+  arm_near_upper:"torso",arm_near_lower:"arm_near_upper",
+  arm_far_upper:"torso",arm_far_lower:"arm_far_upper",
+  leg_near_upper:"torso",leg_near_lower:"leg_near_upper",
+  leg_far_upper:"torso",leg_far_lower:"leg_far_upper"
+ });
+ const DRAW_ORDER=Object.freeze(["leg_far_lower","leg_far_upper","arm_far_lower","arm_far_upper",
+  "torso","leg_near_lower","leg_near_upper","arm_near_upper","arm_near_lower","head"]);
  const LAYERS=Object.freeze(["hair_back","body","pants","shoes","top_back","top","body_front","hair_front","accessory"]);
  const WEAR=Object.freeze(["pants","shoes","top_back","top","hair_back","hair_front","accessory"]);
  const FORMAT="lafrich-puppet-master-v1",MOTION="lafrich-puppet-motion-v1",CHARACTER="lafrich-puppet-character-v1";
@@ -19,13 +31,23 @@
  const clone=a=>JSON.parse(JSON.stringify(a));
  function assert(ok,msg){if(!ok)throw Error("Lafrich Puppet: "+msg)}
  const isPoint=p=>p&&Number.isInteger(p.x)&&Number.isInteger(p.y)&&p.x>=0&&p.x<W&&p.y>=0&&p.y<H;
- const coords=Object.freeze({head:[32,40],torso:[32,65],arm_near:[21,65],arm_far:[43,65],
-  leg_near:[26,85],leg_far:[38,85]});
+ // Pivots are in original 64×112 V6B coordinates and can be edited in four views.
+ const coords=Object.freeze({torso:[32,66],head:[32,48],
+  arm_near_upper:[22,62],arm_near_lower:[21,73],
+  arm_far_upper:[42,62],arm_far_lower:[43,73],
+  leg_near_upper:[27,81],leg_near_lower:[26,93],
+  leg_far_upper:[37,81],leg_far_lower:[38,93]});
  function maskDefault(){
   const bytes=new Uint8Array(N);
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-   const part=y<49?"head":y<80?(x<24?"arm_near":x>40?"arm_far":"torso"):
-    x<32?"leg_near":"leg_far";
+   let part;
+   if(y<50)part="head";
+   else if(y<81){
+    if(x<24)part=y<73?"arm_near_upper":"arm_near_lower";
+    else if(x>40)part=y<73?"arm_far_upper":"arm_far_lower";
+    else part="torso";
+   }else if(x<32)part=y<94?"leg_near_upper":"leg_near_lower";
+   else part=y<94?"leg_far_upper":"leg_far_lower";
    bytes[y*W+x]=PARTS.indexOf(part);
   }
   return encode(bytes);
@@ -130,7 +152,7 @@
   let value;try{value=JSON.parse(match[1])}catch{throw Error("Motion must be a JSON-compatible Python dict literal")}
   return validateMotion(value);
  }
- return Object.freeze({W,H,N,DIRS,IDS,PARTS,LAYERS,WEAR,FORMAT,MOTION,CHARACTER,
+ return Object.freeze({W,H,N,DIRS,IDS,PARTS,PARENTS,DRAW_ORDER,LAYERS,WEAR,FORMAT,MOTION,CHARACTER,
   MASTER_KEY,CHARACTER_KEY,MOTION_KEY,blankPose,blankFrame,master,validateMaster,
   motion,validateMotion,character,validateCharacter,encode,decode,clone,toPython,fromPython});
 });
