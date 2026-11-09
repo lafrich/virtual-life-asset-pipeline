@@ -173,6 +173,20 @@ jobs:
               }
               assert((await page.locator('#part-progress').textContent()).includes('40 / 40'),
                 '40-part review matrix not complete');
+              // Adjusting a reviewed pivot MUST invalidate that part's review.
+              await page.locator('#pivot-x').fill('30');
+              await page.locator('#pivot-x').dispatchEvent('change');
+              assert((await page.locator('#part-progress').textContent()).includes('39 / 40'),
+                'Pivot correction did not invalidate previous rig QA');
+              await page.locator('#mark-reviewed').click();
+              assert((await page.locator('#part-progress').textContent()).includes('40 / 40'),
+                'Corrected part could not be re-reviewed');
+              await page.locator('#rig-isolate').click();
+              assert(await page.locator('#rig-isolate').getAttribute('aria-pressed')==='true',
+                'Isolate Body Part preview not active');
+              await page.locator('#rig-pan').click();
+              assert(await page.locator('#rig-pan').getAttribute('aria-pressed')==='true',
+                'No-edit pan mode not available');
               await page.locator('#rig-next').click();
               await page.locator('#make-binding').click();
               await page.waitForTimeout(500);
