@@ -147,6 +147,26 @@ jobs:
               await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
               await page.locator('#pixel-next').click();
               assert(await page.locator('[data-panel="rig"]').isVisible(),'Rig stage inaccessible');
+              assert(await page.locator('#part-select').isVisible(),
+                'Body Part selector hidden on Pivot & Slicing');
+              // The old 1-click bind used to pass with an unreviewed, approximate mask.
+              // Go through all 10 parts in each of four directions without
+              // returning to Pixel Editor. Each review is explicit.
+              const partNames=await page.evaluate(()=>[...window.LafrichPuppetCore.PARTS]);
+              for(const d of ['se','sw','ne','nw']){
+                await page.locator('#views button[data-dir="'+d+'"]').click();
+                for(const part of partNames){
+                  await page.locator('#part-select').selectOption(part);
+                  await page.locator('#mark-reviewed').click();
+                }
+              }
+              assert((await page.locator('#part-progress').textContent()).includes('40 / 40'),
+                '40-part review matrix not complete');
+              await page.locator('#rig-next').click();
+              await page.locator('#make-binding').click();
+              assert((await page.locator('#binding-result').textContent()).includes('MANUAL QA INCOMPLETE'),
+                'Unreviewed 10×4 masks wrongly passed binding');
+              await page.locator('[data-step="rig"]').click();
               await page.locator('#pivot-x').fill('31');
               await page.locator('#pivot-x').dispatchEvent('change');
               await page.locator('#rig-next').click();
@@ -156,8 +176,23 @@ jobs:
               assert(/^BOUND/.test(info),'Binding failed: '+info);
               await page.locator('#bind-next').click();
               assert(await page.locator('[data-panel="test"]').isVisible(),'Test binding stage inaccessible');
+              assert(await page.locator('#part-select').isVisible(),
+                'Shared Body Part selector hidden during motion checks');
               await page.locator('#test-preset').selectOption('walk');
               await page.locator('#test-angle').fill('25');
+              await page.locator('#test-play').click();
+              await page.waitForTimeout(350);
+              const motionValue=Number(await page.locator('#test-scrub').inputValue());
+              assert(motionValue>0,'Motion scrub did not play');
+              await page.locator('#test-play').click();
+              // Approval must fail until all four angles are explicitly tested.
+              await page.locator('#approve-binding').click();
+              assert(await page.locator('[data-panel="test"]').isVisible(),
+                'Unverified four-angle motion approved');
+              for(const d of ['se','sw','ne','nw']){
+                await page.locator('#views button[data-dir="'+d+'"]').click();
+                await page.locator('#mark-angle-tested').click();
+              }
               await page.locator('#approve-binding').click();
               assert(await page.locator('[data-panel="save"]').isVisible(),'Approval did not open Save Master');
               await page.locator('#save-master').click();
@@ -165,6 +200,8 @@ jobs:
               assert(saved.includes('MASTER SAVED'),'Master not persisted: '+saved);
               const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')));
               assert(actual?.female?.id==='lafrich_genesis_female','Canonical Female Genesis Master missing from database');
+              assert(Object.keys(actual.female.binding.reviewed||{}).length===40,
+                'Approved binding did not preserve 40 part-angle review receipts');
               assert(actual.female.binding.views.se.spritePng.startsWith('data:image/png;base64,'),'Python neutral source absent');
               assert(actual.female.rigFormat==='LGR-1'&&actual.female.binding.rigFormat==='LGR-1',
                 'Missing LGR-1 format identifiers in approved master');
