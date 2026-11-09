@@ -38,6 +38,6 @@ test("Mahluk Hidup bridge loads Emosi.exe local and Drive database, never old pu
  assert.match(studio,/nav-emotion/);
  assert.match(studio,/emotion-frame/);
  assert.match(retired,/LEGACY ROUTE INACTIVE/);
- assert.doesNotMatch(retired,/<script\\b/i);
+ assert.doesNotMatch(retired,/<script\b/i);
  assert.doesNotMatch(studio,/v6b-reset-studio\.html/);
 });
