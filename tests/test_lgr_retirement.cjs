@@ -12,6 +12,28 @@ const legacy=[
   "site/mahluk-action-editor.html","site/mahluk-animation-native.html",
   "site/v6p-studio.html","site/pixel-editor.html"
 ];
+const retiredControllers=[
+  "site/lafrich-puppet-studio.js","site/mahluk-hub.js",
+  "site/mahluk-action-editor.js","site/mahluk-animation-native.js",
+  "site/genesis-editor.js","site/pixel-editor.js",
+  "site/cloud-first-mahluk-entry.js"
+];
+for(const controller of retiredControllers){
+ const code=read(controller);
+ assert.match(code.slice(0,1100),/LGR-1 PERMANENT RETIREMENT/);
+ assert.match(code.slice(0,1100),/return;/);
+}
+const removedLegacyWorkflows=[
+  ".github/workflows/lafrich-puppet-qa.yml",
+  ".github/workflows/mahluk-unified-regression.yml",
+  ".github/workflows/genesis-native-animation-qa.yml",
+  ".github/workflows/genesis-motion-checks.yml",
+  ".github/workflows/mahluk-approved-stock-qa.yml",
+  ".github/workflows/non-destructive-mahluk-cloud.yml"
+];
+for(const filename of removedLegacyWorkflows)
+ assert(!fs.existsSync(path.join(repo,filename)),"Retired workflow unexpectedly reactivated: "+filename);
+assert.match(read("tools/build_mahluk_motion_registry.py"),/Legacy six-part V6B motion packs are retired/);
 for(const filename of legacy){
  const html=read(filename);
  assert.match(html,/LEGACY ROUTE INACTIVE/);
