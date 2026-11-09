@@ -2,6 +2,9 @@
  * Declarative native Python poses on approved Genesis sources. Editable puppet\n * masks are stored only in the two stable Genesis master IDs.
  */
 (function(root){"use strict";
+// LGR-1 PERMANENT RETIREMENT: keep code as historical archive ONLY.
+// No init, character writes, background sync, event handlers or storage mutation.
+return;
 const C=root.GenesisNativePythonContract,$=id=>document.getElementById(id),
  Master=root.GenesisMasterRig,Puppet=root.GenesisPuppetRenderer,Clipboard=root.GenesisPoseClipboard;
 if(!C){document.body.textContent="Genesis native contract unavailable";return;}

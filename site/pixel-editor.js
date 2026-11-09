@@ -2,6 +2,9 @@
    Original 64x112 RGBA sprite frames, no CSS-only illusion or remote writes. */
 (()=>{
 "use strict";
+// LGR-1 PERMANENT RETIREMENT: keep code as historical archive ONLY.
+// No init, character writes, background sync, event handlers or storage mutation.
+return;
 if(new URLSearchParams(location.search).get("embedded")==="1")document.body.classList.add("embedded");
 const core=window.VirtualLifePixelEdit;
 const parts=window.VirtualLifeMasterParts;

@@ -1,5 +1,8 @@
 /* Two existing Genesis masters only: puppet/slice authoring and cloud overwrite. */
 (function(root){"use strict";
+// LGR-1 PERMANENT RETIREMENT: keep code as historical archive ONLY.
+// No init, character writes, background sync, event handlers or storage mutation.
+return;
 const $=id=>document.getElementById(id),M=root.GenesisMasterRig,P=root.GenesisPuppetRenderer,
  C=root.GenesisNativePythonContract,V=root.V6PCompositor,Pixel=root.GenesisMasterPixel;
 if(!M||!P||!C||!V){document.body.textContent="Genesis master dependencies missing";return}

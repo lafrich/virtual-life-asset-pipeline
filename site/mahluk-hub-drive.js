@@ -4,6 +4,15 @@
  */
 (function(root){
 "use strict";
+// Permanent fail-closed retirement. Preserved source below is not executed.
+// Any stale Mahluk tab or cached integration cannot write/restore legacy records.
+const inactive=async()=>{throw Error("MAHLUK LEGACY SYNC RETIRED: use LGR-1 Genesis Masters only")};
+root.VLMahlukHubDrive=Object.freeze({
+ retired:true,connected:()=>false,connect:inactive,backup:inactive,restore:inactive,
+ saveRecord:inactive,listRecords:inactive,loadRecord:inactive,
+ KEYS:Object.freeze([]),KIND:"mahluk-legacy-retired-v1"
+});
+return;
 const CLIENT="369223065433-idbuhhj6akuf2cmo6vpbiblkhu019csn.apps.googleusercontent.com";
 const API="https://www.googleapis.com/drive/v3/files";
 const UP="https://www.googleapis.com/upload/drive/v3/files";

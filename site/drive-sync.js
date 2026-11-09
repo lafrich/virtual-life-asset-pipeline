@@ -120,6 +120,7 @@ async function list(app,kind=null){
  return files.filter(f=>f.name.endsWith(".json")&&(!kind||f.name.startsWith(kind+"--")));
 }
 async function save(app,kind,record,knownFile=null){
+ if(app==="mahluk")throw Error("Legacy Mahluk Drive writer retired; only dedicated LGR-1 master sync is active.");
  const id=validateRecord(app,kind,record),folderId=await folder(app,kind);
  const name=filename(kind,id),existing=(await search(folderId,"name = '"+quote(name)+"'"))[0]||null;
  if(existing&&(!knownFile?.id||knownFile.id!==existing.id||knownFile.modifiedTime!==existing.modifiedTime))
@@ -193,6 +194,7 @@ async function upsertBinary(name,mime,bytes,appProperties){
  return {file,folderId,overwrote:!!existing};
 }
 async function saveV6pPart(opts){
+ throw Error("V6P part-sheet upload retired. Only LGR-1 Genesis Masters may sync.");
  if(!connected())await connect();
  const part=catalog.normalizePart(opts&&opts.part);
  const sha=String(opts&&opts.sha256||"");
@@ -217,6 +219,7 @@ function userProjectFilename(type,id){
  return "v6p-user--"+type+"__"+id+".png";
 }
 async function saveV6pUserProject(opts){
+ throw Error("V6P user project upload retired. Only LGR-1 Genesis Masters may sync.");
  if(!connected())await connect();
  const type=opts&&opts.type,id=opts&&opts.id;
  const name=userProjectFilename(type,id);

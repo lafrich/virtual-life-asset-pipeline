@@ -2,6 +2,9 @@
  * No changes to native character, Custom Wear, animation sources, Jiwa or Semesta.
  * Action entries remain drafts pending separate gameplay approval. */
 (function(root){"use strict";
+// LGR-1 PERMANENT RETIREMENT: keep code as historical archive ONLY.
+// No init, character writes, background sync, event handlers or storage mutation.
+return;
 const KEY="mahluk-action-situations-v1",FORMAT="mahluk-situation-database-v1";
 const DIRS=["se","sw","ne","nw"],PHASES=["enter","loop","exit"],$=id=>document.getElementById(id);
 const V=root.V6PCompositor,Store=root.V6PClipStore,

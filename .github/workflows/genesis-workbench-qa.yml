@@ -6,6 +6,26 @@ on:
       - 'site/genesis-cloud.js'
       - 'site/genesis_procedural_runtime.py'
       - 'site/mahluk-hidup.html'
+      - 'site/lafrich-puppet-studio.html'
+      - 'site/genesis-editor.html'
+      - 'site/mahluk-action-editor.html'
+      - 'site/mahluk-animation-native.html'
+      - 'site/v6p-studio.html'
+      - 'site/pixel-editor.html'
+      - 'site/lafrich-puppet-studio.js'
+      - 'site/mahluk-hub.js'
+      - 'site/mahluk-action-editor.js'
+      - 'site/mahluk-animation-native.js'
+      - 'site/genesis-editor.js'
+      - 'site/pixel-editor.js'
+      - 'site/cloud-first-mahluk-entry.js'
+      - 'tools/build_mahluk_motion_registry.py'
+      - 'docs/LGR_FORMAT_SPEC.md'
+      - 'site/mahluk-hub-drive.js'
+      - 'site/drive-sync.js'
+      - 'site/vlhub-characters-publish.js'
+      - 'site/v6p-compositor.js'
+      - 'tests/test_lgr_retirement.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
       - '.github/workflows/genesis-workbench-qa.yml'
   pull_request:
@@ -14,6 +34,26 @@ on:
       - 'site/genesis-cloud.js'
       - 'site/genesis_procedural_runtime.py'
       - 'site/mahluk-hidup.html'
+      - 'site/lafrich-puppet-studio.html'
+      - 'site/genesis-editor.html'
+      - 'site/mahluk-action-editor.html'
+      - 'site/mahluk-animation-native.html'
+      - 'site/v6p-studio.html'
+      - 'site/pixel-editor.html'
+      - 'site/lafrich-puppet-studio.js'
+      - 'site/mahluk-hub.js'
+      - 'site/mahluk-action-editor.js'
+      - 'site/mahluk-animation-native.js'
+      - 'site/genesis-editor.js'
+      - 'site/pixel-editor.js'
+      - 'site/cloud-first-mahluk-entry.js'
+      - 'tools/build_mahluk_motion_registry.py'
+      - 'docs/LGR_FORMAT_SPEC.md'
+      - 'site/mahluk-hub-drive.js'
+      - 'site/drive-sync.js'
+      - 'site/vlhub-characters-publish.js'
+      - 'site/v6p-compositor.js'
+      - 'tests/test_lgr_retirement.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
 jobs:
   syntax-contract:
@@ -26,6 +66,11 @@ jobs:
           node --check site/genesis-cloud.js
           node --check site/lafrich-puppet-core.js
           node --check site/lafrich-puppet-renderer.js
+          node --check site/mahluk-hub-drive.js
+          node --check site/drive-sync.js
+          node --check site/vlhub-characters-publish.js
+          node --check site/v6p-compositor.js
+          node tests/test_lgr_retirement.cjs
       - name: HTML / UI integration contract
         run: |
           node <<'NODE'
@@ -121,6 +166,15 @@ jobs:
               const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')));
               assert(actual?.female?.id==='lafrich_genesis_female','Canonical Female Genesis Master missing from database');
               assert(actual.female.binding.views.se.spritePng.startsWith('data:image/png;base64,'),'Python neutral source absent');
+              assert(actual.female.rigFormat==='LGR-1'&&actual.female.binding.rigFormat==='LGR-1',
+                'Missing LGR-1 format identifiers in approved master');
+              const cloudValidation=await page.evaluate(async()=>{
+                const master=JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')).female;
+                try{await window.VLGenesisCloud.save(master.id,master);return 'UNEXPECTED CLOUD WRITE'}
+                catch(e){return e.message}
+              });
+              assert(/Google Drive connection is missing|Google Drive connection is missing or expired/.test(cloudValidation),
+                'Canonical master unexpectedly failed strict LGR-1 validation: '+cloudValidation);
               if(errors.length)throw Error('Browser errors: '+errors.join(' | '));
               console.log(JSON.stringify({browser:'OK',pixelCount,partCount:10,
                 femaleSwitched:true,bindingResult:info.slice(0,180),approved:actual.female.id}));

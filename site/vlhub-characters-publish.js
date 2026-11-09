@@ -79,6 +79,7 @@ function unsupportedClips(record){
   !(/^(?:clp|clip)_[a-z0-9_]{3,70}$/.test(id)&&record.clips[id]?.source==="genesis-v6b-universal-motion-v1"));
 }
 function publish(input,env){
+ throw Error("MAHLUK LEGACY PUBLISH RETIRED: V1/V2 character storage is read-only. LGR-1 masters are required.");
  const store=(env&&env.localStorage)||(root&&root.localStorage);
  if(!store)return {ok:false,error:"no localStorage"};
  const record=v2Record(input);
@@ -109,6 +110,7 @@ function isQuota(error){
   /quota.*exceed|exceed.*quota|storage.*full/i.test(String(error?.message||error||""));
 }
 async function publishAsync(input,env){
+ throw Error("MAHLUK LEGACY ASYNC PUBLISH RETIRED: LGR-1 only.");
  const store=(env&&env.localStorage)||(root&&root.localStorage);
  if(!store)return {ok:false,error:"localStorage unavailable"};
  try{return publish(input,env)}

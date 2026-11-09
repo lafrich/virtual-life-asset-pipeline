@@ -1,135 +1,20 @@
 <!doctype html>
-<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MAHLUK HIDUP · GENESIS NATIVE ANIMATION</title>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#174a96">
+<title>RETIRED · Legacy Animation Editor</title>
 <style>
-:root{--blue:#1a4e94;--edge:#7e94af;--panel:#e9edf0;--ink:#183251}
-*{box-sizing:border-box}
-body{margin:0;min-height:100dvh;background:#b8cadd;color:var(--ink);font:12px Tahoma,Arial,sans-serif;overflow-x:hidden}
-header{background:linear-gradient(90deg,#164789,#6295d0);padding:9px 12px;color:#fff;font-weight:bold;display:flex;justify-content:space-between;gap:10px}
-section.card,.panel{background:var(--panel);border:2px ridge #fff;padding:13px}
-section.card{margin:12px auto;max-width:960px}
-button,select,input{font:inherit;color:var(--ink);background:#fafdff;border:1px solid var(--edge);padding:7px;max-width:100%}
-button{cursor:pointer;background:linear-gradient(#fff,#d8e5f5)}
-button:disabled{opacity:.55;cursor:not-allowed}
-button.primary{background:linear-gradient(#deedff,#accbf3);border-color:#356bb1;font-weight:bold}
-button[aria-pressed=true]{background:#abcafa}
-input[type=number],input[type=text],select{width:100%}
-label{display:block;font-size:11px;font-weight:bold;margin:9px 0}
-label input,label select{margin-top:5px}
-.actions{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
-.hero{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.hero button{min-height:90px;text-align:left;padding:14px;font-size:14px;font-weight:bold}
-.hero small{display:block;font-size:11px;font-weight:normal;margin-top:9px}
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:7px;margin-top:7px}
-.gallery button{text-align:left;padding:12px}
-.gallery button strong,.gallery button small{display:block}
-.gallery button small{margin-top:6px}
-#editor{max-width:none;margin:6px}
-#editor-grid{display:grid;grid-template-columns:minmax(180px,245px) minmax(300px,1fr) minmax(195px,245px);gap:7px}
-.panel h2{font-size:13px;margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid #b0bbc9}
-#canvas-wrap{position:relative;margin:auto;width:min(100%,310px);aspect-ratio:64/112}
-#stage{display:block;width:100%;height:100%;touch-action:none;image-rendering:pixelated;border:2px solid #70869a;background:repeating-conic-gradient(#edf3fb 0 25%,#c6d5e3 0 50%) 0 0/18px 18px}
-#direction-buttons,#timeline{display:flex;gap:5px;overflow-x:auto;padding:5px 0;max-width:100%;flex-wrap:wrap}
-#direction-buttons button{flex:1}
-#timeline button{min-width:43px}
-#status,#notice{background:#dce9f9;border:1px solid #9caec2;padding:9px;margin:10px 0;line-height:1.5}
-#status.error{background:#ffe2de;border-color:#d99995}
-#notice{background:#fff6de;border-color:#d6bc83}
-.hint{font-size:11px;color:#546c86;line-height:1.5}
-#joint-list{max-height:230px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:4px}
-#joint-list button{font-size:10px;text-align:left;overflow-wrap:anywhere}
-.twocol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-h1{font-size:18px;margin:0 0 13px}
-h2{font-size:14px}
-[hidden]{display:none!important}
-@media(max-width:850px){#editor-grid{grid-template-columns:1fr 1fr}#editor-grid>.panel:nth-child(2){grid-column:2;grid-row:1 / 3}#editor-grid>.panel:nth-child(3){grid-column:1}}
-@media(max-width:610px){.hero{grid-template-columns:1fr}#editor-grid{display:flex;flex-direction:column}section.card{margin:6px;padding:10px}#canvas-wrap{width:min(100%,240px)}#joint-list{max-height:130px}header{font-size:11px}}
+:root{font:13px Tahoma,"Segoe UI",Arial,sans-serif;color:#24415f;background:#a6b9d0}
+*{box-sizing:border-box}body{margin:0;padding:18px;min-height:100dvh;display:grid;place-items:center}
+main{width:min(570px,100%);padding:0 0 25px;background:#e7eff7;border:2px solid white;box-shadow:0 3px 0 #718bab}
+header{padding:12px;background:linear-gradient(90deg,#164686,#4583c5);color:white;font-weight:bold}
+section{padding:18px;line-height:1.6}h1{font-size:18px;margin:0 0 7px}a{display:inline-block;background:#d2e5ff;border:1px solid #7a9ec8;padding:9px 13px;color:#103a78;font-weight:bold}
+small{display:block;margin-top:16px;color:#576c82}
 </style></head>
-<body>
-<header><span>▣ MAHLUK · GENESIS V6B NATIVE ANIMATION</span><span>PYTHON POSE SOURCE · 4 DIRECTIONS</span></header>
-<section id="home" class="card">
- <h1>ANIMATION DATABASE</h1>
- <div class="hero">
-  <button id="start-import" class="primary">↑ IMPORT PYTHON<small>Upload .py → native preview → choose whether to save in Google Drive</small></button>
-  <button id="start-create" class="primary">＋ CREATE NEW<small>Choose one of 11 original native templates → name → edit coordinates</small></button>
- </div>
- <input type="file" id="python-file" accept=".py,text/x-python" hidden>
- <p id="home-note" class="hint">Only strictly validated Genesis V6B Python pose files are accepted. No arbitrary Python is executed.</p>
- <h2>ONLINE ANIMATION LIBRARY</h2>
- <div class="actions"><button id="reload-gallery">↻ REFRESH CLOUD</button><span class="hint">Connect Google Drive from Mahluk Hidup toolbar first</span></div>
- <div class="gallery" id="gallery"></div>
-</section>
-<section id="setup" class="card" hidden>
- <div class="actions"><button id="setup-back">← BACK</button></div>
- <h1>CREATE NATIVE ANIMATION</h1>
- <label>ANIMATION NAME<input id="setup-name" type="text" maxlength="80" placeholder="e.g. Greeting, Standing Punch, Waving"></label>
- <label>NATIVE STARTING TEMPLATE<select id="template"></select></label>
- <div class="twocol">
-  <label>FRAME COUNT<input type="number" id="setup-count" value="4" min="1" max="24"></label>
-  <label>DURATION PER FRAME (ms)<input type="number" id="setup-duration" value="140" min="40" max="1200"></label>
- </div>
- <label><input id="setup-loop" type="checkbox" checked> LOOP</label>
- <p class="hint">Template uses the original native animation grid. New motion gets its own ID, never overwriting 11 native actions.</p>
- <button id="setup-continue" class="primary">CREATE & EDIT →</button>
-</section>
-<section id="editor" class="card" hidden>
- <div class="actions"><button id="back-home">← DATABASE</button><strong id="editor-title">NEW ANIMATION</strong></div>
- <div id="editor-grid">
-  <div class="panel">
-   <h2>SOURCE / FRAMES</h2>
-   <label>NAME<input type="text" id="animation-name" maxlength="80"></label>
-   <label>PREVIEW CHARACTER<select id="gender"><option value="male">GENESIS MALE · master</option><option value="female">GENESIS FEMALE · master</option></select></label>
-   <p class="hint">Native Python source preview currently uses original Ichsan/Noor generator configurations. This is not yet a Custom Wear compatibility test.</p>
-   <label>TEMPLATE<input type="text" id="template-label" readonly></label>
-   <label>FRAME DURATION (ms)<input type="number" id="frame-ms" min="40" max="1200"></label>
-   <label><input type="checkbox" id="loop"> LOOP</label>
-   <div class="actions"><button id="add-frame">＋ FRAME</button><button id="copy-frame">DUPLICATE FRAME</button><button id="remove-frame">✕ FRAME</button></div>
-   <h2>EXPORT / CLOUD</h2>
-   <div class="actions"><button id="export-python">↓ EXPORT PYTHON</button><button id="save-cloud" class="primary" disabled>☁ SAVE PYTHON TO CLOUD</button></div>
-   <button id="install" disabled>INSTALL TO SYSTEM — NOT YET VERIFIED</button>
-   <p class="hint">Master rig changes are previewed on Genesis Male/Female. Install remains locked until gameplay and independent Character Custom Wear validation pass.</p>
-  </div>
-  <div class="panel">
-   <h2>GENESIS V6B MASTER PUPPET PREVIEW</h2>
-   <div id="direction-buttons"></div>
-   <div id="canvas-wrap"><canvas id="stage" width="64" height="112" aria-label="Native Python pose preview and draggable anatomical landmarks"></canvas></div>
-   <div id="timeline"></div>
-   <div class="actions"><button id="prev-frame">◀ FRAME</button><button id="play">▶ PLAY</button><button id="next-frame">FRAME ▶</button></div>
-   <div id="status" role="status">Select an animation to start native Python rendering.</div>
-   <p class="hint">Puppet mask and joint overlays use the approved Genesis native 11-action sprite sheets. Custom Wear stays on the Genesis layers. Pose coordinates follow the same declarative Python contract; source assets are never overwritten.</p>
-  </div>
-  <div class="panel">
-   <h2>ANATOMICAL COORDINATES</h2>
-   <div id="joint-list"></div>
-   <label>SELECTED JOINT<input id="selected-joint" readonly></label>
-   <div class="twocol">
-    <label>X (0–63)<input id="joint-x" type="number" min="0" max="63"></label>
-    <label>Y (0–111)<input id="joint-y" type="number" min="0" max="111"></label>
-   </div>
-   <h2>ROTATION / ANGLE</h2>
-   <label>ANATOMICAL ANGLE<select id="angle-select"></select></label>
-   <input type="range" id="angle-slider" min="-180" max="180" step="1" value="0">
-   <label>ANGLE DEGREES<input id="angle-number" type="number" min="-180" max="180" value="0"></label>
-   <h2>COPY / PASTE COORDINATES</h2>
-   <div class="actions"><button id="pose-copy">COPY FRAME</button><button id="pose-paste">PASTE FRAME</button><button id="pose-paste-flip">PASTE FLIP</button></div>
-   <div class="actions"><button id="pose-copy-all">COPY ALL FRAMES</button><button id="pose-paste-all">PASTE ALL</button><button id="pose-paste-all-flip">PASTE ALL FLIP</button></div>
-   <p class="hint">After Copy, select another SE / SW / NE / NW angle, then Paste or Paste Flip. Only joint coordinates and angles are copied; frame timing stays the same.</p>
-   <div class="actions"><button id="reset-joint">RESET SELECTED</button><button id="reset-frame">RESET FRAME</button></div>
-   <div id="notice">Draft coordinates are recorded as Python source. Rendering and installation are separate verification steps.</div>
-  </div>
- </div>
-</section>
-<script src="./genesis-source.js?v=genesis-master-v1"></script>
-<script src="./v6p-part-catalog.js?v=genesis-master-v1"></script>
-<script src="./v6p-character-store.js?v=genesis-master-v1"></script>
-<script src="./genesis-base-bridge.js?v=genesis-master-v1"></script>
-<script src="./v6p-part-overrides.js?v=genesis-master-v1"></script>
-<script src="./v6p-compositor.js?v=genesis-appearance-master-v2"></script>
-<script src="./genesis-native-python-contract.js?v=genesis-master-v1"></script>
-<script src="./genesis-master-rig.js?v=genesis-appearance-master-v2"></script>
-<script src="./genesis-puppet-renderer.js?v=genesis-master-v1"></script>
-<script src="./genesis-appearance-transfer.js?v=genesis-appearance-v1"></script>
-<script src="./genesis-master-pixels.js?v=genesis-appearance-v1"></script>
-<script src="./genesis-pose-clipboard.js?v=genesis-master-v1"></script>
-<script src="./mahluk-animation-native.js?v=genesis-master-v1"></script>
-</body></html>
+<body><main><header>▣ MAHLUK HIDUP.EXE · LEGACY ROUTE INACTIVE</header>
+<section><h1>Legacy Animation Editor telah dinonaktifkan</h1>
+<p>Editor dan sinkronisasi format lama sudah dipensiunkan. Aset historis tetap tersimpan sebagai arsip tetapi halaman ini tidak bisa lagi menjalankan editor atau menulis data lama.</p>
+<a href="./genesis-workbench.html">BUKA LAFRICH GENESIS RIG · LGR-1</a>
+<small>Format aktif: LGR-1 · Four-view 2D skeletal pixel rig · wajah melalui Emosi.exe.</small>
+</section></main></body></html>

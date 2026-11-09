@@ -71,10 +71,36 @@ async function connect(){
  return connection;
 }
 function validate(id,master){
- if(!ID.test(String(id||""))||master?.format!=="lafrich-genesis-master-v1"||
-  master.id!==id||master.binding?.format!=="lafrich-genesis-binding-v1"||
-  master.faceSource!=="emosi.exe")throw Error("Invalid approved Genesis Master");
+ if(!ID.test(String(id||"")))throw Error("Only canonical LGR-1 Male/Female masters are accepted");
+ const gender=id.endsWith("_female")?"female":"male";
+ const source="genesis_"+gender+"_nude",b=master?.binding;
+ if(master?.format!=="lafrich-genesis-master-v1"||master.id!==id||
+    master.gender!==gender||master.sourceId!==source||master.faceSource!=="emosi.exe"||
+    (master.rigFormat!==undefined&&master.rigFormat!=="LGR-1")||
+    b?.format!=="lafrich-genesis-binding-v1"||b.id!==id||
+    b.gender!==gender||b.sourceId!==source||b.faceSource!=="emosi.exe"||
+    (b.rigFormat!==undefined&&b.rigFormat!=="LGR-1")||
+    b.originalNative!=="V6B")throw Error("Legacy/foreign master rejected: LGR-1 only");
+ const core=root?.LafrichPuppetCore;
+ if(!core?.validateMaster)throw Error("LGR-1 rig validator unavailable");
+ const rig=core.validateMaster(b.rig);
+ if(rig.id!==core.IDS[gender]||rig.gender!==gender)throw Error("Wrong V6B rig base");
  if(JSON.stringify(master).length>10000000)throw Error("Genesis master too large");
+ const dirs=["se","sw","ne","nw"];
+ if(b.frame?.width!==64||b.frame?.height!==112||
+    JSON.stringify(b.frame.directions)!==JSON.stringify(dirs)||
+    JSON.stringify(b.hierarchy?.parts)!==JSON.stringify(core.PARTS)||
+    JSON.stringify(b.hierarchy?.parents)!==JSON.stringify(core.PARENTS)||
+    JSON.stringify(b.hierarchy?.drawOrder)!==JSON.stringify(core.DRAW_ORDER)||
+    Object.keys(b.views||{}).sort().join()!==dirs.slice().sort().join())
+  throw Error("LGR-1 geometry contract incomplete");
+ for(const d of dirs){
+  const view=b.views[d];
+  if(view?.maskBase64!==rig.masks[d]||
+     JSON.stringify(view?.pivots)!==JSON.stringify(rig.pivots[d])||
+     !/^data:image\/png;base64,[a-z0-9+/]+=*$/i.test(view?.spritePng||""))
+   throw Error("LGR-1 source/mask/pivot mismatch: "+d);
+ }
 }
 function fileName(id){if(!ID.test(String(id||"")))throw Error("Invalid Genesis master ID");return id+".json"}
 async function load(id){

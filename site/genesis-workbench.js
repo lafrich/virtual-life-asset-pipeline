@@ -11,7 +11,7 @@ const SOURCE=Object.freeze({male:"genesis_male_nude",female:"genesis_female_nude
 const MASTER_IDS=Object.freeze({male:"lafrich_genesis_male",female:"lafrich_genesis_female"});
 const DRAFT_KEY="vl-lafrich-genesis-workbench-drafts-v1";
 const MASTER_KEY="vl-lafrich-genesis-approved-masters-v1";
-const MASTER_FORMAT="lafrich-genesis-master-v1",BIND_FORMAT="lafrich-genesis-binding-v1";
+const MASTER_FORMAT="lafrich-genesis-master-v1",BIND_FORMAT="lafrich-genesis-binding-v1",RIG_FORMAT="LGR-1";
 const cv=() => R.rgba(64,112),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const clone=C.clone;
 let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5,activeLayer="body";
@@ -414,7 +414,7 @@ async function makeBinding(){
   }
   const m=report.m;
   const out={
-   format:BIND_FORMAT,id:MASTER_IDS[gender],gender,sourceId:SOURCE[gender],
+   format:BIND_FORMAT,rigFormat:RIG_FORMAT,rigType:"2d-skeletal-cutout-pixel-rig",id:MASTER_IDS[gender],gender,sourceId:SOURCE[gender],
    originalNative:"V6B",faceSource:"emosi.exe",
    frame:{width:64,height:112,pivot:[32,100],directions:[...DIR]},
    hierarchy:{parts:[...PARTS],parents:clone(C.PARENTS),drawOrder:[...C.DRAW_ORDER]},
@@ -432,7 +432,8 @@ async function makeBinding(){
 }
 function validatedBinding(){
  const b=record()?.bound;
- if(!b||b.format!==BIND_FORMAT||b.gender!==gender||b.id!==MASTER_IDS[gender])
+ if(!b||b.format!==BIND_FORMAT||b.gender!==gender||b.id!==MASTER_IDS[gender]||
+    (b.rigFormat!==undefined&&b.rigFormat!==RIG_FORMAT)||b.sourceId!==SOURCE[gender])
   throw Error("Genesis binding missing / invalid");
  C.validateMaster(b.rig);
  for(const d of DIR)if(!b.views?.[d]||!b.views[d].spritePng)throw Error("Missing "+d+" binding");
@@ -440,7 +441,7 @@ function validatedBinding(){
 }
 function toMaster(){
  const b=validatedBinding();
- return {format:MASTER_FORMAT,id:b.id,gender,sourceId:SOURCE[gender],
+ return {format:MASTER_FORMAT,rigFormat:RIG_FORMAT,rigType:"2d-skeletal-cutout-pixel-rig",id:b.id,gender,sourceId:SOURCE[gender],
   faceSource:"emosi.exe",approvedAt:new Date().toISOString(),
   animationContract:"lafrich-genesis-binding-v1",binding:clone(b)};
 }
@@ -448,7 +449,7 @@ function toPython(b){
  // Python accepts declarative JSON string: geometry and RGBA PNG data. Never
  // execute imported browser code. Procedural animation is applied to pivots.
  const value=JSON.stringify(b).replace(/'''/g,"");
- return "# LAFRICH GENESIS MASTER · four-angle / 10-piece / no baked face\n"+
+ return "# LGR-1 / LAFRICH GENESIS RIG · four-angle / 10-piece / no baked face\n"+
   "# Machine-readable Python source. Motion is computed from time + transforms,\n"+
   "# NOT stored as rendered frame-by-frame sprites. Use genesis_procedural_runtime.py.\n"+
   "import json\nLAFRICH_GENESIS = json.loads(r'''"+value+"''')\n";

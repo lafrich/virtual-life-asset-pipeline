@@ -1,6 +1,9 @@
 /* Lafrich Puppet live workspace: legacy editors archived, no user data deleted. */
 (()=>{
 "use strict";
+// LGR-1 PERMANENT RETIREMENT: keep code as historical archive ONLY.
+// No init, character writes, background sync, event handlers or storage mutation.
+return;
 const $=id=>document.getElementById(id);
 const ORIGIN=location.origin;
 const URLS=Object.freeze({

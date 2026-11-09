@@ -70,20 +70,20 @@ def validate(path):
     return mid
 
 def main():
-    ensure(ROOT.is_dir(), f"Missing motion asset directory: {ROOT}")
+    # Legacy six-part Genesis V6B motion registry is permanently read-only.
+    # Keeping an empty index prevents older Mainkan/Semesta consumers from
+    # breaking, while rejecting any newly added obsolete motion packs.
+    ensure(ROOT.is_dir(), f"Missing legacy motion directory: {ROOT}")
     files = sorted(ROOT.glob("*.motion.json"))
-    seen = set()
-    for path in files:
-        mid = validate(path)
-        ensure(mid not in seen, f"Duplicate Genesis motion ID: {mid}")
-        seen.add(mid)
-    manifest = {"format": "genesis-v6b-motion-registry-v1",
-                "files": [path.name for path in files]}
+    ensure(not files,
+           "Legacy six-part V6B motion packs are retired. LGR-1 Python rigs only; "
+           "new *.motion.json entries are NOT permitted.")
+    manifest = {"format": "genesis-v6b-motion-registry-v1", "files": []}
     output = ROOT / "index.json"
     value = json.dumps(manifest, indent=2) + "\n"
     if not output.exists() or output.read_text(encoding="utf-8") != value:
         output.write_text(value, encoding="utf-8")
-    print(f"Genesis JSON motion registry: {len(files)} verified asset(s) -> {output}")
+    print(f"Legacy V6B motion registry RETIRED: 0 entries -> {output}")
 
 if __name__ == "__main__":
     main()

@@ -3,6 +3,9 @@
  * Emosi.exe is a separate Drive-native editor with its own cloud connection.
  */
 (function(root){"use strict";
+// LGR-1 PERMANENT RETIREMENT: keep code as historical archive ONLY.
+// No init, character writes, background sync, event handlers or storage mutation.
+return;
  function init(){
   // Recovery-only compatibility route for the previous workspace and its tests.
   // No storage is modified by selecting legacy mode.

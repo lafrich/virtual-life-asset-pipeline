@@ -4,6 +4,9 @@
  * fitted four-view wear, and transformed/frontmost Emosi.
  */
 (function(root){"use strict";
+// LGR-1 PERMANENT RETIREMENT: keep code as historical archive ONLY.
+// No init, character writes, background sync, event handlers or storage mutation.
+return;
 const C=root.LafrichPuppetCore,R=root.LafrichPuppetRenderer,$=id=>document.getElementById(id);
 if(!C||!R){document.body.textContent="Lafrich Puppet engine unavailable";return}
 const directions=C.DIRS,parts=C.PARTS,storage=key=>{

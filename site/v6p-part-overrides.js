@@ -9,7 +9,7 @@ function readMap(){
  try{const obj=JSON.parse(raw);return obj&&typeof obj==="object"&&!Array.isArray(obj)?obj:{};}
  catch{return {};}
 }
-function writeMap(map){
+function writeMap(map){throw Error("Legacy V6P pixel overrides are archived read-only under LGR-1.");
  const s=storage();
  if(!s)throw Error("localStorage unavailable");
  s.setItem(KEY,JSON.stringify(map));
