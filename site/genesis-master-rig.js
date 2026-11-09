@@ -91,13 +91,19 @@
   }
   return out;
  }
- function load(gender){
+ function inspect(gender){
   const base=initial(gender);
   try{
-   const saved=JSON.parse(root?.localStorage?.getItem(KEY)||"{}");
-   if(saved?.[gender])return validate(saved[gender]);
-  }catch{}
-  return base;
+   const raw=root?.localStorage?.getItem(KEY);
+   const saved=raw?JSON.parse(raw):{};
+   if(saved?.[gender])return {row:validate(saved[gender]),source:"local",error:""};
+  }catch(error){return {row:base,source:"invalid",error:String(error?.message||error)}}
+  return {row:base,source:"default",error:""};
+ }
+ function load(gender){return inspect(gender).row}
+ function newerThan(a,b){
+  const aa=Date.parse(a?.updated||""),bb=Date.parse(b?.updated||"");
+  return Number.isFinite(aa)&&(!Number.isFinite(bb)||aa>bb);
  }
  function apply(row,{persist=true}={}){
   const valid=validate(row);
@@ -111,13 +117,20 @@
   return clone(valid);
  }
  function cloudRows(rows){
-  let count=0;
+  // Validate the entire batch BEFORE touching either local master. Never
+  // replace a newer verified local revision with an older cloud response.
+  const ready=[];
   for(const gender of ["male","female"]){
-   const candidates=(Array.isArray(rows)?rows:[]).filter(x=>x?.id===IDS[gender]&&x?.format===FORMAT)
+   const candidates=(Array.isArray(rows)?rows:[]).filter(x=>x?.id===IDS[gender])
     .sort((a,b)=>String(b.updated).localeCompare(String(a.updated)));
-   if(candidates.length){try{apply(candidates[0]);count++}catch{}}
+   if(!candidates.length)continue;
+   const cloud=validate(candidates[0]),local=inspect(gender);
+   if(local.source==="invalid")throw Error("Genesis "+gender+" local record invalid: "+local.error);
+   if(newerThan(local.row,cloud))continue;
+   ready.push(cloud);
   }
-  return count;
+  for(const row of ready)apply(row);
+  return ready.length;
  }
- return Object.freeze({FORMAT,IDS,DIRS,PARTS,UNSELECTED,PIVOTS,JOINTS,KEY,initial,validate,encode,decode,load,apply,cloudRows});
+ return Object.freeze({FORMAT,IDS,DIRS,PARTS,UNSELECTED,PIVOTS,JOINTS,KEY,initial,validate,encode,decode,inspect,load,newerThan,apply,cloudRows});
 });
