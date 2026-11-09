@@ -378,7 +378,7 @@ function applyPixels(){
  }catch(e){status("Pixel editor Apply failed: "+e.message,true);return false}
 }
 async function audit(){
- const m=C.validateMaster(master()),errors=[],counts={};
+ const m=C.validateMaster(master()),errors=[],counts={},globalCoverage=Array(PARTS.length).fill(0);
  for(const d of DIR){
   const mask=C.decode(m.masks[d]),raw=source[gender][d].getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
   let unassigned=0,visible=0;const per=Array(PARTS.length).fill(0);
@@ -387,10 +387,15 @@ async function audit(){
    visible++;
    if(mask[k]===255)unassigned++;else per[mask[k]]++;
   }
-  counts[d]={visible,unassigned,per};
+  counts[d]={visible,unassigned,per,occluded:PARTS.filter((_,i)=>per[i]===0)};
   if(unassigned)errors.push(d.toUpperCase()+": "+unassigned+" visible pixels unassigned");
-  for(let i=0;i<PARTS.length;i++)if(!per[i])errors.push(d.toUpperCase()+": "+PARTS[i]+" has no pixels");
+  for(let i=0;i<PARTS.length;i++)globalCoverage[i]+=per[i];
  }
+ // A back-side limb may be FULLY hidden by the torso in one perspective.
+ // Never invent filler pixels to make an occluded part visible. Each bone
+ // still receives a unique independently editable pivot in every view.
+ for(let i=0;i<PARTS.length;i++)if(!globalCoverage[i])
+  errors.push(PARTS[i]+": no visible pixels in ANY of the four angles");
  return {m,errors,counts};
 }
 async function makeBinding(){
@@ -409,7 +414,8 @@ async function makeBinding(){
    hierarchy:{parts:[...PARTS],parents:clone(C.PARENTS),drawOrder:[...C.DRAW_ORDER]},
    views:Object.fromEntries(DIR.map(d=>[d,{
     pivots:clone(m.pivots[d]),maskBase64:m.masks[d],
-    spritePng:source[gender][d].toDataURL("image/png"),coverage:report.counts[d].visible
+    spritePng:source[gender][d].toDataURL("image/png"),coverage:report.counts[d].visible,
+    occluded:report.counts[d].occluded
    }])),
    rig:clone(m),pythonEngine:"genesis_procedural_runtime.py",
    createdAt:new Date().toISOString()
