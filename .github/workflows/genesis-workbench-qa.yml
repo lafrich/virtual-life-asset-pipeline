@@ -48,3 +48,57 @@ jobs:
         run: |
           python3 -m py_compile site/genesis_procedural_runtime.py
           python3 -m unittest discover -s tests -p 'test_genesis_procedural_runtime.py' -v
+
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium browser harness
+        run: |
+          npm install --prefix /tmp/genesis-qa --no-save playwright@1.56.1
+          npx --yes --prefix /tmp/genesis-qa playwright install chromium
+      - name: Launch local static test + real browser
+        env:
+          NODE_PATH: /tmp/genesis-qa/node_modules
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-http.log 2>&1 &
+          node <<'NODE'
+          (async()=>{
+            const {chromium}=require('playwright'),assert=require('assert');
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1500,height:1000}});
+            const errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            page.on('console',m=>{if(m.type()==='error'&&!/accounts.google.com|favicon.ico/.test(m.text()))errors.push(m.text())});
+            try{
+              await page.goto('http://127.0.0.1:8765/site/genesis-workbench.html',{waitUntil:'domcontentloaded'});
+              await page.locator('#viewdetail').filter({hasText:'MALE'}).waitFor({timeout:60000});
+              const pixelCount=await page.locator('#stage').evaluate(c=>{
+                const d=c.getContext('2d').getImageData(0,0,64,112).data;
+                let count=0;for(let i=3;i<d.length;i+=4)if(d[i])count++;
+                return count;
+              });
+              assert(pixelCount>40,'Male frozen source did not render');
+              await page.locator('#edit-pixels').click();
+              await page.locator('#pixelOverlay').waitFor({state:'visible'});
+              const tools=['pixelCopySelection','pixelPasteSelection','pixelPasteMirrored','pixelFlipH','pixelFlipV','pixelUndo','pixelRedo','pixelSelectAll'];
+              for(const id of tools)assert(await page.locator('#'+id).count()===1,'Missing pixel tool '+id);
+              await page.locator('#pixelDirection').selectOption('nw');
+              await page.locator('#pixelClose').click();
+              await page.locator('#gender').selectOption('female');
+              await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
+              await page.locator('#pixel-next').click();
+              assert(await page.locator('[data-panel="rig"]').isVisible(),'Rig stage inaccessible');
+              await page.locator('#pivot-x').fill('31');
+              await page.locator('#pivot-x').dispatchEvent('change');
+              await page.locator('#rig-next').click();
+              await page.locator('#make-binding').click();
+              await page.waitForTimeout(500);
+              const info=await page.locator('#binding-result').textContent();
+              assert(!/Binding belum dibuat/.test(info),'Binding action did nothing');
+              if(errors.length)throw Error('Browser errors: '+errors.join(' | '));
+              console.log(JSON.stringify({browser:'OK',pixelCount,partCount:10,femaleSwitched:true,bindingResult:info.slice(0,240)}));
+            } finally {await browser.close()}
+          })().catch(e=>{console.error(e);process.exitCode=1})
+          NODE
