@@ -14,7 +14,7 @@ function setMode(m){
  mode=m;$("mode-puppet").setAttribute("aria-pressed",String(m==="puppet"));
  $("mode-slice").setAttribute("aria-pressed",String(m==="slice"));
  $("puppet-tools").hidden=m!=="puppet";$("slice-tools").hidden=m!=="slice";
- stage.style.cursor=m==="slice"?(sliceTool==="unselect"?"not-allowed":"crosshair"):"default";
+ stage.style.cursor=m==="slice"?"crosshair":"default";
  $("preview-title").textContent=m==="puppet"?"ADJUST PUPPET / COORDINATES":"ADJUST SLICE / PIXEL MASK";
  paint();
 }
@@ -24,9 +24,9 @@ function selectSliceTool(tool){
  sliceTool=tool;
  $("slice-select").setAttribute("aria-pressed",String(tool==="select"));
  $("slice-unselect").setAttribute("aria-pressed",String(tool==="unselect"));
- stage.style.cursor=mode==="slice"?(tool==="unselect"?"not-allowed":"crosshair"):"default";
- show(tool==="unselect"?"UNSELECT tool · brush removes puppet slice assignments, not pixels":
-  "SELECT / PAINT tool · brush assigns pixels to "+maskPart.toUpperCase());
+ stage.style.cursor=mode==="slice"?"crosshair":"default";
+ show(tool==="unselect"?"UNSELECT · erase only the blue selection for "+maskPart.toUpperCase()+"; native pixels remain unchanged":
+  "SELECT / PAINT · mark pixels blue for "+maskPart.toUpperCase());
 }
 function jointInput(){
  const j=profile.joints[dir][selected],p=profile.pivots[dir][pivot];
@@ -56,8 +56,8 @@ function paint(){
  if(mode==="slice"){
   ctx.fillStyle="rgba(36,187,255,.32)";
   for(let i=0;i<mask.length;i++)if(mask[i]===partIndex)ctx.fillRect(i%64,(i/64)|0,1,1);
-  ctx.fillStyle="rgba(245,155,27,.42)";
-  for(let i=0;i<mask.length;i++)if(mask[i]===M.UNSELECTED)ctx.fillRect(i%64,(i/64)|0,1,1);
+  // Unselected areas have NO overlay: this is an eraser for blue selection,
+  // not another colored mask layer. Keep underlying Genesis pixels visible.
  }else{
   for(const [a,b] of [["head","neck"],["neck","torso"],["torso","hip_near"],["torso","hip_far"],
    ["shoulder_near","elbow_near"],["elbow_near","hand_near"],["shoulder_far","elbow_far"],["elbow_far","hand_far"],
@@ -102,10 +102,18 @@ function coords(e){
 function editPixel(point){
  const mask=M.decode(profile.masks[dir]),size=Number($("brush").value),idx=M.PARTS.indexOf(maskPart);
  const radius=Math.floor(size/2);
+ let changed=false;
  for(let y=Math.max(0,point.y-radius);y<=Math.min(111,point.y+radius);y++)
- for(let x=Math.max(0,point.x-radius);x<=Math.min(63,point.x+radius);x++)
-  if(Math.hypot(x-point.x,y-point.y)<=radius+.3)mask[y*64+x]=sliceTool==="unselect"?M.UNSELECTED:idx;
- profile.masks[dir]=M.encode(mask);markEdited();
+ for(let x=Math.max(0,point.x-radius);x<=Math.min(63,point.x+radius);x++){
+  if(Math.hypot(x-point.x,y-point.y)>radius+.3)continue;
+  const at=y*64+x;
+  // Unselect ONLY erases the blue mask of the currently selected body part.
+  // Do not silently erase ownership of other head/arm/torso/leg pieces.
+  const next=sliceTool==="unselect"?M.UNSELECTED:idx;
+  if(sliceTool==="unselect"&&mask[at]!==idx)continue;
+  if(mask[at]!==next){mask[at]=next;changed=true}
+ }
+ if(changed){profile.masks[dir]=M.encode(mask);markEdited()}
 }
 stage.addEventListener("pointerdown",e=>{
  if(!sheet)return;

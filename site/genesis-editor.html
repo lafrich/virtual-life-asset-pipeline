@@ -22,7 +22,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 #source-preview{display:block;width:min(140px,100%);height:auto;margin:8px auto}
 #stage{display:block;width:min(350px,100%);aspect-ratio:64/112;height:auto;touch-action:none;margin:7px auto}
 #stage:focus-visible{outline:3px solid #e5a947}
-#slice-unselect[aria-pressed=true]{background:#ffd9b6;border-color:#c07729}
+#slice-unselect[aria-pressed=true]{background:#e2e9f1;border-color:#718ba9}
 #slice-select[aria-pressed=true]{background:#b7d5ff;border-color:#3868af}
 #joints{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:250px;overflow:auto}
 #joints button{font-size:10px;overflow-wrap:anywhere}
@@ -55,7 +55,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <section class="panel">
  <h2 id="preview-title">EDIT MASTER RIG / SLICE</h2>
  <canvas id="stage" width="64" height="112" tabindex="0" aria-label="Editable Genesis puppet joints and pixel slice assignment"></canvas>
- <p id="legend">Biru = slice terpilih; jingga = belum ditetapkan (Unselect); titik putih = sendi. Mode Slice mengganti area puppet, bukan menghapus sprite sumber. Mask 64×112 per arah.</p>
+ <p id="legend">Biru = area yang dipilih. Unselect menghapus warna biru di bagian yang kamu sapu; tidak ada warna pengganti dan tidak menghapus gambar. Titik putih = sendi. Mask 64×112 per arah.</p>
  <div id="status" role="status">Loading approved Genesis bases…</div>
  <div class="action-row"><button id="load-cloud">↻ LOAD MASTER CLOUD</button><button class="primary" id="save">☁ SAVE · OVERWRITE MASTER</button></div>
  <div class="action-row"><button id="export">↓ BACKUP PROFILE.JSON</button><button id="reset">RESET THIS MASTER (UNSAVED)</button></div>
@@ -80,7 +80,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
   </div>
   <label>BRUSH SIZE (PIXELS)<input id="brush" type="range" min="1" max="7" step="2" value="3"></label>
   <div class="action-row"><button id="mask-copy">COPY MASK</button><button id="mask-paste">PASTE MASK</button><button id="mask-flip">PASTE FLIP</button></div>
-  <p class="note">Select / Paint assigns the chosen body part. Unselect removes the slice assignment from brushed pixels without erasing Genesis artwork; these pixels remain stationary in the native preview. Paint the area again to restore its puppet binding. SE/SW/NE/NW masks are independent.</p>
+  <p class="note">Select / Paint = tandai area bagian tubuh dengan warna biru. Unselect = hapus area biru yang salah pilih saja (tanpa warna kuning / warna pengganti). Tidak menghapus piksel Genesis atau bagian tubuh lainnya. Area yang dilepas tetap terlihat di preview native dan dapat dipilih kembali. SE/SW/NE/NW independen.</p>
   <p class="note">If a slice still breaks while sitting or lying down, inspect the native action in preview before saving. A single base mask cannot guarantee every extreme pose.</p>
  </section>
 </section>
@@ -94,5 +94,5 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <script src="./genesis-native-python-contract.js?v=genesis-editor-v1"></script>
 <script src="./genesis-master-rig.js?v=genesis-editor-v1"></script>
 <script src="./genesis-puppet-renderer.js?v=genesis-editor-v1"></script>
-<script src="./genesis-editor.js?v=2-unselect"></script>
+<script src="./genesis-editor.js?v=3-blue-erase"></script>
 </body></html>

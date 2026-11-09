@@ -123,6 +123,15 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
    return window.GenesisMasterRig.decode(mask)[30*64+32];
   },unselectSave.masks.se);
   assert.equal(unselectDecoded,255,"UNSELECT must save as unassigned, not clear Genesis pixels");
+  // Unselected pixels have no extra yellow/orange highlight; blue disappears.
+  const noYellow=await genesis.locator("#stage").evaluate((canvas,mask)=>{
+   const M=window.GenesisMasterRig,part=M.PARTS.indexOf("arm_l");
+   const decoded=M.decode(mask);
+   return {unassigned:decoded[30*64+32]===M.UNSELECTED,
+    blueCode:canvas.getContext("2d").getImageData(32,30,1,1).data[2],
+    maskPart:part};
+  },unselectSave.masks.se);
+  assert.equal(noYellow.unassigned,true,"UNSELECT should erase the blue selection");
   await genesis.locator("#slice-select").click();
   await genesis.locator("#stage").click({position:{x:b.width*32/64,y:b.height*30/112}});
   await genesis.locator("#save").click();
