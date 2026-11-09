@@ -11,7 +11,7 @@ const directions=C.DIRS,parts=C.PARTS,storage=key=>{
 };
 const clone=C.clone;let mode="master",dir="se",gender="male",masterModels={male:C.master("male"),female:C.master("female")},
  characters={},motions={},character=C.character("male"),motion=C.motion(),frame=0,
- selectedPart="head",artLayer="body",wearLayer="top",maskMode="select",tool="rig",
+ selectedPart="head",wearLayer="top",maskMode="select",tool="rig",
  dirtyMaster={male:false,female:false},dirtyCharacter=false,dirtyMotion=false,
  cloudVerified={male:false,female:false},cloudStatus={},copyMask=null,copyPose=null,
  zoom=4,fit=true,pan=false,pointer=null,editor=null,editorSession=null,
@@ -244,7 +244,6 @@ function controlOptions(id,items,keep){
  if(items.some(i=>i[0]===keep))el.value=keep;
 }
 function syncControls(){
- controlOptions("master-layer",C.LAYERS.map(x=>[x,x.toUpperCase().replaceAll("_"," ")]),artLayer);
  controlOptions("wear-layer",C.WEAR.map(x=>[x,x.toUpperCase().replaceAll("_"," ")]),wearLayer);
  controlOptions("part-select",parts.map(x=>[x,x.toUpperCase().replaceAll("_"," ")]),selectedPart);
  controlOptions("pose-part",parts.map(x=>[x,x.toUpperCase().replaceAll("_"," ")]),selectedPart);
@@ -271,8 +270,10 @@ function syncControls(){
 async function openPixelEditor(target,{piece=null}={}){
  if(editorBusy)return;
  const g=mode==="master"?gender:character.gender,layer=target;
- if(piece&&(mode!=="master"||layer!=="body"||!parts.includes(piece)))
-  return status("Body-piece editing requires a valid Lafrich master body piece",true);
+ if(mode==="master"&&(!piece||layer!=="body"||!parts.includes(piece)))
+  return status("MASTER editing is limited to Body Piece, slicing, and pivots",true);
+ if(mode==="character"&&(piece||!C.WEAR.includes(layer)))
+  return status("Clothing, hair, and accessories must be edited in CHARACTER / WEAR",true);
  editorBusy=true;
  try{
   const owner=mode==="master"?currentMaster().layers:character.wear;
@@ -357,7 +358,10 @@ function applyPixel(){
   return true;
  }catch(error){status("Pixel Apply failed: "+error.message,true);return false}
 }
-async function importPng(file){
+async function importWearPng(file){
+ if(mode!=="character")throw Error("Wear can only be imported in CHARACTER / WEAR");
+ const selectedLayer=wearLayer,selectedDirection=dir,selectedCharacter=character;
+ if(!C.WEAR.includes(selectedLayer))throw Error("Invalid Character wear layer");
  if(!file||file.type!=="image/png")throw Error("Choose PNG file");
  if(file.size>400000)throw Error("PNG is too large (400 KB maximum)");
  const data=await new Promise((resolve,reject)=>{
@@ -366,7 +370,12 @@ async function importPng(file){
  });
  const image=await R.loadPng(data);
  if(!image)throw Error("PNG did not decode");
- currentMaster().layers[artLayer][dir]=data;masterChanged();
+ if(mode!=="character"||character!==selectedCharacter)
+  throw Error("Character changed while importing; no wear was replaced");
+ character.wear[selectedLayer][selectedDirection]=data;
+ characterChanged();
+ status("IMPORTED CHARACTER WEAR · "+selectedLayer.toUpperCase()+" / "+
+  selectedDirection.toUpperCase()+" · SAVE CHARACTER to persist");
 }
 function setMotionFrame(i){
  frame=Math.max(0,Math.min(motion.frames.length-1,i));
@@ -521,7 +530,6 @@ function attach(){
  }
  $("master-gender").onchange=e=>setGender(e.target.value);
  $("character-gender").onchange=()=>newCharacter();
- $("master-layer").onchange=e=>{artLayer=e.target.value};
  $("wear-layer").onchange=e=>{wearLayer=e.target.value};
  $("part-select").onchange=e=>{selectedPart=e.target.value;syncPivot();void refreshScene()};
  $("pose-part").onchange=e=>{selectedPart=e.target.value;syncPivot();poseValues();void refreshScene()};
@@ -560,10 +568,9 @@ function attach(){
  $("paste-mask").onclick=()=>pasteCopiedMask(false);
  $("flip-mask").onclick=()=>pasteCopiedMask(true);
  $("edit-piece").onclick=()=>void openPixelEditor("body",{piece:selectedPart});
- $("edit-master").onclick=()=>void openPixelEditor(artLayer);
  $("edit-wear").onclick=()=>void openPixelEditor(wearLayer);
  $("seed-v6b").onclick=()=>void seedBase();
- $("import-layer").onchange=e=>{const file=e.target.files?.[0];if(file)void importPng(file).catch(err=>status(err.message,true));e.target.value=""};
+ $("import-wear").onchange=e=>{const file=e.target.files?.[0];if(file)void importWearPng(file).catch(err=>status(err.message,true));e.target.value=""};
  $("save-master-local").onclick=()=>{try{saveLocalMaster()}catch(e){status(e.message,true)}};
  $("save-master-cloud").onclick=()=>void saveCloud("lafrich_master");
  $("load-master-cloud").onclick=()=>void cloudLoad();
