@@ -89,7 +89,49 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
   }
   await genesis.locator("#native-action").selectOption("idle");
   await genesis.locator("#mode-slice").click();
+  // Pixel-accurate zoom: canvas changes only CSS size, not its 64x112 native buffer.
+  const initial=await genesis.locator("#stage").evaluate(c=>({
+   width:c.getBoundingClientRect().width,height:c.getBoundingClientRect().height,
+   intrinsicWidth:c.width,intrinsicHeight:c.height
+  }));
+  await genesis.locator("#zoom-in").click();
+  const plus=await genesis.locator("#stage").evaluate(c=>c.getBoundingClientRect().width);
+  assert.equal(plus-initial.width,64,"Zoom + must add exactly one CSS pixel per native pixel");
+  await genesis.locator("#zoom").evaluate(input=>{
+   input.value="12";input.dispatchEvent(new Event("input",{bubbles:true}));
+  });
+  const magnified=await genesis.locator("#stage").evaluate(c=>({
+   width:c.getBoundingClientRect().width,height:c.getBoundingClientRect().height,
+   intrinsicWidth:c.width,intrinsicHeight:c.height
+  }));
+  assert.deepEqual(magnified,{width:768,height:1344,intrinsicWidth:64,intrinsicHeight:112});
+  const scrollable=await genesis.locator("#stage-viewport").evaluate(v=>({
+   canScrollX:v.scrollWidth>v.clientWidth,canScrollY:v.scrollHeight>v.clientHeight
+  }));
+  assert.equal(scrollable.canScrollX&&scrollable.canScrollY,true,"Zoomed canvas must scroll both ways");
+  await genesis.locator("#zoom-pan").click();
+  assert.equal(await genesis.locator("#zoom-pan").getAttribute("aria-pressed"),"true");
+  const box=await genesis.locator("#stage-viewport").boundingBox();
+  assert.ok(box);
+  const leftBefore=await genesis.locator("#stage-viewport").evaluate(v=>v.scrollLeft);
+  await page.mouse.move(box.x+box.width*.5,box.y+box.height*.5);
+  await page.mouse.down();
+  await page.mouse.move(box.x+box.width*.5-45,box.y+box.height*.5,{steps:5});
+  await page.mouse.up();
+  const leftAfter=await genesis.locator("#stage-viewport").evaluate(v=>v.scrollLeft);
+  assert.ok(leftAfter>leftBefore,"Pan must scroll zoomed canvas without painting pixels");
+  await genesis.locator("#zoom-pan").click();
   await genesis.locator("#slice-part").selectOption("arm_l");
+  await genesis.locator("#stage-viewport").evaluate(v=>{v.scrollLeft=0;v.scrollTop=0});
+  await genesis.locator("#stage").click({position:{x:10*12+6,y:10*12+6}});
+  await genesis.locator("#zoom-fit").click();
+  const fitted=await genesis.locator("#stage").evaluate(c=>({
+   width:c.getBoundingClientRect().width,height:c.getBoundingClientRect().height
+  }));
+  assert.ok(fitted.width<=768&&fitted.height<=1344,"Fit should reduce magnification");
+  assert.equal(await genesis.locator("#stage").evaluate(c=>c.width),64,
+   "Zoom/Fit must not modify the native mask coordinate system");
+
   const b=await genesis.locator("#stage").boundingBox();
   assert.ok(b,"Genesis slice canvas is missing");
   await genesis.locator("#stage").click({position:{x:b.width*32/64,y:b.height*30/112}});
@@ -105,6 +147,11 @@ const TARGET_URL="http://127.0.0.1:4174/virtual-life-asset-pipeline/mahluk-hidup
    return M.decode(M.load('male').masks.se)[30*64+32];
   });
   assert.equal(masks,3,"Edited native slice must be stored as left-arm mask");
+  const zoomPaint=await genesis.locator("#stage").evaluate(()=>{
+   const M=window.GenesisMasterRig;
+   return M.decode(M.load("male").masks.se)[10*64+10];
+  });
+  assert.equal(zoomPaint,3,"Painting at 1200% zoom must hit exact native pixel 10,10");
   await genesis.locator("#slice-unselect").click();
   assert.equal(await genesis.locator("#slice-unselect").getAttribute("aria-pressed"),"true");
   await genesis.locator("#stage").click({position:{x:b.width*32/64,y:b.height*30/112}});

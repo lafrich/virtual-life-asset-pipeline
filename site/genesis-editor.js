@@ -17,8 +17,10 @@ function setZoom(requested,{fit=false}={}){
  if(mouse)return;
  const previousW=stage.getBoundingClientRect().width||64*zoom;
  const previousH=stage.getBoundingClientRect().height||112*zoom;
- const centerX=(viewport.scrollLeft+viewport.clientWidth/2)/previousW;
- const centerY=(viewport.scrollTop+viewport.clientHeight/2)/previousH;
+ const centerX=previousW<=viewport.clientWidth?0.5:
+  (viewport.scrollLeft+viewport.clientWidth/2)/previousW;
+ const centerY=previousH<=viewport.clientHeight?0.5:
+  (viewport.scrollTop+viewport.clientHeight/2)/previousH;
  zoom=val(requested,1,16);zoomFit=fit;
  // Explicit integer CSS pixels per native pixel keeps all brush coordinates exact.
  stage.style.width=String(64*zoom)+"px";
