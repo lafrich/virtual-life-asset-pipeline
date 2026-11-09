@@ -20,7 +20,16 @@ button:disabled{opacity:.55;cursor:not-allowed}
 #status.error{background:#ffdfdc}
 #source-preview,#stage{image-rendering:pixelated;border:1px solid #6c8199;background:repeating-conic-gradient(#ecf0f6 0 25%,#d1dcea 0 50%) 0 0/16px 16px}
 #source-preview{display:block;width:min(140px,100%);height:auto;margin:8px auto}
-#stage{display:block;width:min(350px,100%);aspect-ratio:64/112;height:auto;touch-action:none;margin:7px auto}
+#stage-zoom-controls{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:6px 0;padding:6px;background:#d5e2ef;border:1px solid #94abc5}
+#stage-zoom-controls button{flex:none;min-width:34px;padding:6px}
+#stage-zoom-controls input[type=range]{flex:1;min-width:70px;max-width:220px}
+#zoom-label{font:700 11px Tahoma;min-width:45px;text-align:center}
+#stage-viewport{width:100%;height:clamp(320px,62dvh,610px);overflow:auto;overscroll-behavior:contain;
+ border:1px solid #8395ab;background:repeating-conic-gradient(#ecf0f6 0 25%,#d1dcea 0 50%) 0 0/16px 16px}
+#stage{display:block;max-width:none;max-height:none;border:0;image-rendering:pixelated;
+ margin:0 auto;touch-action:none}
+#zoom-pan[aria-pressed=true]{background:#b7d5ff;border-color:#3868af}
+#stage-zoom-controls button:focus-visible{outline:2px solid #174e99}
 #stage:focus-visible{outline:3px solid #e5a947}
 #slice-unselect[aria-pressed=true]{background:#e2e9f1;border-color:#718ba9}
 #slice-select[aria-pressed=true]{background:#b7d5ff;border-color:#3868af}
@@ -31,7 +40,10 @@ button:disabled{opacity:.55;cursor:not-allowed}
 #legend{font-size:10px;line-height:1.55}
 [hidden]{display:none!important}
 @media(max-width:940px){main{grid-template-columns:240px 1fr}main>.panel:last-child{grid-column:1 / -1}}
-@media(max-width:650px){main{display:flex;flex-direction:column;padding:5px}.panel{padding:9px}#stage{width:min(270px,100%)}}
+@media(max-width:650px){main{display:flex;flex-direction:column;padding:5px}.panel{padding:9px}
+ #stage-viewport{height:clamp(300px,52dvh,500px)}
+ #stage-zoom-controls{gap:4px}
+ #stage-zoom-controls input[type=range]{min-width:64px}}
 </style></head><body>
 <header>▣ GENESIS EDITOR · FIXED TWO MASTER RIGS · NATIVE V6B</header>
 <main>
@@ -54,8 +66,18 @@ button:disabled{opacity:.55;cursor:not-allowed}
 </section>
 <section class="panel">
  <h2 id="preview-title">EDIT MASTER RIG / SLICE</h2>
- <canvas id="stage" width="64" height="112" tabindex="0" aria-label="Editable Genesis puppet joints and pixel slice assignment"></canvas>
- <p id="legend">Biru = area yang dipilih. Unselect menghapus warna biru di bagian yang kamu sapu; tidak ada warna pengganti dan tidak menghapus gambar. Titik putih = sendi. Mask 64×112 per arah.</p>
+ <div id="stage-zoom-controls" role="group" aria-label="Zoom and pan Genesis selection canvas">
+  <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+  <input id="zoom" type="range" min="1" max="16" step="1" value="4" aria-label="Canvas zoom">
+  <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+  <output id="zoom-label" for="zoom">400%</output>
+  <button type="button" id="zoom-fit" title="Fit canvas inside the viewport">FIT</button>
+  <button type="button" id="zoom-pan" aria-pressed="false" title="Drag to move around the zoomed canvas">✋ PAN</button>
+ </div>
+ <div id="stage-viewport" aria-label="Scrollable zoomed Genesis canvas">
+  <canvas id="stage" width="64" height="112" tabindex="0" aria-label="Editable Genesis puppet joints and pixel slice assignment"></canvas>
+ </div>
+ <p id="legend">Zoom +/− atau slider untuk memperbesar area slice. FIT menampilkan seluruh karakter; PAN menggeser kanvas yang diperbesar dengan mouse/jari (tanpa menggambar). Biru = seleksi, Unselect menghapus biru saja tanpa menghapus sprite. Mask tetap 64×112 native.</p>
  <div id="status" role="status">Loading approved Genesis bases…</div>
  <div class="action-row"><button id="load-cloud">↻ LOAD MASTER CLOUD</button><button class="primary" id="save">☁ SAVE · OVERWRITE MASTER</button></div>
  <div class="action-row"><button id="export">↓ BACKUP PROFILE.JSON</button><button id="reset">RESET THIS MASTER (UNSAVED)</button></div>
@@ -94,5 +116,5 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <script src="./genesis-native-python-contract.js?v=genesis-editor-v1"></script>
 <script src="./genesis-master-rig.js?v=genesis-editor-v1"></script>
 <script src="./genesis-puppet-renderer.js?v=genesis-editor-v1"></script>
-<script src="./genesis-editor.js?v=3-blue-erase"></script>
+<script src="./genesis-editor.js?v=4-slice-zoom"></script>
 </body></html>

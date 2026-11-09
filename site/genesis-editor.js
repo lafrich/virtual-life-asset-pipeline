@@ -5,7 +5,34 @@ const $=id=>document.getElementById(id),M=root.GenesisMasterRig,P=root.GenesisPu
 if(!M||!P||!C||!V){document.body.textContent="Genesis master dependencies missing";return}
 let gender="male",dir="se",mode="puppet",profile=M.load(gender),sheet=null,selected="head",pivot="head",
  maskPart="head",sliceTool="select",clipboard=null,mouse=null,playTimer=0,working=false,dirty=false,revision=0,changeVersion=0;
-const stage=$("stage"),ctx=stage.getContext("2d"),srcCtx=$("source-preview").getContext("2d");
+const stage=$("stage"),viewport=$("stage-viewport"),ctx=stage.getContext("2d"),srcCtx=$("source-preview").getContext("2d");
+let zoom=4,zoomFit=true,pan=false;
+function cursor(){
+ stage.style.cursor=pan?"grab":mode==="slice"?"crosshair":"default";
+}
+function fittedZoom(){
+ return val(Math.floor(Math.min((viewport.clientWidth-12)/64,(viewport.clientHeight-12)/112)),1,16);
+}
+function setZoom(requested,{fit=false}={}){
+ if(mouse)return;
+ const previousW=stage.getBoundingClientRect().width||64*zoom;
+ const previousH=stage.getBoundingClientRect().height||112*zoom;
+ const centerX=(viewport.scrollLeft+viewport.clientWidth/2)/previousW;
+ const centerY=(viewport.scrollTop+viewport.clientHeight/2)/previousH;
+ zoom=val(requested,1,16);zoomFit=fit;
+ // Explicit integer CSS pixels per native pixel keeps all brush coordinates exact.
+ stage.style.width=String(64*zoom)+"px";
+ stage.style.height=String(112*zoom)+"px";
+ $("zoom").value=String(zoom);
+ $("zoom-label").textContent=String(zoom*100)+"%";
+ $("zoom-out").disabled=zoom<=1;
+ $("zoom-in").disabled=zoom>=16;
+ viewport.scrollLeft=Math.max(0,centerX*64*zoom-viewport.clientWidth/2);
+ viewport.scrollTop=Math.max(0,centerY*112*zoom-viewport.clientHeight/2);
+}
+function setPan(value){
+ pan=!!value;$("zoom-pan").setAttribute("aria-pressed",String(pan));cursor();
+}
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null}catch{return null}};
 const show=(s,err=false)=>{$("status").textContent=s;$("status").classList.toggle("error",!!err)};
 const val=(x,min,max)=>Math.max(min,Math.min(max,Math.round(Number(x)||0)));
@@ -14,7 +41,7 @@ function setMode(m){
  mode=m;$("mode-puppet").setAttribute("aria-pressed",String(m==="puppet"));
  $("mode-slice").setAttribute("aria-pressed",String(m==="slice"));
  $("puppet-tools").hidden=m!=="puppet";$("slice-tools").hidden=m!=="slice";
- stage.style.cursor=m==="slice"?"crosshair":"default";
+ cursor();
  $("preview-title").textContent=m==="puppet"?"ADJUST PUPPET / COORDINATES":"ADJUST SLICE / PIXEL MASK";
  paint();
 }
@@ -24,7 +51,7 @@ function selectSliceTool(tool){
  sliceTool=tool;
  $("slice-select").setAttribute("aria-pressed",String(tool==="select"));
  $("slice-unselect").setAttribute("aria-pressed",String(tool==="unselect"));
- stage.style.cursor=mode==="slice"?"crosshair":"default";
+ cursor();
  show(tool==="unselect"?"UNSELECT · erase only the blue selection for "+maskPart.toUpperCase()+"; native pixels remain unchanged":
   "SELECT / PAINT · mark pixels blue for "+maskPart.toUpperCase());
 }
@@ -97,7 +124,7 @@ function setFrame(){
 }
 function coords(e){
  const r=stage.getBoundingClientRect();
- return {x:val((e.clientX-r.left)*64/r.width,0,63),y:val((e.clientY-r.top)*112/r.height,0,111)}
+ return {x:val(Math.floor((e.clientX-r.left)*64/r.width),0,63),y:val(Math.floor((e.clientY-r.top)*112/r.height),0,111)}
 }
 function editPixel(point){
  const mask=M.decode(profile.masks[dir]),size=Number($("brush").value),idx=M.PARTS.indexOf(maskPart);
@@ -117,6 +144,13 @@ function editPixel(point){
 }
 stage.addEventListener("pointerdown",e=>{
  if(!sheet)return;
+ if(pan){
+  mouse={id:e.pointerId,kind:"pan",x:e.clientX,y:e.clientY,
+   left:viewport.scrollLeft,top:viewport.scrollTop};
+  stage.setPointerCapture(e.pointerId);
+  stage.style.cursor="grabbing";
+  return;
+ }
  const p=coords(e);
  if(mode==="slice"){mouse={id:e.pointerId};editPixel(p)}
  else{
@@ -133,11 +167,16 @@ stage.addEventListener("pointerdown",e=>{
 });
 stage.addEventListener("pointermove",e=>{
  if(!mouse||mouse.id!==e.pointerId)return;
+ if(mouse.kind==="pan"){
+  viewport.scrollLeft=mouse.left+mouse.x-e.clientX;
+  viewport.scrollTop=mouse.top+mouse.y-e.clientY;
+  return;
+ }
  const p=coords(e);
  if(mode==="slice")editPixel(p);
  else{profile.joints[dir][selected]={x:p.x,y:p.y};jointInput();markEdited()}
 });
-for(const type of ["pointerup","pointercancel"])stage.addEventListener(type,()=>{mouse=null});
+for(const type of ["pointerup","pointercancel"])stage.addEventListener(type,()=>{mouse=null;cursor()});
 function saveLocalBackup(){
  const bytes=JSON.stringify(M.validate(profile),null,2),u=URL.createObjectURL(new Blob([bytes],{type:"application/json"}));
  const a=document.createElement("a");a.href=u;a.download=profile.id+".rig-backup.json";a.click();
@@ -187,6 +226,24 @@ $("gender").onchange=e=>changeGender(e.target.value);
 $("dir").onchange=e=>{dir=e.target.value;jointInput();paint()};
 $("mode-puppet").onclick=()=>setMode("puppet");
 $("mode-slice").onclick=()=>setMode("slice");
+$("zoom-out").onclick=()=>setZoom(zoom-1);
+$("zoom-in").onclick=()=>setZoom(zoom+1);
+$("zoom").oninput=e=>setZoom(e.target.value);
+$("zoom-fit").onclick=()=>setZoom(fittedZoom(),{fit:true});
+$("zoom-pan").onclick=()=>setPan(!pan);
+stage.addEventListener("keydown",e=>{
+ if(e.key==="Escape"&&pan){setPan(false);e.preventDefault()}
+ else if(e.key==="+"
+  ||e.key==="="){setZoom(zoom+1);e.preventDefault()}
+ else if(e.key==="-"){setZoom(zoom-1);e.preventDefault()}
+});
+viewport.addEventListener("wheel",e=>{
+ if(!e.ctrlKey&&!e.metaKey)return;
+ e.preventDefault();setZoom(zoom+(e.deltaY<0?1:-1));
+},{passive:false});
+if(root.ResizeObserver)new ResizeObserver(()=>{
+ if(zoomFit&&!mouse)setZoom(fittedZoom(),{fit:true});
+}).observe(viewport);
 $("native-action").onchange=()=>{$("native-frame").value="1";setFrame()};
 $("native-frame").onchange=setFrame;
 $("probe").oninput=paint;
@@ -232,5 +289,5 @@ $("load-cloud").onclick=()=>void loadCloud().catch(e=>show(e.message,true));
 root.addEventListener("message",e=>{if(e.origin===location.origin&&e.data?.type==="mahluk:cloud-connected"&&!dirty)void loadCloud().catch(()=>{})});
 root.addEventListener("pagehide",stop);
 $("native-action").value="idle";$("pivot-name").value="head";$("slice-part").value="head";
-setMode("puppet");jointInput();void reloadSheet();
+setZoom(fittedZoom(),{fit:true});setMode("puppet");jointInput();void reloadSheet();
 })(window);
