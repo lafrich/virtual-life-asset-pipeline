@@ -55,3 +55,25 @@ Existing legacy character files, saved game assets and historical Git sources re
 ## Automated safety gate
 
 `tests/test_lgr_retirement.cjs` and `.github/workflows/genesis-workbench-qa.yml` enforce retired routes, blocked old writes, and Genesis editor integrity. The Character Stock deployment additionally asserts retirement routes contain no scripts and LGR-1 exists. Legacy Mahluk-specific QA workflows were removed; independent Semesta/NPC asset publication remains active.
+
+## Workflow UX and data-safety update (November 10, 2026)
+
+The authoring workflow was audited and rebuilt to remove the previous loop of having to return to Pixel Editor just to select a different body part:
+
+- **Shared Body Part navigation** with direct selector, previous/next controls and an optional 10-part list remains accessible in Pixel Editor, Pivot & Slicing, Bind and Check Binding.
+- **Forty part/angle review receipts**, one for each 10 parts × four directions, are now required before Bind. The matrix is navigable, not auto-approve. Clicking a cell chooses that part and angle; approval requires explicit visual inspection via the separate Mark Reviewed action. Fully occluded parts require an explicit confirmation.
+- Changes to pivot/mask immediately clear affected review receipts. Changing pixel art invalidates all previous review receipts, binding, and motion approvals.
+- **Isolate Selected** visually dims other body parts, red highlights visible pixels with no mask assignment, and per-part Copy/Paste avoids overwriting an entire angle's ten-part mask. Whole-mask Paste/Flip now explicitly warns before replacement.
+- **Check Binding** includes continuous Walk/Wave preview, Play/Pause, speed, scrub slider, part rotation and X/Y translation. The four direction approvals must be marked separately before an approved master can be produced.
+- **Pan mode** allows touch/mouse drag navigation on zoomed canvas without editing slices. Fullscreen uses the browser's actual Fullscreen API rather than opening a new tab.
+- **Draft editing is recoverable before master approval**, using versioned Google Drive drafts or JSON Import/Export. Each cloud draft creates an immutable revision, and the user chooses which version to restore. Local storage errors no longer report false success.
+- Canonical approved cloud master overwrites are **fail-closed** unless this browser has explicitly loaded and acknowledged that exact cloud revision. The previous approved master is archived with a timestamp and checksum before replacement; a changed remote checksum aborts the save.
+- The Python geometry runtime now includes per-piece placement offsets from the authored core so its affine chain matches the JavaScript renderer. Python and Drive reject unreviewed 40-part bindings.
+
+**Limits still remaining:** The 40 reviews are *human anatomical decisions*, not machine vision verifying a perfect cut. Automatic limb segmentation is not implemented. Per-direction near/far visual labels do not yet define a guaranteed anatomical left/right map for reusable *left-hand/right-hand* motion across all four directions; this must be calibrated before a fully automatic cross-angle motion library. The JavaScript and Python output images have not been proven pixel-for-pixel identical for every pose; geometry has dedicated tests. Mainkan/Character Editor runtime integration remains a separate future component and is not falsely advertised as complete.
+
+## QA coverage
+
+- `tests/test_genesis_procedural_runtime.py` checks procedural geometry, parent transforms, per-part placements, and all 40 QA receipts.
+- `tests/test_lgr_cloud_safety.cjs` simulates two independent devices, stale-master conflicts, immutable draft versions and recoverable previous masters without accessing the user's Drive.
+- `.github/workflows/genesis-workbench-qa.yml` launches Chromium and checks artist navigation, premature-bind rejection, 40 reviews, pivot-change invalidation, procedural motion playback, four-angle approval, approved master local storage, and strict Drive validation.
