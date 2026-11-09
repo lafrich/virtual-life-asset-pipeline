@@ -281,6 +281,13 @@ jobs:
               assert.equal(clean.alpha,0,'Delete Stray left visible source pixel');
               assert.equal(clean.mask,255,'Cleanup secretly assigned a body part');
               assert.equal(clean.checks,40,'Cleanup incorrectly cleared prior 40-part reviews');
+              await page.locator('#rig-next').click();
+              await page.locator('#make-binding').click();
+              await page.waitForFunction(()=>document.querySelector('#binding-result')?.
+                textContent?.startsWith('BOUND'),null,{timeout:15000});
+              assert((await page.locator('#binding-result').textContent()).startsWith('BOUND'),
+                'After stray deletion the existing 40/40 review should allow a clean bind');
+              await page.locator('[data-step="rig"]').click();
               await page.locator('#undo-stray-delete').click();
               await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
                 textContent?.includes('1 visible unassigned pixels'));
