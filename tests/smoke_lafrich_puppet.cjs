@@ -58,6 +58,63 @@ const {chromium}=require('playwright');
    'V6B source must not seed clothes or hair into Lafrich Master');
   assert.ok(approvedArt.male.parts.includes('body')&&approvedArt.female.parts.includes('body'));
   console.log('PASS V6B male/female visual art seeded into new independent four-view physical layers');
+  // Regression: a bare V6B base/body sheet contains mostly head/skin,
+  // while torso/arms/legs are held in the native NUDE top/pants/feet sheets.
+  // Confirm that seeding restores a complete nude anatomical silhouette.
+  const bodyCoverage=await page.evaluate(async()=>{
+   const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
+   const report={};
+   const count=(d,y0,y1)=>{let n=0;
+    for(let y=y0;y<y1;y++)for(let x=12;x<52;x++)if(d[(y*64+x)*4+3]>0)n++;
+    return n;};
+   for(const gender of ['male','female']){
+    const master=await R.seedFromV6B(gender);
+    report[gender]={};
+    for(const dir of C.DIRS){
+     const canvas=R.rgba(),ctx=canvas.getContext('2d',{willReadFrequently:true});
+     for(const l of ['body','body_front']){
+      const im=await R.loadPng(master.layers[l][dir]);if(im)ctx.drawImage(im,0,0);
+     }
+     const data=ctx.getImageData(0,0,64,112).data;
+     report[gender][dir]={torso:count(data,52,81),legs:count(data,81,111)};
+    }
+   }
+   return report;
+  });
+  for(const [g,views] of Object.entries(bodyCoverage))
+   for(const [d,row] of Object.entries(views)){
+    assert.ok(row.torso>40,g+' '+d+' missing nude torso: '+JSON.stringify(row));
+    assert.ok(row.legs>40,g+' '+d+' missing nude legs: '+JSON.stringify(row));
+   }
+  const repair=await page.evaluate(async()=>{
+   const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer;
+   const seeded=await R.seedFromV6B('male');
+   const partial=C.clone(seeded);
+   const beforePivot=C.clone(partial.pivots);
+   const cut=R.rgba(),c=cut.getContext('2d');
+   const im=await R.loadPng(partial.layers.body.se);
+   c.drawImage(im,0,0);c.clearRect(0,52,64,60);
+   partial.layers.body.se=cut.toDataURL('image/png');
+   const front=R.rgba(),f=front.getContext('2d');
+   const fi=await R.loadPng(partial.layers.body_front.se);
+   if(fi)f.drawImage(fi,0,0);
+   f.clearRect(0,52,64,60);
+   partial.layers.body_front.se=front.toDataURL('image/png');
+   const result=await R.repairIncompleteBody(partial);
+   const restored=R.rgba(),g=restored.getContext('2d',{willReadFrequently:true});
+   g.drawImage(await R.loadPng(result.master.layers.body.se),0,0);
+   g.drawImage(await R.loadPng(result.master.layers.body_front.se),0,0);
+   const data=g.getImageData(0,0,64,112).data;
+   const below=[...data].filter((v,i)=>i%4===3&&Math.floor(i/4/64)>=81&&v>0).length;
+   return {repaired:result.repaired,below,samePivots:
+     JSON.stringify(beforePivot)===JSON.stringify(result.master.pivots),
+    originalUnchanged:partial.layers.body.se!==result.master.layers.body.se};
+  });
+  assert.ok(repair.repaired.includes('se'),'Head-only legacy master must be repaired');
+  assert.ok(repair.below>40,'Head-only base should regain nude legs');
+  assert.ok(repair.samePivots,'Body repair must preserve all existing pivots');
+  assert.ok(repair.originalUnchanged,'Legacy source remains recoverable');
+  console.log('PASS native nude torso/limbs/feet in every direction and reversible legacy head-only body repair');
   assert.equal(await page.locator('#motion-list option').count(),1,
    'New Lafrich motion gallery must initially be empty (no eleven legacy actions)');
   await page.locator('#master-gender').selectOption('female');
