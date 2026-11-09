@@ -18,6 +18,7 @@ const clone=C.clone;let mode="master",dir="se",gender="male",masterModels={male:
  editorBusy=false,playing=false,timer=null,renderEpoch=0,sceneVersion=0,
  preparedCache=new Map(),faces=[],loadedFaceImages=new Map();
 const canvas=$("canvas"),ctx=canvas.getContext("2d"),viewport=$("viewport");
+const anatomyChecks=new WeakMap();
 const bridge=()=>{try{return root.parent!==root?root.parent.VLMahlukWorkspace:null}catch{return null}};
 function status(msg,error=false){$("status").textContent=String(msg);$("status").classList.toggle("error",error)}
 function validGender(g){if(!C.IDS[g])throw Error("Invalid base");return g}
@@ -39,6 +40,24 @@ function localSave(key,data){
 }
 function masterChanged(){
  dirtyMaster[gender]=true;sceneVersion++;preparedCache.clear();R.clearCache();void refreshScene();
+}
+async function ensureAnatomy(g){
+ const existing=masterModels[g];
+ if(!existing?.layers?.body?.se||dirtyMaster[g])return;
+ if(anatomyChecks.has(existing))return anatomyChecks.get(existing);
+ const check=(async()=>{
+  try{
+   const result=await R.repairIncompleteBody(existing);
+   if(masterModels[g]!==existing||dirtyMaster[g]||!result.repaired.length)return;
+   // Recover preview in memory only; original local/cloud profiles stay
+   // unchanged until the user explicitly saves this restored anatomical body.
+   masterModels[g]=result.master;dirtyMaster[g]=true;
+   sceneVersion++;preparedCache.clear();R.clearCache();void refreshScene();
+   if(g===gender)status("FULL BODY RECOVERED · torso, arms and legs · "+
+    result.repaired.join("/").toUpperCase()+" · UNSAVED, verify and SAVE MASTER");
+  }catch(e){if(g===gender)status("Body source verification failed: "+e.message,true)}
+ })();
+ anatomyChecks.set(existing,check);return check;
 }
 function characterChanged(){
  dirtyCharacter=true;sceneVersion++;preparedCache.clear();void refreshScene();
@@ -66,7 +85,7 @@ function setGender(next){
  $("master-gender").value=next;
  character.gender=next;
  selectedPart="head";sceneVersion++;preparedCache.clear();
- syncControls();void refreshScene();
+ syncControls();void refreshScene();void ensureAnatomy(next);
 }
 function faceOptions(){
  const active=$("face-select"),keep=character.faceId;
@@ -508,6 +527,7 @@ async function cloudLoad(all=false){
   localSave(C.MASTER_KEY,{...storage(C.MASTER_KEY),[gender]:next});cloudVerified[gender]=true;
   void refreshScene();syncControls();
   status("LAFRICH "+gender.toUpperCase()+" LOADED FROM DRIVE · last saved "+(next.updated||"unknown"));
+  await ensureAnatomy(gender);
  }catch(error){status("Lafrich Cloud load failed: "+error.message,true)}
 }
 async function seedBase(){
@@ -515,9 +535,11 @@ async function seedBase(){
  if(currentMaster().layers.body?.se&&!confirm("Replace current "+gender+" base art with V6B reference seed? Save a backup first."))return;
  try{
   status("Seeding Lafrich "+gender+" from approved V6B pixel art. No old motion is imported.");
-  const result=await R.seedFromV6B(gender);
-  masterModels[gender]=result;masterChanged();
-  status("V6B STYLE SEED LOADED · 4 directions · BODY art only · 10-piece Lafrich rig · UNSAVED");
+  const result=await R.seedFromV6B(gender),previous=currentMaster();
+  masterModels[gender]=C.validateMaster({...previous,layers:{...previous.layers,
+   body:result.layers.body,body_front:result.layers.body_front}});
+  masterChanged();
+  status("FULL NUDE BODY RESTORED · head, torso, arms, legs · 4 views · slicing and pivots preserved · UNSAVED");
  }catch(error){status("Seed failed: "+error.message,true)}
 }
 function attach(){
@@ -715,11 +737,19 @@ async function initialize(){
  for(const g of ["male","female"]){
   if(masterModels[g].layers.body?.se)continue;
   try{const seed=await R.seedFromV6B(g);
-   if(!masterModels[g].layers.body?.se&&!dirtyMaster[g]){masterModels[g]=seed;sceneVersion++;preparedCache.clear();}
+   if(!masterModels[g].layers.body?.se&&!dirtyMaster[g]){
+    const prior=masterModels[g];
+    masterModels[g]=C.validateMaster({...prior,layers:{...prior.layers,
+     body:seed.layers.body,body_front:seed.layers.body_front}});
+    sceneVersion++;preparedCache.clear();
+   }
   }catch(error){status("V6B seed optional: "+error.message+" · paint or import 64×112 art",true)}
  }
  syncControls();void refreshScene();
- if(bridge()?.isOnline?.()){void cloudLoad(false);void cloudLoad(true);void refreshFaces()}
+ if(bridge()?.isOnline?.()){
+  await cloudLoad(false);void cloudLoad(true);void refreshFaces();
+ }
+ await Promise.all(["male","female"].map(g=>ensureAnatomy(g)));
 }
 void initialize().catch(e=>status("Lafrich Puppet startup failed: "+e.message,true));
 })(window);
