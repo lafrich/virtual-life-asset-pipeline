@@ -74,7 +74,10 @@
   for(const p of lineage){
    const pivot=prepared.master.pivots[prepared.dir][p];
    const v=node[p]||{x:0,y:0,a:0};
-   ctx.translate(v.x,v.y);
+   const placement=prepared.master.placements?.[prepared.dir]?.[p]||{x:0,y:0};
+   // Parent placements automatically carry children, native sprites, Emosi,
+   // and Character Wear through the exact same rig transform.
+   ctx.translate(v.x+placement.x,v.y+placement.y);
    ctx.translate(pivot.x,pivot.y);ctx.rotate(v.a*Math.PI/180);
    ctx.translate(-pivot.x,-pivot.y);
   }
