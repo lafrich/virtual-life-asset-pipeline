@@ -20,10 +20,14 @@ const DB="emotion-studio-local-v1",STORE="emotion-assets";
 const byteLimit=25*1024*1024;
 let token="",expires=0,baseFolder="",savedFile="",recordFolder="",recordFolderPromise=null;
 const CLOUD_FORMAT="mahluk-online-record-v1";
-const CLOUD_TYPES=new Set(["character","action","animation","genesis"]);
+const CLOUD_TYPES=new Set(["character","action","animation","genesis",
+ "lafrich_master","lafrich_character","lafrich_motion"]);
 function validCloud(kind,id){
  if(!CLOUD_TYPES.has(kind)||!/^[-a-z0-9_]{2,80}$/.test(String(id||""))||
-  (kind==="genesis"&&id!=="genesis_male_nude"&&id!=="genesis_female_nude"))
+  (kind==="genesis"&&id!=="genesis_male_nude"&&id!=="genesis_female_nude")||
+  (kind==="lafrich_master"&&id!=="lafrich_male"&&id!=="lafrich_female")||
+  (kind==="lafrich_character"&&!/^lafrich_char_[a-z0-9_]+$/.test(id))||
+  (kind==="lafrich_motion"&&!/^lafrich_motion_[a-z0-9_]+$/.test(id)))
   throw Error("Invalid cloud record kind / id");
 }
 async function cloudFolder(){

@@ -1,20 +1,20 @@
-/* One host, four preserved specialist editors. Navigation never resets editor storage. */
+/* Lafrich Puppet live workspace: legacy editors archived, no user data deleted. */
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id);
 const ORIGIN=location.origin;
 const URLS=Object.freeze({
  emotion:"/virtual-office/emotion-studio/",
- character:"./v6p-studio.html?embedded=1&rev=idle-pivot-v2",
- action:"./mahluk-action-editor.html?embedded=1",
- animation:"./mahluk-animation-native.html?embedded=1&rev=genesis-master-v1",
- genesis:"./genesis-editor.html?embedded=1&rev=genesis-appearance-master-v2"
+ character:"./lafrich-puppet-studio.html?embedded=1&mode=character&rev=lafrich-puppet-v1",
+ action:"./lafrich-puppet-studio.html?embedded=1&mode=animation&rev=lafrich-puppet-v1",
+ animation:"./lafrich-puppet-studio.html?embedded=1&mode=animation&rev=lafrich-puppet-v1",
+ genesis:"./lafrich-puppet-studio.html?embedded=1&mode=master&rev=lafrich-puppet-v1"
 });
 const FRAMES=Object.freeze({
  emotion:"emotion-frame",character:"character-frame",action:"action-frame",
  animation:"motion-frame",genesis:"genesis-frame"
 });
-const TAB_IDS=["emotion","character","action","animation","genesis"];
+const TAB_IDS=["emotion","character","animation","genesis","action"];
 let tab="character";
 const ephemeral=new Map();
 const SESSION_KEYS=new Set(["vl-v6p-character-workflow-v1","vl-v6p-selected-character-v1",
@@ -73,10 +73,10 @@ function show(name){
  const u=new URL(location.href);u.searchParams.set("tab",tab);
  history.replaceState(null,"",u.pathname+u.search+u.hash);
  note({emotion:"EMOSI.EXE · emotion database and dialog lipsync are the original editor",
- character:"CHARACTER · Start → Base → Customize → Preview → Save",
- action:"ACTION EDITOR · situation binding is stored as a separate draft",
- animation:"ANIMATION · GENESIS MALE/FEMALE · 11 native templates · Python four directions",
- genesis:"GENESIS EDITOR · Edit Male/Female masters, native slice mask + puppet; overwrite the same ID"}[tab]);
+ character:"LAFRICH CHARACTER · Four-view Custom Wear + Emosi · fitted to 10-piece puppet",
+ action:"LAFRICH PYTHON MOTION · old Action legacy disabled",
+ animation:"LAFRICH PYTHON ANIMATION · new database (zero stock animations) · 10-piece rig",
+ genesis:"LAFRICH MASTER · fixed Lafrich Male/Female · four-view pixel art + 10-piece puppet rig"}[tab]);
 }
 function openEditor(value){
  const url=fixedUrl(value);
@@ -103,7 +103,7 @@ function refreshCharacter(){
 function newClip(){
   // Only the Motion Editor creates animations. Pixel Editor edits Custom Wear.
   show("animation");
-  note("IMPORT PYTHON or CREATE NEW in Genesis Native Animation.");
+  note("Lafrich Puppet: create a NEW Python motion. No stock animations are active.");
 }
 function openFull(){
  const url=$(FRAMES[tab]).src||new URL(URLS[tab],location.href).href;
@@ -122,7 +122,13 @@ function bind(){
    for(const id of ["motion-frame","character-frame"]){
     try{$(id)?.contentWindow?.postMessage({type:"genesis:master-overwritten",gender:e.data.gender},ORIGIN)}catch{}
    }
-   note("Genesis master "+e.data.gender+" overwritten in Drive; editors will reload this profile");
+   note("Historic Genesis master notification received; Lafrich Puppet is the active engine");
+  }
+  if(e.data.type==="lafrich:master-saved"&&["male","female"].includes(e.data.gender)){
+   for(const id of ["character-frame","motion-frame"]){
+    try{$(id)?.contentWindow?.postMessage({type:"lafrich:master-updated",gender:e.data.gender},ORIGIN)}catch{}
+   }
+   note("Lafrich "+e.data.gender+" master saved · Character and Animation will reload it");
   }
   if(e.data.type==="mahluk:open-editor"&&typeof e.data.url==="string"){
    try{openEditor(e.data.url)}catch(error){note("Editor link rejected: "+error.message)}
