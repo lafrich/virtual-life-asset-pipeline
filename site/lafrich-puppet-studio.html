@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LAFRICH PUPPET.EXE — 4 View Pixel Puppet + Python Motions</title>
+<link rel="stylesheet" href="./mahluk-action-frame-pixel.css?v=lafrich-puppet-v1">
+<style>
+:root{font:12px Tahoma,Arial,sans-serif;color:#263b58;background:#b8c9db}
+*{box-sizing:border-box}html,body{margin:0;min-height:100dvh}button,input,select,textarea{font:inherit;color:#18395f}
+button{background:linear-gradient(#fff,#d0e0f3);border:1px solid #879bb6;padding:7px;cursor:pointer}
+button:hover{border-color:#3573c6}button[aria-pressed=true],button.active{background:#b4d4fb;border-color:#3977bc;font-weight:bold}
+button:disabled{opacity:.5;cursor:not-allowed}input,select,textarea{border:1px solid #8da2bb;padding:6px;max-width:100%;background:#fff}
+header{background:linear-gradient(90deg,#123879,#3e80ce);color:#fff;padding:10px 12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header strong{font-size:14px;letter-spacing:.04em}header small{opacity:.88}
+#app{min-height:100dvh;display:flex;flex-direction:column}
+#tabs{display:flex;gap:5px;align-items:center;flex-wrap:wrap;padding:6px;background:#e1e8f0;border-bottom:1px solid #8397b1}
+#tabs button{min-width:100px}#tabs button[aria-selected=true]{background:#9ec7ff;font-weight:bold;border:2px solid #3772bf}
+#page{width:100%;max-width:1460px;margin:0 auto;padding:8px;display:grid;grid-template-columns:minmax(205px,270px) minmax(300px,1fr) minmax(210px,300px);gap:8px;align-items:start}
+.panel{border:2px ridge #fff;background:#e8edf3;padding:10px;min-width:0}
+h2{font-size:12px;border-bottom:1px solid #9daec3;margin:0 0 9px;padding:5px;background:#d9e5f2}
+label{display:block;font-size:11px;font-weight:bold;margin:7px 0}label>input:not([type=checkbox]),label>select{display:block;width:100%;margin-top:3px}
+.row{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:70px}
+.note{color:#51667f;line-height:1.5;font-size:11px}.mode-pane[hidden],.mode-card[hidden],[hidden]{display:none!important}
+#viewport{overflow:auto;overscroll-behavior:contain;height:clamp(380px,65dvh,680px);border:1px solid #94a4b7;
+background:repeating-conic-gradient(#f2f5f9 0 25%,#d8e2ed 0 50%) 0 0/16px 16px}
+#canvas{display:block;max-width:none;max-height:none;image-rendering:pixelated;touch-action:none;margin:0 auto}
+#zoom{width:100%;flex:1}#views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:7px 0}
+#views button{padding:4px;min-width:0}#views canvas{display:block;width:100%;max-height:138px;object-fit:contain;image-rendering:pixelated}
+#status{background:#d6e7f8;border:1px solid #8aa7c7;padding:9px;min-height:42px;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+#status.error{background:#ffe3e1;border-color:#d78989}
+#frames-info{font-size:11px;white-space:normal}#mode-hint{margin-top:8px}
+#pose-parts button{min-width:100%;text-align:left;margin:2px 0;padding:5px}
+#motion-list,#character-list{width:100%}
+#animation-controls{padding:7px 0}#python-file,#import-layer{width:100%}
+.small{font-size:10px}#python-note{font-size:11px;line-height:1.5}
+@media(max-width:950px){#page{grid-template-columns:1fr 1fr}#page>.panel:last-child{grid-column:1/-1}}
+@media(max-width:650px){#page{display:flex;flex-direction:column;padding:4px;gap:5px}#page>.panel{width:100%}
+#viewport{height:clamp(320px,54dvh,500px)}#tabs button{flex:1 1 80px}header{padding:7px}}
+</style></head><body><div id="app">
+<header><strong>▣ LAFRICH PUPPET.EXE</strong><small>4-VIEW V6B-STYLE PIXEL PUPPET · 10-PIECE HIERARCHICAL RIG · NEW PYTHON MOTIONS</small></header>
+<nav id="tabs" aria-label="Lafrich Puppet workspace">
+<button id="tab-master" data-mode="master">◇ MASTER</button>
+<button id="tab-character" data-mode="character">♟ CHARACTER / WEAR</button>
+<button id="tab-animation" data-mode="animation">▤ PYTHON ANIMATION</button>
+</nav>
+<main id="page">
+<section class="panel">
+<div class="mode-pane" data-page="master">
+<h2>THE TWO FIXED MASTER BASES</h2>
+<label>BASE BODY<select id="master-gender"><option value="male">LAFRICH MALE</option><option value="female">LAFRICH FEMALE</option></select></label>
+<p class="note">Dua ID tetap: <b>lafrich_male</b> dan <b>lafrich_female</b>. Source V6B hanya seed visual sekali, bukan sistem motion lama.</p>
+<label>ART LAYER<select id="master-layer"></select></label>
+<div class="row"><button id="edit-master" class="active">✎ EDIT 4 VIEWS</button><button id="seed-v6b">V6B STYLE SEED</button></div>
+<h2>RIGGING / 10 PIECES</h2>
+<label>BODY PIECE<select id="part-select"></select></label>
+<div class="row"><button id="tool-rig" aria-pressed="true">✣ PIVOTS</button><button id="tool-mask" aria-pressed="false">▣ SLICES</button></div>
+<div id="pivot-controls">
+<label>PIVOT X<input type="number" id="pivot-x" min="0" max="63"></label>
+<label>PIVOT Y<input type="number" id="pivot-y" min="0" max="111"></label>
+</div>
+<div id="mask-controls" hidden>
+<div class="row"><button id="paint-mask" aria-pressed="true">SELECT BLUE</button><button id="erase-mask" aria-pressed="false">UNSELECT BLUE</button></div>
+<label>BRUSH <input id="brush" type="range" min="1" max="9" step="2" value="3"></label>
+<div class="row"><button id="copy-mask">COPY MASK</button><button id="paste-mask">PASTE</button><button id="flip-mask">PASTE FLIP</button></div>
+<p class="note">Tiap arah punya slicing sendiri; Unselect hanya menghapus seleksi biru milik bagian yang dipilih.</p>
+</div>
+<h2>MASTER STORAGE</h2>
+<div class="row"><button id="save-master-local">SAVE LOCAL</button><button id="save-master-cloud">☁ OVERWRITE MASTER</button></div>
+<div class="row"><button id="load-master-cloud">↓ LOAD CLOUD</button><button id="master-backup">↓ BACKUP JSON</button></div>
+</div>
+<div class="mode-pane" data-page="character" hidden>
+<h2>CHARACTER · LAFRICH BASE</h2>
+<label>BODY<select id="character-gender"><option value="male">LAFRICH MALE</option><option value="female">LAFRICH FEMALE</option></select></label>
+<label>CHARACTER NAME<input id="character-name" maxlength="100" value="New Lafrich Character"></label>
+<label>SELECT SAVED CHARACTER<select id="character-list"></select></label>
+<div class="row"><button id="character-new">NEW</button><button id="character-load">OPEN</button></div>
+<h2>CUSTOM WEAR · FOUR VIEW</h2>
+<label>WEAR LAYER<select id="wear-layer"></select></label>
+<div class="row"><button id="edit-wear" class="active">✎ EDIT WEAR</button></div>
+<p class="note">Wear adalah layer per arah yang mengikuti transformasi bahu, siku, pinggul, dan lutut bersama tubuh.</p>
+<h2>EMOSI.EXE · FRONTMOST</h2>
+<label>FACE / EMOTION<select id="face-select"><option value="">BLANK / NONE</option></select></label>
+<div class="row"><button id="refresh-faces">↻ REFRESH EMOSI</button><button id="open-emosi">↗ EMOSI.EXE</button></div>
+<h2>SAVE CHARACTER</h2>
+<div class="row"><button id="save-character-local">SAVE LOCAL</button><button id="save-character-cloud">☁ SAVE CHARACTER</button></div>
+</div>
+<div class="mode-pane" data-page="animation" hidden>
+<h2>NEW PYTHON MOTION DATABASE</h2>
+<p class="note">Tidak ada 11 animasi bawaan. Mulai dari gerakan yang kamu buat sendiri. .py berisi MOTION literal tervalidasi, tidak menjalankan kode Python sembarang.</p>
+<label>ANIMATION NAME<input id="motion-name" maxlength="100" value="New Motion"></label>
+<label>DATABASE<select id="motion-list"></select></label>
+<div class="row"><button id="motion-new" class="active">＋ NEW</button><button id="motion-open">OPEN</button></div>
+<h2>FRAME EDITOR</h2>
+<div class="row"><button id="frame-add">＋ FRAME</button><button id="frame-remove">− FRAME</button></div>
+<label>FRAME <input type="number" id="frame-index" value="1" min="1" max="96"></label>
+<label>DURATION (MS)<input type="number" id="frame-duration" value="160" min="40" max="5000"></label>
+<h2>PYTHON FILE</h2>
+<div class="row"><button id="export-python">↓ EXPORT .PY</button><label style="flex:1">IMPORT .PY<input type="file" id="python-file" accept=".py,text/x-python"></label></div>
+<div class="row"><button id="save-motion-local">SAVE LOCAL</button><button id="save-motion-cloud">☁ SAVE MOTION</button></div>
+</div>
+</section>
+
+<section class="panel">
+<h2 id="preview-title">LIVE PUPPET · FOUR VIEWS</h2>
+<div class="row"><button id="zoom-out">−</button><input id="zoom" type="range" min="1" max="16" step="1" value="4" aria-label="Canvas zoom">
+<button id="zoom-in">＋</button><button id="zoom-fit">FIT</button><button id="pan" aria-pressed="false">✋ PAN</button></div>
+<div id="viewport"><canvas id="canvas" width="64" height="112" aria-label="Live Lafrich hierarchical puppet and mask editor"></canvas></div>
+<div id="views" aria-label="Four direction previews"></div>
+<div class="row" id="animation-controls">
+<button id="previous-frame">◀</button><button id="play">▶ PLAY</button><button id="next-frame">▶</button>
+<small id="frames-info">No motion loaded</small></div>
+<div id="status" role="status">Lafrich Puppet starting. Old animation database is disabled, not deleted.</div>
+<p id="mode-hint" class="note">Tiap arah dapat diedit mandiri, pakaian dan Emosi akan tampak ketika animasi bergerak.</p>
+</section>
+
+<section class="panel">
+<div class="mode-card" data-card="master">
+<h2>BODY HIERARCHY</h2><div id="hierarchy"></div>
+<p class="note">Lengan atas → lengan bawah (siku). Paha → betis (lutut). Tiap sisi berdiri sendiri. Kepala mengikuti torso. Pivot dan slice tersimpan empat arah.</p>
+<h2>IMPORT PIXEL ART</h2>
+<label>IMPORT 64×112 PNG FOR SELECTED LAYER + VIEW<input type="file" id="import-layer" accept="image/png"></label>
+<p class="note">Mengganti layer yang dipilih hanya di tampak aktif. Bukan mengubah ukuran kanvas, ID, atau file animasi.</p>
+</div>
+<div class="mode-card" data-card="character" hidden>
+<h2>CHARACTER VIEW</h2><div id="wear-info" class="note">Pilih pakaian, edit keempat arah, lalu uji pada animasi Python.</div>
+<label>PREVIEW MOTION<select id="character-motion"></select></label>
+<p class="note">Layer Custom Wear mengikuti potongan rig yang sama. Tidak perlu menggambar ulang pakaian untuk setiap frame.</p>
+</div>
+<div class="mode-card" data-card="animation" hidden>
+<h2>10-PIECE POSE</h2>
+<label>CHARACTER / OUTFIT<select id="preview-character"></select></label>
+<label>BODY PART<select id="pose-part"></select></label>
+<div class="row"><label>Δ X<input id="pose-x" type="number" min="-64" max="64" value="0"></label>
+<label>Δ Y<input id="pose-y" type="number" min="-112" max="112" value="0"></label>
+<label>ANGLE °<input id="pose-angle" type="number" min="-360" max="360" value="0"></label></div>
+<div class="row"><button id="pose-copy">COPY POSE</button><button id="pose-paste">PASTE</button><button id="pose-flip">PASTE FLIP</button></div>
+<div class="row"><button id="direction-copy">COPY ALL FRAMES</button><button id="direction-paste">PASTE ALL</button><button id="direction-flip">PASTE ALL FLIP</button></div>
+<p id="python-note">Pose per frame/per view. Siku dan lutut berputar mengikuti parent transform. Source Python bisa diekspor dan diimpor ulang tanpa mengubah rig master.</p>
+</div>
+</section>
+</main>
+</div>
+<div id="pixelOverlay" class="pixel-overlay action-frame-pixel genesis-source-pixel" hidden>
+ <section class="pixel-dialog" role="dialog" aria-modal="true" aria-labelledby="pixelTitle">
+  <header class="pixel-dialog-header"><strong id="pixelTitle">LAFRICH PUPPET · PIXEL EDITOR</strong><button id="pixelClose" title="Close editor">×</button></header>
+  <div class="pixel-toolbar">
+   <label>DIRECTION <select id="pixelDirection"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></label>
+   <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
+   <button data-pixel-tool="eraser">⌫ ERASER</button><button data-pixel-tool="select" title="Draw a rectangle around pixels to select them / S">▣ SELECT</button>
+   <button id="pixelToolbarCopy" class="pixel-quick-copy" type="button" title="Copy selection from current view / Ctrl+C">⧉ COPY</button>
+   <button id="pixelToolbarPaste" class="pixel-quick-paste" type="button" title="Paste pixels into current view / Ctrl+V">▣ PASTE</button>
+   <button id="pixelToolbarPasteFlip" class="pixel-quick-paste" type="button" title="Mirror and paste into current view / Ctrl+Shift+V">⇆ PASTE FLIP</button>
+   <button data-pixel-tool="move-pixels" title="Move selected pixels / M">✣ MOVE PIXELS</button>
+   <button data-pixel-tool="fill">▤ FILL</button>
+   <button data-pixel-tool="picker">◎ PICK</button><button data-pixel-tool="hand" title="Pan canvas by dragging / H">✥ HAND</button>
+   <label>COLOR <input id="pixelColor" type="color" value="#211d22"></label>
+   <label>SIZE <select id="pixelSize"><option value="1">1 PX</option><option value="2">2 PX</option><option value="3">3 PX</option><option value="5">5 PX</option></select></label>
+  </div>
+  <div class="pixel-workarea">
+   <div class="pixel-canvas-wrap" id="pixelCanvasWrap"><canvas id="pixelCanvas" tabindex="0" width="384" height="672" aria-label="Edit a 64 by 112 source pixel plane, one isometric direction at a time. Scroll to zoom, pinch to zoom on touch."></canvas></div>
+   <aside class="pixel-side">
+    <div class="sectionhead">PALETTE / SWATCHES</div>
+    <div class="pixel-swatches">
+     <button data-pixel-swatch="#1b1519" style="--swatch:#1b1519" title="Dark ink"></button>
+     <button data-pixel-swatch="#443330" style="--swatch:#443330" title="Shadow"></button>
+     <button data-pixel-swatch="#b97656" style="--swatch:#b97656" title="Skin shade"></button>
+     <button data-pixel-swatch="#e9a77c" style="--swatch:#e9a77c" title="Skin"></button>
+     <button data-pixel-swatch="#ffc99b" style="--swatch:#ffc99b" title="Highlight"></button>
+     <button data-pixel-swatch="#f4ece5" style="--swatch:#f4ece5" title="White"></button>
+     <button data-pixel-swatch="#5b718d" style="--swatch:#5b718d" title="Blue"></button>
+     <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
+    </div>
+
+    <p class="hint">Edit the chosen Genesis source part. Edits affect the selected Lafrich source layer. Emosi stays separate and frontmost.</p>
+    <div class="pixel-selection-controls">
+     <div class="sectionhead">SELECTION / TRANSFORM</div>
+     <div class="plane-buttons pixel-clipboard-actions">
+      <button id="pixelCopySelection" type="button" title="Copy selected RGBA pixels from active view / Ctrl+C">⧉ COPY</button>
+      <button id="pixelPasteSelection" type="button" title="Paste to active view without changing other views / Ctrl+V">▣ PASTE</button>
+      <button id="pixelPasteMirrored" type="button" title="Paste flipped horizontally, at mirrored X position / Ctrl+Shift+V">⇆ PASTE FLIP</button>
+     </div>
+     <label class="check"><input id="pixelPasteReplace" type="checkbox"> REPLACE TRANSPARENT PIXELS (erase under transparent source)</label>
+     <p class="hint" id="pixelClipboardInfo" aria-live="polite">CLIPBOARD EMPTY · SELECT + COPY (CTRL+C)</p>
+     <div class="plane-buttons"><button id="pixelSelectAll" type="button">▣ SELECT ALL</button><button id="pixelDeselect" type="button">◇ DESELECT</button></div>
+     <div class="plane-buttons"><button id="pixelFlipH" type="button">⇆ FLIP H</button><button id="pixelFlipV" type="button">⇅ FLIP V</button></div>
+     <div class="plane-buttons"><button id="pixelDeleteSelection" type="button">⌫ DELETE PIXELS</button></div>
+     <p class="hint" id="pixelSelectionInfo">No selection. Select rectangle, then Move Pixels or Flip.</p>
+    </div>
+    <label class="check"><input type="checkbox" id="pixelOnion" checked> SELECTED CHARACTER REFERENCE · CURRENT VIEW</label>
+    <label class="male-guide-range">REFERENCE OPACITY <input id="pixelMaleOpacity" type="range" min="5" max="100" step="5" value="35"><span id="pixelMaleOpacityLabel">35%</span></label>
+    <div class="pixel-grid-controls">
+     <label class="check"><input type="checkbox" id="pixelGrid" checked> GRID MODE</label>
+     <label>GRID SIZE <select id="pixelGridType"><option value="1">1 × 1 PX</option><option value="8">8 × 8 PX</option><option value="16">16 × 16 PX</option></select></label>
+    </div>
+    <div class="pixel-zoom-controls">
+     <span>ZOOM</span>
+     <button id="pixelZoomOut" title="Zoom out (mouse wheel or pinch)">−</button>
+     <input id="pixelZoom" type="range" min="2" max="16" step="1" value="5" aria-label="Pixel canvas zoom">
+     <button id="pixelZoomIn" title="Zoom in (mouse wheel or pinch)">＋</button>
+     <button id="pixelZoomFit" title="Fit artwork to editor">FIT</button>
+     <span id="pixelZoomLabel">500%</span>
+    </div>
+    <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
+    <p class="hint">Edits affect only the selected Lafrich layer and view. Apply first, then SAVE MASTER / CHARACTER to sync Drive.</p>
+    <div class="plane-buttons">
+     <button id="pixelEraseCanvas" type="button" title="Erase this direction/frame only; Undo restores it">⌫ ERASE CANVAS</button>
+     <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
+    </div>
+   </aside>
+  </div>
+  <footer class="pixel-dialog-foot">
+   <span id="pixelStatus">LAFRICH PUPPET SOURCE · 64×112 RGBA</span>
+   <button id="pixelApply">APPLY TO LAFRICH</button>
+   <button id="pixelSaveDefault" class="primary">✓ APPLY TO LAFRICH</button>
+  </footer>
+ </section>
+</div>
+
+
+<script src="./genesis-source.js?v=lafrich-seed-1"></script>
+<script src="./v6p-character-store.js?v=lafrich-seed-1"></script>
+<script src="./genesis-base-bridge.js?v=lafrich-seed-1"></script>
+<script src="./v6p-part-catalog.js?v=lafrich-seed-1"></script>
+<script src="./v6p-part-overrides.js?v=lafrich-seed-1"></script>
+<script src="./v6p-compositor.js?v=lafrich-seed-1"></script>
+<script src="./emotion-studio/emotion-library.js?v=lafrich-puppet-1"></script>
+<script src="./emosi-bridge.js?v=lafrich-puppet-1"></script>
+<script src="./emotion-studio/shared-pixel-selection.js?v=lafrich-puppet-1"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=lafrich-puppet-1"></script>
+<script src="./lafrich-puppet-core.js?v=lafrich-puppet-10parts"></script>
+<script src="./lafrich-puppet-renderer.js?v=lafrich-puppet-10parts"></script>
+<script src="./lafrich-puppet-studio.js?v=lafrich-puppet-10parts"></script>
+</body></html>
