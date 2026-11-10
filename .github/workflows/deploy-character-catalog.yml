@@ -192,6 +192,16 @@ jobs:
           test -s _site/mahluk-hidup-shell.js
           test -s _site/lgr1-raster.js
           test -s _site/lgr1-motion.js
+          test -s _site/lgr-db.js
+          test -s _site/lgr-actor.js
+          test -s _site/lgr-import.js
+          test -s _site/lgr-wear.js
+          test -s _site/mahluk-bergerak.js
+          test -s _site/mahluk-beraksi.js
+          test -s _site/mahluk-subapps-ui.js
+          test -s _site/mahluk-subapps.css
+          test -s _site/media/lgr1/needed-motions.json
+          test -s _site/media/lgr1/mh-wear/index.json
           test -s _site/mahluk-hidup.html
           ! grep -q '<script' _site/lafrich-puppet-studio.html
           ! grep -q '<script' _site/genesis-editor.html
@@ -274,10 +284,20 @@ jobs:
           test -s _site/media/lgr1/motions.json
           node --check site/lgr1-raster.js
           node --check site/lgr1-motion.js
+          node --check site/lgr-db.js
+          node --check site/lgr-actor.js
+          node --check site/lgr-import.js
+          node --check site/lgr-wear.js
+          node --check site/mahluk-bergerak.js
+          node --check site/mahluk-beraksi.js
+          node --check site/mahluk-subapps-ui.js
           python -m json.tool site/media/lgr1/motions.json > /dev/null
+          python -m json.tool site/media/lgr1/needed-motions.json > /dev/null
           python -m py_compile site/genesis_procedural_runtime.py
           python -m unittest discover -s tests -p 'test_lgr1_parity.py' -v
           node --test tests/test_lgr1_motion.cjs
+          node --test tests/test_lgr_db.cjs
+          node tests/test_lgr_retirement.cjs
       - name: Check built site files
         run: |
           # Native-only: all 11 original action rows stay; no bundled custom motion.

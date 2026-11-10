@@ -33,6 +33,19 @@ on:
       - 'site/vlhub-characters-publish.js'
       - 'site/v6p-compositor.js'
       - 'tests/test_lgr_retirement.cjs'
+      - 'site/lgr-db.js'
+      - 'site/lgr-actor.js'
+      - 'site/lgr-import.js'
+      - 'site/lgr-wear.js'
+      - 'site/mahluk-bergerak.js'
+      - 'site/mahluk-beraksi.js'
+      - 'site/mahluk-subapps-ui.js'
+      - 'site/mahluk-subapps.css'
+      - 'tests/test_lgr_db.cjs'
+      - 'docs/LGR_DB.md'
+      - 'docs/BERGERAK_FORMAT.md'
+      - 'docs/BERAKSI_FORMAT.md'
+      - 'tools/bake_lgr_wear.py'
       - 'tests/test_lgr_cloud_safety.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
       - 'tests/test_lgr1_parity.py'
@@ -74,6 +87,19 @@ on:
       - 'site/vlhub-characters-publish.js'
       - 'site/v6p-compositor.js'
       - 'tests/test_lgr_retirement.cjs'
+      - 'site/lgr-db.js'
+      - 'site/lgr-actor.js'
+      - 'site/lgr-import.js'
+      - 'site/lgr-wear.js'
+      - 'site/mahluk-bergerak.js'
+      - 'site/mahluk-beraksi.js'
+      - 'site/mahluk-subapps-ui.js'
+      - 'site/mahluk-subapps.css'
+      - 'tests/test_lgr_db.cjs'
+      - 'docs/LGR_DB.md'
+      - 'docs/BERGERAK_FORMAT.md'
+      - 'docs/BERAKSI_FORMAT.md'
+      - 'tools/bake_lgr_wear.py'
       - 'tests/test_lgr_cloud_safety.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
       - 'tests/test_lgr1_parity.py'
@@ -105,6 +131,14 @@ jobs:
           node --check site/v6p-compositor.js
           node tests/test_lgr_retirement.cjs
           node tests/test_lgr_cloud_safety.cjs
+          node --check site/lgr-db.js
+          node --check site/lgr-actor.js
+          node --check site/lgr-import.js
+          node --check site/lgr-wear.js
+          node --check site/mahluk-bergerak.js
+          node --check site/mahluk-beraksi.js
+          node --check site/mahluk-subapps-ui.js
+          node --test tests/test_lgr_db.cjs
       - name: HTML / UI integration contract
         run: |
           node <<'NODE'

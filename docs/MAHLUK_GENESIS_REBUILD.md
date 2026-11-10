@@ -40,3 +40,14 @@ Implementation branch: `feature/mahluk-genesis-rebuild-20261110`.
 - This workbench is a **new authoring route**, not an in-place migration of older Mahluk libraries.
 - The built-in test poses and exported Python module demonstrate procedural transformations; a full motion catalogue, clothing parameter UI in Mainkan, and Mainkan's runtime importer are separate future integration tasks.
 - Emosi preview requires the canonical Emosi.exe database and origin; cross-browser Google Drive sync requires the user to authorize Google Drive.
+
+## Bergerak + Beraksi (t637u–t643u)
+
+Live tabs on `site/genesis-workbench.html` (Mahluk Hidup), cache-buster `mh-subapps-1`. Emosi.exe stays an untouched iframe; faces still sit under front hair and stay hidden in back views.
+
+- **✦ Bergerak** — frame-by-frame pose pivots, saved to Drive `Membangun/Mahluk Hidup/Database/Bergerak`. Format: `docs/BERGERAK_FORMAT.md`.
+- **⚔ Beraksi** — multi-character action scenes (outfit or none, one or more animations, several Emosi, drag / flip / front-behind / duration), saved to `…/Database/Beraksi`. Format: `docs/BERAKSI_FORMAT.md`.
+- Shared cloud loader: `site/lgr-db.js` (see `docs/LGR_DB.md`). IMPORT JSON validates, then saves to the cloud; Mainkan / Semesta / Bangun Ruang read the same database. Overwrites and deletes go to `Database/Backup/`.
+- Needed-motions checklist: `site/media/lgr1/needed-motions.json` (built-in / in database / placeholder / missing).
+- Outfits for the editors and `LGRActor`: `site/media/lgr1/mh-wear/` (`site/lgr-wear.js`).
+- Tests: `tests/test_lgr_db.cjs` (schema, sync, conflicts, backups, offline, import) and retirement checks in `tests/test_lgr_retirement.cjs`, both run from `.github/workflows/genesis-workbench-qa.yml` and the Pages deploy workflow.

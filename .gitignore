@@ -20,3 +20,6 @@ build/
 
 # authored activity sheets (contract v2 pushup pilot)
 !site/media/v6p-act/**
+
+# LGR-1 Mahluk Hidup outfit sheets (Bergerak / Beraksi / LGRActor)
+!site/media/lgr1/mh-wear/**

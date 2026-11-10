@@ -52,15 +52,16 @@ for(const filename of legacy){
  assert.doesNotMatch(html,/<script\b/i,"Retired route must not run ANY old JS: "+filename);
  assert.doesNotMatch(html,/<iframe\b/i,"Retired route must not embed old apps: "+filename);
 }
-// Mahluk Hidup is an Emosi-only shell while it is rebuilt on LGR (t617u);
-// the LGR-1 editor lives on as Genesis Base (genesis-base.html).
+// Mahluk Hidup (t637u): ☺ Emosi.exe + ✦ Bergerak + ⚔ Beraksi on LGR-1 only;
+// the base editor lives on as Genesis Base (genesis-base.html). No V6P runtime.
 const shell=read("site/genesis-workbench.html");
-assert.match(shell,/\.\/genesis-cloud\.js/);
-assert.match(shell,/\.\/emosi-bridge\.js/);
-assert.match(shell,/\.\/mahluk-hidup-shell\.js/);
+for(const lib of ["emosi-bridge","mahluk-hidup-shell","lgr-db","lgr-import","lgr-actor","lgr-wear","lgr-skin","lgr1-raster","lgr1-motion","mahluk-bergerak","mahluk-beraksi"])
+ assert.match(shell,new RegExp("\\./"+lib+"\\.js"),"shell must load "+lib);
 assert.match(shell,/href="\.\/genesis-base\.html"/);
-assert.match(shell,/COMING NEXT ON LGR/);
-assert.doesNotMatch(shell,/genesis-workbench\.js|lgr1-raster|lafrich-puppet/);
+assert.match(shell,/BERGERAK/);assert.match(shell,/BERAKSI/);
+assert.doesNotMatch(shell,/genesis-workbench\.js|v6p-|mahluk-hub|cloud-first|drive-sync/);
+for(const f of ["site/lgr-db.js","site/lgr-actor.js","site/lgr-import.js","site/lgr-wear.js","site/mahluk-bergerak.js","site/mahluk-beraksi.js"])
+ assert.doesNotMatch(read(f),/V6PCompositor|v6p-compositor|media\/v6p/,"no V6P runtime dependency: "+f);
 assert(!fs.existsSync(path.join(repo,"site/genesis-workbench.js")),"Old workshop script came back");
 assert.doesNotMatch(read("site/mahluk-hidup-shell.js"),/setItem|createAndWrite|saveMaster|saveDraft/);
 const base=read("site/genesis-base.html"),baseApp=read("site/genesis-base-app.js");

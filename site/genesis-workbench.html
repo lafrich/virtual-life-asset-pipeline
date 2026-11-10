@@ -4,7 +4,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="data:,">
 <meta name="theme-color" content="#174a96">
-<title>MAHLUK HIDUP.EXE — Emosi · LGR rebuild</title>
+<title>MAHLUK HIDUP.EXE — Emosi · Bergerak · Beraksi (LGR-1)</title>
+<link rel="stylesheet" href="./mahluk-subapps.css?v=mh-subapps-1">
 <style>
 :root{font:12px Tahoma,"Segoe UI",Arial,sans-serif;color:#25344d;background:#97abc4}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
@@ -16,7 +17,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #e5a52d;outline-offset:1p
 .titlebar strong{font-size:13px;letter-spacing:.045em}.titlebar small{opacity:.85}.titlebar .winbuttons{margin-left:auto;display:flex;gap:3px}.titlebar .winbuttons span{background:#d8e7fc;color:#174177;padding:2px 6px;font-weight:bold}
 #topnav{display:flex;align-items:center;gap:7px;padding:6px 8px;border-bottom:1px solid #8da0b5;background:#edf1f7;flex-wrap:wrap}#topnav .space{flex:1}
 #emotionpanel{flex:1;min-height:0}#emotionpanel iframe{display:block;border:0;width:100%;height:100%;background:#e8eef4}
-#lgrpanel{flex:1;min-height:0;overflow:auto;padding:18px}#lgrpanel[hidden],#emotionpanel[hidden]{display:none}
+#lgrpanel{flex:1;min-height:0;overflow:auto;padding:18px}#lgrpanel[hidden],#emotionpanel[hidden],.subapp[hidden]{display:none}
 .card{max-width:640px;margin:0 auto;background:#fff;border:1px solid #95a4b7;padding:16px 18px;box-shadow:0 2px 0 #b9c7d8}
 .card h2{margin:0 0 8px;color:#153f82;font-size:15px}.card li{margin:4px 0}.card .soon{display:inline-block;background:#fff3cd;border:1px solid #e5a52d;padding:3px 7px;font-weight:bold;margin:6px 0}
 #status{display:flex;gap:10px;align-items:center;min-height:31px;padding:7px 10px;border-top:1px solid #91a4bf;background:#e5edf6;font-size:11px}
@@ -26,28 +27,42 @@ button:focus-visible,a:focus-visible{outline:2px solid #e5a52d;outline-offset:1p
 </head>
 <body>
 <div id="app">
- <header class="titlebar"><strong>▣ MAHLUK HIDUP.EXE</strong><small>EMOSI · REBUILDING ON LGR</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
- <nav id="topnav"><button id="nav-emotion" aria-selected="true">☺ EMOSI.EXE</button><button id="nav-lgr" aria-selected="false">◈ PLAYERS &amp; ANIMATIONS</button><a id="open-genesis-base" class="navlink" href="./genesis-base.html">↗ GENESIS BASE APP</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
+ <header class="titlebar"><strong>▣ MAHLUK HIDUP.EXE</strong><small>EMOSI · BERGERAK · BERAKSI · LGR-1 · by Lafrich</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
+ <nav id="topnav"><button id="nav-emotion" aria-selected="true">☺ EMOSI.EXE</button><button id="nav-bergerak" aria-selected="false">✦ BERGERAK</button><button id="nav-beraksi" aria-selected="false">⚔ BERAKSI</button><button id="nav-lgr" aria-selected="false">◈ INFO</button><a id="open-genesis-base" class="navlink" href="./genesis-base.html">↗ GENESIS BASE APP</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="db-sync" title="Sync database Bergerak + Beraksi dari Google Drive">↻ SYNC</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
  <div id="emotionpanel"><iframe id="emotion-frame" title="Emosi.exe original face and dialogue editor" src="about:blank" allow="clipboard-read; clipboard-write"></iframe></div>
  <section id="lgrpanel" hidden>
   <div class="card">
-   <h2>PLAYERS &amp; ANIMATIONS</h2>
-   <span class="soon">COMING NEXT ON LGR</span>
-   <p>Mahluk Hidup is being rebuilt from zero on the LGR engine. The old workshop (pixel / pivot / bind / test / motion / master steps) was removed from this app.</p>
+   <h2>MAHLUK HIDUP · LGR-1</h2>
+   <p>Mahluk Hidup dibangun ulang di mesin LGR-1. Base character: Genesis Base (official Male/Female).</p>
    <ul>
     <li><b>Base character</b> — make and export the Male / Female base in <a href="./genesis-base.html">Genesis Base by Lafrich</a> (pixel editor 4 views, slicing, pivots, motion preview).</li>
     <li><b>Emosi</b> — faces stay in Emosi.exe (tab ☺ EMOSI.EXE). <span id="face-count">Checking Emosi faces…</span></li>
-    <li><b>Players + animation assets</b> — next, built on the Genesis Base package.</li>
+    <li><b>✦ Bergerak</b> — bikin animasi: gerakin part per frame, simpan ke database animasi (cloud).</li>
+    <li><b>⚔ Beraksi</b> — bikin adegan: beberapa karakter, baju, animasi, Emosi, posisi, flip, depan/belakang, durasi.</li>
+    <li><b>Database</b> — Drive: Membangun / Mahluk Hidup / Database / Bergerak · Beraksi (Backup untuk konflik/hapus). Dibaca juga oleh Mainkan / Semesta lewat <code>lgr-db.js</code>.</li>
    </ul>
    <p class="small">Your Drive data (Genesis Masters, drafts, motions, Emosi) is untouched.</p>
   </div>
  </section>
- <footer id="status"><b id="stage-label">EMOSI.EXE</b><span id="statusmsg" role="status">Loading Emosi.exe…</span><span id="statuscloud">DRIVE OPTIONAL</span></footer>
+ <section id="bergerakpanel" class="subapp" hidden aria-label="Bergerak · animasi"></section>
+ <section id="beraksipanel" class="subapp" hidden aria-label="Beraksi · adegan"></section>
+ <footer id="status"><b id="stage-label">EMOSI.EXE</b><span id="statusmsg" role="status">Loading Emosi.exe…</span><span id="statuscloud">DATABASE: BELUM SYNC</span><span class="wm">by Lafrich</span></footer>
 </div>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="./emotion-studio/emotion-library.js?v=lgr-rebuild-1"></script>
-<script src="./emosi-bridge.js?v=lgr-rebuild-1"></script>
-<script src="./genesis-cloud.js?v=lgr-rebuild-1"></script>
-<script src="./mahluk-hidup-shell.js?v=lgr-rebuild-1"></script>
+<script src="./emotion-studio/emotion-library.js?v=mh-subapps-1"></script>
+<script src="./emosi-bridge.js?v=mh-subapps-1"></script>
+<script src="./lafrich-puppet-core.js?v=mh-subapps-1"></script>
+<script src="./lgr1-raster.js?v=mh-subapps-1"></script>
+<script src="./lafrich-puppet-renderer.js?v=mh-subapps-1"></script>
+<script src="./lgr1-motion.js?v=mh-subapps-1"></script>
+<script src="./lgr-skin.js?v=mh-subapps-1"></script>
+<script src="./lgr-wear.js?v=mh-subapps-1"></script>
+<script src="./lgr-db.js?v=mh-subapps-1"></script>
+<script src="./lgr-import.js?v=mh-subapps-1"></script>
+<script src="./lgr-actor.js?v=mh-subapps-1"></script>
+<script src="./mahluk-subapps-ui.js?v=mh-subapps-1"></script>
+<script src="./mahluk-bergerak.js?v=mh-subapps-1"></script>
+<script src="./mahluk-beraksi.js?v=mh-subapps-1"></script>
+<script src="./mahluk-hidup-shell.js?v=mh-subapps-1"></script>
 </body>
 </html>

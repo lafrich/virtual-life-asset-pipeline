@@ -1,0 +1,151 @@
+{
+ "format": "lgr1-needed-motions-v1",
+ "note": "Motions the game references by id (builtin:<id> from motions.json, else bergerak:<id> from the cloud DB). Edit this list to add requirements; status is computed live in Mahluk Hidup → Bergerak. A DB entry with category 'placeholder' counts as placeholder.",
+ "motions": [
+  {
+   "id": "idle",
+   "name": "Diam / napas",
+   "group": "dasar"
+  },
+  {
+   "id": "walk",
+   "name": "Jalan",
+   "group": "dasar"
+  },
+  {
+   "id": "crouch",
+   "name": "Jongkok",
+   "group": "dasar"
+  },
+  {
+   "id": "wave",
+   "name": "Lambai tangan",
+   "group": "sosial"
+  },
+  {
+   "id": "arms_up",
+   "name": "Angkat tangan",
+   "group": "dasar"
+  },
+  {
+   "id": "bow",
+   "name": "Membungkuk",
+   "group": "sosial"
+  },
+  {
+   "id": "sit",
+   "name": "Duduk",
+   "group": "dasar"
+  },
+  {
+   "id": "lie_sleep",
+   "name": "Tidur rebahan (kasur)",
+   "group": "tidur"
+  },
+  {
+   "id": "talk",
+   "name": "Ngobrol",
+   "group": "sosial"
+  },
+  {
+   "id": "tent_sleep",
+   "name": "Tidur di tenda",
+   "group": "tidur"
+  },
+  {
+   "id": "tent_crawl_out",
+   "name": "Merangkak keluar tenda",
+   "group": "tidur"
+  },
+  {
+   "id": "bench_sleep",
+   "name": "Tidur di bangku",
+   "group": "tidur"
+  },
+  {
+   "id": "mandi",
+   "name": "Mandi",
+   "group": "kebersihan"
+  },
+  {
+   "id": "wc_squat",
+   "name": "WC jongkok",
+   "group": "kebersihan"
+  },
+  {
+   "id": "pee_stand",
+   "name": "Pipis berdiri",
+   "group": "kebersihan"
+  },
+  {
+   "id": "fishing_cast",
+   "name": "Mancing · lempar kail",
+   "group": "kerja"
+  },
+  {
+   "id": "fishing_wait",
+   "name": "Mancing · nunggu",
+   "group": "kerja"
+  },
+  {
+   "id": "pick_up",
+   "name": "Ambil barang",
+   "group": "dasar"
+  },
+  {
+   "id": "silver_pose",
+   "name": "Manusia silver · pose",
+   "group": "kerja"
+  },
+  {
+   "id": "ogah_flag",
+   "name": "Pak Ogah · kibar bendera",
+   "group": "kerja"
+  },
+  {
+   "id": "parkir_whistle",
+   "name": "Tukang parkir · peluit",
+   "group": "kerja"
+  },
+  {
+   "id": "eat",
+   "name": "Makan",
+   "group": "kebutuhan"
+  },
+  {
+   "id": "drink_coffee",
+   "name": "Minum kopi",
+   "group": "kebutuhan"
+  },
+  {
+   "id": "faint",
+   "name": "Pingsan",
+   "group": "kondisi"
+  },
+  {
+   "id": "arrested",
+   "name": "Ditangkap",
+   "group": "kondisi"
+  },
+  {
+   "id": "clean_gorong",
+   "name": "Bersihin gorong-gorong",
+   "group": "kerja"
+  },
+  {
+   "id": "pray_generic",
+   "name": "Berdoa",
+   "group": "sosial"
+  },
+  {
+   "id": "give_sedekah",
+   "name": "Kasih sedekah",
+   "group": "sosial"
+  },
+  {
+   "id": "tired_walk",
+   "name": "Jalan capek",
+   "group": "kondisi"
+  }
+ ]
+}
