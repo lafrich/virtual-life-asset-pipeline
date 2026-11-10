@@ -52,13 +52,21 @@ for(const filename of legacy){
  assert.doesNotMatch(html,/<script\b/i,"Retired route must not run ANY old JS: "+filename);
  assert.doesNotMatch(html,/<iframe\b/i,"Retired route must not embed old apps: "+filename);
 }
+// Mahluk Hidup is an Emosi-only shell while it is rebuilt on LGR (t617u);
+// the LGR-1 editor lives on as Genesis Base (genesis-base.html).
 const shell=read("site/genesis-workbench.html");
 assert.match(shell,/\.\/genesis-cloud\.js/);
-assert.match(shell,/\.\/genesis-workbench\.js/);
 assert.match(shell,/\.\/emosi-bridge\.js/);
-assert.match(shell,/\.\/lgr1-raster\.js/);
-assert.match(shell,/\.\/lgr1-motion\.js/);
-assert.doesNotMatch(shell,/\.\/(?:mahluk-hub|mahluk-hub-drive|cloud-first-mahluk-entry|drive-sync)\.js/);
+assert.match(shell,/\.\/mahluk-hidup-shell\.js/);
+assert.match(shell,/href="\.\/genesis-base\.html"/);
+assert.match(shell,/COMING NEXT ON LGR/);
+assert.doesNotMatch(shell,/genesis-workbench\.js|lgr1-raster|lafrich-puppet/);
+assert(!fs.existsSync(path.join(repo,"site/genesis-workbench.js")),"Old workshop script came back");
+assert.doesNotMatch(read("site/mahluk-hidup-shell.js"),/setItem|createAndWrite|saveMaster|saveDraft/);
+const base=read("site/genesis-base.html"),baseApp=read("site/genesis-base-app.js");
+for(const lib of ["genesis-cloud","emosi-bridge","lgr1-raster","lgr1-motion","lafrich-puppet-core","lafrich-puppet-renderer","genesis-base-app","genesis-base"])
+ assert.match(base,new RegExp("\\./"+lib+"\\.js"));
+assert.doesNotMatch(base,/\.\/(?:mahluk-hub|mahluk-hub-drive|cloud-first-mahluk-entry|drive-sync)\.js/);
 const live=read("site/mahluk-hidup.html");
 assert.match(live,/genesis-workbench\.html/);
 const index=read("site/index.html");
@@ -85,16 +93,15 @@ vm.runInNewContext(read("site/v6p-character-store.js"),{window:v6pWorld});
 assert.throws(()=>v6pWorld.V6PCharacterStore.create({name:"Legacy"}),/READ-ONLY|read-only/);
 assert.throws(()=>v6pWorld.V6PCharacterStore.select(""),/retired/);
 
-assert.match(read("site/genesis-workbench.js"),/RIG_FORMAT="LGR-1"/);
+assert.match(baseApp,/RIG_FORMAT="LGR-1"/);
 // Shape-based head/neck re-slice is a manual, confirmed action (never auto-run on drafts).
-assert.match(read("site/genesis-workbench.html"),/id="reslice-head"/);
-assert.match(read("site/genesis-workbench.html"),/empty canvas belongs to no part/);
-assert.match(read("site/genesis-workbench.js"),/if\(!confirm\("RE-SLICE FROM SHAPE/);
-assert.match(read("site/genesis-workbench.js"),/invalidateReviews\(p\.d,\[\.\.\.new Set\(\[\.\.\.p\.r\.parts/);
-assert.match(read("site/genesis-workbench.js"),/isLegacyBound/);
+assert.match(base,/id="reslice-head"/);
+assert.match(base,/empty canvas belongs to no part/);
+assert.match(baseApp,/if\(!confirm\("RE-SLICE FROM SHAPE/);
+assert.match(baseApp,/invalidateReviews\(p\.d,\[\.\.\.new Set\(\[\.\.\.p\.r\.parts/);
+assert.match(baseApp,/isLegacyBound/);
 assert.match(read("site/genesis-cloud.js"),/Wrong V6B rig base/);
-const storageKeys=["vl-lafrich-genesis-workbench-drafts-v1","vl-lafrich-genesis-approved-masters-v1"];
-for(const key of storageKeys)assert(shell.includes("genesis-workbench.js")&&read("site/genesis-workbench.js").includes(key));
+assert(baseApp.includes("vl-lafrich-genesis-base-drafts-v1"));
 async function test(){
  await assert.rejects(()=>world.VLMahlukHubDrive.connect(),/RETIRED/);
  await assert.rejects(()=>world.VLMahlukHubDrive.saveRecord("character","mh2_old",{}),/RETIRED/);

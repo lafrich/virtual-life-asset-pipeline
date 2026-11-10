@@ -1,8 +1,12 @@
-name: Genesis Workbench QA
+name: Genesis Base + Mahluk Hidup shell QA
 on:
   push:
     paths:
       - 'site/genesis-workbench.*'
+      - 'site/genesis-base*'
+      - 'site/mahluk-hidup-shell.js'
+      - 'site/emosi-bridge.js'
+      - 'tests/test_genesis_base.cjs'
       - 'site/genesis-cloud.js'
       - 'site/genesis_procedural_runtime.py'
       - 'site/mahluk-hidup.html'
@@ -37,6 +41,10 @@ on:
   pull_request:
     paths:
       - 'site/genesis-workbench.*'
+      - 'site/genesis-base*'
+      - 'site/mahluk-hidup-shell.js'
+      - 'site/emosi-bridge.js'
+      - 'tests/test_genesis_base.cjs'
       - 'site/genesis-cloud.js'
       - 'site/genesis_procedural_runtime.py'
       - 'site/mahluk-hidup.html'
@@ -74,7 +82,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: JavaScript syntax
         run: |
-          node --check site/genesis-workbench.js
+          node --check site/genesis-base-app.js
+          node --check site/genesis-base.js
+          node --check site/mahluk-hidup-shell.js
+          node tests/test_genesis_base.cjs
           node --check site/genesis-cloud.js
           node --check site/lafrich-puppet-core.js
           node --check site/lafrich-puppet-renderer.js
@@ -92,19 +103,23 @@ jobs:
         run: |
           node <<'NODE'
           const fs=require('fs'),assert=require('assert');
-          const html=fs.readFileSync('site/genesis-workbench.html','utf8');
-          const script=fs.readFileSync('site/genesis-workbench.js','utf8');
+          const html=fs.readFileSync('site/genesis-base.html','utf8');
+          const script=fs.readFileSync('site/genesis-base-app.js','utf8')+fs.readFileSync('site/genesis-base.js','utf8');
           const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
           const missing=[...script.matchAll(/\$\("([^"]+)"\)/g)].map(m=>m[1])
             .filter(id=>!ids.includes(id));
           assert.deepStrictEqual(missing,[], 'Missing DOM controls: '+missing.join(', '));
           assert.strictEqual(ids.length,new Set(ids).size,'Duplicate HTML IDs');
-          for(const id of ['pixelApply','pixelCanvas','pixelDirection','nav-emotion','seed','bind-next','approve-binding','save-master'])
+          for(const id of ['pixelApply','pixelCanvas','pixelDirection','seed','reslice-head','rig-motion-play','gb-export','gb-import','gb-save-drive'])
             assert(ids.includes(id),'Missing required control '+id);
           assert(html.includes('./genesis-cloud.js'),'Dedicated Drive module not loaded');
           assert(!html.includes('./mahluk-hub.js'),'Legacy workspace accidentally active');
           assert(!html.includes('./lafrich-puppet-studio.js'),'Legacy character/animation app accidentally active');
-          console.log('Workbench UI contracts and original pixel editor controls: OK');
+          const shell=fs.readFileSync('site/genesis-workbench.html','utf8'),shellJs=fs.readFileSync('site/mahluk-hidup-shell.js','utf8');
+          const sids=[...shell.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+          const smissing=[...shellJs.matchAll(/\$\("([^"]+)"\)/g)].map(m=>m[1]).filter(id=>!sids.includes(id));
+          assert.deepStrictEqual(smissing,[],'Shell missing DOM: '+smissing.join(', '));
+          console.log('Genesis Base + Mahluk Hidup shell UI contracts: OK');
           NODE
       - name: Python continuous rig tests
         run: |
@@ -127,213 +142,38 @@ jobs:
           NODE_PATH: /tmp/genesis-qa/node_modules
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/genesis-http.log 2>&1 &
+          sleep 1
           node <<'NODE'
           (async()=>{
-            const {chromium}=require('playwright'),assert=require('assert');
+            const {chromium}=require('playwright'),assert=require('assert'),fs=require('fs');
+            const B='http://127.0.0.1:8765/site/';
             const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage({viewport:{width:1500,height:1000}});
-            const errors=[];
-            // Some physically occluded limbs require an explicit review confirmation.
-            page.on('dialog',async dialog=>{await dialog.accept()});
-            page.on('pageerror',e=>errors.push(e.message));
-            page.on('console',m=>{if(m.type()==='error'&&!/accounts.google.com|favicon.ico/.test(m.text()))errors.push(m.text())});
-            try{
-              await page.goto('http://127.0.0.1:8765/site/genesis-workbench.html',{waitUntil:'domcontentloaded'});
-              await page.locator('#viewdetail').filter({hasText:'MALE'}).waitFor({timeout:60000});
-              const pixelCount=await page.locator('#stage').evaluate(c=>{
-                const d=c.getContext('2d').getImageData(0,0,64,112).data;
-                let count=0;for(let i=3;i<d.length;i+=4)if(d[i])count++;
-                return count;
-              });
-              assert(pixelCount>40,'Male frozen source did not render');
-              await page.locator('#edit-pixels').click();
-              await page.locator('#pixelOverlay').waitFor({state:'visible'});
-              const tools=['pixelCopySelection','pixelPasteSelection','pixelPasteMirrored','pixelFlipH','pixelFlipV','pixelUndo','pixelRedo','pixelSelectAll'];
-              for(const id of tools)assert(await page.locator('#'+id).count()===1,'Missing pixel tool '+id);
-              await page.locator('#pixelDirection').selectOption('nw');
-              const initial=await page.evaluate(()=>{
-                const saved=JSON.parse(localStorage.getItem('vl-lafrich-genesis-workbench-drafts-v1'));
-                return saved.drafts.male.rig.layers.top.se;
-              });
-              await page.locator('#pixelApply').click();
-              await page.waitForFunction(()=>
-                document.querySelector('#statusmsg')?.textContent?.includes('APPLIED '),
-                null,{timeout:30000});
-              const retained=await page.evaluate(()=>{
-                const saved=JSON.parse(localStorage.getItem('vl-lafrich-genesis-workbench-drafts-v1'));
-                return saved.drafts.male.rig.layers.top.se;
-              });
-              assert.strictEqual(retained,initial,'Editing skin accidentally changed shirt layer');
-              await page.locator('#gender').selectOption('female');
-              await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
-              await page.locator('#pixel-next').click();
-              assert(await page.locator('[data-panel="rig"]').isVisible(),'Rig stage inaccessible');
-              assert(await page.locator('#part-select').isVisible(),
-                'Body Part selector hidden on Pivot & Slicing');
-              // First, reject a bind when none of the 44 combinations has been reviewed.
-              await page.locator('#rig-next').click();
-              await page.locator('#make-binding').click();
-              assert((await page.locator('#binding-result').textContent()).includes('MANUAL QA INCOMPLETE'),
-                'Unreviewed mask wrongly passed binding');
-              await page.locator('[data-step="rig"]').click();
-              await page.locator('#pivot-x').fill('31');
-              await page.locator('#pivot-x').dispatchEvent('change');
-              // Complete all 11 parts in four directions without returning to Pixel Editor.
-              const partNames=await page.evaluate(()=>[...window.LafrichPuppetCore.PARTS]);
-              for(const d of ['se','sw','ne','nw']){
-                await page.locator('#views button[data-dir="'+d+'"]').click();
-                for(const part of partNames){
-                  await page.locator('#part-select').selectOption(part);
-                  await page.locator('#mark-reviewed').click();
-                }
-              }
-              assert((await page.locator('#part-progress').textContent()).includes('44 / 44'),
-                '44-review matrix (11 parts x 4) not complete');
-              // Adjusting a reviewed pivot MUST invalidate that part's review.
-              await page.locator('#pivot-x').fill('30');
-              await page.locator('#pivot-x').dispatchEvent('change');
-              assert((await page.locator('#part-progress').textContent()).includes('43 / 44'),
-                'Pivot correction did not invalidate previous rig QA');
-              await page.locator('#mark-reviewed').click();
-              assert((await page.locator('#part-progress').textContent()).includes('44 / 44'),
-                'Corrected part could not be re-reviewed');
-              await page.locator('#rig-isolate').click();
-              assert(await page.locator('#rig-isolate').getAttribute('aria-pressed')==='true',
-                'Isolate Body Part preview not active');
-              await page.locator('#rig-pan').click();
-              assert(await page.locator('#rig-pan').getAttribute('aria-pressed')==='true',
-                'No-edit pan mode not available');
-              await page.locator('#rig-next').click();
-              await page.locator('#make-binding').click();
-              await page.waitForTimeout(500);
-              const info=await page.locator('#binding-result').textContent();
-              assert(/^BOUND/.test(info),'Binding failed: '+info);
-              await page.locator('#bind-next').click();
-              assert(await page.locator('[data-panel="test"]').isVisible(),'Test binding stage inaccessible');
-              assert(await page.locator('#part-select').isVisible(),
-                'Shared Body Part selector hidden during motion checks');
-              await page.locator('#test-preset').selectOption('walk');
-              await page.locator('#test-angle').fill('25');
-              await page.locator('#test-play').click();
-              await page.waitForTimeout(350);
-              const motionValue=Number(await page.locator('#test-scrub').inputValue());
-              assert(motionValue>0,'Motion scrub did not play');
-              await page.locator('#test-play').click();
-              // Approval must fail until all four angles are explicitly tested.
-              await page.locator('#approve-binding').click();
-              assert(await page.locator('[data-panel="test"]').isVisible(),
-                'Unverified four-angle motion approved');
-              for(const d of ['se','sw','ne','nw']){
-                await page.locator('#views button[data-dir="'+d+'"]').click();
-                await page.locator('#mark-angle-tested').click();
-              }
-              await page.locator('#approve-binding').click();
-              assert(await page.locator('[data-panel="save"]').isVisible(),'Approval did not open Save Master');
-              await page.locator('#save-master').click();
-              const saved=await page.locator('#master-details').textContent();
-              assert(saved.includes('MASTER SAVED'),'Master not persisted: '+saved);
-              const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')));
-              assert(actual?.female?.id==='lafrich_genesis_female','Canonical Female Genesis Master missing from database');
-              assert(Object.keys(actual.female.binding.reviewed||{}).length===44,
-                'Approved binding did not preserve 44 part-angle review receipts');
-              assert(actual.female.binding.views.se.spritePng.startsWith('data:image/png;base64,'),'Python neutral source absent');
-              assert(actual.female.rigFormat==='LGR-1'&&actual.female.binding.rigFormat==='LGR-1',
-                'Missing LGR-1 format identifiers in approved master');
-              const cloudValidation=await page.evaluate(async()=>{
-                const master=JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')).female;
-                try{await window.VLGenesisCloud.save(master.id,master);return 'UNEXPECTED CLOUD WRITE'}
-                catch(e){return e.message}
-              });
-              assert(/Google Drive connection is missing|Google Drive connection is missing or expired/.test(cloudValidation),
-                'Canonical master unexpectedly failed strict LGR-1 validation: '+cloudValidation);
-              // Regression: a stray pixel is visible but is intentionally NOT part of
-              // anatomy. Find -> delete the source RGBA pixel -> Undo restores it.
-              // No old 44/44 reviewed part-angle receipts should be lost.
-              const strayIndex=await page.evaluate(async()=>{
-                const key='vl-lafrich-genesis-workbench-drafts-v1';
-                const store=JSON.parse(localStorage.getItem(key));
-                const rig=store.drafts.female.rig,part='body',direction='ne';
-                const img=new Image();img.src=rig.layers[part][direction];await img.decode();
-                const surface=document.createElement('canvas');
-                surface.width=64;surface.height=112;
-                const ctx=surface.getContext('2d');ctx.drawImage(img,0,0);
-                const colors=ctx.getImageData(0,0,64,112).data;
-                const mask=window.LafrichPuppetCore.decode(rig.masks[direction]);
-                const index=Array.from({length:64*112},(_,i)=>i).find(i=>
-                  colors[i*4+3]>0&&mask[i]!==255);
-                if(index===undefined)throw Error('No visible source pixel for fixture');
-                mask[index]=255;rig.masks[direction]=window.LafrichPuppetCore.encode(mask);
-                store.drafts.female.bound=null;store.drafts.female.approved=false;
-                store.drafts.female.saved=false;
-                localStorage.setItem(key,JSON.stringify(store));
-                return index;
-              });
-              await page.reload({waitUntil:'domcontentloaded'});
-              await page.locator('#viewdetail').filter({hasText:'MALE'}).waitFor({timeout:60000});
-              await page.locator('#gender').selectOption('female');
-              await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
-              await page.locator('[data-step="rig"]').click();
-              await page.locator('#find-unassigned').click();
-              await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
-                textContent?.includes('1 px in 1 issue clusters (1 unassigned'));
-              const highlighted=await page.locator('#unassigned-detail').textContent();
-              assert(highlighted.includes('NE')&&highlighted.includes('1 unassigned'),
-                'Find Unassigned missed synthetic unassigned pixel '+strayIndex+': '+highlighted);
-              assert(await page.locator('#remove-stray-group').isEnabled(),
-                'Missing targeted cleanup button');
-              await page.locator('#remove-stray-group').click();
-              await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
-                textContent?.includes('No visible unassigned pixels'));
-              const clean=await page.evaluate(async(index)=>{
-                const key='vl-lafrich-genesis-workbench-drafts-v1';
-                const draft=JSON.parse(localStorage.getItem(key)).drafts.female;
-                const img=new Image();img.src=draft.rig.layers.body.ne;await img.decode();
-                const c=document.createElement('canvas');c.width=64;c.height=112;
-                const g=c.getContext('2d');g.drawImage(img,0,0);
-                return {alpha:g.getImageData(0,0,64,112).data[index*4+3],
-                  checks:Object.values(draft.reviewed).filter(Boolean).length,
-                  mask:window.LafrichPuppetCore.decode(draft.rig.masks.ne)[index]};
-              },strayIndex);
-              assert.equal(clean.alpha,0,'Delete Stray left visible source pixel');
-              assert.equal(clean.mask,255,'Cleanup secretly assigned a body part');
-              assert.equal(clean.checks,44,'Cleanup incorrectly cleared prior 44 part-angle reviews');
-              await page.locator('#rig-next').click();
-              await page.locator('#make-binding').click();
-              await page.waitForFunction(()=>document.querySelector('#binding-result')?.
-                textContent?.startsWith('BOUND'),null,{timeout:15000});
-              assert((await page.locator('#binding-result').textContent()).startsWith('BOUND'),
-                'After stray deletion the existing 44/44 review should allow a clean bind');
-              await page.locator('[data-step="rig"]').click();
-              await page.locator('#undo-stray-delete').click();
-              await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
-                textContent?.includes('1 unassigned'));
-              const restored=await page.evaluate(async index=>{
-                const key='vl-lafrich-genesis-workbench-drafts-v1';
-                const draft=JSON.parse(localStorage.getItem(key)).drafts.female;
-                const img=new Image();img.src=draft.rig.layers.body.ne;await img.decode();
-                const c=document.createElement('canvas');c.width=64;c.height=112;
-                const g=c.getContext('2d');g.drawImage(img,0,0);
-                return g.getImageData(0,0,64,112).data[index*4+3];
-              },strayIndex);
-              assert(restored>0,'Undo did not restore original stray artwork');
-              // LGR-1 motion editor: editing a shared library motion makes a
-              // local copy; the shared library itself is never modified.
-              await page.locator('[data-step="motion"]').click();
-              await page.locator('#motion-select').selectOption('wave');
-              await page.locator('#motion-add-frame').click();
-              await page.locator('#motion-a-num').fill('43');
-              await page.locator('#motion-a-num').dispatchEvent('change');
-              await page.locator('#motion-save').click();
-              const mine=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lgr1-user-motions-v1')||'null'));
-              assert(mine?.motions?.some(m=>m.id==='wave_mine'&&m.frames.length===5),
-                'Edited library motion was not saved as a local copy');
-              assert(mine.motions.find(m=>m.id==='wave_mine').frames[1].parts.arm_r_upper.a===45,
-                'Angle snap (5°) not applied');
-              const lib=await page.evaluate(async()=>(await (await fetch('./media/lgr1/motions.json')).json()).motions.find(m=>m.id==='wave').frames.length);
-              assert.strictEqual(lib,4,'Shared library unexpectedly modified');
-              if(errors.length)throw Error('Browser errors: '+errors.join(' | '));
-              console.log(JSON.stringify({browser:'OK',pixelCount,partCount:11,
-                femaleSwitched:true,bindingResult:info.slice(0,180),approved:actual.female.id}));
-            } finally {await browser.close()}
-          })().catch(e=>{console.error(e);process.exitCode=1})
+            const ctx=await browser.newContext({viewport:{width:1500,height:1000},acceptDownloads:true});
+            const page=await ctx.newPage(),errors=[];
+            page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message));
+            await page.goto(B+'genesis-base.html');
+            await page.locator('#viewdetail').filter({hasText:'MALE'}).waitFor({timeout:90000});
+            const vis=await page.evaluate(()=>[...document.querySelectorAll('#progress button')].filter(b=>b.offsetParent).map(b=>b.dataset.step));
+            assert.deepStrictEqual(vis,['pixel','rig']);
+            await page.locator('#edit-pixels').click();await page.locator('#pixelOverlay').waitFor({state:'visible'});
+            await page.locator('#pixelClose').click();
+            await page.locator('#pixel-next').click();
+            await page.locator('#rig-motion-play').click();await page.waitForTimeout(500);
+            const [dl]=await Promise.all([page.waitForEvent('download'),page.locator('#gb-export').click()]);
+            const f='/tmp/'+dl.suggestedFilename();await dl.saveAs(f);
+            const pkg=JSON.parse(fs.readFileSync(f,'utf8'));
+            assert.strictEqual(pkg.format,'lafrich-genesis-base-v1');assert.strictEqual(pkg.parts.length,11);
+            await page.locator('#gender').selectOption('female');
+            await page.locator('#viewdetail').filter({hasText:'FEMALE'}).waitFor({timeout:60000});
+            await page.locator('#gb-file').setInputFiles(f);
+            await page.waitForFunction(()=>/IMPORTED/.test(document.querySelector('#statusmsg').textContent),null,{timeout:30000});
+            assert.strictEqual(await page.locator('#gender').inputValue(),'male');
+            const shell=await ctx.newPage();shell.on('pageerror',e=>errors.push('shell '+e.message));
+            await shell.goto(B+'genesis-workbench.html?tab=lgr');
+            await shell.locator('#face-count').filter({hasText:'Emosi faces'}).waitFor({timeout:30000});
+            assert.strictEqual(await shell.locator('#open-genesis-base').getAttribute('href'),'./genesis-base.html');
+            assert.deepStrictEqual(errors,[]);
+            console.log('Genesis Base + Mahluk Hidup shell browser smoke: OK');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
           NODE

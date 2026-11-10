@@ -35,7 +35,7 @@ It is *not* a 3D skeleton, not a simple spritesheet animation and not a new imag
 
 `Pixel Editor → Pivot & Slicing (4 directions) → Bind → Check Binding → Approve & Save LGR-1 Master.`
 
-The active app is `site/genesis-workbench.html`, reached through `site/mahluk-hidup.html` and `site/index.html`. The only separate authoring sub-app linked from this UI is Emosi.exe.
+**2026-11-10 (t616u/t617u):** the LGR-1 editor (pixel editor, pivot & slicing, motion preview) now lives in **Genesis Base by Lafrich** (`site/genesis-base.html` + `genesis-base-app.js` + `genesis-base.js`, package format `docs/GENESIS_BASE_FORMAT.md`). Mahluk Hidup (`site/genesis-workbench.html`, reached through `site/mahluk-hidup.html` and `site/index.html`) is an Emosi-only shell (`mahluk-hidup-shell.js`) with a link to Genesis Base while players & animations are rebuilt on LGR. The old workshop script `genesis-workbench.js` (bind / check / motion editor / master save steps) was removed; restore it from git (see ROLLBACK.md) if needed.
 
 The following historical Mahluk pages are **hard-retired**: `lafrich-puppet-studio.html`, `genesis-editor.html`, `mahluk-action-editor.html`, `mahluk-animation-native.html`, `v6p-studio.html`, and `pixel-editor.html`. They serve static retirement pages and execute no old JavaScript. Their entry controllers also return immediately before initialization.
 
