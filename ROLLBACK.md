@@ -1,5 +1,25 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Genesis Base by Lafrich app
+
+- Previous `origin/main` (safe restore point): `e46fb8d`
+- Feature commit: `f264542` (new `site/genesis-base.html` + `genesis-base-app.js` + `genesis-base.js`, Genesis Base Drive functions in `genesis-cloud.js`, link in Mahluk Hidup, docs/GENESIS_BASE_FORMAT.md, cache-busters lgr1-fix-6)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit e46fb8d..origin/main   # newest first
+git push origin main
+```
+
+Data safety: Genesis Base uses its own local draft key and its own Drive folder
+`Membangun/Mahluk Hidup/Genesis Base` (new files only). Genesis Masters,
+Mahluk Hidup drafts and motions are not written.
+
+---
+
 ## 2026-11-10 · LGR-1 step 02 motion preview panel
 
 - Previous `origin/main` (safe restore point): `6527a3a`
