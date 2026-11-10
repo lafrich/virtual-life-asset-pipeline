@@ -291,7 +291,7 @@ function flushCache(){preparedCache.clear();rev++;void renderAll()}
 function makeDirty(){
  const r=record();if(!r)return;
  r.bound=null;r.approved=false;r.saved=false;r.edited=new Date().toISOString();
- flushCache();persistDraft();
+ flushCache();persistDraft();refreshRigMotionNow();
 }
 function download(name,data,mime){
  const blob=new Blob([data],{type:mime||"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");
@@ -520,8 +520,20 @@ async function renderAll(){
 /* ---------------- 02 · motion preview on the current draft ---------------- */
 let rigMotion={playing:false,ms:0,tick:0,cache:new Map(),rev:-1,frame:-1,busy:false};
 function rigMotionCurrent(){const id=$("rig-motion-select")?.value;const m=allMotions().find(x=>x.id===id);return m?safeMotion(m):null}
+// Redraw the preview right away (next frame) with the live, unsaved pivots;
+// used on every pivot drag step, joint cap, draw order and near-side change.
+let rigMotionRaf=0;
+function refreshRigMotionNow(){
+ if(rigMotionRaf)return;
+ rigMotionRaf=root.requestAnimationFrame(()=>{rigMotionRaf=0;void renderRigMotion(true)});
+}
+function rotatesIn(mo,part,d,sides){
+ for(let i=0;i<mo.frames.length;i++){const t=M.framePose(motionLib.poses,mo,i,d,sides)?.[part];if(t&&(t.a||t.x||t.y))return true}
+ return false;
+}
 async function renderRigMotion(force){
- if(step!=="rig"||page!=="workshop"||!master()||rigMotion.busy)return;
+ if(rigMotion.busy){if(force)rigMotion.again=true;return}
+ if(step!=="rig"||page!=="workshop"||!master())return;
  const mo=rigMotionCurrent(),all=$("rig-motion-all").checked;
  for(const d of DIR)$("rig-motion-"+d).hidden=!all&&d!==dir;
  $("rig-motion-views").classList.toggle("all",all);
@@ -539,10 +551,21 @@ async function renderRigMotion(force){
    const pose=Object.assign(C.blankPose(),M.framePose(motionLib.poses,mo,i,d,sides));
    const out=R.render(prep,pose,{order:M.frameOrder(baseOrder(d,m),mo,i,d,sides)});
    const c=$("rig-motion-"+d).getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);c.drawImage(out,0,0);
+   // selected part: live pivot (magenta cross) where it is in this frame
+   const pv=m.pivots?.[d]?.[selected];
+   if(pv&&root.LGR1Raster?.matrices){
+    const t=root.LGR1Raster.matrices(m.pivots[d],m.placements?.[d]||{},pose)[selected].mat;
+    const wx=Math.round(t[0]*pv.x+t[2]*pv.y+t[4]),wy=Math.round(t[1]*pv.x+t[3]*pv.y+t[5]);
+    c.fillStyle="rgba(255,0,200,.95)";c.fillRect(wx-2,wy,5,1);c.fillRect(wx,wy-2,1,5);
+   }
   }
+  const note=$("rig-motion-note");
+  if(note)note.textContent=rotatesIn(mo,selected,dir,sides)?
+   "✣ = "+labels[selected]+" pivot (live, unsaved values) · it moves in "+mo.name+".":
+   "✣ = "+labels[selected]+" pivot · "+labels[selected]+" does not move in "+mo.name+", so its pivot changes nothing here; pick a motion that moves it.";
   rigMotion.frame=i;
  }catch(e){status("Motion preview: "+e.message,true);stopRigMotion()}
- finally{rigMotion.busy=false}
+ finally{rigMotion.busy=false;if(rigMotion.again){rigMotion.again=false;refreshRigMotionNow()}}
 }
 function stopRigMotion(){rigMotion.playing=false;rigMotion.tick=0;if($("rig-motion-play"))$("rig-motion-play").textContent="▶ PLAY"}
 function animateRigMotion(now){
@@ -606,7 +629,7 @@ function buildPartButtons(){
 }
 function selectPart(part){
  if(!PARTS.includes(part))return;
- selected=part;syncControls();void renderAll();void autoLayer(true);
+ selected=part;syncControls();void renderAll();void autoLayer(true);refreshRigMotionNow();
 }
 // V6B keeps each part's skin in the layer it was painted on (nude base: head
 // in BODY, chest/arms in TOP, hips/legs in PANTS, feet in SHOES ...). Show the
@@ -777,7 +800,7 @@ function setPivot(x,y,commit=true){
  p.x=nx;p.y=ny;
  if(commit)invalidateReviews(dir,[selected]);
  else scheduleRigPreview(); // Drag preview only; no multi-MB localStorage writes per pointermove.
- syncControls();
+ syncControls();refreshRigMotionNow();
 }
 function bindMaskCopy(flipped){
  if(!maskCopied){status("Copy a mask first",true);return}

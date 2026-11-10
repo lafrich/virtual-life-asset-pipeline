@@ -163,6 +163,16 @@ jobs:
             assert.strictEqual(await page.locator('#art-layer').inputValue(),'top','torso must open on the layer holding its pixels');
             await page.locator('#pixel-next').click();
             await page.locator('#rig-motion-play').click();await page.waitForTimeout(500);
+            await page.locator('#rig-motion-play').click();await page.waitForTimeout(300); // pause
+            const snap=()=>page.evaluate(()=>{const c=document.querySelector('#rig-motion-views canvas:not([hidden])'),d=c.getContext('2d').getImageData(0,0,64,112).data;let h=0,n=0;for(let k=3;k<d.length;k+=4)if(d[k])n++;if(!n)return 'empty';for(let k=0;k<d.length;k++)h=(h*31+d[k])>>>0;return h});
+            await page.locator('#part-select').selectOption('arm_near_upper');await page.waitForTimeout(300);
+            const before=await snap(),box=await page.locator('#stage').boundingBox();
+            const px=Number(await page.locator('#pivot-x').inputValue()),py=Number(await page.locator('#pivot-y').inputValue());
+            await page.locator('#rig-pivot').click();
+            await page.mouse.move(box.x+(px+.5)*box.width/64,box.y+(py+.5)*box.height/112);await page.mouse.down();
+            await page.mouse.move(box.x+(px+6.5)*box.width/64,box.y+(py+8.5)*box.height/112,{steps:6});await page.waitForTimeout(250);
+            assert(before!=='empty','preview empty');assert.notStrictEqual(await snap(),before,'motion preview did not redraw while dragging the pivot');
+            await page.mouse.up();
             const [dl]=await Promise.all([page.waitForEvent('download'),page.locator('#gb-export').click()]);
             const f='/tmp/'+dl.suggestedFilename();await dl.saveAs(f);
             const pkg=JSON.parse(fs.readFileSync(f,'utf8'));

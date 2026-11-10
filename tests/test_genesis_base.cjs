@@ -30,6 +30,11 @@ assert.match(app,/selected=part;syncControls\(\);void renderAll\(\);void autoLay
 assert.match(app,/async function partLayerCounts/);
 assert(!/SAVE MASTER to sync Drive/.test(html),"stale editor hint");
 assert.match(html,/then ☁ SAVE BASE TO DRIVE/);
+// t622u: preview redraws on pivot drag / joint / order changes, marks the pivot
+assert.match(app,/syncControls\(\);refreshRigMotionNow\(\);/);
+assert.match(app,/flushCache\(\);persistDraft\(\);refreshRigMotionNow\(\);/);
+assert.match(app,/if\(rigMotion\.busy\)\{if\(force\)rigMotion\.again=true;return\}/);
+assert(ids.has("rig-motion-note"));
 // docs exist
 assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/lafrich-genesis-base-v1/);
 console.log("genesis base contract ok");
