@@ -47,8 +47,8 @@ footer{margin:18px 0;font-size:11px;color:#42536d}
  <header>
   <div class="titlebar"><b>▣ GENESIS BASE — LGR-1 SLICE TEST</b><span>READ-ONLY · MALE · FOUR DIRECTIONS</span></div>
   <div class="headercontent">
-   <p>Uji slicing baru dari <b>LGR male test.json</b> memakai <b>pixel art resmi Genesis Male</b> dan mesin animasi LGR-1 yang sama di kedua sisi. Perbandingan ini hanya mengganti <b>mask, pivot, dan placement</b> pada panel kanan.</p>
-   <p class="note">Versi lama <b>official-2</b>, Genesis Female, database animasi, dan save Google Drive <b>tidak ditimpa</b>. Draft baru belum disetujui untuk mengganti rig utama.</p>
+   <p>Bandingkan <b>official-2 (arsip)</b> dengan <b>official-3 aktif</b> dari <b>LGR male test.json</b>. Kedua panel memakai pixel art yang sama. Hanya <b>mask, pivot, dan placement</b> yang berbeda.</p>
+   <p class="note">Slice baru sudah <b>aktif sebagai Genesis Male official-3</b>. Versi lama <b>official-2</b>, Genesis Female, animasi, dan save Google Drive <b>tetap disimpan</b>. Panel perbandingan ini read-only.</p>
    <a href="./genesis-base.html">← Genesis Base Editor</a>
   </div>
  </header>
@@ -67,14 +67,14 @@ footer{margin:18px 0;font-size:11px;color:#42536d}
    <div class="small">Gambar, mask, pivot dan hierarki original. Tidak berubah.</div>
   </section>
   <section class="panel new">
-   <div class="paneltitle"><span>SESUDAH · Slice dari File Kamu</span><span>TRIAL · not approved</span></div>
+   <div class="paneltitle"><span>SESUDAH · Slice dari File Kamu</span><span>official-3 · ACTIVE</span></div>
    <div class="staging"><canvas id="after" width="64" height="112" aria-label="Male LGR with supplied slice and pivots"></canvas></div>
-   <div class="small">Pixel art sama persis; hanya slicing/pivot/placement dari draft yang diganti.</div>
+   <div class="small">Pixel art sama persis; slicing, pivot, dan placement sekarang adalah base Male resmi.</div>
   </section>
  </div>
  <div class="result"><span>Mask berbeda: <strong id="maskdiff">—</strong> piksel</span><span>Pivot berubah: <strong id="pivotdiff">—</strong> dari 11</span><span>Perbedaan frame yang sedang tampil: <strong id="pixeldiff">—</strong> piksel</span></div>
  <div class="legend" id="legend" aria-label="Warna bagian rig"></div>
- <div class="status" id="status" role="status">Mengambil Genesis Male official-2 dan draft slicing…</div>
+ <div class="status" id="status" role="status">Mengambil Genesis Male official-2 (arsip) dan official-3 aktif…</div>
  <footer>Test sandbox only · 64 × 112 native pixel, nearest-neighbor preview · no writes to original rig or browser drafts.</footer>
 </div>
 <script src="./lafrich-puppet-core.js"></script>
@@ -94,21 +94,25 @@ let dir="se",motion=null,playing=true,overlay=false,t=0,last=performance.now(),s
 const prepared=new Map();
 const report=(s,error)=>{$("status").textContent=s;$("status").style.color=error?"#aa2424":"#203f75"};
 try{
- const [official,draft,library]=await Promise.all([
+ const [official,archived,draft,library]=await Promise.all([
   A.master("male","light"),
+  fetch("./media/lgr1/base/archive/genesis-base-male-official-2.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("Archived official-2 HTTP "+r.status);return r.json()}),
   fetch("./media/lgr1/base/candidates/lgr-male-slice-test-20261111.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("Slice JSON HTTP "+r.status);return r.json()}),
   A.motions()
  ]);
  if(draft.format!=="lgr-1-draft-v1"||draft.gender!=="male"||draft.record?.rig?.id!=="lafrich_male")
    throw Error("File slicing bukan LGR-1 Male draft yang benar");
- original=C.validateMaster(official);
- // Important: original pixel art is intentionally reused. This is a cut/pivot
- // A/B experiment, NOT a second set of approved Genesis artwork.
- trial=C.validateMaster({...official,
-  masks:draft.record.rig.masks,
-  pivots:draft.record.rig.pivots,
-  placements:draft.record.rig.placements
+ if(archived.rigSha256!=="1c1a220a78488e4e255c0ae4958547587217241041761475ef649ac8665a42a9")
+   throw Error("Archived original Male rig mismatch");
+ // Pixel art and skin are sourced from the active Master in both views.
+ // Only archived cut/pivot data are restored on the left, preserving old v2.
+ original=C.validateMaster({...official,
+  masks:archived.rig.masks,pivots:archived.rig.pivots,placements:archived.rig.placements
  });
+ trial=C.validateMaster(official);
+ if(C.DIRS.some(d=>trial.masks[d]!==draft.record.rig.masks[d]||
+   JSON.stringify(trial.pivots[d])!==JSON.stringify(draft.record.rig.pivots[d])))
+   throw Error("Current official Male does not match the approved user slicing");
  lib=library;
  const options=[{id:"",name:"Rest / netral"}].concat(lib.motions.map(m=>({id:m.id,name:m.name||m.id})));
  $("motion").replaceChildren(...options.map(o=>{const el=document.createElement("option");el.value=o.id;el.textContent=o.name;return el}));
@@ -117,7 +121,7 @@ try{
  const m=lib.motions.find(x=>x.id===$("motion").value);motion=m||null;
  const colors=C.PARTS.map((p,i)=>{const span=document.createElement("span"),mark=document.createElement("i");mark.style.background=COLORS[i];span.append(mark,document.createTextNode(p));return span});
  $("legend").replaceChildren(...colors);
- report("Loaded. Semua data resmi tetap utuh. Pilih motion dan arah untuk melihat perbedaan potongan saat bergerak.");
+ report("Loaded. Genesis Male official-3 aktif; official-2 tetap diarsip. Pilih motion dan arah untuk membandingkan sambungan saat bergerak.");
 }catch(e){report("Tidak bisa memuat perbandingan: "+(e.message||e),true);return}
 function countMask(d){
  const a=C.decode(original.masks[d]),b=C.decode(trial.masks[d]);let n=0;
