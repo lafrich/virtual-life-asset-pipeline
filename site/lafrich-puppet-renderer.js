@@ -162,8 +162,12 @@
   }
   if(raw.body){
    for(const [front,back] of [["se","ne"],["sw","nw"]]){
-    if(raw.body[front]&&raw.body[back])
-     raw.body[back]=wholeBackHead(raw.body[front],raw.body[back]).data;
+    if(raw.body[front]&&raw.body[back]){
+     // fill the bald skull first so the back NECK row (not the skull gap) is found,
+     // then take the whole front head above it (same result as the 01 button)
+     let b=raw.body[back];if(headRows(b)<40)b=repairBackHead(raw.body[front],b).data;
+     raw.body[back]=wholeBackHead(raw.body[front],b).data;
+    }
    }
   }
   for(const d of Cc.DIRS)removeFloaters(Object.keys(raw).map(l=>raw[l][d]));

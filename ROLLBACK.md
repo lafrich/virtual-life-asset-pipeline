@@ -3,7 +3,7 @@
 ## 2026-11-10 · LGR-1 whole back head + better slice paint
 
 - Previous `origin/main` (safe restore point): `5520232` (ROLLBACK notes for the neck stem)
-- Feature commit: `9c5cb08` (NE/NW back head from the whole front head in the seed + 01 button with undo; slice paint visible-only, continuous strokes, RE-SLICE keeps hand-painted pixels on request)
+- Feature commits: `9c5cb08` + the seed-order fix right after the ROLLBACK notes (NE/NW back head from the whole front head in the seed + 01 button with undo; slice paint visible-only, continuous strokes, RE-SLICE keeps hand-painted pixels on request)
 - New tip: this ROLLBACK-notes commit
 
 Restore (fast-forward only, never force-push):
