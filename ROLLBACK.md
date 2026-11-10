@@ -1,4 +1,34 @@
-# Rollback — virtual-life-asset-pipeline 2026-11-07
+# Rollback — virtual-life-asset-pipeline (latest first)
+
+## 2026-11-10 · LGR-1 app fixes (motions, joints, rotation, layers, outfits, seed, review, cleanup)
+
+- Previous `origin/main` (safe restore point): `299a8ce` (Sync v6p pixel edits from Drive: shoes/hightops_over_f)
+- Feature commits: `924608c8d300acdb9f5f24279a556c935eb144ed` (LGR-1 raster + shared motions + workbench), `69a987fb6f11dc7035d33703982b7181cbf73645` (retired JS/test cleanup + CI)
+- New tip: the ROLLBACK-notes commit directly after `69a987f`
+
+Restore (fast-forward only, never force-push), newest first:
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit <this ROLLBACK notes commit>
+git revert --no-edit 69a987fb6f11dc7035d33703982b7181cbf73645
+git revert --no-edit 924608c8d300acdb9f5f24279a556c935eb144ed
+git push origin main
+```
+
+Data safety: wire IDs/formats are unchanged; no Drive file is modified by this deploy.
+New Drive motion files are separate immutable `lgr1_motion.*.json` versions. Local
+user motions live in `vl-lgr1-user-motions-v1`, outfit tweaks in
+`vl-lgr1-outfit-tweaks-v1`; reverting leaves them harmlessly unused. Optional rig
+fields (`drawOrders`, `sides`, `capRadius`) are ignored by the old code.
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+- https://lafrich.github.io/virtual-life-asset-pipeline/genesis-workbench.html
+- https://lafrich.github.io/virtual-life-asset-pipeline/mahluk-hidup.html
+
+---
+
+## Rollback — virtual-life-asset-pipeline 2026-11-07
 
 Repo: `lafrich/virtual-life-asset-pipeline`  
 Branch: `main`  
