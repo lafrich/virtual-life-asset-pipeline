@@ -181,6 +181,46 @@
    "id": "check_phone",
    "name": "Cek HP",
    "group": "sosial"
+  },
+  {
+   "id": "rinse_tap",
+   "name": "Bilas di keran / sungai",
+   "group": "kebersihan"
+  },
+  {
+   "id": "hand_over",
+   "name": "Serah / terima barang (jual-beli)",
+   "group": "sosial"
+  },
+  {
+   "id": "protest",
+   "name": "Protes / ngomel (antrean)",
+   "group": "sosial"
+  },
+  {
+   "id": "get_up",
+   "name": "Bangun dari rebah (pingsan / kasur)",
+   "group": "kondisi"
+  },
+  {
+   "id": "use_storage",
+   "name": "Buka lemari / kulkas",
+   "group": "kebutuhan"
+  },
+  {
+   "id": "sit_lesehan",
+   "name": "Duduk lesehan",
+   "group": "dasar"
+  },
+  {
+   "id": "run",
+   "name": "Lari",
+   "group": "dasar"
+  },
+  {
+   "id": "sweep",
+   "name": "Nyapu",
+   "group": "kerja"
   }
  ]
 }

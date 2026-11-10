@@ -13,8 +13,8 @@ function load(db){
 test("lgr-game has no V6P dependency",()=>{assert.doesNotMatch(src,/V6PCompositor|v6p-compositor|media\/v6p/)});
 test("every needed motion id is built-in or has a built-in stand-in",()=>{
  const ids=new Set(lib.motions.map(m=>m.id));const {G}=load(null);
- for(const id of needed)assert.ok(ids.has(id)||ids.has(G.STAND_INS[id]),"no motion for "+id);
- for(const v of Object.values(G.STAND_INS))assert.ok(ids.has(v),"stand-in "+v+" missing from motions.json");
+ for(const id of needed)assert.ok(ids.has(id)||G.STAND_INS[id],"no motion for "+id);
+ for(const id of Object.keys(G.STAND_INS)){let v=id,n=0;while(!ids.has(v)&&n++<5)v=G.STAND_INS[v];assert.ok(ids.has(v),"stand-in chain for "+id+" never reaches a built-in")}
 });
 test("motion lookup prefers the cloud DB, then built-in, then stand-in",async()=>{
  const dbMotion={id:"ogah_flag",frames:[{ms:100,parts:{}}]};
@@ -30,6 +30,9 @@ test("motion lookup prefers the cloud DB, then built-in, then stand-in",async()=
  const {G:G3}=load({motion:r=>r==="bergerak:cook"?cook:null});G3.useLibrary(lib);
  assert.deepStrictEqual([G3.resolveAction("cook").source,G3.resolveAction("cook").motion],["bergerak",cook]);
  const c2=G.resolveAction("cook");assert.deepStrictEqual([c2.source,c2.motion.id],["stand-in","idle"]);
+ const rt=G.resolveAction("rinse_tap");assert.deepStrictEqual([rt.motion.id,rt.via],["arms_up",["mandi","arms_up"]]);
+ const mandi={id:"mandi",frames:[{ms:100,parts:{}}]};const {G:G4}=load({motion:r=>r==="bergerak:mandi"?mandi:null});G4.useLibrary(lib);
+ assert.strictEqual(G4.resolveAction("rinse_tap").motion,mandi);
  assert.strictEqual(G.resolveAction("unknown_thing").motion.id,"idle");
  const {G:G2}=load(null);G2.useLibrary(lib);assert.strictEqual(G2.resolveAction("ogah_flag").source,"stand-in");
 });

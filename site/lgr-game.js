@@ -16,7 +16,7 @@
  if(root)root.LGRGame=api;
 })(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){
 "use strict";
-const VERSION="lgr-game-4";
+const VERSION="lgr-game-5";
 const DIRS=["se","sw","ne","nw"];
 const here=(()=>{try{const s=document.currentScript?.src;return s?s.slice(0,s.lastIndexOf("/")+1):"/virtual-life-asset-pipeline/"}catch{return "/virtual-life-asset-pipeline/"}})();
 if(root&&!root.LGRDB_BASE)root.LGRDB_BASE=here;
@@ -29,7 +29,8 @@ const STAND_INS=Object.freeze({
  pee_stand:"idle",fishing_cast:"wave",fishing_wait:"idle",pick_up:"bow",silver_pose:"idle",ogah_flag:"wave",
  parkir_whistle:"wave",eat:"talk",drink_coffee:"talk",faint:"lie_sleep",arrested:"arms_up",clean_gorong:"crouch",
  pray_generic:"bow",give_sedekah:"wave",tired_walk:"walk",tired:"idle",cook:"idle",
- eat_sit:"sit",drink_coffee_sit:"sit",fishing_wait_sit:"sit",mulung_pick:"bow",walk_carry_sack:"walk",check_phone:"talk"});
+ eat_sit:"sit",drink_coffee_sit:"sit",fishing_wait_sit:"sit",mulung_pick:"bow",walk_carry_sack:"walk",check_phone:"talk",
+ sit_lesehan:"sit",run:"walk",sweep:"idle",rinse_tap:"mandi",hand_over:"pick_up",protest:"talk",get_up:"idle",use_storage:"pick_up"});
 const ALIASES=Object.freeze({
  sleep:"lie_sleep",rest:"lie_sleep",sleep_bed_right:"lie_sleep",sleep_bed_left:"lie_sleep",
  sit_type:"sit",work:"sit",study:"sit",perch:"sit",bathtub_bathe:"sit",
@@ -74,8 +75,11 @@ function resolveAction(action){
  if(db)return {id,motion:db,source:"bergerak",standIn:false,dir:ALIAS_DIR[action]};
  const own=builtin(id);
  if(own)return {id,motion:own,source:"builtin",standIn:false,dir:ALIAS_DIR[action]};
- const sub=builtin(STAND_INS[id])||builtin("idle");
- return {id,motion:sub,source:"stand-in",standIn:true,dir:ALIAS_DIR[action]};
+ // stand-in: the fallback id is itself resolved (cloud DB → built-in → its own
+ // stand-in), e.g. rinse_tap → mandi (DB) → arms_up; ends at builtin idle.
+ let fb=STAND_INS[id],sub=null,via=[];
+ for(let n=0;fb&&n<4&&!sub;n++){via.push(fb);sub=DB?.motion?.("bergerak:"+fb)||builtin(fb);if(!sub)fb=STAND_INS[fb];}
+ return {id,motion:sub||builtin("idle"),source:"stand-in",standIn:true,via,dir:ALIAS_DIR[action]};
 }
 // virtual-office profile.appearance → LGRWear spec
 function spec(profile){
