@@ -1,15 +1,16 @@
 'use strict';
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
-const base=process.env.LGR_SLICE_TEST_URL||'http://127.0.0.1:8091/virtual-life-asset-pipeline/genesis-slice-compare.html';
+const base=process.env.LGR_SLICE_TEST_URL||'http://127.0.0.1:8091/virtual-life-asset-pipeline/site/genesis-slice-compare.html';
 (async()=>{
  const browser=await chromium.launch({headless:true,channel:'chrome',args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader']});
  const page=await browser.newPage({viewport:{width:1280,height:960}});
  const errors=[];
  page.on('pageerror',e=>errors.push(String(e.stack||e)));
  try{
-  await page.goto(base,{waitUntil:'domcontentloaded',timeout:90000});
-  await page.waitForFunction(()=>document.getElementById('status').textContent.startsWith('Loaded.')||
-    document.getElementById('status').textContent.startsWith('Tidak bisa'),null,{timeout:90000});
+  const response=await page.goto(base,{waitUntil:'domcontentloaded',timeout:90000});
+  assert.equal(response.status(),200,'Candidate preview page must be served from site/');
+  await page.waitForFunction(()=>document.getElementById('status')?.textContent.startsWith('Loaded.')||
+    document.getElementById('status')?.textContent.startsWith('Tidak bisa'),null,{timeout:90000});
   const status=await page.locator('#status').textContent();
   assert.match(status,/Loaded\./,'Candidate must actually load into the native LGR renderer');
   const options=await page.locator('#motion option').evaluateAll(opts=>opts.map(o=>o.value));
