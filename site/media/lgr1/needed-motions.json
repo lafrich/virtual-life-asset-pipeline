@@ -146,6 +146,11 @@
    "id": "tired_walk",
    "name": "Jalan capek",
    "group": "kondisi"
+  },
+  {
+   "id": "cook",
+   "name": "Masak (spatula)",
+   "group": "kerja"
   }
  ]
 }

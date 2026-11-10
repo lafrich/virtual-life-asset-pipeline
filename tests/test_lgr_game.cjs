@@ -26,6 +26,10 @@ test("motion lookup prefers the cloud DB, then built-in, then stand-in",async()=
  assert.deepStrictEqual([G.resolveAction("sit").source,G.resolveAction("sit").motion.id],["builtin","sit"]);
  assert.deepStrictEqual([G.resolveAction("sleep").id,G.resolveAction("sleep").source],["lie_sleep","builtin"]);
  const w=G.resolveAction("wc_squat");assert.deepStrictEqual([w.source,w.motion.id,w.standIn],["stand-in","crouch",true]);
+ const cook={id:"cook",frames:[{ms:100,parts:{}}]};
+ const {G:G3}=load({motion:r=>r==="bergerak:cook"?cook:null});G3.useLibrary(lib);
+ assert.deepStrictEqual([G3.resolveAction("cook").source,G3.resolveAction("cook").motion],["bergerak",cook]);
+ const c2=G.resolveAction("cook");assert.deepStrictEqual([c2.source,c2.motion.id],["stand-in","idle"]);
  assert.strictEqual(G.resolveAction("unknown_thing").motion.id,"idle");
  const {G:G2}=load(null);G2.useLibrary(lib);assert.strictEqual(G2.resolveAction("ogah_flag").source,"stand-in");
 });
