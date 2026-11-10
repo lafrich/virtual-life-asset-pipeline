@@ -53,7 +53,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 #order-list{display:grid;gap:2px;margin:4px 0}.order-row{display:flex;gap:3px;align-items:center;font-size:10px}.order-row span{flex:1;cursor:pointer;padding:2px 4px;background:#eef3fa;border:1px solid #c6d3e4}.order-row.current span{background:#cfe0fb;font-weight:bold}.order-row button{min-width:26px;padding:2px}
 #motion-frames button{min-width:34px}#motion-frames button[aria-pressed=true]{background:#3065a9;color:#fff}
 #rig-settings{margin-top:8px;border-top:1px dashed #9babc0;padding-top:6px}
-</style>
+#rig-motion{margin:9px 0;padding:9px;border:1px solid #a5bad1;background:#f5f9ff}#rig-motion h3{margin:2px 0 4px;color:#31588a}#rig-motion select{flex:2;min-width:0}#rig-motion-views{display:grid;grid-template-columns:1fr;justify-items:center;gap:4px;background:#dfe9f5;padding:4px;border:1px solid #c2cfdf}#rig-motion-views.all{grid-template-columns:1fr 1fr}#rig-motion-views canvas{width:100%;max-width:192px;height:auto;aspect-ratio:64/112;image-rendering:pixelated;background:repeating-conic-gradient(#e8eef6 0 25%,#f6f9fc 0 50%) 0 0/16px 16px}#rig-motion-views canvas[hidden]{display:none}</style>
 </head>
 <body>
 <div id="app">
@@ -105,6 +105,13 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <p id="mask-legend" style="font-size:10px">BLUE = selected part (real pixels incl. hair/outfit) · RED = no part · YELLOW = flagged · empty canvas belongs to no part</p>
    <button id="reslice-head" type="button" title="Re-slice all parts from the body shape: head+neck, arm-only arms, legs split at the gap. Pixel art is not changed.">✂ RE-SLICE FROM SHAPE (HEAD/NECK · ARMS · LEGS · PELVIS)</button>
    <p style="font-size:10px">For drafts made before 10 Nov: head gets chin + neck, arms get only the arm (shoulders stay torso), legs split at the gap, new PELVIS (hips) split from the torso, empty canvas belongs to no part. Pixel art is untouched; only reviews of changed parts reset. RIG UNDO reverts.</p>
+   <div id="rig-motion">
+    <h3>▶ PREVIEW MOTION (THIS DRAFT'S SLICES)</h3>
+    <div class="btnrow"><select id="rig-motion-select" aria-label="Motion to preview"></select><button id="rig-motion-play" type="button">▶ PLAY</button></div>
+    <label class="check"><input id="rig-motion-all" type="checkbox"> SHOW ALL 4 ANGLES (else only the current angle)</label>
+    <div id="rig-motion-views"><canvas id="rig-motion-se" width="64" height="112" title="SE"></canvas><canvas id="rig-motion-sw" width="64" height="112" title="SW"></canvas><canvas id="rig-motion-ne" width="64" height="112" title="NE"></canvas><canvas id="rig-motion-nw" width="64" height="112" title="NW"></canvas></div>
+    <p style="font-size:10px">Plays the shared motions with your current cut, pivots and hand-painted slices; it refreshes after every paint stroke. A hole or a piece flying off while it moves = a slice or pivot to fix. Preview only, nothing is saved.</p>
+   </div>
    <div id="unassigned-tools">
     <h3>FIND UNASSIGNED PIXELS</h3>
     <p>Finds visible pixels that belong to NO body part, tiny isolated FLOATERS (≤6 px touching nothing) and, with an outfit preview on, OUTFIT pixels outside the body outline (auto-assigned to the nearest part).</p>
@@ -197,7 +204,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
   <div class="detail" id="viewdetail">64 × 112 PNG • SE / SW / NE / NW • select a body part</div>
  </section>
  <aside class="pane" id="rightpane">
-  <h2>ANATOMY · 10 PIECES</h2><div id="anatomy"></div>
+  <h2>ANATOMY · 11 PIECES</h2><div id="anatomy"></div>
   <h2 id="side-title">SELECTED PART</h2><div id="selection-details">HEAD</div>
   <h2>EMOSI.EXE · FACE ENGINE</h2>
   <p>Database wajah tetap milik Emosi.exe. Tidak ada face-painting atau frame wajah manual di Python.</p>
@@ -292,21 +299,21 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="./genesis-source.js?v=lgr1-fix-4"></script>
-<script src="./v6p-character-store.js?v=lgr1-fix-4"></script>
-<script src="./genesis-base-bridge.js?v=lgr1-fix-4"></script>
-<script src="./v6p-part-catalog.js?v=lgr1-fix-4"></script>
-<script src="./v6p-part-overrides.js?v=lgr1-fix-4"></script>
-<script src="./v6p-compositor.js?v=lgr1-fix-4"></script>
-<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-4"></script>
-<script src="./emosi-bridge.js?v=lgr1-fix-4"></script>
-<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-4"></script>
-<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-4"></script>
-<script src="./lgr1-raster.js?v=lgr1-fix-4"></script>
-<script src="./lgr1-motion.js?v=lgr1-fix-4"></script>
-<script src="./lafrich-puppet-core.js?v=lgr1-fix-4"></script>
-<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-4"></script>
-<script src="./genesis-cloud.js?v=lgr1-fix-4"></script>
-<script src="./genesis-workbench.js?v=lgr1-fix-4"></script>
+<script src="./genesis-source.js?v=lgr1-fix-5"></script>
+<script src="./v6p-character-store.js?v=lgr1-fix-5"></script>
+<script src="./genesis-base-bridge.js?v=lgr1-fix-5"></script>
+<script src="./v6p-part-catalog.js?v=lgr1-fix-5"></script>
+<script src="./v6p-part-overrides.js?v=lgr1-fix-5"></script>
+<script src="./v6p-compositor.js?v=lgr1-fix-5"></script>
+<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-5"></script>
+<script src="./emosi-bridge.js?v=lgr1-fix-5"></script>
+<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-5"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-5"></script>
+<script src="./lgr1-raster.js?v=lgr1-fix-5"></script>
+<script src="./lgr1-motion.js?v=lgr1-fix-5"></script>
+<script src="./lafrich-puppet-core.js?v=lgr1-fix-5"></script>
+<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-5"></script>
+<script src="./genesis-cloud.js?v=lgr1-fix-5"></script>
+<script src="./genesis-workbench.js?v=lgr1-fix-5"></script>
 </body>
 </html>

@@ -510,6 +510,50 @@ async function renderAll(){
    }
   }catch(e){status("Preview "+d+": "+e.message,true);break}
  }
+ if(currentStep==="rig"&&token===renderRequest)void renderRigMotion(true);
+}
+/* ---------------- 02 · motion preview on the current draft ---------------- */
+let rigMotion={playing:false,ms:0,tick:0,cache:new Map(),rev:-1,frame:-1,busy:false};
+function rigMotionCurrent(){const id=$("rig-motion-select")?.value;const m=allMotions().find(x=>x.id===id);return m?safeMotion(m):null}
+async function renderRigMotion(force){
+ if(step!=="rig"||page!=="workshop"||!master()||rigMotion.busy)return;
+ const mo=rigMotionCurrent(),all=$("rig-motion-all").checked;
+ for(const d of DIR)$("rig-motion-"+d).hidden=!all&&d!==dir;
+ $("rig-motion-views").classList.toggle("all",all);
+ if(!mo)return;
+ if(rigMotion.rev!==rev){rigMotion.cache.clear();rigMotion.rev=rev;force=true}
+ const i=M.frameIndexAt(mo,rigMotion.ms);
+ if(!force&&i===rigMotion.frame)return;
+ rigMotion.busy=true;
+ try{
+  const m=master(),sides=rigSides(m),g=gender;
+  for(const d of DIR){
+   if(!all&&d!==dir)continue;
+   let prep=rigMotion.cache.get(g+"|"+d);
+   if(!prep){prep=await R.prepare(m,null,d);rigMotion.cache.set(g+"|"+d,prep)}
+   const pose=Object.assign(C.blankPose(),M.framePose(motionLib.poses,mo,i,d,sides));
+   const out=R.render(prep,pose,{order:M.frameOrder(baseOrder(d,m),mo,i,d,sides)});
+   const c=$("rig-motion-"+d).getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);c.drawImage(out,0,0);
+  }
+  rigMotion.frame=i;
+ }catch(e){status("Motion preview: "+e.message,true);stopRigMotion()}
+ finally{rigMotion.busy=false}
+}
+function stopRigMotion(){rigMotion.playing=false;rigMotion.tick=0;if($("rig-motion-play"))$("rig-motion-play").textContent="▶ PLAY"}
+function animateRigMotion(now){
+ if(!rigMotion.playing)return;
+ if(step!=="rig"||page!=="workshop"){stopRigMotion();return}
+ if(!rigMotion.tick)rigMotion.tick=now;
+ rigMotion.ms+=now-rigMotion.tick;rigMotion.tick=now;
+ const mo=rigMotionCurrent();if(mo)rigMotion.ms%=M.duration(mo);
+ void renderRigMotion(false);
+ root.requestAnimationFrame(animateRigMotion);
+}
+function toggleRigMotion(){
+ if(rigMotion.playing){stopRigMotion();return}
+ if(!rigMotionCurrent()){status("Choose a motion to preview",true);return}
+ rigMotion.playing=true;rigMotion.tick=0;$("rig-motion-play").textContent="Ⅱ PAUSE";
+ root.requestAnimationFrame(animateRigMotion);
 }
 function buildAngleButtons(){
  const el=$("views");el.replaceChildren();
@@ -622,6 +666,7 @@ function switchAngle(d){
 }
 function switchStep(next){
  if(!STEPS.includes(next))return;
+ if(next!=="rig")stopRigMotion();
  if(next!=="test")stopPlayback();
  if((next==="test"||next==="save")&&!record()?.bound){status("Bind all 4 views before checking",true);next="bind"}
  if(next==="motion"&&!editMotion){const first=allMotions()[0];if(first)startEdit(first)}
@@ -1328,6 +1373,9 @@ function persistUserMotions(){
 }
 function isLibraryId(id){return motionLib.motions.some(m=>m.id===id)}
 function populateMotionSelects(){
+ const rm=$("rig-motion-select"),rkeep=rm.value;rm.replaceChildren();
+ for(const m of allMotions())rm.add(new Option((isLibraryId(m.id)?"":"★ ")+m.name+" · "+m.frames.length+"f",m.id));
+ rm.value=allMotions().some(m=>m.id===rkeep)?rkeep:(allMotions().find(m=>m.id==="walk")?.id||allMotions()[0]?.id||"");
  const test=$("test-preset"),keep=test.value;
  test.replaceChildren(new Option("Neutral · no motion",""));
  for(const m of allMotions())test.add(new Option((isLibraryId(m.id)?"":"★ ")+m.name+" · "+m.frames.length+"f",m.id));
@@ -1665,6 +1713,9 @@ function setupLgr1Controls(){
   status("JOINT CAP "+labels[selected]+" = "+v+" px · rebind to use it in the check step.");
  };
  $("reslice-head").onclick=guard(resliceHeadDraft,"Re-slice head");
+ $("rig-motion-play").onclick=()=>toggleRigMotion();
+ $("rig-motion-select").onchange=()=>{rigMotion.ms=0;void renderRigMotion(true)};
+ $("rig-motion-all").onchange=()=>void renderRigMotion(true);
  $("repair-head").onclick=guard(async()=>{if(await repairBackHeadDraft()){syncControls();flushCache()}},"Back head");
  $("repair-head-undo").onclick=guard(async()=>{if(await undoBackHead()){syncControls();flushCache()}},"Back head undo");
  // outfits
