@@ -1,5 +1,25 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Genesis Base: paste across views, auto-slice, skin tone
+
+- Previous `origin/main` (safe restore point): `269240c`
+- Feature commit: `86119af` (shared pixel editor paste/paste-flip into any view; AUTO-SLICE NEW PIXELS on APPLY; SKIN TONE preview + `site/lgr-skin.js`; package skin = V6P key ramp `v6p-key-ramp-v1`; cache-buster lgr1-fix-9)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 86119af^..origin/main   # this fix + its notes only
+git push origin main
+```
+
+Data safety: drafts keep pixels in the base light tone; skin is a preview
+setting. Packages exported from now on carry skin pixels as key colours
+(older Genesis Base code would show them magenta — re-export after a revert).
+
+---
+
 ## 2026-11-10 · Genesis Base: live pivot in PREVIEW MOTION
 
 - Previous `origin/main` (safe restore point): `1c6b692`
