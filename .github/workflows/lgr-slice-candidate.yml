@@ -1,17 +1,21 @@
-name: Genesis LGR-1 Male Slice Trial — A/B QA
+name: Genesis LGR-1 Male v2/v3 — Promotion QA
 on:
   push:
     branches: [main]
     paths:
       - 'site/genesis-slice-compare.html'
-      - 'site/media/lgr1/base/candidates/**'
+      - 'site/media/lgr1/base/**'
+      - 'site/genesis-base-app.js'
+      - 'tests/test_genesis_base.cjs'
       - 'tests/test_lgr_slice_candidate.cjs'
       - 'tests/genesis-slice-compare.e2e.cjs'
       - '.github/workflows/lgr-slice-candidate.yml'
   pull_request:
     paths:
       - 'site/genesis-slice-compare.html'
-      - 'site/media/lgr1/base/candidates/**'
+      - 'site/media/lgr1/base/**'
+      - 'site/genesis-base-app.js'
+      - 'tests/test_genesis_base.cjs'
       - 'tests/test_lgr_slice_candidate.cjs'
       - 'tests/genesis-slice-compare.e2e.cjs'
       - '.github/workflows/lgr-slice-candidate.yml'
@@ -30,15 +34,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify no official base is modified
-        run: node --test virtual-life-asset-pipeline/tests/test_lgr_slice_candidate.cjs
+      - name: Verify immutable official-2 backup, official-3 and game/editor contracts
+        run: |
+          node --test virtual-life-asset-pipeline/tests/test_lgr_slice_candidate.cjs
+          node virtual-life-asset-pipeline/tests/test_genesis_base.cjs
+          node --test virtual-life-asset-pipeline/tests/test_lgr_game.cjs
+          node --test virtual-life-asset-pipeline/tests/test_lafrich_puppet.cjs
       - name: Install Playwright
         run: npm install --no-save playwright@1.56.1
-      - name: Serve candidate and official base from same origin
+      - name: Serve official-2 and official-3 from same origin
         run: |
           python3 -m http.server 8091 --bind 127.0.0.1 >/tmp/genesis-slice-compare.log 2>&1 &
           sleep 2
-      - name: Render four views with original and supplied slices
+      - name: Render four views with archived and active official Male slices
         run: node virtual-life-asset-pipeline/tests/genesis-slice-compare.e2e.cjs
       - name: Upload visual proof
         if: always()

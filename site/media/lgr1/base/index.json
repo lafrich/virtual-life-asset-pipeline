@@ -1,18 +1,18 @@
 {
  "format": "lafrich-lgr1-official-base-index-v1",
- "version": "official-2",
- "approved": "2026-11-10T18:45:00+07:00",
+ "version": "official-3",
+ "approved": "2026-11-11T02:03:00+07:00",
  "approvedBy": "Lafrich",
  "bases": {
   "male": {
-   "package": "genesis-base-male.json",
+   "package": "genesis-base-male-official-3.json",
    "packageFormat": "lafrich-genesis-base-v1",
-   "rigSha256": "1c1a220a78488e4e255c0ae4958547587217241041761475ef649ac8665a42a9",
+   "rigSha256": "2e5ddbc4a09c3316a7d18113c9ec3820fd52407d9ffac865ff9d12d0e54dd537",
    "sheet": "genesis-base-male-sheet.png",
-   "source": "source/genesis_male_draft.lafrich-20261110.json",
+   "source": "candidates/lgr-male-slice-test-20261111.json",
    "sourceFormat": "lgr-1-draft-v1",
-   "sourceSha256": "62864c3785cce3a7d62b182ccf153e64163044d62ca9a64bba7caa6606071483",
-   "sourceBytes": 65775
+   "sourceSha256": "9977850ed62fe06ada80ab6a72208aa505f7a27402878d974aca0dc146e0a544",
+   "sourceBytes": 104071
   },
   "female": {
    "package": "genesis-base-female.json",
@@ -43,6 +43,15 @@
    "renderer": {
     "jointFill": 8
    }
+  },
+  {
+   "version": "official-3",
+   "date": "2026-11-11T02:03:00+07:00",
+   "approvedBy": "Lafrich",
+   "note": "Male LGR rig: apply full four-view masks/pivots/placements from user's LGR male test.json. Original official-2 pixel art/layers, ID, draw order, skin KEY encoding and hierarchy retained. Female unchanged. Official-2 package and index archived as a lossless rollback. Versioned official-3 package: genesis-base-male-official-3.json; original official-2 file at genesis-base-male.json is byte-identical and remains available.",
+   "originalMaleRigSha256": "1c1a220a78488e4e255c0ae4958547587217241041761475ef649ac8665a42a9",
+   "maleRigSha256": "2e5ddbc4a09c3316a7d18113c9ec3820fd52407d9ffac865ff9d12d0e54dd537",
+   "archive": "archive/genesis-base-male-official-2.json"
   }
  ]
 }

@@ -357,11 +357,22 @@ async function sourceCanvases(g){
 }
 // Official LGR-1 base (approved by Lafrich, site/media/lgr1/base/) is the
 // default seed; the frozen V6B source is only the fallback / "OLD V6B" reset.
-const OFFICIAL_BASE_VERSION="official-1";
+const OFFICIAL_BASE_VERSION="official-3";
 async function officialRecord(g){
- const r=await fetch("./media/lgr1/base/genesis-base-"+g+".json?v="+OFFICIAL_BASE_VERSION,{cache:"no-store"});
+ // Resolve via approved index: Male v3 is a new versioned package; v2 is
+ // preserved at its original path. Never replace an existing local draft.
+ const rootPath="./media/lgr1/base/";
+ const ix=await fetch(rootPath+"index.json?v="+OFFICIAL_BASE_VERSION,{cache:"no-store"});
+ if(!ix.ok)throw Error("official index HTTP "+ix.status);
+ const index=await ix.json();
+ const info=index?.bases?.[g];
+ if(!info||index.version!==OFFICIAL_BASE_VERSION||
+    !/^genesis-base-(male|female)(?:-official-[0-9]+)?\.json$/.test(info.package))
+  throw Error("official "+g+" base index invalid");
+ const r=await fetch(rootPath+info.package+"?v="+OFFICIAL_BASE_VERSION,{cache:"no-store"});
  if(!r.ok)throw Error("official base HTTP "+r.status);
  const pkg=await r.json();
+ if(pkg.rigSha256!==info.rigSha256)throw Error("official "+g+" rig version mismatch");
  for(let i=0;i<50&&!root.GenesisBase;i++)await new Promise(res=>setTimeout(res,100));
  if(!root.GenesisBase)throw Error("Genesis Base package module missing");
  const p=await root.GenesisBase.readPackage(pkg); // checksum + key ramp → light
