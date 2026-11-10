@@ -79,6 +79,20 @@ assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/v6p-key-ramp-v1/);
  assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/## Official LGR-1 base/);
  assert.match(html,/AUTO-SLICE NEW PIXELS/);assert.match(html,/color:#13284a;font-weight:bold/);
 }
+// t631u: hair design overlay = screen-only guide
+{
+ for(const id of ["hair-style","hair-opacity","hair-front","pixelHairStyle","pixelHairOpacity","pixelHairFront"])assert(ids.has(id),id);
+ assert.match(app,/const HAIR_KEY="lafrich-genesis-base-hair-overlay-v1"/);
+ for(const h of ["short","swept","mid_curtain","mid","wavy","wavy_curtain","long","long_curtain"])assert(app.includes('"'+h+'"'),h);
+ assert.match(app,/guide:pixelGuide/);
+ const persist=app.slice(app.indexOf("function persistDraft"),app.indexOf("function persistDraft")+400);
+ assert(!/hair/i.test(persist),"hair overlay must not be in drafts");
+ assert(!/hair(Guide|_KEY|Overlay)/.test(pkg),"hair overlay must not be in exports");
+ const ed=read("site/emotion-studio/shared-pixel-editor.js");
+ assert.match(ed,/guide\(out,DIR\[dir\],u,v,phase\)/,"guide draws on the screen canvas only");
+ assert(!/guide\(ctx/.test(ed),"guide must never draw into the atlas");
+ assert.match(html,/genesis-base-app\.js\?v=lgr1-fix-11/);
+}
 // docs exist
 assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/lafrich-genesis-base-v1/);
 console.log("genesis base contract ok");

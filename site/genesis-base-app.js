@@ -577,6 +577,7 @@ async function renderAll(){
      Math.min(data.data[k*4+3],28);
     o.putImageData(data,0,0);
    }
+   if(BASE_MODE)drawHairOverlay(o,d,m,fp.pose,1,1,true); // screen-only guide
    if(currentStep==="pixel"||currentStep==="rig"){
     await maskHighlight(o,d,m);if(token!==renderRequest)return;
     if(currentStep==="rig"){showPivot(o,d,m);paintUnassignedFocus(o,d);}
@@ -624,6 +625,7 @@ async function renderRigMotion(force){
    const pose=Object.assign(C.blankPose(),M.framePose(motionLib.poses,mo,i,d,sides));
    const out=R.render(prep,pose,{order:M.frameOrder(baseOrder(d,m),mo,i,d,sides)});
    const c=$("rig-motion-"+d).getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);c.drawImage(out,0,0);
+   if(BASE_MODE)drawHairOverlay(c,d,m,pose,1,1,true); // screen-only guide
    // selected part: live pivot (magenta cross) where it is in this frame
    const pv=m.pivots?.[d]?.[selected];
    if(pv&&root.LGR1Raster?.matrices){
@@ -932,7 +934,7 @@ async function openPixels(){
  }
  if(!pixelEditor){
   pixelEditor=P.create({overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
-   onApply:applyPixels,onSaveDefault:applyPixels,onRestore:()=>{}});
+   onApply:applyPixels,onSaveDefault:applyPixels,onRestore:()=>{},guide:pixelGuide});
  }
  // union of every OTHER layer per view: a pixel erased here that no other
  // layer covers becomes unassigned on APPLY (auto-slice)
@@ -1964,13 +1966,85 @@ function showPage(next){
   $("emotion-frame").src="/virtual-office/emotion-studio/";
  if(!isEmotion)void renderAll();
 }
+/* ---------------- hair design overlay (guide only, t631u) ----------------
+ * V6P hair designs drawn on SCREEN canvases only (pixel editor, views, rig
+ * motion preview), placed with the head transform the game uses. Never written
+ * into layers, masks, drafts, exports or checksums; the choice lives in its own
+ * localStorage key. */
+const HAIR_KEY="lafrich-genesis-base-hair-overlay-v1";
+const HAIR_STYLES=Object.freeze(["short","swept","mid_curtain","mid","wavy","wavy_curtain","long","long_curtain"]);
+let hairGuide={style:"",opacity:50,front:true};
+const hairCache={};
+function loadHairGuide(){
+ try{const s=JSON.parse(localStorage.getItem(HAIR_KEY)||"null");
+  if(s&&typeof s==="object")hairGuide={style:HAIR_STYLES.includes(s.style)?s.style:"",
+   opacity:Math.max(10,Math.min(100,Math.round(Number(s.opacity)||50))),front:s.front!==false}}catch{}
+}
+function saveHairGuide(){try{localStorage.setItem(HAIR_KEY,JSON.stringify(hairGuide))}catch{}}
+function hairImages(style){
+ if(hairCache[style])return hairCache[style];
+ hairCache[style]=(async()=>{
+  const V=root.V6PCompositor;if(!V)throw Error("V6P compositor missing");
+  const ch=V.norm({hair:style,hairColor:"brown",skin:"light",body:"male",gender:"male",face:"blank"}),out={back:{},front:{}};
+  for(const part of ["back","front"]){
+   const atlas=await V.img("hair/"+style+"_"+part);if(!atlas)continue;
+   for(const d of DIR){
+    const im=V.extractFrame(atlas,"idle",d,0).getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
+    const c=cv();c.getContext("2d").putImageData(V.keysToDisplay(im,ch),0,0);out[part][d]=c;
+   }
+  }
+  hairCache[style].ready=out;return out;
+ })();
+ return hairCache[style];
+}
+function hairReady(){const p=hairGuide.style&&hairCache[hairGuide.style];return p&&p.ready||null}
+function headMat(d,m,pose){
+ return root.LGR1Raster.matrices(m.pivots[d],m.placements?.[d]||{},pose||C.blankPose()).head.mat;
+}
+// g2: target context (identity transform); scale: screen px per sprite px;
+// behind via destination-over when the target already holds the body.
+function drawHairOverlay(g2,d,m,pose,sx=1,sy=sx,destOver=false){
+ const h=hairReady();if(!h||!m)return false;
+ const t=headMat(d,m,pose);
+ g2.save();g2.imageSmoothingEnabled=false;g2.globalAlpha=hairGuide.opacity/100;
+ if(destOver&&!hairGuide.front)g2.globalCompositeOperation="destination-over";
+ g2.setTransform(t[0]*sx,t[1]*sy,t[2]*sx,t[3]*sy,t[4]*sx,t[5]*sy);
+ for(const part of (destOver&&!hairGuide.front)?["front","back"]:["back","front"]){const c=h[part]?.[d];if(c)g2.drawImage(c,0,0)}
+ g2.restore();return true;
+}
+function pixelGuide(out,d,u,v,phase){
+ if(!hairGuide.style||phase!==(hairGuide.front?"front":"behind"))return;
+ drawHairOverlay(out,d,master(),null,u,v,false);
+}
+function syncHairUI(){
+ for(const [sel,op,lab,front] of [["hair-style","hair-opacity","hair-opacity-label","hair-front"],["pixelHairStyle","pixelHairOpacity","pixelHairOpacityLabel","pixelHairFront"]]){
+  if($(sel))$(sel).value=hairGuide.style;
+  if($(op))$(op).value=String(hairGuide.opacity);
+  if($(lab))$(lab).textContent=hairGuide.opacity+"%";
+  if($(front))$(front).value=hairGuide.front?"front":"behind";
+ }
+}
+async function setHairGuide(patch){
+ hairGuide={...hairGuide,...patch};saveHairGuide();syncHairUI();
+ if(hairGuide.style){try{await hairImages(hairGuide.style)}catch(e){status("Hair overlay: "+e.message,true)}}
+ pixelEditor?.redraw?.();void renderAll();refreshRigMotionNow();
+}
+function setupHairUI(){
+ for(const sel of ["hair-style","pixelHairStyle"]){const el=$(sel);if(!el)continue;
+  if(el.options.length<2)for(const h of HAIR_STYLES)el.add(new Option(h.replaceAll("_"," ").toUpperCase(),h));
+  el.onchange=()=>setHairGuide({style:el.value})}
+ for(const op of ["hair-opacity","pixelHairOpacity"]){const el=$(op);if(el)el.oninput=()=>setHairGuide({opacity:Number(el.value)})}
+ for(const f of ["hair-front","pixelHairFront"]){const el=$(f);if(el)el.onchange=()=>setHairGuide({front:el.value!=="behind"})}
+ syncHairUI();
+ if(hairGuide.style)void hairImages(hairGuide.style).then(()=>{pixelEditor?.redraw?.();void renderAll();refreshRigMotionNow()}).catch(()=>{});
+}
 async function boot(){
  try{
   if(!C||!R||!P)throw Error("Required anatomy, compositor or pixel editor engine absent");
   if(!root.LGR1Raster||!M)throw Error("LGR-1 raster / motion modules absent");
   loadStored();
-  await loadMotionLibrary();loadUserMotions();loadOutfitTweaks();
-  setup();populateMotionSelects();
+  await loadMotionLibrary();loadUserMotions();loadOutfitTweaks();loadHairGuide();
+  setup();populateMotionSelects();if(BASE_MODE)setupHairUI();
   await ensure(gender);
   syncControls();await renderAll();void autoLayer(true);void syncSkinUI();
   if(BASE_MODE)status("GENESIS BASE · edit Male/Female pixels in 4 views (01), then cut + pivots (02) · ▶ PREVIEW MOTION checks it · EXPORT / SAVE TO DRIVE when done.");

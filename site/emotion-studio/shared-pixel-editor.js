@@ -41,7 +41,7 @@
   const code=/^#[\da-f]{6}$/i.test(hex)?hex:"#18151b";
   return [parseInt(code.slice(1,3),16),parseInt(code.slice(3,5),16),parseInt(code.slice(5,7),16),255];
  }
- function create({overlay,canvas,reference,onApply,onSaveDefault,onRestore,onDirectionChange}){
+ function create({overlay,canvas,reference,onApply,onSaveDefault,onRestore,onDirectionChange,guide}){
   const els={
    heading:overlay.querySelector("#pixelTitle"),dir:overlay.querySelector("#pixelDirection"),
    color:overlay.querySelector("#pixelColor"),size:overlay.querySelector("#pixelSize"),
@@ -139,7 +139,12 @@
     out.drawImage(ref,0,0,ref.width,ref.height,0,0,canvas.width,canvas.height);
     out.restore();
    }
+   // optional host guide (e.g. Genesis Base hair overlay): drawn on the screen
+   // canvas only, never into the atlas, so tools / clipboard / APPLY never see it
+   const guideAt=phase=>{if(typeof guide==="function")try{guide(out,DIR[dir],u,v,phase)}catch(e){}};
+   guideAt("behind");
    out.drawImage(atlas,sx,sy,W,H,0,0,canvas.width,canvas.height);
+   guideAt("front");
    if(els.grid.checked){
     const step=Math.max(1,Math.min(16,Number(els.gridType.value)||1));
     out.save();out.strokeStyle=step===1?"rgba(65,94,128,.29)":"rgba(56,111,161,.65)";

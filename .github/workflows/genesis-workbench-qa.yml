@@ -197,6 +197,13 @@ jobs:
             await page.waitForFunction(()=>/APPLIED/.test(document.querySelector('#statusmsg').textContent),null,{timeout:15000});
             const applied=await page.locator('#statusmsg').textContent();
             assert.match(applied,/^\+\d+ px → /);assert.match(applied,/SW/);assert.match(applied,/NE/);
+            // t631u: hair overlay is visible but never data
+            {const snap=()=>page.evaluate(async()=>{const p=await GenesisBase.buildPackage();return [localStorage.getItem(GenesisWorkbench.DRAFT_KEY),p.rigSha256].join('|')});
+             const th=()=>page.evaluate(()=>document.getElementById('thumb-ne').toDataURL());const a=await snap(),t=await th();
+             await page.locator('#hair-style').selectOption('long');await page.waitForTimeout(1500);
+             assert.notStrictEqual(await th(),t,'hair overlay not drawn');assert.strictEqual(await snap(),a,'hair overlay leaked into draft/export');
+             assert.match(await page.evaluate(()=>localStorage.getItem('lafrich-genesis-base-hair-overlay-v1')),/long/);
+             await page.locator('#hair-style').selectOption('');await page.waitForTimeout(500);}
             // t627u: a fresh browser starts from the official LGR-1 base
             assert.strictEqual(await page.evaluate(()=>GenesisWorkbench.record().seed),'official','official base seed');
             // skin tone preview (t625u/t626u): deep shows deep ramp, draft stays light

@@ -112,6 +112,13 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <p id="gb-skin-info" class="gb-hint">Checking skin pixels…</p>
    <p class="gb-hint">Preview only: the base keeps one fixed skin KEY ramp (same as the old customizer); the game swaps it for the chosen tone.</p>
   </section>
+  <section id="gb-hair">
+   <h2>HAIR OVERLAY · DESIGN GUIDE</h2>
+   <label class="field">HAIR<select id="hair-style"><option value="">OFF</option></select></label>
+   <label class="field">OPACITY <span id="hair-opacity-label">50%</span><input id="hair-opacity" type="range" min="10" max="100" step="5" value="50"></label>
+   <label class="field">DRAW<select id="hair-front"><option value="front">ON TOP OF BODY</option><option value="behind">BEHIND BODY</option></select></label>
+   <p class="gb-hint">Guide only: shows the game's hair on the head (all 4 views, editor, motion preview). Never painted, picked, sliced, saved or exported.</p>
+  </section>
   <section class="section active" data-panel="pixel">
    <h2>BODY PART PIXEL EDITOR</h2>
    <p>Setiap body part punya piksel independen di keempat sudut. Edit satu bagian tanpa menimpa area bagian lain.</p>
@@ -296,6 +303,12 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
     </div>
     <label class="check"><input type="checkbox" id="pixelOnion" checked> SELECTED CHARACTER REFERENCE · CURRENT VIEW</label>
     <label class="male-guide-range">REFERENCE OPACITY <input id="pixelMaleOpacity" type="range" min="5" max="100" step="5" value="35"><span id="pixelMaleOpacityLabel">35%</span></label>
+    <div class="hair-guide" style="border:1px solid #e5a52d;background:#fff8e6;padding:5px 8px;margin:4px 0;color:#13284a">
+     <label class="field" style="display:flex;gap:6px;align-items:center;font-weight:bold">HAIR OVERLAY<select id="pixelHairStyle" style="flex:1"><option value="">OFF</option></select></label>
+     <label class="male-guide-range">HAIR OPACITY <input id="pixelHairOpacity" type="range" min="10" max="100" step="5" value="50"><span id="pixelHairOpacityLabel">50%</span></label>
+     <label class="field" style="display:flex;gap:6px;align-items:center">DRAW<select id="pixelHairFront" style="flex:1"><option value="front">ON TOP</option><option value="behind">BEHIND</option></select></label>
+     <span class="hint" style="color:#13284a">Guide only · not painted / picked / copied / saved</span>
+    </div>
     <div class="pixel-grid-controls">
      <label class="check"><input type="checkbox" id="pixelGrid" checked> GRID MODE</label>
      <label>GRID SIZE <select id="pixelGridType"><option value="1">1 × 1 PX</option><option value="8">8 × 8 PX</option><option value="16">16 × 16 PX</option></select></label>
@@ -328,23 +341,23 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="./genesis-source.js?v=lgr1-fix-10"></script>
-<script src="./v6p-character-store.js?v=lgr1-fix-10"></script>
-<script src="./genesis-base-bridge.js?v=lgr1-fix-10"></script>
-<script src="./v6p-part-catalog.js?v=lgr1-fix-10"></script>
-<script src="./v6p-part-overrides.js?v=lgr1-fix-10"></script>
-<script src="./v6p-compositor.js?v=lgr1-fix-10"></script>
-<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-10"></script>
-<script src="./emosi-bridge.js?v=lgr1-fix-10"></script>
-<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-10"></script>
-<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-10"></script>
-<script src="./lgr1-raster.js?v=lgr1-fix-10"></script>
-<script src="./lgr1-motion.js?v=lgr1-fix-10"></script>
-<script src="./lafrich-puppet-core.js?v=lgr1-fix-10"></script>
-<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-10"></script>
-<script src="./genesis-cloud.js?v=lgr1-fix-10"></script>
-<script src="./lgr-skin.js?v=lgr1-fix-10"></script>
-<script src="./genesis-base-app.js?v=lgr1-fix-10"></script>
-<script src="./genesis-base.js?v=lgr1-fix-10"></script>
+<script src="./genesis-source.js?v=lgr1-fix-11"></script>
+<script src="./v6p-character-store.js?v=lgr1-fix-11"></script>
+<script src="./genesis-base-bridge.js?v=lgr1-fix-11"></script>
+<script src="./v6p-part-catalog.js?v=lgr1-fix-11"></script>
+<script src="./v6p-part-overrides.js?v=lgr1-fix-11"></script>
+<script src="./v6p-compositor.js?v=lgr1-fix-11"></script>
+<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-11"></script>
+<script src="./emosi-bridge.js?v=lgr1-fix-11"></script>
+<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-11"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-11"></script>
+<script src="./lgr1-raster.js?v=lgr1-fix-11"></script>
+<script src="./lgr1-motion.js?v=lgr1-fix-11"></script>
+<script src="./lafrich-puppet-core.js?v=lgr1-fix-11"></script>
+<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-11"></script>
+<script src="./genesis-cloud.js?v=lgr1-fix-11"></script>
+<script src="./lgr-skin.js?v=lgr1-fix-11"></script>
+<script src="./genesis-base-app.js?v=lgr1-fix-11"></script>
+<script src="./genesis-base.js?v=lgr1-fix-11"></script>
 </body>
 </html>
