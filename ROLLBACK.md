@@ -1,5 +1,32 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · LGR-1 shape slicing + PELVIS split (11 parts)
+
+- Previous `origin/main` (safe restore point): `8b1108d` (ROLLBACK notes for the LGR-1 app fixes)
+- Feature commit(s): see `git log 8b1108d..origin/main` (shape slicing, RE-SLICE button, ownership highlight, pelvis split, motions)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 8b1108d..origin/main   # newest first; creates revert commits
+git push origin main
+```
+
+Data safety: no Drive file is modified by this deploy. Old 10-part drafts and
+Drive masters keep opening (migrated in memory only). **Caution:** once the
+artist SAVES a new 11-part master to Drive, the pre-pelvis code (`8b1108d`)
+rejects it ("LGR-1 geometry contract incomplete"); the previous version stays
+in that master's `.history.` archive on Drive. Local drafts that were edited
+after this deploy are 11-part; the old app would refuse them too (they stay in
+localStorage untouched).
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+- https://lafrich.github.io/virtual-life-asset-pipeline/genesis-workbench.html
+
+---
+
 ## 2026-11-10 · LGR-1 app fixes (motions, joints, rotation, layers, outfits, seed, review, cleanup)
 
 - Previous `origin/main` (safe restore point): `299a8ce` (Sync v6p pixel edits from Drive: shoes/hightops_over_f)
