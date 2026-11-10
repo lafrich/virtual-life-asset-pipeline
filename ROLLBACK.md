@@ -1,5 +1,23 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Genesis Base: live pivot in PREVIEW MOTION
+
+- Previous `origin/main` (safe restore point): `1c6b692`
+- Feature commit: `dde205b` (preview redraw on pivot drag / joint cap / order / near side, pivot marker + note, CI regression; cache-buster lgr1-fix-8)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 1c6b692..origin/main   # newest first
+git push origin main
+```
+
+Data safety: preview only; nothing new is saved.
+
+---
+
 ## 2026-11-10 · Genesis Base: every body part editable in 01
 
 - Previous `origin/main` (safe restore point): `7557b44`
