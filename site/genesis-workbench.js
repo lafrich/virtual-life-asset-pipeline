@@ -133,7 +133,7 @@ function focusUnassignedIssue(index){
  status(group.dir.toUpperCase()+" x "+group.minX+"–"+group.maxX+", y "+group.minY+"–"+group.maxY+" · "+issueReason(group));
 }
 function issueReason(c){
- if(c.kind==="floater")return "WHY: "+c.count+" loose pixel(s) not touching the body (usually a leftover of the old seed). Delete them, or in NE/NW use 01 · REBUILD NE/NW BACK HEAD.";
+ if(c.kind==="floater")return "WHY: "+c.count+" loose pixel(s) not touching the body (usually a leftover of the old seed). Delete them, or in NE/NW use 01 · BACK HEAD FROM WHOLE FRONT HEAD.";
  if(c.kind==="outfit")return "WHY: "+c.count+" outfit pixel(s) stick out past the body outline. They are fine and will move with "+
   (c.owner==="STATIC"?"nothing (static)":labels[c.owner])+". Only if that's wrong: pick another body part and ASSIGN (this outfit only).";
  return "WHY: "+c.count+" visible pixel(s) belong to NO body part, so they would not move. Paint them into a part (SLICE PAINT) or delete them if they are stray art.";
@@ -319,7 +319,8 @@ function loadStored(){
     drafts[g]={rig,bound,
      reviewed:x.reviewed&&typeof x.reviewed==="object"?x.reviewed:{},
      testedAngles:bound&&x.testedAngles&&typeof x.testedAngles==="object"?x.testedAngles:{},
-     approved:!!x.approved&&!!bound,saved:!!x.saved&&!!bound,edited:String(x.edited||"")};
+     approved:!!x.approved&&!!bound,saved:!!x.saved&&!!bound,edited:String(x.edited||""),
+     manual:x.manual&&typeof x.manual==="object"?x.manual:{}};
    }catch(e){status("Existing "+g+" draft invalid; preserved in storage: "+e.message,true)}
   }
  }
@@ -646,17 +647,34 @@ function applySnapshot(which,opposite){
  const s=which.pop();master().pivots[s.dir]=s.pivots;master().masks[s.dir]=s.mask;
  dir=s.dir;invalidateReviews(s.dir);syncControls();
 }
-function maskPaint(p,erase){
+// Manual slice paint: pixels the artist painted by hand are remembered per
+// angle (draft.manual) so RE-SLICE FROM SHAPE can keep them.
+function manualLock(d,create){
+ const r=record();if(!r)return null;
+ if(!r.manual)r.manual={};
+ if(!r.manual[d]){if(!create)return null;r.manual[d]=C.encode(new Uint8Array(C.N).fill(0))}
+ return C.decode(r.manual[d]);
+}
+function manualCount(d){const l=manualLock(d,false);let n=0;if(l)for(let k=0;k<C.N;k++)if(l[k])n++;return n}
+function maskPaint(p,erase,from){
  const m=master(),mask=C.decode(m.masks[dir]),idx=PARTS.indexOf(selected),size=Number($("mask-brush").value)||3;
- const half=Math.floor(size/2);
- for(let y=Math.max(0,p.y-half);y<=Math.min(111,p.y+half);y++)
-  for(let x=Math.max(0,p.x-half);x<=Math.min(63,p.x+half);x++)
+ const half=Math.floor(size/2),onlyVisible=$("mask-visible-only")?.checked!==false;
+ const alpha=onlyVisible?source[gender]?.[dir]?.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data:null;
+ const lock=manualLock(dir,true);
+ // stroke from the previous pointer position so a fast drag leaves no holes
+ const pts=[];const a=from||p,steps=Math.max(Math.abs(p.x-a.x),Math.abs(p.y-a.y),1);
+ for(let i=from?1:0;i<=steps;i++)pts.push({x:Math.round(a.x+(p.x-a.x)*i/steps),y:Math.round(a.y+(p.y-a.y)*i/steps)});
+ for(const q of pts)
+ for(let y=Math.max(0,q.y-half);y<=Math.min(111,q.y+half);y++)
+  for(let x=Math.max(0,q.x-half);x<=Math.min(63,q.x+half);x++)
    {
-    const previous=mask[y*64+x];
+    const k=y*64+x;
+    if(alpha&&!alpha[k*4+3])continue; // empty canvas stays no part
+    const previous=mask[k];
     if(paintDrag?.dirtyParts&&previous!==255)paintDrag.dirtyParts.add(PARTS[previous]);
-    mask[y*64+x]=erase?255:idx;
+    mask[k]=erase?255:idx;lock[k]=1;
    }
- m.masks[dir]=C.encode(mask);
+ m.masks[dir]=C.encode(mask);record().manual[dir]=C.encode(lock);
  scheduleRigPreview();
 }
 function setPivot(x,y,commit=true){
@@ -1205,6 +1223,7 @@ async function resliceHeadDraft(){
   const pivotMoves=Object.keys(moves).length>0;
   plan.push({d,r,pivotMoves,moves});
  }
+ const manualTotal=plan.reduce((n,p)=>n+manualCount(p.d),0);
  const total=plan.reduce((n,p)=>n+p.r.changed,0);
  if(!total&&!plan.some(p=>p.pivotMoves)){status("Slices already follow the body shape · nothing changed.");return false}
  const parts=[...new Set(plan.flatMap(p=>p.r.parts))].map(p=>labels[p]||p);
@@ -1214,8 +1233,18 @@ async function resliceHeadDraft(){
    "• Legs split at the real gap between the legs\n"+
    "• PELVIS = hips/crotch band (waist "+plan.map(p=>p.d.toUpperCase()+" row "+p.r.waist).join(", ")+"), parent of both thighs\n"+
    "• Empty canvas no longer belongs to any part · pixel art is NOT changed\n"+
-   "• Your manual slice paint is replaced by the shape slice · RIG UNDO restores each angle\n"+
+   (manualTotal?"• You hand-painted "+manualTotal+" px: you will be asked next whether to KEEP them\n":"• RIG UNDO restores each angle\n")+
    "• Reviews reset only for parts that changed: "+(parts.join(", ")||"none")))return false;
+ const keepManual=manualTotal>0&&confirm("KEEP your "+manualTotal+" hand-painted slice pixels?\n\nOK = keep them (shape slice everywhere else)\nCancel = replace them with the shape slice too");
+ for(const p of plan){
+  const old=C.decode(rig.masks[p.d]),lock=manualLock(p.d,false);
+  if(keepManual&&lock){
+   const m=p.r.mask,set=new Set();let n=0;
+   for(let k=0;k<C.N;k++)if(lock[k])m[k]=old[k];
+   for(let k=0;k<C.N;k++)if(m[k]!==old[k]){n++;if(m[k]!==255)for(const v of [m[k],old[k]])if(v<PARTS.length)set.add(PARTS[v])}
+   p.r.changed=n;p.r.moved=n;p.r.parts=[...set];
+  }else if(lock&&record().manual)delete record().manual[p.d];
+ }
  for(const p of plan){
   if(!p.r.changed&&!p.pivotMoves)continue;
   maskUndo.push({dir:p.d,pivots:clone(rig.pivots[p.d]),mask:rig.masks[p.d]});
@@ -1223,39 +1252,61 @@ async function resliceHeadDraft(){
   for(const [part,to] of Object.entries(p.moves))rig.pivots[p.d][part]={...to};
   invalidateReviews(p.d,[...new Set([...p.r.parts,...Object.keys(p.moves)])]);
  }
+ const resetParts=[...new Set(plan.flatMap(p=>p.r.changed||p.pivotMoves?[...p.r.parts,...Object.keys(p.moves)]:[]))].map(p=>labels[p]||p);
  if(maskUndo.length>32)maskUndo.splice(0,maskUndo.length-32);maskRedo=[];
  ownershipCache.clear();flushCache();persistDraft();syncControls();void renderAll();
- status("RE-SLICED FROM SHAPE · "+plan.reduce((n,p)=>n+p.r.moved,0)+" visible pixels moved to a better part · empty canvas cleared · reviews reset only for: "+(parts.join(", ")||"head pivot")+" ("+reviewCount()+"/"+TOTAL_REVIEWS+" kept). Check each angle and AUTO-CHECK again.");
+ status("RE-SLICED FROM SHAPE · "+plan.reduce((n,p)=>n+p.r.moved,0)+" visible pixels moved to a better part · empty canvas cleared · reviews reset only for: "+(resetParts.join(", ")||"none")+(keepManual?" · your hand-painted pixels kept":"")+" ("+reviewCount()+"/"+TOTAL_REVIEWS+" kept). Check each angle and AUTO-CHECK again.");
  return true;
 }
 /* ---------------- NE/NW bald back head repair ---------------- */
+let backHeadUndo=null;
 async function repairBackHeadDraft(){
+ // 01 · BACK HEAD FROM WHOLE FRONT HEAD: NE/NW get the whole SE/SW head
+ // (rows above their own neck); neck and body stay. Draft only; UNDO restores.
  await sourcePending;
  const rig=master(),fixes=[];
  for(const [front,back] of [["se","ne"],["sw","nw"]]){
   const f=await R.pixels(rig.layers.body?.[front]),b=await R.pixels(rig.layers.body?.[back]);
-  if(!f||!b||R.headRows(b)>=40)continue;
-  const out=R.repairBackHead(f,b);if(out.added)fixes.push([back,out]);
+  if(!f||!b)continue;
+  const out=R.wholeBackHead(f,b);if(out.changed)fixes.push([back,out]);
  }
- if(!fixes.length){status("NE/NW already have a back head · nothing changed.");return false}
- if(!confirm("Rebuild the bald back head in "+fixes.map(f=>f[0].toUpperCase()).join(" + ")+
-   " from the matching front view? Only empty pixels above the neck are filled ("+
-   fixes.reduce((n,f)=>n+f[1].added,0)+" px). Undo: RESET or restore a draft."))return false;
+ if(!fixes.length){status("NE/NW already use the whole front head · nothing changed.");return false}
+ if(!confirm("Build the NE/NW back head from the WHOLE front head ("+fixes.map(f=>f[0].toUpperCase()+" ← "+(f[0]==="ne"?"SE":"SW")+", rows above y"+f[1].neckRow).join(" · ")+
+   ")?\n\n"+fixes.reduce((n,f)=>n+f[1].changed,0)+" body pixels change; the back neck and body stay. Head pixels become HEAD in the slice. "+
+   "Only this draft changes (not Drive) · ↶ UNDO BACK HEAD restores it."))return false;
+ backHeadUndo={gender,layers:{},masks:{}};
  for(const [back,out] of fixes){
+  backHeadUndo.layers[back]=rig.layers.body[back];backHeadUndo.masks[back]=rig.masks[back];
   const c=cv();c.getContext("2d").putImageData(new ImageData(out.data,64,112),0,0);
   rig.layers.body[back]=c.toDataURL("image/png");
  }
  R.clearCache();sourcePending=sourceCanvases(gender);await sourcePending;
- for(const [back] of fixes)invalidateReviews(back,["head"]);
- makeDirty();
- status("BACK HEAD REBUILT · "+fixes.map(f=>f[0].toUpperCase()).join(" + ")+" · only HEAD reviews in those angles reset.");
+ for(const [back,out] of fixes){
+  // the whole head belongs to HEAD; pixels that vanished belong to no part
+  const comp=source[gender][back].getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+  const mask=C.decode(rig.masks[back]),H=PARTS.indexOf("head");
+  for(let k=0;k<out.neckRow*64;k++)mask[k]=comp[k*4+3]?H:255;
+  rig.masks[back]=C.encode(mask);
+  invalidateReviews(back,["head"]);
+ }
+ ownershipCache.clear();makeDirty();
+ $("repair-head-undo").disabled=false;
+ status("BACK HEAD = WHOLE FRONT HEAD · "+fixes.map(f=>f[0].toUpperCase()).join(" + ")+" · only HEAD reviews there reset · ↶ UNDO BACK HEAD to revert.");
  return true;
+}
+async function undoBackHead(){
+ if(!backHeadUndo||backHeadUndo.gender!==gender){status("Nothing to undo for the back head.",true);return false}
+ const rig=master();
+ for(const d of Object.keys(backHeadUndo.layers)){rig.layers.body[d]=backHeadUndo.layers[d];rig.masks[d]=backHeadUndo.masks[d];invalidateReviews(d,["head"])}
+ backHeadUndo=null;$("repair-head-undo").disabled=true;
+ R.clearCache();sourcePending=sourceCanvases(gender);await sourcePending;
+ ownershipCache.clear();makeDirty();status("BACK HEAD UNDONE · NE/NW restored.");return true;
 }
 async function warnHeadless(){
  try{
   const rig=master();const missing=[];
   for(const d of ["ne","nw"]){const b=await R.pixels(rig?.layers?.body?.[d]);if(b&&R.headRows(b)<40)missing.push(d.toUpperCase())}
-  if(missing.length)status("This draft has no back head in "+missing.join("+")+" (old seed). Use 01 · REBUILD NE/NW BACK HEAD.",true);
+  if(missing.length)status("This draft has no back head in "+missing.join("+")+" (old seed). Use 01 · BACK HEAD FROM WHOLE FRONT HEAD.",true);
  }catch{}
 }
 /* ---------------- motion library + editor ---------------- */
@@ -1566,7 +1617,7 @@ function setup(){
    return;
   }
   const p=coords(e);snapshot();
-  paintDrag={id:e.pointerId,last:"",direction:dir,dirtyParts:new Set([selected])};
+  paintDrag={id:e.pointerId,last:"",prev:p,direction:dir,dirtyParts:new Set([selected])};
   if(tool==="pivot"){setPivot(p.x,p.y,false)}
   else maskPaint(p,tool==="erase");
  });
@@ -1580,7 +1631,7 @@ function setup(){
   const p=coords(e),key=p.x+"|"+p.y;
   if(paintDrag.last===key)return;paintDrag.last=key;
   if(tool==="pivot")setPivot(p.x,p.y,false);
-  else maskPaint(p,tool==="erase");
+  else{maskPaint(p,tool==="erase",paintDrag.prev);paintDrag.prev=p}
  });
  const end=e=>{
   if(paintDrag?.id!==e.pointerId)return;
@@ -1615,6 +1666,7 @@ function setupLgr1Controls(){
  };
  $("reslice-head").onclick=guard(resliceHeadDraft,"Re-slice head");
  $("repair-head").onclick=guard(async()=>{if(await repairBackHeadDraft()){syncControls();flushCache()}},"Back head");
+ $("repair-head-undo").onclick=guard(async()=>{if(await undoBackHead()){syncControls();flushCache()}},"Back head undo");
  // outfits
  $("outfit-preview").onchange=guard(()=>chooseOutfit($("outfit-preview").value),"Outfit");
  $("outfit-in-rig").onchange=guard(async()=>{tweakRev++;flushCache();if(unassignedClusters.length)await findUnassignedPixels()},"Outfit");

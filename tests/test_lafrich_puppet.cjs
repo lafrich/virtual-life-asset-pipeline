@@ -101,3 +101,17 @@ test('Custom Wear selects character four-view images without mutating master',()
  assert.equal(female.layers.top.se,undefined);
  assert.equal(Runtime.resolveLayers(female,after,'sw').top,'');
 });
+test('NE/NW back head = whole front head above the back neck; neck/body untouched',()=>{
+ const N=64*112,front=new Uint8ClampedArray(N*4),back=new Uint8ClampedArray(N*4);
+ const put=(a,x,y,v)=>{a.set([v,v,v,255],(y*64+x)*4)};
+ for(let y=36;y<=53;y++)for(let x=24;x<40;x++)put(front,x,y,200);          // whole front head
+ for(let y=40;y<50;y++)for(let x=29;x<36;x++)put(back,x,y,90);            // half head / neck lines
+ for(let y=46;y<54;y++)for(let x=29;x<36;x++)put(back,x,y,150);           // back neck, narrowest
+ for(let y=54;y<80;y++)for(let x=20;x<44;x++)put(back,x,y,170);           // body
+ const out=Runtime.wholeBackHead(front,back);
+ assert.equal(out.neckRow,46);
+ for(let k=0;k<46*64;k++)assert.equal(out.data[k*4+3],front[k*4+3]);
+ for(let k=46*64;k<N;k++)for(let c=0;c<4;c++)assert.equal(out.data[k*4+c],back[k*4+c]);
+ assert.ok(out.changed>0);
+ assert.equal(Runtime.wholeBackHead(front,out.data).changed,0);
+});

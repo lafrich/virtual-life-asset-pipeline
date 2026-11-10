@@ -165,6 +165,14 @@ seed and by the manual *02 · ✂ RE-SLICE FROM SHAPE* button):
   piece is whole down to the bottom of the neck. Front views (chin hides the
   neck) keep the chest as torso.
 - **Hand tip**: a fingertip row that tapers in over the hip (Female) stays arm.
+- **Manual slice paint** (02 · ▣ SLICE PAINT / ⌫ UNASSIGN): paints only visible
+  pixels by default, strokes are continuous, and hand-painted pixels are kept
+  per angle in the local draft (`manual`), so RE-SLICE FROM SHAPE asks whether
+  to keep them. The mask itself is what is saved in the master.
+- **Back head (NE/NW)**: built from the WHOLE matching front head (SE→NE,
+  SW→NW): every row above the back view's narrowest neck row is the front
+  row; the back neck and body stay (`LafrichPuppetRenderer.wholeBackHead`,
+  used by the V6B seed and by 01 · ↻ BACK HEAD (NE/NW) FROM WHOLE FRONT HEAD).
 - **Arms** = only the arm. The inner arm edge is found per side from rows
   where the arm hangs free (empty gap to the body, typical for Female) or
   from the dark inner outline 2–5 px inside the outer edge (Male). Shoulder
