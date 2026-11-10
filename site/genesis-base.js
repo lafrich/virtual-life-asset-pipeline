@@ -17,15 +17,41 @@ const stamp=()=>{const d=new Date();return d.getFullYear()+pad(d.getMonth()+1)+p
 const EXTRAS=["drawOrders","sides","capRadius"];
 function withExtras(valid,src){const out={...valid};for(const k of EXTRAS)if(src&&src[k]&&typeof src[k]==="object")out[k]=JSON.parse(JSON.stringify(src[k]));return out}
 function say(s,err){W()?.status(s,err)}
+const SK=()=>root.LGRSkin;
+async function mapLayers(rig,fn){
+ // returns a copy of rig whose layer PNGs went through fn(rgba) → pixels changed
+ const out={...rig,layers:{}};let changed=0;
+ for(const [L,v] of Object.entries(rig.layers||{})){
+  out.layers[L]={};
+  for(const [d,url] of Object.entries(v||{})){
+   if(!url){out.layers[L][d]=url;continue}
+   const im=new Image();im.src=url;await im.decode();
+   const c=document.createElement("canvas");c.width=C.W;c.height=C.H;const g=c.getContext("2d",{willReadFrequently:true});
+   g.drawImage(im,0,0);const data=g.getImageData(0,0,C.W,C.H),n=fn(data.data);
+   if(n){g.putImageData(data,0,0);out.layers[L][d]=c.toDataURL("image/png");changed+=n}else out.layers[L][d]=url;
+  }
+ }
+ return {rig:out,changed};
+}
+async function skinReport(rig){
+ let count=0;const colors={};
+ await mapLayers(rig,d=>{const o=SK().offRamp(d);count+=o.count;for(const [c,n] of Object.entries(o.colors))colors[c]=(colors[c]||0)+n;return 0});
+ return {count,colors};
+}
 async function buildPackage(){
  const w=W(),g=w.gender(),r=w.record();if(!r?.rig)throw Error("No draft to export");
- const rig=withExtras(C.validateMaster(r.rig),r.rig),raw=JSON.stringify(rig);
+ const base=withExtras(C.validateMaster(r.rig),r.rig);
+ // skin pixels leave as the game KEY ramp (light tone ⇄ key is exact 1:1)
+ const offRamp=await skinReport(base),keyed=await mapLayers(base,d=>SK().toKey(d)),rig=keyed.rig,raw=JSON.stringify(rig);
+ const pick=w.skin?w.skin():{tone:"light"};
+ const skin={encoding:SK().ENCODING,keys:{...SK().KEYS},order:[...SK().ORDER],tones:JSON.parse(JSON.stringify(SK().TONES)),
+  toneOrder:[...SK().TONE_ORDER],baseTone:SK().BASE_TONE,preview:pick,keyedPixels:keyed.changed,offRamp};
  return {format:FORMAT,formatVersion:1,app:APP_VERSION,watermark:"Genesis Base by Lafrich",
   gender:g,id:rig.id,created:new Date().toISOString(),edited:r.edited||"",
   canvas:{width:C.W,height:C.H},dirs:C.DIRS.slice(),parts:C.PARTS.slice(),parents:{...C.PARENTS},
   notes:String($("gb-notes").value||"").slice(0,4000),
   manualSlice:r.manual&&typeof r.manual==="object"?r.manual:{},
-  rigSha256:await sha256(raw),rig};
+  skin,rigSha256:await sha256(raw),rig};
 }
 function download(name,blob){
  const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.append(a);a.click();a.remove();
@@ -39,7 +65,9 @@ async function readPackage(v){
   if(v.rigSha256&&await sha256(JSON.stringify(v.rig))!==v.rigSha256)
    throw Error("Package checksum mismatch (file changed or damaged)");
   if(rig.gender!==v.gender)throw Error("Package gender does not match its rig");
-  return {g:v.gender,rig,manual:v.manualSlice,notes:v.notes||""};
+  if(v.skin&&v.skin.encoding!==SK().ENCODING)throw Error("Unknown skin encoding "+v.skin.encoding);
+  const open=v.skin?(await mapLayers(rig,d=>SK().fromKey(d))).rig:rig; // key → base light tone for editing
+  return {g:v.gender,rig:open,manual:v.manualSlice,notes:v.notes||"",skin:v.skin?.preview||null};
  }
  const src=v?.master||v,rig=withExtras(C.validateMaster(src),src);
  return {g:rig.gender,rig,manual:{},notes:""};
@@ -55,7 +83,8 @@ async function exportSheets(){
   const c=await w.renderSheet(g,kind),big=document.createElement("canvas");big.width=c.width*4;big.height=c.height*4+14;
   const o=big.getContext("2d");o.imageSmoothingEnabled=false;o.fillStyle="#fff";o.fillRect(0,0,big.width,big.height);
   o.drawImage(c,0,0,big.width,c.height*4);o.fillStyle="#557";o.font="10px sans-serif";
-  o.fillText("Genesis Base by Lafrich · "+g.toUpperCase()+" · SE SW NE NW · "+(kind==="mask"?"part slices":"pixels")+" · "+stamp(),4,big.height-3);
+  const sk=w.skin?w.skin():{tone:"light"};
+  o.fillText("Genesis Base by Lafrich · "+g.toUpperCase()+" · SE SW NE NW · "+(kind==="mask"?"part slices":"pixels · skin "+(sk.custom||sk.tone))+" · "+stamp(),4,big.height-3);
   const blob=await new Promise(r=>big.toBlob(r,"image/png"));
   download("genesis-base-"+g+"-"+stamp()+"-"+kind+".png",blob);
  }
@@ -65,7 +94,7 @@ async function importFile(file){
  const text=await file.text();if(text.length>15000000)throw Error("File too large");
  const p=await readPackage(JSON.parse(text));
  if(!confirm("Open "+file.name+" as the "+p.g.toUpperCase()+" Genesis Base draft? Your current "+p.g+" draft here is replaced (export it first if needed)."))return;
- await W().adopt(p.g,p.rig,p.manual,"IMPORTED "+file.name+" · "+p.g.toUpperCase());
+ await W().adopt(p.g,p.rig,p.manual,"IMPORTED "+file.name+" · "+p.g.toUpperCase(),p.skin);
  if(p.notes)$("gb-notes").value=p.notes;
 }
 async function fromWorkbench(){
@@ -74,7 +103,7 @@ async function fromWorkbench(){
  const rig=s?.drafts?.[g]?.rig;
  if(!rig){say("No Mahluk Hidup "+g+" draft in this browser.",true);return}
  if(!confirm("Copy your Mahluk Hidup "+g.toUpperCase()+" draft (pixels, slices, pivots) into Genesis Base? The Genesis Base "+g+" draft here is replaced; Mahluk Hidup is not changed."))return;
- await W().adopt(g,withExtras(C.validateMaster(rig),rig),s.drafts[g].manual,"Copied the Mahluk Hidup "+g.toUpperCase()+" draft into Genesis Base.");
+ await W().adopt(g,withExtras(C.validateMaster(rig),rig),s.drafts[g].manual,"Copied the Mahluk Hidup "+g.toUpperCase()+" draft into Genesis Base.",W().skin());
 }
 const cloud=()=>root.VLGenesisCloud;
 async function ensureDrive(){if(!cloud()?.connected())await cloud().connect();$("statuscloud").textContent="DRIVE CONNECTED"}
@@ -92,7 +121,7 @@ async function loadDrive(){
  const id=$("gb-drive-list").value;if(!id){say("Choose a saved version first",true);return}
  await ensureDrive();const {pkg,name}=await cloud().loadBase(id),p=await readPackage(pkg);
  if(!confirm("Open "+name+"? Your current "+p.g+" Genesis Base draft here is replaced."))return;
- await W().adopt(p.g,p.rig,p.manual,"OPENED from Drive · "+name);if(p.notes)$("gb-notes").value=p.notes;
+ await W().adopt(p.g,p.rig,p.manual,"OPENED from Drive · "+name,p.skin);if(p.notes)$("gb-notes").value=p.notes;
 }
 function guard(fn){return async()=>{try{await fn()}catch(e){say(e.message,true)}}}
 function setup(){

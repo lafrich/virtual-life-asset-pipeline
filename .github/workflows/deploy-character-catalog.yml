@@ -185,6 +185,7 @@ jobs:
           test -s _site/genesis-cloud.js
           test -s _site/genesis-base.html
           test -s _site/genesis-base-app.js
+          test -s _site/lgr-skin.js
           test -s _site/mahluk-hidup-shell.js
           test -s _site/lgr1-raster.js
           test -s _site/lgr1-motion.js

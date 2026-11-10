@@ -35,6 +35,25 @@ assert.match(app,/syncControls\(\);refreshRigMotionNow\(\);/);
 assert.match(app,/flushCache\(\);persistDraft\(\);refreshRigMotionNow\(\);/);
 assert.match(app,/if\(rigMotion\.busy\)\{if\(force\)rigMotion\.again=true;return\}/);
 assert(ids.has("rig-motion-note"));
+// t624u: paste into any view (Emosi parity) + auto-slice on APPLY
+const editor=read("site/emotion-studio/shared-pixel-editor.js");
+assert(!/PASTE ONLY IN CURRENT VIEW/.test(editor),"paste must work across views like Emosi.exe");
+assert(ids.has("pixel-auto-slice"));
+assert.match(app,/const auto=\$\("pixel-auto-slice"\)\?\.checked!==false;/);
+assert.match(app,/if\(lock&&lock\[k\]&&mask\[k\]!==255\)keptLocked\+\+/);
+// t625u/t626u: skin key ramp = old V6P customizer keys + tones
+const SKN=require(path.join(__dirname,"..","site","lgr-skin.js")),comp=read("site/v6p-compositor.js");
+const VP=JSON.parse(comp.match(/^const P=(\{.*\});$/m)[1]),VK=JSON.parse(comp.match(/^const K=(\{.*\});$/m)[1]);
+assert.deepStrictEqual([...SKN.TONE_ORDER],Object.keys(VP.skin));
+for(const t of SKN.TONE_ORDER)for(const k of SKN.ORDER)assert.strictEqual(SKN.TONES[t][k],VP.skin[t][k].toUpperCase(),t+"/"+k);
+for(const k of SKN.ORDER)assert.strictEqual(SKN.KEYS[k],VK["K"+k]);
+const px=new Uint8ClampedArray([0xF1,0xD3,0xB5,255, 0x8A,0x5A,0x3C,255, 0xE1,0x8A,0x84,255, 1,2,3,0]);
+assert.strictEqual(SKN.toKey(px),2);assert.deepStrictEqual([...px.slice(0,3)],[0xFF,0x2C,0xE8]);
+assert.strictEqual(SKN.fromKey(px,SKN.TONES.deep),2);assert.deepStrictEqual([...px.slice(4,7)],[0x3A,0x1C,0x0E]);
+assert.strictEqual(SKN.offRamp(new Uint8ClampedArray([0xE1,0x8A,0x84,255])).count,1);
+assert.match(html,/\.\/lgr-skin\.js\?v=/);
+for(const id of ["gb-skin-tones","gb-skin-custom","gb-skin-info"])assert(ids.has(id));
+assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/v6p-key-ramp-v1/);
 // docs exist
 assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/lafrich-genesis-base-v1/);
 console.log("genesis base contract ok");

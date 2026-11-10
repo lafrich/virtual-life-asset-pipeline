@@ -40,6 +40,17 @@ for the LGR engine (players, animations and Emosi are built on top of it).
   "parents": {"pelvis": null, "torso": "pelvis", ...},
   "notes": "artist notes (≤4000 chars)",
   "manualSlice": {"se": "<base64 bitmap 64×112, 1 = hand-painted>", ...},
+  "skin": {                              // see § Skin (game contract)
+    "encoding": "v6p-key-ramp-v1",
+    "keys": {"i":"#FF2CE8","h":"#FF32E5","e":"#FF38E2","a":"#FF3EDF","7":"#FF44DC","5":"#FF4AD9"},
+    "order": ["i","h","e","a","7","5"],
+    "tones": {"porcelain": {...}, "light": {...}, "tan": {...}, "medium": {...}, "brown": {...}, "deep": {...}},
+    "toneOrder": ["porcelain","light","tan","medium","brown","deep"],
+    "baseTone": "light",
+    "preview": {"tone": "deep"} | {"tone": "custom", "custom": "#RRGGBB"},
+    "keyedPixels": 4321,                 // skin pixels written as keys
+    "offRamp": {"count": 16, "colors": {"#4A3A30": 12, "#E18A84": 4}}
+  },
   "rigSha256": "sha256 hex of JSON.stringify(rig)",
   "rig": {                               // LGR-1 master, see LGR_FORMAT_SPEC.md
     "format": "lafrich-genesis-master-v1", "id", "gender", "name", "version", "updated",
@@ -54,10 +65,51 @@ for the LGR engine (players, animations and Emosi are built on top of it).
 }
 ```
 
+## Skin (game contract)
+
+Skin pixels in `rig.layers` are stored as the **key ramp** of the old V6P
+character customizer (`site/v6p-compositor.js`, keys `Ki Kh Ke Ka K7 K5`,
+skin list `P.skin`; the copy in `site/lgr-skin.js` is tested to match it):
+
+| key | role | key colour | light (V6B base) |
+|---|---|---|---|
+| i | highlight | `#FF2CE8` | `#F1D3B5` |
+| h | main | `#FF32E5` | `#EBC8A8` |
+| e | shade | `#FF38E2` | `#E0AE8A` |
+| a | deep shade | `#FF3EDF` | `#D9A47E` |
+| 7 | dark / outline in | `#FF44DC` | `#A8704E` |
+| 5 | outline | `#FF4AD9` | `#8A5A3C` |
+
+Tones (i, h, e, a, 7, 5):
+- porcelain `#F8E4D6 #F2D8C7 #E7BCA3 #DFB195 #AD795C #8E6147`
+- light `#F1D3B5 #EBC8A8 #E0AE8A #D9A47E #A8704E #8A5A3C`
+- tan `#E3B791 #DDAD87 #D3976F #CC8E65 #9E613E #824E30`
+- medium `#C99364 #C48B5D #BB794C #B57246 #8C4E2B #733F21`
+- brown `#9A6644 #96613F #8F5434 #8B4F2F #6B361D #582C17`
+- deep `#66412B #633E28 #5F3621 #5C331E #472313 #3A1C0E`
+- custom: picked colour = `i`; every other key = picked × (light key ÷ light `i`) per RGB channel.
+
+Bake / game: replace every fully-opaque pixel whose RGB equals a key with the
+chosen tone's colour for that key, at draw time (exactly like V6P `cmap`).
+Pixels listed in `skin.offRamp` look like skin but are not on the ramp (e.g.
+lips, body hair); they keep their colour in every tone.
+
+In the editor the draft keeps the light tone (1:1 with the keys); the SKIN TONE
+buttons only preview a tone (stage, thumbnails, motion preview, pixel editor,
+PNG sheets). Export writes keys, import turns keys back into light. Emosi faces
+are separate and never recoloured.
+
+## Auto-slice on APPLY (pixel editor)
+
+With **AUTO-SLICE NEW PIXELS** (default on): pixels added, moved or pasted while
+editing part P join P's slice; pixels erased from P that no other layer covers
+become *no part*; pixels another part's slice owns by hand painting (manual
+lock) stay that part's; everything else keeps its slice.
+
 ## Ingest
 
 1. `JSON.parse`, require `format === "lafrich-genesis-base-v1"`.
-2. Verify `sha256(JSON.stringify(pkg.rig)) === pkg.rigSha256`.
+2. Verify `sha256(JSON.stringify(pkg.rig)) === pkg.rigSha256` (rig is in key form).
 3. `LafrichPuppetCore.validateMaster(pkg.rig)` (same validator as the engine);
    `rig.gender` must equal `pkg.gender`.
 4. Use `rig` as the frozen base for that gender; `manualSlice` only tells which

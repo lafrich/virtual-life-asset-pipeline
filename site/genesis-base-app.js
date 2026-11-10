@@ -325,7 +325,8 @@ function loadStored(){
      reviewed:x.reviewed&&typeof x.reviewed==="object"?x.reviewed:{},
      testedAngles:bound&&x.testedAngles&&typeof x.testedAngles==="object"?x.testedAngles:{},
      approved:!!x.approved&&!!bound,saved:!!x.saved&&!!bound,edited:String(x.edited||""),
-     manual:x.manual&&typeof x.manual==="object"?x.manual:{}};
+     manual:x.manual&&typeof x.manual==="object"?x.manual:{},
+     skin:root.LGRSkin?root.LGRSkin.normalize(x.skin):{tone:"light"}};
    }catch(e){status("Existing "+g+" draft invalid; preserved in storage: "+e.message,true)}
   }
  }
@@ -474,6 +475,55 @@ function showPivot(destination,d,rig){
  destination.moveTo(p.x+.5,p.y-6);destination.lineTo(p.x+.5,p.y+7);
  destination.stroke();destination.restore();
 }
+/* ---------------- skin tone preview (game key ramp, non-destructive) ---------------- */
+// Draft pixels stay in the V6B "light" tone (= exact 1:1 with the key ramp).
+// Every preview (stage, thumbnails, motion, editor, sheets) swaps light → the
+// chosen tone at draw time; export writes KEY colours (genesis-base.js).
+const SK=root.LGRSkin,skinUrlCache=new Map();
+function skinSetting(){return SK?SK.normalize(record()?.skin):{tone:"light"}}
+function skinRamp(){const s=skinSetting();return SK?SK.rampFor(s.tone,s.custom):null}
+function skinId(){const s=skinSetting();return s.tone+(s.custom?":"+s.custom:"")}
+async function skinnedUrl(url){
+ const id=skinId();if(!url||!SK||id==="light")return url;
+ const key=id+"|"+url;let hit=skinUrlCache.get(key);if(hit)return hit;
+ const c=await canvasFromData(url),g=c.getContext("2d",{willReadFrequently:true}),im=g.getImageData(0,0,64,112);
+ if(!SK.swap(im.data,SK.TONES.light,skinRamp()))hit=url;else{g.putImageData(im,0,0);hit=c.toDataURL("image/png")}
+ if(skinUrlCache.size>400)skinUrlCache.clear();skinUrlCache.set(key,hit);return hit;
+}
+async function skinned(m){
+ if(!m||!SK||skinId()==="light")return m;
+ const layers={};
+ for(const [L,v] of Object.entries(m.layers||{})){layers[L]={};for(const d of Object.keys(v||{}))layers[L][d]=await skinnedUrl(v[d])}
+ return {...m,layers}; // pivots/masks stay the live objects
+}
+function setSkin(s){
+ const r=record();if(!r||!SK)return;
+ r.skin=SK.normalize(s);persistDraft();R.clearCache();flushCache();refreshRigMotionNow();syncSkinUI();
+ status("SKIN "+(r.skin.tone==="custom"?"CUSTOM "+r.skin.custom:r.skin.tone.toUpperCase())+" · preview only (game swaps the key ramp); pixels stay on the base ramp.");
+}
+let skinCheckTicket=0;
+async function syncSkinUI(){
+ const box=$("gb-skin-tones");if(!box||!SK)return;
+ const s=skinSetting();
+ if(!box.childElementCount){
+  for(const t of SK.TONE_ORDER){const b=document.createElement("button");b.type="button";b.dataset.tone=t;b.title=t;
+   b.style.background=SK.TONES[t].i;b.style.color=SK.TONE_ORDER.indexOf(t)>=4?"#fff":"#2b1b10";b.style.textShadow="none";b.style.borderBottom="6px solid "+SK.TONES[t]["7"];b.textContent=t.toUpperCase();
+   b.onclick=()=>setSkin({tone:t});box.append(b)}
+  $("gb-skin-custom").oninput=()=>setSkin({tone:"custom",custom:$("gb-skin-custom").value});
+ }
+ for(const b of box.querySelectorAll("button"))b.setAttribute("aria-pressed",String(b.dataset.tone===s.tone));
+ if(s.custom)$("gb-skin-custom").value=s.custom.toLowerCase();
+ const ticket=++skinCheckTicket,m=master();if(!m)return;
+ let count=0;const colors={};
+ for(const v of Object.values(m.layers||{}))for(const url of Object.values(v||{})){
+  if(!url)continue;const a=(await canvasFromData(url)).getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+  const o=SK.offRamp(a);count+=o.count;for(const [c,n] of Object.entries(o.colors))colors[c]=(colors[c]||0)+n;
+ }
+ if(ticket!==skinCheckTicket)return;
+ const list=Object.entries(colors).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c,n])=>c+" ×"+n).join(", ");
+ $("gb-skin-info").textContent=(s.tone==="custom"?"CUSTOM "+s.custom:s.tone.toUpperCase())+" · "+
+  (count?"⚠ "+count+" skin-like px NOT on the key ramp (stay fixed in game): "+list:"✓ all skin pixels are on the key ramp");
+}
 async function renderAll(){
  await sourcePending.catch(()=>{});
  if(!master()||page!=="workshop")return;
@@ -487,7 +537,7 @@ async function renderAll(){
    const key=rev+"|"+currentGender+"|"+currentStep+"|"+d+"|"+faceId+"|"+(wear?outfitId+"#"+tweakRev:"");
    let prepared=preparedCache.get(key);
    if(!prepared){
-    prepared=await R.prepare(m,wear,d,face);
+    prepared=await R.prepare(await skinned(m),wear,d,face);
     if(token!==renderRequest)return;
     preparedCache.set(key,prepared);
    }
@@ -547,7 +597,7 @@ async function renderRigMotion(force){
   for(const d of DIR){
    if(!all&&d!==dir)continue;
    let prep=rigMotion.cache.get(g+"|"+d);
-   if(!prep){prep=await R.prepare(m,null,d);rigMotion.cache.set(g+"|"+d,prep)}
+   if(!prep){prep=await R.prepare(await skinned(m),null,d);rigMotion.cache.set(g+"|"+d,prep)}
    const pose=Object.assign(C.blankPose(),M.framePose(motionLib.poses,mo,i,d,sides));
    const out=R.render(prep,pose,{order:M.frameOrder(baseOrder(d,m),mo,i,d,sides)});
    const c=$("rig-motion-"+d).getContext("2d");c.imageSmoothingEnabled=false;c.clearRect(0,0,64,112);c.drawImage(out,0,0);
@@ -850,8 +900,8 @@ async function openPixels(){
  const a=atlas.getContext("2d",{willReadFrequently:true}),refs={};
  const idx=PARTS.indexOf(selected),originals={};
  for(let i=0;i<4;i++){
-  const d=DIR[i],src=await canvasFromData(master().layers[layer]?.[d]);
-  originals[d]=src.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
+  const d=DIR[i],src=await canvasFromData(await skinnedUrl(master().layers[layer]?.[d]));
+  originals[d]=(await canvasFromData(master().layers[layer]?.[d])).getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112); // un-skinned
   const raw=src.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
   const mask=C.decode(master().masks[d]);
   for(let k=0;k<C.N;k++)if(mask[k]!==idx)raw.data.fill(0,k*4,k*4+4);
@@ -861,7 +911,11 @@ async function openPixels(){
   pixelEditor=P.create({overlay:$("pixelOverlay"),canvas:$("pixelCanvas"),
    onApply:applyPixels,onSaveDefault:applyPixels,onRestore:()=>{}});
  }
- pixelSession={gender,selected,layer,originals};
+ // union of every OTHER layer per view: a pixel erased here that no other
+ // layer covers becomes unassigned on APPLY (auto-slice)
+ const others={};
+ for(const d of DIR){const u=new Uint8Array(C.N);for(const L of Object.keys(master().layers||{})){if(L===layer)continue;const a=await alphaOf(master().layers[L]?.[d]);if(a)for(let k=0;k<C.N;k++)if(a[k])u[k]=1}others[d]=u}
+ pixelSession={gender,selected,layer,originals,others,skin:skinId(),ramp:skinRamp()};
  pixelEditor.open({id:"LAFRICH GENESIS "+gender.toUpperCase()+" / "+selected+" / "+layer,
   initialAtlas:atlas,originalAtlas:atlas,referenceImages:refs,direction:dir});
  status("Pixel editing "+labels[selected]+" / "+layer+" · SE/SW/NE/NW with original selection tools.");
@@ -874,7 +928,8 @@ function applyPixels(){
  try{
   const atlas=pixelEditor.getAtlas(),g=atlas.getContext("2d",{willReadFrequently:true});
   const next={},idx=PARTS.indexOf(selected),layer=activeLayer,touched={};
-  let expandCount=0,stealCount=0;
+  let expandCount=0,stealCount=0,added=0,cleared=0,keptLocked=0;
+  const auto=$("pixel-auto-slice")?.checked!==false;
   // Draw into the selected layer only. Every other physical appearance layer
   // stays pixel-exact, allowing independent future skin/clothing edits.
   for(let di=0;di<4;di++){
@@ -885,15 +940,23 @@ function applyPixels(){
    oldCtx.putImageData(original,0,0);
    const old=oldCtx.getImageData(0,0,64,112),edited=g.getImageData(0,di*112,64,112);
    const mask=C.decode(master().masks[d]),pixels=old.data,part=edited.data,before=original.data;
-   const hit=new Set();
+   // the editor showed the preview skin tone: store base-ramp colours again
+   if(SK&&pixelSession.skin!=="light")SK.swap(part,pixelSession.ramp,SK.TONES.light);
+   const hit=new Set(),lock=manualLock(d,false),other=pixelSession.others?.[d];
    for(let k=0;k<C.N;k++){
-    const p=k*4;
-    if(mask[k]===idx) pixels.fill(0,p,p+4);
+    const p=k*4,wasPart=mask[k]===idx;
+    if(wasPart) pixels.fill(0,p,p+4);
     if(part[p+3]){
-     if(mask[k]!==idx){expandCount++;if(pixels[p+3])stealCount++;if(mask[k]!==255)hit.add(PARTS[mask[k]])}
+     if(!wasPart){
+      if(auto){
+       // AUTO-SLICE: new / moved / pasted pixels join the edited part, except
+       // where another part's slice was hand-painted (that stays theirs).
+       if(lock&&lock[k]&&mask[k]!==255)keptLocked++;
+       else{if(mask[k]!==255)hit.add(PARTS[mask[k]]);mask[k]=idx;added++}
+      }else{expandCount++;if(pixels[p+3])stealCount++;if(mask[k]!==255)hit.add(PARTS[mask[k]]);mask[k]=idx}
+     }
      pixels.set(part.subarray(p,p+4),p);
-     mask[k]=idx;
-    }
+    }else if(wasPart&&auto&&before[p+3]&&!(other&&other[k])){mask[k]=255;cleared++} // erased → no part
    }
    let changed=false;
    for(let i=0;i<before.length;i++)if(before[i]!==pixels[i]){changed=true;break}
@@ -901,7 +964,7 @@ function applyPixels(){
    oldCtx.putImageData(old,0,0);
    next[d]={mask:C.encode(mask),png:oldCtx.canvas.toDataURL("image/png")};
   }
-  if(expandCount&&!confirm("Your pixel edit expands this part's slice ownership by "+expandCount+
+  if(!auto&&expandCount&&!confirm("Your pixel edit expands this part's slice ownership by "+expandCount+
     " pixels across 4 angles. "+stealCount+" pixels are already painted in this physical layer."+
     " Confirm changing the rig masks as well? Cancel keeps the original rig unchanged."))return false;
   for(const d of DIR){
@@ -922,7 +985,9 @@ function applyPixels(){
   syncControls();
   void sourcePending.then(()=>{
    flushCache();syncControls();
-   status("APPLIED "+labels[appliedPart]+" / "+layer+" · changed: "+(touchedDirs.map(d=>d.toUpperCase()).join(", ")||"nothing")+
+   const slice=[added?"+"+added+" px → "+labels[appliedPart]:"",cleared?"−"+cleared+" px unassigned":"",keptLocked?keptLocked+" hand-sliced px kept":""].filter(Boolean).join(" · ");
+   status((auto&&slice?slice+" · ":"")+
+    "APPLIED "+labels[appliedPart]+" / "+layer+" · changed: "+(touchedDirs.map(d=>d.toUpperCase()).join(", ")||"nothing")+
     " · only those part reviews reset ("+reviewCount()+"/"+TOTAL_REVIEWS+" kept).");
    void autoLayer(false);
   }).catch(e=>status("Composite rebuild failed: "+e.message,true));
@@ -1593,7 +1658,7 @@ function setup(){
    stopPlayback();motionMs=0;
    if(step==="save"&&!record()?.approved)step=record()?.bound?"test":"pixel";
    if(step==="test"&&!record()?.bound)step="rig";
-   syncControls();flushCache();void refreshFace();void autoLayer(true);
+   syncControls();flushCache();void refreshFace();void autoLayer(true);void syncSkinUI();
    if(root.VLGenesisCloud?.connected()&&!BASE_MODE)void refreshDraftRevisions().catch(()=>{});
   }catch(err){status("V6B source error: "+err.message,true)}
  };
@@ -1879,7 +1944,7 @@ async function boot(){
   await loadMotionLibrary();loadUserMotions();loadOutfitTweaks();
   setup();populateMotionSelects();
   await ensure(gender);
-  syncControls();await renderAll();void autoLayer(true);
+  syncControls();await renderAll();void autoLayer(true);void syncSkinUI();
   if(BASE_MODE)status("GENESIS BASE · edit Male/Female pixels in 4 views (01), then cut + pivots (02) · ▶ PREVIEW MOTION checks it · EXPORT / SAVE TO DRIVE when done.");
   else status("LGR-1 · V6B MALE loaded · "+allMotions().length+" shared motions · edit "+PARTS.length+" body parts (pelvis split from torso) across four directions.");
   if(!BASE_MODE)await refreshFace().catch(()=>{});
@@ -1897,17 +1962,18 @@ if(BASE_MODE)root.GenesisWorkbench=Object.freeze({
    if(kind==="mask"){const m=C.decode(rig.masks[d]),im=o.createImageData(64,112);
     for(let k=0;k<C.N;k++){const v=m[k];if(v===255||!PART_RGB[PARTS[v]])continue;im.data.set([...PART_RGB[PARTS[v]],255],k*4)}
     o.putImageData(im,i*64,0)}
-   else{const prep=await R.prepare(rig,null,d);o.drawImage(R.render(prep,C.blankPose()),i*64,0)}
+   else{const sk=g===gender?await skinned(rig):rig,prep=await R.prepare(sk,null,d);o.drawImage(R.render(prep,C.blankPose()),i*64,0)}
   }
   return out;
  },
- async adopt(g,rig,manual,label){
+ skin:()=>skinSetting(),
+ async adopt(g,rig,manual,label,skin){
   if(!SOURCE[g])throw Error("Unknown gender");
   drafts[g]={rig:C.validateMaster(rig),bound:null,reviewed:{},testedAngles:{},approved:false,saved:false,
-   edited:new Date().toISOString(),manual:manual&&typeof manual==="object"?manual:{}};
+   edited:new Date().toISOString(),manual:manual&&typeof manual==="object"?manual:{},skin:SK?SK.normalize(skin):{tone:"light"}};
   await sourceCanvases(g);R.clearCache();persistDraft();
   if(g!==gender){$("gender").value=g;$("gender").dispatchEvent(new Event("change"))}
-  else{maskUndo=[];maskRedo=[];flushCache();syncControls();void autoLayer(true)}
+  else{maskUndo=[];maskRedo=[];flushCache();syncControls();void autoLayer(true);void syncSkinUI()}
   status(label||("Opened "+g+" Genesis Base"));
  }
 });

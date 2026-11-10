@@ -267,7 +267,7 @@
    }))}catch{/* Copy still works in this editor when browser storage is unavailable. */}
    updateClipboardInfo();
    els.status.textContent="COPIED "+clipboard.w+"×"+clipboard.h+" PIXELS · "+
-    bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · PASTE INTO CURRENT VIEW";
+    bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · PASTE HERE OR SWITCH VIEW / PART, THEN PASTE";
   }
   // A true four-view transfer: the copied region is saved once and can be
   // composited directly on any native direction, with automatic opposite-angle
@@ -275,9 +275,8 @@
   function pasteSelection(mirror=false){const targetDir=dir;
    const stamp=currentClipboard();
    if(!stamp){els.status.textContent="NO COPIED PIXELS · SELECT + COPY FIRST";return false;}
-   if(stamp.direction!==DIR[dir]){
-     els.status.textContent="PASTE ONLY IN CURRENT VIEW · COPY FROM "+DIR[dir].toUpperCase()+" FIRST";return false;
-    }
+   // Same as Emosi.exe: a copied stamp pastes into ANY view (and any part /
+   // layer opened later — the clipboard lives in localStorage for the session).
    const switching=false;
    const destX=selection&&!switching?selection.x:(mirror?W-stamp.x-stamp.w:stamp.x);
    const destY=selection&&!switching?selection.y:stamp.y;

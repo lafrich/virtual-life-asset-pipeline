@@ -4,6 +4,8 @@ on:
     paths:
       - 'site/genesis-workbench.*'
       - 'site/genesis-base*'
+      - 'site/lgr-skin.js'
+      - 'site/emotion-studio/shared-pixel-*.js'
       - 'site/mahluk-hidup-shell.js'
       - 'site/emosi-bridge.js'
       - 'tests/test_genesis_base.cjs'
@@ -42,6 +44,8 @@ on:
     paths:
       - 'site/genesis-workbench.*'
       - 'site/genesis-base*'
+      - 'site/lgr-skin.js'
+      - 'site/emotion-studio/shared-pixel-*.js'
       - 'site/mahluk-hidup-shell.js'
       - 'site/emosi-bridge.js'
       - 'tests/test_genesis_base.cjs'
@@ -173,6 +177,29 @@ jobs:
             await page.mouse.move(box.x+(px+6.5)*box.width/64,box.y+(py+8.5)*box.height/112,{steps:6});await page.waitForTimeout(250);
             assert(before!=='empty','preview empty');assert.notStrictEqual(await snap(),before,'motion preview did not redraw while dragging the pivot');
             await page.mouse.up();
+            // paste / paste flip across views + auto-slice on APPLY (t624u)
+            await page.locator('[data-step="pixel"]').click();
+            await page.locator('#part-select').selectOption('arm_near_upper');await page.waitForTimeout(600);
+            await page.locator('#edit-pixels').click();await page.locator('#pixelOverlay').waitFor({state:'visible'});
+            await page.locator('#pixelDirection').selectOption('se');
+            await page.locator('[data-pixel-tool="select"]').click();
+            const eb=await page.locator('#pixelCanvas').boundingBox(),at=(x,y)=>[eb.x+(x+.5)*eb.width/64,eb.y+(y+.5)*eb.height/112];
+            const [ax,ay]=at(14,55),[bx,by]=at(50,85);
+            await page.mouse.move(ax,ay);await page.mouse.down();await page.mouse.move(bx,by,{steps:5});await page.mouse.up();
+            await page.locator('#pixelToolbarCopy').click();
+            await page.locator('#pixelDirection').selectOption('sw');await page.locator('#pixelToolbarPaste').click();
+            assert.match(await page.locator('#pixelStatus').textContent(),/PASTED/);
+            await page.locator('#pixelDirection').selectOption('ne');await page.locator('#pixelToolbarPasteFlip').click();
+            assert.match(await page.locator('#pixelStatus').textContent(),/PASTED.*MIRROR/);
+            await page.locator('#pixelApply').click();
+            await page.waitForFunction(()=>/APPLIED/.test(document.querySelector('#statusmsg').textContent),null,{timeout:15000});
+            const applied=await page.locator('#statusmsg').textContent();
+            assert.match(applied,/^\+\d+ px → /);assert.match(applied,/SW/);assert.match(applied,/NE/);
+            // skin tone preview (t625u/t626u): deep shows deep ramp, draft stays light
+            await page.locator('#gb-skin-tones button[data-tone="deep"]').click();await page.waitForTimeout(1500);
+            const tones=await page.evaluate(async()=>{const c=await GenesisWorkbench.renderSheet('male','art'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,s=new Set();for(let k=0;k<d.length;k+=4)if(d[k+3]===255)s.add((d[k]<<16)|(d[k+1]<<8)|d[k+2]);return [s.has(0x633E28),s.has(0xEBC8A8)]});
+            assert.deepStrictEqual(tones,[true,false],'deep skin preview');
+            await page.locator('#gb-skin-tones button[data-tone="light"]').click();await page.waitForTimeout(800);
             const [dl]=await Promise.all([page.waitForEvent('download'),page.locator('#gb-export').click()]);
             const f='/tmp/'+dl.suggestedFilename();await dl.saveAs(f);
             const pkg=JSON.parse(fs.readFileSync(f,'utf8'));

@@ -56,6 +56,9 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 #rig-motion{margin:9px 0;padding:9px;border:1px solid #a5bad1;background:#f5f9ff}#rig-motion h3{margin:2px 0 4px;color:#31588a}#rig-motion select{flex:2;min-width:0}#rig-motion-views{display:grid;grid-template-columns:1fr;justify-items:center;gap:4px;background:#dfe9f5;padding:4px;border:1px solid #c2cfdf}#rig-motion-views.all{grid-template-columns:1fr 1fr}#rig-motion-views canvas{width:100%;max-width:192px;height:auto;aspect-ratio:64/112;image-rendering:pixelated;background:repeating-conic-gradient(#e8eef6 0 25%,#f6f9fc 0 50%) 0 0/16px 16px}#rig-motion-views canvas[hidden]{display:none}#topnav .navlink{display:inline-flex;align-items:center;padding:0 9px;color:#1f3758;background:linear-gradient(#fff,#d5e2f1);text-decoration:none;border:1px solid #869bb4;border-radius:2px;margin-left:4px;font-weight:bold}
 #gb-panel{border:2px solid #e5a52d;background:#fff8e6;padding:6px;margin:6px 0}#gb-panel h2{margin:0 0 4px}#gb-panel .gb-hint{font-size:10px;margin:0 0 4px}#gb-panel textarea{width:100%;font:inherit}
 #gb-watermark{position:fixed;right:10px;bottom:30px;z-index:5;pointer-events:none;font:bold 13px Tahoma,sans-serif;color:rgba(21,63,130,.35);letter-spacing:1px}
+#gb-skin{border:1px solid #a5bad1;background:#f5f9ff;padding:6px;margin:6px 0}#gb-skin h2{margin:0 0 4px}
+.gb-tones{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.gb-tones button{font-size:10px;font-weight:bold;color:#2b1b10;padding:6px 2px;text-shadow:0 0 2px #fff}
+.gb-tones button[aria-pressed="true"]{outline:3px solid #e5a52d;outline-offset:-1px}
 </style>
 </head>
 <body>
@@ -101,6 +104,13 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <label class="field">SAVED ON DRIVE (Membangun/Mahluk Hidup/Genesis Base)<select id="gb-drive-list"><option value="">Connect Drive, then ↻ DRIVE LIST</option></select></label>
    <button id="gb-load-drive" type="button">↓ OPEN SELECTED VERSION</button>
    <label class="field">NOTES FOR THIS BASE (go inside the export)<textarea id="gb-notes" rows="2" maxlength="4000" placeholder="e.g. female hair trimmed, pivots final"></textarea></label>
+  </section>
+  <section id="gb-skin">
+   <h2>SKIN TONE · GAME PREVIEW</h2>
+   <div id="gb-skin-tones" class="gb-tones" role="group" aria-label="Skin tone"></div>
+   <label class="field">CUSTOM TONE (highlight colour)<input id="gb-skin-custom" type="color" value="#f1d3b5"></label>
+   <p id="gb-skin-info" class="gb-hint">Checking skin pixels…</p>
+   <p class="gb-hint">Preview only: the base keeps one fixed skin KEY ramp (same as the old customizer); the game swaps it for the chosen tone.</p>
   </section>
   <section class="section active" data-panel="pixel">
    <h2>BODY PART PIXEL EDITOR</h2>
@@ -308,6 +318,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
   </div>
   <footer class="pixel-dialog-foot">
    <span id="pixelStatus">LGR-1 SOURCE · 64×112 RGBA</span>
+   <label class="check" title="On APPLY: new, moved or pasted pixels join the part you are editing; erased pixels become no part; other parts' hand-painted slices stay"><input id="pixel-auto-slice" type="checkbox" checked> AUTO-SLICE NEW PIXELS</label>
    <button id="pixelApply">APPLY TO LGR-1</button>
    <button id="pixelSaveDefault" class="primary">✓ APPLY TO LGR-1</button>
   </footer>
@@ -317,22 +328,23 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="./genesis-source.js?v=lgr1-fix-8"></script>
-<script src="./v6p-character-store.js?v=lgr1-fix-8"></script>
-<script src="./genesis-base-bridge.js?v=lgr1-fix-8"></script>
-<script src="./v6p-part-catalog.js?v=lgr1-fix-8"></script>
-<script src="./v6p-part-overrides.js?v=lgr1-fix-8"></script>
-<script src="./v6p-compositor.js?v=lgr1-fix-8"></script>
-<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-8"></script>
-<script src="./emosi-bridge.js?v=lgr1-fix-8"></script>
-<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-8"></script>
-<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-8"></script>
-<script src="./lgr1-raster.js?v=lgr1-fix-8"></script>
-<script src="./lgr1-motion.js?v=lgr1-fix-8"></script>
-<script src="./lafrich-puppet-core.js?v=lgr1-fix-8"></script>
-<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-8"></script>
-<script src="./genesis-cloud.js?v=lgr1-fix-8"></script>
-<script src="./genesis-base-app.js?v=lgr1-fix-8"></script>
-<script src="./genesis-base.js?v=lgr1-fix-8"></script>
+<script src="./genesis-source.js?v=lgr1-fix-9"></script>
+<script src="./v6p-character-store.js?v=lgr1-fix-9"></script>
+<script src="./genesis-base-bridge.js?v=lgr1-fix-9"></script>
+<script src="./v6p-part-catalog.js?v=lgr1-fix-9"></script>
+<script src="./v6p-part-overrides.js?v=lgr1-fix-9"></script>
+<script src="./v6p-compositor.js?v=lgr1-fix-9"></script>
+<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-9"></script>
+<script src="./emosi-bridge.js?v=lgr1-fix-9"></script>
+<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-9"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-9"></script>
+<script src="./lgr1-raster.js?v=lgr1-fix-9"></script>
+<script src="./lgr1-motion.js?v=lgr1-fix-9"></script>
+<script src="./lafrich-puppet-core.js?v=lgr1-fix-9"></script>
+<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-9"></script>
+<script src="./genesis-cloud.js?v=lgr1-fix-9"></script>
+<script src="./lgr-skin.js?v=lgr1-fix-9"></script>
+<script src="./genesis-base-app.js?v=lgr1-fix-9"></script>
+<script src="./genesis-base.js?v=lgr1-fix-9"></script>
 </body>
 </html>
