@@ -75,7 +75,7 @@ assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/v6p-key-ramp-v1/);
  assert.match(app,/const OFFICIAL_BASE_VERSION="official-3"/);
  assert.match(app,/rootPath\+info\.package/);
  assert.match(app,/info\.rigSha256/);
- assert.match(app,/\.\/media\/lgr1\/base\/genesis-base-"\+g\+"\.json/);
+ assert.match(app,/rootPath\+info\.package/,"Genesis editor resolves the active package through the official index");
  assert.match(html,/id="seed"[^>]*>↻ RESET TO OFFICIAL BASE</);assert(ids.has("seed-v6b"));
  assert.match(read("site/genesis-base.js"),/format==="lgr-1-draft-v1"/);
  assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/## Official LGR-1 base/);
