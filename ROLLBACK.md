@@ -1,5 +1,31 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Mahluk Hidup: stop repeated cloud sync (mh-sync-1)
+
+- Previous `origin/main` (safe restore point): `306347f`
+- Feature commit: `fa5aa60` (`site/lgr-db.js` coalesce/debounce/cross-tab lock, `site/mahluk-hidup-shell.js` online-flush only, cache-buster mh-sync-1, `tests/test_lgr_sync_count.cjs`, CI, docs)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit fa5aa60^..origin/main   # this change + its notes only
+git push origin main
+```
+
+Data safety: Emosi.exe is unchanged. Drive files under
+`Membangun/Mahluk Hidup/Database/` and the cache format
+`localStorage["lgr1-db-cache-v1"]` are not migrated or deleted; only how often
+the app talks to Drive changed. Genesis Base, Genesis Masters and Emosi Drive
+data were not touched.
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+- https://lafrich.github.io/virtual-life-asset-pipeline/genesis-workbench.html
+- scripts load with `?v=mh-sync-1`
+
+---
+
 ## 2026-11-10 · lgr-game-7: `tired` needed motion + explicit chain tired → tired_walk → idle
 
 - Previous `origin/main` (safe restore point): `6fc5dd4`
