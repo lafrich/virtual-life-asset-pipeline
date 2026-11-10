@@ -1,5 +1,23 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Genesis Base: every body part editable in 01
+
+- Previous `origin/main` (safe restore point): `7557b44`
+- Feature commit: `fd859c9` (review-matrix click stays in 01; part change auto-selects the layer holding that part, layer list shows px per part; editor hint → ☁ SAVE BASE TO DRIVE; cache-buster lgr1-fix-7)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 7557b44..origin/main   # newest first
+git push origin main
+```
+
+Data safety: UI only; drafts, packages and Drive are unchanged by this fix.
+
+---
+
 ## 2026-11-10 · Mahluk Hidup stripped to Emosi-only shell
 
 - Previous `origin/main` (safe restore point): `3690570` (Genesis Base app live, full old workshop still in Mahluk Hidup)
