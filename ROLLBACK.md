@@ -1,5 +1,26 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Mahluk Hidup stripped to Emosi-only shell
+
+- Previous `origin/main` (safe restore point): `3690570` (Genesis Base app live, full old workshop still in Mahluk Hidup)
+- Feature commit: `817d007` (`site/genesis-workbench.html` → Emosi + Genesis Base link + "players & animations: coming next on LGR"; new `mahluk-hidup-shell.js`; deleted `site/genesis-workbench.js`; tests + QA/deploy workflows retargeted to Genesis Base)
+- New tip: this ROLLBACK-notes commit
+
+Restore the full old workshop (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 3690570..origin/main   # newest first
+git push origin main
+```
+
+Data safety: nothing on Drive is deleted or written (Genesis Masters, drafts,
+motions, Emosi). Browser drafts under `vl-lafrich-genesis-workbench-drafts-v1`
+stay in localStorage; Genesis Base can copy them (⇣ COPY MAHLUK HIDUP DRAFT).
+`site/media/lgr1/motions.json` and all shared libraries stay.
+
+---
+
 ## 2026-11-10 · Genesis Base by Lafrich app
 
 - Previous `origin/main` (safe restore point): `e46fb8d`
