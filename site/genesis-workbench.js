@@ -563,7 +563,7 @@ function syncControls(){
  $("part-select").value=selected;
  const done=reviewCount();
  $("part-progress").textContent="RIG REVIEW: "+done+" / "+TOTAL_REVIEWS+" · per angle: "+DIR.map(d=>d.toUpperCase()+" "+
-  PARTS.filter(p=>record()?.reviewed?.[reviewKey(d,p)]).length+"/10").join(" · ");
+  PARTS.filter(p=>record()?.reviewed?.[reviewKey(d,p)]).length+"/"+PARTS.length).join(" · ");
  renderRigSettings();syncMotionControls();
  if($("outfit-preview"))$("outfit-preview").value=outfitId;
  $("rig-review-message").textContent=(record()?.reviewed?.[reviewKey(dir,selected)]?"✓ REVIEWED":"NOT REVIEWED")+
@@ -879,7 +879,7 @@ function toPython(b){
  // Python accepts declarative JSON string: geometry and RGBA PNG data. Never
  // execute imported browser code. Procedural animation is applied to pivots.
  const value=JSON.stringify(b).replace(/'''/g,"");
- return "# LGR-1 / LAFRICH GENESIS RIG · four-angle / 10-piece / no baked face\n"+
+ return "# LGR-1 / LAFRICH GENESIS RIG · four-angle / "+PARTS.length+"-piece (pelvis root) / no baked face\n"+
   "# Machine-readable Python source. Motion is computed from time + transforms,\n"+
   "# NOT stored as rendered frame-by-frame sprites. Use genesis_procedural_runtime.py.\n"+
   "import json\nLAFRICH_GENESIS = json.loads(r'''"+value+"''')\n";
