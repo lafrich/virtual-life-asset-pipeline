@@ -21,7 +21,10 @@ where `sha256` = SHA-256 of the canonical (sorted-key) JSON of `entry`. Drive `a
 
 ## Sync rules
 
-- Opening Mahluk Hidup shows **SYNC DATABASE** first (or syncs silently if this tab already has a Drive session).
+- Opening Mahluk Hidup shows **SYNC DATABASE** first (or syncs silently **once** if this tab already has a Drive session).
+  ↻ SYNC runs **one** sync. A save schedules **at most one** debounced flush (overlapping saves share it). Coming back
+  online only flushes unsynced local edits — it does not start a full refresh, and a failed sync is never auto-retried.
+  An already-running sync is reused (including across tabs: the other tab waits and reads the shared cache).
   "Lanjut offline" uses the local cache; the status bar shows `☁ DATABASE TERSINKRON hh.mm` / pending count.
 - Local cache: `localStorage["lgr1-db-cache-v1"]` (works offline; saves made offline are pushed on the next sync).
 - Per id: unchanged → nothing; only one side changed → that side wins; **both changed → newest `updated` wins and the

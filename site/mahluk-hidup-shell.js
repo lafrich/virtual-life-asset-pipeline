@@ -41,15 +41,21 @@ function chip(st){
  el.title=st.message||"";
  if(DB().connected())$("connect-drive").textContent="☁ CONNECTED";
 }
-async function syncNow(interactive){
- try{
-  const r=await DB().sync({interactive});
-  root.dispatchEvent(new CustomEvent("lgr-db-synced",{detail:r}));
-  status("Database tersinkron: "+DB().all("bergerak").length+" animasi · "+DB().all("beraksi").length+" adegan"+
-   (r.pulled||r.pushed?" (↓"+r.pulled+" ↑"+r.pushed+")":"")+(r.conflicts?" · "+r.conflicts+" konflik → yang terbaru dipakai, versi lain di Backup":"")+
-   (r.errors.length?" · "+r.errors.length+" gagal: "+r.errors[0]:""),!!r.errors.length);
-  return true;
- }catch(e){status("Sync: "+e.message+" · pakai cache lokal",true);return false}
+let syncNowRunning=null;
+async function syncNow(interactive,opts={}){
+ if(syncNowRunning)return syncNowRunning;
+ syncNowRunning=(async()=>{
+  try{
+   const r=await DB().sync({interactive,force:!!interactive,auto:!!opts.auto&&!interactive});
+   if(r.skipped||r.shared)return true;
+   root.dispatchEvent(new CustomEvent("lgr-db-synced",{detail:r}));
+   status("Database tersinkron: "+DB().all("bergerak").length+" animasi · "+DB().all("beraksi").length+" adegan"+
+    (r.pulled||r.pushed?" (↓"+r.pulled+" ↑"+r.pushed+")":"")+(r.conflicts?" · "+r.conflicts+" konflik → yang terbaru dipakai, versi lain di Backup":"")+
+    (r.errors.length?" · "+r.errors.length+" gagal: "+r.errors[0]:""),!!r.errors.length);
+   return true;
+  }catch(e){status("Sync: "+e.message+" · pakai cache lokal",true);return false}
+ })().finally(()=>{syncNowRunning=null});
+ return syncNowRunning;
 }
 function gate(){
  const c=DB().readCache(),nb=Object.keys(c.kinds.bergerak).length,ns=Object.keys(c.kinds.beraksi).length;
@@ -79,7 +85,9 @@ $("connect-drive").onclick=async()=>{
 $("db-sync").onclick=()=>void syncNow(true);
 $("fullscreen").onclick=()=>{const d=document;if(d.fullscreenElement)d.exitFullscreen?.();else d.documentElement.requestFullscreen?.().catch(()=>{})};
 DB().onStatus(chip);
-root.addEventListener("online",()=>{if(DB().connected())void syncNow(false)});
+// Only flush unsynced local edits when the browser comes back online.
+// A full refresh runs once on open and when the user presses ↻ SYNC — not on every online blip.
+root.addEventListener("online",()=>{if(DB().connected()&&DB().pending())void syncNow(false,{auto:true})});
 const want=new URLSearchParams(location.search).get("tab");
 void show(PAGES.includes(want)?want:"emotion");
 status("Emosi.exe · ✦ BERGERAK bikin animasi · ⚔ BERAKSI bikin adegan · database di Google Drive.");

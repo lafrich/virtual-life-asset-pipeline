@@ -43,7 +43,7 @@ Implementation branch: `feature/mahluk-genesis-rebuild-20261110`.
 
 ## Bergerak + Beraksi (t637u–t643u)
 
-Live tabs on `site/genesis-workbench.html` (Mahluk Hidup), cache-buster `mh-subapps-1`. Emosi.exe stays an untouched iframe; faces still sit under front hair and stay hidden in back views.
+Live tabs on `site/genesis-workbench.html` (Mahluk Hidup), cache-buster `mh-sync-1`. Emosi.exe stays an untouched iframe; faces still sit under front hair and stay hidden in back views.
 
 - **✦ Bergerak** — frame-by-frame pose pivots, saved to Drive `Membangun/Mahluk Hidup/Database/Bergerak`. Format: `docs/BERGERAK_FORMAT.md`.
 - **⚔ Beraksi** — multi-character action scenes (outfit or none, one or more animations, several Emosi, drag / flip / front-behind / duration), saved to `…/Database/Beraksi`. Format: `docs/BERAKSI_FORMAT.md`.

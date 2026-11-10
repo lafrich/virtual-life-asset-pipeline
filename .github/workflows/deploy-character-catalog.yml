@@ -299,6 +299,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_lgr1_parity.py' -v
           node --test tests/test_lgr1_motion.cjs
           node --test tests/test_lgr_db.cjs
+          node --test tests/test_lgr_sync_count.cjs
           node --test tests/test_lgr_game.cjs
           node tests/test_lgr_retirement.cjs
       - name: Check built site files

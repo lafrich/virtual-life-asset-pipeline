@@ -286,50 +286,130 @@ async function syncKind(kind,cache,report){
   }catch(e){report.errors.push(kind+"/"+id+": "+e.message)}
  }
 }
-let syncing=null;
-async function sync(opts={}){
- if(syncing)return syncing;
- syncing=(async()=>{
+const SAVE_DEBOUNCE_MS=400,PEER_FRESH_MS=2500,LOCK_KEY="lgr-db-sync-lock-v1",LOCK_MS=120000;
+const tabId="t"+Math.random().toString(36).slice(2);
+let syncing=null,syncRunCount=0,lastSyncOk=false,lastSyncFailed=false;
+let debounceTimer=null,debounceWait=null;
+function peerJustSynced(){
+ const t=Date.parse(readCache().syncedAt||"");
+ return Number.isFinite(t)&&Date.now()-t<PEER_FRESH_MS&&pending()===0;
+}
+function lockOwner(){try{return JSON.parse(storage()?.getItem(LOCK_KEY)||"null")}catch{return null}}
+function tryLock(){
+ const s=storage();if(!s)return true;
+ const cur=lockOwner();
+ if(cur&&cur.owner!==tabId&&Date.now()-cur.at<LOCK_MS)return false;
+ try{s.setItem(LOCK_KEY,JSON.stringify({owner:tabId,at:Date.now()}));
+  const chk=lockOwner();return chk&&chk.owner===tabId}catch{return true}
+}
+function releaseLock(){try{if(lockOwner()?.owner===tabId)storage()?.removeItem(LOCK_KEY)}catch{}}
+function tickLock(){try{if(lockOwner()?.owner===tabId)storage()?.setItem(LOCK_KEY,JSON.stringify({owner:tabId,at:Date.now()}))}catch{}}
+async function acquireLock(){
+ if(tryLock())return {waited:false};
+ const start=Date.now();
+ while(Date.now()-start<LOCK_MS){
+  if(peerJustSynced())return {waited:true,shared:true};
+  await new Promise(r=>setTimeout(r,40));
+  if(tryLock())return {waited:true};
+ }
+ return {waited:true};
+}
+function skipAuto(opts){
+ if(!opts.auto)return false;
+ if(lastSyncFailed)return true; // never auto-retry a failed sync (no error loop)
+ if(pending()>0)return false;   // coming back online with unsynced edits → one flush
+ return lastSyncOk;             // already synced this session and nothing is dirty
+}
+function flushDebounce(runner){
+ if(!debounceTimer)return runner;
+ clearTimeout(debounceTimer);debounceTimer=null;
+ const p=debounceWait;debounceWait=null;
+ if(p)runner.then(p._res,p._rej);
+ return runner;
+}
+function scheduleSync(opts={}){
+ const ms=opts.debounceMs??0;
+ if(ms<=0)return sync({...opts,debounceMs:0});
+ if(!debounceWait){let res,rej;debounceWait=new Promise((r,j)=>{res=r;rej=j});debounceWait._res=res;debounceWait._rej=rej}
+ clearTimeout(debounceTimer);
+ debounceTimer=setTimeout(()=>{const p=debounceWait;debounceTimer=null;debounceWait=null;sync({...opts,debounceMs:0}).then(p._res,p._rej)},ms);
+ return debounceWait;
+}
+async function runOnce(opts){
+ if(opts.auto&&skipAuto(opts))return {pulled:0,pushed:0,deleted:0,conflicts:0,backups:[],errors:[],skipped:"auto"};
+ const lock=await acquireLock();
+ try{
+  if((lock.shared||(lock.waited&&peerJustSynced()))&&!opts.force&&!opts.interactive&&pending()===0){
+   lastSyncOk=true;lastSyncFailed=false;
+   emit("synced","Tersinkron (tab lain) · "+count("bergerak")+" animasi · "+count("beraksi")+" adegan");
+   return {pulled:0,pushed:0,deleted:0,conflicts:0,backups:[],errors:[],shared:true};
+  }
+  if(opts.auto&&skipAuto(opts))return {pulled:0,pushed:0,deleted:0,conflicts:0,backups:[],errors:[],skipped:"auto"};
   const report={pulled:0,pushed:0,deleted:0,conflicts:0,backups:[],errors:[]};
   try{
    if(!connected()&&!restoreSession()){if(opts.interactive)await connect();else throw Error("Drive belum terhubung")}
    emit("syncing","Sync database…");
+   syncRunCount++;
    const cache=readCache();
-   for(const kind of Object.keys(KINDS))await syncKind(kind,cache,report);
+   for(const kind of Object.keys(KINDS)){tickLock();await syncKind(kind,cache,report)}
    cache.syncedAt=new Date().toISOString();writeCache(cache);
+   lastSyncOk=!report.errors.length;lastSyncFailed=!!report.errors.length;
    emit(report.errors.length?"error":"synced",report.errors.length?"Sync sebagian gagal: "+report.errors[0]:
     "Tersinkron · "+count("bergerak")+" animasi · "+count("beraksi")+" adegan"+(report.conflicts?" · "+report.conflicts+" konflik (backup disimpan)":""));
    return report;
-  }catch(e){emit("error","Sync gagal: "+e.message+" · pakai cache offline");throw e}
- })().finally(()=>{syncing=null});
+  }catch(e){lastSyncOk=false;lastSyncFailed=true;emit("error","Sync gagal: "+e.message+" · pakai cache offline");throw e}
+ }finally{releaseLock()}
+}
+async function sync(opts={}){
+ if(opts.auto&&!syncing&&skipAuto(opts))return {pulled:0,pushed:0,deleted:0,conflicts:0,backups:[],errors:[],skipped:"auto"};
+ if(syncing)return syncing;
+ const run=runOnce(opts);
+ syncing=flushDebounce(run).finally(()=>{syncing=null});
  return syncing;
 }
 function count(kind){return Object.values(readCache().kinds[kind]).filter(r=>!r.deleted).length}
 /* ---------------- public read / write ---------------- */
+let cacheGate=Promise.resolve();
+function withCacheWrite(fn){const next=cacheGate.then(fn,fn);cacheGate=next.then(()=>{},()=>{});return next}
 function all(kind){assert(KINDS[kind],"Unknown kind");return Object.values(readCache().kinds[kind]).filter(r=>!r.deleted).map(r=>r.entry).sort((a,b)=>a.name.localeCompare(b.name))}
 function get(kind,id){const r=readCache().kinds[kind]?.[id];return r&&!r.deleted?r.entry:null}
 function pending(){const c=readCache();let n=0;for(const k of Object.keys(KINDS))for(const r of Object.values(c.kinds[k]))if(r.dirty||r.deleted)n++;return n}
 async function save(kind,entry,opts={}){
- const c=readCache(),prev=c.kinds[kind][entry.id];
- const now=new Date().toISOString();
- const e=validate(kind,{...entry,rev:(prev?.entry?.rev||0)+1,updated:now,created:prev?.entry?.created||entry.created||now},poses);
- const sha=await sha256(canonical(e));
- const row={entry:e,sha,baseSha:prev?.baseSha||"",fileId:prev?.fileId||"",dirty:true};
- if(opts.overwrite&&prev&&!prev.deleted)row.backupOf=prev.backupOf||prev.entry; // replaced version → Drive Backup on push
- c.kinds[kind][e.id]=row;
- assert(writeCache(c),"Cache penuh: simpan gagal");
+ const e=await withCacheWrite(async()=>{
+  const c=readCache(),prev=c.kinds[kind][entry.id];
+  const stamp=new Date().toISOString();
+  const out=validate(kind,{...entry,rev:(prev?.entry?.rev||0)+1,updated:stamp,created:prev?.entry?.created||entry.created||stamp},poses);
+  const sha=await sha256(canonical(out));
+  const row={entry:out,sha,baseSha:prev?.baseSha||"",fileId:prev?.fileId||"",dirty:true};
+  if(opts.overwrite&&prev&&!prev.deleted)row.backupOf=prev.backupOf||prev.entry; // replaced version → Drive Backup on push
+  c.kinds[kind][out.id]=row;
+  assert(writeCache(c),"Cache penuh: simpan gagal");
+  return out;
+ });
  let synced=false;
- if(opts.sync!==false&&(connected()||restoreSession())){try{await sync();synced=!readCache().kinds[kind][e.id]?.dirty}catch{}}
+ if(opts.sync!==false&&(connected()||restoreSession())){
+  try{
+   await scheduleSync({debounceMs:SAVE_DEBOUNCE_MS});
+   if(readCache().kinds[kind][e.id]?.dirty&&!lastSyncFailed)await sync(); // trailing: this save landed after the in-flight pass
+   synced=!readCache().kinds[kind][e.id]?.dirty;
+  }catch{}
+ }
  else emit("pending","Tersimpan offline · "+pending()+" belum di-sync");
  return {entry:e,synced};
 }
 async function remove(kind,id,opts={}){
- const c=readCache(),r=c.kinds[kind][id];if(!r)return false;
- if(!r.fileId)delete c.kinds[kind][id];else c.kinds[kind][id]={...r,deleted:true,dirty:true};
- writeCache(c);
- if(opts.sync!==false&&(connected()||restoreSession()))try{await sync()}catch{}
+ const ok=await withCacheWrite(()=>{
+  const c=readCache(),r=c.kinds[kind][id];if(!r)return false;
+  if(!r.fileId)delete c.kinds[kind][id];else c.kinds[kind][id]={...r,deleted:true,dirty:true};
+  writeCache(c);return true;
+ });
+ if(!ok)return false;
+ if(opts.sync!==false&&(connected()||restoreSession())){
+  try{await scheduleSync({debounceMs:SAVE_DEBOUNCE_MS});if(pending()&&!lastSyncFailed)await sync()}catch{}
+ }
  return true;
 }
+
 function exportAll(){const c=readCache();return {format:"lgr1-db-export-v1",exported:new Date().toISOString(),
  bergerak:all("bergerak"),beraksi:all("beraksi"),syncedAt:c.syncedAt}}
 /* ---------------- motion lookup for scenes / game ---------------- */
@@ -366,6 +446,7 @@ return Object.freeze({VERSION,ready,motion,scene,onChange,CLIENT,SCOPE,BASE_PATH
  slug,canonical,sha256,validate,validateBergerak,validateBeraksi,validateMotionLong,decide,
  sceneDuration,trackAt,emosiAt,drawOrder,
  connect,connected,disconnect,useToken,restoreSession,setFetch,onStatus,get state(){return state},
- sync,all,get,save,remove,pending,readCache,exportAll,setPoses,loadBuiltin,resolveMotion,
+ sync,scheduleSync,SAVE_DEBOUNCE_MS,syncRuns:()=>syncRunCount,
+ all,get,save,remove,pending,readCache,exportAll,setPoses,loadBuiltin,resolveMotion,
  get builtin(){return builtin}});
 });
