@@ -5,7 +5,7 @@
  "approvedBy": "Lafrich",
  "bases": {
   "male": {
-   "package": "genesis-base-male.json",
+   "package": "genesis-base-male-official-3.json",
    "packageFormat": "lafrich-genesis-base-v1",
    "rigSha256": "2e5ddbc4a09c3316a7d18113c9ec3820fd52407d9ffac865ff9d12d0e54dd537",
    "sheet": "genesis-base-male-sheet.png",
@@ -48,7 +48,7 @@
    "version": "official-3",
    "date": "2026-11-11T02:03:00+07:00",
    "approvedBy": "Lafrich",
-   "note": "Male LGR rig: apply full four-view masks/pivots/placements from user's LGR male test.json. Original official-2 pixel art/layers, ID, draw order, skin KEY encoding and hierarchy retained. Female unchanged. Official-2 package and index archived as a lossless rollback.",
+   "note": "Male LGR rig: apply full four-view masks/pivots/placements from user's LGR male test.json. Original official-2 pixel art/layers, ID, draw order, skin KEY encoding and hierarchy retained. Female unchanged. Official-2 package and index archived as a lossless rollback. Versioned official-3 package: genesis-base-male-official-3.json; original official-2 file at genesis-base-male.json is byte-identical and remains available.",
    "originalMaleRigSha256": "1c1a220a78488e4e255c0ae4958547587217241041761475ef649ac8665a42a9",
    "maleRigSha256": "2e5ddbc4a09c3316a7d18113c9ec3820fd52407d9ffac865ff9d12d0e54dd537",
    "archive": "archive/genesis-base-male-official-2.json"
