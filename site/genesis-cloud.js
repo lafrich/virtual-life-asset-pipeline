@@ -36,10 +36,12 @@ async function find(folder,name,mime){
  }while(page);
  return null;
 }
-async function folder(){
- if(parent)return parent;
+const BASE_DIR=["Membangun","Mahluk Hidup","Genesis Base"];let baseParent="";
+async function folder(path){
+ const base=path===BASE_DIR;
+ if(base?baseParent:parent)return base?baseParent:parent;
  let current="root";
- for(const segment of DIR){
+ for(const segment of (path||DIR)){
   const mime="application/vnd.google-apps.folder";
   const existing=await find(current,segment,mime);
   if(existing)current=existing.id;
@@ -48,11 +50,11 @@ async function folder(){
     method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({name:segment,parents:[current],mimeType:mime})
    })).json();
-   if(!created?.id)throw Error("Could not create Genesis Masters folder");
+   if(!created?.id)throw Error("Could not create "+segment+" folder");
    current=created.id;
   }
  }
- parent=current;return current;
+ if(base)baseParent=current;else parent=current;return current;
 }
 async function connect(){
  if(connected())return true;
@@ -64,7 +66,7 @@ async function connect(){
    client_id:CLIENT,scope:"https://www.googleapis.com/auth/drive.file",include_granted_scopes:true,
    callback:r=>{
     if(r.error||!r.access_token){reject(Error(r.error_description||r.error||"Connection refused"));return}
-    token=r.access_token;expiry=Date.now()+(Number(r.expires_in)||3500)*1000;parent="";baselines.clear();
+    token=r.access_token;expiry=Date.now()+(Number(r.expires_in)||3500)*1000;parent="";baseParent="";baselines.clear();
     resolve(true);
    },error_callback:e=>reject(Error(e?.message||e?.type||"Google sign in closed"))
   }).requestAccessToken({prompt:""});}catch(e){reject(e)}
@@ -280,6 +282,36 @@ async function loadMotion(fileId){
   throw Error("Cloud motion checksum mismatch");
  return {motion:validateMotionData(value.motion),name:file.name,fileId:file.id};
 }
-root.VLGenesisCloud=Object.freeze({connect,connected,save,load,acknowledgeLoadedMaster,saveDraft,listDrafts,loadDraft,
+// Genesis Base packages (genesis-base.html): append-only, OWN folder
+// Membangun / Mahluk Hidup / Genesis Base. Never touches Genesis Masters.
+const BASE_FORMAT="lafrich-genesis-base-v1",BASE_NAME=/^genesis-base-(male|female)-[0-9TZ-]+\.[0-9a-f]{10}\.json$/;
+async function saveBase(pkg){
+ if(pkg?.format!==BASE_FORMAT||!["male","female"].includes(pkg.gender))throw Error("Not a Genesis Base package");
+ const raw=JSON.stringify(pkg),digest=await hash(raw);
+ if(raw.length>15000000)throw Error("Genesis Base package too large");
+ const name="genesis-base-"+pkg.gender+"-"+new Date().toISOString().replace(/[:.]/g,"-")+"."+digest.slice(0,10)+".json";
+ const folderId=await folder(BASE_DIR),fileId=await createAndWrite(folderId,name,raw);
+ const back=await(await request(API+"/"+encodeURIComponent(fileId)+"?alt=media")).text();
+ if(await hash(back)!==digest)throw Error("Genesis Base read-back mismatch; version not verified");
+ return {fileId,name,verified:true};
+}
+async function listBases(gender){
+ const parentId=await folder(BASE_DIR);
+ const params=new URLSearchParams({q:"'"+q(parentId)+"' in parents and name contains 'genesis-base-"+q(gender||"")+
+  "' and mimeType = 'application/json' and trashed = false",fields:"nextPageToken,files(id,name,createdTime)",pageSize:"100",orderBy:"createdTime desc"});
+ const out=[];let cursor="";
+ do{if(cursor)params.set("pageToken",cursor);const r=await(await request(API+"?"+params)).json();
+  out.push(...(r.files||[]).filter(f=>BASE_NAME.test(f.name)));cursor=r.nextPageToken||""}while(cursor&&out.length<300);
+ return out.sort((a,b)=>String(b.createdTime||"").localeCompare(String(a.createdTime||"")));
+}
+async function loadBase(fileId){
+ const versions=await listBases("");const file=versions.find(f=>f.id===fileId);
+ if(!file)throw Error("Genesis Base version not found in the Genesis Base folder");
+ const body=await(await request(API+"/"+encodeURIComponent(file.id)+"?alt=media")).text();
+ if(body.length>15000000)throw Error("Genesis Base package too large");
+ const v=JSON.parse(body);if(v.format!==BASE_FORMAT)throw Error("Not a Genesis Base package");
+ return {pkg:v,name:file.name,fileId:file.id};
+}
+root.VLGenesisCloud=Object.freeze({saveBase,listBases,loadBase,connect,connected,save,load,acknowledgeLoadedMaster,saveDraft,listDrafts,loadDraft,
  saveMotion,listMotions,loadMotion});
 })(window);
