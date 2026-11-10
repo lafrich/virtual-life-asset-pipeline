@@ -1,5 +1,25 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · LGR-1 head neck stem + female hand tip (artist revision notes)
+
+- Previous `origin/main` (safe restore point): `22ccc1b` (11-part pelvis split, review count fix)
+- Feature commit: `8bd6510` (shapeSlice: clean neck stem for the head, back views reach the neck bottom; Female hand tip stays arm)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 22ccc1b..origin/main   # newest first
+git push origin main
+```
+
+Data safety: slicing only changes the V6B seed default and what the manual
+RE-SLICE FROM SHAPE button produces. No Drive file is modified; existing drafts
+and Drive masters are untouched until the artist presses RE-SLICE and saves.
+
+---
+
 ## 2026-11-10 · LGR-1 shape slicing + PELVIS split (11 parts)
 
 - Previous `origin/main` (safe restore point): `8b1108d` (ROLLBACK notes for the LGR-1 app fixes)
