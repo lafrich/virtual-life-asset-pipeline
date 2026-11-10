@@ -1,5 +1,24 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Genesis Base: hair design overlay
+
+- Previous `origin/main` (safe restore point): `30641a7`
+- Feature commit: `a61c02e` (HAIR OVERLAY guide in pixel editor / views / motion preview, shared-editor `guide` hook, tests; cache-buster lgr1-fix-11)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit a61c02e^..origin/main   # this change + its notes only
+git push origin main
+```
+
+Data safety: screen-only guide; drafts, exports and checksums are unchanged. The
+only stored value is the overlay choice (`lafrich-genesis-base-hair-overlay-v1`).
+
+---
+
 ## 2026-11-10 · Genesis Base: official LGR-1 Male/Female base
 
 - Previous `origin/main` (safe restore point): `ae69998`
