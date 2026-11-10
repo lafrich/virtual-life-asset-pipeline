@@ -12,16 +12,27 @@ const legacy=[
   "site/mahluk-action-editor.html","site/mahluk-animation-native.html",
   "site/v6p-studio.html","site/pixel-editor.html"
 ];
-const retiredControllers=[
-  "site/lafrich-puppet-studio.js","site/mahluk-hub.js",
-  "site/mahluk-action-editor.js","site/mahluk-animation-native.js",
-  "site/genesis-editor.js","site/pixel-editor.js",
-  "site/cloud-first-mahluk-entry.js"
-];
+// Retired controllers still read by kept regression tests stay as inert stubs.
+const retiredControllers=["site/pixel-editor.js","site/cloud-first-mahluk-entry.js"];
 for(const controller of retiredControllers){
  const code=read(controller);
  assert.match(code.slice(0,1100),/LGR-1 PERMANENT RETIREMENT/);
  assert.match(code.slice(0,1100),/return;/);
+}
+// Retired shipped JS with no remaining references is deleted outright.
+const deletedControllers=[
+  "site/lafrich-puppet-studio.js","site/mahluk-hub.js","site/mahluk-action-editor.js",
+  "site/mahluk-animation-native.js","site/genesis-editor.js","site/genesis-master-rig.js",
+  "site/genesis-puppet-renderer.js","site/genesis-pose-clipboard.js","site/genesis-native-worker.js",
+  "site/genesis-native-render.py","site/genesis-native-python-contract.js",
+  "site/genesis-character-python-preview.js","site/genesis-master-pixels.js","site/mahluk-emosi-chrome.js"
+];
+for(const f of deletedControllers)
+ assert(!fs.existsSync(path.join(repo,f)),"Retired controller resurrected: "+f);
+for(const f of fs.readdirSync(path.join(repo,"site")).filter(n=>n.endsWith(".html"))){
+ const html=read("site/"+f);
+ for(const gone of deletedControllers)
+  assert(!html.includes(path.basename(gone)),f+" still loads deleted "+gone);
 }
 const removedLegacyWorkflows=[
   ".github/workflows/lafrich-puppet-qa.yml",
@@ -45,6 +56,8 @@ const shell=read("site/genesis-workbench.html");
 assert.match(shell,/\.\/genesis-cloud\.js/);
 assert.match(shell,/\.\/genesis-workbench\.js/);
 assert.match(shell,/\.\/emosi-bridge\.js/);
+assert.match(shell,/\.\/lgr1-raster\.js/);
+assert.match(shell,/\.\/lgr1-motion\.js/);
 assert.doesNotMatch(shell,/\.\/(?:mahluk-hub|mahluk-hub-drive|cloud-first-mahluk-entry|drive-sync)\.js/);
 const live=read("site/mahluk-hidup.html");
 assert.match(live,/genesis-workbench\.html/);

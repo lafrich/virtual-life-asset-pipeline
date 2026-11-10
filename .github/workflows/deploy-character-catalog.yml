@@ -184,6 +184,8 @@ jobs:
           test -s _site/genesis-workbench.html
           test -s _site/genesis-cloud.js
           test -s _site/genesis-workbench.js
+          test -s _site/lgr1-raster.js
+          test -s _site/lgr1-motion.js
           test -s _site/mahluk-hidup.html
           ! grep -q '<script' _site/lafrich-puppet-studio.html
           ! grep -q '<script' _site/genesis-editor.html
@@ -257,17 +259,19 @@ jobs:
           test ! -e _site/genesis-native-source/live/chars/ichsan.json
           test -s _site/genesis-source.js
           test -s _site/genesis-editor.html
-          test -s _site/genesis-master-rig.js
-          python -m py_compile site/genesis-native-render.py
-          python tests/test_genesis_native_renderer.py
-          node --check site/genesis-native-worker.js
-          node --check site/genesis-master-rig.js
-          node --check site/genesis-puppet-renderer.js
-          node --check site/genesis-pose-clipboard.js
-          node --check site/genesis-editor.js
-          node tests/test_genesis_master_rig.cjs
-          node --check site/mahluk-animation-native.js
-          node --check site/genesis-native-python-contract.js
+          # LGR-1: retired Genesis-native/editor controllers were deleted; the
+          # single LGR-1 raster + shared motion library ship instead.
+          test ! -e _site/genesis-editor.js
+          test ! -e _site/genesis-master-rig.js
+          test -s _site/lgr1-raster.js
+          test -s _site/lgr1-motion.js
+          test -s _site/media/lgr1/motions.json
+          node --check site/lgr1-raster.js
+          node --check site/lgr1-motion.js
+          python -m json.tool site/media/lgr1/motions.json > /dev/null
+          python -m py_compile site/genesis_procedural_runtime.py
+          python -m unittest discover -s tests -p 'test_lgr1_parity.py' -v
+          node --test tests/test_lgr1_motion.cjs
       - name: Check built site files
         run: |
           # Native-only: all 11 original action rows stay; no bundled custom motion.

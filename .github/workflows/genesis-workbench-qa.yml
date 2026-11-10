@@ -12,11 +12,11 @@ on:
       - 'site/mahluk-animation-native.html'
       - 'site/v6p-studio.html'
       - 'site/pixel-editor.html'
-      - 'site/lafrich-puppet-studio.js'
-      - 'site/mahluk-hub.js'
-      - 'site/mahluk-action-editor.js'
-      - 'site/mahluk-animation-native.js'
-      - 'site/genesis-editor.js'
+      - 'site/lgr1-raster.js'
+      - 'site/lgr1-motion.js'
+      - 'site/media/lgr1/**'
+      - 'site/lafrich-puppet-core.js'
+      - 'site/lafrich-puppet-renderer.js'
       - 'site/pixel-editor.js'
       - 'site/cloud-first-mahluk-entry.js'
       - 'tools/build_mahluk_motion_registry.py'
@@ -28,6 +28,11 @@ on:
       - 'tests/test_lgr_retirement.cjs'
       - 'tests/test_lgr_cloud_safety.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
+      - 'tests/test_lgr1_parity.py'
+      - 'tests/test_lgr1_motion.cjs'
+      - 'tests/test_lafrich_puppet.cjs'
+      - 'tests/lgr1_raster_cli.cjs'
+      - 'tests/fixtures/lgr1_male_bound.json'
       - '.github/workflows/genesis-workbench-qa.yml'
   pull_request:
     paths:
@@ -41,11 +46,11 @@ on:
       - 'site/mahluk-animation-native.html'
       - 'site/v6p-studio.html'
       - 'site/pixel-editor.html'
-      - 'site/lafrich-puppet-studio.js'
-      - 'site/mahluk-hub.js'
-      - 'site/mahluk-action-editor.js'
-      - 'site/mahluk-animation-native.js'
-      - 'site/genesis-editor.js'
+      - 'site/lgr1-raster.js'
+      - 'site/lgr1-motion.js'
+      - 'site/media/lgr1/**'
+      - 'site/lafrich-puppet-core.js'
+      - 'site/lafrich-puppet-renderer.js'
       - 'site/pixel-editor.js'
       - 'site/cloud-first-mahluk-entry.js'
       - 'tools/build_mahluk_motion_registry.py'
@@ -57,6 +62,11 @@ on:
       - 'tests/test_lgr_retirement.cjs'
       - 'tests/test_lgr_cloud_safety.cjs'
       - 'tests/test_genesis_procedural_runtime.py'
+      - 'tests/test_lgr1_parity.py'
+      - 'tests/test_lgr1_motion.cjs'
+      - 'tests/test_lafrich_puppet.cjs'
+      - 'tests/lgr1_raster_cli.cjs'
+      - 'tests/fixtures/lgr1_male_bound.json'
 jobs:
   syntax-contract:
     runs-on: ubuntu-latest
@@ -68,6 +78,10 @@ jobs:
           node --check site/genesis-cloud.js
           node --check site/lafrich-puppet-core.js
           node --check site/lafrich-puppet-renderer.js
+          node --check site/lgr1-raster.js
+          node --check site/lgr1-motion.js
+          node --test tests/test_lgr1_motion.cjs
+          node --test tests/test_lafrich_puppet.cjs
           node --check site/mahluk-hub-drive.js
           node --check site/drive-sync.js
           node --check site/vlhub-characters-publish.js
@@ -94,8 +108,10 @@ jobs:
           NODE
       - name: Python continuous rig tests
         run: |
+          python3 -m pip install --quiet pillow
           python3 -m py_compile site/genesis_procedural_runtime.py
           python3 -m unittest discover -s tests -p 'test_genesis_procedural_runtime.py' -v
+          python3 -m unittest discover -s tests -p 'test_lgr1_parity.py' -v
 
   browser-smoke:
     runs-on: ubuntu-24.04
@@ -259,9 +275,9 @@ jobs:
               await page.locator('[data-step="rig"]').click();
               await page.locator('#find-unassigned').click();
               await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
-                textContent?.includes('1 visible unassigned pixels'));
+                textContent?.includes('1 px in 1 issue clusters (1 unassigned'));
               const highlighted=await page.locator('#unassigned-detail').textContent();
-              assert(highlighted.includes('NE')&&highlighted.includes('1 visible'),
+              assert(highlighted.includes('NE')&&highlighted.includes('1 unassigned'),
                 'Find Unassigned missed synthetic unassigned pixel '+strayIndex+': '+highlighted);
               assert(await page.locator('#remove-stray-group').isEnabled(),
                 'Missing targeted cleanup button');
@@ -290,7 +306,7 @@ jobs:
               await page.locator('[data-step="rig"]').click();
               await page.locator('#undo-stray-delete').click();
               await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
-                textContent?.includes('1 visible unassigned pixels'));
+                textContent?.includes('1 unassigned'));
               const restored=await page.evaluate(async index=>{
                 const key='vl-lafrich-genesis-workbench-drafts-v1';
                 const draft=JSON.parse(localStorage.getItem(key)).drafts.female;
@@ -300,6 +316,21 @@ jobs:
                 return g.getImageData(0,0,64,112).data[index*4+3];
               },strayIndex);
               assert(restored>0,'Undo did not restore original stray artwork');
+              // LGR-1 motion editor: editing a shared library motion makes a
+              // local copy; the shared library itself is never modified.
+              await page.locator('[data-step="motion"]').click();
+              await page.locator('#motion-select').selectOption('wave');
+              await page.locator('#motion-add-frame').click();
+              await page.locator('#motion-a-num').fill('43');
+              await page.locator('#motion-a-num').dispatchEvent('change');
+              await page.locator('#motion-save').click();
+              const mine=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lgr1-user-motions-v1')||'null'));
+              assert(mine?.motions?.some(m=>m.id==='wave_mine'&&m.frames.length===5),
+                'Edited library motion was not saved as a local copy');
+              assert(mine.motions.find(m=>m.id==='wave_mine').frames[1].parts.arm_r_upper.a===45,
+                'Angle snap (5°) not applied');
+              const lib=await page.evaluate(async()=>(await (await fetch('./media/lgr1/motions.json')).json()).motions.find(m=>m.id==='wave').frames.length);
+              assert.strictEqual(lib,4,'Shared library unexpectedly modified');
               if(errors.length)throw Error('Browser errors: '+errors.join(' | '));
               console.log(JSON.stringify({browser:'OK',pixelCount,partCount:10,
                 femaleSwitched:true,bindingResult:info.slice(0,180),approved:actual.female.id}));
