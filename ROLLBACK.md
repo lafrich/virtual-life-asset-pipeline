@@ -1,5 +1,23 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · LGR-1 step 02 motion preview panel
+
+- Previous `origin/main` (safe restore point): `6527a3a`
+- Feature commit: `16ef4e7` (02 · PREVIEW MOTION panel, anatomy header 11 pieces, script cache-busters lgr1-fix-5)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 6527a3a..origin/main   # newest first
+git push origin main
+```
+
+Data safety: preview only; no draft, mask or Drive file is written by the panel.
+
+---
+
 ## 2026-11-10 · LGR-1 whole back head + better slice paint
 
 - Previous `origin/main` (safe restore point): `5520232` (ROLLBACK notes for the neck stem)
