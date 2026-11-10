@@ -69,6 +69,7 @@ returns a 64×112 canvas (or `null` while loading). Motion lookup for a game act
 1. cloud DB `bergerak:<id>` (whatever Lafrich saved in Mahluk Hidup → Bergerak, via the shared `lgr1-db-cache-v1` cache / Drive sync)
 2. built-in `builtin:<id>` (`media/lgr1/motions.json`: idle, walk, wave, crouch, arms_up, bow, sit, lie_sleep, talk)
 3. stand-in built-in from `LGRGame.STAND_INS` (marked `standIn:true` in `LGRGame.actionTable()`)
+   A stand-in may be an ordered array (explicit chain, each step DB → built-in, no further hops), e.g. `tired: ["tired_walk","idle"]`.
 
 Legacy game actions alias onto the needed ids (`sleep→lie_sleep`, `toilet→wc_squat`, `pee→pee_stand`, `bathe→mandi`, …).
 Glasses / facial hair use the `mh-wear/glasses` and `mh-wear/facial` strips (accessory layer).

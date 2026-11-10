@@ -16,7 +16,7 @@
  if(root)root.LGRGame=api;
 })(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){
 "use strict";
-const VERSION="lgr-game-6";
+const VERSION="lgr-game-7";
 const DIRS=["se","sw","ne","nw"];
 const here=(()=>{try{const s=document.currentScript?.src;return s?s.slice(0,s.lastIndexOf("/")+1):"/virtual-life-asset-pipeline/"}catch{return "/virtual-life-asset-pipeline/"}})();
 if(root&&!root.LGRDB_BASE)root.LGRDB_BASE=here;
@@ -28,7 +28,7 @@ const STAND_INS=Object.freeze({
  tent_sleep:"lie_sleep",tent_crawl_out:"crouch",bench_sleep:"lie_sleep",mandi:"arms_up",wc_squat:"crouch",
  pee_stand:"idle",fishing_cast:"wave",fishing_wait:"idle",pick_up:"bow",silver_pose:"idle",ogah_flag:"wave",
  parkir_whistle:"wave",eat:"talk",drink_coffee:"talk",faint:"lie_sleep",arrested:"arms_up",clean_gorong:"crouch",
- pray_generic:"bow",give_sedekah:"wave",tired_walk:"walk",tired:"idle",cook:"idle",
+ pray_generic:"bow",give_sedekah:"wave",tired_walk:"walk",tired:["tired_walk","idle"],cook:"idle",
  eat_sit:"sit",drink_coffee_sit:"sit",fishing_wait_sit:"sit",mulung_pick:"bow",walk_carry_sack:"walk",check_phone:"talk",
  sit_lesehan:"sit",run:"walk",sweep:"idle",rinse_tap:"mandi",hand_over:"pick_up",protest:"talk",get_up:"idle",use_storage:"pick_up",
  accident_wet:"idle",cook_stir:"cook",mix_drink:"drink_coffee",eat_snack:"eat",sell_food_stall:"talk",sit_class:"sit",read_book:"sit",online_learning:"check_phone",work_bank_counter:"sit",pee_wall:"pee_stand",steal:"pick_up",help_npc:"hand_over",collect:"pick_up"});
@@ -79,6 +79,9 @@ function resolveAction(action){
  // stand-in: the fallback id is itself resolved (cloud DB → built-in → its own
  // stand-in), e.g. rinse_tap → mandi (DB) → arms_up; ends at builtin idle.
  let fb=STAND_INS[id],sub=null,via=[];
+ // An array is an explicit ordered chain (each tried DB → built-in, no further hops),
+ // e.g. tired → tired_walk → idle.
+ if(Array.isArray(fb)){for(const f of fb){via.push(f);sub=DB?.motion?.("bergerak:"+f)||builtin(f);if(sub)break;}fb=null;}
  for(let n=0;fb&&n<4&&!sub;n++){via.push(fb);sub=DB?.motion?.("bergerak:"+fb)||builtin(fb);if(!sub)fb=STAND_INS[fb];}
  return {id,motion:sub||builtin("idle"),source:"stand-in",standIn:true,via,dir:ALIAS_DIR[action]};
 }

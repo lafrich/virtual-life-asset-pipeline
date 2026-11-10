@@ -148,6 +148,11 @@
    "group": "kondisi"
   },
   {
+   "id": "tired",
+   "name": "Capek (diam)",
+   "group": "kondisi"
+  },
+  {
    "id": "cook",
    "name": "Masak (spatula)",
    "group": "kerja"

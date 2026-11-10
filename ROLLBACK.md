@@ -1,5 +1,11 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · lgr-game-7: `tired` needed motion + explicit chain tired → tired_walk → idle
+
+- Previous `origin/main` (safe restore point): `6fc5dd4`
+- Change: `site/lgr-game.js` (array stand-in chains, VERSION lgr-game-7), `media/lgr1/needed-motions.json` (+`tired`), `tests/test_lgr_game.cjs`, docs/LGR_DB.md.
+- Rollback: `git fetch origin && git checkout main && git pull --ff-only && git revert --no-edit <this commit> && git push origin main` (no force-push). Cloud DB entries and secrets are untouched.
+
 ## 2026-11-10 · LGR game runtime (lgr-game-2) + single refit wear dir
 
 - Previous `origin/main` (safe restore point): `bf888c8`
