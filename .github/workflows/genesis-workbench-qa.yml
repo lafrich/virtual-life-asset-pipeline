@@ -157,6 +157,10 @@ jobs:
             assert.deepStrictEqual(vis,['pixel','rig']);
             await page.locator('#edit-pixels').click();await page.locator('#pixelOverlay').waitFor({state:'visible'});
             await page.locator('#pixelClose').click();
+            await page.locator('#review-matrix button[data-review-part="torso"][data-review-dir="sw"]').click();
+            assert(await page.locator('#edit-pixels').isVisible(),'part change hid the 01 pixel editor panel');
+            await page.waitForFunction(()=>/ px$/.test(document.querySelector('#art-layer').selectedOptions[0].textContent),null,{timeout:15000});
+            assert.strictEqual(await page.locator('#art-layer').inputValue(),'top','torso must open on the layer holding its pixels');
             await page.locator('#pixel-next').click();
             await page.locator('#rig-motion-play').click();await page.waitForTimeout(500);
             const [dl]=await Promise.all([page.waitForEvent('download'),page.locator('#gb-export').click()]);

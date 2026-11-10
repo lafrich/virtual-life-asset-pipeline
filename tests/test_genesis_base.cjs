@@ -24,6 +24,12 @@ assert.match(save,/createAndWrite\(folderId,name,raw\)/);
 assert(!/PATCH|uploadType=media&|files\/"\+.*\?uploadType/.test(save),"saveBase must only create new files");
 assert.match(save,/read-back mismatch/);
 assert.match(cloud,/saveBase,listBases,loadBase/);
+// t620u: changing part keeps 01 PIXEL EDITOR open and opens the layer holding the part
+assert.match(app,/if\(step!=="rig"&&step!=="pixel"\)switchStep\("rig"\)/);
+assert.match(app,/selected=part;syncControls\(\);void renderAll\(\);void autoLayer\(true\);/);
+assert.match(app,/async function partLayerCounts/);
+assert(!/SAVE MASTER to sync Drive/.test(html),"stale editor hint");
+assert.match(html,/then ☁ SAVE BASE TO DRIVE/);
 // docs exist
 assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/lafrich-genesis-base-v1/);
 console.log("genesis base contract ok");

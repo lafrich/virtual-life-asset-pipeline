@@ -585,8 +585,9 @@ function buildPartButtons(){
   for(const d of DIR){
    const b=document.createElement("button");
    b.type="button";b.dataset.reviewDir=d;b.dataset.reviewPart=part;
-   b.title=labels[part]+" / "+d.toUpperCase()+" (click to navigate, not to approve)";
-   b.onclick=()=>{selectPart(part);switchAngle(d);if(step!=="rig")switchStep("rig")};
+   b.title=labels[part]+" / "+d.toUpperCase()+" (click to pick this part + view, not to approve)";
+   // stays in the current step: in 01 PIXEL EDITOR it just picks part + view
+   b.onclick=()=>{selectPart(part);switchAngle(d);if(step!=="rig"&&step!=="pixel")switchStep("rig")};
    matrix.append(b);
   }
  }
@@ -605,7 +606,48 @@ function buildPartButtons(){
 }
 function selectPart(part){
  if(!PARTS.includes(part))return;
- selected=part;syncControls();void renderAll();
+ selected=part;syncControls();void renderAll();void autoLayer(true);
+}
+// V6B keeps each part's skin in the layer it was painted on (nude base: head
+// in BODY, chest/arms in TOP, hips/legs in PANTS, feet in SHOES ...). Show the
+// pixel count of the selected part per layer and, when the part changes,
+// jump to the layer holding most of it so the editor never opens empty
+// (any other layer can still be chosen afterwards to add pixels there).
+const alphaCache=new Map();
+async function alphaOf(url){
+ if(!url)return null;let a=alphaCache.get(url);if(a)return a;
+ const d=(await canvasFromData(url)).getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+ a=new Uint8Array(C.N);for(let k=0;k<C.N;k++)a[k]=d[k*4+3]?1:0;
+ if(alphaCache.size>300)alphaCache.clear();alphaCache.set(url,a);return a;
+}
+async function partLayerCounts(part){
+ const m=master(),idx=PARTS.indexOf(part),out={};if(!m)return out;
+ const masks=DIR.map(d=>C.decode(m.masks[d]));
+ for(const L of Object.keys(m.layers||{})){
+  let n=0;
+  for(let i=0;i<DIR.length;i++){const a=await alphaOf(m.layers[L]?.[DIR[i]]);if(!a)continue;for(let k=0;k<C.N;k++)if(a[k]&&masks[i][k]===idx)n++}
+  out[L]=n;
+ }
+ return out;
+}
+let autoLayerTicket=0;
+async function autoLayer(switchIfEmpty){
+ const ticket=++autoLayerTicket,part=selected,g=gender;
+ try{
+  const counts=await partLayerCounts(part);
+  if(ticket!==autoLayerTicket||part!==selected||g!==gender)return;
+  for(const o of $("art-layer").options){
+   o.dataset.label=o.dataset.label||o.textContent;
+   o.textContent=o.dataset.label+(counts[o.value]?" · "+counts[o.value]+" px":" · empty");
+  }
+  if(switchIfEmpty){
+   const best=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+   if(best&&best!==activeLayer&&counts[best]>(counts[activeLayer]||0)&&[...$("art-layer").options].some(o=>o.value===best)){
+    activeLayer=best;$("art-layer").value=best;
+    status(labels[part]+" pixels are on layer "+$("art-layer").selectedOptions[0].dataset.label+" · switched there (pick another layer to edit/add pixels on it).");
+   }
+  }
+ }catch(e){if(ticket===autoLayerTicket)status("Layer check: "+e.message,true)}
 }
 function syncControls(){
  updateUnassignedUI();
@@ -859,6 +901,7 @@ function applyPixels(){
    flushCache();syncControls();
    status("APPLIED "+labels[appliedPart]+" / "+layer+" · changed: "+(touchedDirs.map(d=>d.toUpperCase()).join(", ")||"nothing")+
     " · only those part reviews reset ("+reviewCount()+"/"+TOTAL_REVIEWS+" kept).");
+   void autoLayer(false);
   }).catch(e=>status("Composite rebuild failed: "+e.message,true));
   return true;
  }catch(e){status("Pixel editor Apply failed: "+e.message,true);return false}
@@ -1527,7 +1570,7 @@ function setup(){
    stopPlayback();motionMs=0;
    if(step==="save"&&!record()?.approved)step=record()?.bound?"test":"pixel";
    if(step==="test"&&!record()?.bound)step="rig";
-   syncControls();flushCache();void refreshFace();
+   syncControls();flushCache();void refreshFace();void autoLayer(true);
    if(root.VLGenesisCloud?.connected()&&!BASE_MODE)void refreshDraftRevisions().catch(()=>{});
   }catch(err){status("V6B source error: "+err.message,true)}
  };
@@ -1813,7 +1856,7 @@ async function boot(){
   await loadMotionLibrary();loadUserMotions();loadOutfitTweaks();
   setup();populateMotionSelects();
   await ensure(gender);
-  syncControls();await renderAll();
+  syncControls();await renderAll();void autoLayer(true);
   if(BASE_MODE)status("GENESIS BASE · edit Male/Female pixels in 4 views (01), then cut + pivots (02) · ▶ PREVIEW MOTION checks it · EXPORT / SAVE TO DRIVE when done.");
   else status("LGR-1 · V6B MALE loaded · "+allMotions().length+" shared motions · edit "+PARTS.length+" body parts (pelvis split from torso) across four directions.");
   if(!BASE_MODE)await refreshFace().catch(()=>{});
@@ -1841,7 +1884,7 @@ if(BASE_MODE)root.GenesisWorkbench=Object.freeze({
    edited:new Date().toISOString(),manual:manual&&typeof manual==="object"?manual:{}};
   await sourceCanvases(g);R.clearCache();persistDraft();
   if(g!==gender){$("gender").value=g;$("gender").dispatchEvent(new Event("change"))}
-  else{maskUndo=[];maskRedo=[];flushCache();syncControls()}
+  else{maskUndo=[];maskRedo=[];flushCache();syncControls();void autoLayer(true)}
   status(label||("Opened "+g+" Genesis Base"));
  }
 });
