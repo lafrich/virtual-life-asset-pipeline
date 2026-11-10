@@ -1,5 +1,30 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Mahluk Hidup: Bergerak + Beraksi tabs (mh-subapps-1)
+
+- Previous `origin/main` (safe restore point): `3c3069a`
+- Feature commit: `13795b6` (Bergerak + Beraksi tabs on `genesis-workbench.html`, `lgr-db.js` / `lgr-actor.js` / `lgr-wear.js` / import, needed-motions checklist, `site/media/lgr1/mh-wear/` outfits, docs, tests, CI; cache-buster mh-subapps-1)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 13795b6^..origin/main   # this change + its notes only
+git push origin main
+```
+
+Data safety: Emosi.exe is unchanged. Google Drive files under
+`Membangun/Mahluk Hidup/Database/` are not deleted or migrated; after a revert
+the new tabs disappear but existing Bergerak/Beraksi JSON stays in Drive and in
+`localStorage["lgr1-db-cache-v1"]`. Genesis Base, Genesis Masters and Emosi
+Drive data were not touched.
+
+Confirm after Pages rebuilds (`deploy-character-catalog.yml`):
+- https://lafrich.github.io/virtual-life-asset-pipeline/genesis-workbench.html
+
+---
+
 ## 2026-11-10 · LGR-1 official-2: joint fill + back-view hair (lgr1-fix-12)
 
 - Previous `origin/main` (safe restore point): `f3fb894`
