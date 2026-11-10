@@ -196,6 +196,7 @@ jobs:
           test -s _site/lgr-actor.js
           test -s _site/lgr-import.js
           test -s _site/lgr-wear.js
+          test -s _site/lgr-game.js
           test -s _site/mahluk-bergerak.js
           test -s _site/mahluk-beraksi.js
           test -s _site/mahluk-subapps-ui.js
@@ -288,6 +289,7 @@ jobs:
           node --check site/lgr-actor.js
           node --check site/lgr-import.js
           node --check site/lgr-wear.js
+          node --check site/lgr-game.js
           node --check site/mahluk-bergerak.js
           node --check site/mahluk-beraksi.js
           node --check site/mahluk-subapps-ui.js
@@ -297,6 +299,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_lgr1_parity.py' -v
           node --test tests/test_lgr1_motion.cjs
           node --test tests/test_lgr_db.cjs
+          node --test tests/test_lgr_game.cjs
           node tests/test_lgr_retirement.cjs
       - name: Check built site files
         run: |

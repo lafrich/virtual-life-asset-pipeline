@@ -42,6 +42,8 @@ on:
       - 'site/mahluk-subapps-ui.js'
       - 'site/mahluk-subapps.css'
       - 'tests/test_lgr_db.cjs'
+      - 'tests/test_lgr_game.cjs'
+      - 'site/lgr-game.js'
       - 'docs/LGR_DB.md'
       - 'docs/BERGERAK_FORMAT.md'
       - 'docs/BERAKSI_FORMAT.md'
@@ -96,6 +98,8 @@ on:
       - 'site/mahluk-subapps-ui.js'
       - 'site/mahluk-subapps.css'
       - 'tests/test_lgr_db.cjs'
+      - 'tests/test_lgr_game.cjs'
+      - 'site/lgr-game.js'
       - 'docs/LGR_DB.md'
       - 'docs/BERGERAK_FORMAT.md'
       - 'docs/BERAKSI_FORMAT.md'
@@ -139,6 +143,7 @@ jobs:
           node --check site/mahluk-beraksi.js
           node --check site/mahluk-subapps-ui.js
           node --test tests/test_lgr_db.cjs
+          node --test tests/test_lgr_game.cjs
       - name: HTML / UI integration contract
         run: |
           node <<'NODE'

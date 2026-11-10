@@ -11,7 +11,8 @@
   "nw"
  ],
  "frame": "idle 0",
- "note": "Baked from the retired V6P atlases by tools/bake_lgr_wear.py; key colours, mapped by site/lgr-wear.js.",
+ "base": "official-2",
+ "note": "Baked from the retired V6P atlases by tools/bake_lgr_wear.py; tops/pants/shoes refit to the official LGR-1 base; key colours, mapped by site/lgr-wear.js.",
  "items": [
   "top/cardigan",
   "top/cardigan_back",
@@ -72,6 +73,356 @@
   "hair/wavy_back",
   "hair/wavy_curtain_back",
   "hair/wavy_curtain_front",
-  "hair/wavy_front"
- ]
+  "hair/wavy_front",
+  "facial/both",
+  "facial/both_surpr",
+  "facial/mustache",
+  "facial/mustache_surpr",
+  "facial/stubble",
+  "facial/stubble_surpr",
+  "glasses/round",
+  "glasses/square"
+ ],
+ "meta": {
+  "top/cardigan": {
+   "sha256": "80b65893f62ff036721102b07ca5845392c9946506b9479e0790c52a56d61e52",
+   "refit": true,
+   "movedPx": 332
+  },
+  "top/cardigan_back": {
+   "sha256": "1f9b58f99fabbc4cd7a883bf35ae21ed771781c29ccc933e997c65e97dd9897b",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/cardigan_back_f": {
+   "sha256": "32f43b15b46e1408f0c29d2e5fae6d40a3e2ba5eb27919b7ee3ec68e3445a72a",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/cardigan_dots": {
+   "sha256": "6ee56c69fbce24d596f3e3819fd404dfac8fdfdf781ae72115d1236cdee424ea",
+   "refit": true,
+   "movedPx": 332
+  },
+  "top/cardigan_dots_back": {
+   "sha256": "fbf493b4f9a0862cb5902af5bfff77b6c30c5a5c62845b09f7647b8fc106a61a",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/cardigan_dots_back_f": {
+   "sha256": "515da9e23ccfe816c31a7126d520385cca72e5ab9fa914119bf225f10931e52a",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/cardigan_dots_f": {
+   "sha256": "2dc628184c7823c15eb6e2e6a709afab59a65f33de1e5dde58b60d68e5d313a5",
+   "refit": true,
+   "movedPx": 315
+  },
+  "top/cardigan_f": {
+   "sha256": "1230ed67b6ea6077887a737553105789636f550e9627007d3797f91d6119d511",
+   "refit": true,
+   "movedPx": 315
+  },
+  "top/shirt": {
+   "sha256": "657a297d88de3166d28979d2a33eb00989c7e71ac322c03c58553d17db65f7c5",
+   "refit": true,
+   "movedPx": 340
+  },
+  "top/shirt_back": {
+   "sha256": "9b6a8e14c3b60709d2416b5be30e6389eb18814a0e13d9517199e378f3bef587",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/shirt_back_f": {
+   "sha256": "02a0e11cb551efcd0f099d5234ffa83cbca4f1dde9d51c83dda40bfa4867c5ef",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/shirt_f": {
+   "sha256": "31a78df00cbf3ca814922d72f169608a950c2aae0f0762fb64bdc0bdbc5ad7ce",
+   "refit": true,
+   "movedPx": 323
+  },
+  "top/shirt_tie": {
+   "sha256": "874896944854564c32cfb9e9fdba3c9c9d2b72a5de0cc9f689ca5b7967631310",
+   "refit": true,
+   "movedPx": 340
+  },
+  "top/shirt_tie_back": {
+   "sha256": "9b6a8e14c3b60709d2416b5be30e6389eb18814a0e13d9517199e378f3bef587",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/shirt_tie_back_f": {
+   "sha256": "02a0e11cb551efcd0f099d5234ffa83cbca4f1dde9d51c83dda40bfa4867c5ef",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/shirt_tie_f": {
+   "sha256": "cb1b6476721b3fddb28ff0991035e230d829cbfdc2e54e3175c3db975a4f7075",
+   "refit": true,
+   "movedPx": 323
+  },
+  "top/tee": {
+   "sha256": "ef50a51b06722cee9daef3019d03f743b6d8f68bee4a120d00a329fa0de479fa",
+   "refit": true,
+   "movedPx": 332
+  },
+  "top/tee_back": {
+   "sha256": "9b6a8e14c3b60709d2416b5be30e6389eb18814a0e13d9517199e378f3bef587",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/tee_back_f": {
+   "sha256": "02a0e11cb551efcd0f099d5234ffa83cbca4f1dde9d51c83dda40bfa4867c5ef",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/tee_f": {
+   "sha256": "af61e953881421c0b324b5ac1d465d2e5a92e576b8264b2091ad8d2fbb2dc868",
+   "refit": true,
+   "movedPx": 315
+  },
+  "top/tee_graphic": {
+   "sha256": "1d8d8dbfcb574ed8e6abfb0b8779f96ac322e9e56d70cb798cccd14269a4f994",
+   "refit": true,
+   "movedPx": 332
+  },
+  "top/tee_graphic_back": {
+   "sha256": "9b6a8e14c3b60709d2416b5be30e6389eb18814a0e13d9517199e378f3bef587",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/tee_graphic_back_f": {
+   "sha256": "02a0e11cb551efcd0f099d5234ffa83cbca4f1dde9d51c83dda40bfa4867c5ef",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/tee_graphic_f": {
+   "sha256": "19332c852a42d63fabbdd32365ab93374424a35dc358d65d47674fd0f105effc",
+   "refit": true,
+   "movedPx": 315
+  },
+  "top/tee_long": {
+   "sha256": "a654b13f3ee09b75f55d0f7a769b03e84379417ae04be6f1ba356cc6a67cdb1e",
+   "refit": true,
+   "movedPx": 332
+  },
+  "top/tee_long_back": {
+   "sha256": "1f9b58f99fabbc4cd7a883bf35ae21ed771781c29ccc933e997c65e97dd9897b",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/tee_long_back_f": {
+   "sha256": "32f43b15b46e1408f0c29d2e5fae6d40a3e2ba5eb27919b7ee3ec68e3445a72a",
+   "refit": true,
+   "movedPx": 0
+  },
+  "top/tee_long_f": {
+   "sha256": "7e43a3a2fef0e4594affd739f71ddb5d05a8436b5a3660d714da22024474b30f",
+   "refit": true,
+   "movedPx": 315
+  },
+  "pants/baggy": {
+   "sha256": "66ffad1df2445daf4a34c86f315ae8a31ba25228430c7b4aa3ff28d52207521c",
+   "refit": true,
+   "movedPx": 0
+  },
+  "pants/baggy_f": {
+   "sha256": "fa529a839b8e22e24417e60d0ec493e0b133b911e8eb4746298f62bc0fdd3012",
+   "refit": true,
+   "movedPx": 0
+  },
+  "pants/baggy_ripped": {
+   "sha256": "813782f6066040c94470d1c587f349a0d1509e613fe79d3a86e276b98d3600f2",
+   "refit": true,
+   "movedPx": 0
+  },
+  "pants/baggy_ripped_f": {
+   "sha256": "ba93b8e47216742c41b3baf49a16165d9e7a943b1875d508f4c7f17f140f99c5",
+   "refit": true,
+   "movedPx": 0
+  },
+  "pants/trousers": {
+   "sha256": "7120417db2cec8836caf30fffc19ef0aaa40f50ac5bb8d6fe2c46bc7d3a92451",
+   "refit": true,
+   "movedPx": 0
+  },
+  "pants/trousers_f": {
+   "sha256": "d3685235498a254dfd405d0e9bdc1c17928e2f8bd30ffd44c6793c3f25836007",
+   "refit": true,
+   "movedPx": 0
+  },
+  "pants/trousers_ripped": {
+   "sha256": "97513090a3ff749cdbb926426e8db0e0dfcb2d620a98c7e5d5c9854dd3ec8d55",
+   "refit": true,
+   "movedPx": 0
+  },
+  "pants/trousers_ripped_f": {
+   "sha256": "1c55301335b38b1b3c0e6e8aaab3ba635e41a38449577940e5d97c161f21d65f",
+   "refit": true,
+   "movedPx": 0
+  },
+  "shoes/boots": {
+   "sha256": "5e7e4c916a3dbd7834cddd736b08be58d922003c76699f938dbf1396f676248c",
+   "refit": true,
+   "movedPx": 252
+  },
+  "shoes/boots_f": {
+   "sha256": "09b30139beed5814d3dcb1d00da1b3055af9c995eeb72246a3d758efcd438149",
+   "refit": true,
+   "movedPx": 220
+  },
+  "shoes/hightops": {
+   "sha256": "c998ab05881eb9a5203684ffc0a5c0548d3817681b36029051f0ffa6f2e1d61b",
+   "refit": true,
+   "movedPx": 252
+  },
+  "shoes/hightops_f": {
+   "sha256": "83bcadba7d947f2b56eb16558d32c421fbe926ecd1633d578ebe38d2c6d8de0b",
+   "refit": true,
+   "movedPx": 220
+  },
+  "shoes/shoes": {
+   "sha256": "5e7e4c916a3dbd7834cddd736b08be58d922003c76699f938dbf1396f676248c",
+   "refit": true,
+   "movedPx": 252
+  },
+  "shoes/shoes_f": {
+   "sha256": "09b30139beed5814d3dcb1d00da1b3055af9c995eeb72246a3d758efcd438149",
+   "refit": true,
+   "movedPx": 220
+  },
+  "shoes/sneakers": {
+   "sha256": "c998ab05881eb9a5203684ffc0a5c0548d3817681b36029051f0ffa6f2e1d61b",
+   "refit": true,
+   "movedPx": 252
+  },
+  "shoes/sneakers_f": {
+   "sha256": "83bcadba7d947f2b56eb16558d32c421fbe926ecd1633d578ebe38d2c6d8de0b",
+   "refit": true,
+   "movedPx": 220
+  },
+  "hair/long_back": {
+   "sha256": "e9cc779a43d5bd69fccd5941a59fec3b8fb831f7f3092ca79154fc435bb93695",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/long_curtain_back": {
+   "sha256": "e9cc779a43d5bd69fccd5941a59fec3b8fb831f7f3092ca79154fc435bb93695",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/long_curtain_front": {
+   "sha256": "5a14039c737b0628cb624362899a0d35e25af90a995a44b55a86801e81afa649",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/long_front": {
+   "sha256": "a5822acd09c9ffe09aa7c46dafe69e4f874c8050df4be4bf7b542d00d85204f0",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/mid_back": {
+   "sha256": "f41cd6b9a857447fd11de09cbcd7cd7a060baa1fb0fb2f46c6f07132dde0156e",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/mid_curtain_back": {
+   "sha256": "f41cd6b9a857447fd11de09cbcd7cd7a060baa1fb0fb2f46c6f07132dde0156e",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/mid_curtain_front": {
+   "sha256": "b833a55f4b685c4c179f6052252164e13f8e164d48861f9365fd431e216d3be7",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/mid_front": {
+   "sha256": "4f700b3cb78f6a7828614fa9f91965687c6f18157728ddcfb67cfe08126fa66b",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/short_back": {
+   "sha256": "22c1e0f0d74659f4b73d299d62ba5a98fe5393126dfaad943488ed1b19e27fb7",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/short_front": {
+   "sha256": "76f68b412049b62bc23c03206c0607a1ecb30cf96a927ae1e7b9271fbca1dcc3",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/swept_back": {
+   "sha256": "22c1e0f0d74659f4b73d299d62ba5a98fe5393126dfaad943488ed1b19e27fb7",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/swept_front": {
+   "sha256": "e3486c81c72f9c4471f62a27db4b289d71b6dded0f5aa6cbc59a4222e3bce2e1",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/wavy_back": {
+   "sha256": "a0de4d7f4353b3d2553d5491d92f107f743b02c83fd0e9f1ab9e1d6c3a133b4e",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/wavy_curtain_back": {
+   "sha256": "a0de4d7f4353b3d2553d5491d92f107f743b02c83fd0e9f1ab9e1d6c3a133b4e",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/wavy_curtain_front": {
+   "sha256": "a52134ee6ea24058cc1e8725d122bfd162c4998de6f33994d9376dcbacf568bc",
+   "refit": false,
+   "movedPx": 0
+  },
+  "hair/wavy_front": {
+   "sha256": "2f55dcba7384d02e6931b86400c3ebaacd8839ff7ca5cc6c70ddd24a5923abf7",
+   "refit": false,
+   "movedPx": 0
+  },
+  "facial/both": {
+   "sha256": "ccda97ebf02d4d5706863d613e29dfae3ac24cda90657bd28ace5ef6833f1dba",
+   "refit": false,
+   "movedPx": 0
+  },
+  "facial/both_surpr": {
+   "sha256": "5e9591a28c3d903ba3121b1bdec9c5113a1bd8ba93e07f0da4db9ebf40574c45",
+   "refit": false,
+   "movedPx": 0
+  },
+  "facial/mustache": {
+   "sha256": "ed53b017bdd81c8a6ad2860737a85b2869c613c8b849a9e417a7a9e72393bf8f",
+   "refit": false,
+   "movedPx": 0
+  },
+  "facial/mustache_surpr": {
+   "sha256": "d08681676213beaa9d1385050dde3cbfd5455b6d1b3df82abc3754550bc52dcd",
+   "refit": false,
+   "movedPx": 0
+  },
+  "facial/stubble": {
+   "sha256": "f8566b7325f00482df14726e509da8dd65a57eae2695ba11ebb2a4deca713d7e",
+   "refit": false,
+   "movedPx": 0
+  },
+  "facial/stubble_surpr": {
+   "sha256": "f8566b7325f00482df14726e509da8dd65a57eae2695ba11ebb2a4deca713d7e",
+   "refit": false,
+   "movedPx": 0
+  },
+  "glasses/round": {
+   "sha256": "609fef5af186d62f5133e3d1c9d052360274df375886aff6f1234035862a1fd6",
+   "refit": false,
+   "movedPx": 0
+  },
+  "glasses/square": {
+   "sha256": "10ec78173a1a097db36df9cbe4cf7ad2cdd97ea902e037405bf9b9a819ce95c7",
+   "refit": false,
+   "movedPx": 0
+  }
+ }
 }

@@ -59,3 +59,22 @@ built-in / in database / placeholder / missing. The game references them as `bui
 (`LGRDB.motion("sit")` = `bergerak:sit` from the database; pass `"builtin:sit"` for the built-in library).
 
 Tests: `node --test tests/test_lgr_db.cjs` (schema, sync, conflicts, backups, offline, import).
+
+## Game runtime (`site/lgr-game.js`, `lgr-game-2`)
+
+Used by virtual-office `shared/genesis-player.js` (Mainkan test play, Semesta, Bangun Ruang). Thin adapter over
+`LGRActor` + `LGRWear` + `LGRDB`; no V6P runtime. `LGRGame.frame(profile, dir, action, seconds, emosiAtlas, column)`
+returns a 64×112 canvas (or `null` while loading). Motion lookup for a game action id:
+
+1. cloud DB `bergerak:<id>` (whatever Lafrich saved in Mahluk Hidup → Bergerak, via the shared `lgr1-db-cache-v1` cache / Drive sync)
+2. built-in `builtin:<id>` (`media/lgr1/motions.json`: idle, walk, wave, crouch, arms_up, bow, sit, lie_sleep, talk)
+3. stand-in built-in from `LGRGame.STAND_INS` (marked `standIn:true` in `LGRGame.actionTable()`)
+
+Legacy game actions alias onto the needed ids (`sleep→lie_sleep`, `toilet→wc_squat`, `pee→pee_stand`, `bathe→mandi`, …).
+Glasses / facial hair use the `mh-wear/glasses` and `mh-wear/facial` strips (accessory layer).
+
+## Wear (`media/lgr1/mh-wear`, single wear directory)
+
+`tools/bake_lgr_wear.py` bakes the stock garments once. Tops, pants and shoes get the approved outfit-refit warp onto the
+official LGR-1 base (old V6B body silhouette in `tools/data/v6b-silhouette.json`); hair, facial hair and glasses are
+copied unchanged. `index.json → meta` lists each strip's sha256 and moved pixels.
