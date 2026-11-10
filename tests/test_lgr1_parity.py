@@ -286,3 +286,33 @@ class LegacyMigrationTest(unittest.TestCase):
             prep = rt.prepare_raw(inputs["layers"], inputs["mask"], inputs["pivots"], inputs["placements"],
                                   inputs["order"], inputs["caps"])
             self.assertEqual(bytes(rt.render_raw(prep, frames[0]["pose"], frames[0]["order"])), j, d)
+
+
+@unittest.skipUnless(shutil.which("node"), "node required for parity")
+class OfficialBaseParityTest(LGR1ParityTests):
+    """The approved official Male/Female base (site/media/lgr1/base) renders
+    identically in JS and Python in every motion frame, 4 directions."""
+    GENDER = None
+
+    @classmethod
+    def setUpClass(cls):
+        cls.lib = rt.load_library()
+
+    def run_gender(self, g):
+        pkg = json.loads((ROOT/"site"/"media"/"lgr1"/"base"/f"genesis-base-{g}.json").read_text())
+        rig = pkg["rig"]
+        self.binding = {"rig": rig, "views": {d: {"pivots": rig["pivots"][d], "maskBase64": rig["masks"][d]}
+                                              for d in rt.DIRECTIONS}}
+        self.assert_parity()
+        self.assert_parity(face=synthetic_face())
+
+    def test_official_male(self):
+        self.run_gender("male")
+
+    def test_official_female(self):
+        self.run_gender("female")
+
+    # inherited fixture-specific tests are covered by LGR1ParityTests
+    test_body_all_motions_four_directions = test_custom_wear_with_tweak = None
+    test_emosi_face_follows_head = test_rendering_closes_joint_gaps = None
+    test_motion_mapping_matches_js = test_back_views_have_a_head = None

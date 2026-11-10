@@ -114,3 +114,32 @@ lock) stay that part's; everything else keeps its slice.
    `rig.gender` must equal `pkg.gender`.
 4. Use `rig` as the frozen base for that gender; `manualSlice` only tells which
    mask pixels were hand-painted (keep them if re-slicing).
+
+## Official LGR-1 base (approved 2026-11-10)
+
+Lafrich approved his Male and Female drafts as **the** LGR-1 base
+("Ini ya versi oke coba jadiin base", 2026-11-10 18:45 WIB). They live in
+`site/media/lgr1/base/`:
+
+| file | what |
+|---|---|
+| `genesis-base-male.json`, `genesis-base-female.json` | official `lafrich-genesis-base-v1` packages (skin in key form, checksummed) |
+| `genesis-base-<gender>-sheet.png` | 4-view preview, light + deep tone |
+| `source/genesis_<gender>_draft.lafrich-20261110.json` | his original ↓ SAVE DRAFT files, byte-for-byte (`lgr-1-draft-v1`) |
+| `index.json` | version, `rigSha256` per package, `sha256`/bytes of each source file |
+
+**Draft format `lgr-1-draft-v1`** (old ↓ SAVE DRAFT button): `{format, gender,
+record:{rig, manual, skin, reviewed, …}}`, skin in the *light* tone (not keyed),
+no checksum, no notes. ↑ IMPORT accepts it; the official packages were made by
+importing each draft and running the same `buildPackage()` as ↓ EXPORT BASE
+(light → key, `rigSha256`). Unkeying a package gives the draft's pixels back
+exactly; masks, pivots and placements are unchanged.
+
+**Role.** Genesis Base seeds every *new* browser draft from these files
+(↻ RESET TO OFFICIAL BASE; ↺ OLD V6B is the fallback, also used if the files
+can't load). Drafts already in a browser are never overwritten. The Mahluk
+Hidup rebuild (players & animations on LGR) and the later **Bake** step read
+these packages through § Ingest; read `index.json` first and refuse a package
+whose `rigSha256` doesn't match. A new approved base = new files + bump
+`index.json.version` and `OFFICIAL_BASE_VERSION` in `genesis-base-app.js`;
+never edit an approved package in place.

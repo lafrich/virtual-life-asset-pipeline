@@ -75,10 +75,10 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
  </nav>
  <main id="workspace">
  <aside class="pane" id="leftpane">
-  <h2>01 · ORIGINAL V6B SOURCE</h2>
-  <label class="field">LGR-1 BASE<select id="gender"><option value="male">MALE · V6B BASE</option><option value="female">FEMALE · V6B BASE</option></select></label>
-  <p>Frozen approved V6B Male/Female only. Faces are blank in the body source and come from Emosi.exe.</p>
-  <div class="btnrow"><button id="seed">↻ RESET TO V6B</button><button id="save-draft">↓ SAVE DRAFT</button></div>
+  <h2>01 · OFFICIAL LGR-1 BASE</h2>
+  <label class="field">LGR-1 BASE<select id="gender"><option value="male">MALE · OFFICIAL BASE</option><option value="female">FEMALE · OFFICIAL BASE</option></select></label>
+  <p>New drafts start from the official Male/Female base Lafrich approved (media/lgr1/base). Your browser draft is kept until you reset. OLD V6B = fallback. Faces come from Emosi.exe.</p>
+  <div class="btnrow"><button id="seed" title="Start over from the official Lafrich base (media/lgr1/base)">↻ RESET TO OFFICIAL BASE</button><button id="seed-v6b" title="Fallback: the old frozen V6B source">↺ OLD V6B</button><button id="save-draft">↓ SAVE DRAFT</button></div>
   <section id="part-navigation" class="shared-part-nav">
    <h2>BODY PART · SHARED NAVIGATION</h2>
    <div class="btnrow"><button id="part-prev" type="button" title="Previous body part">← PREV</button><select id="part-select" aria-label="Active body part"></select><button id="part-next" type="button" title="Next body part">NEXT →</button></div>
@@ -245,7 +245,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 </aside>
  </main>
  <div id="emotionpanel"><iframe id="emotion-frame" title="Emosi.exe original face and dialogue editor" src="about:blank" allow="clipboard-read; clipboard-write"></iframe></div>
- <footer id="status"><b id="stage-label">GENESIS BASE</b><span id="statusmsg" role="status">Loading frozen Male and Female V6B bases…</span><span id="statuscloud">LOCAL DRAFT / DRIVE OPTIONAL</span></footer>
+ <footer id="status"><b id="stage-label">GENESIS BASE</b><span id="statusmsg" role="status">Loading official Male and Female bases…</span><span id="statuscloud">LOCAL DRAFT / DRIVE OPTIONAL</span></footer>
 </div>
 <div id="gb-watermark" aria-hidden="true">Genesis Base by Lafrich</div>
 <div id="pixelOverlay" class="pixel-overlay action-frame-pixel genesis-source-pixel" hidden>
@@ -318,7 +318,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
   </div>
   <footer class="pixel-dialog-foot">
    <span id="pixelStatus">LGR-1 SOURCE · 64×112 RGBA</span>
-   <label class="check" title="On APPLY: new, moved or pasted pixels join the part you are editing; erased pixels become no part; other parts' hand-painted slices stay"><input id="pixel-auto-slice" type="checkbox" checked> AUTO-SLICE NEW PIXELS</label>
+   <label class="check" style="color:#13284a;font-weight:bold;background:#fff8e6;padding:2px 6px;border:1px solid #e5a52d" title="On APPLY: new, moved or pasted pixels join the part you are editing; erased pixels become no part; other parts' hand-painted slices stay"><input id="pixel-auto-slice" type="checkbox" checked> AUTO-SLICE NEW PIXELS</label>
    <button id="pixelApply">APPLY TO LGR-1</button>
    <button id="pixelSaveDefault" class="primary">✓ APPLY TO LGR-1</button>
   </footer>
@@ -328,23 +328,23 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="./genesis-source.js?v=lgr1-fix-9"></script>
-<script src="./v6p-character-store.js?v=lgr1-fix-9"></script>
-<script src="./genesis-base-bridge.js?v=lgr1-fix-9"></script>
-<script src="./v6p-part-catalog.js?v=lgr1-fix-9"></script>
-<script src="./v6p-part-overrides.js?v=lgr1-fix-9"></script>
-<script src="./v6p-compositor.js?v=lgr1-fix-9"></script>
-<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-9"></script>
-<script src="./emosi-bridge.js?v=lgr1-fix-9"></script>
-<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-9"></script>
-<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-9"></script>
-<script src="./lgr1-raster.js?v=lgr1-fix-9"></script>
-<script src="./lgr1-motion.js?v=lgr1-fix-9"></script>
-<script src="./lafrich-puppet-core.js?v=lgr1-fix-9"></script>
-<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-9"></script>
-<script src="./genesis-cloud.js?v=lgr1-fix-9"></script>
-<script src="./lgr-skin.js?v=lgr1-fix-9"></script>
-<script src="./genesis-base-app.js?v=lgr1-fix-9"></script>
-<script src="./genesis-base.js?v=lgr1-fix-9"></script>
+<script src="./genesis-source.js?v=lgr1-fix-10"></script>
+<script src="./v6p-character-store.js?v=lgr1-fix-10"></script>
+<script src="./genesis-base-bridge.js?v=lgr1-fix-10"></script>
+<script src="./v6p-part-catalog.js?v=lgr1-fix-10"></script>
+<script src="./v6p-part-overrides.js?v=lgr1-fix-10"></script>
+<script src="./v6p-compositor.js?v=lgr1-fix-10"></script>
+<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-10"></script>
+<script src="./emosi-bridge.js?v=lgr1-fix-10"></script>
+<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-10"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-10"></script>
+<script src="./lgr1-raster.js?v=lgr1-fix-10"></script>
+<script src="./lgr1-motion.js?v=lgr1-fix-10"></script>
+<script src="./lafrich-puppet-core.js?v=lgr1-fix-10"></script>
+<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-10"></script>
+<script src="./genesis-cloud.js?v=lgr1-fix-10"></script>
+<script src="./lgr-skin.js?v=lgr1-fix-10"></script>
+<script src="./genesis-base-app.js?v=lgr1-fix-10"></script>
+<script src="./genesis-base.js?v=lgr1-fix-10"></script>
 </body>
 </html>

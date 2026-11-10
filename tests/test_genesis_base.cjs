@@ -54,6 +54,31 @@ assert.strictEqual(SKN.offRamp(new Uint8ClampedArray([0xE1,0x8A,0x84,255])).coun
 assert.match(html,/\.\/lgr-skin\.js\?v=/);
 for(const id of ["gb-skin-tones","gb-skin-custom","gb-skin-info"])assert(ids.has(id));
 assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/v6p-key-ramp-v1/);
+// t627u: official LGR-1 base = default seed; originals kept byte-for-byte
+{
+ const crypto=require("crypto"),C=require(path.join(__dirname,"..","site","lafrich-puppet-core.js"));
+ const B="site/media/lgr1/base/",idx=JSON.parse(read(B+"index.json"));
+ assert.strictEqual(idx.format,"lafrich-lgr1-official-base-index-v1");
+ for(const g of ["male","female"]){
+  const e=idx.bases[g],pkg=JSON.parse(read(B+e.package));
+  assert.strictEqual(pkg.format,"lafrich-genesis-base-v1");assert.strictEqual(pkg.gender,g);
+  assert.strictEqual(crypto.createHash("sha256").update(JSON.stringify(pkg.rig)).digest("hex"),pkg.rigSha256,g+" rig checksum");
+  assert.strictEqual(pkg.rigSha256,e.rigSha256);
+  const rig=C.validateMaster(pkg.rig);assert.strictEqual(rig.gender,g);
+  for(const d of ["se","sw","ne","nw"])assert.strictEqual(Object.keys(pkg.rig.pivots[d]).length,11);
+  assert.strictEqual(pkg.skin.encoding,"v6p-key-ramp-v1");
+  const raw=fs.readFileSync(path.join(__dirname,"..",B+e.source));
+  assert.strictEqual(raw.length,e.sourceBytes);assert.strictEqual(crypto.createHash("sha256").update(raw).digest("hex"),e.sourceSha256,g+" source changed");
+  assert.strictEqual(JSON.parse(raw).format,"lgr-1-draft-v1");
+  assert(fs.existsSync(path.join(__dirname,"..",B+e.sheet)));
+ }
+ assert.match(app,/const OFFICIAL_BASE_VERSION="official-1"/);
+ assert.match(app,/\.\/media\/lgr1\/base\/genesis-base-"\+g\+"\.json/);
+ assert.match(html,/id="seed"[^>]*>↻ RESET TO OFFICIAL BASE</);assert(ids.has("seed-v6b"));
+ assert.match(read("site/genesis-base.js"),/format==="lgr-1-draft-v1"/);
+ assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/## Official LGR-1 base/);
+ assert.match(html,/AUTO-SLICE NEW PIXELS/);assert.match(html,/color:#13284a;font-weight:bold/);
+}
 // docs exist
 assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/lafrich-genesis-base-v1/);
 console.log("genesis base contract ok");

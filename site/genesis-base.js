@@ -69,6 +69,10 @@ async function readPackage(v){
   const open=v.skin?(await mapLayers(rig,d=>SK().fromKey(d))).rig:rig; // key → base light tone for editing
   return {g:v.gender,rig:open,manual:v.manualSlice,notes:v.notes||"",skin:v.skin?.preview||null};
  }
+ if(v?.format==="lgr-1-draft-v1"&&v.record?.rig){ // ↓ SAVE DRAFT file (light tone, not keyed)
+  const rig=withExtras(C.validateMaster(v.record.rig),v.record.rig);
+  return {g:rig.gender,rig,manual:v.record.manual||{},notes:"",skin:v.record.skin||null};
+ }
  const src=v?.master||v,rig=withExtras(C.validateMaster(src),src);
  return {g:rig.gender,rig,manual:{},notes:""};
 }

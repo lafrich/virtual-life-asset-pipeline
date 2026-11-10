@@ -326,7 +326,7 @@ function loadStored(){
      testedAngles:bound&&x.testedAngles&&typeof x.testedAngles==="object"?x.testedAngles:{},
      approved:!!x.approved&&!!bound,saved:!!x.saved&&!!bound,edited:String(x.edited||""),
      manual:x.manual&&typeof x.manual==="object"?x.manual:{},
-     skin:root.LGRSkin?root.LGRSkin.normalize(x.skin):{tone:"light"}};
+     skin:root.LGRSkin?root.LGRSkin.normalize(x.skin):{tone:"light"},seed:x.seed==="official"?"official":x.seed==="v6b"?"v6b":""};
    }catch(e){status("Existing "+g+" draft invalid; preserved in storage: "+e.message,true)}
   }
  }
@@ -355,7 +355,29 @@ async function sourceCanvases(g){
   source[g][d]=c;
  }
 }
-async function seed(g){
+// Official LGR-1 base (approved by Lafrich, site/media/lgr1/base/) is the
+// default seed; the frozen V6B source is only the fallback / "OLD V6B" reset.
+const OFFICIAL_BASE_VERSION="official-1";
+async function officialRecord(g){
+ const r=await fetch("./media/lgr1/base/genesis-base-"+g+".json?v="+OFFICIAL_BASE_VERSION,{cache:"no-store"});
+ if(!r.ok)throw Error("official base HTTP "+r.status);
+ const pkg=await r.json();
+ for(let i=0;i<50&&!root.GenesisBase;i++)await new Promise(res=>setTimeout(res,100));
+ if(!root.GenesisBase)throw Error("Genesis Base package module missing");
+ const p=await root.GenesisBase.readPackage(pkg); // checksum + key ramp → light
+ if(p.g!==g)throw Error("official base gender mismatch");
+ return p;
+}
+async function seed(g,from="official"){
+ if(from==="official"){
+  try{
+   const p=await officialRecord(g);
+   drafts[g]={rig:C.validateMaster(p.rig),bound:null,reviewed:{},testedAngles:{},approved:false,saved:false,
+    edited:new Date().toISOString(),manual:p.manual&&typeof p.manual==="object"?p.manual:{},skin:SK?SK.normalize(p.skin):{tone:"light"},seed:"official"};
+   await sourceCanvases(g);R.clearCache();flushCache();persistDraft();
+   return "official";
+  }catch(e){status("Official "+g+" base unavailable ("+e.message+") · using frozen V6B",true)}
+ }
  const original=root.VLGenesisSource?.bases?.[SOURCE[g]];
  if(!original||original.gender!==g||original.faceSource!=="emosi.exe")
   throw Error("Frozen V6B "+SOURCE[g]+" source not found");
@@ -365,9 +387,10 @@ async function seed(g){
  const rig=C.validateMaster(originalLayers);
  if(!DIR.every(d=>Boolean(rig.layers.body[d])))
   throw Error("V6B missing a physical body layer");
- drafts[g]={rig,bound:null,reviewed:{},testedAngles:{},approved:false,saved:false,edited:new Date().toISOString()};
+ drafts[g]={rig,bound:null,reviewed:{},testedAngles:{},approved:false,saved:false,edited:new Date().toISOString(),seed:"v6b"};
  await sourceCanvases(g);
  R.clearCache();flushCache();persistDraft();
+ return "v6b";
 }
 async function ensure(g){
  if(drafts[g]&&source[g])return;
@@ -1663,8 +1686,13 @@ function setup(){
   }catch(err){status("V6B source error: "+err.message,true)}
  };
  $("seed").onclick=async()=>{
-  if(!confirm("Reset "+gender+" draft from the ORIGINAL frozen V6B source? This replaces all unsaved pixels, masks and binding."))return;
-  try{await seed(gender);step="pixel";syncControls();status("Restored ORIGINAL V6B "+gender+"; previous approved master left untouched.")}catch(e){status(e.message,true)}
+  if(!confirm("Reset "+gender+" draft to the OFFICIAL "+gender.toUpperCase()+" BASE? This replaces this browser's unsaved pixels, slices and pivots (export first if needed)."))return;
+  try{const from=await seed(gender,"official");step="pixel";syncControls();void autoLayer(true);void syncSkinUI();
+   if(from==="official")status("Reset to the OFFICIAL "+gender.toUpperCase()+" BASE (media/lgr1/base).")}catch(e){status(e.message,true)}
+ };
+ if($("seed-v6b"))$("seed-v6b").onclick=async()=>{
+  if(!confirm("Reset "+gender+" draft to the OLD frozen V6B source (before the official base)? This replaces this browser's draft."))return;
+  try{await seed(gender,"v6b");step="pixel";syncControls();void autoLayer(true);void syncSkinUI();status("Reset to the OLD V6B "+gender+" source (fallback).")}catch(e){status(e.message,true)}
  };
  $("save-draft").onclick=()=>{
   const okay=persistDraft();
@@ -1967,6 +1995,15 @@ if(BASE_MODE)root.GenesisWorkbench=Object.freeze({
   return out;
  },
  skin:()=>skinSetting(),
+ setSkin:s=>setSkin(s),
+ motions:()=>allMotions().map(m=>({id:m.id,name:m.name,frames:m.frames.length})),
+ // one motion frame of the current draft (current skin tone), for QA sheets
+ async renderPose(motionId,i,d){
+  const m=master(),mo=allMotions().find(x=>x.id===motionId);if(!m||!mo)throw Error("No draft or motion "+motionId);
+  const smo=safeMotion(mo),sides=rigSides(m),prep=await R.prepare(await skinned(m),null,d);
+  const pose=Object.assign(C.blankPose(),M.framePose(motionLib.poses,smo,i,d,sides));
+  return R.render(prep,pose,{order:M.frameOrder(baseOrder(d,m),smo,i,d,sides)});
+ },
  async adopt(g,rig,manual,label,skin){
   if(!SOURCE[g])throw Error("Unknown gender");
   drafts[g]={rig:C.validateMaster(rig),bound:null,reviewed:{},testedAngles:{},approved:false,saved:false,

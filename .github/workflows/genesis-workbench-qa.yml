@@ -5,6 +5,7 @@ on:
       - 'site/genesis-workbench.*'
       - 'site/genesis-base*'
       - 'site/lgr-skin.js'
+      - 'site/media/lgr1/base/**'
       - 'site/emotion-studio/shared-pixel-*.js'
       - 'site/mahluk-hidup-shell.js'
       - 'site/emosi-bridge.js'
@@ -45,6 +46,7 @@ on:
       - 'site/genesis-workbench.*'
       - 'site/genesis-base*'
       - 'site/lgr-skin.js'
+      - 'site/media/lgr1/base/**'
       - 'site/emotion-studio/shared-pixel-*.js'
       - 'site/mahluk-hidup-shell.js'
       - 'site/emosi-bridge.js'
@@ -195,6 +197,8 @@ jobs:
             await page.waitForFunction(()=>/APPLIED/.test(document.querySelector('#statusmsg').textContent),null,{timeout:15000});
             const applied=await page.locator('#statusmsg').textContent();
             assert.match(applied,/^\+\d+ px → /);assert.match(applied,/SW/);assert.match(applied,/NE/);
+            // t627u: a fresh browser starts from the official LGR-1 base
+            assert.strictEqual(await page.evaluate(()=>GenesisWorkbench.record().seed),'official','official base seed');
             // skin tone preview (t625u/t626u): deep shows deep ramp, draft stays light
             await page.locator('#gb-skin-tones button[data-tone="deep"]').click();await page.waitForTimeout(1500);
             const tones=await page.evaluate(async()=>{const c=await GenesisWorkbench.renderSheet('male','art'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,s=new Set();for(let k=0;k<d.length;k+=4)if(d[k+3]===255)s.add((d[k]<<16)|(d[k+1]<<8)|d[k+2]);return [s.has(0x633E28),s.has(0xEBC8A8)]});

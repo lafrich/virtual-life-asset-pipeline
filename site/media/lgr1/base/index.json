@@ -1,0 +1,28 @@
+{
+ "format": "lafrich-lgr1-official-base-index-v1",
+ "version": "official-1",
+ "approved": "2026-11-10T18:45:00+07:00",
+ "approvedBy": "Lafrich",
+ "bases": {
+  "male": {
+   "package": "genesis-base-male.json",
+   "packageFormat": "lafrich-genesis-base-v1",
+   "rigSha256": "1c1a220a78488e4e255c0ae4958547587217241041761475ef649ac8665a42a9",
+   "sheet": "genesis-base-male-sheet.png",
+   "source": "source/genesis_male_draft.lafrich-20261110.json",
+   "sourceFormat": "lgr-1-draft-v1",
+   "sourceSha256": "62864c3785cce3a7d62b182ccf153e64163044d62ca9a64bba7caa6606071483",
+   "sourceBytes": 65775
+  },
+  "female": {
+   "package": "genesis-base-female.json",
+   "packageFormat": "lafrich-genesis-base-v1",
+   "rigSha256": "e3c4ce9b14805dbb4364ef61ce380ccc45d78bbc1d86516c241b8d1c7f976dc8",
+   "sheet": "genesis-base-female-sheet.png",
+   "source": "source/genesis_female_draft.lafrich-20261110.json",
+   "sourceFormat": "lgr-1-draft-v1",
+   "sourceSha256": "2743f0ae2b077ee05e6ca67211f565bc3baf963ed60dee325c341627a0af1a7a",
+   "sourceBytes": 66008
+  }
+ }
+}
