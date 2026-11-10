@@ -1,6 +1,6 @@
 {
  "format": "lafrich-lgr1-official-base-index-v1",
- "version": "official-1",
+ "version": "official-2",
  "approved": "2026-11-10T18:45:00+07:00",
  "approvedBy": "Lafrich",
  "bases": {
@@ -24,5 +24,25 @@
    "sourceSha256": "2743f0ae2b077ee05e6ca67211f565bc3baf963ed60dee325c341627a0af1a7a",
    "sourceBytes": 66008
   }
- }
+ },
+ "revisions": [
+  {
+   "version": "official-1",
+   "date": "2026-11-10T18:45:00+07:00",
+   "note": "Lafrich's approved male/female drafts converted to lafrich-genesis-base-v1."
+  },
+  {
+   "version": "official-2",
+   "date": "2026-11-10T20:05:00+07:00",
+   "approvedBy": "Lafrich",
+   "note": "Same base pixels, slices and pivots (rig checksums unchanged). Back-view (NE/NW) hair redrawn to fit this base: short = original length with strand/volume shading and darker under-layers to the nape; swept = tapered nape with both ears free. Renderer joint fill (LGR1Raster.JOINT_FILL=8, waist +2) closes joint seams in every motion; the rest pose renders unchanged.",
+   "hair": {
+    "short_front.png": "NE/NW idle/walk/talk/sit/sleep/tired/swim/perch cells",
+    "swept_front.png": "NE/NW idle/walk/talk/sit/sleep/tired/swim/perch cells"
+   },
+   "renderer": {
+    "jointFill": 8
+   }
+  }
+ ]
 }

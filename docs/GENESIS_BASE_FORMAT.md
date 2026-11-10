@@ -143,3 +143,20 @@ these packages through § Ingest; read `index.json` first and refuse a package
 whose `rigSha256` doesn't match. A new approved base = new files + bump
 `index.json.version` and `OFFICIAL_BASE_VERSION` in `genesis-base-app.js`;
 never edit an approved package in place.
+
+### official-2 (2026-11-10 20:05 WIB)
+
+- Base pixels, slices and pivots are unchanged (same `rigSha256`).
+- Hair back views (NE/NW) redrawn for this base in `site/media/v6p/hair/`:
+  **short** keeps its original length/silhouette and gains strand + volume
+  shading with darker under-layers toward the nape (jaw outline and the gap
+  behind the ear covered); **swept** gets a tapered nape with both ears free.
+  Front views (SE/SW) and the other six styles are untouched. Legacy rotated
+  `float`/`lie` cells are left as they were (LGR does not use them).
+- **Joint fill** (render time, `LGR1Raster.JOINT_FILL` = `JOINT_FILL` in
+  `genesis_procedural_runtime.py`, radius 8 px, waist 10 px): after the parts
+  are drawn, an empty pixel near a joint that is a ≤2 px crack or an enclosed
+  hole is filled with the joint pair's own rest colour (child, then parent),
+  else the commonest neighbour colour. It never draws over art, and gaps that
+  already exist at rest (crotch, armpits) stay open, so the rest pose is
+  byte-identical. JS and Python are pixel-identical (parity tests).

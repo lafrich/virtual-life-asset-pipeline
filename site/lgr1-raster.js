@@ -228,7 +228,76 @@ function drawEntry(out,entry,tr){
   }
  }
 }
+// Render-time joint fill (twin of genesis_procedural_runtime.joint_fill): near
+// each joint an EMPTY pixel that is a <=2px crack or an enclosed hole gets the
+// joint pair's own rest colour (child, then parent), else the commonest
+// neighbour colour. Never draws over art; gaps that exist at rest stay open.
+const JOINT_FILL=8,REST=new WeakMap();
+function crackAt(al,x,y){
+ const h=(al(x-1,y)||al(x-2,y))&&(al(x+1,y)||al(x+2,y))&&(al(x-1,y)||al(x+1,y));
+ const v=(al(x,y-1)||al(x,y-2))&&(al(x,y+1)||al(x,y+2))&&(al(x,y-1)||al(x,y+1));
+ return !!(h||v);
+}
+function outsideOf(out){
+ const seen=new Uint8Array(N),st=[];
+ for(let k=0;k<N;k++){const x=k%W,y=(k/W)|0;if((x===0||x===W-1||y===0||y===H-1)&&!out[k*4+3]){seen[k]=1;st.push(k)}}
+ while(st.length){
+  const k=st.pop(),x=k%W,y=(k/W)|0;
+  for(const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]){
+   if(nx>=0&&nx<W&&ny>=0&&ny<H){const n=ny*W+nx;if(!seen[n]&&!out[n*4+3]){seen[n]=1;st.push(n)}}
+  }
+ }
+ return seen;
+}
+function restInfo(prep){
+ let r=REST.get(prep);if(r)return r;
+ const r0=renderParts(prep,{}),o0=outsideOf(r0),gap=new Uint8Array(N);
+ const al=(x,y)=>x>=0&&x<W&&y>=0&&y<H&&r0[(y*W+x)*4+3];
+ for(let k=0;k<N;k++)if(!r0[k*4+3])gap[k]=crackAt(al,k%W,(k/W)|0)||!o0[k]?1:0;
+ r={gap,tr:matrices(prep.pivots,prep.placements,{})};REST.set(prep,r);return r;
+}
+function jointFill(out,prep,tr,R0){
+ const parts=prep.groups.main.parts,{gap,tr:rtr}=restInfo(prep);
+ const a=(x,y)=>x>=0&&x<W&&y>=0&&y<H&&out[(y*W+x)*4+3];
+ for(const child of PARTS){
+  const parent=PARENTS[child];if(!parent)continue;
+  const imgs=[child,parent].filter(p=>parts[p]&&parts[p].bbox).map(p=>parts[p].img);if(!imgs.length)continue;
+  const pv=prep.pivots[child],[jx,jy]=mapPoint(tr[parent].mat,pv.x,pv.y),R=child==="torso"?R0+2:R0;
+  const invs=[inverse(tr[parent].mat),inverse(tr[child].mat)],outside=outsideOf(out);
+  for(let y=Math.max(2,Math.floor(jy-R));y<Math.min(H-2,Math.ceil(jy+R)+1);y++)
+  for(let x=Math.max(2,Math.floor(jx-R));x<Math.min(W-2,Math.ceil(jx+R)+1);x++){
+   const k=y*W+x;
+   if(out[k*4+3]||(x+.5-jx)**2+(y+.5-jy)**2>R*R)continue;
+   if(!(crackAt(a,x,y)||!outside[k]))continue;
+   const [sx0,sy0]=mapPoint(invs[0],x+.5,y+.5),[rx0,ry0]=mapPoint(rtr[parent].mat,sx0,sy0),rx=Math.floor(rx0),ry=Math.floor(ry0);
+   if(!(rx>=0&&rx<W&&ry>=0&&ry<H)||gap[ry*W+rx])continue;
+   let done=false;
+   for(const inv of invs){
+    const [sx,sy]=mapPoint(inv,x+.5,y+.5),ix=Math.floor(sx),iy=Math.floor(sy);
+    if(!(ix>=0&&ix<W&&iy>=0&&iy<H))continue;
+    const o=(iy*W+ix)*4;
+    for(const img of imgs)if(img[o+3]===255){out.set(img.subarray?img.subarray(o,o+4):img.slice(o,o+4),k*4);done=true;break}
+    if(done)break;
+   }
+   if(!done){
+    const cnt=new Map();
+    for(const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]){
+     const o=(ny*W+nx)*4;
+     if(out[o+3]===255){const c=((out[o]<<24)|(out[o+1]<<16)|(out[o+2]<<8)|out[o+3])>>>0;cnt.set(c,(cnt.get(c)||0)+1)}
+    }
+    let best=null,bn=0,bs=0;
+    for(const [c,n] of cnt){const s3=(c>>>24)+((c>>>16)&255)+((c>>>8)&255);if(best===null||n>bn||(n===bn&&s3<bs)){best=c;bn=n;bs=s3}}
+    if(best!==null){out[k*4]=best>>>24;out[k*4+1]=(best>>>16)&255;out[k*4+2]=(best>>>8)&255;out[k*4+3]=best&255}
+   }
+  }
+ }
+}
 function render(prep,pose,opts){
+ const out=renderParts(prep,pose,opts);
+ if(JOINT_FILL>0){const tr=matrices(prep.pivots,prep.placements,pose);jointFill(out,prep,tr,JOINT_FILL);jointFill(out,prep,tr,JOINT_FILL)}
+ return out;
+}
+function renderParts(prep,pose,opts){
  const out=new Uint8ClampedArray(N*4),tr=matrices(prep.pivots,prep.placements,pose);
  const order=validOrder(opts?.order)?opts.order:prep.order;
  for(const [name] of GROUPS){
@@ -240,5 +309,5 @@ function render(prep,pose,opts){
  return out;
 }
 return Object.freeze({W,H,N,PARTS,PARENTS,DRAW_ORDER,GROUPS,LAYERS,CAP_RADIUS,INHERIT,UNASSIGNED,bodyMask,
- over,expandMask,prepare,render,matrices,scale2x,validOrder,bboxOf});
+ over,expandMask,prepare,render,renderParts,JOINT_FILL,matrices,scale2x,validOrder,bboxOf});
 });

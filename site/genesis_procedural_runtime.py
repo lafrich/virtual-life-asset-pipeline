@@ -112,6 +112,9 @@ CAP_RADIUS = {"pelvis": 0, "torso": 3, "head": 2, "arm_near_upper": 3, "arm_near
               "arm_far_upper": 3, "arm_far_lower": 3, "leg_near_upper": 3,
               "leg_near_lower": 3, "leg_far_upper": 3, "leg_far_lower": 3}
 INHERIT, UNASSIGNED = 254, 255
+# Render-time joint fill radius (px; the waist gets +2). 0 disables. Twin of
+# LGR1Raster.JOINT_FILL. Fills only empty seam pixels; the rest pose is unchanged.
+JOINT_FILL = 8
 ANAT = ("head", "torso", "pelvis", "arm_r_upper", "arm_r_lower", "arm_l_upper", "arm_l_lower",
         "leg_r_upper", "leg_r_lower", "leg_l_upper", "leg_l_lower")
 DEFAULT_SIDES = {"se": "right", "sw": "left", "ne": "right", "nw": "left"}
@@ -579,6 +582,15 @@ def _draw_entry(out, entry, tr):
 
 
 def render_raw(prep: dict, pose: dict, order=None) -> bytearray:
+    out = _render_parts(prep, pose, order)
+    if JOINT_FILL > 0:
+        tr = raw_matrices(prep["pivots"], prep["placements"], pose)
+        joint_fill(out, prep, tr, JOINT_FILL)
+        joint_fill(out, prep, tr, JOINT_FILL)
+    return out
+
+
+def _render_parts(prep: dict, pose: dict, order=None) -> bytearray:
     out = bytearray(N * 4)
     tr = raw_matrices(prep["pivots"], prep["placements"], pose)
     order = order if _valid_order(order) else prep["order"]
@@ -594,6 +606,107 @@ def render_raw(prep: dict, pose: dict, order=None) -> bytearray:
         if name == "main" and prep["face"]:
             _draw_entry(out, prep["face"], tr["head"])
     return out
+
+
+def _crack(al, x, y):
+    h = (al(x - 1, y) or al(x - 2, y)) and (al(x + 1, y) or al(x + 2, y)) and (al(x - 1, y) or al(x + 1, y))
+    v = (al(x, y - 1) or al(x, y - 2)) and (al(x, y + 1) or al(x, y + 2)) and (al(x, y - 1) or al(x, y + 1))
+    return bool(h or v)
+
+
+def _outside(out):
+    """1 = transparent and connected to the canvas border."""
+    seen = bytearray(N)
+    st = [k for k in range(N) if (k % W in (0, W - 1) or k // W in (0, H - 1)) and not out[k * 4 + 3]]
+    for k in st:
+        seen[k] = 1
+    while st:
+        k = st.pop()
+        x, y = k % W, k // W
+        for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if 0 <= nx < W and 0 <= ny < H:
+                n = ny * W + nx
+                if not seen[n] and not out[n * 4 + 3]:
+                    seen[n] = 1
+                    st.append(n)
+    return seen
+
+
+def _rest_info(prep):
+    if "_rest" not in prep:
+        z = zero_pose()
+        r0 = _render_parts(prep, z)
+        o0 = _outside(r0)
+        al = lambda x, y: 0 <= x < W and 0 <= y < H and r0[(y * W + x) * 4 + 3]
+        gap = bytearray(N)
+        for k in range(N):
+            if not r0[k * 4 + 3]:
+                gap[k] = 1 if (_crack(al, k % W, k // W) or not o0[k]) else 0
+        prep["_rest"] = (gap, raw_matrices(prep["pivots"], prep["placements"], z))
+    return prep["_rest"]
+
+
+def joint_fill(out, prep, tr, R0):
+    """Render-time seam fill. Near each joint, an empty pixel that is a narrow
+    crack (<=2 px) or an enclosed hole gets the joint pair's own rest colour there
+    (child, then parent), else the commonest neighbour colour. Only empty pixels
+    are written (never over other art); gaps that already exist at rest (crotch,
+    armpits) stay open, so the rest pose renders unchanged."""
+    parts = prep["groups"]["main"]["parts"]
+    gap, rtr = _rest_info(prep)
+    a = lambda x, y: 0 <= x < W and 0 <= y < H and out[(y * W + x) * 4 + 3]
+    for child in PARTS:
+        parent = PARENTS[child]
+        if not parent:
+            continue
+        imgs = [parts[p]["img"] for p in (child, parent) if parts[p]["bbox"]]
+        if not imgs:
+            continue
+        pv = prep["pivots"][child]
+        jx, jy = map_point(tr[parent]["mat"], pv["x"], pv["y"])
+        R = R0 + 2 if child == "torso" else R0
+        invs = (inverse(tr[parent]["mat"]), inverse(tr[child]["mat"]))
+        outside = _outside(out)
+        for y in range(max(2, math.floor(jy - R)), min(H - 2, math.ceil(jy + R) + 1)):
+            for x in range(max(2, math.floor(jx - R)), min(W - 2, math.ceil(jx + R) + 1)):
+                k = y * W + x
+                if out[k * 4 + 3] or (x + .5 - jx) ** 2 + (y + .5 - jy) ** 2 > R * R:
+                    continue
+                if not (_crack(a, x, y) or not outside[k]):
+                    continue
+                sx, sy = map_point(invs[0], x + .5, y + .5)
+                rx, ry = map_point(rtr[parent]["mat"], sx, sy)
+                rx, ry = math.floor(rx), math.floor(ry)
+                if not (0 <= rx < W and 0 <= ry < H) or gap[ry * W + rx]:
+                    continue
+                done = False
+                for inv in invs:
+                    sx, sy = map_point(inv, x + .5, y + .5)
+                    ix, iy = math.floor(sx), math.floor(sy)
+                    if not (0 <= ix < W and 0 <= iy < H):
+                        continue
+                    o = (iy * W + ix) * 4
+                    for img in imgs:
+                        if img[o + 3] == 255:
+                            out[k * 4:k * 4 + 4] = img[o:o + 4]
+                            done = True
+                            break
+                    if done:
+                        break
+                if not done:
+                    best, bn, bs = None, 0, 0
+                    cnt = {}
+                    for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                        o = (ny * W + nx) * 4
+                        if out[o + 3] == 255:
+                            c4 = bytes(out[o:o + 4])
+                            cnt[c4] = cnt.get(c4, 0) + 1
+                    for c4, n in cnt.items():
+                        s3 = c4[0] + c4[1] + c4[2]
+                        if best is None or n > bn or (n == bn and s3 < bs):
+                            best, bn, bs = c4, n, s3
+                    if best is not None:
+                        out[k * 4:k * 4 + 4] = best
 
 
 def matrices(binding: dict, direction: str, pose: dict):

@@ -316,3 +316,32 @@ class OfficialBaseParityTest(LGR1ParityTests):
     test_body_all_motions_four_directions = test_custom_wear_with_tweak = None
     test_emosi_face_follows_head = test_rendering_closes_joint_gaps = None
     test_motion_mapping_matches_js = test_back_views_have_a_head = None
+
+
+class JointFillTest(unittest.TestCase):
+    """official-2: render-time joint fill closes bow seams, never draws over
+    art, and leaves the rest pose byte-identical (JS == Python is covered by
+    OfficialBaseParityTest, which renders with the fill on)."""
+    def test_rest_unchanged_and_bow_filled(self):
+        lib = rt.load_library()
+        bow = next(m for m in lib["motions"] if m["id"] == "bow")
+        self.assertEqual(rt.JOINT_FILL, 8)
+        for gender in ("male", "female"):
+            rig = json.loads((ROOT/"site"/"media"/"lgr1"/"base"/f"genesis-base-{gender}.json").read_text())["rig"]
+            binding = {"rig": rig, "views": {d: {"pivots": rig["pivots"][d], "maskBase64": rig["masks"][d]} for d in rt.DIRECTIONS}}
+            for d in rt.DIRECTIONS:
+                i = rt.binding_inputs(binding, d)
+                prep = rt.prepare_raw(i["layers"], i["mask"], i["pivots"], i["placements"], i["order"], i["caps"], i["wear"])
+                z = rt.zero_pose()
+                self.assertEqual(bytes(rt.render_raw(prep, z)), bytes(rt._render_parts(prep, z)), f"{gender} {d} rest changed")
+                filled = 0
+                for f in range(len(bow["frames"])):
+                    pose = rt.frame_pose(lib["poses"], bow, f, d, rt.sides_of(rig))
+                    order = rt.frame_order(i["order"], bow, f, d, rt.sides_of(rig))
+                    a, b = rt.render_raw(prep, pose, order), rt._render_parts(prep, pose, order)
+                    for k in range(rt.N):
+                        if b[k*4+3]:
+                            self.assertEqual(a[k*4:k*4+4], b[k*4:k*4+4], "fill drew over art")
+                        elif a[k*4+3]:
+                            filled += 1
+                self.assertGreater(filled, 0, f"{gender} {d}: bow seams not filled")
