@@ -1,0 +1,61 @@
+name: Publish Approved V6B Buildings
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assets/street_buildings/custom_v6b/approved_sprites.json"
+      - "assets/street_buildings/custom_v6b/publish.py"
+      - ".github/workflows/publish-approved-v6b-buildings.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: semesta-approved-v6b-buildings
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install exact-pixel publisher dependencies
+        run: python -m pip install pillow numpy
+      - name: Decode and verify all owner-approved sprites
+        run: python assets/street_buildings/custom_v6b/publish.py
+      - name: Validate catalog, transparency and per-pixel depth
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import json
+          p=Path('assets/street_buildings')
+          d=json.loads((p/'indonesia_custom_catalog.json').read_text())
+          assert d['projection']=='isometric-2:1' and len(d['assets'])==3
+          for a in d['assets']:
+            assert a['source']=='pipeline-street' and a['published']
+            assert set(a['variants'])=={'sw','se','ne','nw'}
+            for view in a['variants'].values():
+              src=p/view['file']
+              depth=src.with_name(src.stem+'__depth.png')
+              with Image.open(src) as im,Image.open(depth) as dm:
+                assert im.mode==dm.mode=='RGBA' and im.size==dm.size==tuple(view['size'])
+                assert set(im.getchannel('A').getdata()).issubset({0,56,255})
+                assert im.getbbox() and dm.getbbox()
+          print('Checked: 3 published catalog entries, 12 color sprites, 12 depth textures')
+          PY
+      - name: Publish artwork and catalog into canonical pipeline
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f assets/street_buildings/kampung/id_gubuk_miskin_*.png
+          git add -f assets/street_buildings/kampung/id_warung_sembako_*.png
+          git add -f assets/street_buildings/kampung/id_rm_padang_*.png
+          git add assets/street_buildings/indonesia_custom_catalog.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish approved V6B Gubuk, Sembako and Trio Minang sprites [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
