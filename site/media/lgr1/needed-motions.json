@@ -151,6 +151,36 @@
    "id": "cook",
    "name": "Masak (spatula)",
    "group": "kerja"
+  },
+  {
+   "id": "eat_sit",
+   "name": "Makan duduk (warung)",
+   "group": "kebutuhan"
+  },
+  {
+   "id": "drink_coffee_sit",
+   "name": "Minum kopi duduk",
+   "group": "kebutuhan"
+  },
+  {
+   "id": "fishing_wait_sit",
+   "name": "Mancing · nunggu duduk di dermaga",
+   "group": "kerja"
+  },
+  {
+   "id": "mulung_pick",
+   "name": "Mulung · pungut ke karung",
+   "group": "kerja"
+  },
+  {
+   "id": "walk_carry_sack",
+   "name": "Jalan panggul karung",
+   "group": "kerja"
+  },
+  {
+   "id": "check_phone",
+   "name": "Cek HP",
+   "group": "sosial"
   }
  ]
 }
