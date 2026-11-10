@@ -170,7 +170,7 @@ jobs:
             assert.strictEqual(await page.locator('#gender').inputValue(),'male');
             const shell=await ctx.newPage();shell.on('pageerror',e=>errors.push('shell '+e.message));
             await shell.goto(B+'genesis-workbench.html?tab=lgr');
-            await shell.locator('#face-count').filter({hasText:'Emosi faces'}).waitFor({timeout:30000});
+            await shell.locator('#face-count').filter({hasText:/Emosi faces: \d+ male/}).waitFor({timeout:30000});
             assert.strictEqual(await shell.locator('#open-genesis-base').getAttribute('href'),'./genesis-base.html');
             assert.deepStrictEqual(errors,[]);
             console.log('Genesis Base + Mahluk Hidup shell browser smoke: OK');
