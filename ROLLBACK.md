@@ -1,5 +1,25 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · LGR-1 whole back head + better slice paint
+
+- Previous `origin/main` (safe restore point): `5520232` (ROLLBACK notes for the neck stem)
+- Feature commit: `9c5cb08` (NE/NW back head from the whole front head in the seed + 01 button with undo; slice paint visible-only, continuous strokes, RE-SLICE keeps hand-painted pixels on request)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 5520232..origin/main   # newest first
+git push origin main
+```
+
+Data safety: no Drive file is modified. Existing drafts change only when the
+artist presses 01 · BACK HEAD FROM WHOLE FRONT HEAD (undo button) and saves.
+Drafts gain an optional local `manual` map (ignored by older code).
+
+---
+
 ## 2026-11-10 · LGR-1 head neck stem + female hand tip (artist revision notes)
 
 - Previous `origin/main` (safe restore point): `22ccc1b` (11-part pelvis split, review count fix)
