@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>GENESIS Male — Slice Test | LGR-1</title>
+<style>
+:root{font:13px Tahoma,"MS Sans Serif",Arial,sans-serif;color:#23304a;background:#91a8c9}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:linear-gradient(#8da5ca,#d4ddeb 55%,#f0d8c5)}
+button,select{font:inherit;color:#192c51}button{cursor:pointer}
+button:focus-visible,select:focus-visible{outline:3px solid #ffdb64;outline-offset:1px}
+.shell{max-width:1180px;margin:0 auto;padding:15px}
+header{border:2px solid #e8effd;background:#dce5f2;box-shadow:3px 4px 0 #415575;overflow:hidden}
+.titlebar{background:linear-gradient(90deg,#092e7e,#2565b6);color:white;padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.titlebar b{font-size:15px}.titlebar span{font-size:11px;opacity:.9}
+.headercontent{padding:12px 16px;line-height:1.55}
+.headercontent p{margin:0 0 7px}.headercontent a{color:#124b99}
+.note{background:#fff5d7;border:1px solid #c6a558;padding:7px 10px;font-size:12px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:13px 0}
+.control{display:grid;gap:4px;font-size:11px;font-weight:bold}
+button,select{background:#f5f6f8;border:2px solid;border-color:#fff #7e92b1 #7e92b1 #fff;border-radius:1px;padding:8px 10px;min-height:34px}
+button[aria-pressed="true"]{background:#ffdc87;border-color:#fbe7af #9e7731 #9e7731 #fbe7af}
+button.primary{background:#ffdc87;font-weight:bold}
+.toolbar select{min-width:170px;max-width:300px}
+.controls{display:flex;gap:5px;flex-wrap:wrap}
+.panelrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.panel{background:#dce2ed;border:2px solid;border-color:#fff #7385a0 #7385a0 #fff;box-shadow:2px 3px 0 #5b719a;overflow:hidden}
+.paneltitle{background:linear-gradient(90deg,#173f94,#477bc4);color:white;font-weight:bold;padding:8px 10px;display:flex;justify-content:space-between;gap:6px}
+.panel.new .paneltitle{background:linear-gradient(90deg,#225b59,#398a83)}
+.staging{position:relative;min-height:480px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+ background:linear-gradient(145deg,#f0f2f4,#dfe6f0)}
+.staging::before{content:"";position:absolute;left:0;right:0;top:65%;height:1px;background:#aabdd1}
+canvas{image-rendering:pixelated;width:256px;height:448px;max-width:90%;object-fit:contain;position:relative}
+.small{font-size:11px;line-height:1.4;color:#4b5b76;text-align:center;padding:7px}
+.result{margin-top:12px;background:#e5edf8;border:1px solid #8296b4;padding:10px;display:flex;gap:12px;flex-wrap:wrap}
+.result strong{color:#153e8b}.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.legend span{display:flex;gap:4px;align-items:center;font-size:10px}
+.legend i{width:11px;height:11px;display:block;border:1px solid #475061}
+.status{font-size:12px;padding:8px 10px;border:1px inset #a5b0c1;background:#f5f8fd;margin-top:11px;min-height:38px}
+footer{margin:18px 0;font-size:11px;color:#42536d}
+@media(max-width:620px){.shell{padding:7px}.panelrow{grid-template-columns:1fr}.staging{min-height:380px}canvas{width:192px;height:336px}.toolbar select{max-width:100%}.titlebar{align-items:start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="shell">
+ <header>
+  <div class="titlebar"><b>▣ GENESIS BASE — LGR-1 SLICE TEST</b><span>READ-ONLY · MALE · FOUR DIRECTIONS</span></div>
+  <div class="headercontent">
+   <p>Uji slicing baru dari <b>LGR male test.json</b> memakai <b>pixel art resmi Genesis Male</b> dan mesin animasi LGR-1 yang sama di kedua sisi. Perbandingan ini hanya mengganti <b>mask, pivot, dan placement</b> pada panel kanan.</p>
+   <p class="note">Versi lama <b>official-2</b>, Genesis Female, database animasi, dan save Google Drive <b>tidak ditimpa</b>. Draft baru belum disetujui untuk mengganti rig utama.</p>
+   <a href="./genesis-base.html">← Genesis Base Editor</a>
+  </div>
+ </header>
+ <div class="toolbar" aria-label="Slice comparison controls">
+  <div class="control">Arah karakter<div class="controls" id="directions">
+   <button data-dir="se" aria-pressed="true">SE</button><button data-dir="sw" aria-pressed="false">SW</button>
+   <button data-dir="ne" aria-pressed="false">NE</button><button data-dir="nw" aria-pressed="false">NW</button>
+  </div></div>
+  <label class="control">Gerakan LGR-1<select id="motion" aria-label="Pilih gerakan" disabled><option value="">Memuat motion…</option></select></label>
+  <div class="control">Preview<div class="controls"><button id="play" class="primary" aria-pressed="true">Ⅱ Pause</button><button id="mask" aria-pressed="false">◈ Lihat Slice & Pivot</button></div></div>
+ </div>
+ <div class="panelrow">
+  <section class="panel">
+   <div class="paneltitle"><span>SEBELUM · Genesis Male Official</span><span>official-2</span></div>
+   <div class="staging"><canvas id="before" width="64" height="112" aria-label="Original male LGR sprite"></canvas></div>
+   <div class="small">Gambar, mask, pivot dan hierarki original. Tidak berubah.</div>
+  </section>
+  <section class="panel new">
+   <div class="paneltitle"><span>SESUDAH · Slice dari File Kamu</span><span>TRIAL · not approved</span></div>
+   <div class="staging"><canvas id="after" width="64" height="112" aria-label="Male LGR with supplied slice and pivots"></canvas></div>
+   <div class="small">Pixel art sama persis; hanya slicing/pivot/placement dari draft yang diganti.</div>
+  </section>
+ </div>
+ <div class="result"><span>Mask berbeda: <strong id="maskdiff">—</strong> piksel</span><span>Pivot berubah: <strong id="pivotdiff">—</strong> dari 11</span><span>Perbedaan frame yang sedang tampil: <strong id="pixeldiff">—</strong> piksel</span></div>
+ <div class="legend" id="legend" aria-label="Warna bagian rig"></div>
+ <div class="status" id="status" role="status">Mengambil Genesis Male official-2 dan draft slicing…</div>
+ <footer>Test sandbox only · 64 × 112 native pixel, nearest-neighbor preview · no writes to original rig or browser drafts.</footer>
+</div>
+<script src="./lafrich-puppet-core.js"></script>
+<script src="./lgr1-raster.js"></script>
+<script src="./lafrich-puppet-renderer.js"></script>
+<script src="./lgr1-motion.js"></script>
+<script src="./lgr-skin.js"></script>
+<script src="./lgr-actor.js"></script>
+<script>
+(async function(){
+"use strict";
+const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer,
+      A=window.LGRActor,M=window.LGR1Motion;
+const $=id=>document.getElementById(id),DIRS=C.DIRS;
+const COLORS=["#4db6ac","#2667dc","#a677e8","#f5a75c","#6ab850","#2984a8","#cb65a1","#e0c34b","#c67653","#f17e83","#8c91dc"];
+let dir="se",motion=null,playing=true,overlay=false,t=0,last=performance.now(),serial=0,original=null,trial=null,lib=null;
+const prepared=new Map();
+const report=(s,error)=>{$("status").textContent=s;$("status").style.color=error?"#aa2424":"#203f75"};
+try{
+ const [official,draft,library]=await Promise.all([
+  A.master("male","light"),
+  fetch("./media/lgr1/base/candidates/lgr-male-slice-test-20261111.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("Slice JSON HTTP "+r.status);return r.json()}),
+  A.motions()
+ ]);
+ if(draft.format!=="lgr-1-draft-v1"||draft.gender!=="male"||draft.record?.rig?.id!=="lafrich_male")
+   throw Error("File slicing bukan LGR-1 Male draft yang benar");
+ original=C.validateMaster(official);
+ // Important: original pixel art is intentionally reused. This is a cut/pivot
+ // A/B experiment, NOT a second set of approved Genesis artwork.
+ trial=C.validateMaster({...official,
+  masks:draft.record.rig.masks,
+  pivots:draft.record.rig.pivots,
+  placements:draft.record.rig.placements
+ });
+ lib=library;
+ const options=[{id:"",name:"Rest / netral"}].concat(lib.motions.map(m=>({id:m.id,name:m.name||m.id})));
+ $("motion").replaceChildren(...options.map(o=>{const el=document.createElement("option");el.value=o.id;el.textContent=o.name;return el}));
+ $("motion").disabled=false;
+ $("motion").value=options.some(o=>o.id==="walk")?"walk":"";
+ const m=lib.motions.find(x=>x.id===$("motion").value);motion=m||null;
+ const colors=C.PARTS.map((p,i)=>{const span=document.createElement("span"),mark=document.createElement("i");mark.style.background=COLORS[i];span.append(mark,document.createTextNode(p));return span});
+ $("legend").replaceChildren(...colors);
+ report("Loaded. Semua data resmi tetap utuh. Pilih motion dan arah untuk melihat perbedaan potongan saat bergerak.");
+}catch(e){report("Tidak bisa memuat perbandingan: "+(e.message||e),true);return}
+function countMask(d){
+ const a=C.decode(original.masks[d]),b=C.decode(trial.masks[d]);let n=0;
+ for(let i=0;i<a.length;i++)if(a[i]!==b[i])n++;
+ return n;
+}
+function countPivot(d){
+ return C.PARTS.filter(p=>JSON.stringify(original.pivots[d][p])!==JSON.stringify(trial.pivots[d][p])).length;
+}
+function showOverlay(c,rig){
+ if(!overlay)return;
+ const mask=C.decode(rig.masks[dir]),ctx=c.getContext("2d");
+ ctx.globalAlpha=.28;
+ for(let k=0;k<mask.length;k++)if(mask[k]<C.PARTS.length){ctx.fillStyle=COLORS[mask[k]];ctx.fillRect(k%64,Math.floor(k/64),1,1)}
+ ctx.globalAlpha=1;
+ for(const p of C.PARTS){
+  const point=rig.pivots[dir][p];
+  ctx.fillStyle="#050d23";ctx.fillRect(point.x-1,point.y-1,3,3);
+  ctx.fillStyle="#ffffff";ctx.fillRect(point.x,point.y,1,1);
+ }
+}
+async function pair(d){
+ const key=d;
+ if(!prepared.has(key))prepared.set(key,Promise.all([R.prepare(original,null,d),R.prepare(trial,null,d)]));
+ return prepared.get(key);
+}
+function countPixels(a,b){
+ const x=a.getContext("2d").getImageData(0,0,64,112).data,
+       y=b.getContext("2d").getImageData(0,0,64,112).data;
+ let n=0;for(let k=0;k<x.length;k+=4)if(x[k]!==y[k]||x[k+1]!==y[k+1]||x[k+2]!==y[k+2]||x[k+3]!==y[k+3])n++;
+ return n;
+}
+let paintBusy=false,dirty=true,priorKey="";
+async function paint(){
+ if(paintBusy||!original||!trial)return;
+ const frame=motion?M.frameIndexAt(motion,t):0,key=dir+"/"+(motion?.id||"rest")+"/"+frame+"/"+overlay;
+ if(key===priorKey&&!dirty)return;
+ paintBusy=true;dirty=false;
+ const targetDir=dir,rev=serial;
+ try{
+  const [p0,p1]=await pair(targetDir);
+  if(rev!==serial)return;
+  const a=A.poseOf(original,lib,motion,frame,targetDir),b=A.poseOf(trial,lib,motion,frame,targetDir);
+  const c0=R.render(p0,a.pose,{order:a.order}),c1=R.render(p1,b.pose,{order:b.order});
+  const diff=countPixels(c0,c1);
+  if(rev!==serial)return;
+  const o0=$("before"),o1=$("after");
+  for(const [el,source,rig] of [[o0,c0,original],[o1,c1,trial]]){
+   const ctx=el.getContext("2d");ctx.imageSmoothingEnabled=false;
+   ctx.clearRect(0,0,64,112);ctx.drawImage(source,0,0);showOverlay(el,rig);
+  }
+  $("maskdiff").textContent=countMask(targetDir).toLocaleString("id-ID");
+  $("pivotdiff").textContent=countPivot(targetDir);
+  $("pixeldiff").textContent=diff.toLocaleString("id-ID");
+  priorKey=key;
+ }catch(e){report("Render LGR-1 gagal: "+(e.message||e),true)}
+ finally{paintBusy=false}
+}
+function reset(){serial++;priorKey="";dirty=true;t=0;paint()}
+document.querySelectorAll("[data-dir]").forEach(btn=>btn.addEventListener("click",()=>{
+ dir=btn.dataset.dir;
+ document.querySelectorAll("[data-dir]").forEach(b=>b.setAttribute("aria-pressed",String(b===btn)));
+ reset();
+}));
+$("motion").addEventListener("change",()=>{
+ motion=lib.motions.find(x=>x.id===$("motion").value)||null;reset();
+});
+$("mask").addEventListener("click",()=>{
+ overlay=!overlay;$("mask").setAttribute("aria-pressed",String(overlay));reset();
+});
+$("play").addEventListener("click",()=>{
+ playing=!playing;$("play").textContent=playing?"Ⅱ Pause":"▶ Play";
+ $("play").setAttribute("aria-pressed",String(playing));last=performance.now();
+});
+function tick(now){
+ const dt=Math.min(80,Math.max(0,now-last));last=now;
+ if(playing&&motion)t+=dt;
+ paint();
+ requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

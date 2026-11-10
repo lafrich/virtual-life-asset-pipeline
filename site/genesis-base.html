@@ -14,7 +14,7 @@ button[aria-pressed=true],button[aria-selected=true],button.active{background:li
 #app{height:100dvh;display:flex;flex-direction:column;border:2px solid #d8e8ff;min-height:0;background:#d7e1ed}
 .titlebar{display:flex;align-items:center;gap:10px;min-height:35px;padding:7px 11px;background:linear-gradient(90deg,#0b347b,#3174c0 75%,#8aafe0);color:#fff}
 .titlebar strong{font-size:13px;letter-spacing:.045em}.titlebar small{opacity:.85}.titlebar .winbuttons{margin-left:auto;display:flex;gap:3px}.titlebar .winbuttons span{background:#d8e7fc;color:#174177;padding:2px 6px;font-weight:bold}
-#topnav{display:flex;align-items:center;gap:7px;padding:6px 8px;border-bottom:1px solid #8da0b5;background:#edf1f7}
+#topnav{display:flex;align-items:center;gap:7px;padding:6px 8px;border-bottom:1px solid #8da0b5;background:#edf1f7;overflow-x:auto;white-space:nowrap}
 #topnav .space{flex:1}#topnav button{min-width:116px}.small{font-size:10px;color:#596b81}
 #progress{display:flex;align-items:stretch;gap:4px;padding:7px 8px;border-bottom:1px solid #9babc0;background:#dbe6f4;overflow-x:auto}
 #progress button{min-width:139px;flex:1;white-space:nowrap;text-align:left}
@@ -64,7 +64,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 <body>
 <div id="app">
  <header class="titlebar"><strong>▣ GENESIS BASE · by Lafrich</strong><small>MALE / FEMALE · 4 VIEWS · PIXELS + SLICES + PIVOTS</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
- <nav id="topnav"><button id="nav-workshop" aria-selected="true">◈ GENESIS BASE</button><button id="nav-emotion" aria-selected="false" hidden>☺ EMOSI.EXE</button><a class="navlink" href="./genesis-workbench.html">↗ MAHLUK HIDUP</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
+ <nav id="topnav"><button id="nav-workshop" aria-selected="true">◈ GENESIS BASE</button><button id="nav-emotion" aria-selected="false" hidden>☺ EMOSI.EXE</button><a class="navlink" href="./genesis-workbench.html">↗ MAHLUK HIDUP</a><a class="navlink" href="./genesis-slice-compare.html" title="Uji old vs new Genesis Male slice, read-only; base resmi dan draft tidak diganti">↔ TEST SLICE MALE</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
  <nav id="progress" aria-label="LGR-1 creation stages">
   <button data-step="pixel" aria-selected="true"><span class="progress-index">1</span><b>PIXEL EDITOR</b></button>
   <button data-step="rig" aria-selected="false"><span class="progress-index">2</span><b>PIVOT &amp; SLICING</b></button>

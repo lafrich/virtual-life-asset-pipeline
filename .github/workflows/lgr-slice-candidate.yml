@@ -1,0 +1,49 @@
+name: Genesis LGR-1 Male Slice Trial — A/B QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/genesis-slice-compare.html'
+      - 'site/media/lgr1/base/candidates/**'
+      - 'tests/test_lgr_slice_candidate.cjs'
+      - 'tests/genesis-slice-compare.e2e.cjs'
+      - '.github/workflows/lgr-slice-candidate.yml'
+  pull_request:
+    paths:
+      - 'site/genesis-slice-compare.html'
+      - 'site/media/lgr1/base/candidates/**'
+      - 'tests/test_lgr_slice_candidate.cjs'
+      - 'tests/genesis-slice-compare.e2e.cjs'
+      - '.github/workflows/lgr-slice-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout LGR-1 asset pipeline
+        uses: actions/checkout@v4
+        with:
+          path: virtual-life-asset-pipeline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify no official base is modified
+        run: node --test virtual-life-asset-pipeline/tests/test_lgr_slice_candidate.cjs
+      - name: Install Playwright
+        run: npm install --no-save playwright@1.56.1
+      - name: Serve candidate and official base from same origin
+        run: |
+          python3 -m http.server 8091 --bind 127.0.0.1 >/tmp/genesis-slice-compare.log 2>&1 &
+          sleep 2
+      - name: Render four views with original and supplied slices
+        run: node virtual-life-asset-pipeline/tests/genesis-slice-compare.e2e.cjs
+      - name: Upload visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-slice-male-ab
+          path: screenshots/
+          if-no-files-found: ignore
