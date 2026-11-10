@@ -158,6 +158,13 @@ seed and by the manual *02 · ✂ RE-SLICE FROM SHAPE* button):
 - **Head** = skull + chin + neck down to the shoulder line. The shoulder row is
   the first row below the narrowest neck row (y 46–57) that is ≥ 4 px wider.
   The head pivot is the neck base (centre of the last neck row, y = shoulder).
+  The head ends in a clean **neck stem** (artist revision, Nov 10): below the
+  narrowest neck row only the neck's own columns are head (the flare into the
+  shoulders is torso), and a real neck (≤ 8 px, back views NE/NW) runs on below
+  the shoulder line while rows are < neck + 6 px wide (max 3 rows), so the head
+  piece is whole down to the bottom of the neck. Front views (chin hides the
+  neck) keep the chest as torso.
+- **Hand tip**: a fingertip row that tapers in over the hip (Female) stays arm.
 - **Arms** = only the arm. The inner arm edge is found per side from rows
   where the arm hangs free (empty gap to the body, typical for Female) or
   from the dark inner outline 2–5 px inside the outer edge (Male). Shoulder

@@ -80,12 +80,28 @@
  // visible pixel in any body layer). Head = everything above the shoulder
  // line (skull + chin + neck), limbs/torso by region; EMPTY canvas → 255 (no part).
  function rowWidth(vis,y){let n=0;for(let x=0;x<W;x++)if(vis[y*W+x])n++;return n}
- function shoulderRow(vis){
+ function neckRow(vis){
   let min=Infinity,at=-1;
   for(let y=46;y<=57;y++){const w=rowWidth(vis,y);if(w>0&&w<min){min=w;at=y}}
+  return {at,min};
+ }
+ function shoulderRow(vis){
+  const {at,min}=neckRow(vis);
   if(at<0)return 50;
   for(let y=at+1;y<=60;y++)if(rowWidth(vis,y)>=min+4)return y;
   return 50;
+ }
+ // The head piece ends in a clean neck stem: below the narrowest neck row only
+ // the neck's own columns stay head (the flare into the shoulders is torso),
+ // and the stem runs on down to the top of the shoulders (rows still narrower
+ // than neck + 6 px, at most 3 rows) so the head is whole to the bottom of the neck.
+ function neckStem(vis,cut){
+  const {at,min}=neckRow(vis);if(at<0)return null;
+  let xl=-1,xr=-1;for(let x=0;x<W;x++)if(vis[at*W+x]){if(xl<0)xl=x;xr=x}
+  // only a real neck (≤8 px, back views) runs on below the shoulder line;
+  // in front views the chin hides the neck and the chest stays torso
+  let end=cut;while(xr-xl<8&&end<cut+3&&end<H&&rowWidth(vis,end)>0&&rowWidth(vis,end)<min+6)end++;
+  return {row:at,xl,xr,end};
  }
  // pixels: composite RGBA (N*4, outline colours used to find the arm line) or
  // a plain 0/1 silhouette (N). Returns {mask, shoulder, legTop, headPivot,...}.
@@ -126,6 +142,7 @@
   while(end+1<bottom&&at(xo,end+1)&&at(xi,end+1))end++;          // arm overlapping the hip
   const outside=(y)=>{for(let x=0;x<W;x++)if(vis[y*W+x]&&(side<0?x<xi:x>xi))return true;return false};
   if(end+1<bottom&&outside(end+1)&&!(end+2<H&&outside(end+2)))end++; // fingertips
+  else if(end+1<bottom&&outside(end+1)&&(side<0?edge(end+1)>xo:edge(end+1)<xo))end++; // hand tip tapering in over the hip
   return {x:xi,top:a,bottom:end};
  }
  function legGap(vis,y,prev){
@@ -141,7 +158,7 @@
  }
  function shapeSlice(pixels,dir="se"){
   const sil=silhouette(pixels),vis=sil.vis;
-  const flip=!!MIRRORED[dir],cut=shoulderRow(vis),out=new Uint8Array(N).fill(255);
+  const flip=!!MIRRORED[dir],cut=shoulderRow(vis),stem=neckStem(vis,cut),out=new Uint8Array(N).fill(255);
   const part=(sx,y)=>PARTS.indexOf(defaultPart(flip?mirrorX(sx):sx,y));
   // legs start at the crotch: first row (74..90) with a real gap between legs
   let legTop=81;
@@ -154,7 +171,10 @@
    for(let x=0;x<W;x++){
     const k=y*W+x;if(!vis[k])continue;
     let p;
-    if(y<cut)p=PARTS.indexOf("head");
+    const inStem=stem&&x>=stem.xl&&x<=stem.xr;
+    if(y<cut&&!(stem&&y>stem.row&&!inStem))p=PARTS.indexOf("head");
+    else if(stem&&y>stem.row&&y<stem.end&&inStem)p=PARTS.indexOf("head");
+    else if(y<cut)p=PARTS.indexOf("torso");
     else if(y>=legTop)p=part(x<split?26:38,Math.max(y,81));
     else{
      p=PARTS.indexOf(y>=waist?"pelvis":"torso");

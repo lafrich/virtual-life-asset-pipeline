@@ -211,10 +211,20 @@ class ShapeSliceTest(unittest.TestCase):
                 x, y = k % 64, k // 64
                 if not vis[k]:
                     self.assertEqual(mask[k], 255, f"{d} empty pixel owned")
-                elif y < shoulder:
+                elif y < shoulder - 1:
                     self.assertEqual(mask[k], HEAD, f"{d} chin/neck not head at y{y}")
                 elif y < 62:
-                    self.assertEqual(mask[k], TORSO, f"{d} shoulder ({x},{y}) not torso")
+                    self.assertIn(mask[k], (HEAD, TORSO), f"{d} shoulder ({x},{y}) not torso")
+            # the head ends in a clean neck stem: below the shoulder line only a
+            # real neck (back views, <= 8 px wide) runs on; the flare is torso
+            for y in range(shoulder - 1, 62):
+                cols = [k % 64 for k in range(y*64, y*64+64) if vis[k] and mask[k] == HEAD]
+                if cols:
+                    self.assertLessEqual(max(cols) - min(cols), 10, f"{d} head flare at y{y}")
+                if y >= shoulder:
+                    self.assertTrue(not cols or (d in ("ne", "nw") and len(cols) <= 8), f"{d} head below shoulder at y{y}")
+            if d in ("ne", "nw"):
+                self.assertEqual(sum(1 for x in range(64) if mask[shoulder*64+x] == HEAD), 7, d + " neck stem")
             # pelvis = hips band between the waist and the leg split; parent of both thighs
             self.assertEqual(out["waist"], out["legTop"] - 6, d)
             for k in range(rt.N):
