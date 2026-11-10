@@ -1,5 +1,24 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · Genesis Base: official LGR-1 Male/Female base
+
+- Previous `origin/main` (safe restore point): `ae69998`
+- Feature commit: `df6e2cb` (official packages + originals in `site/media/lgr1/base/`, default seed = official base, RESET TO OFFICIAL BASE / OLD V6B, IMPORT of `lgr-1-draft-v1`, darker AUTO-SLICE label, tests; cache-buster lgr1-fix-10)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit df6e2cb^..origin/main   # this change + its notes only
+git push origin main
+```
+
+Data safety: browser drafts are never overwritten by the new seed; after a
+revert new drafts start from V6B again. Lafrich's Drive files were not touched.
+
+---
+
 ## 2026-11-10 · Genesis Base: paste across views, auto-slice, skin tone
 
 - Previous `origin/main` (safe restore point): `269240c`
