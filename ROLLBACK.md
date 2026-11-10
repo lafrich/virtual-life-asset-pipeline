@@ -1,5 +1,25 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · LGR-1 official-2: joint fill + back-view hair (lgr1-fix-12)
+
+- Previous `origin/main` (safe restore point): `f3fb894`
+- Feature commit: `c2d881c` (render-time joint fill in `lgr1-raster.js` + `genesis_procedural_runtime.py`, short/swept NE/NW hair cells in `site/media/v6p/hair/`, base index `official-2`, tests; cache-buster lgr1-fix-12)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit c2d881c^..origin/main   # this change + its notes only
+git push origin main
+```
+
+Instant switch-off without a revert: set `JOINT_FILL=0` in `site/lgr1-raster.js`
+and `JOINT_FILL = 0` in `site/genesis_procedural_runtime.py`. Base pixels, slices,
+pivots and rig checksums are unchanged; only the two hair PNGs changed.
+
+---
+
 ## 2026-11-10 · Genesis Base: hair design overlay
 
 - Previous `origin/main` (safe restore point): `30641a7`
