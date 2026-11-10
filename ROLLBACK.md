@@ -1,5 +1,23 @@
 # Rollback — virtual-life-asset-pipeline (latest first)
 
+## 2026-11-10 · LGR game runtime (lgr-game-2) + single refit wear dir
+
+- Previous `origin/main` (safe restore point): `bf888c8`
+- Feature commit: `8f0c24c` (`site/lgr-game.js` game adapter on LGRActor/LGRWear/LGRDB, built-in sit/lie_sleep/talk in `media/lgr1/motions.json`, `mh-wear` re-baked with the outfit-refit warp + glasses/facial strips, `tools/bake_lgr_wear.py`, `tools/data/v6b-silhouette.json`, `tests/test_lgr_game.cjs`, CI, docs/LGR_DB.md)
+- New tip: this ROLLBACK-notes commit
+
+Restore (fast-forward only, never force-push):
+
+```bash
+git fetch origin && git checkout main && git pull --ff-only origin main
+git revert --no-edit 8f0c24c^..origin/main   # this change + its notes only
+git push origin main
+```
+
+virtual-office loads `lgr-game.js`; revert the virtual-office LGR player commit first (see its ROLLBACK.md).
+
+---
+
 ## 2026-11-10 · Mahluk Hidup: Bergerak + Beraksi tabs (mh-subapps-1)
 
 - Previous `origin/main` (safe restore point): `3c3069a`
