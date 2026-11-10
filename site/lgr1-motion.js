@@ -16,13 +16,13 @@
 })(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(){
 "use strict";
 const DIRS=Object.freeze(["se","sw","ne","nw"]);
-const ANAT=Object.freeze(["head","torso","arm_r_upper","arm_r_lower","arm_l_upper","arm_l_lower",
+const ANAT=Object.freeze(["head","torso","pelvis","arm_r_upper","arm_r_lower","arm_l_upper","arm_l_lower",
  "leg_r_upper","leg_r_lower","leg_l_upper","leg_l_lower"]);
 const DEFAULT_SIDES=Object.freeze({se:"right",sw:"left",ne:"right",nw:"left"});
 const FACING=Object.freeze({se:1,sw:-1,ne:1,nw:-1});
 const LIBRARY_FORMAT="lgr1-motion-library-v1",MOTION_FORMAT="lgr1-motion-v1";
 const SNAPS=Object.freeze([1,5,10,15,30,45,90]);
-const LABELS=Object.freeze({head:"KEPALA / HEAD",torso:"TORSO",
+const LABELS=Object.freeze({head:"KEPALA / HEAD",torso:"TORSO (BADAN ATAS)",pelvis:"PINGGUL / PELVIS",
  arm_r_upper:"LENGAN KANAN · ATAS",arm_r_lower:"LENGAN KANAN · BAWAH",
  arm_l_upper:"LENGAN KIRI · ATAS",arm_l_lower:"LENGAN KIRI · BAWAH",
  leg_r_upper:"PAHA KANAN",leg_r_lower:"BETIS KANAN",leg_l_upper:"PAHA KIRI",leg_l_lower:"BETIS KIRI"});
@@ -32,7 +32,7 @@ function sidesOf(rig){
  return s;
 }
 function rigPart(anat,dir,sides){
- if(anat==="head"||anat==="torso")return anat;
+ if(anat==="head"||anat==="torso"||anat==="pelvis")return anat;
  const [limb,side,seg]=anat.split("_");
  const nearSide=(sides||DEFAULT_SIDES)[dir]||DEFAULT_SIDES[dir];
  const near=(side==="r")===(nearSide==="right");
@@ -71,7 +71,7 @@ function validateMotion(m,poses){
   if(!Number.isInteger(ms)||ms<40||ms>2000)throw Error("LGR-1 motion "+m.id+" frame "+(i+1)+": ms must be 40–2000");
   const out={ms,parts:validatePose(f.parts,m.id+"#"+(i+1))};
   if(Array.isArray(f.behindTorso)&&f.behindTorso.length){
-   out.behindTorso=f.behindTorso.filter(p=>ANAT.includes(p)&&p!=="torso"&&p!=="head");
+   out.behindTorso=f.behindTorso.filter(p=>ANAT.includes(p)&&p!=="torso"&&p!=="head"&&p!=="pelvis");
   }
   if(f.dirs&&typeof f.dirs==="object"){
    const dirs={};
@@ -116,6 +116,11 @@ function framePose(poses,m,index,dir,sides){
   v.a=snap(v.a,m.angleSnap);
   out[rigPart(anat,dir,sides)]=v;
  }
+ // TORSO x/y move the whole body (as before the pelvis split, so older
+ // motions look identical); PELVIS x/y too. PELVIS a tilts the hips (legs and
+ // upper body follow); TORSO a bends the upper body at the waist.
+ out.pelvis={x:out.pelvis.x+out.torso.x,y:out.pelvis.y+out.torso.y,a:out.pelvis.a};
+ out.torso={x:0,y:0,a:out.torso.a};
  return out;
 }
 function frameOrder(baseOrder,m,index,dir,sides){
@@ -123,7 +128,7 @@ function frameOrder(baseOrder,m,index,dir,sides){
  if(!f.behindTorso?.length)return baseOrder.slice();
  const behind=new Set(f.behindTorso.map(a=>rigPart(a,dir,sides)));
  const rest=baseOrder.filter(p=>!behind.has(p)),moved=baseOrder.filter(p=>behind.has(p));
- const t=rest.indexOf("torso");
+ const t=Math.min(...["pelvis","torso"].map(p=>rest.indexOf(p)).filter(i=>i>=0));
  return [...rest.slice(0,t),...moved,...rest.slice(t)];
 }
 return Object.freeze({DIRS,ANAT,DEFAULT_SIDES,FACING,LIBRARY_FORMAT,MOTION_FORMAT,SNAPS,LABELS,

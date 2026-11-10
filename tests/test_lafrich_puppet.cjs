@@ -10,8 +10,9 @@ test('Lafrich base has exactly two independent immutable IDs',()=>{
  assert.throws(()=>Core.validateMaster({...male,id:'genesis_male_nude'}),/Lafrich Puppet/);
  assert.equal(Object.keys(male.pivots).length,4);
 });
-test('real 10-piece skeletal rig separates both arms into upper and lower, both legs into thigh and calf',()=>{
- assert.equal(Core.PARTS.length,10);
+test('real 11-piece skeletal rig (pelvis root) separates both arms into upper and lower, both legs into thigh and calf',()=>{
+ assert.equal(Core.PARTS.length,11);
+ assert.equal(Core.PARENTS.pelvis,null);assert.equal(Core.PARENTS.torso,'pelvis');
  for(const side of ['near','far']){
   assert.ok(Core.PARTS.includes('arm_'+side+'_upper'));
   assert.ok(Core.PARTS.includes('arm_'+side+'_lower'));
@@ -20,9 +21,9 @@ test('real 10-piece skeletal rig separates both arms into upper and lower, both 
   assert.equal(Core.PARENTS['arm_'+side+'_lower'],'arm_'+side+'_upper');
   assert.equal(Core.PARENTS['leg_'+side+'_lower'],'leg_'+side+'_upper');
   assert.equal(Core.PARENTS['arm_'+side+'_upper'],'torso');
-  assert.equal(Core.PARENTS['leg_'+side+'_upper'],'torso');
-  assert.deepEqual(Runtime.partPath('arm_'+side+'_lower',Core),['torso','arm_'+side+'_upper','arm_'+side+'_lower']);
-  assert.deepEqual(Runtime.partPath('leg_'+side+'_lower',Core),['torso','leg_'+side+'_upper','leg_'+side+'_lower']);
+  assert.equal(Core.PARENTS['leg_'+side+'_upper'],'pelvis');
+  assert.deepEqual(Runtime.partPath('arm_'+side+'_lower',Core),['pelvis','torso','arm_'+side+'_upper','arm_'+side+'_lower']);
+  assert.deepEqual(Runtime.partPath('leg_'+side+'_lower',Core),['pelvis','leg_'+side+'_upper','leg_'+side+'_lower']);
  }
  assert.equal(Core.PARENTS.head,'torso');
 });
@@ -79,7 +80,7 @@ test('Hierarchical rest placement moves body and wear through the SAME LGR-1 tra
 test('new Python motion has only one blank, unsaved authoring frame; no eleven installed animations',()=>{
  const source=Core.motion('Hand Wave');
  assert.equal(source.frames.length,1);assert.equal(source.id,'');
- for(const d of Core.DIRS)assert.equal(Object.keys(source.frames[0].poses[d]).length,10);
+ for(const d of Core.DIRS)assert.equal(Object.keys(source.frames[0].poses[d]).length,11);
  source.frames[0].poses.se.arm_near_lower.a=78;
  source.frames[0].poses.se.arm_near_upper.a=23;
  const text=Core.toPython(source),loaded=Core.fromPython(text);

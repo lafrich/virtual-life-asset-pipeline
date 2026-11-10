@@ -170,7 +170,7 @@ jobs:
               assert(await page.locator('[data-panel="rig"]').isVisible(),'Rig stage inaccessible');
               assert(await page.locator('#part-select').isVisible(),
                 'Body Part selector hidden on Pivot & Slicing');
-              // First, reject a bind when none of the 40 combinations has been reviewed.
+              // First, reject a bind when none of the 44 combinations has been reviewed.
               await page.locator('#rig-next').click();
               await page.locator('#make-binding').click();
               assert((await page.locator('#binding-result').textContent()).includes('MANUAL QA INCOMPLETE'),
@@ -178,7 +178,7 @@ jobs:
               await page.locator('[data-step="rig"]').click();
               await page.locator('#pivot-x').fill('31');
               await page.locator('#pivot-x').dispatchEvent('change');
-              // Complete all 10 parts in four directions without returning to Pixel Editor.
+              // Complete all 11 parts in four directions without returning to Pixel Editor.
               const partNames=await page.evaluate(()=>[...window.LafrichPuppetCore.PARTS]);
               for(const d of ['se','sw','ne','nw']){
                 await page.locator('#views button[data-dir="'+d+'"]').click();
@@ -187,15 +187,15 @@ jobs:
                   await page.locator('#mark-reviewed').click();
                 }
               }
-              assert((await page.locator('#part-progress').textContent()).includes('40 / 40'),
-                '40-part review matrix not complete');
+              assert((await page.locator('#part-progress').textContent()).includes('44 / 44'),
+                '44-review matrix (11 parts x 4) not complete');
               // Adjusting a reviewed pivot MUST invalidate that part's review.
               await page.locator('#pivot-x').fill('30');
               await page.locator('#pivot-x').dispatchEvent('change');
-              assert((await page.locator('#part-progress').textContent()).includes('39 / 40'),
+              assert((await page.locator('#part-progress').textContent()).includes('43 / 44'),
                 'Pivot correction did not invalidate previous rig QA');
               await page.locator('#mark-reviewed').click();
-              assert((await page.locator('#part-progress').textContent()).includes('40 / 40'),
+              assert((await page.locator('#part-progress').textContent()).includes('44 / 44'),
                 'Corrected part could not be re-reviewed');
               await page.locator('#rig-isolate').click();
               assert(await page.locator('#rig-isolate').getAttribute('aria-pressed')==='true',
@@ -234,8 +234,8 @@ jobs:
               assert(saved.includes('MASTER SAVED'),'Master not persisted: '+saved);
               const actual=await page.evaluate(()=>JSON.parse(localStorage.getItem('vl-lafrich-genesis-approved-masters-v1')));
               assert(actual?.female?.id==='lafrich_genesis_female','Canonical Female Genesis Master missing from database');
-              assert(Object.keys(actual.female.binding.reviewed||{}).length===40,
-                'Approved binding did not preserve 40 part-angle review receipts');
+              assert(Object.keys(actual.female.binding.reviewed||{}).length===44,
+                'Approved binding did not preserve 44 part-angle review receipts');
               assert(actual.female.binding.views.se.spritePng.startsWith('data:image/png;base64,'),'Python neutral source absent');
               assert(actual.female.rigFormat==='LGR-1'&&actual.female.binding.rigFormat==='LGR-1',
                 'Missing LGR-1 format identifiers in approved master');
@@ -248,7 +248,7 @@ jobs:
                 'Canonical master unexpectedly failed strict LGR-1 validation: '+cloudValidation);
               // Regression: a stray pixel is visible but is intentionally NOT part of
               // anatomy. Find -> delete the source RGBA pixel -> Undo restores it.
-              // No old 40/40 reviewed part-angle receipts should be lost.
+              // No old 44/44 reviewed part-angle receipts should be lost.
               const strayIndex=await page.evaluate(async()=>{
                 const key='vl-lafrich-genesis-workbench-drafts-v1';
                 const store=JSON.parse(localStorage.getItem(key));
@@ -296,13 +296,13 @@ jobs:
               },strayIndex);
               assert.equal(clean.alpha,0,'Delete Stray left visible source pixel');
               assert.equal(clean.mask,255,'Cleanup secretly assigned a body part');
-              assert.equal(clean.checks,40,'Cleanup incorrectly cleared prior 40-part reviews');
+              assert.equal(clean.checks,44,'Cleanup incorrectly cleared prior 44 part-angle reviews');
               await page.locator('#rig-next').click();
               await page.locator('#make-binding').click();
               await page.waitForFunction(()=>document.querySelector('#binding-result')?.
                 textContent?.startsWith('BOUND'),null,{timeout:15000});
               assert((await page.locator('#binding-result').textContent()).startsWith('BOUND'),
-                'After stray deletion the existing 40/40 review should allow a clean bind');
+                'After stray deletion the existing 44/44 review should allow a clean bind');
               await page.locator('[data-step="rig"]').click();
               await page.locator('#undo-stray-delete').click();
               await page.waitForFunction(()=>document.querySelector('#unassigned-detail')?.
@@ -332,7 +332,7 @@ jobs:
               const lib=await page.evaluate(async()=>(await (await fetch('./media/lgr1/motions.json')).json()).motions.find(m=>m.id==='wave').frames.length);
               assert.strictEqual(lib,4,'Shared library unexpectedly modified');
               if(errors.length)throw Error('Browser errors: '+errors.join(' | '));
-              console.log(JSON.stringify({browser:'OK',pixelCount,partCount:10,
+              console.log(JSON.stringify({browser:'OK',pixelCount,partCount:11,
                 femaleSwitched:true,bindingResult:info.slice(0,180),approved:actual.female.id}));
             } finally {await browser.close()}
           })().catch(e=>{console.error(e);process.exitCode=1})

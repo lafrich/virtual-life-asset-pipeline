@@ -14,13 +14,15 @@ runtime = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runtime)
 
 
-def fixture():
-    parts = runtime.PARTS
+def fixture(legacy=False):
+    parts = runtime.LEGACY_PARTS if legacy else runtime.PARTS
     parents = {"torso": None, "head": "torso",
         "arm_near_upper": "torso", "arm_near_lower": "arm_near_upper",
         "arm_far_upper": "torso", "arm_far_lower": "arm_far_upper",
         "leg_near_upper": "torso", "leg_near_lower": "leg_near_upper",
         "leg_far_upper": "torso", "leg_far_lower": "leg_far_upper"}
+    if not legacy:
+        parents = dict(runtime.PARENTS)
     image = "data:image/png;base64,iVBORw0KGgo="
     mask = base64.b64encode(bytes([0])*runtime.N).decode()
     return {
@@ -38,10 +40,27 @@ def fixture():
 
 
 class GenesisRigTests(unittest.TestCase):
-    def test_four_views_and_ten_parts(self):
+    def test_four_views_and_eleven_parts(self):
         m = fixture()
         self.assertIs(runtime.validate(m), m)
-        self.assertEqual(len(runtime.PARTS), 10)
+        self.assertEqual(len(runtime.PARTS), 11)
+        self.assertEqual(runtime.PARENTS["torso"], "pelvis")
+        self.assertEqual(runtime.PARENTS["leg_near_upper"], "pelvis")
+
+    def test_legacy_ten_part_binding_still_opens(self):
+        m = fixture(legacy=True)
+        for d in runtime.DIRECTIONS:
+            m["views"][d]["pivots"]["torso"] = {"x": 32, "y": 66}
+        self.assertIs(runtime.validate(m), m)
+        mask = bytearray([runtime.PARTS.index("torso")])*runtime.N
+        new, piv = runtime.migrate_legacy_view(bytes(mask), m["views"]["se"]["pivots"])
+        self.assertEqual(piv["pelvis"], {"x": 32, "y": 79})
+        self.assertEqual(piv["torso"], {"x": 32, "y": 75})
+        self.assertEqual(new[74*64], runtime.PARTS.index("torso"))
+        self.assertEqual(new[75*64], runtime.PARTS.index("pelvis"))
+        self.assertNotIn("pelvis", m["views"]["se"]["pivots"])  # input untouched
+        mats = runtime.matrices(m, "se", runtime.zero_pose())
+        self.assertIn("pelvis", mats)
 
     def test_missing_side_rejected(self):
         m = fixture()
@@ -72,7 +91,7 @@ class GenesisRigTests(unittest.TestCase):
     def test_parent_transform_moves_child(self):
         m = fixture()
         pose = runtime.zero_pose()
-        pose["torso"]["x"] = 7
+        pose["pelvis"]["x"] = 7
         mat = runtime.matrices(m, "se", pose)
         x, y = runtime.map_point(mat["head"], 32, 50)
         self.assertAlmostEqual(x, 39)
@@ -134,13 +153,13 @@ class GenesisRigTests(unittest.TestCase):
     def test_unreviewed_part_angle_rejected(self):
         m = fixture()
         del m["reviewed"]["sw|head"]
-        with self.assertRaisesRegex(ValueError,"40 part-angle"):
+        with self.assertRaisesRegex(ValueError,"44 part-angle"):
             runtime.validate(m)
 
     def test_placements_match_js_affine_hierarchy(self):
         m = fixture()
         m["rig"] = {"placements": {"se": {
-            "torso": {"x": 4, "y": 1},
+            "pelvis": {"x": 4, "y": 1},
             "arm_near_upper": {"x": 3, "y": -2},
             "arm_near_lower": {"x": 2, "y": 1},
         }}}

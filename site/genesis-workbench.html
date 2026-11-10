@@ -76,8 +76,8 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
   <section id="part-navigation" class="shared-part-nav">
    <h2>BODY PART · SHARED NAVIGATION</h2>
    <div class="btnrow"><button id="part-prev" type="button" title="Previous body part">← PREV</button><select id="part-select" aria-label="Active body part"></select><button id="part-next" type="button" title="Next body part">NEXT →</button></div>
-   <details id="all-parts"><summary>SHOW ALL 10 BODY PARTS</summary><div id="bodyparts"></div></details>
-   <p id="part-progress">Review: 0 / 40 part-angle combinations</p>
+   <details id="all-parts"><summary>SHOW ALL 11 BODY PARTS</summary><div id="bodyparts"></div></details>
+   <p id="part-progress">Review: 0 / 44 part-angle combinations</p>
    <div id="review-matrix" aria-label="Rig review completion by angle and part"></div>
   </section>
   <details id="draft-management">
@@ -102,7 +102,9 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <p>Mask slicing per-pixel menentukan bagian yang bergerak. Pivot pada koordinat asli PNG 64 × 112.</p>
    <div class="btnrow"><button id="rig-pivot" aria-pressed="true">✣ PIVOT</button><button id="rig-paint" aria-pressed="false">▣ SLICE PAINT</button><button id="rig-erase" aria-pressed="false">⌫ UNASSIGN</button><button id="rig-pan" aria-pressed="false" title="Drag the zoomed canvas without editing">✥ PAN</button></div>
    <div class="btnrow"><button id="rig-isolate" aria-pressed="false" title="Hide all except the selected part">◉ ISOLATE SELECTED</button><button id="copy-part-slice">⧉ COPY PART</button><button id="paste-part-slice">▣ PASTE PART</button></div>
-   <p style="font-size:10px">BLUE = selected part · RED = visible unassigned pixels · YELLOW = currently highlighted stray cluster.</p>
+   <p id="mask-legend" style="font-size:10px">BLUE = selected part (real pixels incl. hair/outfit) · RED = no part · YELLOW = flagged · empty canvas belongs to no part</p>
+   <button id="reslice-head" type="button" title="Re-slice all parts from the body shape: head+neck, arm-only arms, legs split at the gap. Pixel art is not changed.">✂ RE-SLICE FROM SHAPE (HEAD/NECK · ARMS · LEGS · PELVIS)</button>
+   <p style="font-size:10px">For drafts made before 10 Nov: head gets chin + neck, arms get only the arm (shoulders stay torso), legs split at the gap, new PELVIS (hips) split from the torso, empty canvas belongs to no part. Pixel art is untouched; only reviews of changed parts reset. RIG UNDO reverts.</p>
    <div id="unassigned-tools">
     <h3>FIND UNASSIGNED PIXELS</h3>
     <p>Finds visible pixels that belong to NO body part, tiny isolated FLOATERS (≤6 px touching nothing) and, with an outfit preview on, OUTFIT pixels outside the body outline (auto-assigned to the nearest part).</p>
@@ -110,6 +112,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
     <div class="btnrow"><button id="find-unassigned" type="button">⌕ FIND ALL STRAY PIXELS</button><button id="next-unassigned" type="button" disabled>NEXT ISSUE →</button></div>
     <label class="field">ISSUE CLUSTER<select id="unassigned-clusters" aria-label="Unassigned pixel issue"><option value="">Run Find to scan all 4 angles</option></select></label>
     <p id="unassigned-detail" role="status">No scan yet. Finding checks all four angles.</p>
+    <p id="unassigned-reason" style="font-size:11px;color:#7a3b00"></p>
     <div class="btnrow"><button id="remove-stray-group" type="button" disabled>✕ DELETE HIGHLIGHTED STRAY GROUP</button><button id="undo-stray-delete" type="button" disabled>↶ UNDO DELETE</button></div>
     <button id="remove-strays-angle" type="button" disabled>✕ DELETE ALL UNASSIGNED / FLOATERS IN CURRENT ANGLE</button>
     <div class="btnrow"><button id="assign-outfit-cluster" type="button" disabled>⇢ ASSIGN OUTFIT CLUSTER TO SELECTED PART</button><button id="reset-outfit-tweaks" type="button" disabled>↺ RESET OUTFIT TWEAKS</button></div>
@@ -185,6 +188,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
  </aside>
  <section class="pane" id="viewer">
   <h2 id="preview-title">PIXEL EDITOR · SELECT A PART</h2>
+  <div id="stagelegend" style="font-size:10px;padding:2px 6px">BLUE = selected part (real pixels incl. hair/outfit) · RED = no part · YELLOW = flagged · empty canvas belongs to no part</div>
   <div id="stagebar"><button id="zoom-out">−</button><input id="zoom" type="range" min="2" max="14" value="5"><button id="zoom-in">＋</button><button id="zoom-fit">FIT</button><span id="zoom-label">500%</span></div>
   <div id="stagewrap"><canvas id="stage" width="64" height="112" aria-label="Genesis 64 by 112 edit and binding preview"></canvas></div>
   <div id="views" aria-label="Four independently editable angles"></div>
@@ -286,21 +290,21 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="./genesis-source.js?v=lgr1-fix-1"></script>
-<script src="./v6p-character-store.js?v=lgr1-fix-1"></script>
-<script src="./genesis-base-bridge.js?v=lgr1-fix-1"></script>
-<script src="./v6p-part-catalog.js?v=lgr1-fix-1"></script>
-<script src="./v6p-part-overrides.js?v=lgr1-fix-1"></script>
-<script src="./v6p-compositor.js?v=lgr1-fix-1"></script>
-<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-1"></script>
-<script src="./emosi-bridge.js?v=lgr1-fix-1"></script>
-<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-1"></script>
-<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-1"></script>
-<script src="./lgr1-raster.js?v=lgr1-fix-1"></script>
-<script src="./lgr1-motion.js?v=lgr1-fix-1"></script>
-<script src="./lafrich-puppet-core.js?v=lgr1-fix-1"></script>
-<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-1"></script>
-<script src="./genesis-cloud.js?v=lgr1-fix-1"></script>
-<script src="./genesis-workbench.js?v=lgr1-fix-1"></script>
+<script src="./genesis-source.js?v=lgr1-fix-3"></script>
+<script src="./v6p-character-store.js?v=lgr1-fix-3"></script>
+<script src="./genesis-base-bridge.js?v=lgr1-fix-3"></script>
+<script src="./v6p-part-catalog.js?v=lgr1-fix-3"></script>
+<script src="./v6p-part-overrides.js?v=lgr1-fix-3"></script>
+<script src="./v6p-compositor.js?v=lgr1-fix-3"></script>
+<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-3"></script>
+<script src="./emosi-bridge.js?v=lgr1-fix-3"></script>
+<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-3"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-3"></script>
+<script src="./lgr1-raster.js?v=lgr1-fix-3"></script>
+<script src="./lgr1-motion.js?v=lgr1-fix-3"></script>
+<script src="./lafrich-puppet-core.js?v=lgr1-fix-3"></script>
+<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-3"></script>
+<script src="./genesis-cloud.js?v=lgr1-fix-3"></script>
+<script src="./genesis-workbench.js?v=lgr1-fix-3"></script>
 </body>
 </html>

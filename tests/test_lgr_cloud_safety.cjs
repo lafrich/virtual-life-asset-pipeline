@@ -71,9 +71,40 @@ function mockMaster(){
   sourceId:"genesis_male_nude",faceSource:"emosi.exe",
   approvedAt:"2026-11-10T00:00:00.000Z",binding};
 }
+function mockLegacyFemale(){
+ // A master saved before the PELVIS split (10 parts, 40 reviews).
+ const fid="lafrich_genesis_female",rig=C.master("female"),png="data:image/png;base64,AAAA";
+ const P=C.PARTS.indexOf("pelvis"),T=C.PARTS.indexOf("torso");
+ for(const d of D){
+  const m=C.decode(rig.masks[d]);for(let k=0;k<m.length;k++)if(m[k]===P)m[k]=T;
+  rig.masks[d]=Buffer.from(m).toString("base64");
+  delete rig.pivots[d].pelvis;delete rig.placements[d].pelvis;rig.pivots[d].torso={x:32,y:66};
+ }
+ const binding={
+  format:"lafrich-genesis-binding-v1",rigFormat:"LGR-1",id:fid,gender:"female",
+  sourceId:"genesis_female_nude",faceSource:"emosi.exe",originalNative:"V6B",
+  frame:{width:64,height:112,directions:[...D]},
+  hierarchy:{parts:[...C.LEGACY.PARTS],parents:{...C.LEGACY.PARENTS},drawOrder:[...C.LEGACY.DRAW_ORDER]},
+  views:Object.fromEntries(D.map(d=>[d,{maskBase64:rig.masks[d],pivots:rig.pivots[d],spritePng:png}])),
+  reviewed:Object.fromEntries(D.flatMap(d=>C.LEGACY.PARTS.map(p=>[d+"|"+p,true]))),
+  rig
+ };
+ return {format:"lafrich-genesis-master-v1",rigFormat:"LGR-1",id:fid,gender:"female",
+  sourceId:"genesis_female_nude",faceSource:"emosi.exe",approvedAt:"2026-11-09T00:00:00.000Z",binding};
+}
 async function run(){
  const a=device(),b=device();
  await Promise.all([a.connect(),b.connect()]);
+ // Old 10-part master: still loads untouched; core migrates it in memory only.
+ const legacy=mockLegacyFemale(),legacyJson=JSON.stringify(legacy);
+ assert.equal((await a.save(legacy.id,legacy)).verified,true);
+ const back=await b.load(legacy.id);
+ assert.equal(JSON.stringify(back),legacyJson,"legacy master must round-trip unchanged");
+ const migrated=C.validateMaster(back.binding.rig);
+ assert.deepEqual(migrated.pivots.se.pelvis,{x:32,y:79});
+ assert.deepEqual(migrated.pivots.se.torso,{x:32,y:75});
+ assert(C.decode(migrated.masks.se).includes(C.PARTS.indexOf("pelvis")));
+ assert.equal(JSON.stringify(back),legacyJson,"in-memory migration must not mutate the loaded master");
  const master=mockMaster();
  assert.equal((await a.save(id,master)).verified,true);
  const initial=await b.load(id);

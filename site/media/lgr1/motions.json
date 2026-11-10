@@ -1,14 +1,9 @@
 {
  "format": "lgr1-motion-library-v1",
- "note": "Shared by site/lgr1-motion.js and site/genesis_procedural_runtime.py. Values are authored as seen in SE (canvas degrees, +x = screen right) on ANATOMICAL parts; SW/NW mirror automatically. Use frame.dirs.<dir> for lateral moves that must not mirror.",
+ "note": "Shared by site/lgr1-motion.js and site/genesis_procedural_runtime.py. Values are authored as seen in SE (canvas degrees, +x = screen right) on ANATOMICAL parts; SW/NW mirror automatically. Use frame.dirs.<dir> for lateral moves that must not mirror. Pelvis (Nov 2026): pelvis x/y and torso x/y both move the whole body; pelvis a tilts the hips; torso a bends the upper body at the waist.",
  "poses": {
   "neutral": {},
   "crouch": {
-   "torso": {
-    "x": 0,
-    "y": 5,
-    "a": 0
-   },
    "head": {
     "x": 0,
     "y": 0,
@@ -53,6 +48,16 @@
     "x": 0,
     "y": 0,
     "a": -15
+   },
+   "pelvis": {
+    "x": 0,
+    "y": 5,
+    "a": 0
+   },
+   "torso": {
+    "x": 0,
+    "y": 0,
+    "a": 10
    }
   },
   "arms_up": {
@@ -71,7 +76,7 @@
  "motions": [
   {
    "id": "idle",
-   "name": "Idle \u00b7 breathing",
+   "name": "Idle · breathing",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
@@ -98,7 +103,7 @@
   },
   {
    "id": "walk",
-   "name": "Walk \u00b7 6 frames",
+   "name": "Walk · 6 frames",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
@@ -126,9 +131,6 @@
     {
      "ms": 120,
      "parts": {
-      "torso": {
-       "y": 1
-      },
       "leg_r_upper": {
        "a": -20
       },
@@ -143,6 +145,13 @@
       },
       "arm_l_upper": {
        "a": -15
+      },
+      "pelvis": {
+       "y": 1,
+       "a": 5
+      },
+      "torso": {
+       "a": -5
       }
      }
     },
@@ -189,9 +198,6 @@
     {
      "ms": 120,
      "parts": {
-      "torso": {
-       "y": 1
-      },
       "leg_r_upper": {
        "a": 20
       },
@@ -206,6 +212,13 @@
       },
       "arm_l_upper": {
        "a": 15
+      },
+      "pelvis": {
+       "y": 1,
+       "a": -5
+      },
+      "torso": {
+       "a": 5
       }
      }
     },
@@ -233,7 +246,7 @@
   },
   {
    "id": "wave",
-   "name": "Wave \u00b7 right hand",
+   "name": "Wave · right hand",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
@@ -358,7 +371,7 @@
   },
   {
    "id": "crouch",
-   "name": "Crouch \u00b7 bend knees",
+   "name": "Crouch · bend knees",
    "source": "crouch",
    "angleSnap": 5,
    "loop": true,
@@ -370,7 +383,7 @@
     {
      "ms": 500,
      "parts": {
-      "torso": {
+      "pelvis": {
        "y": 1
       }
      }
@@ -387,6 +400,59 @@
     {
      "ms": 800,
      "parts": {}
+    }
+   ]
+  },
+  {
+   "id": "bow",
+   "name": "Bow (torso bends at the waist)",
+   "source": "neutral",
+   "angleSnap": 5,
+   "loop": false,
+   "frames": [
+    {
+     "ms": 160,
+     "parts": {
+      "torso": {
+       "a": 10
+      }
+     }
+    },
+    {
+     "ms": 200,
+     "parts": {
+      "torso": {
+       "a": 20
+      },
+      "head": {
+       "a": 10
+      }
+     }
+    },
+    {
+     "ms": 500,
+     "parts": {
+      "torso": {
+       "a": 30
+      },
+      "head": {
+       "a": 10
+      },
+      "arm_r_upper": {
+       "a": -10
+      },
+      "arm_l_upper": {
+       "a": -10
+      }
+     }
+    },
+    {
+     "ms": 200,
+     "parts": {
+      "torso": {
+       "a": 10
+      }
+     }
     }
    ]
   }

@@ -7,6 +7,7 @@
 (function(root){"use strict";
 const C=root.LafrichPuppetCore,R=root.LafrichPuppetRenderer,P=root.MH2PlanePixelEditor,M=root.LGR1Motion;
 const $=id=>document.getElementById(id),DIR=C.DIRS,PARTS=C.PARTS,STEPS=["pixel","rig","bind","test","motion","save"];
+const TOTAL_REVIEWS=PARTS.length*4; // 11 parts × 4 angles = 44
 const USER_MOTION_KEY="vl-lgr1-user-motions-v1",OUTFIT_TWEAK_KEY="vl-lgr1-outfit-tweaks-v1";
 const SOURCE=Object.freeze({male:"genesis_male_nude",female:"genesis_female_nude"});
 const MASTER_IDS=Object.freeze({male:"lafrich_genesis_male",female:"lafrich_genesis_female"});
@@ -92,7 +93,7 @@ function updateUnassignedUI(){
  const total=unassignedClusters.reduce((n,c)=>n+c.count,0);
  for(let i=0;i<unassignedClusters.length;i++){
   const c=unassignedClusters[i];
-  const tag=c.kind==="floater"?"FLOATER":c.kind==="outfit"?"OUTFIT → "+(c.owner==="STATIC"?"STATIC":labels[c.owner])+(c.tweaked?" (tweaked)":""):"UNASSIGNED";
+  const tag=c.kind==="floater"?"LOOSE PIXELS":c.kind==="outfit"?"OUTFIT MOVES WITH "+(c.owner==="STATIC"?"STATIC":labels[c.owner])+(c.tweaked?" (tweaked)":""):"NO BODY PART";
   choice.add(new Option(c.dir.toUpperCase()+" · "+tag+" · "+c.count+
    " px · x "+c.minX+"–"+c.maxX+", y "+c.minY+"–"+c.maxY,String(i)));
  }
@@ -100,6 +101,7 @@ function updateUnassignedUI(){
  const valid=activeUnassigned>=0&&activeUnassigned<unassignedClusters.length;
  choice.value=valid?String(activeUnassigned):"";
  const current=selectedUnassigned();
+ if($("unassigned-reason"))$("unassigned-reason").textContent=current?issueReason(current):"";
  $("unassigned-detail").textContent=total===0?
   "✓ No visible unassigned pixels, floaters"+(outfitChar?" or outfit overhang":"")+" across four directions.":
   total+" px in "+unassignedClusters.length+" issue clusters ("+
@@ -128,10 +130,13 @@ function focusUnassignedIssue(index){
   wrap.scrollLeft=Math.max(0,centerX-wrap.clientWidth/2);
   wrap.scrollTop=Math.max(0,centerY-wrap.clientHeight/2);
  });
- status("FOUND "+group.count+" "+(group.kind==="floater"?"isolated floater":group.kind==="outfit"?"outfit overhang":"visible unassigned")+
-  " pixels at "+group.dir.toUpperCase()+" / x "+group.minX+"–"+group.maxX+", y "+group.minY+"–"+group.maxY+
-  (group.kind==="outfit"?". Auto-assigned to "+(group.owner==="STATIC"?"STATIC":labels[group.owner])+"; select a body part and ASSIGN to override for this outfit only.":
-   ". Delete only if these are unwanted source pixels."));
+ status(group.dir.toUpperCase()+" x "+group.minX+"–"+group.maxX+", y "+group.minY+"–"+group.maxY+" · "+issueReason(group));
+}
+function issueReason(c){
+ if(c.kind==="floater")return "WHY: "+c.count+" loose pixel(s) not touching the body (usually a leftover of the old seed). Delete them, or in NE/NW use 01 · REBUILD NE/NW BACK HEAD.";
+ if(c.kind==="outfit")return "WHY: "+c.count+" outfit pixel(s) stick out past the body outline. They are fine and will move with "+
+  (c.owner==="STATIC"?"nothing (static)":labels[c.owner])+". Only if that's wrong: pick another body part and ASSIGN (this outfit only).";
+ return "WHY: "+c.count+" visible pixel(s) belong to NO body part, so they would not move. Paint them into a part (SLICE PAINT) or delete them if they are stray art.";
 }
 async function outfitMasksForScan(){
  if(!outfitChar)return null;
@@ -177,7 +182,7 @@ async function eraseUnassignedStrays(allInAngle=false){
  if(!confirm("DELETE "+count+" visible unassigned / floater source pixel(s) in "+
   targetDir.toUpperCase()+"? This ERASES artwork in ALL affected physical layers "+
   "at those exact coordinates. It will NOT assign any part, change pivots, or "+
-  "reset your 40/40 reviews. Undo available until the page is reloaded."))return;
+  "reset your "+TOTAL_REVIEWS+"/"+TOTAL_REVIEWS+" reviews. Undo available until the page is reloaded."))return;
  const g=gender,r=record(),rig=r.rig;
  const original=Object.fromEntries(C.LAYERS.map(layer=>[layer,rig.layers[layer]?.[targetDir]||null]));
  const changed={};let layerHits=0;
@@ -199,7 +204,7 @@ async function eraseUnassignedStrays(allInAngle=false){
  makeDirty(); // Only the source artwork changes, NOT masks/pivots/previous QA receipts.
  await findUnassignedPixels();
  status("REMOVED "+count+" stray pixels from "+targetDir.toUpperCase()+
-  " ("+layerHits+" artwork-layer pixels cleared). 40 part/angle reviews preserved."+
+  " ("+layerHits+" artwork-layer pixels cleared). "+TOTAL_REVIEWS+" part/angle reviews preserved."+
   " Undo remains available.");
 }
 async function undoUnassignedRemoval(){
@@ -267,7 +272,7 @@ function togglePlayback(){
  root.requestAnimationFrame(animatePlayback);
 }
 const canvas=$("stage"),ctx=canvas.getContext("2d",{willReadFrequently:true});
-const labels={head:"KEPALA / HEAD",torso:"TORSO",arm_near_upper:"LENGAN DEPAN · ATAS",
+const labels={head:"KEPALA / HEAD",torso:"TORSO (BADAN ATAS)",pelvis:"PINGGUL / PELVIS",arm_near_upper:"LENGAN DEPAN · ATAS",
  arm_near_lower:"LENGAN DEPAN · BAWAH",arm_far_upper:"LENGAN BELAKANG · ATAS",
  arm_far_lower:"LENGAN BELAKANG · BAWAH",leg_near_upper:"PAHA DEPAN",
  leg_near_lower:"BETIS DEPAN",leg_far_upper:"PAHA BELAKANG",
@@ -295,6 +300,11 @@ function persistDraft(){
   return true;
  }catch(error){status("LOCAL DRAFT SAVE FAILED: "+error.message+". Export or cloud-save a JSON backup.",true);return false}
 }
+// Pre-pelvis (10-part) bindings still open; their rig is migrated in memory by
+// C.validateMaster (pelvis = lower torso). The old binding itself cannot be
+// re-used (44 reviews needed), so the draft goes back to review + rebind.
+const isLegacyBound=b=>Array.isArray(b?.hierarchy?.parts)&&b.hierarchy.parts.length!==PARTS.length;
+let legacyNotice=[];
 function loadStored(){
  let s=null;
  try{s=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null")}catch{}
@@ -303,11 +313,13 @@ function loadStored(){
    const x=s.drafts?.[g];
    if(!x?.rig)continue;
    try{
-    const rig=C.validateMaster(x.rig);
-    drafts[g]={rig,bound:x.bound?.format===BIND_FORMAT?x.bound:null,
+    const legacy=C.isLegacyMaster(x.rig),rig=C.validateMaster(x.rig);
+    const bound=x.bound?.format===BIND_FORMAT&&!isLegacyBound(x.bound)?x.bound:null;
+    if(legacy)legacyNotice.push(g.toUpperCase());
+    drafts[g]={rig,bound,
      reviewed:x.reviewed&&typeof x.reviewed==="object"?x.reviewed:{},
-     testedAngles:x.testedAngles&&typeof x.testedAngles==="object"?x.testedAngles:{},
-     approved:!!x.approved&&!!x.bound,saved:!!x.saved,edited:String(x.edited||"")};
+     testedAngles:bound&&x.testedAngles&&typeof x.testedAngles==="object"?x.testedAngles:{},
+     approved:!!x.approved&&!!bound,saved:!!x.saved&&!!bound,edited:String(x.edited||"")};
    }catch(e){status("Existing "+g+" draft invalid; preserved in storage: "+e.message,true)}
   }
  }
@@ -402,17 +414,46 @@ async function faceForPreview(){
  });
  faceImage={id:faceId,image:img};return img;
 }
-function maskHighlight(destination,d,rig){
- const mask=C.decode(rig.masks[d]),idx=PARTS.indexOf(selected);
- const raw=source[gender]?.[d]?.getContext("2d",{willReadFrequently:true})
-  .getImageData(0,0,64,112).data;
- if(!raw)return;
+// What actually moves with each part, pixel by pixel, using the SAME rules as
+// the LGR-1 raster: hair → head, outfit → tweak / nearest body part, body →
+// slice mask. Empty canvas = no part. Joint fill is internal and never shown.
+const ownershipCache=new Map();
+function strHash(t){let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+t.length}
+async function ownershipMap(d,rig){
+ const wear=outfitFor(step),key=rev+"|"+gender+"|"+d+"|"+(wear?outfitId+"#"+tweakRev:"")+"|"+strHash(rig.masks[d]);
+ if(ownershipCache.has(key))return ownershipCache.get(key);
+ const mask=C.decode(rig.masks[d]),owner=new Uint8Array(C.N).fill(254); // 254 = empty
+ const layers={},wearPx={},HEAD=PARTS.indexOf("head");
+ for(const l of C.LAYERS){
+  const own=await R.pixels(rig.layers?.[l]?.[d]);if(own)layers[l]=own;
+  const custom=wear&&C.WEAR.includes(l)?wear.wear?.[l]?.[d]:null;
+  if(custom)wearPx[l]=await R.pixels(custom);
+ }
+ const anyWear=Object.keys(wearPx).length>0;
+ const expanded=anyWear?root.LGR1Raster.expandMask(root.LGR1Raster.bodyMask(mask,layers)):null;
+ const tw=anyWear&&wear.maskTweaks?.[d]?Uint8Array.from(atob(wear.maskTweaks[d]),c=>c.charCodeAt(0)):null;
+ // Same ownership rule as LGR1Raster.prepare (hair → head; outfit → tweak or nearest body part).
+ for(const l of C.LAYERS){
+  const fromWear=!!wearPx[l],src=wearPx[l]||layers[l];if(!src)continue;
+  const hair=l==="hair_back"||l==="hair_front";
+  for(let k=0;k<C.N;k++){
+   if(!src[k*4+3])continue;
+   let o=hair?HEAD:mask[k];
+   if(fromWear){if(tw&&tw[k]!==254)o=tw[k];else if(!hair)o=expanded[k]}
+   owner[k]=o;
+  }
+ }
+ if(ownershipCache.size>40)ownershipCache.clear();
+ ownershipCache.set(key,owner);return owner;
+}
+async function maskHighlight(destination,d,rig){
+ const own=await ownershipMap(d,rig),idx=PARTS.indexOf(selected);
  const image=destination.createImageData(64,112);
- for(let k=0;k<mask.length;k++){
-  if(raw[k*4+3]===0)continue;
+ for(let k=0;k<own.length;k++){
+  if(own[k]===254)continue;
   const p=k*4;
-  if(mask[k]===255){image.data[p]=235;image.data[p+1]=47;image.data[p+2]=73;image.data[p+3]=160;}
-  else if(mask[k]===idx){image.data[p]=39;image.data[p+1]=126;image.data[p+2]=239;image.data[p+3]=83;}
+  if(own[k]===255){image.data[p]=235;image.data[p+1]=47;image.data[p+2]=73;image.data[p+3]=160;}
+  else if(own[k]===idx){image.data[p]=39;image.data[p+1]=126;image.data[p+2]=239;image.data[p+3]=83;}
   else if(step==="pixel"){image.data[p]=51;image.data[p+1]=61;image.data[p+2]=80;image.data[p+3]=30;}
  }
  const overlay=cv();overlay.getContext("2d").putImageData(image,0,0);
@@ -450,14 +491,15 @@ async function renderAll(){
    const out=cv(),o=out.getContext("2d",{willReadFrequently:true});
    o.imageSmoothingEnabled=false;o.drawImage(output,0,0);
    if(currentStep==="rig"&&isolated){
-    const data=o.getImageData(0,0,64,112),mask=C.decode(m.masks[d]);
+    const data=o.getImageData(0,0,64,112),own=await ownershipMap(d,m);
+    if(token!==renderRequest)return;
     const owner=PARTS.indexOf(selected);
-    for(let k=0;k<mask.length;k++)if(mask[k]!==owner)data.data[k*4+3]=
+    for(let k=0;k<own.length;k++)if(own[k]!==owner)data.data[k*4+3]=
      Math.min(data.data[k*4+3],28);
     o.putImageData(data,0,0);
    }
    if(currentStep==="pixel"||currentStep==="rig"){
-    maskHighlight(o,d,m);
+    await maskHighlight(o,d,m);if(token!==renderRequest)return;
     if(currentStep==="rig"){showPivot(o,d,m);paintUnassignedFocus(o,d);}
    }
    const view=$("thumb-"+d);
@@ -520,7 +562,7 @@ function syncControls(){
  $("gender").value=gender;$("art-layer").value=activeLayer;
  $("part-select").value=selected;
  const done=reviewCount();
- $("part-progress").textContent="RIG REVIEW: "+done+" / 40 · per angle: "+DIR.map(d=>d.toUpperCase()+" "+
+ $("part-progress").textContent="RIG REVIEW: "+done+" / "+TOTAL_REVIEWS+" · per angle: "+DIR.map(d=>d.toUpperCase()+" "+
   PARTS.filter(p=>record()?.reviewed?.[reviewKey(d,p)]).length+"/10").join(" · ");
  renderRigSettings();syncMotionControls();
  if($("outfit-preview"))$("outfit-preview").value=outfitId;
@@ -563,7 +605,7 @@ function syncControls(){
  $("preview-title").textContent=title[step];
  const b=record()?.bound;
  $("binding-result").textContent=b?
-  ("BOUND · "+b.id+" · 10 parts · 4 views · "+
+  ("BOUND · "+b.id+" · "+PARTS.length+" parts · 4 views · "+
    (record().approved?"APPROVED":"TEST REQUIRED")):"NOT BOUND · Edit pixels, pivots, masks, then bind.";
  $("master-details").textContent=record()?.saved?
   ("LGR-1 MASTER SAVED: "+MASTER_IDS[gender]+" · ready for the Character Editor and shared motion library"):
@@ -747,7 +789,7 @@ function applyPixels(){
   void sourcePending.then(()=>{
    flushCache();syncControls();
    status("APPLIED "+labels[appliedPart]+" / "+layer+" · changed: "+(touchedDirs.map(d=>d.toUpperCase()).join(", ")||"nothing")+
-    " · only those part reviews reset ("+reviewCount()+"/40 kept).");
+    " · only those part reviews reset ("+reviewCount()+"/"+TOTAL_REVIEWS+" kept).");
   }).catch(e=>status("Composite rebuild failed: "+e.message,true));
   return true;
  }catch(e){status("Pixel editor Apply failed: "+e.message,true);return false}
@@ -779,7 +821,7 @@ async function makeBinding(){
   const missing=missingReviews();
   if(missing.length){
    status("Rig incomplete: "+missing.length+" part/angle combinations not reviewed. Start with "+missing[0],true);
-   $("binding-result").textContent="MANUAL QA INCOMPLETE · "+missing.length+"/40 missing: "+missing.slice(0,7).join(" · ")+
+   $("binding-result").textContent="MANUAL QA INCOMPLETE · "+missing.length+"/"+TOTAL_REVIEWS+" missing: "+missing.slice(0,7).join(" · ")+
     (missing.length>7?" ...":"");
    return;
   }
@@ -823,7 +865,7 @@ function validatedBinding(){
  C.validateMaster(b.rig);
  for(const d of DIR)for(const part of PARTS)
   if(b.reviewed?.[reviewKey(d,part)]!==true)
-   throw Error("Binding must include 40 verified part/angle reviews: missing "+d+" / "+part);
+   throw Error("Binding must include "+TOTAL_REVIEWS+" verified part/angle reviews: missing "+d+" / "+part);
  for(const d of DIR)if(!b.views?.[d]||!b.views[d].spritePng)throw Error("Missing "+d+" binding");
  return b;
 }
@@ -858,7 +900,7 @@ async function restoreDraftRecord(data,label){
  const rig=C.validateMaster(data.rig);
  if(target!==gender&&!confirm("This draft is "+target.toUpperCase()+
    ". Switch from "+gender.toUpperCase()+" to restore it?"))return false;
- const validBound=data.bound?.format===BIND_FORMAT&&
+ const validBound=data.bound?.format===BIND_FORMAT&&!isLegacyBound(data.bound)&&
   data.bound.id===MASTER_IDS[target]&&data.bound.gender===target&&
   data.bound.sourceId===SOURCE[target]&&
   JSON.stringify(C.validateMaster(data.bound.rig))===JSON.stringify(rig);
@@ -878,7 +920,7 @@ async function restoreDraftRecord(data,label){
  step=approved?"save":validBound?"test":"rig";
  const okay=persistDraft();syncControls();void renderAll();
  status(label+" · "+target.toUpperCase()+" restored · "+
-  reviewCount()+"/40 rig checks · "+(okay?"local copy saved":"LOCAL STORAGE FULL: save another backup"),!okay);
+  reviewCount()+"/"+TOTAL_REVIEWS+" rig checks · "+(okay?"local copy saved":"LOCAL STORAGE FULL: save another backup"),!okay);
  return true;
 }
 async function importDraftFile(file){
@@ -960,11 +1002,14 @@ async function cloudLoad(){
     data.binding?.format!==BIND_FORMAT)throw Error("Invalid LGR-1 cloud master");
   if(!confirm("Replace current "+gender+" draft with this verified Drive master? Export current draft first. Unsaved edits will be lost."))return;
   await d.acknowledgeLoadedMaster(data.id,data);
-  drafts[gender]={rig:C.validateMaster(data.binding.rig),bound:data.binding,
-   reviewed:data.binding.reviewed||{},testedAngles:Object.fromEntries(DIR.map(d=>[d,true])),
-   approved:true,saved:true,edited:data.approvedAt||""};
+  const legacy=isLegacyBound(data.binding);
+  drafts[gender]={rig:C.validateMaster(data.binding.rig),bound:legacy?null:data.binding,
+   reviewed:data.binding.reviewed||{},testedAngles:legacy?{}:Object.fromEntries(DIR.map(d=>[d,true])),
+   approved:!legacy,saved:!legacy,edited:data.approvedAt||""};
   await sourceCanvases(gender);persistDraft();flushCache();syncControls();renderAll();
-  status("Verified LGR-1 master loaded from Drive: "+data.id);
+  status(legacy?"Old 10-part Drive master opened · PELVIS derived from the lower torso (in this browser only, Drive file unchanged). "+
+   "Review PELVIS in 4 angles (AUTO-CHECK), rebind, approve, then SAVE to Drive when you are ready.":
+   "Verified LGR-1 master loaded from Drive: "+data.id);
  }catch(e){status("Cloud load: "+e.message,true)}
 }
 async function refreshFace(){
@@ -1110,9 +1155,9 @@ async function reviewAngle(){
   else{record().reviewed[reviewKey(dir,part)]=true;passed.push(part)}
  }
  persistDraft();syncControls();
- $("rig-review-message").textContent=dir.toUpperCase()+" AUTO-CHECK · "+passed.length+"/10 passed and marked reviewed"+
+ $("rig-review-message").textContent=dir.toUpperCase()+" AUTO-CHECK · "+passed.length+"/"+PARTS.length+" passed and marked reviewed"+
   (failed.length?" · NEEDS YOUR EYES: "+failed.join(" · ")+" — fix, or select the part and MARK it after looking.":"");
- status(dir.toUpperCase()+" angle review: "+passed.length+"/10 parts passed automated checks · "+reviewCount()+"/40 total.",failed.length>0);
+ status(dir.toUpperCase()+" angle review: "+passed.length+"/"+PARTS.length+" parts passed automated checks · "+reviewCount()+"/"+TOTAL_REVIEWS+" total.",failed.length>0);
  return {passed,failed};
 }
 /* ---------------- per-direction draw order, near side, joint caps ---------------- */
@@ -1133,7 +1178,7 @@ function renderRigSettings(){
  $("order-title").textContent="DRAW ORDER · "+dir.toUpperCase()+" (top = furthest back)";
  $("near-side").value=M.sidesOf(master())[dir];
  $("joint-cap").value=master().capRadius?.[selected]??root.LGR1Raster.CAP_RADIUS[selected];
- $("joint-cap").disabled=selected==="torso";
+ $("joint-cap").disabled=!C.PARENTS[selected];
 }
 function moveOrder(part,delta){
  const o=baseOrder(dir,master()),i=o.indexOf(part),j=i+delta;
@@ -1142,6 +1187,46 @@ function moveOrder(part,delta){
  master().drawOrders??={};master().drawOrders[dir]=o;
  makeDirty();renderRigSettings();
  status("DRAW ORDER "+dir.toUpperCase()+" changed · rebind to apply (reviews kept).");
+}
+/* ---------------- shape-based re-slice (existing drafts) ---------------- */
+// Manual, confirmed action only. Never runs on load and never touches Drive.
+async function resliceHeadDraft(){
+ await sourcePending;
+ const rig=master(),plan=[];
+ for(const d of DIR){
+  const rgba=source[gender][d].getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+  const r=C.resliceFromShape(C.decode(rig.masks[d]),rgba,d);
+  // a pivot moves only while it is still at its default/migrated spot
+  const def=C.defaultPivots(d),moves={};
+  for(const [part,to] of [["head",r.headPivot],["torso",r.torsoPivot],["pelvis",r.pelvisPivot]]){
+   const pv=rig.pivots[d][part];
+   if(pv.y===def[part].y&&(pv.x!==to.x||pv.y!==to.y))moves[part]=to;
+  }
+  const pivotMoves=Object.keys(moves).length>0;
+  plan.push({d,r,pivotMoves,moves});
+ }
+ const total=plan.reduce((n,p)=>n+p.r.changed,0);
+ if(!total&&!plan.some(p=>p.pivotMoves)){status("Slices already follow the body shape · nothing changed.");return false}
+ const parts=[...new Set(plan.flatMap(p=>p.r.parts))].map(p=>labels[p]||p);
+ if(!confirm("RE-SLICE FROM SHAPE ("+gender.toUpperCase()+", all 4 angles)?\n\n"+
+   "• Head = skull + chin + neck down to the shoulder line ("+plan.map(p=>p.d.toUpperCase()+" row "+p.r.shoulder).join(", ")+")\n"+
+   "• Arms = only the arm (split at the armpit / arm outline); shoulders stay torso\n"+
+   "• Legs split at the real gap between the legs\n"+
+   "• PELVIS = hips/crotch band (waist "+plan.map(p=>p.d.toUpperCase()+" row "+p.r.waist).join(", ")+"), parent of both thighs\n"+
+   "• Empty canvas no longer belongs to any part · pixel art is NOT changed\n"+
+   "• Your manual slice paint is replaced by the shape slice · RIG UNDO restores each angle\n"+
+   "• Reviews reset only for parts that changed: "+(parts.join(", ")||"none")))return false;
+ for(const p of plan){
+  if(!p.r.changed&&!p.pivotMoves)continue;
+  maskUndo.push({dir:p.d,pivots:clone(rig.pivots[p.d]),mask:rig.masks[p.d]});
+  rig.masks[p.d]=C.encode(p.r.mask);
+  for(const [part,to] of Object.entries(p.moves))rig.pivots[p.d][part]={...to};
+  invalidateReviews(p.d,[...new Set([...p.r.parts,...Object.keys(p.moves)])]);
+ }
+ if(maskUndo.length>32)maskUndo.splice(0,maskUndo.length-32);maskRedo=[];
+ ownershipCache.clear();flushCache();persistDraft();syncControls();void renderAll();
+ status("RE-SLICED FROM SHAPE · "+plan.reduce((n,p)=>n+p.r.moved,0)+" visible pixels moved to a better part · empty canvas cleared · reviews reset only for: "+(parts.join(", ")||"head pivot")+" ("+reviewCount()+"/"+TOTAL_REVIEWS+" kept). Check each angle and AUTO-CHECK again.");
+ return true;
 }
 /* ---------------- NE/NW bald back head repair ---------------- */
 async function repairBackHeadDraft(){
@@ -1270,7 +1355,7 @@ function syncMotionControls(){
  $("motion-a").value=v.a;$("motion-a-num").value=v.a;$("motion-x").value=v.x;$("motion-y").value=v.y;
  $("motion-x-num").value=v.x;$("motion-y-num").value=v.y;
  $("motion-behind").checked=!!f.behindTorso?.includes(motionPart);
- $("motion-behind").disabled=motionPart==="torso"||motionPart==="head";
+ $("motion-behind").disabled=motionPart==="torso"||motionPart==="head"||motionPart==="pelvis";
  const mapped=M.rigPart(motionPart,dir,rigSides());
  const valid=safeMotion(editMotion);
  $("motion-info").textContent=(isLibraryId(editMotion.id)?"LIBRARY (read-only: first edit makes your copy)":"★ YOUR MOTION")+
@@ -1278,6 +1363,8 @@ function syncMotionControls(){
   (dirOnly()?" · editing "+dir.toUpperCase()+" ONLY (screen values)":" · values as seen in SE, mirrored to SW/NW")+
   (()=>{const own=DIR.filter(d=>f.dirs?.[d]?.[motionPart]);
    return own.length&&!dirOnly()?" · ⚠ "+own.map(d=>d.toUpperCase()).join("+")+" keep their own value for this part (tick EDIT ONLY THIS DIRECTION there)":""})()+
+  (motionPart==="torso"?" · TORSO angle bends the upper body at the WAIST (legs stay); X/Y move the whole body":
+   motionPart==="pelvis"?" · PELVIS is the root: X/Y move the whole body, angle tilts the hips (legs + upper body follow)":"")+
   (valid?"":" · ⚠ INVALID");
 }
 function newMotion(){
@@ -1380,7 +1467,7 @@ function setup(){
  };
  $("paste-slice").onclick=()=>{
   if(!maskCopied||!confirm("Replace the ENTIRE "+dir.toUpperCase()+
-    " 10-part mask with the copied mask? All reviews of this angle will reset."))return;
+    " "+PARTS.length+"-part mask with the copied mask? All reviews of this angle will reset."))return;
   bindMaskCopy(false);
  };
  $("flip-slice").onclick=()=>{
@@ -1516,16 +1603,17 @@ function setupLgr1Controls(){
  $("near-side").onchange=()=>{
   const v=$("near-side").value;if(v!=="left"&&v!=="right")return;
   master().sides={...M.sidesOf(master()),[dir]:v};
-  invalidateReviews(dir,PARTS.filter(p=>p!=="head"&&p!=="torso"));syncControls();
+  invalidateReviews(dir,PARTS.filter(p=>p!=="head"&&p!=="torso"&&p!=="pelvis"));syncControls();
   status("NEAR SIDE "+dir.toUpperCase()+" = "+v.toUpperCase()+" · motions now drive the "+v+" limbs with the near pieces here. Limb reviews of this angle reset.");
  };
  $("joint-cap").onchange=()=>{
-  if(selected==="torso")return;
+  if(!C.PARENTS[selected])return;
   const v=clamp(Math.round(Number($("joint-cap").value)||0),0,6);
   master().capRadius={...(master().capRadius||{}),[selected]:v};
   makeDirty();flushCache();syncControls();
   status("JOINT CAP "+labels[selected]+" = "+v+" px · rebind to use it in the check step.");
  };
+ $("reslice-head").onclick=guard(resliceHeadDraft,"Re-slice head");
  $("repair-head").onclick=guard(async()=>{if(await repairBackHeadDraft()){syncControls();flushCache()}},"Back head");
  // outfits
  $("outfit-preview").onchange=guard(()=>chooseOutfit($("outfit-preview").value),"Outfit");
@@ -1616,9 +1704,11 @@ async function boot(){
   setup();populateMotionSelects();
   await ensure(gender);
   syncControls();await renderAll();
-  status("LGR-1 · V6B MALE loaded · "+allMotions().length+" shared motions · edit 10 body parts across four directions.");
+  status("LGR-1 · V6B MALE loaded · "+allMotions().length+" shared motions · edit "+PARTS.length+" body parts (pelvis split from torso) across four directions.");
   await refreshFace().catch(()=>{});
   await warnHeadless();
+  if(legacyNotice.length)status("Old 10-part draft ("+legacyNotice.join("+")+") opened · PELVIS was derived from the lower torso in memory (nothing saved yet). "+
+   "Press 02 · ✂ RE-SLICE FROM SHAPE for the new head/arm/leg/pelvis cut, AUTO-CHECK each angle, then rebind.",true);
  }catch(e){status("LGR-1 boot failed: "+e.message,true)}
 }
 void boot();

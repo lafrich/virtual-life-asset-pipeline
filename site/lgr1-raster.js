@@ -5,7 +5,7 @@
  * - Layer groups: BACK (hair_back) → MAIN (body … body_front) → Emosi face →
  *   FRONT (hair_front, accessory). Back hair therefore stays behind the torso
  *   and top, and front hair/bangs stay over the face.
- * - Per-direction draw order of the 10 parts (optional per-frame override).
+ * - Per-direction draw order of the 11 parts (pelvis root → torso → head/arms; pelvis → legs) (optional per-frame override).
  * - Joint caps + hidden fill: each parent keeps an underlay copied from the
  *   child pixels around the joint pivot (cap) and, for children drawn in
  *   front of it, the row continuation of the parent behind the child (fill).
@@ -25,20 +25,20 @@
 "use strict";
 const W=64,H=112,N=W*H;
 const PARTS=Object.freeze(["leg_far_upper","leg_far_lower","arm_far_upper","arm_far_lower",
- "torso","leg_near_upper","leg_near_lower","arm_near_upper","arm_near_lower","head"]);
-const PARENTS=Object.freeze({torso:null,head:"torso",
+ "torso","leg_near_upper","leg_near_lower","arm_near_upper","arm_near_lower","head","pelvis"]);
+const PARENTS=Object.freeze({pelvis:null,torso:"pelvis",head:"torso",
  arm_near_upper:"torso",arm_near_lower:"arm_near_upper",
  arm_far_upper:"torso",arm_far_lower:"arm_far_upper",
- leg_near_upper:"torso",leg_near_lower:"leg_near_upper",
- leg_far_upper:"torso",leg_far_lower:"leg_far_upper"});
+ leg_near_upper:"pelvis",leg_near_lower:"leg_near_upper",
+ leg_far_upper:"pelvis",leg_far_lower:"leg_far_upper"});
 const DRAW_ORDER=Object.freeze(["leg_far_lower","leg_far_upper","arm_far_lower","arm_far_upper",
- "torso","leg_near_lower","leg_near_upper","arm_near_upper","arm_near_lower","head"]);
+ "pelvis","torso","leg_near_lower","leg_near_upper","arm_near_upper","arm_near_lower","head"]);
 const GROUPS=Object.freeze([
  ["back",Object.freeze(["hair_back"])],
  ["main",Object.freeze(["body","pants","shoes","top_back","top","body_front"])],
  ["front",Object.freeze(["hair_front","accessory"])]]);
 const LAYERS=Object.freeze(["hair_back","body","pants","shoes","top_back","top","body_front","hair_front","accessory"]);
-const CAP_RADIUS=Object.freeze({torso:0,head:2,arm_near_upper:3,arm_near_lower:3,arm_far_upper:3,arm_far_lower:3,
+const CAP_RADIUS=Object.freeze({pelvis:0,torso:3,head:2,arm_near_upper:3,arm_near_lower:3,arm_far_upper:3,arm_far_lower:3,
  leg_near_upper:3,leg_near_lower:3,leg_far_upper:3,leg_far_lower:3});
 const INHERIT=254,UNASSIGNED=255;
 const DEG=Math.PI/180;

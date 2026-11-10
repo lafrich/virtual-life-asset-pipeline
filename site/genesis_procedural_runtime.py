@@ -25,7 +25,10 @@ W, H = 64, 112
 DIRECTIONS = ("se", "sw", "ne", "nw")
 PARTS = ("leg_far_upper", "leg_far_lower", "arm_far_upper", "arm_far_lower",
          "torso", "leg_near_upper", "leg_near_lower", "arm_near_upper",
-         "arm_near_lower", "head")
+         "arm_near_lower", "head", "pelvis")
+# Pre-pelvis 10-part contract (still accepted; migrated in memory only).
+LEGACY_PARTS = PARTS[:10]
+LEGACY_WAIST, LEGACY_HIP, LEGACY_TORSO_PIVOT_Y = 75, 79, 66
 N = W * H
 
 def validate(binding: dict) -> dict:
@@ -40,22 +43,24 @@ def validate(binding: dict) -> dict:
         raise ValueError("Invalid master ID")
     if binding.get("sourceId") != "genesis_" + binding["gender"] + "_nude":
         raise ValueError("Only approved V6B Genesis sources are permitted")
+    hierarchy = binding.get("hierarchy", {})
+    parts = tuple(hierarchy.get("parts", ()))
+    if parts not in (PARTS, LEGACY_PARTS):
+        raise ValueError("Genesis needs all 11 ordered body parts (or the legacy 10)")
+    root = "pelvis" if parts == PARTS else "torso"
     reviews = binding.get("reviewed", {})
     if not isinstance(reviews, dict) or any(
         reviews.get(direction + "|" + part) is not True
-        for direction in DIRECTIONS for part in PARTS
+        for direction in DIRECTIONS for part in parts
     ):
-        raise ValueError("LGR-1 requires manual review of all 40 part-angle combinations")
-    hierarchy = binding.get("hierarchy", {})
-    if tuple(hierarchy.get("parts", ())) != PARTS:
-        raise ValueError("Genesis needs all 10 ordered body parts")
+        raise ValueError("LGR-1 requires manual review of all %d part-angle combinations" % (4 * len(parts)))
     parents = hierarchy.get("parents", {})
-    if set(parents) != set(PARTS) or parents["torso"] is not None:
+    if set(parents) != set(parts) or parents[root] is not None:
         raise ValueError("Incomplete parent graph")
-    for part in PARTS:
+    for part in parts:
         seen, parent = set(), part
         while parent is not None:
-            if parent in seen or parent not in PARTS:
+            if parent in seen or parent not in parts:
                 raise ValueError("Invalid cycle or parent")
             seen.add(parent)
             parent = parents[parent]
@@ -64,7 +69,7 @@ def validate(binding: dict) -> dict:
     for direction in DIRECTIONS:
         v = binding["views"][direction]
         pivots = v.get("pivots", {})
-        if set(pivots) != set(PARTS):
+        if set(pivots) != set(parts):
             raise ValueError("Missing view pivot for " + direction)
         for point in pivots.values():
             if not isinstance(point.get("x"), int) or not isinstance(point.get("y"), int):
@@ -75,7 +80,7 @@ def validate(binding: dict) -> dict:
             masks = base64.b64decode(v["maskBase64"], validate=True)
         except (KeyError, ValueError) as exc:
             raise ValueError("Corrupt Genesis slice mask") from exc
-        if len(masks) != N or any(b != 255 and b >= len(PARTS) for b in masks):
+        if len(masks) != N or any(b != 255 and b >= len(parts) for b in masks):
             raise ValueError("Invalid mask dimensions or body part index")
         if not str(v.get("spritePng", "")).startswith("data:image/png;base64,"):
             raise ValueError("Missing 64x112 PNG source")
@@ -90,24 +95,24 @@ def read_binding(path: str | Path) -> dict:
 
 DEG = math.pi / 180
 LIBRARY_PATH = Path(__file__).resolve().parent / "media" / "lgr1" / "motions.json"
-PARENTS = {"torso": None, "head": "torso",
+PARENTS = {"pelvis": None, "torso": "pelvis", "head": "torso",
            "arm_near_upper": "torso", "arm_near_lower": "arm_near_upper",
            "arm_far_upper": "torso", "arm_far_lower": "arm_far_upper",
-           "leg_near_upper": "torso", "leg_near_lower": "leg_near_upper",
-           "leg_far_upper": "torso", "leg_far_lower": "leg_far_upper"}
+           "leg_near_upper": "pelvis", "leg_near_lower": "leg_near_upper",
+           "leg_far_upper": "pelvis", "leg_far_lower": "leg_far_upper"}
 DRAW_ORDER = ("leg_far_lower", "leg_far_upper", "arm_far_lower", "arm_far_upper",
-              "torso", "leg_near_lower", "leg_near_upper", "arm_near_upper",
+              "pelvis", "torso", "leg_near_lower", "leg_near_upper", "arm_near_upper",
               "arm_near_lower", "head")
 GROUPS = (("back", ("hair_back",)),
           ("main", ("body", "pants", "shoes", "top_back", "top", "body_front")),
           ("front", ("hair_front", "accessory")))
 LAYERS = ("hair_back", "body", "pants", "shoes", "top_back", "top", "body_front",
           "hair_front", "accessory")
-CAP_RADIUS = {"torso": 0, "head": 2, "arm_near_upper": 3, "arm_near_lower": 3,
+CAP_RADIUS = {"pelvis": 0, "torso": 3, "head": 2, "arm_near_upper": 3, "arm_near_lower": 3,
               "arm_far_upper": 3, "arm_far_lower": 3, "leg_near_upper": 3,
               "leg_near_lower": 3, "leg_far_upper": 3, "leg_far_lower": 3}
 INHERIT, UNASSIGNED = 254, 255
-ANAT = ("head", "torso", "arm_r_upper", "arm_r_lower", "arm_l_upper", "arm_l_lower",
+ANAT = ("head", "torso", "pelvis", "arm_r_upper", "arm_r_lower", "arm_l_upper", "arm_l_lower",
         "leg_r_upper", "leg_r_lower", "leg_l_upper", "leg_l_lower")
 DEFAULT_SIDES = {"se": "right", "sw": "left", "ne": "right", "nw": "left"}
 FACING = {"se": 1, "sw": -1, "ne": 1, "nw": -1}
@@ -200,7 +205,7 @@ def validate_motion(m: dict, poses: dict | None = None) -> dict:
         if not isinstance(ms, int) or isinstance(ms, bool) or not 40 <= ms <= 2000:
             raise ValueError("frame %d: ms must be 40-2000" % (i + 1))
         frame = {"ms": ms, "parts": _check_pose(f.get("parts"), m["id"])}
-        behind = [p for p in (f.get("behindTorso") or []) if p in ANAT and p not in ("torso", "head")]
+        behind = [p for p in (f.get("behindTorso") or []) if p in ANAT and p not in ("torso", "head", "pelvis")]
         if behind:
             frame["behindTorso"] = behind
         dirs = {}
@@ -235,7 +240,7 @@ def sides_of(rig: dict | None) -> dict:
 
 
 def rig_part(anat: str, direction: str, sides: dict | None = None) -> str:
-    if anat in ("head", "torso"):
+    if anat in ("head", "torso", "pelvis"):
         return anat
     limb, side, seg = anat.split("_")
     near_side = (sides or DEFAULT_SIDES).get(direction) or DEFAULT_SIDES[direction]
@@ -277,6 +282,11 @@ def frame_pose(poses: dict, m: dict, index: int, direction: str, sides: dict | N
                  "a": (_num(b.get("a")) + _num(d.get("a"))) * facing}
         v["a"] = snap(v["a"], m["angleSnap"])
         out[rig_part(anat, direction, sides)] = v
+    # torso x/y move the whole body (legacy-identical); pelvis a tilts the hips;
+    # torso a bends the upper body at the waist (same rule as lgr1-motion.js).
+    out["pelvis"] = {"x": out["pelvis"]["x"] + out["torso"]["x"],
+                     "y": out["pelvis"]["y"] + out["torso"]["y"], "a": out["pelvis"]["a"]}
+    out["torso"] = {"x": 0, "y": 0, "a": out["torso"]["a"]}
     return out
 
 
@@ -287,7 +297,7 @@ def frame_order(base_order, m: dict, index: int, direction: str, sides: dict | N
     behind = {rig_part(a, direction, sides) for a in f["behindTorso"]}
     rest = [p for p in base_order if p not in behind]
     moved = [p for p in base_order if p in behind]
-    t = rest.index("torso")
+    t = min(rest.index(p) for p in ("pelvis", "torso") if p in rest)
     return rest[:t] + moved + rest[t:]
 
 
@@ -591,7 +601,8 @@ def matrices(binding: dict, direction: str, pose: dict):
     validate(binding)
     if direction not in DIRECTIONS:
         raise ValueError("Unknown direction")
-    pivots = binding["views"][direction]["pivots"]
+    v = binding["views"][direction]
+    _, pivots = migrate_legacy_view(bytes(N), v["pivots"])
     placements = binding.get("rig", {}).get("placements", {}).get(direction, {})
     return {p: v["mat"] for p, v in raw_matrices(pivots, placements, pose).items()}
 
@@ -603,6 +614,33 @@ def _png_rgba(data_url: str) -> bytes:
     if image.size != (W, H):
         raise ValueError("Physical layer must be exactly 64x112")
     return image.tobytes()
+
+
+def migrate_order(order):
+    """Insert pelvis before torso in a legacy 10-part draw order."""
+    if not isinstance(order, list) or "pelvis" in order or "torso" not in order:
+        return order
+    t = order.index("torso")
+    return order[:t] + ["pelvis"] + order[t:]
+
+
+def migrate_legacy_view(mask: bytes, pivots: dict):
+    """10-part → 11-part in memory (twin of LafrichPuppetCore.migrateLegacyView):
+    torso pixels at/below the waist become pelvis; pelvis pivot = hip centre;
+    a torso pivot still at the old default y66 moves to the waist."""
+    if "pelvis" in pivots:
+        return mask, pivots
+    out = bytearray(mask)
+    T, P = PARTS.index("torso"), PARTS.index("pelvis")
+    for k in range(LEGACY_WAIST * W, N):
+        if out[k] == T:
+            out[k] = P
+    tp = pivots.get("torso") or {"x": 32, "y": LEGACY_TORSO_PIVOT_Y}
+    pv = dict(pivots)
+    pv["pelvis"] = {"x": tp["x"], "y": LEGACY_HIP}
+    if tp["y"] == LEGACY_TORSO_PIVOT_Y:
+        pv["torso"] = {"x": tp["x"], "y": LEGACY_WAIST}
+    return bytes(out), pv
 
 
 def binding_inputs(binding: dict, direction: str, layer_overrides: dict | None = None):
@@ -626,9 +664,9 @@ def binding_inputs(binding: dict, direction: str, layer_overrides: dict | None =
             if not isinstance(png, str) or not png.startswith("data:image/png;base64,"):
                 raise ValueError("Invalid physical layer PNG " + layer)
             wear[layer] = _png_rgba(png)
-    mask = base64.b64decode(v["maskBase64"], validate=True)
-    order = (rig.get("drawOrders") or {}).get(direction)
-    return {"layers": layers, "wear": wear, "mask": mask, "pivots": v["pivots"],
+    mask, pivots = migrate_legacy_view(base64.b64decode(v["maskBase64"], validate=True), v["pivots"])
+    order = migrate_order((rig.get("drawOrders") or {}).get(direction))
+    return {"layers": layers, "wear": wear, "mask": mask, "pivots": pivots,
             "placements": (rig.get("placements") or {}).get(direction, {}),
             "order": order if _valid_order(order) else list(DRAW_ORDER),
             "caps": rig.get("capRadius") or {}}

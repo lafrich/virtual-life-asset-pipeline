@@ -19,7 +19,7 @@ It is *not* a 3D skeleton, not a simple spritesheet animation and not a new imag
 
 - Four authored directions: `se`, `sw`, `ne`, `nw`.
 - Native coordinate system: 64×112 pixels, original V6B anchor [32,100].
-- Ten body pieces: head, torso, both upper arms and forearms, both thighs and lower legs (near/far relative to viewer).
+- Eleven body pieces (since 10 Nov 2026): pelvis (root), torso (upper body), head, both upper arms and forearms, both thighs and lower legs (near/far relative to viewer). Older 10-piece masters (no pelvis) still open; see "Pelvis split" below.
 - Each angle keeps independent per-part pivot coordinates and a pixel mask assigning every visible original pixel to one of the ten pieces.
 - A part that is **occluded** in one direction may have zero visible pixels there, while its pivot and parent relationship still exist.
 - Parent hierarchy transports child joints; nearest-neighbor rendering preserves source pixels.
@@ -107,7 +107,7 @@ Emosi face.
 
 - Layer slots: `hair_back` (behind everything) → body/pants/shoes/top_back/top/
   body_front → Emosi face (follows head) → `hair_front`, `accessory`.
-- Per-direction part order: optional `rig.drawOrders[dir]` (10 parts); the
+- Per-direction part order: optional `rig.drawOrders[dir]` (11 parts; legacy 10-part orders get `pelvis` inserted before `torso`); the
   binding's `hierarchy.drawOrder` stays the canonical default. A motion frame may
   move limbs behind the torso with `behindTorso`.
 - Joint caps: each parent keeps an underlay of child pixels within
@@ -147,3 +147,47 @@ only the changed part(s) in the changed direction(s).
 (V6B paints the skull with hair); islands ≤3 px are removed. Old drafts get a
 warning and "REBUILD NE/NW BACK HEAD". Find Unassigned also flags isolated
 floaters (≤6 px) and outfit overhang.
+
+## Shape-based slicing + pelvis split (November 10, 2026)
+
+**Slicing from the body shape** (`LafrichPuppetCore.shapeSlice`, used by the V6B
+seed and by the manual *02 · ✂ RE-SLICE FROM SHAPE* button):
+
+- Only visible pixels get a part. Empty canvas is `255` (no part), so the
+  highlight/Isolate never shows a "head" around the head.
+- **Head** = skull + chin + neck down to the shoulder line. The shoulder row is
+  the first row below the narrowest neck row (y 46–57) that is ≥ 4 px wider.
+  The head pivot is the neck base (centre of the last neck row, y = shoulder).
+- **Arms** = only the arm. The inner arm edge is found per side from rows
+  where the arm hangs free (empty gap to the body, typical for Female) or
+  from the dark inner outline 2–5 px inside the outer edge (Male). Shoulder
+  rows above the armpit stay torso. Upper/lower split stays at the elbow (y69).
+- **Legs** split per row at the real empty gap between the legs (no column
+  crossing), starting at the first crotch row (legTop, usually y81). Knee y94.
+- **Pelvis** = the hips/crotch band `legTop − 6 … legTop − 1` (usually y75–80).
+- RE-SLICE never runs by itself, asks for confirmation, does not touch pixel
+  art or Drive, moves a head/torso/pelvis pivot only while it is still at its
+  default spot, resets reviews only for parts whose pixels changed, and can be
+  undone per angle with RIG UNDO.
+
+**Pelvis split — 11 parts.** `PARTS` appends `pelvis` as index 10 (old mask
+indices keep their meaning). Hierarchy: `pelvis` is the root and the parent of
+both thighs; `torso` is a child of `pelvis` and the parent of head and arms.
+Default pivots: pelvis (32,79) hip centre, torso (32,75) waist. Default draw
+order puts `pelvis` directly before `torso`. Joint caps: pelvis 0 (root),
+torso 3 (waist).
+
+Motions (`lgr1-motion-library-v1`, unchanged format) gain the `pelvis` part:
+`torso` x/y **and** `pelvis` x/y move the whole body (so older motions that
+used torso x/y look identical), `pelvis` a tilts the hips (legs and upper body
+follow), `torso` a bends the upper body at the waist. Library: walk bobs and
+sways the pelvis, crouch lowers the pelvis and leans the torso 10°, new
+`bow` bends at the waist.
+
+**Backward compatibility.** A 10-part rig (no `pelvis` pivot) is migrated **in
+memory only**, identically in JS (`migrateLegacyView`) and Python
+(`migrate_legacy_view`): torso pixels with y ≥ 75 → pelvis; pelvis pivot =
+(torso.x, 79); a torso pivot still at the old default y66 moves to y75. Drive
+and Python accept legacy bindings (10 parts, 40 reviews) unchanged; the
+workbench opens them, asks for PELVIS review in 4 angles (44 total), and only
+writes the new 11-part master when the artist saves.

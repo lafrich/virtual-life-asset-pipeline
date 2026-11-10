@@ -84,26 +84,31 @@ function validate(id,master){
     b.originalNative!=="V6B")throw Error("Legacy/foreign master rejected: LGR-1 only");
  const core=root?.LafrichPuppetCore;
  if(!core?.validateMaster)throw Error("LGR-1 rig validator unavailable");
+ // Pre-pelvis 10-part masters still open (validated against the legacy
+ // contract; the workbench migrates them in memory, Drive stays unchanged).
+ const legacy=Array.isArray(b.hierarchy?.parts)&&b.hierarchy.parts.length===core.LEGACY.PARTS.length;
+ const contract=legacy?core.LEGACY:core;
  const rig=core.validateMaster(b.rig);
  if(rig.id!==core.IDS[gender]||rig.gender!==gender)throw Error("Wrong V6B rig base");
  if(JSON.stringify(master).length>10000000)throw Error("Genesis master too large");
  if(!Number.isFinite(Date.parse(master.approvedAt||"")))
   throw Error("LGR-1 approval timestamp required");
- for(const d of ["se","sw","ne","nw"])for(const part of core.PARTS)
+ for(const d of ["se","sw","ne","nw"])for(const part of contract.PARTS)
   if(b.reviewed?.[d+"|"+part]!==true)
    throw Error("Unreviewed LGR-1 body part: "+d+" / "+part);
  const dirs=["se","sw","ne","nw"];
  if(b.frame?.width!==64||b.frame?.height!==112||
     JSON.stringify(b.frame.directions)!==JSON.stringify(dirs)||
-    JSON.stringify(b.hierarchy?.parts)!==JSON.stringify(core.PARTS)||
-    JSON.stringify(b.hierarchy?.parents)!==JSON.stringify(core.PARENTS)||
-    JSON.stringify(b.hierarchy?.drawOrder)!==JSON.stringify(core.DRAW_ORDER)||
+    JSON.stringify(b.hierarchy?.parts)!==JSON.stringify(contract.PARTS)||
+    JSON.stringify(b.hierarchy?.parents)!==JSON.stringify(contract.PARENTS)||
+    JSON.stringify(b.hierarchy?.drawOrder)!==JSON.stringify(contract.DRAW_ORDER)||
     Object.keys(b.views||{}).sort().join()!==dirs.slice().sort().join())
   throw Error("LGR-1 geometry contract incomplete");
  for(const d of dirs){
   const view=b.views[d];
-  if(view?.maskBase64!==rig.masks[d]||
-     JSON.stringify(view?.pivots)!==JSON.stringify(rig.pivots[d])||
+  const want=legacy?{mask:b.rig?.masks?.[d],pivots:b.rig?.pivots?.[d]}:{mask:rig.masks[d],pivots:rig.pivots[d]};
+  if(view?.maskBase64!==want.mask||
+     JSON.stringify(view?.pivots)!==JSON.stringify(want.pivots)||
      !/^data:image\/png;base64,[a-z0-9+/]+=*$/i.test(view?.spritePng||""))
    throw Error("LGR-1 source/mask/pivot mismatch: "+d);
  }

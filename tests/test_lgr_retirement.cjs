@@ -86,6 +86,12 @@ assert.throws(()=>v6pWorld.V6PCharacterStore.create({name:"Legacy"}),/READ-ONLY|
 assert.throws(()=>v6pWorld.V6PCharacterStore.select(""),/retired/);
 
 assert.match(read("site/genesis-workbench.js"),/RIG_FORMAT="LGR-1"/);
+// Shape-based head/neck re-slice is a manual, confirmed action (never auto-run on drafts).
+assert.match(read("site/genesis-workbench.html"),/id="reslice-head"/);
+assert.match(read("site/genesis-workbench.html"),/empty canvas belongs to no part/);
+assert.match(read("site/genesis-workbench.js"),/if\(!confirm\("RE-SLICE FROM SHAPE/);
+assert.match(read("site/genesis-workbench.js"),/invalidateReviews\(p\.d,\[\.\.\.new Set\(\[\.\.\.p\.r\.parts/);
+assert.match(read("site/genesis-workbench.js"),/isLegacyBound/);
 assert.match(read("site/genesis-cloud.js"),/Wrong V6B rig base/);
 const storageKeys=["vl-lafrich-genesis-workbench-drafts-v1","vl-lafrich-genesis-approved-masters-v1"];
 for(const key of storageKeys)assert(shell.includes("genesis-workbench.js")&&read("site/genesis-workbench.js").includes(key));

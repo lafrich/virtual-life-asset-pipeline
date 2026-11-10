@@ -148,6 +148,15 @@
    }
   }
   for(const d of Cc.DIRS)removeFloaters(Object.keys(raw).map(l=>raw[l][d]));
+  // Shape-based slices: head = skull+chin+neck down to the shoulder line,
+  // empty canvas belongs to no part.
+  for(const d of Cc.DIRS){
+   const comp=new Uint8ClampedArray(Cc.N*4);
+   for(const l of Cc.LAYERS){const px=raw[l]?.[d];if(px)for(let k=0;k<Cc.N;k++)if(px[k*4+3])comp.set(px.subarray(k*4,k*4+4),k*4)}
+   const sl=Cc.shapeSlice(comp,d);
+   m.masks[d]=Cc.encode(sl.mask);m.pivots[d].head=sl.headPivot;
+   m.pivots[d].torso=sl.torsoPivot;m.pivots[d].pelvis=sl.pelvisPivot;
+  }
   for(const layer of Object.keys(raw))for(const d of Cc.DIRS){
    const c=rgba();c.getContext("2d").putImageData(new ImageData(raw[layer][d],64,112),0,0);
    m.layers[layer][d]=c.toDataURL("image/png");

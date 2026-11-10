@@ -172,3 +172,107 @@ class LGR1ParityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ShapeSliceTest(unittest.TestCase):
+    """Head = skull + chin + neck down to the shoulder line; arms are only the
+    arm (shoulders stay torso); legs split at the real gap; empty canvas
+    belongs to no part. The fixture is the current (shape-sliced) seed."""
+
+    def slice(self, d, mask=None):
+        b = json.loads(FIXTURE.read_text())
+        layers = [v for k, v in rt.binding_inputs(b, d)["layers"].items()]
+        comp = bytearray(rt.N*4)
+        for l in layers:
+            for k in range(rt.N):
+                if l[k*4+3]:
+                    comp[k*4:k*4+4] = l[k*4:k*4+4]
+        script = ("const C=require('./site/lafrich-puppet-core.js');const i=JSON.parse(require('fs').readFileSync(0,'utf8'));"
+                  "const v=Uint8Array.from(Buffer.from(i.px,'base64'));const s=C.shapeSlice(v,i.d);"
+                  "const r=i.mask?C.resliceFromShape(Uint8Array.from(Buffer.from(i.mask,'base64')),v,i.d):null;"
+                  "process.stdout.write(JSON.stringify({mask:Buffer.from(s.mask).toString('base64'),shoulder:s.shoulder,waist:s.waist,legTop:s.legTop,arms:s.arms,pivot:s.headPivot,"
+                  "re:r&&{mask:Buffer.from(r.mask).toString('base64'),changed:r.changed,parts:r.parts}}))")
+        out = json.loads(subprocess.run(["node", "-e", script], cwd=ROOT, input=json.dumps(
+            {"px": b64(comp), "d": d, "mask": b64(mask) if mask else None}), capture_output=True, text=True, check=True).stdout)
+        vis = bytes(1 if comp[k*4+3] else 0 for k in range(rt.N))
+        return vis, out
+
+    def test_shape_slices_four_directions(self):
+        HEAD, TORSO, PELVIS = rt.PARTS.index("head"), rt.PARTS.index("torso"), rt.PARTS.index("pelvis")
+        b = json.loads(FIXTURE.read_text())
+        for d, shoulder in (("se", 54), ("sw", 54), ("ne", 53), ("nw", 53)):
+            vis, out = self.slice(d)
+            mask = base64.b64decode(out["mask"])
+            self.assertEqual(b["views"][d]["maskBase64"], out["mask"], d + " fixture is not the current seed")
+            self.assertEqual(out["shoulder"], shoulder, d)
+            self.assertEqual(out["pivot"]["y"], shoulder, d)
+            self.assertTrue(out["arms"]["left"] and out["arms"]["right"], d + " arm lines not found")
+            for k in range(rt.N):
+                x, y = k % 64, k // 64
+                if not vis[k]:
+                    self.assertEqual(mask[k], 255, f"{d} empty pixel owned")
+                elif y < shoulder:
+                    self.assertEqual(mask[k], HEAD, f"{d} chin/neck not head at y{y}")
+                elif y < 62:
+                    self.assertEqual(mask[k], TORSO, f"{d} shoulder ({x},{y}) not torso")
+            # pelvis = hips band between the waist and the leg split; parent of both thighs
+            self.assertEqual(out["waist"], out["legTop"] - 6, d)
+            for k in range(rt.N):
+                y = k // 64
+                if vis[k] and out["waist"] <= y < out["legTop"] and mask[k] not in (PELVIS,) and not rt.PARTS[mask[k]].startswith("arm"):
+                    self.fail(f"{d} hip pixel ({k % 64},{y}) not pelvis")
+                if vis[k] and shoulder <= y < out["waist"] and mask[k] == PELVIS:
+                    self.fail(f"{d} chest pixel in pelvis")
+            for side in ("left", "right"):
+                arm = out["arms"][side]
+                self.assertGreaterEqual(arm["top"], 61, d)
+                for y in range(arm["top"], arm["bottom"]+1):
+                    inner = arm["x"] + (1 if side == "left" else -1)
+                    if vis[y*64+inner]:
+                        self.assertIn(mask[y*64+inner], (TORSO, PELVIS), f"{d} {side} arm takes torso at ({inner},{y})")
+            # legs never cross the gap: one leg per side of each empty gap column
+            for y in range(out["legTop"], 101):
+                parts = [mask[y*64+x] for x in range(64) if vis[y*64+x]]
+                if not parts:
+                    continue
+                left = {rt.PARTS[p].split("_")[1] for p in parts[:3]}
+                right = {rt.PARTS[p].split("_")[1] for p in parts[-3:]}
+                self.assertEqual(len(left), 1, f"{d} y{y}"); self.assertEqual(len(right), 1, f"{d} y{y}")
+                self.assertNotEqual(left, right, f"{d} y{y} both sides same leg")
+
+    def test_reslice_old_draft(self):
+        old = bytearray(rt.N)
+        for k in range(rt.N):  # the pre-shape rectangular default slice
+            x, y = k % 64, k // 64
+            old[k] = rt.PARTS.index("head") if y < 50 else rt.PARTS.index("arm_near_upper") if 61 <= y < 81 and x <= 24 else rt.PARTS.index("torso") if y < 81 else rt.PARTS.index("leg_near_upper")
+        vis, out = self.slice("se", bytes(old))
+        self.assertGreater(out["re"]["changed"], 0)
+        self.assertEqual(out["re"]["mask"], out["mask"])
+        self.assertIn("head", out["re"]["parts"])
+
+
+class LegacyMigrationTest(unittest.TestCase):
+    """Old 10-part masters/drafts still open: JS and Python derive the pelvis
+    from the lower torso identically, in memory, without touching the input."""
+
+    def test_js_and_python_migrate_identically_and_render_equal(self):
+        legacy = json.loads((ROOT/"tests"/"fixtures"/"lgr1_male_bound_legacy10.json").read_text())
+        self.assertEqual(len(legacy["hierarchy"]["parts"]), 10)
+        rt.validate(legacy)
+        script = ("const C=require('./site/lafrich-puppet-core.js');const b=JSON.parse(require('fs').readFileSync(0,'utf8'));"
+                  "const m=C.validateMaster(b.rig);const o={};for(const d of C.DIRS)o[d]={mask:m.masks[d],pivots:m.pivots[d]};"
+                  "process.stdout.write(JSON.stringify(o))")
+        js = json.loads(subprocess.run(["node", "-e", script], cwd=ROOT, input=json.dumps(legacy),
+                                       capture_output=True, text=True, check=True).stdout)
+        lib = rt.load_library()
+        bow = next(m for m in lib["motions"] if m["id"] == "bow")
+        for d in rt.DIRECTIONS:
+            inputs = rt.binding_inputs(legacy, d)
+            self.assertEqual(base64.b64encode(inputs["mask"]).decode(), js[d]["mask"], d)
+            self.assertEqual(inputs["pivots"], js[d]["pivots"], d)
+            self.assertNotIn("pelvis", legacy["views"][d]["pivots"])
+            frames = [{"pose": rt.frame_pose(lib["poses"], bow, 2, d, rt.sides_of(None)), "order": list(inputs["order"])}]
+            j = node_render(inputs, frames)[0]
+            prep = rt.prepare_raw(inputs["layers"], inputs["mask"], inputs["pivots"], inputs["placements"],
+                                  inputs["order"], inputs["caps"])
+            self.assertEqual(bytes(rt.render_raw(prep, frames[0]["pose"], frames[0]["order"])), j, d)
