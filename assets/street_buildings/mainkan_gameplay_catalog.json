@@ -1,0 +1,2415 @@
+{
+  "version": 1,
+  "projection": "isometric-2:1",
+  "tile": [
+    64,
+    32
+  ],
+  "palette": "v6b-r4 known-colors.json",
+  "pack": "mainkan-gameplay-v6b-r4-20261110",
+  "notes": "30 review-grade gameplay fixture placeholders, four 1x native PNG directions per object; not automatically enabled as Jiwa actions.",
+  "assets": [
+    {
+      "id": "id_mainkan_bank_counter",
+      "file": "pipeline:id_mainkan_bank_counter",
+      "label": "Meja teller bank",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "work",
+        "pay",
+        "talk"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "money",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_bank_counter_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_bank_counter_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_bank_counter_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_bank_counter_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_scrap_sorting",
+      "file": "pipeline:id_mainkan_scrap_sorting",
+      "label": "Meja sortir rongsok",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "collect",
+        "sell"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "money",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_scrap_sorting_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_scrap_sorting_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_scrap_sorting_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_scrap_sorting_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_coffee_station",
+      "file": "pipeline:id_mainkan_coffee_station",
+      "label": "Lapak kopi sachet",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "buy",
+        "drink"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "energy",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_coffee_station_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_coffee_station_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_coffee_station_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_coffee_station_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_hobo_tent",
+      "file": "pipeline:id_mainkan_hobo_tent",
+      "label": "Tenda tidur gelandangan",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        2
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "sleep",
+        "rest"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "energy",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_hobo_tent_sw.png",
+          "size": [
+            133,
+            144
+          ],
+          "pivot": [
+            66,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_hobo_tent_se.png",
+          "size": [
+            133,
+            144
+          ],
+          "pivot": [
+            66,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_hobo_tent_ne.png",
+          "size": [
+            133,
+            144
+          ],
+          "pivot": [
+            66,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_hobo_tent_nw.png",
+          "size": [
+            133,
+            144
+          ],
+          "pivot": [
+            66,
+            130
+          ]
+        }
+      },
+      "size": [
+        133,
+        144
+      ],
+      "pivot": [
+        66,
+        130
+      ],
+      "width": 2.66,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_sleep_mat",
+      "file": "pipeline:id_mainkan_sleep_mat",
+      "label": "Kasur lipat kost",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        2
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "sleep",
+        "rest"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "energy",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_sleep_mat_sw.png",
+          "size": [
+            133,
+            144
+          ],
+          "pivot": [
+            66,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_sleep_mat_se.png",
+          "size": [
+            133,
+            144
+          ],
+          "pivot": [
+            66,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_sleep_mat_ne.png",
+          "size": [
+            133,
+            144
+          ],
+          "pivot": [
+            66,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_sleep_mat_nw.png",
+          "size": [
+            133,
+            144
+          ],
+          "pivot": [
+            66,
+            130
+          ]
+        }
+      },
+      "size": [
+        133,
+        144
+      ],
+      "pivot": [
+        66,
+        130
+      ],
+      "width": 2.66,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_snack_rack",
+      "file": "pipeline:id_mainkan_snack_rack",
+      "label": "Rak camilan minimarket",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "buy",
+        "eat_snack"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "energy",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_snack_rack_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_snack_rack_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_snack_rack_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_snack_rack_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_prayer_mat",
+      "file": "pipeline:id_mainkan_prayer_mat",
+      "label": "Sajadah dan rak sandal",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "pray"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "moral",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_prayer_mat_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_prayer_mat_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_prayer_mat_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_prayer_mat_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_cleaning_kit",
+      "file": "pipeline:id_mainkan_cleaning_kit",
+      "label": "Peralatan bersih selokan",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "clean_community",
+        "community_service"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "moral",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_cleaning_kit_sw.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_cleaning_kit_se.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_cleaning_kit_ne.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_cleaning_kit_nw.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        }
+      },
+      "size": [
+        69,
+        132
+      ],
+      "pivot": [
+        34,
+        118
+      ],
+      "width": 1.38,
+      "height": 2.64
+    },
+    {
+      "id": "id_mainkan_help_post",
+      "file": "pipeline:id_mainkan_help_post",
+      "label": "Meja bantuan warga",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "help_npc",
+        "talk"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "moral",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_help_post_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_help_post_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_help_post_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_help_post_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_alley_wall",
+      "file": "pipeline:id_mainkan_alley_wall",
+      "label": "Tembok gang",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "pee_wall"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "immoral",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_alley_wall_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_alley_wall_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_alley_wall_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_alley_wall_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_shop_display",
+      "file": "pipeline:id_mainkan_shop_display",
+      "label": "Etalase toko kecil",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "browse",
+        "buy"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "immoral",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_shop_display_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_shop_display_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_shop_display_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_shop_display_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_shift_desk",
+      "file": "pipeline:id_mainkan_shift_desk",
+      "label": "Meja kerja shift",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "work",
+        "leave_shift"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "immoral",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_shift_desk_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_shift_desk_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_shift_desk_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_shift_desk_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_study_desk",
+      "file": "pipeline:id_mainkan_study_desk",
+      "label": "Meja kursus daring",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "study",
+        "online_learning"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "exp",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_study_desk_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_study_desk_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_study_desk_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_study_desk_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_bookcase",
+      "file": "pipeline:id_mainkan_bookcase",
+      "label": "Rak buku perpustakaan",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "read_book",
+        "browse"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "exp",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_bookcase_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_bookcase_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_bookcase_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_bookcase_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_campus_desk",
+      "file": "pipeline:id_mainkan_campus_desk",
+      "label": "Meja kelas kampus",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "sit_class",
+        "study"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "exp",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_campus_desk_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_campus_desk_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_campus_desk_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_campus_desk_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_street_stove",
+      "file": "pipeline:id_mainkan_street_stove",
+      "label": "Kompor nasi goreng",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "cook_stir",
+        "cook_stall"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "cooking",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_street_stove_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_street_stove_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_street_stove_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_street_stove_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_drink_mixer",
+      "file": "pipeline:id_mainkan_drink_mixer",
+      "label": "Meja racik minuman",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "mix_drink",
+        "cook"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "cooking",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_drink_mixer_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_drink_mixer_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_drink_mixer_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_drink_mixer_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_kos_reception",
+      "file": "pipeline:id_mainkan_kos_reception",
+      "label": "Meja pengurus kost",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "buy_room",
+        "talk"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "buying",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_kos_reception_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_kos_reception_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_kos_reception_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_kos_reception_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_furniture_display",
+      "file": "pipeline:id_mainkan_furniture_display",
+      "label": "Etalase furnitur",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "buy_item",
+        "browse"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "buying",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_furniture_display_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_furniture_display_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_furniture_display_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_furniture_display_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_prop_rack",
+      "file": "pipeline:id_mainkan_prop_rack",
+      "label": "Rak perlengkapan",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "buy_prop",
+        "browse"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "buying",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_prop_rack_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_prop_rack_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_prop_rack_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_prop_rack_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_police_cell",
+      "file": "pipeline:id_mainkan_police_cell",
+      "label": "Pintu sel tahanan",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "jail_idle",
+        "enter"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "punishment",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_police_cell_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_police_cell_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_police_cell_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_police_cell_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_hansip_checkpoint",
+      "file": "pipeline:id_mainkan_hansip_checkpoint",
+      "label": "Meja pos hansip",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "community_service",
+        "pay",
+        "talk"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "punishment",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_hansip_checkpoint_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_hansip_checkpoint_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_hansip_checkpoint_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_hansip_checkpoint_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_public_shower",
+      "file": "pipeline:id_mainkan_public_shower",
+      "label": "Shower WC umum",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "bathe",
+        "shower"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "hygiene",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_public_shower_sw.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_public_shower_se.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_public_shower_ne.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_public_shower_nw.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        }
+      },
+      "size": [
+        69,
+        132
+      ],
+      "pivot": [
+        34,
+        118
+      ],
+      "width": 1.38,
+      "height": 2.64
+    },
+    {
+      "id": "id_mainkan_public_sink",
+      "file": "pipeline:id_mainkan_public_sink",
+      "label": "Wastafel umum",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "wash_hands",
+        "wash"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "hygiene",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_public_sink_sw.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_public_sink_se.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_public_sink_ne.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_public_sink_nw.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        }
+      },
+      "size": [
+        69,
+        132
+      ],
+      "pivot": [
+        34,
+        118
+      ],
+      "width": 1.38,
+      "height": 2.64
+    },
+    {
+      "id": "id_mainkan_fishing_stand",
+      "file": "pipeline:id_mainkan_fishing_stand",
+      "label": "Tempat mancing pinggir kali",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "fish",
+        "collect"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "money",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_fishing_stand_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_fishing_stand_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_fishing_stand_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_fishing_stand_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_siomay_cart",
+      "file": "pipeline:id_mainkan_siomay_cart",
+      "label": "Gerobak siomay",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "sell",
+        "buy",
+        "cook_stall"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "money",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_siomay_cart_sw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_siomay_cart_se.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_siomay_cart_ne.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_siomay_cart_nw.png",
+          "size": [
+            101,
+            144
+          ],
+          "pivot": [
+            50,
+            130
+          ]
+        }
+      },
+      "size": [
+        101,
+        144
+      ],
+      "pivot": [
+        50,
+        130
+      ],
+      "width": 2.02,
+      "height": 2.88
+    },
+    {
+      "id": "id_mainkan_public_water",
+      "file": "pipeline:id_mainkan_public_water",
+      "label": "Keran air minum umum",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: Mainkan v1 placeholder fixture; object-to-activity binding requires Jiwa Entities authoring.",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "drink",
+        "wash"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "energy",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_public_water_sw.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_public_water_se.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_public_water_ne.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_public_water_nw.png",
+          "size": [
+            69,
+            132
+          ],
+          "pivot": [
+            34,
+            118
+          ]
+        }
+      },
+      "size": [
+        69,
+        132
+      ],
+      "pivot": [
+        34,
+        118
+      ],
+      "width": 1.38,
+      "height": 2.64
+    },
+    {
+      "id": "id_mainkan_warteg_vitrine",
+      "file": "pipeline:id_mainkan_warteg_vitrine",
+      "label": "Etalase nasi warteg",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: V6B r4 official gold artwork re-keyed and remapped into known palette. No old live builtins overwritten.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "buy",
+        "eat"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "energy",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_warteg_vitrine_sw.png",
+          "size": [
+            101,
+            110
+          ],
+          "pivot": [
+            50,
+            81
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_warteg_vitrine_se.png",
+          "size": [
+            101,
+            110
+          ],
+          "pivot": [
+            50,
+            81
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_warteg_vitrine_ne.png",
+          "size": [
+            101,
+            110
+          ],
+          "pivot": [
+            50,
+            81
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_warteg_vitrine_nw.png",
+          "size": [
+            101,
+            110
+          ],
+          "pivot": [
+            50,
+            81
+          ]
+        }
+      },
+      "size": [
+        101,
+        110
+      ],
+      "pivot": [
+        50,
+        81
+      ],
+      "width": 2.02,
+      "height": 2.2
+    },
+    {
+      "id": "id_mainkan_food_cart",
+      "file": "pipeline:id_mainkan_food_cart",
+      "label": "Gerobak jualan",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: V6B r4 official gold artwork re-keyed and remapped into known palette. No old live builtins overwritten.",
+      "footprint": [
+        2,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "sell_food_stall",
+        "cook_stall"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "money",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_food_cart_sw.png",
+          "size": [
+            101,
+            116
+          ],
+          "pivot": [
+            50,
+            87
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_food_cart_se.png",
+          "size": [
+            101,
+            104
+          ],
+          "pivot": [
+            50,
+            75
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_food_cart_ne.png",
+          "size": [
+            101,
+            104
+          ],
+          "pivot": [
+            50,
+            75
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_food_cart_nw.png",
+          "size": [
+            101,
+            116
+          ],
+          "pivot": [
+            50,
+            87
+          ]
+        }
+      },
+      "size": [
+        101,
+        116
+      ],
+      "pivot": [
+        50,
+        87
+      ],
+      "width": 2.02,
+      "height": 2.32
+    },
+    {
+      "id": "id_mainkan_public_toilet",
+      "file": "pipeline:id_mainkan_public_toilet",
+      "label": "WC duduk umum",
+      "group": "prop",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "mainkan-gameplay-v6b-r4-20261110",
+      "category": "furniture",
+      "note": "REVIEW: V6B r4 official gold artwork re-keyed and remapped into known palette. No old live builtins overwritten.",
+      "footprint": [
+        1,
+        1
+      ],
+      "collision": true,
+      "published": true,
+      "interactions": [
+        "use_toilet",
+        "pee",
+        "poop"
+      ],
+      "interactionSide": "front",
+      "mechanicScope": "hygiene",
+      "draft": true,
+      "variants": {
+        "sw": {
+          "file": "props/id_mainkan_public_toilet_sw.png",
+          "size": [
+            69,
+            77
+          ],
+          "pivot": [
+            34,
+            56
+          ]
+        },
+        "se": {
+          "file": "props/id_mainkan_public_toilet_se.png",
+          "size": [
+            69,
+            66
+          ],
+          "pivot": [
+            34,
+            45
+          ]
+        },
+        "ne": {
+          "file": "props/id_mainkan_public_toilet_ne.png",
+          "size": [
+            69,
+            66
+          ],
+          "pivot": [
+            34,
+            45
+          ]
+        },
+        "nw": {
+          "file": "props/id_mainkan_public_toilet_nw.png",
+          "size": [
+            69,
+            77
+          ],
+          "pivot": [
+            34,
+            56
+          ]
+        }
+      },
+      "size": [
+        69,
+        77
+      ],
+      "pivot": [
+        34,
+        56
+      ],
+      "width": 1.38,
+      "height": 1.54
+    }
+  ]
+}

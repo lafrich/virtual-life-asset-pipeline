@@ -1,0 +1,42 @@
+{
+  "format": "mainkan-gameplay-art-mapping-v1",
+  "status": "visual-only-review",
+  "authoritative_logic": "jiwa/activity-catalog.js",
+  "source_catalog": "mainkan_gameplay_catalog.json",
+  "activityToAsset": {
+    "bank_teller": "id_mainkan_bank_counter",
+    "mulung": "id_mainkan_scrap_sorting",
+    "jualan_makanan": "id_mainkan_food_cart",
+    "minum_kopi": "id_mainkan_coffee_station",
+    "makan_warteg": "id_mainkan_warteg_vitrine",
+    "tidur": "id_mainkan_sleep_mat",
+    "snack": "id_mainkan_snack_rack",
+    "ibadah": "id_mainkan_prayer_mat",
+    "sukarela": "id_mainkan_cleaning_kit",
+    "bantu_npc": "id_mainkan_help_post",
+    "pipis_sembarangan": "id_mainkan_alley_wall",
+    "mencuri": "id_mainkan_shop_display",
+    "kabur_shift": "id_mainkan_shift_desk",
+    "online_course": "id_mainkan_study_desk",
+    "baca_buku": "id_mainkan_bookcase",
+    "selundup_kelas": "id_mainkan_campus_desk",
+    "nasi_goreng": "id_mainkan_street_stove",
+    "kopi_susu": "id_mainkan_drink_mixer",
+    "beli_kost": "id_mainkan_kos_reception",
+    "beli_furnitur": "id_mainkan_furniture_display",
+    "beli_props": "id_mainkan_prop_rack",
+    "kerja_sosial": "id_mainkan_hansip_checkpoint",
+    "penjara": "id_mainkan_police_cell"
+  },
+  "additionalMechanics": {
+    "use_toilet": "id_mainkan_public_toilet",
+    "bathe": "id_mainkan_public_shower",
+    "wash": "id_mainkan_public_sink",
+    "free_water": "id_mainkan_public_water",
+    "fishing": "id_mainkan_fishing_stand",
+    "sell_fish": "id_mainkan_siomay_cart",
+    "cook_stall": "id_mainkan_food_cart",
+    "homeless_respawn": "id_mainkan_hobo_tent"
+  },
+  "warning": "Art mappings do not automatically enable Jiwa actions or bind city object IDs. Only published sprites are visible in Semesta library."
+}
