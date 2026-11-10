@@ -1,12 +1,13 @@
-/* MAHLUK HIDUP.EXE — clean Genesis-only character workshop.
+/* MAHLUK HIDUP.EXE — LGR-1 character rig workshop.
  * The only source of anatomy is the approved frozen V6B Genesis Male/Female.
  * Art -> pivot/slice -> immutable binding -> pose test -> approved master.
  * Old character, action, animation and Genesis local databases are never read.
  * Facial art is always an optional Emosi.exe overlay, not baked into body art.
  */
 (function(root){"use strict";
-const C=root.LafrichPuppetCore,R=root.LafrichPuppetRenderer,P=root.MH2PlanePixelEditor;
-const $=id=>document.getElementById(id),DIR=C.DIRS,PARTS=C.PARTS,STEPS=["pixel","rig","bind","test","save"];
+const C=root.LafrichPuppetCore,R=root.LafrichPuppetRenderer,P=root.MH2PlanePixelEditor,M=root.LGR1Motion;
+const $=id=>document.getElementById(id),DIR=C.DIRS,PARTS=C.PARTS,STEPS=["pixel","rig","bind","test","motion","save"];
+const USER_MOTION_KEY="vl-lgr1-user-motions-v1",OUTFIT_TWEAK_KEY="vl-lgr1-outfit-tweaks-v1";
 const SOURCE=Object.freeze({male:"genesis_male_nude",female:"genesis_female_nude"});
 const MASTER_IDS=Object.freeze({male:"lafrich_genesis_male",female:"lafrich_genesis_female"});
 const DRAFT_KEY="vl-lafrich-genesis-workbench-drafts-v1";
@@ -18,11 +19,38 @@ let gender="male",dir="se",selected="head",step="pixel",tool="pivot",zoom=5,acti
 let drafts={},source={},preparedCache=new Map(),rev=0,paintDrag=null,renderRequest=0;
 let pixelEditor=null,pixelSession=null,maskCopied=null,partCopied=null,isolated=false,maskUndo=[],maskRedo=[];
 let faceEntries=[],faceImage=null,faceId="",page="workshop",sourcePending=Promise.resolve();
-let playing=false,playTick=0,playFrame=0,motionTime=0,rigPreviewTimer=0;
+let playing=false,playTick=0,playFrame=0,motionMs=0,rigPreviewTimer=0;
+let motionLib={poses:{neutral:{}},motions:[]},userMotions=[],editMotion=null,editFrame=0,motionPart="arm_r_upper";
+let outfitId="",outfitChar=null,outfitCache={},outfitTweaks={};
 let unassignedClusters=[],activeUnassigned=-1,unassignedUndo=null;
-function scanUnassignedClusters(){
- // A pixel is a problem only if VISIBLE in the composited source and unowned
- // in the per-angle slice mask. Transparent pixels do not need rig ownership.
+function clustersOf(active,d,kind,extra){
+ const visited=new Uint8Array(C.N),found=[];
+ for(let start=0;start<C.N;start++){
+  if(!active[start]||visited[start])continue;
+  const queue=[start],pixels=[];visited[start]=1;
+  let minX=63,minY=111,maxX=0,maxY=0;
+  for(let i=0;i<queue.length;i++){
+   const index=queue[i],x=index%64,y=Math.floor(index/64);
+   pixels.push(index);minX=Math.min(minX,x);maxX=Math.max(maxX,x);
+   minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+   // 8-neighbor grouping treats diagonally touching stray pixels as one cluster.
+   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    if(!dx&&!dy)continue;
+    const nx=x+dx,ny=y+dy;
+    if(nx<0||nx>=64||ny<0||ny>=112)continue;
+    const n=ny*64+nx;
+    if(active[n]&&!visited[n]){visited[n]=1;queue.push(n)}
+   }
+  }
+  found.push({dir:d,kind,pixels,count:pixels.length,minX,minY,maxX,maxY,...(extra?extra(pixels):{})});
+ }
+ return found;
+}
+const FLOATER_MAX=6;
+function scanUnassignedClusters(outfitMasks=null){
+ // UNASSIGNED: visible source pixels that belong to no part.
+ // FLOATER: tiny isolated islands (≤6 px) of visible art touching nothing.
+ // OUTFIT: Custom Wear pixels outside the body outline (auto → nearest part).
  if(!master()||!source[gender])return [];
  const found=[];
  for(const d of DIR){
@@ -30,26 +58,28 @@ function scanUnassignedClusters(){
   if(!composite)continue;
   const alpha=composite.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
   const mask=C.decode(master().masks[d]);
-  const active=new Uint8Array(C.N),visited=new Uint8Array(C.N);
-  for(let k=0;k<C.N;k++)if(mask[k]===255&&alpha[k*4+3]>0)active[k]=1;
-  for(let start=0;start<C.N;start++){
-   if(!active[start]||visited[start])continue;
-   const queue=[start],pixels=[];visited[start]=1;
-   let minX=63,minY=111,maxX=0,maxY=0;
-   for(let i=0;i<queue.length;i++){
-    const index=queue[i],x=index%64,y=Math.floor(index/64);
-    pixels.push(index);minX=Math.min(minX,x);maxX=Math.max(maxX,x);
-    minY=Math.min(minY,y);maxY=Math.max(maxY,y);
-    // 8-neighbor grouping treats diagonally touching stray pixels as one cluster.
-    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-     if(!dx&&!dy)continue;
-     const nx=x+dx,ny=y+dy;
-     if(nx<0||nx>=64||ny<0||ny>=112)continue;
-     const n=ny*64+nx;
-     if(active[n]&&!visited[n]){visited[n]=1;queue.push(n)}
-    }
-   }
-   found.push({dir:d,pixels,count:pixels.length,minX,minY,maxX,maxY});
+  const active=new Uint8Array(C.N),visible=new Uint8Array(C.N);
+  for(let k=0;k<C.N;k++){if(alpha[k*4+3]>0){visible[k]=1;if(mask[k]===255)active[k]=1}}
+  const unassigned=clustersOf(active,d,"unassigned");
+  found.push(...unassigned);
+  const inUnassigned=new Set(unassigned.flatMap(c=>c.pixels));
+  const islands=clustersOf(visible,d,"floater").filter(c=>c.count<=FLOATER_MAX&&!c.pixels.some(k=>inUnassigned.has(k)));
+  if(islands.length&&visible.reduce((n,v)=>n+v,0)>FLOATER_MAX)found.push(...islands);
+  const wear=outfitMasks?.[d];
+  if(wear){
+   const bm=new Uint8Array(C.N).fill(255);
+   for(let k=0;k<C.N;k++)if(visible[k])bm[k]=mask[k];
+   const expanded=root.LGR1Raster.expandMask(bm);
+   const tw=outfitFor("test")?.maskTweaks?.[d];
+   const tweak=tw?Uint8Array.from(atob(tw),c=>c.charCodeAt(0)):null;
+   const outside=new Uint8Array(C.N);
+   for(let k=0;k<C.N;k++)if(wear[k]&&!visible[k])outside[k]=1;
+   found.push(...clustersOf(outside,d,"outfit",px=>{
+    const votes=new Map();
+    for(const k of px){const o=tweak&&tweak[k]!==254?tweak[k]:expanded[k];votes.set(o,(votes.get(o)||0)+1)}
+    const owner=[...votes.entries()].sort((a,b)=>b[1]-a[1])[0][0];
+    return {owner:owner===255?"STATIC":PARTS[owner],tweaked:!!tweak&&px.some(k=>tweak[k]!==254)};
+   }));
   }
  }
  return found;
@@ -62,21 +92,25 @@ function updateUnassignedUI(){
  const total=unassignedClusters.reduce((n,c)=>n+c.count,0);
  for(let i=0;i<unassignedClusters.length;i++){
   const c=unassignedClusters[i];
-  choice.add(new Option(c.dir.toUpperCase()+" · "+c.count+
+  const tag=c.kind==="floater"?"FLOATER":c.kind==="outfit"?"OUTFIT → "+(c.owner==="STATIC"?"STATIC":labels[c.owner])+(c.tweaked?" (tweaked)":""):"UNASSIGNED";
+  choice.add(new Option(c.dir.toUpperCase()+" · "+tag+" · "+c.count+
    " px · x "+c.minX+"–"+c.maxX+", y "+c.minY+"–"+c.maxY,String(i)));
  }
- if(!unassignedClusters.length)choice.add(new Option("No unassigned pixels found",""));
+ if(!unassignedClusters.length)choice.add(new Option("No unassigned pixels or floaters found",""));
  const valid=activeUnassigned>=0&&activeUnassigned<unassignedClusters.length;
  choice.value=valid?String(activeUnassigned):"";
  const current=selectedUnassigned();
  $("unassigned-detail").textContent=total===0?
-  "✓ No visible unassigned pixels found across four directions.":
-  total+" visible unassigned pixels in "+unassignedClusters.length+" clusters across "+
+  "✓ No visible unassigned pixels, floaters"+(outfitChar?" or outfit overhang":"")+" across four directions.":
+  total+" px in "+unassignedClusters.length+" issue clusters ("+
+  ["unassigned","floater","outfit"].map(k=>unassignedClusters.filter(c=>c.kind===k).length+" "+k).join(", ")+") across "+
   DIR.filter(d=>unassignedClusters.some(c=>c.dir===d)).map(d=>d.toUpperCase()).join(", ")+
   (current?" · HIGHLIGHT: "+current.dir.toUpperCase()+" / "+current.count+" px":"");
  $("next-unassigned").disabled=!unassignedClusters.length;
- $("remove-stray-group").disabled=!current;
- $("remove-strays-angle").disabled=!unassignedClusters.some(c=>c.dir===dir);
+ $("remove-stray-group").disabled=!current||current.kind==="outfit";
+ $("remove-strays-angle").disabled=!unassignedClusters.some(c=>c.dir===dir&&c.kind!=="outfit");
+ $("assign-outfit-cluster").disabled=!current||current.kind!=="outfit";
+ $("reset-outfit-tweaks").disabled=!outfitChar||!outfitTweaks?.[gender]?.[outfitChar?.id];
  $("undo-stray-delete").disabled=!unassignedUndo||unassignedUndo.gender!==gender;
 }
 function focusUnassignedIssue(index){
@@ -94,17 +128,22 @@ function focusUnassignedIssue(index){
   wrap.scrollLeft=Math.max(0,centerX-wrap.clientWidth/2);
   wrap.scrollTop=Math.max(0,centerY-wrap.clientHeight/2);
  });
- status("FOUND "+group.count+" visible unassigned pixels at "+group.dir.toUpperCase()+
-  " / x "+group.minX+"–"+group.maxX+", y "+group.minY+"–"+group.maxY+
-  ". Delete only if these are unwanted source pixels.");
+ status("FOUND "+group.count+" "+(group.kind==="floater"?"isolated floater":group.kind==="outfit"?"outfit overhang":"visible unassigned")+
+  " pixels at "+group.dir.toUpperCase()+" / x "+group.minX+"–"+group.maxX+", y "+group.minY+"–"+group.maxY+
+  (group.kind==="outfit"?". Auto-assigned to "+(group.owner==="STATIC"?"STATIC":labels[group.owner])+"; select a body part and ASSIGN to override for this outfit only.":
+   ". Delete only if these are unwanted source pixels."));
+}
+async function outfitMasksForScan(){
+ if(!outfitChar)return null;
+ const out={};for(const d of DIR)out[d]=await outfitAlpha(d);return out;
 }
 async function findUnassignedPixels(){
  await sourcePending;
- unassignedClusters=scanUnassignedClusters();
+ unassignedClusters=scanUnassignedClusters(await outfitMasksForScan());
  activeUnassigned=unassignedClusters.length?0:-1;
  updateUnassignedUI();
  if(unassignedClusters.length)focusUnassignedIssue(0);
- else status("CLEAN · no visible unassigned pixels in any of 4 angles.");
+ else status("CLEAN · no unassigned pixels or floaters in any of 4 angles.");
  return unassignedClusters;
 }
 function paintUnassignedFocus(destination,d){
@@ -128,14 +167,14 @@ async function eraseUnassignedStrays(allInAngle=false){
  const chosen=selectedUnassigned(),targetDir=allInAngle?dir:chosen?.dir;
  if(!targetDir)throw Error("Use FIND UNASSIGNED first");
  // Rescan so a stale result can never erase a pixel that was assigned meanwhile.
- const current=scanUnassignedClusters().filter(c=>c.dir===targetDir);
- const matching=allInAngle?current:current.filter(c=>c.pixels.includes(chosen?.pixels[0]));
+ const current=scanUnassignedClusters().filter(c=>c.dir===targetDir&&c.kind!=="outfit");
+ const matching=allInAngle?current:current.filter(c=>c.kind===chosen?.kind&&c.pixels.includes(chosen?.pixels[0]));
  const pixelIndices=[...new Set(matching.flatMap(c=>c.pixels))];
  if(!pixelIndices.length){
   await findUnassignedPixels();throw Error("Issue changed; scan updated, nothing deleted");
  }
  const count=pixelIndices.length;
- if(!confirm("DELETE "+count+" visible unassigned source pixel(s) in "+
+ if(!confirm("DELETE "+count+" visible unassigned / floater source pixel(s) in "+
   targetDir.toUpperCase()+"? This ERASES artwork in ALL affected physical layers "+
   "at those exact coordinates. It will NOT assign any part, change pivots, or "+
   "reset your 40/40 reviews. Undo available until the page is reloaded."))return;
@@ -201,25 +240,30 @@ function invalidateReviews(direction=null,parts=null){
 }
 function stopPlayback(){
  playing=false;playTick=0;
- const b=$("test-play");if(b)b.textContent="▶ PLAY PREVIEW";
+ for(const id of ["test-play","motion-play"])if($(id))$(id).textContent="▶ PLAY PREVIEW";
 }
+let lastShownFrame=-1;
 function animatePlayback(now){
  if(!playing)return;
- if(step!=="test"||page!=="workshop"){stopPlayback();return}
+ if((step!=="test"&&step!=="motion")||page!=="workshop"){stopPlayback();return}
  if(!playTick)playTick=now;
- if(now-playFrame>=95){
-  const speed=Number($("test-speed").value)||1;
-  motionTime=(motionTime+(now-playTick)*speed/1100)%1;
-  $("test-scrub").value=Math.round(motionTime*100);
-  playFrame=now;void renderAll();
+ const speed=Number($("test-speed").value)||1;
+ motionMs+=(now-playTick)*speed;playTick=now;
+ const mo=currentMotion();
+ if(mo){
+  const total=M.duration(mo);motionMs%=total;
+  $("test-scrub").value=Math.round(motionMs/total*100);
+  const i=M.frameIndexAt(mo,motionMs);
+  if(i!==lastShownFrame){lastShownFrame=i;if(step==="motion")editFrame=i;void renderAll();if(step==="motion")syncMotionControls()}
  }
- playTick=now;
  root.requestAnimationFrame(animatePlayback);
 }
 function togglePlayback(){
- if(playing){stopPlayback();return}
- if(!record()?.bound){status("Bind a rig before testing motion",true);return}
- playing=true;playTick=0;playFrame=0;$("test-play").textContent="Ⅱ PAUSE PREVIEW";
+ if(playing){stopPlayback();syncControls();return}
+ if(step==="test"&&!record()?.bound){status("Bind a rig before testing motion",true);return}
+ if(!currentMotion()){status("Choose a motion first",true);return}
+ playing=true;playTick=0;playFrame=0;lastShownFrame=-1;
+ for(const id of ["test-play","motion-play"])if($(id))$(id).textContent="Ⅱ PAUSE PREVIEW";
  root.requestAnimationFrame(animatePlayback);
 }
 const canvas=$("stage"),ctx=canvas.getContext("2d",{willReadFrequently:true});
@@ -311,34 +355,41 @@ async function ensure(g){
  if(drafts[g]){await sourceCanvases(g);return}
  await seed(g);
 }
-function pose(){
- const p=C.blankPose();
- if(step!=="test"&&step!=="save")return p;
- const preset=$("test-preset").value;
- const phase=motionTime*2*Math.PI;
- if(preset==="arms"){
-  p.arm_near_upper.a=-65;p.arm_far_upper.a=65;
-  p.arm_near_lower.a=-23;p.arm_far_lower.a=23;
- }else if(preset==="walk"){
-  const swing=Math.sin(phase)*25;
-  p.leg_near_upper.a=swing;p.leg_far_upper.a=-swing;
-  p.leg_near_lower.a=-Math.max(0,swing)*.8;p.leg_far_lower.a=Math.max(0,swing)*.8;
-  p.arm_near_upper.a=-swing*.75;p.arm_far_upper.a=swing*.75;
-  p.torso.y=-Math.abs(Math.sin(phase))*1.6;
- }else if(preset==="wave"){
-  p.arm_near_upper.a=-60;p.arm_near_lower.a=-26+Math.sin(phase)*26;
- }else if(preset==="crouch"){
-  p.torso.y=7;p.torso.a=8;
-  p.leg_near_upper.a=-37;p.leg_far_upper.a=37;
-  p.leg_near_lower.a=55;p.leg_far_lower.a=-55;
- }
- p[selected].a+=Number($("test-angle").value)||0;
- p[selected].x+=Number($("test-x").value)||0;
- p[selected].y+=Number($("test-y").value)||0;
- return p;
+function allMotions(){return [...motionLib.motions,...userMotions]}
+function currentMotion(){
+ if(step==="motion")return editMotion;
+ const id=$("test-preset")?.value||"";
+ return allMotions().find(m=>m.id===id)||null;
 }
+function rigSides(rig){return M.sidesOf(rig||activeRig())}
+function baseOrder(d,rig){
+ const o=(rig||activeRig())?.drawOrders?.[d];
+ return Array.isArray(o)&&o.length===PARTS.length?o.slice():C.DRAW_ORDER.slice();
+}
+function poseFor(d,rig){
+ // Returns {pose, order} for one direction: shared motion data (anatomical,
+ // authored as seen in SE) is mapped to near/far pieces per direction.
+ const p=C.blankPose();let order=null;
+ if(step!=="test"&&step!=="save"&&step!=="motion")return {pose:p,order};
+ const mo=currentMotion();
+ if(mo){
+  const valid=step==="motion"?safeMotion(mo):mo;
+  if(valid){
+   const i=step==="motion"&&!playing?Math.min(editFrame,valid.frames.length-1):M.frameIndexAt(valid,motionMs);
+   Object.assign(p,M.framePose(motionLib.poses,valid,i,d,rigSides(rig)));
+   order=M.frameOrder(baseOrder(d,rig),valid,i,d,rigSides(rig));
+  }
+ }
+ if(step==="test"){
+  p[selected].a+=Number($("test-angle").value)||0;
+  p[selected].x+=Number($("test-x").value)||0;
+  p[selected].y+=Number($("test-y").value)||0;
+ }
+ return {pose:p,order};
+}
+function safeMotion(m){try{return M.validateMotion(m,motionLib.poses)}catch{return null}}
 function activeRig(){
- return (step==="test"||step==="save")&&record().bound?
+ return (step==="test"||step==="save"||step==="motion")&&record()?.bound?
  record().bound.rig:master();
 }
 async function faceForPreview(){
@@ -379,20 +430,22 @@ function showPivot(destination,d,rig){
 async function renderAll(){
  await sourcePending.catch(()=>{});
  if(!master()||page!=="workshop")return;
- const token=++renderRequest,currentGender=gender,currentStep=step,m=activeRig(),po=pose();
+ const token=++renderRequest,currentGender=gender,currentStep=step,m=activeRig();
  let face=null;
  try{face=await faceForPreview()}catch(e){status(e.message,true)}
  for(const d of DIR){
   if(token!==renderRequest)return;
   try{
-   const key=rev+"|"+currentGender+"|"+currentStep+"|"+d+"|"+faceId;
+   const wear=outfitFor(currentStep);
+   const key=rev+"|"+currentGender+"|"+currentStep+"|"+d+"|"+faceId+"|"+(wear?outfitId+"#"+tweakRev:"");
    let prepared=preparedCache.get(key);
    if(!prepared){
-    prepared=await R.prepare(m,null,d,face);
+    prepared=await R.prepare(m,wear,d,face);
     if(token!==renderRequest)return;
     preparedCache.set(key,prepared);
    }
-   const output=R.render(prepared,po);
+   const fp=poseFor(d,m);
+   const output=R.render(prepared,fp.pose,fp.order?{order:fp.order}:undefined);
    if(token!==renderRequest)return;
    const out=cv(),o=out.getContext("2d",{willReadFrequently:true});
    o.imageSmoothingEnabled=false;o.drawImage(output,0,0);
@@ -467,7 +520,10 @@ function syncControls(){
  $("gender").value=gender;$("art-layer").value=activeLayer;
  $("part-select").value=selected;
  const done=reviewCount();
- $("part-progress").textContent="RIG REVIEW: "+done+" / 40 combinations inspected";
+ $("part-progress").textContent="RIG REVIEW: "+done+" / 40 · per angle: "+DIR.map(d=>d.toUpperCase()+" "+
+  PARTS.filter(p=>record()?.reviewed?.[reviewKey(d,p)]).length+"/10").join(" · ");
+ renderRigSettings();syncMotionControls();
+ if($("outfit-preview"))$("outfit-preview").value=outfitId;
  $("rig-review-message").textContent=(record()?.reviewed?.[reviewKey(dir,selected)]?"✓ REVIEWED":"NOT REVIEWED")+
   " · "+labels[selected]+" / "+dir.toUpperCase()+" · inspect and mark only when slice AND pivot are correct.";
  $("mark-reviewed").textContent=record()?.reviewed?.[reviewKey(dir,selected)]?"✓ REVIEWED · MARK AGAIN":"✓ MARK PART / ANGLE REVIEWED";
@@ -502,14 +558,15 @@ function syncControls(){
  $("download-master").disabled=!record()?.approved;
  $("download-binding").disabled=!record()?.bound;
  const title={pixel:"01 · PIXEL EDITOR · "+labels[selected],rig:"02 · PIVOT + SLICING · "+labels[selected],
-  bind:"03 · PYTHON / RIG DATA BINDING",test:"04 · ANIMATION-FREE BINDING CHECK",save:"05 · MASTER LAFRICH GENESIS"};
+  bind:"03 · LGR-1 RIG DATA BINDING",test:"04 · CHECK BINDING · SHARED MOTIONS",
+  motion:"05 · MOTION EDITOR · "+(editMotion?.name||"no motion")+(record()?.bound?"":" · preview on unbound draft"),save:"06 · LGR-1 MASTER"};
  $("preview-title").textContent=title[step];
  const b=record()?.bound;
  $("binding-result").textContent=b?
   ("BOUND · "+b.id+" · 10 parts · 4 views · "+
    (record().approved?"APPROVED":"TEST REQUIRED")):"NOT BOUND · Edit pixels, pivots, masks, then bind.";
  $("master-details").textContent=record()?.saved?
-  ("MASTER SAVED: "+MASTER_IDS[gender]+" · Ready for future Character Editor and Python animation database"):
+  ("LGR-1 MASTER SAVED: "+MASTER_IDS[gender]+" · ready for the Character Editor and shared motion library"):
   ("MASTER NOT YET SAVED · "+(record()?.approved?"binding approved":"binding test pending"));
 }
 function switchAngle(d){
@@ -524,6 +581,7 @@ function switchStep(next){
  if(!STEPS.includes(next))return;
  if(next!=="test")stopPlayback();
  if((next==="test"||next==="save")&&!record()?.bound){status("Bind all 4 views before checking",true);next="bind"}
+ if(next==="motion"&&!editMotion){const first=allMotions()[0];if(first)startEdit(first)}
  if(next==="save"&&!record()?.approved){status("Approve the binding in CHECK BINDING before saving master",true);next="test"}
  step=next;syncControls();void renderAll();
 }
@@ -639,7 +697,7 @@ function applyPixels(){
  }
  try{
   const atlas=pixelEditor.getAtlas(),g=atlas.getContext("2d",{willReadFrequently:true});
-  const next={},idx=PARTS.indexOf(selected),layer=activeLayer;
+  const next={},idx=PARTS.indexOf(selected),layer=activeLayer,touched={};
   let expandCount=0,stealCount=0;
   // Draw into the selected layer only. Every other physical appearance layer
   // stays pixel-exact, allowing independent future skin/clothing edits.
@@ -650,16 +708,20 @@ function applyPixels(){
    const original=pixelSession.originals[d];
    oldCtx.putImageData(original,0,0);
    const old=oldCtx.getImageData(0,0,64,112),edited=g.getImageData(0,di*112,64,112);
-   const mask=C.decode(master().masks[d]),pixels=old.data,part=edited.data;
+   const mask=C.decode(master().masks[d]),pixels=old.data,part=edited.data,before=original.data;
+   const hit=new Set();
    for(let k=0;k<C.N;k++){
     const p=k*4;
     if(mask[k]===idx) pixels.fill(0,p,p+4);
     if(part[p+3]){
-     if(mask[k]!==idx){expandCount++;if(pixels[p+3])stealCount++}
+     if(mask[k]!==idx){expandCount++;if(pixels[p+3])stealCount++;if(mask[k]!==255)hit.add(PARTS[mask[k]])}
      pixels.set(part.subarray(p,p+4),p);
      mask[k]=idx;
     }
    }
+   let changed=false;
+   for(let i=0;i<before.length;i++)if(before[i]!==pixels[i]){changed=true;break}
+   if(changed||hit.size)touched[d]=[selected,...hit];
    oldCtx.putImageData(old,0,0);
    next[d]={mask:C.encode(mask),png:oldCtx.canvas.toDataURL("image/png")};
   }
@@ -676,10 +738,16 @@ function applyPixels(){
   // Invalidate approved/bound data IMMEDIATELY. Binding waits for the
   // full composite to rebuild so it never exports stale source sprites.
   sourcePending=sourceCanvases(appliedGender);
-  invalidateReviews();syncControls();
+  // Only the edited part (and parts that lost pixels to it) in the edited
+  // directions lose their review; everything else keeps its receipt.
+  const touchedDirs=Object.keys(touched);
+  for(const d of touchedDirs)invalidateReviews(d,touched[d]);
+  if(!touchedDirs.length)makeDirty();
+  syncControls();
   void sourcePending.then(()=>{
    flushCache();syncControls();
-   status("APPLIED "+labels[appliedPart]+" / "+layer+" · 4 independent source angles updated.");
+   status("APPLIED "+labels[appliedPart]+" / "+layer+" · changed: "+(touchedDirs.map(d=>d.toUpperCase()).join(", ")||"nothing")+
+    " · only those part reviews reset ("+reviewCount()+"/40 kept).");
   }).catch(e=>status("Composite rebuild failed: "+e.message,true));
   return true;
  }catch(e){status("Pixel editor Apply failed: "+e.message,true);return false}
@@ -735,8 +803,10 @@ async function makeBinding(){
    views:Object.fromEntries(DIR.map(d=>[d,{
     pivots:clone(m.pivots[d]),maskBase64:m.masks[d],
     spritePng:source[gender][d].toDataURL("image/png"),coverage:report.counts[d].visible,
-    occluded:report.counts[d].occluded
+    occluded:report.counts[d].occluded,
+    drawOrder:baseOrder(d,m),nearSide:M.sidesOf(m)[d]
    }])),
+   motionLibrary:"media/lgr1/motions.json",
    rig:clone(m),pythonEngine:"genesis_procedural_runtime.py",
    createdAt:new Date().toISOString()
   };
@@ -749,7 +819,7 @@ function validatedBinding(){
  const b=record()?.bound;
  if(!b||b.format!==BIND_FORMAT||b.gender!==gender||b.id!==MASTER_IDS[gender]||
     (b.rigFormat!==undefined&&b.rigFormat!==RIG_FORMAT)||b.sourceId!==SOURCE[gender])
-  throw Error("Genesis binding missing / invalid");
+  throw Error("LGR-1 binding missing / invalid");
  C.validateMaster(b.rig);
  for(const d of DIR)for(const part of PARTS)
   if(b.reviewed?.[reviewKey(d,part)]!==true)
@@ -800,7 +870,7 @@ async function restoreDraftRecord(data,label){
  const testedAngles=validBound?Object.fromEntries(DIR.filter(d=>data.testedAngles?.[d]===true).map(d=>[d,true])):{};
  const approved=!!validBound&&!!data.approved&&DIR.every(d=>testedAngles[d]);
  stopPlayback();gender=target;dir="se";selected="head";maskUndo=[];maskRedo=[];
- faceId="";faceImage=null;motionTime=0;
+ faceId="";faceImage=null;motionMs=0;
  drafts[target]={rig,bound:validBound?clone(data.bound):null,reviewed,testedAngles,
   approved,saved:false,edited:String(data.edited||new Date().toISOString())};
  await sourceCanvases(target);
@@ -877,7 +947,7 @@ async function cloudSave(){
   await d.save(v.id,v);
   const localOkay=saveApproved();
   $("statuscloud").textContent="DRIVE VERIFIED";
-  status("Drive read-back verified · "+v.id+" · canonical Genesis Master"+
+  status("Drive read-back verified · "+v.id+" · canonical LGR-1 master"+
    (localOkay?"":" · browser local save failed, Drive copy is safe"),!localOkay);
  }catch(e){status("Cloud save: "+e.message,true)}
 }
@@ -885,16 +955,16 @@ async function cloudLoad(){
  try{
   const d=root.VLGenesisCloud;if(!d?.connected())throw Error("CONNECT DRIVE first");
   const data=await d.load(MASTER_IDS[gender]);
-  if(!data)throw Error("No approved Genesis Master for "+gender+" on Drive");
+  if(!data)throw Error("No approved LGR-1 master for "+gender+" on Drive");
   if(data.format!==MASTER_FORMAT||data.gender!==gender||data.id!==MASTER_IDS[gender]||
-    data.binding?.format!==BIND_FORMAT)throw Error("Invalid Genesis cloud master");
+    data.binding?.format!==BIND_FORMAT)throw Error("Invalid LGR-1 cloud master");
   if(!confirm("Replace current "+gender+" draft with this verified Drive master? Export current draft first. Unsaved edits will be lost."))return;
   await d.acknowledgeLoadedMaster(data.id,data);
   drafts[gender]={rig:C.validateMaster(data.binding.rig),bound:data.binding,
    reviewed:data.binding.reviewed||{},testedAngles:Object.fromEntries(DIR.map(d=>[d,true])),
    approved:true,saved:true,edited:data.approvedAt||""};
   await sourceCanvases(gender);persistDraft();flushCache();syncControls();renderAll();
-  status("Verified Genesis Master loaded from Drive: "+data.id);
+  status("Verified LGR-1 master loaded from Drive: "+data.id);
  }catch(e){status("Cloud load: "+e.message,true)}
 }
 async function refreshFace(){
@@ -910,6 +980,348 @@ async function refreshFace(){
   void renderAll();
  }catch(e){status("Emosi refresh: "+e.message,true)}
 }
+/* ---------------- LGR-1 outfits (Custom Wear preview) ---------------- */
+const OUTFITS=Object.freeze({
+ tee_trousers:{label:"Tee + Trousers + Sneakers · short hair",top:"tee",pants:"trousers",shoes:"sneakers",hair:"short",topColor:"red",pantsColor:"denim",shoesColor:"white",hairColor:"brown"},
+ shirt_tie_baggy:{label:"Shirt & tie + Baggy + Shoes · long curtain hair",top:"shirt_tie",pants:"baggy",shoes:"shoes",hair:"long_curtain",topColor:"white",pantsColor:"khaki",shoesColor:"black",hairColor:"black"},
+ cardigan_ripped:{label:"Cardigan + Ripped trousers + Sneakers · wavy hair",top:"cardigan",pants:"trousers_ripped",shoes:"sneakers",hair:"wavy",topColor:"mustard",pantsColor:"night",shoesColor:"red",hairColor:"chestnut"}
+});
+let tweakRev=0;
+function loadOutfitTweaks(){
+ try{const s=JSON.parse(localStorage.getItem(OUTFIT_TWEAK_KEY)||"null");
+  if(s?.format==="lgr1-outfit-tweaks-v1"&&s.tweaks&&typeof s.tweaks==="object")outfitTweaks=s.tweaks}catch{}
+}
+function persistOutfitTweaks(){
+ try{localStorage.setItem(OUTFIT_TWEAK_KEY,JSON.stringify({format:"lgr1-outfit-tweaks-v1",tweaks:outfitTweaks}));return true}
+ catch(e){status("Outfit tweak save failed: "+e.message,true);return false}
+}
+function withTweaks(ch){
+ const t=outfitTweaks?.[gender]?.[ch.id];
+ return t&&Object.keys(t).length?{...ch,maskTweaks:t}:ch;
+}
+function outfitFor(st){
+ if(!outfitChar||outfitChar.gender!==gender)return null;
+ if(st==="pixel"||st==="bind")return null;
+ if(st==="rig"&&!$("outfit-in-rig")?.checked)return null;
+ return withTweaks(outfitChar);
+}
+async function buildOutfit(id){
+ const key=gender+"|"+id;
+ if(outfitCache[key])return outfitCache[key];
+ const o=OUTFITS[id],V=root.V6PCompositor,base=root.VLGenesisSource?.bases?.[SOURCE[gender]];
+ if(!o||!V||!base)throw Error("Outfit preview needs the V6B compositor");
+ const f=gender==="female"?"_f":"";
+ const ch=V.norm({...base.appearance,...o,body:gender,gender,face:"blank"});
+ const files={hair_back:"hair/"+o.hair+"_back",top_back:"top/"+o.top+"_back"+f,top:"top/"+o.top+f,
+  pants:"pants/"+o.pants+f,shoes:"shoes/"+o.shoes+f,hair_front:"hair/"+o.hair+"_front"};
+ const wear={};
+ for(const [layer,src] of Object.entries(files)){
+  const atlas=await V.img(src);if(!atlas)continue;
+  wear[layer]={};
+  for(const d of DIR){
+   const frame=V.extractFrame(atlas,"idle",d,0);
+   const im=frame.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112);
+   const c=cv();c.getContext("2d").putImageData(V.keysToDisplay(im,ch),0,0);
+   wear[layer][d]=c.toDataURL("image/png");
+  }
+ }
+ outfitCache[key]=C.validateCharacter({format:C.CHARACTER,id,name:o.label.slice(0,90),gender,wear,faceId:""});
+ return outfitCache[key];
+}
+async function chooseOutfit(id){
+ outfitId=OUTFITS[id]?id:"";
+ outfitChar=outfitId?await buildOutfit(outfitId):null;
+ tweakRev++;flushCache();
+ if(unassignedClusters.length)await findUnassignedPixels();
+ status(outfitId?"OUTFIT PREVIEW · "+OUTFITS[outfitId].label+" · inherits the body mask; pixels outside the body follow the nearest part.":"Outfit preview off.");
+}
+async function outfitAlpha(d){
+ const ch=outfitFor("test");if(!ch)return null;
+ const a=new Uint8Array(C.N);let any=false;
+ for(const layer of C.WEAR){
+  if(layer==="hair_back"||layer==="hair_front")continue; // hair always follows the head
+  const png=ch.wear?.[layer]?.[d];if(!png)continue;
+  const px=await R.pixels(png);
+  for(let k=0;k<C.N;k++)if(px[k*4+3]){a[k]=1;any=true}
+ }
+ return any?a:null;
+}
+function setOutfitTweak(pixelsIdx,d,value){
+ if(!outfitChar)return;
+ const g=outfitTweaks[gender]??={},o=g[outfitChar.id]??={};
+ const bytes=o[d]?Uint8Array.from(atob(o[d]),c=>c.charCodeAt(0)):new Uint8Array(C.N).fill(254);
+ for(const k of pixelsIdx)bytes[k]=value;
+ let chars="";for(const b of bytes)chars+=String.fromCharCode(b);
+ o[d]=btoa(chars);
+ persistOutfitTweaks();tweakRev++;flushCache();
+}
+/* ---------------- automated review checks ---------------- */
+function components8(list){
+ const set=new Set(list),seen=new Set();let n=0;
+ for(const s of list){
+  if(seen.has(s))continue;n++;
+  const q=[s];seen.add(s);
+  for(let i=0;i<q.length;i++){const k=q[i],x=k%64,y=(k-x)/64;
+   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const nx=x+dx,ny=y+dy,n2=ny*64+nx;
+    if((dx||dy)&&nx>=0&&nx<64&&ny>=0&&ny<112&&set.has(n2)&&!seen.has(n2)){seen.add(n2);q.push(n2)}}}
+ }
+ return n;
+}
+function nearestDist(p,list){
+ let best=Infinity;
+ for(const k of list){const x=k%64,y=(k-x)/64,d=Math.hypot(x-p.x,y-p.y);if(d<best)best=d}
+ return best;
+}
+function partChecks(d){
+ const m=master(),mask=C.decode(m.masks[d]);
+ const alpha=source[gender][d].getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+ const lists=PARTS.map(()=>[]);
+ for(let k=0;k<C.N;k++)if(alpha[k*4+3]&&mask[k]!==255)lists[mask[k]].push(k);
+ const out={};
+ for(let i=0;i<PARTS.length;i++){
+  const part=PARTS[i],list=lists[i],issues=[],pv=m.pivots[d][part],parent=C.PARENTS[part];
+  if(!list.length)issues.push("no visible pixels (OK only if fully hidden)");
+  else{
+   const n=components8(list);if(n>2)issues.push(n+" separate islands");
+   if(parent){
+    const own=nearestDist(pv,list);if(own>3)issues.push("pivot "+Math.round(own)+" px away from this part");
+    const plist=lists[PARTS.indexOf(parent)];
+    if(plist.length){const pd=nearestDist(pv,plist);if(pd>3)issues.push("pivot "+Math.round(pd)+" px away from "+labels[parent])}
+   }
+  }
+  out[part]=issues;
+ }
+ const cx=list=>list.reduce((s,k)=>s+k%64,0)/list.length;
+ const near=lists[PARTS.indexOf("arm_near_upper")],far=lists[PARTS.indexOf("arm_far_upper")];
+ if(near.length&&far.length){
+  const nearLeft=cx(near)<cx(far),expectLeft=!C.MIRRORED[d];
+  if(nearLeft!==expectLeft)out.arm_near_upper.push("near arm is on screen-"+(nearLeft?"left":"right")+
+   "; in "+d.toUpperCase()+" the limb closest to camera is on screen-"+(expectLeft?"left":"right")+" (use PASTE FLIP)");
+ }
+ return out;
+}
+async function reviewAngle(){
+ await sourcePending;
+ const checks=partChecks(dir),passed=[],failed=[];
+ record().reviewed??={};
+ for(const part of PARTS){
+  if(checks[part].length)failed.push(labels[part]+": "+checks[part].join(", "));
+  else{record().reviewed[reviewKey(dir,part)]=true;passed.push(part)}
+ }
+ persistDraft();syncControls();
+ $("rig-review-message").textContent=dir.toUpperCase()+" AUTO-CHECK · "+passed.length+"/10 passed and marked reviewed"+
+  (failed.length?" · NEEDS YOUR EYES: "+failed.join(" · ")+" — fix, or select the part and MARK it after looking.":"");
+ status(dir.toUpperCase()+" angle review: "+passed.length+"/10 parts passed automated checks · "+reviewCount()+"/40 total.",failed.length>0);
+ return {passed,failed};
+}
+/* ---------------- per-direction draw order, near side, joint caps ---------------- */
+function renderRigSettings(){
+ const el=$("order-list");if(!el||!master())return;
+ el.replaceChildren();
+ const order=baseOrder(dir,master());
+ order.forEach((part,i)=>{
+  const row=document.createElement("div");row.className="order-row"+(part===selected?" current":"");
+  const name=document.createElement("span");name.textContent=(i+1)+". "+labels[part];
+  const up=document.createElement("button");up.type="button";up.textContent="▲";up.title="Draw earlier (further back)";
+  const down=document.createElement("button");down.type="button";down.textContent="▼";down.title="Draw later (in front)";
+  up.disabled=i===0;down.disabled=i===order.length-1;
+  up.onclick=()=>moveOrder(part,-1);down.onclick=()=>moveOrder(part,1);
+  name.onclick=()=>selectPart(part);
+  row.append(name,up,down);el.append(row);
+ });
+ $("order-title").textContent="DRAW ORDER · "+dir.toUpperCase()+" (top = furthest back)";
+ $("near-side").value=M.sidesOf(master())[dir];
+ $("joint-cap").value=master().capRadius?.[selected]??root.LGR1Raster.CAP_RADIUS[selected];
+ $("joint-cap").disabled=selected==="torso";
+}
+function moveOrder(part,delta){
+ const o=baseOrder(dir,master()),i=o.indexOf(part),j=i+delta;
+ if(j<0||j>=o.length)return;
+ [o[i],o[j]]=[o[j],o[i]];
+ master().drawOrders??={};master().drawOrders[dir]=o;
+ makeDirty();renderRigSettings();
+ status("DRAW ORDER "+dir.toUpperCase()+" changed · rebind to apply (reviews kept).");
+}
+/* ---------------- NE/NW bald back head repair ---------------- */
+async function repairBackHeadDraft(){
+ await sourcePending;
+ const rig=master(),fixes=[];
+ for(const [front,back] of [["se","ne"],["sw","nw"]]){
+  const f=await R.pixels(rig.layers.body?.[front]),b=await R.pixels(rig.layers.body?.[back]);
+  if(!f||!b||R.headRows(b)>=40)continue;
+  const out=R.repairBackHead(f,b);if(out.added)fixes.push([back,out]);
+ }
+ if(!fixes.length){status("NE/NW already have a back head · nothing changed.");return false}
+ if(!confirm("Rebuild the bald back head in "+fixes.map(f=>f[0].toUpperCase()).join(" + ")+
+   " from the matching front view? Only empty pixels above the neck are filled ("+
+   fixes.reduce((n,f)=>n+f[1].added,0)+" px). Undo: RESET or restore a draft."))return false;
+ for(const [back,out] of fixes){
+  const c=cv();c.getContext("2d").putImageData(new ImageData(out.data,64,112),0,0);
+  rig.layers.body[back]=c.toDataURL("image/png");
+ }
+ R.clearCache();sourcePending=sourceCanvases(gender);await sourcePending;
+ for(const [back] of fixes)invalidateReviews(back,["head"]);
+ makeDirty();
+ status("BACK HEAD REBUILT · "+fixes.map(f=>f[0].toUpperCase()).join(" + ")+" · only HEAD reviews in those angles reset.");
+ return true;
+}
+async function warnHeadless(){
+ try{
+  const rig=master();const missing=[];
+  for(const d of ["ne","nw"]){const b=await R.pixels(rig?.layers?.body?.[d]);if(b&&R.headRows(b)<40)missing.push(d.toUpperCase())}
+  if(missing.length)status("This draft has no back head in "+missing.join("+")+" (old seed). Use 01 · REBUILD NE/NW BACK HEAD.",true);
+ }catch{}
+}
+/* ---------------- motion library + editor ---------------- */
+async function loadMotionLibrary(){
+ const r=await fetch("./media/lgr1/motions.json?v=lgr1-fix-1",{cache:"no-store"});
+ if(!r.ok)throw Error("Motion library HTTP "+r.status);
+ motionLib=M.validateLibrary(await r.json());
+}
+function loadUserMotions(){
+ try{
+  const s=JSON.parse(localStorage.getItem(USER_MOTION_KEY)||"null");
+  if(s?.format==="lgr1-user-motions-v1"&&Array.isArray(s.motions))
+   userMotions=s.motions.map(m=>safeMotion(m)).filter(Boolean).filter(m=>!motionLib.motions.some(x=>x.id===m.id));
+ }catch{}
+}
+function persistUserMotions(){
+ try{localStorage.setItem(USER_MOTION_KEY,JSON.stringify({format:"lgr1-user-motions-v1",motions:userMotions}));return true}
+ catch(e){status("Local motion save failed: "+e.message,true);return false}
+}
+function isLibraryId(id){return motionLib.motions.some(m=>m.id===id)}
+function populateMotionSelects(){
+ const test=$("test-preset"),keep=test.value;
+ test.replaceChildren(new Option("Neutral · no motion",""));
+ for(const m of allMotions())test.add(new Option((isLibraryId(m.id)?"":"★ ")+m.name+" · "+m.frames.length+"f",m.id));
+ test.value=allMotions().some(m=>m.id===keep)?keep:(allMotions()[0]?.id||"");
+ const sel=$("motion-select");sel.replaceChildren();
+ for(const m of allMotions())sel.add(new Option((isLibraryId(m.id)?"LIBRARY · ":"★ MINE · ")+m.name,m.id));
+ if(editMotion&&allMotions().some(m=>m.id===editMotion.id))sel.value=editMotion.id;
+ const src=$("motion-source");src.replaceChildren();
+ for(const k of Object.keys(motionLib.poses))src.add(new Option(k,k));
+ const part=$("motion-part");
+ if(!part.options.length)for(const a of M.ANAT)part.add(new Option(M.LABELS[a],a));
+ const snap=$("motion-snap");
+ if(!snap.options.length)for(const v of M.SNAPS)snap.add(new Option(v===1?"OFF (1°)":v+"°",String(v)));
+}
+function startEdit(m){
+ editMotion=clone(m);editFrame=0;motionMs=0;stopPlayback();
+ syncMotionControls();void renderAll();
+}
+function touchMotion(){
+ // Library motions are shared data: editing one creates your own copy.
+ if(editMotion&&isLibraryId(editMotion.id)){
+  let id=editMotion.id+"_mine",n=2;
+  while(allMotions().some(m=>m.id===id))id=editMotion.id+"_mine"+n++;
+  editMotion.id=id;editMotion.name=(editMotion.name+" (mine)").slice(0,60);
+  status("Library motion copied as "+id+" · save LOCAL or DRIVE to keep it.");
+ }
+}
+function frameObj(){return editMotion?.frames?.[Math.min(editFrame,editMotion.frames.length-1)]}
+function dirOnly(){return !!$("motion-dironly")?.checked}
+function effectiveValue(frame){
+ const base=motionLib.poses[editMotion.source]?.[motionPart]||{},d=frame.parts[motionPart]||{};
+ return {x:(Number(base.x||0)+Number(d.x||0)),y:Number(base.y||0)+Number(d.y||0),a:Number(base.a||0)+Number(d.a||0)};
+}
+function partValue(){
+ const f=frameObj();if(!f)return {x:0,y:0,a:0};
+ if(dirOnly()){const o=f.dirs?.[dir]?.[motionPart];if(o)return {x:o.x||0,y:o.y||0,a:o.a||0}}
+ const v=f.parts[motionPart]||{};return {x:v.x||0,y:v.y||0,a:v.a||0};
+}
+function setPartValue(field,value){
+ const f=frameObj();if(!f)return;
+ touchMotion();
+ const v=Math.max(field==="a"?-360:-32,Math.min(field==="a"?360:32,Number(value)||0));
+ if(dirOnly()){
+  f.dirs??={};f.dirs[dir]??={};
+  if(!f.dirs[dir][motionPart]){
+   const e=effectiveValue(f),k=M.FACING[dir];
+   f.dirs[dir][motionPart]={x:e.x*k,y:e.y,a:e.a*k};
+  }
+  f.dirs[dir][motionPart][field]=v;
+ }else{
+  f.parts[motionPart]??={x:0,y:0,a:0};f.parts[motionPart][field]=v;
+ }
+ syncMotionControls();void renderAll();
+}
+function syncMotionControls(){
+ if(!$("motion-panel"))return;
+ const has=!!editMotion;
+ for(const el of document.querySelectorAll("#motion-panel [data-needs-motion]"))el.disabled=!has;
+ if(!has){$("motion-info").textContent="Choose a motion or NEW.";return}
+ $("motion-id").value=editMotion.id;$("motion-name").value=editMotion.name;
+ $("motion-source").value=editMotion.source;$("motion-snap").value=String(editMotion.angleSnap);
+ $("motion-loop").checked=editMotion.loop!==false;
+ const frames=$("motion-frames");frames.replaceChildren();
+ editMotion.frames.forEach((f,i)=>{
+  const b=document.createElement("button");b.type="button";b.textContent=String(i+1);
+  b.setAttribute("aria-pressed",String(i===editFrame));
+  b.onclick=()=>{stopPlayback();editFrame=i;motionMs=editMotion.frames.slice(0,i).reduce((n,x)=>n+x.ms,0);syncMotionControls();void renderAll()};
+  frames.append(b);
+ });
+ $("motion-add-frame").disabled=editMotion.frames.length>=6;
+ $("motion-del-frame").disabled=editMotion.frames.length<=1;
+ const f=frameObj();
+ $("motion-ms").value=f.ms;
+ $("motion-part").value=motionPart;
+ const v=partValue();
+ $("motion-a").value=v.a;$("motion-a-num").value=v.a;$("motion-x").value=v.x;$("motion-y").value=v.y;
+ $("motion-x-num").value=v.x;$("motion-y-num").value=v.y;
+ $("motion-behind").checked=!!f.behindTorso?.includes(motionPart);
+ $("motion-behind").disabled=motionPart==="torso"||motionPart==="head";
+ const mapped=M.rigPart(motionPart,dir,rigSides());
+ const valid=safeMotion(editMotion);
+ $("motion-info").textContent=(isLibraryId(editMotion.id)?"LIBRARY (read-only: first edit makes your copy)":"★ YOUR MOTION")+
+  " · frame "+(editFrame+1)+"/"+editMotion.frames.length+" · "+M.LABELS[motionPart]+" → "+dir.toUpperCase()+" piece "+labels[mapped]+
+  (dirOnly()?" · editing "+dir.toUpperCase()+" ONLY (screen values)":" · values as seen in SE, mirrored to SW/NW")+
+  (()=>{const own=DIR.filter(d=>f.dirs?.[d]?.[motionPart]);
+   return own.length&&!dirOnly()?" · ⚠ "+own.map(d=>d.toUpperCase()).join("+")+" keep their own value for this part (tick EDIT ONLY THIS DIRECTION there)":""})()+
+  (valid?"":" · ⚠ INVALID");
+}
+function newMotion(){
+ let n=1;while(allMotions().some(m=>m.id==="my_motion_"+n))n++;
+ startEdit({format:M.MOTION_FORMAT,id:"my_motion_"+n,name:"My motion "+n,source:"neutral",angleSnap:5,loop:true,frames:[{ms:160,parts:{}}]});
+}
+function saveMotionLocal(){
+ try{
+  const v=M.validateMotion(editMotion,motionLib.poses);
+  if(isLibraryId(v.id))throw Error("ID "+v.id+" belongs to the shared library · change ID first");
+  userMotions=userMotions.filter(m=>m.id!==v.id);userMotions.push(v);
+  if(!persistUserMotions())return false;
+  editMotion=clone(v);populateMotionSelects();syncMotionControls();
+  status("MOTION SAVED LOCALLY · "+v.id+" · "+v.frames.length+" keyframes · also available in 04 CHECK BINDING.");
+  return true;
+ }catch(e){status("Motion save: "+e.message,true);return false}
+}
+async function saveMotionDrive(){
+ try{
+  if(!saveMotionLocal())return;
+  const cloud=root.VLGenesisCloud;if(!cloud?.connected())throw Error("CONNECT DRIVE first (motion kept locally)");
+  const r=await cloud.saveMotion(M.validateMotion(editMotion,motionLib.poses));
+  await refreshDriveMotions();
+  status("MOTION DRIVE VERSION VERIFIED · "+r.name+" (new immutable file, nothing overwritten)");
+ }catch(e){status("Motion Drive: "+e.message,true)}
+}
+async function refreshDriveMotions(){
+ const cloud=root.VLGenesisCloud;if(!cloud?.connected())throw Error("CONNECT DRIVE first");
+ const list=await cloud.listMotions(),sel=$("motion-drive-list");sel.replaceChildren();
+ if(!list.length)sel.add(new Option("No motions on Drive yet",""));
+ for(const f of list)sel.add(new Option(f.name.replace(/^lgr1_motion\./,""),f.id));
+ return list;
+}
+async function loadDriveMotion(){
+ try{
+  const cloud=root.VLGenesisCloud;if(!cloud?.connected())throw Error("CONNECT DRIVE first");
+  const id=$("motion-drive-list").value;if(!id)throw Error("Refresh and choose a Drive motion");
+  const r=await cloud.loadMotion(id),v=M.validateMotion(r.motion,motionLib.poses);
+  if(isLibraryId(v.id))v.id+="_drive";
+  userMotions=userMotions.filter(m=>m.id!==v.id);userMotions.push(v);persistUserMotions();
+  populateMotionSelects();startEdit(v);
+  status("Loaded Drive motion "+r.name+" · saved locally as "+v.id);
+ }catch(e){status("Load Drive motion: "+e.message,true)}
+}
 function setup(){
  buildAngleButtons();buildPartButtons();
  for(const b of document.querySelectorAll("#progress button"))b.onclick=()=>switchStep(b.dataset.step);
@@ -920,7 +1332,7 @@ function setup(){
    gender=g;dir="se";selected="head";activeLayer="body";maskUndo=[];maskRedo=[];faceId="";faceImage=null;
    unassignedClusters=[];activeUnassigned=-1;unassignedUndo=null;
    await ensure(g);
-   stopPlayback();motionTime=0;
+   stopPlayback();motionMs=0;
    if(step==="save"&&!record()?.approved)step=record()?.bound?"test":"pixel";
    if(step==="test"&&!record()?.bound)step="rig";
    syncControls();flushCache();void refreshFace();
@@ -983,8 +1395,9 @@ function setup(){
   const rgba=source[gender][dir].getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
   let pixels=0;
   for(let i=0;i<mask.length;i++)if(mask[i]===PARTS.indexOf(selected)&&rgba[i*4+3]>0)pixels++;
-  if(!pixels&&!confirm(labels[selected]+" has zero slice pixels in "+dir.toUpperCase()+
-    ". This is valid ONLY if fully occluded; confirm the pivot position and continue?"))return;
+  const issues=partChecks(dir)[selected];
+  if(issues.length&&!confirm(labels[selected]+" / "+dir.toUpperCase()+" automated check:\n• "+issues.join("\n• ")+
+    "\n\nMark reviewed anyway? Only do this if you looked at it and it is correct (e.g. fully hidden limb)."))return;
   record().reviewed??={};
   record().reviewed[reviewKey(dir,selected)]=true;
   persistDraft();syncControls();status("Reviewed "+labels[selected]+" / "+dir.toUpperCase()+
@@ -1002,9 +1415,12 @@ function setup(){
  $("export-json").onclick=exportJson;
  $("bind-next").onclick=()=>switchStep("test");
  $("test-play").onclick=togglePlayback;
- $("test-scrub").oninput=()=>{stopPlayback();motionTime=Number($("test-scrub").value)/100;void renderAll()};
+ $("test-scrub").oninput=()=>{stopPlayback();const mo=currentMotion();
+  motionMs=mo?Number($("test-scrub").value)/100*M.duration(mo):0;
+  if(mo&&step==="motion"){editFrame=M.frameIndexAt(mo,motionMs);syncMotionControls()}
+  void renderAll()};
  $("test-speed").onchange=()=>{playTick=0};
- $("test-preset").onchange=()=>{motionTime=0;$("test-scrub").value=0;void renderAll()};
+ $("test-preset").onchange=()=>{motionMs=0;$("test-scrub").value=0;void renderAll()};
  for(const id of ["test-angle","test-x","test-y"])$(id).oninput=()=>void renderAll();
  $("edit-binding").onclick=()=>{record().bound=null;record().approved=false;record().saved=false;
   persistDraft();switchStep("rig");status("Binding reopened. Edit pivots/slices and BIND again.")};
@@ -1017,7 +1433,7 @@ function setup(){
    const missing=DIR.filter(d=>!record()?.testedAngles?.[d]);
    if(missing.length)throw Error("Test and mark all 4 views before approval: "+missing.join(", "));
    record().approved=true;stopPlayback();persistDraft();
-   switchStep("save");status("BINDING APPROVED · save as canonical Lafrich Genesis Master");
+   switchStep("save");status("BINDING APPROVED · save as the canonical LGR-1 master");
   }catch(e){status(e.message,true)}};
  $("save-master").onclick=saveApproved;
  $("download-master").onclick=()=>{try{download(MASTER_IDS[gender]+".json",JSON.stringify(toMaster(),null,2));status("Master JSON downloaded")}catch(e){status(e.message,true)}};
@@ -1035,7 +1451,7 @@ function setup(){
  $("connect-drive").onclick=async()=>{
   try{await root.VLGenesisCloud.connect();$("connect-drive").textContent="☁ CONNECTED";$("statuscloud").textContent="DRIVE CONNECTED";
    await refreshDraftRevisions();
-   status("Genesis Drive connected · draft versions loaded · no legacy records touched.");
+   status("LGR-1 Drive connected · draft versions loaded · no legacy records touched.");
   }catch(e){status("Drive: "+e.message,true)}
  };
  $("face").onchange=()=>{faceId=$("face").value;faceImage=null;flushCache()};
@@ -1089,7 +1505,95 @@ function setup(){
   syncControls();
  };
  for(const k of ["pointerup","pointercancel","lostpointercapture"])canvas.addEventListener(k,end);
+ setupLgr1Controls();
  setZoom(5);
+}
+function setupLgr1Controls(){
+ const guard=(fn,label)=>(...a)=>{try{const r=fn(...a);if(r?.catch)r.catch(e=>status(label+": "+e.message,true))}catch(e){status(label+": "+e.message,true)}};
+ // 02 · rig settings + lighter review gate
+ $("review-angle").onclick=guard(reviewAngle,"Angle review");
+ $("order-reset").onclick=()=>{if(master()?.drawOrders?.[dir]){delete master().drawOrders[dir];makeDirty();renderRigSettings();status("DRAW ORDER "+dir.toUpperCase()+" reset to default.")}};
+ $("near-side").onchange=()=>{
+  const v=$("near-side").value;if(v!=="left"&&v!=="right")return;
+  master().sides={...M.sidesOf(master()),[dir]:v};
+  invalidateReviews(dir,PARTS.filter(p=>p!=="head"&&p!=="torso"));syncControls();
+  status("NEAR SIDE "+dir.toUpperCase()+" = "+v.toUpperCase()+" · motions now drive the "+v+" limbs with the near pieces here. Limb reviews of this angle reset.");
+ };
+ $("joint-cap").onchange=()=>{
+  if(selected==="torso")return;
+  const v=clamp(Math.round(Number($("joint-cap").value)||0),0,6);
+  master().capRadius={...(master().capRadius||{}),[selected]:v};
+  makeDirty();flushCache();syncControls();
+  status("JOINT CAP "+labels[selected]+" = "+v+" px · rebind to use it in the check step.");
+ };
+ $("repair-head").onclick=guard(async()=>{if(await repairBackHeadDraft()){syncControls();flushCache()}},"Back head");
+ // outfits
+ $("outfit-preview").onchange=guard(()=>chooseOutfit($("outfit-preview").value),"Outfit");
+ $("outfit-in-rig").onchange=guard(async()=>{tweakRev++;flushCache();if(unassignedClusters.length)await findUnassignedPixels()},"Outfit");
+ $("assign-outfit-cluster").onclick=guard(async()=>{
+  const c=unassignedClusters[activeUnassigned];if(!c||c.kind!=="outfit")return;
+  setOutfitTweak(c.pixels,c.dir,PARTS.indexOf(selected));
+  await findUnassignedPixels();
+  status("Outfit "+outfitChar.id+" · "+c.count+" px in "+c.dir.toUpperCase()+" now follow "+labels[selected]+" (this outfit only).");
+ },"Outfit tweak");
+ $("reset-outfit-tweaks").onclick=guard(async()=>{
+  if(!outfitChar||!confirm("Reset all part tweaks for outfit "+outfitChar.id+"?"))return;
+  delete outfitTweaks[gender]?.[outfitChar.id];persistOutfitTweaks();tweakRev++;flushCache();
+  await findUnassignedPixels();status("Outfit tweaks reset · outfit follows the body mask again.");
+ },"Outfit tweak");
+ // 05 · motion editor
+ $("motion-select").onchange=()=>{const m=allMotions().find(x=>x.id===$("motion-select").value);if(m)startEdit(m)};
+ $("motion-new").onclick=()=>{newMotion();populateMotionSelects();status("NEW MOTION · edit frames, then SAVE.")};
+ $("motion-dup").onclick=()=>{if(!editMotion)return;const c=clone(editMotion);let id=(c.id.slice(0,34))+"_copy",n=2;
+  while(allMotions().some(m=>m.id===id))id=c.id.slice(0,32)+"_copy"+n++;
+  c.id=id;c.name=(c.name+" copy").slice(0,60);startEdit(c);status("Duplicated as "+id+" · SAVE to keep.")};
+ $("motion-del").onclick=()=>{
+  if(!editMotion)return;
+  if(isLibraryId(editMotion.id))return status("Library motions are shared data and cannot be deleted here",true);
+  if(!confirm("Delete your local motion "+editMotion.id+"? (Drive versions stay.)"))return;
+  userMotions=userMotions.filter(m=>m.id!==editMotion.id);persistUserMotions();
+  editMotion=null;populateMotionSelects();const f=allMotions()[0];if(f)startEdit(f);status("Local motion deleted.");
+ };
+ $("motion-id").onchange=()=>{const v=$("motion-id").value.trim().toLowerCase();
+  if(!/^[a-z0-9_]{1,40}$/.test(v)){status("ID: a-z 0-9 _ only, 1–40",true);syncMotionControls();return}
+  editMotion.id=v;syncMotionControls()};
+ $("motion-name").onchange=()=>{touchMotion();editMotion.name=$("motion-name").value.slice(0,60)||editMotion.id;syncMotionControls()};
+ $("motion-source").onchange=()=>{touchMotion();editMotion.source=$("motion-source").value;syncMotionControls();void renderAll()};
+ $("motion-snap").onchange=()=>{touchMotion();editMotion.angleSnap=Number($("motion-snap").value);
+  for(const id of ["motion-a","motion-a-num"])$(id).step=String(editMotion.angleSnap);syncMotionControls();void renderAll()};
+ $("motion-loop").onchange=()=>{touchMotion();editMotion.loop=$("motion-loop").checked;syncMotionControls()};
+ $("motion-add-frame").onclick=()=>{
+  if(!editMotion||editMotion.frames.length>=6)return;touchMotion();
+  editMotion.frames.splice(editFrame+1,0,clone(frameObj()));editFrame++;stopPlayback();syncMotionControls();void renderAll();
+ };
+ $("motion-del-frame").onclick=()=>{
+  if(!editMotion||editMotion.frames.length<=1)return;touchMotion();
+  editMotion.frames.splice(editFrame,1);editFrame=Math.max(0,editFrame-1);syncMotionControls();void renderAll();
+ };
+ $("motion-ms").onchange=()=>{touchMotion();frameObj().ms=clamp(Math.round(Number($("motion-ms").value)||120),40,2000);syncMotionControls()};
+ $("motion-part").onchange=()=>{motionPart=$("motion-part").value;syncMotionControls()};
+ const angle=v=>M.snap(Number(v)||0,editMotion?.angleSnap||5);
+ $("motion-a").oninput=()=>setPartValue("a",angle($("motion-a").value));
+ $("motion-a-num").onchange=()=>setPartValue("a",angle($("motion-a-num").value));
+ for(const k of ["x","y"]){
+  $("motion-"+k).oninput=()=>setPartValue(k,Math.round(Number($("motion-"+k).value)));
+  $("motion-"+k+"-num").onchange=()=>setPartValue(k,Math.round(Number($("motion-"+k+"-num").value)));
+ }
+ $("motion-reset-part").onclick=()=>{const f=frameObj();if(!f)return;touchMotion();
+  if(dirOnly())delete f.dirs?.[dir]?.[motionPart];else delete f.parts[motionPart];
+  syncMotionControls();void renderAll()};
+ $("motion-behind").onchange=()=>{const f=frameObj();if(!f)return;touchMotion();
+  const set=new Set(f.behindTorso||[]);$("motion-behind").checked?set.add(motionPart):set.delete(motionPart);
+  if(set.size)f.behindTorso=[...set];else delete f.behindTorso;syncMotionControls();void renderAll()};
+ $("motion-dironly").onchange=()=>syncMotionControls();
+ $("motion-play").onclick=togglePlayback;
+ $("motion-save").onclick=()=>void saveMotionLocal();
+ $("motion-save-drive").onclick=()=>void saveMotionDrive();
+ $("motion-export").onclick=()=>{try{const v=M.validateMotion(editMotion,motionLib.poses);
+  download("lgr1_motion_"+v.id+".json",JSON.stringify(v,null,2));status("Motion JSON downloaded · add to media/lgr1/motions.json to share it with everyone.")}
+  catch(e){status("Export: "+e.message,true)}};
+ $("motion-refresh-drive").onclick=()=>void refreshDriveMotions().then(l=>status(l.length+" Drive motions found.")).catch(e=>status("Drive motions: "+e.message,true));
+ $("motion-load-drive").onclick=()=>void loadDriveMotion();
 }
 function showPage(next){
  page=next;
@@ -1106,12 +1610,16 @@ function showPage(next){
 async function boot(){
  try{
   if(!C||!R||!P)throw Error("Required anatomy, compositor or pixel editor engine absent");
-  loadStored();setup();
+  if(!root.LGR1Raster||!M)throw Error("LGR-1 raster / motion modules absent");
+  loadStored();
+  await loadMotionLibrary();loadUserMotions();loadOutfitTweaks();
+  setup();populateMotionSelects();
   await ensure(gender);
   syncControls();await renderAll();
-  status("Frozen Genesis MALE loaded · ready to edit 10 body parts across four directions.");
-  void refreshFace();
- }catch(e){status("Genesis boot failed: "+e.message,true)}
+  status("LGR-1 · V6B MALE loaded · "+allMotions().length+" shared motions · edit 10 body parts across four directions.");
+  await refreshFace().catch(()=>{});
+  await warnHeadless();
+ }catch(e){status("LGR-1 boot failed: "+e.message,true)}
 }
 void boot();
 })(window);

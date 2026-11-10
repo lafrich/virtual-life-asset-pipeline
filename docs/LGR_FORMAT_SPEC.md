@@ -92,3 +92,58 @@ The same source alpha and slice-mask contract drives both the Bind audit and a n
 - Test coverage includes a synthetic visible-but-unassigned source pixel, the Find/Highlight/Erase flow, verification of transparent source with unmodified mask, successful Bind with original 40 receipts, and Undo restoring the original pixel.
 
 This is **source-art cleanup**, not a workaround that classifies unwanted background noise as a body part.
+
+## LGR-1 rendering + shared motions (November 10, 2026)
+
+Single UI name: **LGR-1**. Wire IDs are unchanged (`lafrich-genesis-binding-v1`,
+`lafrich-genesis-master-v1`, `rigFormat: "LGR-1"`, `lafrich_genesis_male/female`,
+`lafrich_male/female`), so every saved draft and Drive master still opens.
+
+**One raster, two languages.** `site/lgr1-raster.js` and
+`site/genesis_procedural_runtime.py` implement the same integer pixel algorithm
+(no canvas transforms). `tests/test_lgr1_parity.py` asserts 0 differing pixels
+for every shared motion frame × 4 directions, with Custom Wear (+ tweak) and an
+Emosi face.
+
+- Layer slots: `hair_back` (behind everything) → body/pants/shoes/top_back/top/
+  body_front → Emosi face (follows head) → `hair_front`, `accessory`.
+- Per-direction part order: optional `rig.drawOrders[dir]` (10 parts); the
+  binding's `hierarchy.drawOrder` stays the canonical default. A motion frame may
+  move limbs behind the torso with `behindTorso`.
+- Joint caps: each parent keeps an underlay of child pixels within
+  `capRadius[child]` (default head 2, limbs 3) of the joint, plus hidden fill for
+  children drawn above the parent → no see-through holes at hips, crotch,
+  shoulders, knees, elbows.
+- Rotation: right angles are exact; other angles sample a Scale2x×3 (8×) image
+  (RotSprite-style). Motion angles snap (default 5°).
+- Custom Wear: inherits the body mask; clothing pixels outside the visible body go
+  to the nearest part (BFS). Hair layers always follow the head. Optional
+  per-outfit tweak (`character.maskTweaks[dir]`, base64 64×112: 0–9 part, 254
+  inherit, 255 static).
+
+**Shared motions.** `site/media/lgr1/motions.json` (`lgr1-motion-library-v1`)
+is the only motion data, read by JS (`site/lgr1-motion.js`) and Python
+(`load_library`, `frame_pose`, `render_motion`). Values are anatomical
+(`arm_r_upper`, `leg_l_lower`, …), authored as seen in SE; the rig maps them to
+near/far pieces per direction with `rig.sides` (default SE right, SW left,
+NE right, NW left), so mirroring keeps the right hand the right hand. Sideways
+moves use per-direction overrides (`frame.dirs[dir]`, absolute screen values).
+Motions are stepped, 1–6 keyframes, 40–2000 ms each.
+
+**Motion editor (step 05).** Pick a motion or NEW, source pose, keyframes 1–6,
+per-part rotate/move, ms per frame, angle snap, loop, "this direction only",
+"behind torso". Editing a library motion creates `<id>_mine`. Save local
+(`vl-lgr1-user-motions-v1`) or Drive (immutable
+`lgr1_motion.<id>.<timestamp>.<sha10>.json`, schema `lgr-1-cloud-motion-v1`,
+SHA read-back verified; never overwrites anything). JSON export is the path into
+the shared library.
+
+**Review gate.** "AUTO-CHECK + REVIEW THIS ANGLE" marks the parts that pass
+(pixels present, ≤2 islands, pivot ≤3 px from the part and its parent, near arm on
+the expected screen side); flagged parts need a manual MARK. Pixel edits reset
+only the changed part(s) in the changed direction(s).
+
+**Seed.** NE/NW back heads are rebuilt from SE/SW where the V6B back view was bald
+(V6B paints the skull with hair); islands ≤3 px are removed. Old drafts get a
+warning and "REBUILD NE/NW BACK HEAD". Find Unassigned also flags isolated
+floaters (≤6 px) and outfit overhang.

@@ -1,4 +1,4 @@
-/* Lafrich Puppet v1 — independent, four-view 64×112 pixel puppet contract.
+/* LGR-1 core (wire format "lafrich-puppet-master-v1") — four-view 64×112 pixel rig contract.
  * Old V6B is an optional visual seed ONLY. No Genesis 11-action or Python
  * worker is reachable through this engine. Model data is declarative.
  */
@@ -34,25 +34,36 @@
  const isPlacement=p=>p&&Number.isInteger(p.x)&&Number.isInteger(p.y)&&
   Math.abs(p.x)<=W&&Math.abs(p.y)<=H;
  // Pivots are in original 64×112 V6B coordinates and can be edited in four views.
- const coords=Object.freeze({torso:[32,66],head:[32,48],
-  arm_near_upper:[22,62],arm_near_lower:[21,73],
-  arm_far_upper:[42,62],arm_far_lower:[43,73],
-  leg_near_upper:[27,81],leg_near_lower:[26,93],
-  leg_far_upper:[37,81],leg_far_lower:[38,93]});
- function maskDefault(){
-  const bytes=new Uint8Array(N);
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-   let part;
-   if(y<50)part="head";
-   else if(y<81){
-    if(x<24)part=y<73?"arm_near_upper":"arm_near_lower";
-    else if(x>40)part=y<73?"arm_far_upper":"arm_far_lower";
-    else part="torso";
-   }else if(x<32)part=y<94?"leg_near_upper":"leg_near_lower";
-   else part=y<94?"leg_far_upper":"leg_far_lower";
-   bytes[y*W+x]=PARTS.indexOf(part);
+ // Defaults follow the V6B Genesis silhouette (arms x≤24 / x≥40, elbow y69,
+ // hip y81, knee y94). SE/NW keep the near limbs on screen-left; SW/NE are the
+ // mirror (x' = 64 − x) so "near" is always the limb closest to the camera:
+ // SE near=right, SW near=left, NE near=right, NW near=left (see lgr1-motion.js).
+ const coords=Object.freeze({torso:[32,66],head:[32,50],
+  arm_near_upper:[24,61],arm_near_lower:[23,69],
+  arm_far_upper:[40,61],arm_far_lower:[41,69],
+  leg_near_upper:[28,81],leg_near_lower:[28,93],
+  leg_far_upper:[36,81],leg_far_lower:[36,93]});
+ const MIRRORED=Object.freeze({se:false,sw:true,ne:true,nw:false});
+ const mirrorX=x=>Math.min(W-1,Math.max(0,64-x));
+ function defaultPart(x,y){
+  if(y<50)return "head";
+  if(y<81){
+   if(y>=61&&x<=24)return y<69?"arm_near_upper":"arm_near_lower";
+   if(y>=61&&x>=40)return y<69?"arm_far_upper":"arm_far_lower";
+   return "torso";
   }
+  if(x<32)return y<94?"leg_near_upper":"leg_near_lower";
+  return y<94?"leg_far_upper":"leg_far_lower";
+ }
+ function maskDefault(dir="se"){
+  const bytes=new Uint8Array(N),flip=!!MIRRORED[dir];
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)
+   bytes[y*W+x]=PARTS.indexOf(defaultPart(flip?mirrorX(x):x,y));
   return encode(bytes);
+ }
+ function defaultPivots(dir="se"){
+  const flip=!!MIRRORED[dir];
+  return Object.fromEntries(PARTS.map(p=>[p,{x:flip?mirrorX(coords[p][0]):coords[p][0],y:coords[p][1]}]));
  }
  function encode(bytes){
   assert(bytes instanceof Uint8Array&&bytes.length===N,"Mask must be 64×112");
@@ -74,8 +85,8 @@
   assert(!!IDS[gender],"Gender must be male or female");
   return {format:FORMAT,id:IDS[gender],gender,name:gender==="male"?"Lafrich Male":"Lafrich Female",
    version:1,updated:"",layers:Object.fromEntries(LAYERS.map(n=>[n,{}])),
-   masks:Object.fromEntries(DIRS.map(d=>[d,maskDefault()])),
-   pivots:Object.fromEntries(DIRS.map(d=>[d,Object.fromEntries(PARTS.map(p=>[p,{x:coords[p][0],y:coords[p][1]}]))])),
+   masks:Object.fromEntries(DIRS.map(d=>[d,maskDefault(d)])),
+   pivots:Object.fromEntries(DIRS.map(d=>[d,defaultPivots(d)])),
    // Additive/backward-compatible placement: pixel assets stay at native source
    // coordinates, and the renderer moves each cut puppet piece with its joints.
    placements:Object.fromEntries(DIRS.map(d=>[d,Object.fromEntries(PARTS.map(p=>[p,{x:0,y:0}]))]))};
@@ -104,6 +115,27 @@
    }
   }
   assert(total<6000000,"Master exceeds 6 MB; split assets across parts");
+  // Optional LGR-1 render settings; copied only when present so masters saved
+  // before these fields existed round-trip byte-identically.
+  if(input.drawOrders!==undefined){
+   assert(input.drawOrders&&typeof input.drawOrders==="object","Invalid draw orders");
+   out.drawOrders={};
+   for(const d of DIRS){
+    const o=input.drawOrders[d];if(o===undefined)continue;
+    assert(Array.isArray(o)&&o.length===PARTS.length&&PARTS.every(p=>o.includes(p)),"Invalid draw order "+d);
+    out.drawOrders[d]=o.slice();
+   }
+  }
+  if(input.sides!==undefined){
+   out.sides={};
+   for(const d of DIRS){const v=input.sides?.[d];if(v===undefined)continue;
+    assert(v==="left"||v==="right","Invalid near side "+d);out.sides[d]=v}
+  }
+  if(input.capRadius!==undefined){
+   out.capRadius={};
+   for(const p of PARTS){const v=input.capRadius?.[p];if(v===undefined)continue;
+    assert(Number.isInteger(v)&&v>=0&&v<=6,"Invalid joint cap "+p);out.capRadius[p]=v}
+  }
   return out;
  }
  function blankPose(){return Object.fromEntries(PARTS.map(p=>[p,{x:0,y:0,a:0}]))}
@@ -145,6 +177,14 @@
    if(p!==undefined){assert(nativePng(p),"Invalid wear "+k+"/"+d);out.wear[k][d]=p;size+=p.length;}
   }
   assert(size<6000000,"Custom Wear too large");
+  if(c.maskTweaks&&typeof c.maskTweaks==="object"){
+   out.maskTweaks={};
+   for(const d of DIRS){const t=c.maskTweaks[d];if(t===undefined)continue;
+    assert(typeof t==="string"&&t.length<=9700&&/^[a-z0-9+/]*={0,2}$/i.test(t),"Invalid outfit tweak "+d);
+    const chars=typeof atob==="function"?atob(t):Buffer.from(t,"base64").toString("binary");
+    assert(chars.length===N&&[...chars].every(ch=>{const b=ch.charCodeAt(0);return b<PARTS.length||b===254||b===255}),"Invalid outfit tweak "+d);
+    out.maskTweaks[d]=t}
+  }
   return out;
  }
  function toPython(m){
@@ -163,6 +203,6 @@
   return validateMotion(value);
  }
  return Object.freeze({W,H,N,DIRS,IDS,PARTS,PARENTS,DRAW_ORDER,LAYERS,WEAR,FORMAT,MOTION,CHARACTER,
-  MASTER_KEY,CHARACTER_KEY,MOTION_KEY,blankPose,blankFrame,master,validateMaster,
+  MASTER_KEY,CHARACTER_KEY,MOTION_KEY,MIRRORED,blankPose,blankFrame,master,validateMaster,maskDefault,defaultPivots,
   motion,validateMotion,character,validateCharacter,encode,decode,clone,toPython,fromPython});
 });

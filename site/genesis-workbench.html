@@ -2,8 +2,9 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:,">
 <meta name="theme-color" content="#174a96">
-<title>MAHLUK HIDUP.EXE — LGR-1 Genesis Rig Workshop</title>
+<title>MAHLUK HIDUP.EXE — LGR-1 Workshop</title>
 <link rel="stylesheet" href="./mahluk-action-frame-pixel.css?v=genesis-workbench-v1">
 <style>
 :root{font:12px Tahoma,"Segoe UI",Arial,sans-serif;color:#25344d;background:#97abc4;--dark:#153f82;--edge:#95a4b7;--panel:#e7ecf3}
@@ -49,24 +50,28 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 [hidden]{display:none!important}
 @media(max-width:1000px){#workspace{grid-template-columns:195px minmax(240px,1fr)}#rightpane{grid-column:1/-1;max-height:180px}#stagewrap{height:45dvh}}
 @media(max-width:650px){#topnav button{min-width:80px}#workspace{display:flex;flex-direction:column;overflow-y:auto}#leftpane,#rightpane{overflow:visible;flex:none}#viewer{order:-1;flex:none}#stagewrap{height:42dvh;min-height:250px}#views canvas{height:68px}#progress button{min-width:120px}#progress button b{font-size:10px}.titlebar small{display:none}#rightpane{max-height:none}}
+#order-list{display:grid;gap:2px;margin:4px 0}.order-row{display:flex;gap:3px;align-items:center;font-size:10px}.order-row span{flex:1;cursor:pointer;padding:2px 4px;background:#eef3fa;border:1px solid #c6d3e4}.order-row.current span{background:#cfe0fb;font-weight:bold}.order-row button{min-width:26px;padding:2px}
+#motion-frames button{min-width:34px}#motion-frames button[aria-pressed=true]{background:#3065a9;color:#fff}
+#rig-settings{margin-top:8px;border-top:1px dashed #9babc0;padding-top:6px}
 </style>
 </head>
 <body>
 <div id="app">
- <header class="titlebar"><strong>▣ MAHLUK HIDUP.EXE · LGR-1</strong><small>LGR-1 · LAFRICH GENESIS RIG · 4-VIEW PIXEL PUPPET</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
- <nav id="topnav"><button id="nav-workshop" aria-selected="true">◈ GENESIS WORKSHOP</button><button id="nav-emotion" aria-selected="false">☺ EMOSI.EXE</button><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
- <nav id="progress" aria-label="Character Genesis creation stages">
+ <header class="titlebar"><strong>▣ MAHLUK HIDUP.EXE · LGR-1</strong><small>LGR-1 · 4-VIEW PIXEL RIG · SHARED MOTIONS</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
+ <nav id="topnav"><button id="nav-workshop" aria-selected="true">◈ LGR-1 WORKSHOP</button><button id="nav-emotion" aria-selected="false">☺ EMOSI.EXE</button><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
+ <nav id="progress" aria-label="LGR-1 creation stages">
   <button data-step="pixel" aria-selected="true"><span class="progress-index">1</span><b>PIXEL EDITOR</b></button>
   <button data-step="rig" aria-selected="false"><span class="progress-index">2</span><b>PIVOT &amp; SLICING</b></button>
   <button data-step="bind" aria-selected="false"><span class="progress-index">3</span><b>BIND ANATOMY</b></button>
   <button data-step="test" aria-selected="false"><span class="progress-index">4</span><b>CHECK BINDING</b></button>
-  <button data-step="save" aria-selected="false"><span class="progress-index">5</span><b>MASTER GENESIS</b></button>
+  <button data-step="motion" aria-selected="false"><span class="progress-index">5</span><b>MOTION EDITOR</b></button>
+  <button data-step="save" aria-selected="false"><span class="progress-index">6</span><b>LGR-1 MASTER</b></button>
  </nav>
  <main id="workspace">
  <aside class="pane" id="leftpane">
   <h2>01 · ORIGINAL V6B SOURCE</h2>
-  <label class="field">GENESIS BASE<select id="gender"><option value="male">MALE GENESIS (V6B)</option><option value="female">FEMALE GENESIS (V6B)</option></select></label>
-  <p>Frozen approved Genesis only. Faces are blank in the body source and come from Emosi.exe.</p>
+  <label class="field">LGR-1 BASE<select id="gender"><option value="male">MALE · V6B BASE</option><option value="female">FEMALE · V6B BASE</option></select></label>
+  <p>Frozen approved V6B Male/Female only. Faces are blank in the body source and come from Emosi.exe.</p>
   <div class="btnrow"><button id="seed">↻ RESET TO V6B</button><button id="save-draft">↓ SAVE DRAFT</button></div>
   <section id="part-navigation" class="shared-part-nav">
    <h2>BODY PART · SHARED NAVIGATION</h2>
@@ -88,6 +93,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <p>Setiap body part punya piksel independen di keempat sudut. Edit satu bagian tanpa menimpa area bagian lain.</p>
    <label class="field">EDIT PHYSICAL LAYER (KEEPS SKIN / CLOTHING SEPARATE)<select id="art-layer"><option value="body">BODY / SKIN</option><option value="body_front">BODY FRONT OVERLAY</option><option value="top">TOP / SHIRT</option><option value="top_back">TOP BACK</option><option value="pants">PANTS</option><option value="shoes">SHOES</option><option value="hair_back">HAIR BACK</option><option value="hair_front">HAIR FRONT</option><option value="accessory">ACCESSORY</option></select></label>
    <div class="btnrow"><button id="edit-pixels" class="active">✎ OPEN PIXEL EDITOR</button></div>
+   <div class="btnrow"><button id="repair-head" type="button" title="Old seeds had no bald back head in NE/NW">↻ REBUILD NE/NW BACK HEAD</button></div>
    <p>Select, copy, paste, paste flip, move, erase, fill, color picker, grid, zoom, onion skin, undo, redo aktif dari editor sebelumnya.</p>
    <button id="pixel-next" class="active">NEXT: PIVOT &amp; SLICE →</button>
   </section>
@@ -99,25 +105,35 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <p style="font-size:10px">BLUE = selected part · RED = visible unassigned pixels · YELLOW = currently highlighted stray cluster.</p>
    <div id="unassigned-tools">
     <h3>FIND UNASSIGNED PIXELS</h3>
-    <p>Visible red pixels that belong to NO body part. If they are stray artwork, delete them from the source instead of assigning them to a limb.</p>
+    <p>Finds visible pixels that belong to NO body part, tiny isolated FLOATERS (≤6 px touching nothing) and, with an outfit preview on, OUTFIT pixels outside the body outline (auto-assigned to the nearest part).</p>
+    <label class="check"><input type="checkbox" id="outfit-in-rig"> SHOW OUTFIT PREVIEW HERE</label>
     <div class="btnrow"><button id="find-unassigned" type="button">⌕ FIND ALL STRAY PIXELS</button><button id="next-unassigned" type="button" disabled>NEXT ISSUE →</button></div>
     <label class="field">ISSUE CLUSTER<select id="unassigned-clusters" aria-label="Unassigned pixel issue"><option value="">Run Find to scan all 4 angles</option></select></label>
     <p id="unassigned-detail" role="status">No scan yet. Finding checks all four angles.</p>
     <div class="btnrow"><button id="remove-stray-group" type="button" disabled>✕ DELETE HIGHLIGHTED STRAY GROUP</button><button id="undo-stray-delete" type="button" disabled>↶ UNDO DELETE</button></div>
-    <button id="remove-strays-angle" type="button" disabled>✕ DELETE ALL UNASSIGNED IN CURRENT ANGLE</button>
-    <p>Delete clears only unassigned visible source pixels, across the source's art layers. Masks, pivots and all 40 prior reviews remain unchanged. Confirm before deleting; Undo restores the most recent cleanup.</p>
+    <button id="remove-strays-angle" type="button" disabled>✕ DELETE ALL UNASSIGNED / FLOATERS IN CURRENT ANGLE</button>
+    <div class="btnrow"><button id="assign-outfit-cluster" type="button" disabled>⇢ ASSIGN OUTFIT CLUSTER TO SELECTED PART</button><button id="reset-outfit-tweaks" type="button" disabled>↺ RESET OUTFIT TWEAKS</button></div>
+    <p>Delete clears only the highlighted unassigned/floater pixels, across the source's art layers. Masks, pivots and reviews remain unchanged. Outfit tweaks only affect that outfit. Undo restores the most recent cleanup.</p>
+   </div>
+   <div id="rig-settings">
+    <h3 id="order-title">DRAW ORDER</h3>
+    <div id="order-list" aria-label="Per-direction draw order"></div>
+    <div class="btnrow"><button id="order-reset" type="button">↺ RESET ORDER</button></div>
+    <label class="field">NEAR SIDE IN THIS VIEW (limb closest to camera)<select id="near-side"><option value="right">RIGHT arm/leg is near</option><option value="left">LEFT arm/leg is near</option></select></label>
+    <label class="field">JOINT CAP FOR SELECTED PART (px, closes gaps)<input id="joint-cap" type="number" min="0" max="6" step="1"></label>
    </div>
    <div id="geometry-controls"><label class="field">PIVOT X (0–63)<input id="pivot-x" type="number" min="0" max="63"></label><label class="field">PIVOT Y (0–111)<input id="pivot-y" type="number" min="0" max="111"></label>
    <label class="field">SLICE BRUSH SIZE<input id="mask-brush" type="range" min="1" max="9" value="3" step="2"></label></div>
    <div class="btnrow"><button id="copy-slice">COPY MASK</button><button id="paste-slice">PASTE MASK</button><button id="flip-slice">PASTE FLIP</button></div>
    <div class="btnrow"><button id="rig-undo">↶ UNDO</button><button id="rig-redo">↷ REDO</button></div>
-   <div class="btnrow"><button id="mark-reviewed" class="active">✓ MARK THIS PART / ANGLE REVIEWED</button><button id="clear-reviewed">↺ CLEAR REVIEW</button></div>
-   <p id="rig-review-message">Choose each body part / angle, inspect pixel ownership and pivot, then mark reviewed. 40 combinations required before binding.</p>
+   <div class="btnrow"><button id="review-angle" class="active" type="button">✓ AUTO-CHECK + REVIEW THIS ANGLE</button></div>
+   <div class="btnrow"><button id="mark-reviewed">✓ MARK THIS PART / ANGLE REVIEWED</button><button id="clear-reviewed">↺ CLEAR REVIEW</button></div>
+   <p id="rig-review-message">Look at each angle, then AUTO-CHECK: parts with pixels, ≤2 islands, pivot at the joint and near/far on the right side are marked; anything flagged needs your eyes and a manual MARK.</p>
    <button id="rig-next" class="active">NEXT: BIND ANATOMY →</button>
   </section>
   <section class="section" data-panel="bind">
    <h2>03 · PROCEDURAL BINDING</h2>
-   <p>Binding mengunci mask, 10-piece parent hierarchy, dan pivot 4-angle dalam satu kontrak data. Animasi menyimpan transform Python, bukan sprite frame-by-frame.</p>
+   <p>Binding mengunci mask, 10-piece parent hierarchy, pivot, draw order dan near side 4-angle dalam satu kontrak LGR-1. Animasi = data gerak bersama (JS + Python), bukan sprite frame-by-frame.</p>
    <button id="make-binding" class="active">⛓ BIND PIVOT + SLICES</button>
    <button id="find-unassigned-from-bind" type="button">⌕ FIND VISIBLE UNASSIGNED PIXELS</button>
    <div class="btnrow"><button id="export-python" disabled>↓ BINDING .PY</button><button id="export-json" disabled>↓ BINDING .JSON</button></div>
@@ -125,19 +141,43 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
   </section>
   <section class="section" data-panel="test">
    <h2>04 · INTERACTIVE BINDING TEST</h2>
-   <label class="field">TEST POSE<select id="test-preset"><option value="neutral">Neutral / T-pose check</option><option value="arms">Both Arms Raised</option><option value="walk">Walk / Contralateral</option><option value="wave">Wave Hand</option><option value="crouch">Crouch / Bend Knees</option></select></label>
+   <label class="field">SHARED MOTION (media/lgr1/motions.json + yours)<select id="test-preset"><option value="">Neutral · no motion</option></select></label>
    <div class="btnrow"><button id="test-play" type="button">▶ PLAY PREVIEW</button><label class="field" style="flex:1">MOTION SPEED<select id="test-speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label></div>
    <label class="field">SCRUB TIME <input id="test-scrub" type="range" min="0" max="100" value="0"></label>
    <div id="testcontrols"><label class="field">SELECTED PART ROTATION <input id="test-angle" type="range" min="-120" max="120" step="1" value="0"></label><label class="field">Δ X <input id="test-x" type="range" min="-32" max="32" value="0"></label><label class="field">Δ Y <input id="test-y" type="range" min="-32" max="32" value="0"></label></div>
-   <p>Uji tiap body part dan keempat angle. Wajah Emosi dirender mengikuti kepala, tetapi tidak dibakar ke source pixel.</p>
+   <p>Uji tiap motion dan keempat angle, juga dengan OUTFIT PREVIEW. Wajah Emosi mengikuti kepala, di bawah rambut depan, tidak dibakar ke source pixel.</p>
    <div class="btnrow"><button id="mark-angle-tested">✓ MARK ANGLE TESTED</button><button id="edit-binding">← EDIT BINDING</button></div>
    <p id="test-review-message">Review neutral and moving poses in SE, SW, NE and NW before approval.</p>
    <button id="approve-binding" class="active">✓ APPROVE ALL 4 ANGLES</button>
   </section>
+  <section class="section" data-panel="motion" id="motion-panel">
+   <h2>05 · MOTION EDITOR</h2>
+   <p>Satu gerakan untuk semua karakter &amp; outfit. Nilai diinput seperti terlihat di SE; SW/NW otomatis dicermin dan tangan kanan tetap tangan kanan.</p>
+   <label class="field">MOTION<select id="motion-select"></select></label>
+   <div class="btnrow"><button id="motion-new" type="button">＋ NEW</button><button id="motion-dup" type="button" data-needs-motion>⧉ DUPLICATE</button><button id="motion-del" type="button" data-needs-motion>✕ DELETE MINE</button></div>
+   <div class="btnrow"><label class="field" style="flex:1">ID<input id="motion-id" data-needs-motion maxlength="40"></label><label class="field" style="flex:1">NAME<input id="motion-name" data-needs-motion maxlength="60"></label></div>
+   <div class="btnrow"><label class="field" style="flex:1">SOURCE POSE<select id="motion-source" data-needs-motion></select></label><label class="field" style="flex:1">ANGLE SNAP<select id="motion-snap" data-needs-motion></select></label></div>
+   <label class="check"><input type="checkbox" id="motion-loop" data-needs-motion checked> LOOP</label>
+   <h3>KEYFRAMES (1–6)</h3>
+   <div class="btnrow" id="motion-frames"></div>
+   <div class="btnrow"><button id="motion-add-frame" type="button" data-needs-motion>＋ ADD FRAME</button><button id="motion-del-frame" type="button" data-needs-motion>− REMOVE FRAME</button></div>
+   <label class="field">MS PER FRAME (40–2000)<input id="motion-ms" type="number" min="40" max="2000" step="10" data-needs-motion></label>
+   <label class="field">BODY PART (anatomical)<select id="motion-part" data-needs-motion></select></label>
+   <label class="field">ROTATE ° <input id="motion-a" type="range" min="-180" max="180" step="5" data-needs-motion><input id="motion-a-num" type="number" min="-360" max="360" step="5" data-needs-motion style="width:70px"></label>
+   <label class="field">MOVE X <input id="motion-x" type="range" min="-16" max="16" step="1" data-needs-motion><input id="motion-x-num" type="number" min="-32" max="32" step="1" data-needs-motion style="width:60px"></label>
+   <label class="field">MOVE Y <input id="motion-y" type="range" min="-16" max="16" step="1" data-needs-motion><input id="motion-y-num" type="number" min="-32" max="32" step="1" data-needs-motion style="width:60px"></label>
+   <div class="btnrow"><button id="motion-reset-part" type="button" data-needs-motion>↺ RESET PART</button><button id="motion-play" type="button" data-needs-motion>▶ PLAY PREVIEW</button></div>
+   <label class="check"><input type="checkbox" id="motion-behind" data-needs-motion> DRAW THIS PART BEHIND TORSO (this frame)</label>
+   <label class="check"><input type="checkbox" id="motion-dironly" data-needs-motion> EDIT ONLY THIS DIRECTION (for sideways moves that must not mirror)</label>
+   <p id="motion-info" role="status">Choose a motion or NEW.</p>
+   <div class="btnrow"><button id="motion-save" class="active" type="button" data-needs-motion>✓ SAVE LOCAL</button><button id="motion-save-drive" type="button" data-needs-motion>☁ SAVE TO DRIVE</button><button id="motion-export" type="button" data-needs-motion>↓ JSON</button></div>
+   <div class="btnrow"><button id="motion-refresh-drive" type="button">↻ DRIVE MOTIONS</button><button id="motion-load-drive" type="button">↓ LOAD</button></div>
+   <label class="field">MOTIONS ON DRIVE<select id="motion-drive-list"><option value="">Connect Drive, then refresh</option></select></label>
+  </section>
   <section class="section" data-panel="save">
-   <h2>05 · APPROVED MASTER</h2>
+   <h2>06 · APPROVED LGR-1 MASTER</h2>
    <p>Master tidak memakai database karakter atau animasi sebelumnya.</p>
-   <button id="save-master" class="active">✓ SAVE LAFRICH GENESIS MASTER</button>
+   <button id="save-master" class="active">✓ SAVE LGR-1 MASTER</button>
    <div class="btnrow"><button id="cloud-master">☁ SAVE MASTER TO DRIVE</button><button id="load-cloud">↓ LOAD MASTER</button></div>
    <div class="btnrow"><button id="download-master">↓ DOWNLOAD .JSON</button><button id="download-binding">↓ DOWNLOAD .PY</button></div>
    <p>Master Male dan Female disimpan terpisah. Editor karakter dan database animasi dapat memakai kontrak ini sebagai source.</p>
@@ -157,16 +197,19 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
   <p>Database wajah tetap milik Emosi.exe. Tidak ada face-painting atau frame wajah manual di Python.</p>
   <label class="field">PREVIEW EMOSI<select id="face"><option value="">Blank / no face</option></select></label>
   <div class="btnrow"><button id="refresh-face">↻ REFRESH</button><button id="open-face">↗ OPEN EMOSI</button></div>
+  <h2>OUTFIT PREVIEW · CUSTOM WEAR</h2>
+  <label class="field">PREVIEW OUTFIT<select id="outfit-preview"><option value="">Body only</option><option value="tee_trousers">Tee + Trousers + Sneakers · short hair</option><option value="shirt_tie_baggy">Shirt &amp; tie + Baggy · long curtain hair</option><option value="cardigan_ripped">Cardigan + Ripped trousers · wavy hair</option></select></label>
+  <p>Outfit memakai mask tubuh otomatis; piksel di luar tubuh ikut bagian terdekat. Tampil di 04, 05 dan (opsional) 02 Find Unassigned.</p>
   <div id="binding-result">Binding belum dibuat.</div>
-  <div id="master-details"></div><p>FORMAT: <b>LGR-1 / Lafrich Genesis Rig</b> · 2D Skeletal Cutout Pixel Rig, 4-angle. Hanya master yang sudah di-bind dan di-approve yang boleh disimpan.</p>
+  <div id="master-details"></div><p>FORMAT: <b>LGR-1</b> · 2D skeletal cutout pixel rig, 4-angle. Hanya master yang sudah di-bind dan di-approve yang boleh disimpan.</p>
  </aside>
  </main>
  <div id="emotionpanel"><iframe id="emotion-frame" title="Emosi.exe original face and dialogue editor" src="about:blank" allow="clipboard-read; clipboard-write"></iframe></div>
- <footer id="status"><b id="stage-label">GENESIS WORKSHOP</b><span id="statusmsg" role="status">Loading frozen Male and Female V6B bases…</span><span id="statuscloud">LOCAL DRAFT / DRIVE OPTIONAL</span></footer>
+ <footer id="status"><b id="stage-label">LGR-1 WORKSHOP</b><span id="statusmsg" role="status">Loading frozen Male and Female V6B bases…</span><span id="statuscloud">LOCAL DRAFT / DRIVE OPTIONAL</span></footer>
 </div>
 <div id="pixelOverlay" class="pixel-overlay action-frame-pixel genesis-source-pixel" hidden>
  <section class="pixel-dialog" role="dialog" aria-modal="true" aria-labelledby="pixelTitle">
-  <header class="pixel-dialog-header"><strong id="pixelTitle">LAFRICH PUPPET · PIXEL EDITOR</strong><button id="pixelClose" title="Close editor">×</button></header>
+  <header class="pixel-dialog-header"><strong id="pixelTitle">LGR-1 · PIXEL EDITOR</strong><button id="pixelClose" title="Close editor">×</button></header>
   <div class="pixel-toolbar">
    <label>DIRECTION <select id="pixelDirection"><option value="se">SE / FRONT RIGHT</option><option value="sw">SW / FRONT LEFT</option><option value="ne">NE / BACK RIGHT</option><option value="nw">NW / BACK LEFT</option></select></label>
    <button data-pixel-tool="pencil" class="active">✎ PENCIL</button>
@@ -195,7 +238,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
      <button data-pixel-swatch="#b28ec3" style="--swatch:#b28ec3" title="Lilac"></button>
     </div>
 
-    <p class="hint">Edit the chosen Genesis source part. Edits affect the selected Lafrich source layer. Emosi stays separate and frontmost.</p>
+    <p class="hint">Edit the chosen LGR-1 source part. Edits affect the selected source layer. Emosi stays separate.</p>
     <div class="pixel-selection-controls">
      <div class="sectionhead">SELECTION / TRANSFORM</div>
      <div class="plane-buttons pixel-clipboard-actions">
@@ -225,7 +268,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
      <span id="pixelZoomLabel">500%</span>
     </div>
     <div class="plane-buttons"><button id="pixelUndo">↶ UNDO</button><button id="pixelRedo">↷ REDO</button></div>
-    <p class="hint">Edits affect only the selected Lafrich layer and view. Apply first, then SAVE MASTER / CHARACTER to sync Drive.</p>
+    <p class="hint">Edits affect only the selected LGR-1 layer and view. Apply first, then SAVE MASTER to sync Drive.</p>
     <div class="plane-buttons">
      <button id="pixelEraseCanvas" type="button" title="Erase this direction/frame only; Undo restores it">⌫ ERASE CANVAS</button>
      <button id="pixelRestore">↶ RESET PIXELS TO SOURCE</button>
@@ -233,9 +276,9 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    </aside>
   </div>
   <footer class="pixel-dialog-foot">
-   <span id="pixelStatus">LAFRICH PUPPET SOURCE · 64×112 RGBA</span>
-   <button id="pixelApply">APPLY TO LAFRICH</button>
-   <button id="pixelSaveDefault" class="primary">✓ APPLY TO LAFRICH</button>
+   <span id="pixelStatus">LGR-1 SOURCE · 64×112 RGBA</span>
+   <button id="pixelApply">APPLY TO LGR-1</button>
+   <button id="pixelSaveDefault" class="primary">✓ APPLY TO LGR-1</button>
   </footer>
  </section>
 </div>
@@ -243,19 +286,21 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="./genesis-source.js?v=genesis-rebuild-1"></script>
-<script src="./v6p-character-store.js?v=genesis-rebuild-1"></script>
-<script src="./genesis-base-bridge.js?v=genesis-rebuild-1"></script>
-<script src="./v6p-part-catalog.js?v=genesis-rebuild-1"></script>
-<script src="./v6p-part-overrides.js?v=genesis-rebuild-1"></script>
-<script src="./v6p-compositor.js?v=genesis-rebuild-1"></script>
-<script src="./emotion-studio/emotion-library.js?v=genesis-rebuild-1"></script>
-<script src="./emosi-bridge.js?v=genesis-rebuild-1"></script>
-<script src="./emotion-studio/shared-pixel-selection.js?v=genesis-rebuild-1"></script>
-<script src="./emotion-studio/shared-pixel-editor.js?v=genesis-rebuild-1"></script>
-<script src="./lafrich-puppet-core.js?v=genesis-rebuild-1"></script>
-<script src="./lafrich-puppet-renderer.js?v=genesis-rebuild-1"></script>
-<script src="./genesis-cloud.js?v=genesis-rebuild-1"></script>
-<script src="./genesis-workbench.js?v=genesis-rebuild-1"></script>
+<script src="./genesis-source.js?v=lgr1-fix-1"></script>
+<script src="./v6p-character-store.js?v=lgr1-fix-1"></script>
+<script src="./genesis-base-bridge.js?v=lgr1-fix-1"></script>
+<script src="./v6p-part-catalog.js?v=lgr1-fix-1"></script>
+<script src="./v6p-part-overrides.js?v=lgr1-fix-1"></script>
+<script src="./v6p-compositor.js?v=lgr1-fix-1"></script>
+<script src="./emotion-studio/emotion-library.js?v=lgr1-fix-1"></script>
+<script src="./emosi-bridge.js?v=lgr1-fix-1"></script>
+<script src="./emotion-studio/shared-pixel-selection.js?v=lgr1-fix-1"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=lgr1-fix-1"></script>
+<script src="./lgr1-raster.js?v=lgr1-fix-1"></script>
+<script src="./lgr1-motion.js?v=lgr1-fix-1"></script>
+<script src="./lafrich-puppet-core.js?v=lgr1-fix-1"></script>
+<script src="./lafrich-puppet-renderer.js?v=lgr1-fix-1"></script>
+<script src="./genesis-cloud.js?v=lgr1-fix-1"></script>
+<script src="./genesis-workbench.js?v=lgr1-fix-1"></script>
 </body>
 </html>

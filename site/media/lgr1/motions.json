@@ -1,0 +1,394 @@
+{
+ "format": "lgr1-motion-library-v1",
+ "note": "Shared by site/lgr1-motion.js and site/genesis_procedural_runtime.py. Values are authored as seen in SE (canvas degrees, +x = screen right) on ANATOMICAL parts; SW/NW mirror automatically. Use frame.dirs.<dir> for lateral moves that must not mirror.",
+ "poses": {
+  "neutral": {},
+  "crouch": {
+   "torso": {
+    "x": 0,
+    "y": 5,
+    "a": 0
+   },
+   "head": {
+    "x": 0,
+    "y": 0,
+    "a": 0
+   },
+   "leg_r_upper": {
+    "x": 0,
+    "y": 0,
+    "a": -35
+   },
+   "leg_l_upper": {
+    "x": 0,
+    "y": 0,
+    "a": -20
+   },
+   "leg_r_lower": {
+    "x": 0,
+    "y": 0,
+    "a": 65
+   },
+   "leg_l_lower": {
+    "x": 0,
+    "y": 0,
+    "a": 45
+   },
+   "arm_r_upper": {
+    "x": 0,
+    "y": 0,
+    "a": -20
+   },
+   "arm_l_upper": {
+    "x": 0,
+    "y": 0,
+    "a": -15
+   },
+   "arm_r_lower": {
+    "x": 0,
+    "y": 0,
+    "a": -20
+   },
+   "arm_l_lower": {
+    "x": 0,
+    "y": 0,
+    "a": -15
+   }
+  },
+  "arms_up": {
+   "arm_r_upper": {
+    "x": 0,
+    "y": 0,
+    "a": -160
+   },
+   "arm_l_upper": {
+    "x": 0,
+    "y": 0,
+    "a": -160
+   }
+  }
+ },
+ "motions": [
+  {
+   "id": "idle",
+   "name": "Idle \u00b7 breathing",
+   "source": "neutral",
+   "angleSnap": 5,
+   "loop": true,
+   "frames": [
+    {
+     "ms": 600,
+     "parts": {}
+    },
+    {
+     "ms": 600,
+     "parts": {
+      "head": {
+       "y": 1
+      },
+      "arm_r_upper": {
+       "y": 1
+      },
+      "arm_l_upper": {
+       "y": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "walk",
+   "name": "Walk \u00b7 6 frames",
+   "source": "neutral",
+   "angleSnap": 5,
+   "loop": true,
+   "frames": [
+    {
+     "ms": 120,
+     "parts": {
+      "leg_r_upper": {
+       "a": -10
+      },
+      "leg_l_upper": {
+       "a": 10
+      },
+      "leg_l_lower": {
+       "a": 10
+      },
+      "arm_r_upper": {
+       "a": 10
+      },
+      "arm_l_upper": {
+       "a": -10
+      }
+     }
+    },
+    {
+     "ms": 120,
+     "parts": {
+      "torso": {
+       "y": 1
+      },
+      "leg_r_upper": {
+       "a": -20
+      },
+      "leg_l_upper": {
+       "a": 20
+      },
+      "leg_l_lower": {
+       "a": 15
+      },
+      "arm_r_upper": {
+       "a": 15
+      },
+      "arm_l_upper": {
+       "a": -15
+      }
+     }
+    },
+    {
+     "ms": 120,
+     "parts": {
+      "leg_r_upper": {
+       "a": -10
+      },
+      "leg_l_upper": {
+       "a": 10
+      },
+      "leg_l_lower": {
+       "a": 10
+      },
+      "arm_r_upper": {
+       "a": 10
+      },
+      "arm_l_upper": {
+       "a": -10
+      }
+     }
+    },
+    {
+     "ms": 120,
+     "parts": {
+      "leg_r_upper": {
+       "a": 10
+      },
+      "leg_l_upper": {
+       "a": -10
+      },
+      "leg_r_lower": {
+       "a": 10
+      },
+      "arm_r_upper": {
+       "a": -10
+      },
+      "arm_l_upper": {
+       "a": 10
+      }
+     }
+    },
+    {
+     "ms": 120,
+     "parts": {
+      "torso": {
+       "y": 1
+      },
+      "leg_r_upper": {
+       "a": 20
+      },
+      "leg_l_upper": {
+       "a": -20
+      },
+      "leg_r_lower": {
+       "a": 15
+      },
+      "arm_r_upper": {
+       "a": -15
+      },
+      "arm_l_upper": {
+       "a": 15
+      }
+     }
+    },
+    {
+     "ms": 120,
+     "parts": {
+      "leg_r_upper": {
+       "a": 10
+      },
+      "leg_l_upper": {
+       "a": -10
+      },
+      "leg_r_lower": {
+       "a": 10
+      },
+      "arm_r_upper": {
+       "a": -10
+      },
+      "arm_l_upper": {
+       "a": 10
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "wave",
+   "name": "Wave \u00b7 right hand",
+   "source": "neutral",
+   "angleSnap": 5,
+   "loop": true,
+   "frames": [
+    {
+     "ms": 180,
+     "parts": {
+      "arm_r_upper": {
+       "a": 150
+      },
+      "arm_r_lower": {
+       "a": -25
+      }
+     },
+     "dirs": {
+      "sw": {
+       "arm_r_upper": {
+        "a": 150
+       },
+       "arm_r_lower": {
+        "a": -25
+       }
+      },
+      "ne": {
+       "arm_r_upper": {
+        "a": -150
+       },
+       "arm_r_lower": {
+        "a": 25
+       }
+      }
+     }
+    },
+    {
+     "ms": 180,
+     "parts": {
+      "arm_r_upper": {
+       "a": 150
+      },
+      "arm_r_lower": {
+       "a": 0
+      }
+     },
+     "dirs": {
+      "sw": {
+       "arm_r_upper": {
+        "a": 150
+       },
+       "arm_r_lower": {
+        "a": 0
+       }
+      },
+      "ne": {
+       "arm_r_upper": {
+        "a": -150
+       },
+       "arm_r_lower": {
+        "a": 0
+       }
+      }
+     }
+    },
+    {
+     "ms": 180,
+     "parts": {
+      "arm_r_upper": {
+       "a": 150
+      },
+      "arm_r_lower": {
+       "a": 25
+      }
+     },
+     "dirs": {
+      "sw": {
+       "arm_r_upper": {
+        "a": 150
+       },
+       "arm_r_lower": {
+        "a": 25
+       }
+      },
+      "ne": {
+       "arm_r_upper": {
+        "a": -150
+       },
+       "arm_r_lower": {
+        "a": -25
+       }
+      }
+     }
+    },
+    {
+     "ms": 180,
+     "parts": {
+      "arm_r_upper": {
+       "a": 150
+      },
+      "arm_r_lower": {
+       "a": 0
+      }
+     },
+     "dirs": {
+      "sw": {
+       "arm_r_upper": {
+        "a": 150
+       },
+       "arm_r_lower": {
+        "a": 0
+       }
+      },
+      "ne": {
+       "arm_r_upper": {
+        "a": -150
+       },
+       "arm_r_lower": {
+        "a": 0
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "crouch",
+   "name": "Crouch \u00b7 bend knees",
+   "source": "crouch",
+   "angleSnap": 5,
+   "loop": true,
+   "frames": [
+    {
+     "ms": 500,
+     "parts": {}
+    },
+    {
+     "ms": 500,
+     "parts": {
+      "torso": {
+       "y": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "arms_up",
+   "name": "Both arms raised",
+   "source": "arms_up",
+   "angleSnap": 5,
+   "loop": true,
+   "frames": [
+    {
+     "ms": 800,
+     "parts": {}
+    }
+   ]
+  }
+ ]
+}

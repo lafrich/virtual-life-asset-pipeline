@@ -5,6 +5,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const {webcrypto}=require("node:crypto");
 const C=require("../site/lafrich-puppet-core.js");
+const LM=require("../site/lgr1-motion.js");
 const source=fs.readFileSync(path.join(__dirname,"../site/genesis-cloud.js"),"utf8");
 const files=new Map();
 let seq=0;
@@ -45,7 +46,7 @@ async function fakeFetch(url,opts={}){
  throw Error("Fake Drive API unexpected: "+method+" "+url);
 }
 function device(){
- const world={LafrichPuppetCore:C,google:{accounts:{oauth2:{initTokenClient({callback}){
+ const world={LafrichPuppetCore:C,LGR1Motion:LM,google:{accounts:{oauth2:{initTokenClient({callback}){
   return {requestAccessToken(){callback({access_token:"mock-token",expires_in:3600})}};
  }}}}};
  const context=vm.createContext({window:world,fetch:fakeFetch,Headers,URLSearchParams,
@@ -99,6 +100,21 @@ async function run(){
  assert.equal((await b.loadDraft(id,receipt1.fileId)).record.edited,"first");
  assert.equal((await a.loadDraft(id,receipt2.fileId)).record.edited,"second");
  assert.equal((await a.load(id)).approvedAt,changed.approvedAt,"Draft save replaced approved master");
- console.log("PASS LGR-1 Drive: stale overwrite blocked, accepted update archived, immutable draft versions verified");
+ // LGR-1 motions: every save is a NEW immutable, read-back-verified file.
+ const motion={id:"my_wave",name:"My wave",frames:[{ms:120,parts:{arm_r_upper:{a:150}}}]};
+ const before=new Map([...files].map(([k,v])=>[k,v.content]));
+ const m1=await a.saveMotion(motion),m2=await b.saveMotion({...motion,name:"My wave v2"});
+ assert.equal(m1.verified,true);assert.notEqual(m1.fileId,m2.fileId);
+ assert.match(m1.name,/^lgr1_motion\.my_wave\./);
+ for(const [k,v] of before)assert.equal(files.get(k).content,v,"Motion save modified an existing Drive file");
+ const listed=await a.listMotions();assert.equal(listed.length,2);
+ assert.equal((await b.loadMotion(m1.fileId)).motion.name,"My wave");
+ assert.equal((await a.loadMotion(m2.fileId)).motion.name,"My wave v2");
+ await assert.rejects(()=>a.saveMotion({id:"Bad Id",frames:[{ms:120,parts:{}}]}),/a-z0-9_/);
+ await assert.rejects(()=>a.loadMotion(receipt1.fileId),/not found/);
+ const tampered=files.get(m1.fileId);tampered.content=tampered.content.replace("My wave","Evil");
+ await assert.rejects(()=>a.loadMotion(m1.fileId),/checksum/);
+ assert.equal((await a.load(id)).approvedAt,changed.approvedAt,"Motion save replaced approved master");
+ console.log("PASS LGR-1 Drive: stale overwrite blocked, accepted update archived, immutable draft + motion versions verified");
 }
 run().catch(err=>{console.error(err);process.exitCode=1});

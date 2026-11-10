@@ -29,11 +29,14 @@ test('real 10-piece skeletal rig separates both arms into upper and lower, both 
 test('four independent pixel masks use new upper/lower parts; unselect removes only assignment',()=>{
  const c=Core.master('male');
  for(const d of Core.DIRS){
+  // Near limbs sit on screen-left in SE/NW and screen-right in SW/NE.
+  const X=x=>Core.MIRRORED[d]?64-x:x;
   const mask=Core.decode(c.masks[d]);assert.equal(mask.length,64*112);
-  assert.equal(mask[67*64+20],Core.PARTS.indexOf('arm_near_upper'));
-  assert.equal(mask[77*64+20],Core.PARTS.indexOf('arm_near_lower'));
-  assert.equal(mask[89*64+26],Core.PARTS.indexOf('leg_near_upper'));
-  assert.equal(mask[100*64+26],Core.PARTS.indexOf('leg_near_lower'));
+  assert.equal(mask[67*64+X(20)],Core.PARTS.indexOf('arm_near_upper'),d);
+  assert.equal(mask[77*64+X(20)],Core.PARTS.indexOf('arm_near_lower'),d);
+  assert.equal(mask[89*64+X(26)],Core.PARTS.indexOf('leg_near_upper'),d);
+  assert.equal(mask[100*64+X(26)],Core.PARTS.indexOf('leg_near_lower'),d);
+  assert.equal(c.pivots[d].arm_near_upper.x,X(24),d);
  }
  const se=Core.decode(c.masks.se);se[20*64+31]=255;c.masks.se=Core.encode(se);
  assert.equal(Core.decode(Core.validateMaster(c).masks.se)[20*64+31],255);
@@ -59,34 +62,19 @@ test('Master Body Piece placement retains original images, slices, pivots and st
  m.placements.se.arm_near_upper.x=65;
  assert.throws(()=>Core.validateMaster(m),/Invalid body piece placement/);
 });
-test('Hierarchical rest placement moves body and wear through the SAME puppet transform',()=>{
- const old=globalThis.LafrichPuppetCore;
- globalThis.LafrichPuppetCore=Core;
- try{
-  const master=Core.master('male');
-  master.placements.se.torso={x:3,y:-2};
-  master.placements.se.arm_near_upper={x:4,y:5};
-  master.placements.se.arm_near_lower={x:-1,y:6};
-  const prepared={master:Core.validateMaster(master),dir:'se'};
-  const trace=()=>{
-   const pos={x:0,y:0};
-   const ctx={translate(x,y){pos.x+=x;pos.y+=y},rotate(){}};
-   return {ctx,pos};
-  };
-  const t=trace();
-  Runtime.transform(t.ctx,prepared,Core.blankPose(),'arm_near_lower');
-  assert.deepEqual(t.pos,{x:6,y:9},'Upper-arm move must carry its forearm pixels');
-  const u=trace();
-  Runtime.transform(u.ctx,prepared,Core.blankPose(),'arm_far_lower');
-  assert.deepEqual(u.pos,{x:3,y:-2},'Far arm only follows common torso');
-  const animated=Core.blankPose();animated.arm_near_lower.x=2;animated.arm_near_lower.y=3;
-  const a=trace();
-  Runtime.transform(a.ctx,prepared,animated,'arm_near_lower');
-  assert.deepEqual(a.pos,{x:8,y:12},'Python animation adds to Master rest position');
-  const face=trace();
-  Runtime.transform(face.ctx,prepared,Core.blankPose(),'head');
-  assert.deepEqual(face.pos,{x:3,y:-2},'Emosi head follows moved torso');
- }finally{globalThis.LafrichPuppetCore=old}
+test('Hierarchical rest placement moves body and wear through the SAME LGR-1 transform',()=>{
+ const Raster=require('../site/lgr1-raster.js');
+ const master=Core.master('male');
+ master.placements.se.torso={x:3,y:-2};
+ master.placements.se.arm_near_upper={x:4,y:5};
+ master.placements.se.arm_near_lower={x:-1,y:6};
+ const m=Core.validateMaster(master),pv=m.pivots.se,pl=m.placements.se;
+ const at=(pose,part)=>{const t=Raster.matrices(pv,pl,pose)[part].mat;return {x:t[4],y:t[5]}};
+ assert.deepEqual(at(Core.blankPose(),'arm_near_lower'),{x:6,y:9},'Upper-arm move must carry its forearm pixels');
+ assert.deepEqual(at(Core.blankPose(),'arm_far_lower'),{x:3,y:-2},'Far arm only follows common torso');
+ const animated=Core.blankPose();animated.arm_near_lower.x=2;animated.arm_near_lower.y=3;
+ assert.deepEqual(at(animated,'arm_near_lower'),{x:8,y:12},'Animation adds to Master rest position');
+ assert.deepEqual(at(Core.blankPose(),'head'),{x:3,y:-2},'Emosi head follows moved torso');
 });
 test('new Python motion has only one blank, unsaved authoring frame; no eleven installed animations',()=>{
  const source=Core.motion('Hand Wave');

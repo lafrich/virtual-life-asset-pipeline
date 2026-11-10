@@ -91,11 +91,45 @@ class GenesisRigTests(unittest.TestCase):
         self.assertAlmostEqual(y,52)
 
     def test_animation_procedural_not_frame_atlas(self):
-        p0 = runtime.procedural_pose("walk", .0)
-        p1 = runtime.procedural_pose("walk", .25)
-        self.assertAlmostEqual(p0["leg_near_upper"]["a"],0)
-        self.assertGreater(p1["leg_near_upper"]["a"], 20)
-        self.assertEqual(set(p1),set(runtime.PARTS))
+        # Poses come from the shared motion library (media/lgr1/motions.json),
+        # the same data the JS workbench uses; no hard-coded presets.
+        lib = runtime.load_library()
+        walk = next(m for m in lib["motions"] if m["id"] == "walk")
+        p0 = runtime.procedural_pose("walk", .0, library=lib)
+        t1 = walk["frames"][0]["ms"] / 1000 + 0.001
+        p1 = runtime.procedural_pose("walk", t1, library=lib)
+        self.assertEqual(p0, runtime.frame_pose(lib["poses"], walk, 0, "se"))
+        self.assertEqual(p1, runtime.frame_pose(lib["poses"], walk, 1, "se"))
+        self.assertNotEqual(p0, p1)
+        self.assertEqual(set(p1), set(runtime.PARTS))
+
+    def test_mirroring_keeps_the_anatomical_hand(self):
+        lib = runtime.load_library()
+        wave = next(m for m in lib["motions"] if m["id"] == "wave")
+        se = runtime.frame_pose(lib["poses"], wave, 0, "se")
+        sw = runtime.frame_pose(lib["poses"], wave, 0, "sw")
+        # Right hand waves: near in SE, far in SW (mirrored view).
+        self.assertNotEqual(se["arm_near_upper"]["a"], 0)
+        # Sideways raise uses per-direction overrides so the arm goes UP in both.
+        self.assertEqual(sw["arm_far_upper"]["a"], se["arm_near_upper"]["a"])
+        self.assertEqual(sw["arm_near_upper"]["a"], 0)
+        self.assertEqual(runtime.rig_part("arm_r_upper", "se"), "arm_near_upper")
+        self.assertEqual(runtime.rig_part("arm_r_upper", "sw"), "arm_far_upper")
+        self.assertEqual(runtime.rig_part("arm_r_upper", "ne"), "arm_near_upper")
+        self.assertEqual(runtime.rig_part("arm_r_upper", "nw"), "arm_far_upper")
+        self.assertEqual(runtime.rig_part("arm_r_upper", "sw", {"sw": "right"}), "arm_near_upper")
+
+    def test_motion_validation_and_snap(self):
+        lib = runtime.load_library()
+        with self.assertRaises(ValueError):
+            runtime.validate_motion({"id": "Bad Id", "frames": [{"ms": 100, "parts": {}}]}, lib["poses"])
+        with self.assertRaises(ValueError):
+            runtime.validate_motion({"id": "x", "frames": []}, lib["poses"])
+        with self.assertRaises(ValueError):
+            runtime.validate_motion({"id": "x", "frames": [{"ms": 100, "parts": {}}]*7}, lib["poses"])
+        self.assertEqual(runtime.snap(12.5, 5), 15)
+        self.assertEqual(runtime.snap(-12.5, 5), -10)
+        self.assertEqual(runtime.snap(7, 1), 7)
 
     def test_unreviewed_part_angle_rejected(self):
         m = fixture()

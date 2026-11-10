@@ -1,4 +1,4 @@
-/* Dedicated Genesis master cloud storage.
+/* LGR-1 master / draft / motion cloud storage.
  * Uses only its OWN Membangun / Mahluk Hidup / Genesis Masters folder.
  * No migration, deletion or reads of historical Mahluk/Animation records.
  */
@@ -230,5 +230,51 @@ async function loadDraft(id,fileId){
  validateDraft(id,value.record);
  return {record:value.record,name:file.name,fileId:file.id};
 }
-root.VLGenesisCloud=Object.freeze({connect,connected,save,load,acknowledgeLoadedMaster,saveDraft,listDrafts,loadDraft});
+// LGR-1 motions: append-only immutable versions (lgr1_motion.<id>.<ts>.<sha10>.json).
+// Saving never updates or deletes an existing file.
+const MOTION_SCHEMA="lgr-1-cloud-motion-v1",MOTION_PREFIX="lgr1_motion.";
+function validateMotionData(motion){
+ const M=root?.LGR1Motion;
+ if(!M?.validateMotion)throw Error("LGR-1 motion validator unavailable");
+ const v=M.validateMotion(motion);
+ if(JSON.stringify(v).length>200000)throw Error("LGR-1 motion too large");
+ return v;
+}
+async function saveMotion(motion){
+ const v=validateMotionData(motion);
+ const folderId=await folder(),raw=JSON.stringify(v),digest=await hash(raw);
+ const name=MOTION_PREFIX+v.id+"."+new Date().toISOString().replace(/[:.]/g,"-")+"."+digest.slice(0,10)+".json";
+ const fileId=await createAndWrite(folderId,name,JSON.stringify({schema:MOTION_SCHEMA,id:v.id,sha256:digest,motion:v}));
+ const back=JSON.parse(await(await request(API+"/"+encodeURIComponent(fileId)+"?alt=media")).text());
+ if(back.schema!==MOTION_SCHEMA||back.id!==v.id||back.sha256!==digest||await hash(JSON.stringify(back.motion))!==digest)
+  throw Error("Motion read-back mismatch; version not verified");
+ return {id:v.id,fileId,name,verified:true};
+}
+async function listMotions(){
+ const parentId=await folder();
+ const params=new URLSearchParams({
+  q:"'"+q(parentId)+"' in parents and name contains '"+q(MOTION_PREFIX)+"' and mimeType = 'application/json' and trashed = false",
+  fields:"nextPageToken,files(id,name,createdTime)",pageSize:"100",orderBy:"createdTime desc"
+ });
+ const results=[];let cursor="";
+ do{
+  if(cursor)params.set("pageToken",cursor);
+  const result=await(await request(API+"?"+params)).json();
+  results.push(...(result.files||[]).filter(f=>f.name.startsWith(MOTION_PREFIX)));
+  cursor=result.nextPageToken||"";
+ }while(cursor&&results.length<300);
+ return results.sort((a,b)=>String(b.createdTime||"").localeCompare(String(a.createdTime||"")));
+}
+async function loadMotion(fileId){
+ const file=(await listMotions()).find(f=>f.id===fileId);
+ if(!file)throw Error("LGR-1 motion version not found in the LGR-1 folder");
+ const body=await(await request(API+"/"+encodeURIComponent(file.id)+"?alt=media")).text();
+ if(body.length>400000)throw Error("Cloud motion too large");
+ const value=JSON.parse(body);
+ if(value.schema!==MOTION_SCHEMA||value.sha256!==await hash(JSON.stringify(value.motion)))
+  throw Error("Cloud motion checksum mismatch");
+ return {motion:validateMotionData(value.motion),name:file.name,fileId:file.id};
+}
+root.VLGenesisCloud=Object.freeze({connect,connected,save,load,acknowledgeLoadedMaster,saveDraft,listDrafts,loadDraft,
+ saveMotion,listMotions,loadMotion});
 })(window);
