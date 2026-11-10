@@ -16,7 +16,7 @@
  if(root)root.LGRGame=api;
 })(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){
 "use strict";
-const VERSION="lgr-game-5";
+const VERSION="lgr-game-6";
 const DIRS=["se","sw","ne","nw"];
 const here=(()=>{try{const s=document.currentScript?.src;return s?s.slice(0,s.lastIndexOf("/")+1):"/virtual-life-asset-pipeline/"}catch{return "/virtual-life-asset-pipeline/"}})();
 if(root&&!root.LGRDB_BASE)root.LGRDB_BASE=here;
@@ -30,7 +30,8 @@ const STAND_INS=Object.freeze({
  parkir_whistle:"wave",eat:"talk",drink_coffee:"talk",faint:"lie_sleep",arrested:"arms_up",clean_gorong:"crouch",
  pray_generic:"bow",give_sedekah:"wave",tired_walk:"walk",tired:"idle",cook:"idle",
  eat_sit:"sit",drink_coffee_sit:"sit",fishing_wait_sit:"sit",mulung_pick:"bow",walk_carry_sack:"walk",check_phone:"talk",
- sit_lesehan:"sit",run:"walk",sweep:"idle",rinse_tap:"mandi",hand_over:"pick_up",protest:"talk",get_up:"idle",use_storage:"pick_up"});
+ sit_lesehan:"sit",run:"walk",sweep:"idle",rinse_tap:"mandi",hand_over:"pick_up",protest:"talk",get_up:"idle",use_storage:"pick_up",
+ accident_wet:"idle",cook_stir:"cook",mix_drink:"drink_coffee",eat_snack:"eat",sell_food_stall:"talk",sit_class:"sit",read_book:"sit",online_learning:"check_phone",work_bank_counter:"sit",pee_wall:"pee_stand",steal:"pick_up",help_npc:"hand_over",collect:"pick_up"});
 const ALIASES=Object.freeze({
  sleep:"lie_sleep",rest:"lie_sleep",sleep_bed_right:"lie_sleep",sleep_bed_left:"lie_sleep",
  sit_type:"sit",work:"sit",study:"sit",perch:"sit",bathtub_bathe:"sit",

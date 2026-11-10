@@ -221,6 +221,71 @@
    "id": "sweep",
    "name": "Nyapu",
    "group": "kerja"
+  },
+  {
+   "id": "accident_wet",
+   "name": "Ngompol / basah (kecelakaan)",
+   "group": "kondisi"
+  },
+  {
+   "id": "cook_stir",
+   "name": "Masak · aduk wajan",
+   "group": "kerja"
+  },
+  {
+   "id": "mix_drink",
+   "name": "Racik minuman",
+   "group": "kerja"
+  },
+  {
+   "id": "eat_snack",
+   "name": "Makan jajanan",
+   "group": "kebutuhan"
+  },
+  {
+   "id": "sell_food_stall",
+   "name": "Jualan di lapak",
+   "group": "kerja"
+  },
+  {
+   "id": "sit_class",
+   "name": "Duduk di kelas",
+   "group": "kerja"
+  },
+  {
+   "id": "read_book",
+   "name": "Baca buku",
+   "group": "kerja"
+  },
+  {
+   "id": "online_learning",
+   "name": "Belajar online (HP)",
+   "group": "kerja"
+  },
+  {
+   "id": "work_bank_counter",
+   "name": "Kerja di loket bank",
+   "group": "kerja"
+  },
+  {
+   "id": "pee_wall",
+   "name": "Pipis di tembok",
+   "group": "kebersihan"
+  },
+  {
+   "id": "steal",
+   "name": "Mencuri",
+   "group": "kondisi"
+  },
+  {
+   "id": "help_npc",
+   "name": "Bantu warga",
+   "group": "sosial"
+  },
+  {
+   "id": "collect",
+   "name": "Pungut barang",
+   "group": "kerja"
   }
  ]
 }
