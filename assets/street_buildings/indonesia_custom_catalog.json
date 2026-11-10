@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "projection": "isometric-2:1",
+  "tile": [
+    64,
+    32
+  ],
+  "palette": "v6b-known-colors",
+  "notes": "owner-approved art; generated depth is approximate, not physical 3D mesh",
+  "assets": [
+    {
+      "id": "id_gubuk_miskin",
+      "file": "pipeline:id_gubuk_miskin",
+      "label": "Gubuk Miskin — rumah darurat pinggir gang",
+      "group": "kampung",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "semesta-custom-v6b-20261110",
+      "note": "Atap seng rusak, terpal biru dan dinding papan",
+      "category": "building",
+      "footprint": [
+        3,
+        2
+      ],
+      "collision": true,
+      "published": true,
+      "variants": {
+        "sw": {
+          "file": "kampung/id_gubuk_miskin_sw.png",
+          "size": [
+            224,
+            258
+          ],
+          "pivot": [
+            112,
+            199
+          ]
+        },
+        "se": {
+          "file": "kampung/id_gubuk_miskin_se.png",
+          "size": [
+            224,
+            258
+          ],
+          "pivot": [
+            112,
+            199
+          ]
+        },
+        "ne": {
+          "file": "kampung/id_gubuk_miskin_ne.png",
+          "size": [
+            224,
+            258
+          ],
+          "pivot": [
+            112,
+            199
+          ]
+        },
+        "nw": {
+          "file": "kampung/id_gubuk_miskin_nw.png",
+          "size": [
+            224,
+            258
+          ],
+          "pivot": [
+            112,
+            199
+          ]
+        }
+      },
+      "size": [
+        224,
+        258
+      ],
+      "pivot": [
+        112,
+        199
+      ],
+      "width": 4.48,
+      "height": 5.16
+    },
+    {
+      "id": "id_warung_sembako",
+      "file": "pipeline:id_warung_sembako",
+      "label": "Warung Sembako",
+      "group": "kampung",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "semesta-custom-v6b-20261110",
+      "note": "Etalase sembako, karung beras, LPG dan rentengan sachet",
+      "category": "building",
+      "footprint": [
+        4,
+        3
+      ],
+      "collision": true,
+      "published": true,
+      "variants": {
+        "sw": {
+          "file": "kampung/id_warung_sembako_sw.png",
+          "size": [
+            304,
+            304
+          ],
+          "pivot": [
+            152,
+            233
+          ]
+        },
+        "se": {
+          "file": "kampung/id_warung_sembako_se.png",
+          "size": [
+            304,
+            304
+          ],
+          "pivot": [
+            152,
+            233
+          ]
+        },
+        "ne": {
+          "file": "kampung/id_warung_sembako_ne.png",
+          "size": [
+            304,
+            304
+          ],
+          "pivot": [
+            152,
+            233
+          ]
+        },
+        "nw": {
+          "file": "kampung/id_warung_sembako_nw.png",
+          "size": [
+            304,
+            304
+          ],
+          "pivot": [
+            152,
+            233
+          ]
+        }
+      },
+      "size": [
+        304,
+        304
+      ],
+      "pivot": [
+        152,
+        233
+      ],
+      "width": 6.08,
+      "height": 6.08
+    },
+    {
+      "id": "id_rm_padang",
+      "file": "pipeline:id_rm_padang",
+      "label": "RM Padang — Trio Minang",
+      "group": "kampung",
+      "source": "pipeline-street",
+      "country": "ID",
+      "pack": "semesta-custom-v6b-20261110",
+      "note": "Etalase lauk bertingkat seperti referensi Trio Minang, panel biru Masakan Padang",
+      "category": "building",
+      "footprint": [
+        5,
+        3
+      ],
+      "collision": true,
+      "published": true,
+      "variants": {
+        "sw": {
+          "file": "kampung/id_rm_padang_sw.png",
+          "size": [
+            352,
+            370
+          ],
+          "pivot": [
+            176,
+            263
+          ]
+        },
+        "se": {
+          "file": "kampung/id_rm_padang_se.png",
+          "size": [
+            352,
+            370
+          ],
+          "pivot": [
+            176,
+            263
+          ]
+        },
+        "ne": {
+          "file": "kampung/id_rm_padang_ne.png",
+          "size": [
+            352,
+            370
+          ],
+          "pivot": [
+            176,
+            263
+          ]
+        },
+        "nw": {
+          "file": "kampung/id_rm_padang_nw.png",
+          "size": [
+            352,
+            370
+          ],
+          "pivot": [
+            176,
+            263
+          ]
+        }
+      },
+      "size": [
+        352,
+        370
+      ],
+      "pivot": [
+        176,
+        263
+      ],
+      "width": 7.04,
+      "height": 7.4
+    }
+  ]
+}
