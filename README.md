@@ -7,8 +7,26 @@ reproducible by running it again. (One historical exception, kept as data: the v
 recovered once from a supplied pixel-art reference sprite onto its native pixel grid; only the resulting numeric
 arrays `chars-iso/v6b/study/*.npy` are included, not the image. Everything else is drawn from code.)
 
-It is a **snapshot for reproduction**, not the game. The game itself (`index.html` and its asset folder) lives
-elsewhere; this repo only carries the small read-only bits the generators need (`game/`).
+The generator snapshot is accompanied by the active **Mahluk Hidup / LGR-1
+authoring site and shared character runtime** in `site/`. The full world/player
+applications live in `lafrich/virtual-office`; `game/` here contains read-only
+reference extracts for asset generation, not the full game.
+
+Current application ownership:
+
+| Application | Source and responsibility |
+|---|---|
+| Mahluk Hidup | `site/genesis-workbench.html`: Emosi, Bergerak, Beraksi |
+| LGR Genesis | `site/genesis-base.html` and shared LGR runtime; official-4 index selects Male official-3 / Female official-4; 11 anatomical parts |
+| Semesta | `virtual-office/world-builder/`: city/world engine and saved City Drafts |
+| Bangun Ruang | `virtual-office/world-builder/bangun-ruang/`: building and interior authoring |
+| Emosi.exe | `virtual-office/emotion-studio/`: canonical face authoring; bridge and published snapshots in this repo |
+| Jiwa.exe | `virtual-office/jiwa/`: activities, world entities, context/economy rules |
+| Mainkan | `virtual-office/mainkan/`: player UI over Semesta and shared LGR renderer |
+
+For current cloud/cache behavior read `docs/LGR_DB.md`. For branch → tests → PR →
+review → merge and release boundaries read `docs/reviewed-releases.md`. Legacy
+V6P editor routes are retired; historical format documentation is retained.
 
 * Quick start: `pip install -r requirements.txt && make verify` (from the repo root). See `run_all.md`.
 * Rules for art: `STYLE.md`. Rules for an AI agent working here: `AGENTS.md`.
