@@ -219,7 +219,7 @@ function exportLegacy(){const c=legacyCache();return {format:"lgr1-db-export-v1"
 async function recoverLegacy(){
  await ensureAccount();
  return withCacheWrite(async()=>{
-  const key=cacheKey(),c=readCache(),old=legacyCache();
+  const key=cacheKey(),epoch=authEpoch,c=readCache(),old=legacyCache();
   assert(!c.legacyRecovered,"Legacy cache already recovered for this account");
   for(const kind of Object.keys(KINDS))for(const [id,row] of Object.entries(old.kinds[kind]||{})){
    if(row.deleted)continue;
@@ -227,8 +227,16 @@ async function recoverLegacy(){
    const entry=validate(kind,row.entry,poses),sha=await sha256(canonical(entry));
    c.kinds[kind][id]={entry,sha,fileId:"",baseSha:"",dirty:true};
   }
-  assert(key===cacheKey(),"Drive account changed during recovery");
-  c.legacyRecovered=true;assert(writeCache(c),"Cache penuh: pemulihan gagal");
+  assert(key===cacheKey()&&epoch===authEpoch,"Drive account changed during recovery");
+  const latest=readCache();
+  assert(!latest.legacyRecovered,"Legacy cache already recovered for this account");
+  for(const kind of Object.keys(KINDS))for(const [id,row] of Object.entries(c.kinds[kind])){
+   if(old.kinds[kind]?.[id]&&!old.kinds[kind][id].deleted){
+    assert(!latest.kinds[kind][id],"Recovery ID already exists: "+id);
+    latest.kinds[kind][id]=row;
+   }
+  }
+  latest.legacyRecovered=true;assert(writeCache(latest),"Cache penuh: pemulihan gagal");
  });
 }
 const q=s=>String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
