@@ -1,7 +1,7 @@
 {
  "format": "lafrich-lgr1-official-base-index-v1",
- "version": "official-3",
- "approved": "2026-11-11T02:03:00+07:00",
+ "version": "official-4",
+ "approved": "2026-11-11T15:57:00+07:00",
  "approvedBy": "Lafrich",
  "bases": {
   "male": {
@@ -15,14 +15,14 @@
    "sourceBytes": 104071
   },
   "female": {
-   "package": "genesis-base-female.json",
+   "package": "genesis-base-female-official-4.json",
    "packageFormat": "lafrich-genesis-base-v1",
-   "rigSha256": "e3c4ce9b14805dbb4364ef61ce380ccc45d78bbc1d86516c241b8d1c7f976dc8",
+   "rigSha256": "d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a",
    "sheet": "genesis-base-female-sheet.png",
-   "source": "source/genesis_female_draft.lafrich-20261110.json",
+   "source": "candidates/genesis_female_draft-20261111.json",
    "sourceFormat": "lgr-1-draft-v1",
-   "sourceSha256": "2743f0ae2b077ee05e6ca67211f565bc3baf963ed60dee325c341627a0af1a7a",
-   "sourceBytes": 66008
+   "sourceSha256": "89e3747c8a9e7ca0e4496575cbff5a224b7bb371a5503d205e67cec684ced44e",
+   "sourceBytes": 104383
   }
  },
  "revisions": [
@@ -52,6 +52,15 @@
    "originalMaleRigSha256": "1c1a220a78488e4e255c0ae4958547587217241041761475ef649ac8665a42a9",
    "maleRigSha256": "2e5ddbc4a09c3316a7d18113c9ec3820fd52407d9ffac865ff9d12d0e54dd537",
    "archive": "archive/genesis-base-male-official-2.json"
+  },
+  {
+   "version": "official-4",
+   "date": "2026-11-11T15:57:00+07:00",
+   "approvedBy": "Lafrich",
+   "note": "Female LGR-1: promote user's updated genesis_female_draft.json four-direction masks/pivots/placements/manual slicing; retain official-2 Female original pixel art, skin keys, hierarchy and ID. Male official-3 unchanged. Preserve original Female draft and prior index as immutable rollback.",
+   "originalFemaleRigSha256": "e3c4ce9b14805dbb4364ef61ce380ccc45d78bbc1d86516c241b8d1c7f976dc8",
+   "femaleRigSha256": "d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a",
+   "archive": "archive/index-official-3.json"
   }
  ]
 }
