@@ -1,5 +1,5 @@
 'use strict';
-/* Official-3 promotion contract: candidate approved for Male cuts, old official-2 retained. */
+/* Official-4 contract: Male official-3 retained, new Female cuts applied, old bases untouched. */
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const C=require('../site/lafrich-puppet-core.js');
 const root=path.resolve(__dirname,'../site/media/lgr1/base');
@@ -10,19 +10,23 @@ const archive=parse('archive/genesis-base-male-official-2.json');
 const v2Index=parse('archive/index-official-2.json');
 const official=parse(index.bases.male.package);
 const female=parse(index.bases.female.package);
+const originalFemale=parse('genesis-base-female.json');
+const femaleTrial=parse('candidates/genesis_female_draft-20261111.json');
 const trial=parse('candidates/lgr-male-slice-test-20261111.json');
 const hash=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const dirs=['se','sw','ne','nw'];
-test('official-2 original files and Female base remain unchanged',()=>{
- assert.equal(index.version,'official-3');
+test('official-2 original packages remain unchanged, Male official-3 retained',()=>{
+ assert.equal(index.version,'official-4');
  assert.equal(v2Index.version,'official-2');
  assert.equal(index.bases.male.package,'genesis-base-male-official-3.json');
  assert.equal(v2Index.bases.male.package,'genesis-base-male.json');
  assert.deepEqual(archive,previous,'Original Male official-2 package must remain byte-identical');
  assert.equal(hash(previous.rig),previous.rigSha256);
  assert.equal(previous.rigSha256,v2Index.bases.male.rigSha256);
- assert.equal(index.bases.female.rigSha256,v2Index.bases.female.rigSha256);
- assert.equal(index.bases.female.package,v2Index.bases.female.package);
+ assert.equal(originalFemale.rigSha256,v2Index.bases.female.rigSha256);
+ assert.equal(index.bases.female.package,'genesis-base-female-official-4.json');
+ assert.equal(v2Index.bases.female.package,'genesis-base-female.json');
+ assert.equal(hash(originalFemale.rig),originalFemale.rigSha256);
  assert.equal(hash(female.rig),female.rigSha256);
 });
 test('user Male candidate is kept raw while official-3 passes master and checksum validation',()=>{
@@ -53,5 +57,32 @@ test('official-3 uses the candidate masks, pivots and placements in all four vie
   assert.ok(C.PARTS.some(p=>JSON.stringify(prev.pivots[d][p])!==JSON.stringify(cur.pivots[d][p])),'Expected moved pivot in '+d);
   for(const part of C.PARTS){const q=cur.pivots[d][part];
    assert.ok(q.x>=0&&q.x<64&&q.y>=0&&q.y<112,'Bad pivot '+d+'/'+part)}
+ }
+});
+
+
+test('official-4 promotes the Lafrich Female slicing without changing original artwork',()=>{
+ const old=C.validateMaster(originalFemale.rig),cur=C.validateMaster(female.rig),given=C.validateMaster(femaleTrial.record.rig);
+ assert.equal(femaleTrial.format,'lgr-1-draft-v1');
+ assert.equal(femaleTrial.gender,'female');
+ assert.equal(femaleTrial.record.approved,false,'Original source metadata is preserved');
+ assert.equal(index.bases.female.source,'candidates/genesis_female_draft-20261111.json');
+ const source=fs.readFileSync(path.join(root,index.bases.female.source));
+ assert.equal(source.length,index.bases.female.sourceBytes);
+ assert.equal(crypto.createHash('sha256').update(source).digest('hex'),index.bases.female.sourceSha256);
+ assert.equal(hash(female.rig),index.bases.female.rigSha256);
+ assert.deepEqual(cur.layers,old.layers,'Official-2 source pixels remain intact');
+ assert.deepEqual(cur.drawOrders,old.drawOrders,'Draw order remains intact');
+ assert.deepEqual(cur.sides,old.sides,'Near/far side assignment remains intact');
+ assert.deepEqual(cur.capRadius,old.capRadius,'Joint caps remain intact');
+ assert.equal(cur.id,old.id);
+ for(const d of dirs){
+   assert.equal(C.decode(cur.masks[d]).length,64*112);
+   assert.equal(cur.masks[d],given.masks[d]);
+   assert.deepEqual(cur.pivots[d],given.pivots[d]);
+   assert.deepEqual(cur.placements[d],given.placements[d]);
+   assert.equal(female.manualSlice[d],femaleTrial.record.manual[d]);
+   assert.notEqual(cur.masks[d],old.masks[d],'New slicing must differ for '+d);
+   assert.ok(C.PARTS.some(p=>JSON.stringify(cur.pivots[d][p])!==JSON.stringify(old.pivots[d][p])),'New pivot expected for '+d);
  }
 });
