@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Genesis Female · Compare V3 (Read Only)</title>
+<style>
+:root{font:13px Tahoma,"MS Sans Serif",Arial,sans-serif;color:#20304a;background:#879fc2}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:linear-gradient(#809cc6,#e1e9f7 62%,#f6eadb)}
+button,select,input{font:inherit;color:#20304a}button,select{border:2px solid;border-color:#fff #7e92b1 #7e92b1 #fff;background:#f3f5f8;padding:8px;min-height:36px;border-radius:2px}button{cursor:pointer}
+button[aria-pressed=true],button.active{background:#ffe19b;border-color:#fff1c7 #b4863c #b4863c #fff1c7}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #d98728;outline-offset:2px}
+.shell{max-width:1430px;margin:auto;padding:12px}
+.win{border:2px solid #fff;background:#e3eafa;box-shadow:3px 4px 0 #4e688e}
+.titlebar{display:flex;justify-content:space-between;gap:10px;align-items:center;background:linear-gradient(90deg,#153779,#3476bc);color:#fff;padding:10px 12px;font-weight:bold}
+.titlebar small{font-weight:normal}.intro{padding:11px 13px;line-height:1.5}
+.intro p{margin:0 0 7px}.intro a{color:#2055a2;font-weight:bold}
+.safety{background:#edf8f3;border:1px solid #72a18d;padding:8px;color:#1a594c;font-size:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:end;margin:14px 0}.field{display:grid;gap:4px;font-weight:bold;font-size:11px;flex:1 1 145px;min-width:120px}.field select{width:100%}
+.segment{display:flex;gap:4px;flex-wrap:wrap}.segment button{flex:1;min-width:46px}.field.buttons{flex:1.3 1 190px}
+.panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.panels.two{grid-template-columns:repeat(2,minmax(0,1fr))}.panel[hidden]{display:none!important}
+.panel{background:#e2e8f2;border:2px solid;border-color:#fff #7f91aa #7f91aa #fff;box-shadow:2px 3px 0 #8295b4;overflow:hidden}
+.panel h2{margin:0;padding:9px 12px;background:#2d60a4;color:#fff;display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.panel.candidate h2{background:#28786f}
+.stage{min-height:390px;display:grid;place-items:center;background:repeating-conic-gradient(#ebf0f8 0 25%,#dae4f2 0 50%) 50%/30px 30px;border-bottom:1px solid #a9b9ce}
+.stage canvas{width:min(236px,85%);aspect-ratio:64/112;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:pan-y}
+.panel p{font-size:11px;line-height:1.4;margin:0;padding:9px 11px;color:#4c5f78}
+.controls-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:14px 0;padding:9px 10px;background:#e8eef8;border:1px solid #9eb1c9}
+.controls-bottom input{flex:1;min-width:120px;accent-color:#245ca0}
+.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+.stat{background:#edf2f8;border:1px solid #adc0d3;padding:9px}.stat strong{display:block;font-size:21px;color:#174a8c}.stat span{font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 11px;font-size:10px;margin-bottom:9px}.legend span{display:flex;align-items:center;gap:5px}.legend i{width:11px;height:11px;display:inline-block;border:1px solid #647485}
+#status{background:#f4f7fc;border:1px inset #a0b1cb;min-height:38px;padding:9px;margin:11px 0;font-size:12px}footer{font-size:11px;color:#52617b;margin:16px 0}
+@media(max-width:790px){.shell{padding:6px}.titlebar{align-items:start;flex-direction:column}.panels,.panels.two{grid-template-columns:1fr}.stage{min-height:290px}.stage canvas{width:min(190px,70%)}.counts{grid-template-columns:repeat(2,minmax(0,1fr))}.stat strong{font-size:17px}}
+@media(min-width:681px) and (max-height:410px){.shell{padding:6px}.stage{min-height:270px}.stage canvas{width:128px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="win">
+ <div class="titlebar"><span>▣ GENESIS FEMALE · COMPARE V3</span><small>FEMALE · OFFICIAL-4 vs V2 vs V3 · FOUR VIEWS</small></div>
+ <div class="intro">
+  <p><a href="./genesis-base.html">← Kembali ke Genesis Base</a></p>
+  <p class="safety"><strong>SAFE / READ ONLY.</strong> Halaman ini tidak mengimpor, menyimpan, mereset, atau menyinkronkan data Genesis. Official Base, browser draft, dan Google Drive Master tidak berubah. Candidate V2 &amp; V3 hanya patch sementara di RAM preview. Tidak ada impor otomatis ke game.</p>
+  <p>Bandingkan <b>Female official-4</b>, <b>Candidate V2</b>, dan <b>Candidate V3</b>. V3 menguji <b>hidden pixel underlays</b> pada pinggang, panggul, leher, dan bahu melalui renderer LGR-1 yang sama. Patches ini adalah <b>extension demo-only</b>; belum didukung ekspor master resmi dan belum di-approve.</p>
+ </div>
+</header>
+<section class="toolbar" aria-label="Pengaturan perbandingan">
+ <div class="field">Genesis <strong>FEMALE · official-4</strong></div>
+ <div class="field">Arah<div class="segment" id="directions"><button data-dir="se" aria-pressed="true">SE</button><button data-dir="sw" aria-pressed="false">SW</button><button data-dir="ne" aria-pressed="false">NE</button><button data-dir="nw" aria-pressed="false">NW</button></div></div>
+ <label class="field">Gerakan<select id="motion" disabled><option value="">Loading...</option></select></label>
+ <div class="field buttons">Mode preview<div class="segment"><button id="mode-motion" aria-pressed="true">▶ Motion</button><button id="mode-slice" aria-pressed="false">◈ Slice + Pivot</button><button id="toggle-v2" type="button">Hide V2</button></div></div>
+</section>
+<div class="panels">
+ <section class="panel"><h2><span>OFFICIAL BASE</span><span id="original-label">Female · official-4</span></h2><div class="stage"><canvas width="64" height="112" id="original" aria-label="Official Genesis render"></canvas></div><p>Data resmi yang sedang dipakai Genesis; tidak dimodifikasi.</p></section>
+ <section class="panel" id="v2-panel"><h2><span>CANDIDATE V2</span><span>Female · V2</span></h2><div class="stage"><canvas width="64" height="112" id="v2" aria-label="Previous candidate V2 LGR render"></canvas></div><p>Versi eksperimen sebelumnya, hanya mask + pivot.</p></section>
+ <section class="panel candidate"><h2><span>FEMALE V3 · UNDERLAP PIXEL TEST</span><span id="candidate-label">Female · V3</span></h2><div class="stage"><canvas width="64" height="112" id="candidate" aria-label="Temporary Female V3 LGR render"></canvas></div><p>Mask, pivot, dan tambahan pixel tersembunyi saat rest untuk menjaga sambungan saat bergerak. Tidak di-save ke game.</p></section>
+</div>
+<div class="controls-bottom"><button id="play" aria-pressed="true">Ⅱ Pause</button><label for="scrub">Frame</label><input id="scrub" type="range" min="0" max="0" value="0" step="1" aria-label="Geser frame motion"><span id="frame-text">REST</span></div>
+<div class="counts"><div class="stat"><strong id="maskdiff">—</strong><span>Slice pixel V3 berubah</span></div><div class="stat"><strong id="pivotdiff">—</strong><span>Pivot V3 berubah</span></div><div class="stat"><strong id="underlaycount">—</strong><span>Pixel underlap tersembunyi</span></div><div class="stat"><strong id="v2diff">—</strong><span>Selisih official → V2 (frame)</span></div><div class="stat"><strong id="framediff">—</strong><span>Selisih official → V3 (frame)</span></div></div>
+<div class="legend" id="legend"></div>
+<div id="status" role="status">Mengambil base resmi dan candidate patch read-only...</div>
+<footer>64 × 112 native pixel · 11 body parts · LGR-1 renderer dengan test-only underlap raster modification · tidak ada localStorage/Drive writes atau promosi base. Pada pose 65° tersedia root-offset yang diterapkan SAMA pada official dan V3 agar berada di frame; itu bukan perubahan Genesis. Piksel underlap bukan bagian format master resmi.</footer>
+</div>
+<script src="./lafrich-puppet-core.js"></script>
+<script src="./lgr1-raster.js"></script>
+<script src="./lafrich-puppet-renderer.js"></script>
+<script src="./lgr1-motion.js"></script>
+<script src="./lgr-skin.js"></script>
+<script src="./lgr-actor.js"></script>
+<script id="v3-patch-data" type="application/json">{"format":"lgr1-female-v3-readonly-preview-v1","gender":"female","officialSha256":"d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a","views":{"se":{"m":[[4376,7,8],[4377,7,8],[4391,2,3],[4392,2,3],[4762,4,10],[4774,4,10],[4829,10,4],[4830,10,4],[4831,10,4],[4832,10,4],[4833,10,4],[4834,10,4],[4835,10,4],[4893,10,4],[4894,10,4],[4895,10,4],[4896,10,4],[4897,10,4],[4898,10,4],[4899,10,4],[5661,5,6],[5662,5,6],[5664,0,1],[5665,0,1],[5722,6,5],[5723,6,5],[5731,1,0],[5732,1,0]],"p":{"arm_far_upper":[40,61,40,60],"torso":[32,75,32,76],"arm_near_upper":[24,61,24,60]}},"sw":{"m":[[4374,2,3],[4440,3,2],[4455,8,7],[4456,8,7],[4761,4,10],[4773,4,10],[4828,10,4],[4829,10,4],[4830,10,4],[4831,10,4],[4832,10,4],[4833,10,4],[4834,10,4],[4892,10,4],[4893,10,4],[4894,10,4],[4895,10,4],[4896,10,4],[4897,10,4],[4898,10,4],[5659,0,1],[5660,0,1],[5669,5,6],[5670,5,6],[5726,1,0],[5727,1,0],[5730,6,5],[5731,6,5]],"p":{"arm_far_upper":[24,61,24,60],"torso":[32,75,31,76],"arm_near_upper":[40,61,40,60],"pelvis":[32,79,31,79]}},"ne":{"m":[[4440,3,2],[4441,3,2],[4455,8,7],[4456,8,7],[4762,4,10],[4774,4,10],[4829,10,4],[4830,10,4],[4831,10,4],[4832,10,4],[4833,10,4],[4834,10,4],[4835,10,4],[4893,10,4],[4894,10,4],[4895,10,4],[4896,10,4],[4897,10,4],[4898,10,4],[4899,10,4],[5669,5,6],[5670,5,6],[5724,1,0],[5725,1,0],[5730,6,5],[5731,6,5]],"p":{"arm_far_upper":[24,61,24,60],"torso":[34,75,32,76],"arm_near_upper":[40,61,40,60],"pelvis":[33,79,32,79]}},"nw":{"m":[[4376,7,8],[4391,2,3],[4392,2,3],[4438,8,7],[4761,4,10],[4773,4,10],[4828,10,4],[4829,10,4],[4830,10,4],[4831,10,4],[4832,10,4],[4833,10,4],[4834,10,4],[4892,10,4],[4893,10,4],[4894,10,4],[4895,10,4],[4896,10,4],[4897,10,4],[4898,10,4],[5661,5,6],[5666,0,1],[5667,0,1],[5722,6,5],[5723,6,5]],"p":{"arm_far_upper":[40,61,40,60],"torso":[31,75,31,76],"arm_near_upper":[24,61,24,60]}}},"underlaps":[{"dst":"pelvis","src":"torso","kind":"waist"},{"dst":"torso","src":"head","kind":"neck"},{"dst":"torso","src":"arm_near_upper","kind":"shoulder"},{"dst":"arm_far_upper","src":"torso","kind":"shoulder"},{"dst":"pelvis","src":"leg_near_upper","kind":"hip"},{"dst":"pelvis","src":"leg_far_upper","kind":"hip"}],"why":"Substantial bending improvement via hidden duplicated source-color body-part pixels, not antialiasing or generated imagery. Preview only; does not alter official master."}</script>
+<script>
+/* FEMALE V3 COMPARE: isolated, read-only LGR-1 renderer experiment. No storage or Drive calls.
+ * Official-4 is only read through LGRActor.master. Modified mask/pivot and underlay pixels
+ * exist only in a fresh preview raster; they are NEVER written to the engine's approved base.
+ */
+(async function(){
+'use strict';
+const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer,A=window.LGRActor,
+      X=window.LGR1Raster,$=id=>document.getElementById(id),DIRS=['se','sw','ne','nw'];
+const COLORS=['#4db6ac','#2667dc','#a677e8','#f5a75c','#6ab850','#2984a8','#cb65a1','#e0c34b','#c67653','#f17e83','#8c91dc'];
+const G='female',OFFICIAL_SHA='d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a';
+let dir='se',mode='motion',motion=null,lib=null,index=null,v2=null,v3=null,playing=true,frame=0,lastFrameAt=performance.now(),
+    busy=false,revision=0,dirty=true,lastKey='',showV2=true;
+const cached=new Map();
+const msg=(s,err=false)=>{const el=$('status');el.textContent=s;el.style.color=err?'#a52626':'#234b7e'};
+async function json(url){const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw Error(`${url}: HTTP ${res.status}`);return res.json()}
+function decode(b64){const raw=atob(b64),arr=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return arr}
+function encode(arr){let s='';for(let i=0;i<arr.length;i++)s+=String.fromCharCode(arr[i]);return btoa(s)}
+function apply(rig,delta){
+ const out={...rig,masks:{...rig.masks},pivots:{...rig.pivots},placements:{...rig.placements}};
+ for(const d of DIRS){
+  const change=delta.views[d];if(!change)throw Error(`Candidate ${d} missing`);
+  const mask=decode(rig.masks[d]);if(mask.length!==64*112)throw Error(`Mask ${d} not 64×112`);
+  for(const [at,was,now] of change.m){
+   if(!Number.isInteger(at)||at<0||at>=mask.length||mask[at]!==was||!Number.isInteger(now)||now<0||now>=C.PARTS.length)
+    throw Error(`Candidate patch mismatch at ${d}:${at}. Official changed; preview cancelled.`);
+   mask[at]=now;
+  }
+  out.masks[d]=encode(mask);out.pivots[d]={...rig.pivots[d]};
+  for(const [part,[ox,oy,nx,ny]] of Object.entries(change.p)){
+   const p=rig.pivots[d][part];if(!p||p.x!==ox||p.y!==oy)throw Error(`Pivot mismatch ${d}/${part}`);
+   out.pivots[d][part]={x:nx,y:ny};
+  }
+ }
+ return C.validateMaster(out);
+}
+function counts(raw,trial,d){const x=decode(raw.masks[d]),y=decode(trial.masks[d]);let m=0;
+ for(let i=0;i<x.length;i++)if(x[i]!==y[i])m++;
+ return [m,C.PARTS.filter(p=>raw.pivots[d][p].x!==trial.pivots[d][p].x||raw.pivots[d][p].y!==trial.pivots[d][p].y).length];
+}
+function coordinates(d,part,kind,orig){
+ const res=[],offset=['sw','nw'].includes(d)?-1:0;
+ if(kind==='waist'){
+  for(let y=70;y<77;y++){
+   const rr=Math.max(2,Math.min(6,Math.floor((y-70)/2)+3));
+   for(let x=32+offset-rr;x<=32+offset+rr;x++)res.push([x,y]);
+  }
+ }else if(kind==='neck'){
+  for(let y=50;y<55;y++)for(let x=29+offset;x<35+offset;x++)res.push([x,y]);
+ }else if(kind==='shoulder'){
+  const p=orig.pivots[d][part];for(let y=p.y-3;y<=p.y+3;y++)for(let x=p.x-4;x<=p.x+4;x++)
+   if((x-p.x)**2+(y-p.y)**2<=20)res.push([x,y]);
+ }else if(kind==='hip'){
+  const p=orig.pivots[d][part];for(let y=p.y-2;y<=p.y+6;y++)for(let x=p.x-5;x<=p.x+5;x++)
+   if((x-p.x)**2+(y-p.y-1)**2<=32)res.push([x,y]);
+ }
+ return res;
+}
+function addUnderlaps(prepared,original,d){
+ const parts=prepared.raster.groups.main.parts;
+ let total=0;
+ for(const {src,dst,kind} of v3.underlaps){
+  const source=parts[src]?.img,target=parts[dst]?.img;
+  if(!source||!target)throw Error(`Patch part missing ${dst}<-${src}`);
+  let n=0;
+  for(const [x,y] of coordinates(d,kind==='waist'||kind==='neck'?dst:src,kind,original)){
+   if(x<0||x>=64||y<0||y>=112)continue;
+   const k=(y*64+x)*4;
+   if(source[k+3]!==0&&target[k+3]===0){target.set(source.subarray(k,k+4),k);n++}
+  }
+  if(n){parts[dst].bbox=X.bboxOf(target);parts[dst].scaled=null;total+=n}
+ }
+ return total;
+}
+async function pair(d){
+ if(cached.has(d))return cached.get(d);
+ const p=(async()=>{
+  if(index?.bases?.female?.rigSha256!==OFFICIAL_SHA || v3?.officialSha256!==OFFICIAL_SHA || v2?.baseSha256?.female!==OFFICIAL_SHA)
+   throw Error('Official Female checksum changed. Candidate disabled instead of modifying or guessing.');
+  const official=await A.master(G,'light'),candidate2=apply(official,v2.genders.female),candidate3=apply(official,v3);
+  const prepared=await Promise.all([R.prepare(official,null,d),R.prepare(candidate2,null,d),R.prepare(candidate3,null,d)]);
+  const added=addUnderlaps(prepared[2],official,d);
+  return {official,candidate2,candidate3,prepared,added};
+ })();cached.set(d,p);p.catch(()=>cached.delete(d));return p;
+}
+function overlay(canvas,maskData,rig,d,changed){
+ const ctx=canvas.getContext('2d');
+ for(let k=0;k<maskData.length;k++){
+  const part=maskData[k];if(part===255)continue;
+  ctx.fillStyle=COLORS[part]||'#e24c4c';ctx.globalAlpha=.35;ctx.fillRect(k%64,Math.floor(k/64),1,1);
+ }
+ ctx.globalAlpha=.85;ctx.fillStyle='#ffdf37';for(const at of changed)ctx.fillRect(at%64,Math.floor(at/64),1,1);
+ ctx.globalAlpha=1;
+ for(const part of C.PARTS){const pt=rig.pivots[d][part];ctx.fillStyle='#152036';ctx.fillRect(pt.x-1,pt.y,3,1);
+  ctx.fillRect(pt.x,pt.y-1,1,3);ctx.fillStyle='#fff';ctx.fillRect(pt.x,pt.y,1,1)}
+}
+function difference(x,y){const a=x.getContext('2d').getImageData(0,0,64,112).data,b=y.getContext('2d').getImageData(0,0,64,112).data;
+ let count=0;for(let i=0;i<a.length;i+=4)if(a[i]!==b[i]||a[i+1]!==b[i+1]||a[i+2]!==b[i+2]||a[i+3]!==b[i+3])count++;return count;
+}
+// Diagnostic motion: exact LGR-1 joint transforms, no new animation database writes.
+function tests(){
+ const phases=[0,.18,.4,.7,1,.7,.4,.18];
+ const make=(id,name,style,degrees)=>({id,name,style,degrees,loop:true,frames:phases.map(t=>({ms:230,t}))});
+ return [make('v3_bend48','BUNGKUK 48° / STRESS','bend',48),make('v3_bend65','BUNGKUK 65° / EXTREME','bend',65),
+  make('v3_squat','SQUAT / KNEE','squat',1),make('v3_reach','RAISE ARMS / SHOULDER','reach',1)];
+}
+function poseFor(master,m,f,d){
+ if(!m)return A.poseOf(master,lib,null,0,d);
+ if(!m.style)return A.poseOf(master,lib,m,f,d);
+ const sign=['se','ne'].includes(d)?1:-1,t=m.frames[f]?.t??0;
+ const pose=C.blankPose();
+ function set(part,a,x=0,y=0){pose[part]={a,x,y}}
+ if(m.style==='bend'){
+  const a=sign*m.degrees*t;set('torso',a);set('head',-sign*15*t);set('arm_near_upper',sign*18*t);set('arm_far_upper',-sign*10*t);
+  // Explicit camera-safe body-root compensation shared by both tests. Not a rig change.
+  if(m.degrees>=60)set('pelvis',0,-sign*4*t,1*t);
+ }else if(m.style==='squat'){
+  set('torso',sign*20*t);set('pelvis',0,0,3*t);
+  set('leg_near_upper',-sign*39*t);set('leg_far_upper',sign*34*t);
+  set('leg_near_lower',sign*68*t);set('leg_far_lower',-sign*58*t);
+ }else if(m.style==='reach'){
+  set('torso',-sign*15*t);set('arm_near_upper',-sign*95*t);set('arm_near_lower',sign*24*t);
+  set('arm_far_upper',-sign*52*t);
+ }
+ return {pose,order:A.baseOrder(master,d)};
+}
+function updateFrameInfo(){const n=motion?.frames.length||1;$('scrub').max=n-1;$('scrub').value=Math.min(frame,n-1);
+ $('scrub').disabled=mode==='slice'||!motion;$('frame-text').textContent=motion?`${frame+1}/${n}`:'REST';
+}
+function markDirty(){revision++;dirty=true;lastKey='';lastFrameAt=performance.now();void paint()}
+async function paint(){
+ if(!lib||busy)return;
+ const rev=revision,d=dir,m=motion,f=frame,over=mode==='slice';
+ const key=`${d}/${m?.id||'rest'}/${f}/${mode}/${showV2}`;
+ if(!dirty&&key===lastKey)return;busy=true;dirty=false;
+ try{
+  const {official,candidate2,candidate3,prepared,added}=await pair(d);
+  if(rev!==revision)return;
+  const originals=[official,candidate2,candidate3];
+  const frames=originals.map((rig,i)=>{const p=poseFor(rig,over?null:m,over?0:f,d);return R.render(prepared[i],p.pose,{order:p.order})});
+  if(rev!==revision)return;
+  const origMask=decode(official.masks[d]),candMask=decode(candidate3.masks[d]),changed=[];
+  for(let k=0;k<origMask.length;k++)if(origMask[k]!==candMask[k])changed.push(k);
+  for(let i=0;i<3;i++){
+   const dest=$(['original','v2','candidate'][i]),ctx=dest.getContext('2d');ctx.imageSmoothingEnabled=false;
+   ctx.clearRect(0,0,64,112);ctx.drawImage(frames[i],0,0);
+   if(over)overlay(dest,decode(originals[i].masks[d]),originals[i],d,changed);
+  }
+  const [maskN,pivotN]=counts(official,candidate3,d);
+  $('maskdiff').textContent=String(maskN);$('pivotdiff').textContent=String(pivotN);$('underlaycount').textContent=String(added);
+  $('framediff').textContent=String(difference(frames[0],frames[2]));
+  $('v2diff').textContent=String(difference(frames[0],frames[1]));
+  updateFrameInfo();lastKey=key;
+  msg(`${d.toUpperCase()} · ${m?.name||'Netral'} · Official-4 / V2 / V3 ditampilkan melalui renderer LGR-1. Underlap hanya di RAM compare, tidak disimpan ke Genesis.`);
+ }catch(e){msg('Compare V3 gagal: '+(e.message||e),true)}
+ finally{busy=false;if(rev!==revision){dirty=true;void paint()}}
+}
+function resetMotion(){frame=0;updateFrameInfo();markDirty()}
+document.querySelectorAll('[data-dir]').forEach(btn=>btn.addEventListener('click',()=>{dir=btn.dataset.dir;
+ document.querySelectorAll('[data-dir]').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));resetMotion()}));
+$('motion').addEventListener('change',()=>{motion=(lib.all||[]).find(x=>x.id===$('motion').value)||null;resetMotion()});
+$('mode-motion').addEventListener('click',()=>{mode='motion';$('mode-motion').setAttribute('aria-pressed','true');$('mode-slice').setAttribute('aria-pressed','false');markDirty()});
+$('mode-slice').addEventListener('click',()=>{mode='slice';$('mode-motion').setAttribute('aria-pressed','false');$('mode-slice').setAttribute('aria-pressed','true');markDirty()});
+$('play').addEventListener('click',()=>{playing=!playing;$('play').textContent=playing?'Ⅱ Pause':'▶ Play';$('play').setAttribute('aria-pressed',String(playing));lastFrameAt=performance.now()});
+$('scrub').addEventListener('input',()=>{frame=Number($('scrub').value);playing=false;$('play').textContent='▶ Play';$('play').setAttribute('aria-pressed','false');updateFrameInfo();markDirty()});
+$('toggle-v2').addEventListener('click',()=>{showV2=!showV2;$('v2-panel').hidden=!showV2;
+ document.querySelector('.panels').classList.toggle('two',!showV2);$('toggle-v2').textContent=showV2?'Hide V2':'Show V2';markDirty()});
+function tick(now){
+ if(playing&&motion&&mode==='motion'){
+  const ms=motion.frames[frame]?.ms||160;
+  if(now-lastFrameAt>=ms){frame=(frame+1)%motion.frames.length;lastFrameAt=now;dirty=true}
+ }else lastFrameAt=now;
+ void paint();requestAnimationFrame(tick);
+}
+try{
+ [index,v2,v3,lib]=await Promise.all([
+  json('./media/lgr1/base/index.json'),json('./media/lgr1/base/candidates/lgr-v2-compare-patches.json'),
+  Promise.resolve(JSON.parse($('v3-patch-data').textContent)),A.motions()
+ ]);
+ if(v3.format!=='lgr1-female-v3-readonly-preview-v1'||v2.format!=='lgr1-readonly-compare-patch-v1')throw Error('Format patch unknown');
+ lib.all=[...tests(),...lib.motions];
+ const options=[{id:'',name:'REST / Netral'},...lib.all.map(m=>({id:m.id,name:m.name||m.id}))];
+ $('motion').replaceChildren(...options.map(o=>{const el=document.createElement('option');el.value=o.id;el.textContent=o.name;return el}));
+ $('motion').disabled=false;$('motion').value='v3_bend48';motion=lib.all.find(m=>m.id===$('motion').value)||null;
+ $('legend').replaceChildren(...C.PARTS.map((part,i)=>{const el=document.createElement('span'),sw=document.createElement('i');sw.style.background=COLORS[i];el.append(sw,document.createTextNode(part));return el}));
+ updateFrameInfo();markDirty();requestAnimationFrame(tick);
+}catch(e){msg('Tidak dapat memuat Female V3: '+(e.message||e),true)}
+})();
+
+</script>
+</body>
+</html>
