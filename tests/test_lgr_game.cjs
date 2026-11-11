@@ -44,3 +44,18 @@ test("tired falls back to tired_walk (cloud DB), then built-in idle",()=>{
  const b=G2.resolveAction("tired");assert.deepStrictEqual([b.motion,b.via],[tw,["tired_walk"]]);
  assert.ok(needed.includes("tired"));
 });
+
+test('bed aliases use their resolved direction for prepare and render',async()=>{
+ const {G,root}=load(null);
+ Object.assign(root,{
+  LGRWear:{layers:async()=>({})},LGR1Raster:{},LGRSkin:{TONES:{light:true}},LafrichPuppetCore:{},
+  LGR1Motion:require('../site/lgr1-motion.js'),
+  LGRActor:{loadBases:async()=>({male:{version:'test'}}),motions:async()=>lib,master:async()=>({}),poseOf:(m,l,motion,i,d)=>({pose:{d},order:[]})},
+  LafrichPuppetRenderer:{prepare:async(master,ch,d)=>({master,d}),render:(p,pose)=>({preparedDir:p.d,poseDir:pose.d})}
+ });
+ await G.load();
+ for(const [action,input,expected] of [['sleep_bed_right','nw','se'],['sleep_bed_left','ne','sw'],['walk','nw','nw']]){
+  G.frame({gender:'male'},input,action,0,null);await new Promise(r=>setTimeout(r,0));
+  assert.deepStrictEqual(G.frame({gender:'male'},input,action,0,null),{preparedDir:expected,poseDir:expected});
+ }
+});

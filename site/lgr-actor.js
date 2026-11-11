@@ -82,7 +82,7 @@ async function wear(gender,tone,spec){
  wearCache.set(key,p);p.catch(()=>wearCache.delete(key));return p;
 }
 /* Emosi faces: entries from VLMahlukEmosiBridge ({id, overlay atlas, frames, frame_ms}) */
-let faces=[],facesP=null;
+let faces=[],facesP=null,faceRevision=0;
 function refreshFaces(){
  facesP=(async()=>{
   const b=root.VLMahlukEmosiBridge;if(!b)return [];
@@ -91,6 +91,9 @@ function refreshFaces(){
   for(const g of ["male","female"]){const a={gender:g,template_category:"human",id:"genesis_"+g+"_nude",expressions:[]};b.apply(a);
    for(const e of a.expressions)if(e.source==="emosi"&&e.overlay&&!list.some(x=>x.id===e.id))list.push({...e,genders:[g]});
    else if(e.source==="emosi"){const x=list.find(y=>y.id===e.id);if(x&&!x.genders.includes(g))x.genders.push(g)}}
+  if(JSON.stringify(list)!==JSON.stringify(faces)){
+   faceRevision++;faceCache.clear();prepCache.clear();
+  }
   faces=list;return list;
  })();
  return facesP;
@@ -99,7 +102,7 @@ function facesFor(gender){return faces.filter(f=>!f.genders||f.genders.includes(
 async function faceImage(faceId,localMs){
  const f=faces.find(x=>x.id===faceId);if(!f)return null;
  const frames=Math.max(1,Number(f.frames)||1),ms=Number(f.frame_ms?.[0])||160;
- const i=Math.floor(Math.max(0,localMs||0)/ms)%frames,key=faceId+"#"+i;
+ const i=Math.floor(Math.max(0,localMs||0)/ms)%frames,key=faceId+"#"+faceRevision+"#"+i;
  if(faceCache.has(key))return faceCache.get(key);
  const p=(async()=>{
   const atlas=new Image();atlas.src=f.overlay;await atlas.decode();
@@ -139,7 +142,7 @@ async function frameCanvas(actor,opts){
  if(!pose){const p=poseOf(prep.master,lib,opts.motion||null,opts.frame|0,d);pose=p.pose;order=order||p.order}
  return R().render(prep,pose,order?{order}:undefined);
 }
-function clearCaches(){prepCache.clear();frameCache.clear()}
+function clearCaches(){prepCache.clear();frameCache.clear();faceCache.clear()}
 async function rigOf(gender){return master(gender,"light")}
 return root.LGRActor=Object.freeze({FOOT,OUTFITS,HAIRS,loadBases,master,rigOf,wear,wearSpec,refreshFaces,facesFor,
  get faces(){return faces},faceImage,motions,poseOf,baseOrder,prepared,frameCanvas,clearCaches});

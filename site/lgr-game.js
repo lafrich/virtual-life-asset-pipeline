@@ -148,7 +148,7 @@ function prepare(profile,d,face,faceCol){
  * caller keeps the previous picture). t = seconds since the action started. */
 function frame(profile,dir,action,t,face,faceCol=0){
  if(!state.ready){load().catch(()=>{});return null}
- const d=DIRS.includes(dir)?dir:"se",r=resolveAction(action),m=r.motion,M=dep("LGR1Motion");
+ const r=resolveAction(action),d=r.dir||(DIRS.includes(dir)?dir:"se"),m=r.motion,M=dep("LGR1Motion");
  const i=M.frameIndexAt(m,Math.max(0,t||0)*1000);
  const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-");
  if(frames.has(fkey))return frames.get(fkey);
