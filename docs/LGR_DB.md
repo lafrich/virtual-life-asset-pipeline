@@ -82,15 +82,3 @@ Glasses / facial hair use the `mh-wear/glasses` and `mh-wear/facial` strips (acc
 `tools/bake_lgr_wear.py` bakes the stock garments once. Tops, pants and shoes get the approved outfit-refit warp onto the
 official LGR-1 base (old V6B body silhouette in `tools/data/v6b-silhouette.json`); hair, facial hair and glasses are
 copied unchanged. `index.json → meta` lists each strip's sha256 and moved pixels.
-
-## Live face previews and directional actions
-
-Beraksi refreshes authored Emosi when its tab is reopened. The face bridge can
-reuse the canonical editor iframe's public EmotionDrive adapter only on the same
-origin; it does not copy or persist its token. Changed face atlases invalidate
-image and prepared-actor caches even when the face ID remains unchanged.
-Mainkan's published `emosi-source.js` remains an explicit release snapshot;
-refreshing a preview does not promote user artwork into approved game stock.
-
-Bed-left/right action aliases apply their resolved SE/SW orientation consistently
-to preparation, poses, and cached frames. Ordinary action directions are unchanged.

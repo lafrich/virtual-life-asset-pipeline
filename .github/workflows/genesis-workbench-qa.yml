@@ -44,7 +44,6 @@ on:
       - 'tests/test_lgr_db.cjs'
       - 'tests/test_lgr_sync_count.cjs'
       - 'tests/test_lgr_game.cjs'
-      - 'tests/test_lgr_face_cache.cjs'
       - 'site/lgr-game.js'
       - 'docs/LGR_DB.md'
       - 'docs/BERGERAK_FORMAT.md'
@@ -102,7 +101,6 @@ on:
       - 'tests/test_lgr_db.cjs'
       - 'tests/test_lgr_sync_count.cjs'
       - 'tests/test_lgr_game.cjs'
-      - 'tests/test_lgr_face_cache.cjs'
       - 'site/lgr-game.js'
       - 'docs/LGR_DB.md'
       - 'docs/BERGERAK_FORMAT.md'
@@ -149,7 +147,6 @@ jobs:
           node --test tests/test_lgr_db.cjs
           node --test tests/test_lgr_sync_count.cjs
           node --test tests/test_lgr_game.cjs
-          node --test tests/test_lgr_face_cache.cjs
       - name: HTML / UI integration contract
         run: |
           node <<'NODE'
