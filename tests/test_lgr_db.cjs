@@ -18,6 +18,7 @@ function fakeDrive(){
  const pathOf=id=>{const out=[];let f=files.get(id);while(f){out.unshift(f.name);f=files.get(f.parents[0])}return out.join('/')};
  async function fetch(url,init={}){
   const u=new URL(url),m=init.method||'GET';
+  if(u.pathname==='/drive/v3/about')return res({user:{permissionId:'account_a'}});
   if(u.pathname==='/drive/v3/files'&&m==='GET'){
    const q=u.searchParams.get('q'),par=/'([^']*)' in parents/.exec(q)?.[1],name=/name = '([^']*)'/.exec(q)?.[1],mime=/mimeType = '([^']*)'/.exec(q)?.[1];
    return res({files:[...files.values()].filter(f=>(!par||f.parents.includes(par))&&(!name||f.name===name)&&(!mime||f.mimeType===mime))});
@@ -103,7 +104,7 @@ test('cloud round-trip: save → Drive, cache wiped → sync pulls; overwrite + 
 test('offline save is cached and pushed on the next sync',async()=>{
  const d=fakeDrive();DB.setFetch(d.fetch);mem.clear();DB.disconnect();
  const r=await DB.save('bergerak',motionEntry('offline_a',30));assert.equal(r.synced,false);assert.equal(DB.pending(),1);
- DB.useToken('t',3600);const rep=await DB.sync();assert.equal(rep.pushed,1);assert.equal(DB.pending(),0);
+ DB.useToken('t',3600);await DB.ensureAccount();const rep=await DB.sync();assert.equal(rep.pushed,1);assert.equal(DB.pending(),0);
 });
 test('import Bergerak: AI JSON auto-fixed (fences, trailing comma, aliases, radians, fps); errors point to the field',()=>{
  const txt='```json\n{"name":"Pukul","fps":8,"frames":[{"pose":{"rightUpperArm":-1.2,"left_forearm":{"angle":0.5},"hips":{"y":1}}},{"parts":{"arm_near_upper":{"a":-0.3}}},]}\n```';

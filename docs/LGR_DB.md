@@ -82,3 +82,27 @@ Glasses / facial hair use the `mh-wear/glasses` and `mh-wear/facial` strips (acc
 `tools/bake_lgr_wear.py` bakes the stock garments once. Tops, pants and shoes get the approved outfit-refit warp onto the
 official LGR-1 base (old V6B body silhouette in `tools/data/v6b-silhouette.json`); hair, facial hair and glasses are
 copied unchanged. `index.json → meta` lists each strip's sha256 and moved pixels.
+
+## Account isolation and concurrent edits (2026-11-11)
+
+Before any database upload, the loader reads the authenticated Drive user's
+`permissionId` from `about`. Cache, write locks, and sync locks are scoped to that
+identity. Switching Google accounts selects another cache; pending edits and
+Drive file IDs remain with their original account. The last selected account's
+cache remains available offline. Token changes during a sync abort its remaining
+requests and cache commit. Other apps continue to use `LGRDB` instead of reading
+the cache key directly; `LGRDB.CACHE_KEY` reports the active key.
+
+The old unscoped `lgr1-db-cache-v1` is retained unchanged and never auto-uploaded.
+In Mahluk Hidup → INFO, **EXPORT CACHE LAMA** downloads it for recovery.
+**PULIHKAN KE AKUN TERHUBUNG** requires the user to confirm ownership, then copies
+validated entries into the connected account's cache with fresh upload receipts
+(no foreign file IDs). It refuses conflicting IDs; export/import individual
+entries when the destination already contains them. No legacy data is deleted.
+
+A sync merges verified results into the latest cache rather than replacing the
+starting snapshot. Edits/deletes saved during network I/O stay pending. Web Locks
+serialize short cache writes across supported browser tabs; fallback writes
+recheck revisions after asynchronous hashing. A save is reported synced only
+when its exact revision has a verified Drive receipt. Quota errors propagate,
+and a partial sync leaves the startup gate open with the offline option intact.
