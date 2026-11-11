@@ -9,7 +9,7 @@ on:
       - "assets/street_vehicles/_work/produce.py"
       - ".github/workflows/publish-semesta-cars.yml"
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: semesta-cars-native
   cancel-in-progress: true
@@ -69,15 +69,15 @@ jobs:
           sheet.save(root/'previews/semesta_cars_original_audit.png')
           print('Verified 28 genuine original car PNGs including 4-view TransJakarta')
           PY
-      - name: Publish native 28 car sprites to source repo
+      - name: Package generated changes for branch and PR review
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f assets/street_vehicles/cars/*.png
           git add -f assets/street_vehicles/previews/semesta_cars_original_audit.png
           git add assets/street_vehicles/manifest.json
-          if ! git diff --cached --quiet; then
-            git commit -m "Publish original isometric TransJakarta and six cars for Semesta [skip ci]"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
+          git diff --cached --name-only -z --diff-filter=ACMRT | tar --null --files-from=- -czf reviewed-assets.tar.gz
+      - name: Upload reviewed asset candidate (no automatic publication)
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-assets-${{ github.run_id }}
+          path: reviewed-assets.tar.gz
+          retention-days: 7

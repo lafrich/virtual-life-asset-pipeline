@@ -1,5 +1,12 @@
 # MAHLUK HIDUP.EXE — Lafrich Genesis V6B Workbench
 
+Current status (2026-11-11): the active LGR contract has **11 parts including
+pelvis**, with legacy 10-part import compatibility. Official index `official-4`
+selects Male official-3 and Female official-4. Bergerak/Beraksi and the shared
+`LGRGame` adapter are implemented; the original rebuild narrative below records
+the earlier 10-part migration and its then-future milestones. See `LGR_DB.md`
+for current storage/runtime behavior and `reviewed-releases.md` for release gates.
+
 Implementation branch: `feature/mahluk-genesis-rebuild-20261110`.
 
 ## User-facing stages

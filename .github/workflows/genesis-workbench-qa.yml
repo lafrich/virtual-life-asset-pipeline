@@ -1,5 +1,6 @@
 name: Genesis Base + Mahluk Hidup shell QA
 on:
+  workflow_call:
   push:
     paths:
       - 'site/genesis-workbench.*'
@@ -44,6 +45,7 @@ on:
       - 'tests/test_lgr_db.cjs'
       - 'tests/test_lgr_sync_count.cjs'
       - 'tests/test_lgr_game.cjs'
+      - 'tests/test_lgr_face_cache.cjs'
       - 'site/lgr-game.js'
       - 'docs/LGR_DB.md'
       - 'docs/BERGERAK_FORMAT.md'
@@ -101,6 +103,7 @@ on:
       - 'tests/test_lgr_db.cjs'
       - 'tests/test_lgr_sync_count.cjs'
       - 'tests/test_lgr_game.cjs'
+      - 'tests/test_lgr_face_cache.cjs'
       - 'site/lgr-game.js'
       - 'docs/LGR_DB.md'
       - 'docs/BERGERAK_FORMAT.md'
@@ -147,6 +150,7 @@ jobs:
           node --test tests/test_lgr_db.cjs
           node --test tests/test_lgr_sync_count.cjs
           node --test tests/test_lgr_game.cjs
+          if test -f tests/test_lgr_face_cache.cjs; then node --test tests/test_lgr_face_cache.cjs; fi
       - name: HTML / UI integration contract
         run: |
           node <<'NODE'

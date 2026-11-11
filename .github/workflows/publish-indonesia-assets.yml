@@ -9,7 +9,7 @@ on:
       - ".github/workflows/publish-indonesia-assets.yml"
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: semesta-indonesia-native-assets
   cancel-in-progress: true
@@ -54,14 +54,15 @@ jobs:
           assert (root/'indonesia_contact_sheet.png').is_file()
           print('Verified',len(seen),'native Indonesian assets and all depth sheets')
           PY
-      - name: Commit generated PNGs and catalog to official pipeline
+      - name: Package generated changes for branch and PR review
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f assets/street_buildings/kampung/id_*.png assets/street_buildings/jalan_besar/id_*.png assets/street_buildings/props/id_*.png
           git add -f assets/street_buildings/indonesia_contact_sheet.png
           git add assets/street_buildings/indonesia_catalog.json
-          if ! git diff --cached --quiet; then
-            git commit -m "Publish 68 Indonesia pixel sprites with native depth for Semesta [skip ci]"
-            git push
-          fi
+          git diff --cached --name-only -z --diff-filter=ACMRT | tar --null --files-from=- -czf reviewed-assets.tar.gz
+      - name: Upload reviewed asset candidate (no automatic publication)
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-assets-${{ github.run_id }}
+          path: reviewed-assets.tar.gz
+          retention-days: 7

@@ -1,6 +1,8 @@
 name: Character Stock — Build and Deploy
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches:
       - main
@@ -96,11 +98,16 @@ permissions:
   id-token: write
 
 concurrency:
-  group: character-stock-pages
-  cancel-in-progress: false
+  group: character-stock-pages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  genesis-qa:
+    uses: ./.github/workflows/genesis-workbench-qa.yml
+    permissions:
+      contents: read
   build:
+    needs: genesis-qa
     runs-on: ubuntu-latest
     steps:
       - name: Checkout character library
@@ -387,7 +394,7 @@ jobs:
     # build and artifact upload have succeeded. Allow enough time for backend
     # synchronization before canceling an otherwise valid release.
     timeout-minutes: 40
-    needs: build
+    needs: [build, genesis-qa]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
