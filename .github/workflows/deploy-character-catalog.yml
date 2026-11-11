@@ -185,6 +185,11 @@ jobs:
           test -s _site/genesis-cloud.js
           test -s _site/genesis-base.html
           test -s _site/genesis-base-app.js
+          test -s _site/genesis-v2-compare.html
+          test -s _site/genesis-v2-compare.js
+          test -s _site/media/lgr1/base/candidates/lgr-v2-compare-patches.json
+          node --check site/genesis-v2-compare.js
+          python -m json.tool site/media/lgr1/base/candidates/lgr-v2-compare-patches.json > /dev/null
           test -s _site/lgr-skin.js
           test -s _site/media/lgr1/base/index.json
           test -s _site/media/lgr1/base/genesis-base-male.json
