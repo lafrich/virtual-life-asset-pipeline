@@ -8,7 +8,7 @@ on:
       - '.github/workflows/publish-jakarta-urban.yml'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: jakarta-urban-native-assets
   cancel-in-progress: false
@@ -43,16 +43,17 @@ jobs:
                       assert im.mode==dm.mode=='RGBA'
           print('All Jakarta assets + native depth verified')
           PY
-      - name: Publish generated assets and native catalog
+      - name: Package generated changes for branch and PR review
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f assets/street_buildings/taman/*jakarta*.png assets/street_buildings/props/*jakarta*.png || true
           git add -f assets/street_buildings/taman/semak_kota_*.png assets/street_buildings/taman/rumput_kota_*.png || true
           git add -f assets/street_buildings/jalan_lokal/aspal_patch_jakarta*.png assets/street_buildings/jalan_lokal/selokan_*.png assets/street_buildings/jalan_lokal/sungai_*.png
           git add assets/street_buildings/jakarta_urban_catalog.json
           git add -f assets/street_buildings/previews/jakarta_urban_contact.png
-          if ! git diff --cached --quiet; then
-            git commit -m "Publish Jakarta props, vegetation, drains and river [skip ci]"
-            git push
-          fi
+          git diff --cached --name-only -z --diff-filter=ACMRT | tar --null --files-from=- -czf reviewed-assets.tar.gz
+      - name: Upload reviewed asset candidate (no automatic publication)
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-assets-${{ github.run_id }}
+          path: reviewed-assets.tar.gz
+          retention-days: 7

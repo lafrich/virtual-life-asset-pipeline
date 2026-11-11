@@ -10,7 +10,7 @@ help:
 # ---------------------------------------------------------------- characters (v6b generator)
 chars:            ## player avatar sheet from a character json (default: ichsan) -> chars-iso/v6b/live/ichsan_v6b_sheet.png
 	$(PY) chars-iso/v6b/tools/live_v6b.py chars-iso/v6b/live/chars/ichsan.json
-	$(PY) tools/diff_sheet.py chars-iso/v6b/live/ichsan_v6b_sheet.png game/assets/chars/ichsan_v6b_sheet.png || true
+	$(PY) tools/diff_sheet.py chars-iso/v6b/live/ichsan_v6b_sheet.png game/assets/chars/ichsan_v6b_sheet.png
 npc:              ## all game NPC sheets -> chars-iso/v6b/live/npc/*_v6b_sheet.png (NPCS=raka for one)
 	NP=$(NP) $(PY) chars-iso/v6b/tools/npc_v6b.py $(NPCS)
 # ---------------------------------------------------------------- world
@@ -70,11 +70,11 @@ video:            ## needs ffmpeg + outputs of the families it shows
 	$(PY) assets/video_ig_story/make_video_ig_story.py
 # ---------------------------------------------------------------- checks
 verify: chars kamar anim-nyebrang spawn-hobo   ## the pipelines verified from a fresh clone
-	$(PY) tools/diff_sheet.py chars-iso/v6b/live/ichsan_v6b_sheet.png game/assets/chars/ichsan_v6b_sheet.png || true
+	$(PY) tools/diff_sheet.py chars-iso/v6b/live/ichsan_v6b_sheet.png game/assets/chars/ichsan_v6b_sheet.png
 	NP=2 $(PY) chars-iso/v6b/tools/npc_v6b.py raka
 	$(PY) tools/diff_sheet.py chars-iso/v6b/live/npc/raka_v6b_sheet.png game/assets/chars/raka_v6b_sheet.png
 	$(PY) assets/spawn_hobo/src/chars.py
-	$(PY) tools/audit_colors.py assets/kamar_cove_kosong/props assets/spawn_hobo/sprites assets/spawn_hobo/props || true
+	$(PY) tools/audit_colors.py assets/kamar_cove_kosong/props assets/spawn_hobo/sprites assets/spawn_hobo/props
 audit:            ## colour/alpha audit, e.g. make audit DIR=assets/spawn_hobo/sprites
 	$(PY) tools/audit_colors.py $(DIR)
 all: chars npc buildings vehicles vegetation environment items npc-families anim-ambil anim-nyebrang barista kamar spawn-hobo ui ui-y2k ui-loak ui-mockups pets

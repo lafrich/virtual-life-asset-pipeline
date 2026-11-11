@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths: [".github/workflows/publish-semesta-placeholders.yml"]
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: semesta-street-placeholder-assets
   cancel-in-progress: false
@@ -46,12 +46,13 @@ jobs:
               assert list(map(int,pivot))==man['sprites'][key]['pivot'],(key,'pivot')
               print('OK',output,img.shape)
           PY
-      - name: Commit native pixel replacement sprites
+      - name: Package generated changes for branch and PR review
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f assets/street_buildings/jalan_besar/*.png assets/street_buildings/kampung/*.png assets/street_buildings/pasar_loak/*.png assets/street_buildings/gang/*.png assets/street_buildings/props/*.png assets/street_buildings/taman/*.png assets/street_buildings/sinyal/*.png
-          if ! git diff --cached --quiet; then
-            git commit -m "Publish native Semesta building, utility and furniture replacement sprites [skip ci]"
-            git push
-          fi
+          git diff --cached --name-only -z --diff-filter=ACMRT | tar --null --files-from=- -czf reviewed-assets.tar.gz
+      - name: Upload reviewed asset candidate (no automatic publication)
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-assets-${{ github.run_id }}
+          path: reviewed-assets.tar.gz
+          retention-days: 7

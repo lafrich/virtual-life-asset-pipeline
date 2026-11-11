@@ -7,7 +7,7 @@ on:
       - "assets/street_buildings/_work/render_native_depth.py"
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: semesta-street-native-depth
   cancel-in-progress: false
@@ -23,12 +23,13 @@ jobs:
         run: python -m pip install numpy pillow
       - name: Export and validate exact per-pixel surface depth
         run: python assets/street_buildings/_work/render_native_depth.py
-      - name: Commit native pixel depth texture artifacts
+      - name: Package generated changes for branch and PR review
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f assets/street_buildings/jalan_besar/*__depth.png assets/street_buildings/kampung/*__depth.png assets/street_buildings/pasar_loak/*__depth.png assets/street_buildings/gang/*__depth.png assets/street_buildings/props/*__depth.png assets/street_buildings/taman/*__depth.png assets/street_buildings/sinyal/*__depth.png
-          if ! git diff --cached --quiet; then
-            git commit -m "Publish native per-pixel street depth for Semesta [skip ci]"
-            git push
-          fi
+          git diff --cached --name-only -z --diff-filter=ACMRT | tar --null --files-from=- -czf reviewed-assets.tar.gz
+      - name: Upload reviewed asset candidate (no automatic publication)
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-assets-${{ github.run_id }}
+          path: reviewed-assets.tar.gz
+          retention-days: 7

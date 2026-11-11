@@ -8,7 +8,7 @@ on:
       - ".github/workflows/publish-approved-v6b-buildings.yml"
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: semesta-approved-v6b-buildings
   cancel-in-progress: false
@@ -46,16 +46,16 @@ jobs:
                 assert im.getbbox() and dm.getbbox()
           print('Checked: 3 published catalog entries, 12 color sprites, 12 depth textures')
           PY
-      - name: Publish artwork and catalog into canonical pipeline
+      - name: Package generated changes for branch and PR review
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f assets/street_buildings/kampung/id_gubuk_miskin_*.png
           git add -f assets/street_buildings/kampung/id_warung_sembako_*.png
           git add -f assets/street_buildings/kampung/id_rm_padang_*.png
           git add assets/street_buildings/indonesia_custom_catalog.json
-          if ! git diff --cached --quiet; then
-            git commit -m "Publish approved V6B Gubuk, Sembako and Trio Minang sprites [skip ci]"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
+          git diff --cached --name-only -z --diff-filter=ACMRT | tar --null --files-from=- -czf reviewed-assets.tar.gz
+      - name: Upload reviewed asset candidate (no automatic publication)
+        uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-assets-${{ github.run_id }}
+          path: reviewed-assets.tar.gz
+          retention-days: 7
