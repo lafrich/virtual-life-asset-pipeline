@@ -46,7 +46,7 @@ function fakeDrive(opts={}){
 const motionEntry=(id,a)=>({format:'lgr1-bergerak-v1',id,name:id,motion:{source:'neutral',angleSnap:5,loop:true,frames:[{ms:120,parts:{arm_r_upper:{a}}},{ms:120,parts:{}}]}});
 function ls(map){return {getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v)),removeItem:k=>map.delete(k)}}
 function loadTab(shared){
- const world={localStorage:shared.ls,sessionStorage:ls(new Map()),document:{},fetch:shared.fetch,crypto:webcrypto,
+ const world={localStorage:shared.ls,sessionStorage:ls(new Map()),document:{},fetch:shared.fetch,crypto:shared.crypto||webcrypto,
   addEventListener(){},removeEventListener(){},LGR1Motion:globalThis.LGR1Motion};
  const module={exports:{}};
  const ctx=vm.createContext({window:world,globalThis:world,document:world.document,fetch:shared.fetch,
@@ -222,4 +222,26 @@ test('unowned legacy cache is never uploaded automatically; explicit recovery co
 test('unverified account identity fails before any Drive folder or file write',async()=>{
  const d=fakeDrive(),A=loadTab({ls:ls(new Map()),fetch:async(u,i)=>new URL(u).pathname==='/drive/v3/about'?new Response('{}'):d.fetch(u,i)});
  await assert.rejects(A.sync(),/identity unavailable/);assert.equal(d.files.size,0);
+});
+
+test('legacy recovery preserves unrelated edits saved by another tab during hashing',async()=>{
+ const store=new Map(),d=fakeDrive();let block=false,release,entered;
+ const gate=new Promise(r=>release=r),started=new Promise(r=>entered=r);
+ const crypto={subtle:{digest:async(...args)=>{if(block){block=false;entered();await gate}return webcrypto.subtle.digest(...args)}}};
+ const A=loadTab({ls:ls(store),fetch:d.fetch,crypto}),B=loadTab({ls:ls(store),fetch:d.fetch});
+ const e=await A.save('bergerak',motionEntry('recover',10),{sync:false});
+ const raw=store.get(A.CACHE_KEY);store.set('lgr1-db-cache-v1',raw);store.delete(A.CACHE_KEY);
+ block=true;const recovering=A.recoverLegacy();await started;
+ await B.save('bergerak',motionEntry('parallel',20),{sync:false});release();await recovering;
+ assert.ok(A.get('bergerak','parallel'));assert.ok(A.get('bergerak','recover'));
+ assert.equal(store.get('lgr1-db-cache-v1'),raw);
+});
+test('switching token during a sync aborts the old cache commit and retains its pending draft',async()=>{
+ const store=new Map(),d=fakeDrive({account:'alice'}),A=loadTab({ls:ls(store),fetch:d.fetch});
+ await A.save('bergerak',motionEntry('keep_a',10),{sync:false});const key=A.CACHE_KEY;
+ const slow=pausedDrive(d);A.setFetch(slow.fetch);const run=A.sync();await slow.entered;
+ A.useToken('new-account-token',3600);slow.release();await assert.rejects(run,/account changed/);
+ assert.equal(JSON.parse(store.get(key)).kinds.bergerak.keep_a.dirty,true);
+ const bob=fakeDrive({account:'bob'});A.setFetch(bob.fetch);await A.sync();
+ assert.equal(bob.stats().writes,0);assert.equal(A.account,'bob');
 });
