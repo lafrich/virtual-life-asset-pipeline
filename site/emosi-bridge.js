@@ -158,8 +158,19 @@ async function toFace(entry,U){
     portrait:thumb.toDataURL("image/png"),
     frames:entry.frames,frame_ms:Array(entry.frames).fill(duration)};
 }
+// The canonical editor keeps its OAuth token in its own window. Reuse its
+// public Drive adapter only when the iframe has the exact same origin.
+function emotionDrive(){
+  if(typeof window==="undefined")return null;
+  if(window.EmotionDrive)return window.EmotionDrive;
+  try{
+    const frame=document.getElementById("emotion-frame")?.contentWindow;
+    if(frame?.location?.origin===window.location.origin)return frame.EmotionDrive||null;
+  }catch{} // cross-origin frames are never inspected or messaged
+  return null;
+}
 async function connectDrive(){
-  const D=typeof window!=="undefined"?window.EmotionDrive:null;
+  const D=emotionDrive();
   if(!D)throw Error("Emosi.exe Google Drive module not available");
   if(!D.connected())await D.connect();
   return true;
@@ -178,7 +189,7 @@ async function refresh(){
   const preview=await loadPreviewStock();
   const conflicts=mergeIncoming(entries,preview.entries,"preview");
   let driveCount=0,driveError=preview.error||"";
-  const D=typeof window!=="undefined"?window.EmotionDrive:null;
+  const D=emotionDrive();
   if(D?.connected()){
     try{
       const response=await D.loadAll();
@@ -211,7 +222,7 @@ function apply(actor){
   return actor;
 }
 return Object.freeze({
-  refresh,connectDrive,apply,compatible,isHumanBaseActor,
+  refresh,connectDrive,emotionDrive,apply,compatible,isHumanBaseActor,
   STARTER_IDS,isStarterId,isStarterEntry,unwrapEntries,entrySignature,
   mergeIncoming,statusMessage,loadPreviewStock,hasAuthoredPng,
   PREVIEW_STOCK_INDEX,

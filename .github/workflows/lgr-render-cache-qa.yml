@@ -1,0 +1,26 @@
+name: LGR renderer cache and direction QA
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, fix/lgr-render-cache-20261111]
+    paths:
+      - 'site/lgr-*.js'
+      - 'site/emosi-bridge.js'
+      - 'site/mahluk-beraksi.js'
+      - 'tests/test_lgr_game.cjs'
+      - 'tests/test_lgr_face_cache.cjs'
+      - '.github/workflows/lgr-render-cache-qa.yml'
+permissions:
+  contents: read
+jobs:
+  renderer-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Direction, face revision, origin, and approved base regressions
+        run: |
+          node --test tests/test_lgr_game.cjs tests/test_lgr_face_cache.cjs tests/test_preview_emosi_stock.cjs tests/test_genesis_base.cjs tests/test_lgr_slice_candidate.cjs tests/test_lgr_retirement.cjs

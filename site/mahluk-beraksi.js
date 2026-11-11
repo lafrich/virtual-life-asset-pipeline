@@ -262,7 +262,7 @@ function addActor(gender,given){
  const a=given||newActor(gender);S.scene.actors.push(a);S.sel=a.key;touch(true);rebuildActors();
 }
 async function init(panel){
- if(S.ready){rebuildList();rebuildActor();schedule();return}
+ if(S.ready){await A().refreshFaces();rebuildList();rebuildActor();schedule();return}
  U.status("Beraksi: memuat base, animasi, Emosi…");
  S.lib=await A().motions();await DB().loadBuiltin();DB().setPoses(S.lib.poses);await A().loadBases();await A().refreshFaces().catch(()=>[]);
  build(panel);S.ready=true;S.isNew=true;S.scene=blankScene();S.scene.actors.push(newActor("male"));S.scene.actors.push(newActor("female"));S.sel="a1";S.dirty=false;rebuildAll();
