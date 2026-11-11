@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Genesis · Compare V2 (Read Only)</title>
+<title>Genesis · Compare Lab V2 / V4 (Read Only)</title>
 <style>
 :root{font:13px Tahoma,"MS Sans Serif",Arial,sans-serif;color:#20304a;background:#879fc2}
 *{box-sizing:border-box}body{margin:0;min-height:100dvh;background:linear-gradient(#809cc6,#e1e9f7 62%,#f6eadb)}
@@ -39,26 +39,26 @@ button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{ou
 <body>
 <div class="shell">
 <header class="win">
- <div class="titlebar"><span>▣ GENESIS BASE · COMPARE V2</span><small>MALE + FEMALE · FOUR VIEWS · LGR-1</small></div>
+ <div class="titlebar"><span>▣ GENESIS BASE · COMPARE LAB</span><small>MALE + FEMALE · FOUR VIEWS · LGR-1</small></div>
  <div class="intro">
   <p><a href="./genesis-base.html">← Kembali ke Genesis Base</a></p>
-  <p class="safety"><strong>SAFE / READ ONLY.</strong> Halaman ini tidak mengimpor, menyimpan, mereset, atau menyinkronkan data Genesis. Official Base, browser draft, dan Google Drive Master tidak berubah. Candidate V2 hanya hasil patch sementara di memori preview.</p>
-  <p>Bandingkan <b>Male official-3 / Female official-4</b> melawan <b>Candidate V2</b> pada artwork yang sama, menggunakan renderer LGR-1 dan motion library yang sama. V2 belum approved.</p>
+  <p class="safety"><strong>SAFE / READ ONLY.</strong> Halaman ini tidak mengimpor, menyimpan, mereset, atau menyinkronkan data Genesis. Official Base, browser draft, dan Google Drive Master tidak berubah. Candidate V2 dan Female V4 hanya patch sementara di memori preview.</p>
+  <p>Bandingkan <b>Male official-3 / Female official-4</b> melawan <b>Candidate V2</b> atau <b>Female V4</b> (adaptive gap bridge / pose stress). V4 masih eksperimental dan belum menjadi Genesis resmi.</p>
  </div>
 </header>
 <section class="toolbar" aria-label="Pengaturan perbandingan">
- <label class="field">Genesis<select id="gender"><option value="male">MALE · official-3</option><option value="female">FEMALE · official-4</option></select></label>
+ <label class="field">Genesis<select id="gender"><option value="male">MALE · official-3</option><option value="female" selected>FEMALE · official-4</option></select></label><label class="field">Candidate<select id="candidate-version"><option value="v2">V2 · Slicing & Pivot</option><option value="v4" selected>V4 · Female Adaptive Bridge</option></select></label>
  <div class="field">Arah<div class="segment" id="directions"><button data-dir="se" aria-pressed="true">SE</button><button data-dir="sw" aria-pressed="false">SW</button><button data-dir="ne" aria-pressed="false">NE</button><button data-dir="nw" aria-pressed="false">NW</button></div></div>
  <label class="field">Gerakan<select id="motion" disabled><option value="">Loading...</option></select></label>
  <div class="field buttons">Mode preview<div class="segment"><button id="mode-motion" aria-pressed="true">▶ Motion</button><button id="mode-slice" aria-pressed="false">◈ Slice + Pivot</button></div></div>
 </section>
 <div class="panels">
  <section class="panel"><h2><span>OFFICIAL BASE</span><span id="original-label">Male · official-3</span></h2><div class="stage"><canvas width="64" height="112" id="original" aria-label="Official Genesis render"></canvas></div><p>Data resmi yang sedang dipakai Genesis; tidak dimodifikasi.</p></section>
- <section class="panel candidate"><h2><span>CANDIDATE V2 · PREVIEW</span><span id="candidate-label">Male · not saved</span></h2><div class="stage"><canvas width="64" height="112" id="candidate" aria-label="Temporary candidate LGR render"></canvas></div><p>Sama persis artwork-nya. Hanya mask ownership dan titik pivot yang diuji sementara; tidak dipakai game.</p></section>
+ <section class="panel candidate"><h2><span id="candidate-title">CANDIDATE V4 · PREVIEW</span><span id="candidate-label">Male · not saved</span></h2><div class="stage"><canvas width="64" height="112" id="candidate" aria-label="Temporary candidate LGR render"></canvas></div><p id="candidate-description">Female V4: patch slicing/pivot dan adaptive bridge test. Tidak dipakai di game.</p></section>
 </div>
 <div class="controls-bottom"><button id="play" aria-pressed="true">Ⅱ Pause</button><label for="scrub">Frame</label><input id="scrub" type="range" min="0" max="0" value="0" step="1" aria-label="Geser frame motion"><span id="frame-text">REST</span></div>
 <div class="counts"><div class="stat"><strong id="maskdiff">—</strong><span>Ownership pixel berubah (arah aktif)</span></div><div class="stat"><strong id="pivotdiff">—</strong><span>Pivot berubah (arah aktif)</span></div><div class="stat"><strong id="framediff">—</strong><span>Pixel berbeda pada frame yang ditampilkan</span></div></div>
-<div class="legend" id="legend"></div>
+<div class="stat" id="bridge-stat"><strong id="bridge-count">—</strong><span>Bridge pixels aktif pada frame (V4 only)</span></div><div class="legend" id="legend"></div>
 <div id="status" role="status">Mengambil base resmi dan candidate patch read-only...</div>
 <footer>64 × 112 native pixel · 11 body parts · LGR-1 native renderer · no localStorage · no Drive writes · no base promotion. Slice/Pivot overlay menunjukkan koordinat <em>rest pose</em>, bukan bone yang sedang berotasi.</footer>
 </div>
@@ -68,6 +68,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{ou
 <script src="./lgr1-motion.js"></script>
 <script src="./lgr-skin.js"></script>
 <script src="./lgr-actor.js"></script>
-<script src="./genesis-v2-compare.js?v=1"></script>
+<script id="v4-patch-data" type="application/json"><script id="v4-patch-data" type="application/json">{"format":"lgr1-female-v3-readonly-preview-v1","gender":"female","officialSha256":"d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a","views":{"se":{"m":[[4376,7,8],[4377,7,8],[4391,2,3],[4392,2,3],[4762,4,10],[4774,4,10],[4829,10,4],[4830,10,4],[4831,10,4],[4832,10,4],[4833,10,4],[4834,10,4],[4835,10,4],[4893,10,4],[4894,10,4],[4895,10,4],[4896,10,4],[4897,10,4],[4898,10,4],[4899,10,4],[5661,5,6],[5662,5,6],[5664,0,1],[5665,0,1],[5722,6,5],[5723,6,5],[5731,1,0],[5732,1,0]],"p":{"arm_far_upper":[40,61,40,60],"torso":[32,75,32,76],"arm_near_upper":[24,61,24,60]}},"sw":{"m":[[4374,2,3],[4440,3,2],[4455,8,7],[4456,8,7],[4761,4,10],[4773,4,10],[4828,10,4],[4829,10,4],[4830,10,4],[4831,10,4],[4832,10,4],[4833,10,4],[4834,10,4],[4892,10,4],[4893,10,4],[4894,10,4],[4895,10,4],[4896,10,4],[4897,10,4],[4898,10,4],[5659,0,1],[5660,0,1],[5669,5,6],[5670,5,6],[5726,1,0],[5727,1,0],[5730,6,5],[5731,6,5]],"p":{"arm_far_upper":[24,61,24,60],"torso":[32,75,31,76],"arm_near_upper":[40,61,40,60],"pelvis":[32,79,31,79]}},"ne":{"m":[[4440,3,2],[4441,3,2],[4455,8,7],[4456,8,7],[4762,4,10],[4774,4,10],[4829,10,4],[4830,10,4],[4831,10,4],[4832,10,4],[4833,10,4],[4834,10,4],[4835,10,4],[4893,10,4],[4894,10,4],[4895,10,4],[4896,10,4],[4897,10,4],[4898,10,4],[4899,10,4],[5669,5,6],[5670,5,6],[5724,1,0],[5725,1,0],[5730,6,5],[5731,6,5]],"p":{"arm_far_upper":[24,61,24,60],"torso":[34,75,32,76],"arm_near_upper":[40,61,40,60],"pelvis":[33,79,32,79]}},"nw":{"m":[[4376,7,8],[4391,2,3],[4392,2,3],[4438,8,7],[4761,4,10],[4773,4,10],[4828,10,4],[4829,10,4],[4830,10,4],[4831,10,4],[4832,10,4],[4833,10,4],[4834,10,4],[4892,10,4],[4893,10,4],[4894,10,4],[4895,10,4],[4896,10,4],[4897,10,4],[4898,10,4],[5661,5,6],[5666,0,1],[5667,0,1],[5722,6,5],[5723,6,5]],"p":{"arm_far_upper":[40,61,40,60],"torso":[31,75,31,76],"arm_near_upper":[24,61,24,60]}}},"underlaps":[{"dst":"pelvis","src":"torso","kind":"waist"},{"dst":"torso","src":"head","kind":"neck"},{"dst":"torso","src":"arm_near_upper","kind":"shoulder"},{"dst":"arm_far_upper","src":"torso","kind":"shoulder"},{"dst":"pelvis","src":"leg_near_upper","kind":"hip"},{"dst":"pelvis","src":"leg_far_upper","kind":"hip"}],"why":"Substantial bending improvement via hidden duplicated source-color body-part pixels, not antialiasing or generated imagery. Preview only; does not alter official master."}</script><script src="./genesis-v2-compare.js?v=2"></script>
 </body>
 </html>
