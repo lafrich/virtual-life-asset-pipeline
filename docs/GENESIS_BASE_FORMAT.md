@@ -160,3 +160,8 @@ never edit an approved package in place.
   else the commonest neighbour colour. It never draws over art, and gaps that
   already exist at rest (crotch, armpits) stay open, so the rest pose is
   byte-identical. JS and Python are pixel-identical (parity tests).
+
+
+### official-4 (2026-11-11): Female slicing revision
+
+Lafrich approved the adjusted slicing in `genesis_female_draft.json` as the new Genesis **Female** LGR base. The draft is stored byte-identically at `site/media/lgr1/base/candidates/genesis_female_draft-20261111.json`. `genesis-base-female-official-4.json` retains official-2 Female artwork/skin keys and anatomical structure, but uses the uploaded four-angle masks, pivots, placements and manual-slice flags. `genesis-base-female.json` remains the untouched previous package. `archive/index-official-3.json` keeps the previous catalog mapping. Male continues using `genesis-base-male-official-3.json`, unchanged. The active pointers are in `site/media/lgr1/base/index.json` (`official-4`).
