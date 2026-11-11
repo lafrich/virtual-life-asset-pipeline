@@ -23,6 +23,7 @@ function fakeDrive(opts={}){
  let failNext=false,listCalls=0,writes=0;
  async function fetch(url,init={}){
   const u=new URL(url),m=init.method||'GET';
+  if(u.pathname==='/drive/v3/about')return res({user:{permissionId:opts.account||'account_a'}});
   if(failNext&&u.pathname.startsWith('/drive/v3/files')){failNext=false;throw Error('network down')}
   if(u.pathname==='/drive/v3/files'&&m==='GET'){
    listCalls++;
@@ -136,4 +137,89 @@ test('Mahluk Hidup shell: open + SYNC button call patterns, online only flushes 
  assert.match(shellSrc,/\("db-sync"\)\.onclick=\(\)=>void syncNow\(true\)/);
  assert.doesNotMatch(shellSrc,/setInterval/);
  assert.doesNotMatch(shellSrc,/visibilitychange/);
+});
+
+// Hold a real Drive boundary after the sync snapshot has been taken.
+function pausedDrive(d){
+ let release,started;const gate=new Promise(r=>release=r),entered=new Promise(r=>started=r);let paused=false;
+ return {entered,release,fetch:async(url,init)=>{
+  if(!paused&&new URL(url).pathname==='/drive/v3/files'){
+   paused=true;started();await gate;
+  }
+  return d.fetch(url,init);
+ }};
+}
+for(const peer of [false,true])test(`save during sync survives (${peer?'another tab':'same tab'}) and only exact revision is acknowledged`,async()=>{
+ const d=fakeDrive(),store=new Map(),shared={ls:ls(store),fetch:d.fetch};
+ const A=loadTab(shared),B=peer?loadTab(shared):A;
+ await A.save('bergerak',motionEntry('existing',10));
+ const slow=pausedDrive(d);A.setFetch(slow.fetch);
+ const run=A.sync();await slow.entered;
+ const saved=await B.save('bergerak',motionEntry('new_edit',20),{sync:false});
+ await B.save('bergerak',motionEntry('existing',30),{sync:false});
+ slow.release();await run;
+ assert.equal(A.get('bergerak','new_edit').motion.frames[0].parts.arm_r_upper.a,20);
+ assert.equal(A.get('bergerak','existing').motion.frames[0].parts.arm_r_upper.a,30);
+ assert.equal(A.pending(),2);
+ await A.sync();assert.equal(A.pending(),0);
+ const file=d.inDir('Membangun/Mahluk Hidup/Database/Bergerak').find(f=>f.name==='new_edit.json');
+ assert.equal(JSON.parse(file.content).entry.id,saved.entry.id);
+});
+test('delete during first upload remains pending and moves that upload to Backup',async()=>{
+ const d=fakeDrive(),A=loadTab({ls:ls(new Map()),fetch:d.fetch});
+ await A.save('bergerak',motionEntry('remove_me',10),{sync:false});
+ const slow=pausedDrive(d);A.setFetch(slow.fetch);const run=A.sync();await slow.entered;
+ await A.remove('bergerak','remove_me',{sync:false});slow.release();await run;
+ assert.equal(A.get('bergerak','remove_me'),null);assert.equal(A.pending(),1);
+ await A.sync();assert.equal(A.pending(),0);
+ assert.equal(d.inDir('Membangun/Mahluk Hidup/Database/Bergerak').length,0);
+ assert.ok(d.inDir('Membangun/Mahluk Hidup/Database/Backup').some(f=>f.name.endsWith('.deleted.json')));
+});
+test('save receipt is false when a newer edit replaced the saved revision',async()=>{
+ const d=fakeDrive(),A=loadTab({ls:ls(new Map()),fetch:d.fetch});
+ const slow=pausedDrive(d);A.setFetch(slow.fetch);
+ const receipt=A.save('bergerak',motionEntry('edit',10));await slow.entered;
+ await A.save('bergerak',motionEntry('edit',40),{sync:false});slow.release();
+ assert.equal((await receipt).synced,false);
+ assert.equal(A.get('bergerak','edit').motion.frames[0].parts.arm_r_upper.a,40);
+});
+test('quota failures reject delete and sync without replacing stored data',async()=>{
+ const d=fakeDrive(),store=new Map(),backing=ls(store);let full=false;
+ const A=loadTab({ls:{...backing,setItem(k,v){if(full&&k===A.CACHE_KEY)throw Error('quota');backing.setItem(k,v)}},fetch:d.fetch});
+ await A.save('bergerak',motionEntry('keep',10));full=true;
+ await assert.rejects(A.remove('bergerak','keep',{sync:false}),/Cache penuh/);
+ assert.equal(A.get('bergerak','keep').id,'keep');
+ await assert.rejects(A.sync(),/Cache penuh/);
+ assert.equal(A.state.status,'error');
+});
+
+test('account change keeps pending entries in their own cache and never uploads them to the other Drive',async()=>{
+ const store=new Map(),dA=fakeDrive({account:'alice'}),dB=fakeDrive({account:'bob'});
+ const A=loadTab({ls:ls(store),fetch:dA.fetch});await A.ensureAccount();
+ await A.save('bergerak',motionEntry('private_a',10),{sync:false});
+ const keyA=A.CACHE_KEY;A.disconnect();A.setFetch(dB.fetch);A.useToken('bob-token',3600);
+ await A.sync();assert.notEqual(A.CACHE_KEY,keyA);assert.equal(A.all('bergerak').length,0);
+ assert.equal(dB.stats().writes,0);assert.equal(JSON.parse(store.get(keyA)).kinds.bergerak.private_a.dirty,true);
+ A.disconnect();A.setFetch(dA.fetch);A.useToken('alice-token',3600);await A.sync();
+ assert.equal(A.get('bergerak','private_a').id,'private_a');assert.equal(A.pending(),0);
+ assert.equal(dA.inDir('Membangun/Mahluk Hidup/Database/Bergerak').length,1);
+});
+test('unowned legacy cache is never uploaded automatically; explicit recovery copies it without old file IDs',async()=>{
+ const store=new Map(),d=fakeDrive({account:'alice'}),A=loadTab({ls:ls(store),fetch:d.fetch});
+ const e=await A.save('bergerak',motionEntry('source',10));
+ const legacy={format:'lgr1-db-cache-v1',kinds:{bergerak:{source:{entry:e.entry,sha:'old',fileId:'foreign',baseSha:'foreign-sha',dirty:true}},beraksi:{}}};
+ store.set('lgr1-db-cache-v1',JSON.stringify(legacy));
+ // A different account starts with an empty scoped cache, even with legacy drafts.
+ const dB=fakeDrive({account:'bob'});A.disconnect();A.setFetch(dB.fetch);A.useToken('bob',3600);
+ await A.sync();assert.equal(dB.stats().writes,0);assert.equal(A.hasLegacy(),true);
+ const preserved=store.get('lgr1-db-cache-v1');await A.recoverLegacy();
+ const row=A.readCache().kinds.bergerak.source;
+ assert.equal(row.fileId,'');assert.equal(row.baseSha,'');assert.equal(row.dirty,true);
+ assert.equal(store.get('lgr1-db-cache-v1'),preserved);
+ await A.sync();assert.equal(dB.stats().writes,1);
+ await assert.rejects(A.recoverLegacy(),/already recovered/);
+});
+test('unverified account identity fails before any Drive folder or file write',async()=>{
+ const d=fakeDrive(),A=loadTab({ls:ls(new Map()),fetch:async(u,i)=>new URL(u).pathname==='/drive/v3/about'?new Response('{}'):d.fetch(u,i)});
+ await assert.rejects(A.sync(),/identity unavailable/);assert.equal(d.files.size,0);
 });

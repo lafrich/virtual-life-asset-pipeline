@@ -52,7 +52,7 @@ async function syncNow(interactive,opts={}){
    status("Database tersinkron: "+DB().all("bergerak").length+" animasi · "+DB().all("beraksi").length+" adegan"+
     (r.pulled||r.pushed?" (↓"+r.pulled+" ↑"+r.pushed+")":"")+(r.conflicts?" · "+r.conflicts+" konflik → yang terbaru dipakai, versi lain di Backup":"")+
     (r.errors.length?" · "+r.errors.length+" gagal: "+r.errors[0]:""),!!r.errors.length);
-   return true;
+   return !r.errors.length;
   }catch(e){status("Sync: "+e.message+" · pakai cache lokal",true);return false}
  })().finally(()=>{syncNowRunning=null});
  return syncNowRunning;
@@ -84,7 +84,23 @@ $("connect-drive").onclick=async()=>{
 };
 $("db-sync").onclick=()=>void syncNow(true);
 $("fullscreen").onclick=()=>{const d=document;if(d.fullscreenElement)d.exitFullscreen?.();else d.documentElement.requestFullscreen?.().catch(()=>{})};
-DB().onStatus(chip);
+function refreshRecovery(){
+ $("legacy-recovery").hidden=!DB().hasLegacy();
+ $("legacy-recover").disabled=!!DB().readCache().legacyRecovered;
+}
+$("legacy-export").onclick=()=>{
+ const url=URL.createObjectURL(new Blob([JSON.stringify(DB().exportLegacy(),null,2)],{type:"application/json"}));
+ const a=document.createElement("a");a.href=url;a.download="lgr-legacy-cache.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+$("legacy-recover").onclick=async()=>{
+ try{
+  await DB().connect();
+  if(!confirm("Pulihkan cache lama ke akun Google yang terhubung? Hanya lanjut jika data ini milik akun tersebut. Salinan lama tetap disimpan."))return;
+  await DB().recoverLegacy();refreshRecovery();await syncNow(true);
+ }catch(e){status("Pemulihan: "+e.message+" · cache lama tetap disimpan",true)}
+};
+refreshRecovery();
+DB().onStatus(st=>{chip(st);refreshRecovery()});
 // Only flush unsynced local edits when the browser comes back online.
 // A full refresh runs once on open and when the user presses ↻ SYNC — not on every online blip.
 root.addEventListener("online",()=>{if(DB().connected()&&DB().pending())void syncNow(false,{auto:true})});

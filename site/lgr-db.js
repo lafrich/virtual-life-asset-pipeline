@@ -133,13 +133,18 @@ function emosiAt(actor,t){let cur=null;for(const f of actor.emosi||[])if(t>=f.st
 function drawOrder(scene){return scene.actors.map((a,i)=>({a,i})).sort((p,q)=>p.a.layer-q.a.layer||p.i-q.i).map(p=>p.a)}
 /* ---------------- local cache ---------------- */
 function storage(){try{return root?.localStorage||null}catch{return null}}
+const ACCOUNT_KEY=CACHE_KEY+":last-account";
+let accountOwner="",verifiedToken="",accountCheck=null,authEpoch=0,runningEpoch=null;
+try{accountOwner=storage()?.getItem(ACCOUNT_KEY)||""}catch{}
+const cacheKey=()=>accountOwner?CACHE_KEY+":"+accountOwner:CACHE_KEY;
+const lockKey=()=>LOCK_KEY+(accountOwner?":"+accountOwner:"");
 function emptyCache(){return {format:CACHE_KEY,syncedAt:null,kinds:{bergerak:{},beraksi:{}}}}
 function readCache(){
- try{const c=JSON.parse(storage()?.getItem(CACHE_KEY)||"null");
+ try{const c=JSON.parse(storage()?.getItem(cacheKey())||"null");
   if(c?.format===CACHE_KEY&&c.kinds)return {...emptyCache(),...c,kinds:{bergerak:c.kinds.bergerak||{},beraksi:c.kinds.beraksi||{}}}}catch{}
  return emptyCache();
 }
-function writeCache(c){try{storage()?.setItem(CACHE_KEY,JSON.stringify(c));return true}catch{return false}}
+function writeCache(c){try{const s=storage();if(!s)return false;s.setItem(cacheKey(),JSON.stringify(c));return true}catch{return false}}
 /* ---------------- Drive ---------------- */
 let token="",expiry=0,connecting=null,folders={},fetchImpl=null,listeners=new Set(),state={status:"offline",message:"Belum sync",lastSync:null};
 const doFetch=(...a)=>(fetchImpl||root.fetch.bind(root))(...a);
@@ -149,23 +154,24 @@ function emit(status,message){state={...state,status,message};if(status==="synce
 function onStatus(f){listeners.add(f);try{f(state)}catch{}return()=>listeners.delete(f)}
 function restoreSession(){
  try{const s=JSON.parse(root?.sessionStorage?.getItem(TOKEN_KEY)||"null");
-  if(s&&s.token&&Date.now()+60000<s.expiry){token=s.token;expiry=s.expiry}}catch{}
+  if(s&&s.token&&Date.now()+60000<s.expiry){token=s.token;expiry=s.expiry;verifiedToken="";authEpoch++}}catch{}
  return connected();
 }
 function useToken(t,expiresInSec){ // for tests / apps that already hold a drive.file token
+ authEpoch++;verifiedToken="";accountCheck=null;
  token=String(t||"");expiry=Date.now()+(Number(expiresInSec)||3500)*1000;folders={};
  try{root?.sessionStorage?.setItem(TOKEN_KEY,JSON.stringify({token,expiry}))}catch{}
 }
-function disconnect(){token="";expiry=0;folders={};try{root?.sessionStorage?.removeItem(TOKEN_KEY)}catch{};emit("offline","Drive terputus")}
+function disconnect(){authEpoch++;verifiedToken="";accountCheck=null;token="";expiry=0;folders={};try{root?.sessionStorage?.removeItem(TOKEN_KEY)}catch{};emit("offline","Drive terputus")}
 async function connect(){
- if(connected()||restoreSession())return true;
+ if(connected()||restoreSession()){await ensureAccount();return true;}
  if(connecting)return connecting;
  const auth=root?.google?.accounts?.oauth2;
  if(!auth?.initTokenClient)throw Error("Login Google belum siap; coba reload (Chrome)");
  connecting=new Promise((resolve,reject)=>{
   try{auth.initTokenClient({client_id:CLIENT,scope:SCOPE,include_granted_scopes:true,
    callback:r=>{if(r.error||!r.access_token){reject(Error(r.error_description||r.error||"Login ditolak"));return}
-    useToken(r.access_token,r.expires_in);resolve(true)},
+    useToken(r.access_token,r.expires_in);ensureAccount().then(()=>resolve(true),reject)},
    error_callback:e=>reject(Error(e?.message||e?.type||"Login Google ditutup"))}).requestAccessToken({prompt:""})}
   catch(e){reject(e)}
  }).finally(()=>{connecting=null});
@@ -173,12 +179,57 @@ async function connect(){
 }
 async function request(url,init={}){
  assert(connected(),"Drive belum terhubung");
+ const epoch=authEpoch;
+ assert(runningEpoch===null||runningEpoch===epoch,"Drive account changed during sync; retry");
  const h=new Headers(init.headers||{});h.set("Authorization","Bearer "+token);
  const r=await doFetch(url,{...init,headers:h,cache:"no-store"});
+ assert(epoch===authEpoch,"Drive account changed during request; retry");
  if(!r.ok){let m="";try{m=(await r.json())?.error?.message||""}catch{}
   if(r.status===401)disconnect();
   throw Error("Google Drive "+r.status+(m?": "+m:""))}
  return r;
+}
+async function ensureAccount(){
+ assert(runningEpoch===null||runningEpoch===authEpoch,"Drive account changed during sync; wait and retry");
+ if(verifiedToken===token&&token)return accountOwner;
+ if(accountCheck)return accountCheck;
+ const epoch=authEpoch,currentToken=token;
+ const check=(async()=>{
+  const data=await(await request("https://www.googleapis.com/drive/v3/about?fields=user(permissionId)")).json();
+  const id=String(data?.user?.permissionId||"");
+  assert(/^[A-Za-z0-9_-]{1,160}$/.test(id),"Drive account identity unavailable; no upload performed");
+  assert(epoch===authEpoch,"Drive account changed; reconnect");
+  accountOwner=id;verifiedToken=currentToken;folders={};lastSyncOk=false;lastSyncFailed=false;
+  storage()?.setItem(ACCOUNT_KEY,id);
+  return id;
+ })();
+ accountCheck=check;
+ try{return await check}finally{if(accountCheck===check)accountCheck=null}
+}
+function legacyCache(){
+ try{const c=JSON.parse(storage()?.getItem(CACHE_KEY)||"null");if(c?.format===CACHE_KEY&&c.kinds)return c}catch{}
+ return emptyCache();
+}
+function hasLegacy(){const c=legacyCache();return Object.keys(KINDS).some(k=>Object.keys(c.kinds[k]||{}).length>0)}
+function exportLegacy(){const c=legacyCache();return {format:"lgr1-db-export-v1",exported:new Date().toISOString(),
+ bergerak:Object.values(c.kinds.bergerak||{}).filter(r=>!r.deleted).map(r=>r.entry),
+ beraksi:Object.values(c.kinds.beraksi||{}).filter(r=>!r.deleted).map(r=>r.entry)}}
+// Explicit user action only. Keep the original cache intact as a recovery copy;
+// old Drive file IDs and sync receipts must never cross account boundaries.
+async function recoverLegacy(){
+ await ensureAccount();
+ return withCacheWrite(async()=>{
+  const key=cacheKey(),c=readCache(),old=legacyCache();
+  assert(!c.legacyRecovered,"Legacy cache already recovered for this account");
+  for(const kind of Object.keys(KINDS))for(const [id,row] of Object.entries(old.kinds[kind]||{})){
+   if(row.deleted)continue;
+   assert(!c.kinds[kind][id],"Recovery ID already exists: "+id+". Export the legacy cache and import entries individually.");
+   const entry=validate(kind,row.entry,poses),sha=await sha256(canonical(entry));
+   c.kinds[kind][id]={entry,sha,fileId:"",baseSha:"",dirty:true};
+  }
+  assert(key===cacheKey(),"Drive account changed during recovery");
+  c.legacyRecovered=true;assert(writeCache(c),"Cache penuh: pemulihan gagal");
+ });
 }
 const q=s=>String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
 async function list(parent,extra){
@@ -281,6 +332,10 @@ async function syncKind(kind,cache,report){
     // confirmed overwrite (e.g. IMPORT over an existing name): keep the replaced version
     if(L.backupOf&&act!=="conflict-local-wins"){report.backups.push(await backup(kind,L.backupOf,"overwritten"))}
     const w=await writeFile(kind,L.entry,R?.fileId);rows[id]={...L,sha:w.sha,baseSha:w.sha,fileId:w.fileId,dirty:false};delete rows[id].backupOf;report.pushed++;
+   }else if(act==="same"&&L.dirty){
+    const v=await readFile(R.fileId);
+    assert(v.sha256===L.sha,"Read-back checksum mismatch");
+    rows[id]={...L,baseSha:v.sha256,fileId:R.fileId,dirty:false};
    }else if(act==="delete-remote"){report.backups.push(await moveToBackup(kind,id,R.fileId));delete rows[id];report.deleted++}
    else if(act==="forget"||act==="remote-deleted"){delete rows[id];if(act==="remote-deleted")report.deleted++}
   }catch(e){report.errors.push(kind+"/"+id+": "+e.message)}
@@ -294,16 +349,16 @@ function peerJustSynced(){
  const t=Date.parse(readCache().syncedAt||"");
  return Number.isFinite(t)&&Date.now()-t<PEER_FRESH_MS&&pending()===0;
 }
-function lockOwner(){try{return JSON.parse(storage()?.getItem(LOCK_KEY)||"null")}catch{return null}}
+function lockOwner(){try{return JSON.parse(storage()?.getItem(lockKey())||"null")}catch{return null}}
 function tryLock(){
  const s=storage();if(!s)return true;
  const cur=lockOwner();
  if(cur&&cur.owner!==tabId&&Date.now()-cur.at<LOCK_MS)return false;
- try{s.setItem(LOCK_KEY,JSON.stringify({owner:tabId,at:Date.now()}));
+ try{s.setItem(lockKey(),JSON.stringify({owner:tabId,at:Date.now()}));
   const chk=lockOwner();return chk&&chk.owner===tabId}catch{return true}
 }
-function releaseLock(){try{if(lockOwner()?.owner===tabId)storage()?.removeItem(LOCK_KEY)}catch{}}
-function tickLock(){try{if(lockOwner()?.owner===tabId)storage()?.setItem(LOCK_KEY,JSON.stringify({owner:tabId,at:Date.now()}))}catch{}}
+function releaseLock(){try{if(lockOwner()?.owner===tabId)storage()?.removeItem(lockKey())}catch{}}
+function tickLock(){try{if(lockOwner()?.owner===tabId)storage()?.setItem(lockKey(),JSON.stringify({owner:tabId,at:Date.now()}))}catch{}}
 async function acquireLock(){
  if(tryLock())return {waited:false};
  const start=Date.now();
@@ -312,7 +367,7 @@ async function acquireLock(){
   await new Promise(r=>setTimeout(r,40));
   if(tryLock())return {waited:true};
  }
- return {waited:true};
+ throw Error("Database sync is busy in another tab; retry after it finishes");
 }
 function skipAuto(opts){
  if(!opts.auto)return false;
@@ -336,6 +391,9 @@ function scheduleSync(opts={}){
  return debounceWait;
 }
 async function runOnce(opts){
+ if(!connected()&&!restoreSession()){if(opts.interactive)await connect();else throw Error("Drive belum terhubung")}
+ await ensureAccount();
+ const epoch=authEpoch,key=cacheKey();
  if(opts.auto&&skipAuto(opts))return {pulled:0,pushed:0,deleted:0,conflicts:0,backups:[],errors:[],skipped:"auto"};
  const lock=await acquireLock();
  try{
@@ -348,50 +406,91 @@ async function runOnce(opts){
   const report={pulled:0,pushed:0,deleted:0,conflicts:0,backups:[],errors:[]};
   try{
    if(!connected()&&!restoreSession()){if(opts.interactive)await connect();else throw Error("Drive belum terhubung")}
+   assert(epoch===authEpoch&&key===cacheKey(),"Drive account changed before sync; retry");
+   runningEpoch=epoch;
    emit("syncing","Sync database…");
    syncRunCount++;
-   const cache=readCache();
+   const before=readCache(),cache=JSON.parse(JSON.stringify(before));
    for(const kind of Object.keys(KINDS)){tickLock();await syncKind(kind,cache,report)}
-   cache.syncedAt=new Date().toISOString();writeCache(cache);
+   assert(epoch===authEpoch&&key===cacheKey(),"Drive account changed during sync");
+   await commitSync(before,cache,!report.errors.length,key,epoch);
    lastSyncOk=!report.errors.length;lastSyncFailed=!!report.errors.length;
    emit(report.errors.length?"error":"synced",report.errors.length?"Sync sebagian gagal: "+report.errors[0]:
     "Tersinkron · "+count("bergerak")+" animasi · "+count("beraksi")+" adegan"+(report.conflicts?" · "+report.conflicts+" konflik (backup disimpan)":""));
    return report;
   }catch(e){lastSyncOk=false;lastSyncFailed=true;emit("error","Sync gagal: "+e.message+" · pakai cache offline");throw e}
- }finally{releaseLock()}
+ }finally{runningEpoch=null;releaseLock()}
 }
 async function sync(opts={}){
  if(opts.auto&&!syncing&&skipAuto(opts))return {pulled:0,pushed:0,deleted:0,conflicts:0,backups:[],errors:[],skipped:"auto"};
  if(syncing)return syncing;
- const run=runOnce(opts);
+ const run=runOnce(opts).catch(e=>{lastSyncOk=false;lastSyncFailed=true;emit("error",e.message);throw e});
  syncing=flushDebounce(run).finally(()=>{syncing=null});
  return syncing;
 }
 function count(kind){return Object.values(readCache().kinds[kind]).filter(r=>!r.deleted).length}
 /* ---------------- public read / write ---------------- */
 let cacheGate=Promise.resolve();
-function withCacheWrite(fn){const next=cacheGate.then(fn,fn);cacheGate=next.then(()=>{},()=>{});return next}
+function withCacheWrite(fn){
+ const run=()=>root?.navigator?.locks?.request?
+  root.navigator.locks.request(cacheKey()+":write",{mode:"exclusive"},fn):fn();
+ const next=cacheGate.then(run,run);cacheGate=next.then(()=>{},()=>{});return next;
+}
+// Network I/O works on a snapshot. Commit only rows that have not been edited
+// since that snapshot; carry verified upload receipts forward to newer edits.
+function commitSync(before,result,complete,key,epoch){return withCacheWrite(()=>{
+ assert(key===cacheKey()&&epoch===authEpoch,"Drive account changed before cache commit");
+ const current=readCache();
+ for(const kind of Object.keys(KINDS)){
+  const old=before.kinds[kind],done=result.kinds[kind],live=current.kinds[kind];
+  for(const id of new Set([...Object.keys(old),...Object.keys(done)])){
+   const a=old[id],b=done[id],c=live[id];
+   if(canonical(c)===canonical(a)){
+    if(b)live[id]=b;else delete live[id];
+   }else if(b&&!b.dirty&&a?.sha===b.sha){
+    // The old revision was uploaded while a new edit/delete was saved.
+    live[id]=c?{...c,fileId:b.fileId,baseSha:b.sha}:
+     {...b,deleted:true,dirty:true};
+   }else if(!b&&a&&c?.dirty){
+    // Remote deletion completed while this tab recreated/edited the row.
+    if(c.deleted)delete live[id];else live[id]={...c,fileId:"",baseSha:""};
+   }
+  }
+ }
+ if(complete)current.syncedAt=new Date().toISOString();
+ assert(writeCache(current),"Cache penuh: hasil sync belum tersimpan");
+})}
 function all(kind){assert(KINDS[kind],"Unknown kind");return Object.values(readCache().kinds[kind]).filter(r=>!r.deleted).map(r=>r.entry).sort((a,b)=>a.name.localeCompare(b.name))}
 function get(kind,id){const r=readCache().kinds[kind]?.[id];return r&&!r.deleted?r.entry:null}
 function pending(){const c=readCache();let n=0;for(const k of Object.keys(KINDS))for(const r of Object.values(c.kinds[k]))if(r.dirty||r.deleted)n++;return n}
 async function save(kind,entry,opts={}){
+ if(connected()||restoreSession())await ensureAccount();
+ const key=cacheKey();
  const e=await withCacheWrite(async()=>{
+  // Re-read after hashing too: browsers without Web Locks must not overwrite
+  // unrelated entries saved by another tab during the asynchronous digest.
+  for(;;){
   const c=readCache(),prev=c.kinds[kind][entry.id];
   const stamp=new Date().toISOString();
   const out=validate(kind,{...entry,rev:(prev?.entry?.rev||0)+1,updated:stamp,created:prev?.entry?.created||entry.created||stamp},poses);
   const sha=await sha256(canonical(out));
+  assert(key===cacheKey(),"Drive account changed while saving; retry");
+  const latest=readCache();
+  if(canonical(latest.kinds[kind][entry.id])!==canonical(prev))continue;
   const row={entry:out,sha,baseSha:prev?.baseSha||"",fileId:prev?.fileId||"",dirty:true};
   if(opts.overwrite&&prev&&!prev.deleted)row.backupOf=prev.backupOf||prev.entry; // replaced version → Drive Backup on push
-  c.kinds[kind][out.id]=row;
-  assert(writeCache(c),"Cache penuh: simpan gagal");
+  latest.kinds[kind][out.id]=row;
+  assert(writeCache(latest),"Cache penuh: simpan gagal");
   return out;
+  }
  });
  let synced=false;
  if(opts.sync!==false&&(connected()||restoreSession())){
   try{
    await scheduleSync({debounceMs:SAVE_DEBOUNCE_MS});
    if(readCache().kinds[kind][e.id]?.dirty&&!lastSyncFailed)await sync(); // trailing: this save landed after the in-flight pass
-   synced=!readCache().kinds[kind][e.id]?.dirty;
+   const row=readCache().kinds[kind][e.id];
+   synced=key===cacheKey()&&!!row&&!row.dirty&&!row.deleted&&row.sha===await sha256(canonical(e))&&row.baseSha===row.sha;
   }catch{}
  }
  else emit("pending","Tersimpan offline · "+pending()+" belum di-sync");
@@ -400,8 +499,8 @@ async function save(kind,entry,opts={}){
 async function remove(kind,id,opts={}){
  const ok=await withCacheWrite(()=>{
   const c=readCache(),r=c.kinds[kind][id];if(!r)return false;
-  if(!r.fileId)delete c.kinds[kind][id];else c.kinds[kind][id]={...r,deleted:true,dirty:true};
-  writeCache(c);return true;
+  c.kinds[kind][id]={...r,deleted:true,dirty:true};
+  assert(writeCache(c),"Cache penuh: hapus gagal");return true;
  });
  if(!ok)return false;
  if(opts.sync!==false&&(connected()||restoreSession())){
@@ -441,11 +540,11 @@ function motion(ref){
 }
 function scene(id){return get("beraksi",id)}
 // fires when another tab (e.g. Mahluk Hidup) saved/synced the shared cache
-function onChange(cb){const h=e=>{if(e.key===CACHE_KEY)cb()};root?.addEventListener?.("storage",h);return()=>root?.removeEventListener?.("storage",h)}
-return Object.freeze({VERSION,ready,motion,scene,onChange,CLIENT,SCOPE,BASE_PATH,KINDS,BACKUP_FOLDER,FILE_SCHEMA,CACHE_KEY,MAX_FRAMES,MAX_ACTORS,TONES,
+function onChange(cb){const h=e=>{if(e.key===cacheKey())cb()};root?.addEventListener?.("storage",h);return()=>root?.removeEventListener?.("storage",h)}
+return Object.freeze({VERSION,ready,motion,scene,onChange,CLIENT,SCOPE,BASE_PATH,KINDS,BACKUP_FOLDER,FILE_SCHEMA,get CACHE_KEY(){return cacheKey()},MAX_FRAMES,MAX_ACTORS,TONES,
  slug,canonical,sha256,validate,validateBergerak,validateBeraksi,validateMotionLong,decide,
  sceneDuration,trackAt,emosiAt,drawOrder,
- connect,connected,disconnect,useToken,restoreSession,setFetch,onStatus,get state(){return state},
+ ensureAccount,hasLegacy,exportLegacy,recoverLegacy,get account(){return accountOwner},connect,connected,disconnect,useToken,restoreSession,setFetch,onStatus,get state(){return state},
  sync,scheduleSync,SAVE_DEBOUNCE_MS,syncRuns:()=>syncRunCount,
  all,get,save,remove,pending,readCache,exportAll,setPoses,loadBuiltin,resolveMotion,
  get builtin(){return builtin}});
