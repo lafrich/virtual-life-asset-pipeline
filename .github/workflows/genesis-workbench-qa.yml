@@ -132,6 +132,7 @@ jobs:
           node --check site/genesis-base.js
           node --check site/mahluk-hidup-shell.js
           node tests/test_genesis_base.cjs
+          node tests/test_genesis_paste.cjs
           node --check site/nova-genesis-loader.js
           node tests/test_nova_genesis.cjs
           node --check site/genesis-cloud.js
@@ -214,6 +215,22 @@ jobs:
             const vis=await page.evaluate(()=>[...document.querySelectorAll('#progress button')].filter(b=>b.offsetParent).map(b=>b.dataset.step));
             assert.deepStrictEqual(vis,['pixel','rig']);
             await page.locator('#edit-pixels').click();await page.locator('#pixelOverlay').waitFor({state:'visible'});
+            // Nova/Genesis: COPY without SELECT should crop actual part art,
+            // not the entire transparent 64x112 view (which makes paste invisible).
+            await page.locator('#pixelToolbarCopy').click();
+            const copied=await page.locator('#pixelStatus').textContent();
+            assert.match(copied,/^COPIED [1-9]\\d*×[1-9]\\d* PIXELS/,'pixel editor did not copy actual art');
+            assert(!copied.includes('64×112'),'default copy must crop the visible part bounds');
+            await page.locator('#pixelToolbarPaste').click();
+            const normalPaste=await page.locator('#pixelStatus').textContent();
+            assert.match(normalPaste,/^PASTED .*X\\d+ Y\\d+/,'Paste must give a movable target position');
+            await page.locator('#pixelUndo').click();
+            await page.locator('#pixelToolbarPasteFlip').click();
+            assert.match(await page.locator('#pixelStatus').textContent(),/^PASTED .*MIRRORED.*X\\d+ Y\\d+/,'Paste Flip must mirror the stamp');
+            // Switching view preserves copied pixels for cross-angle edits.
+            await page.locator('#pixelDirection').selectOption('sw');
+            await page.locator('#pixelToolbarPasteFlip').click();
+            assert.match(await page.locator('#pixelStatus').textContent(),/^PASTED .*MIRRORED.*SW/);
             await page.locator('#pixelClose').click();
             await page.locator('#review-matrix button[data-review-part="torso"][data-review-dir="sw"]').click();
             assert(await page.locator('#edit-pixels').isVisible(),'part change hid the 01 pixel editor panel');
