@@ -219,14 +219,14 @@ jobs:
             // not the entire transparent 64x112 view (which makes paste invisible).
             await page.locator('#pixelToolbarCopy').click();
             const copied=await page.locator('#pixelStatus').textContent();
-            assert.match(copied,/^COPIED [1-9]\\d*×[1-9]\\d* PIXELS/,'pixel editor did not copy actual art');
+            assert.match(copied,/^COPIED [1-9][0-9]*×[1-9][0-9]* PIXELS/,'pixel editor did not copy actual art');
             assert(!copied.includes('64×112'),'default copy must crop the visible part bounds');
             await page.locator('#pixelToolbarPaste').click();
             const normalPaste=await page.locator('#pixelStatus').textContent();
-            assert.match(normalPaste,/^PASTED .*X\\d+ Y\\d+/,'Paste must give a movable target position');
+            assert.match(normalPaste,/^PASTED .*X[0-9]+ Y[0-9]+/,'Paste must give a movable target position');
             await page.locator('#pixelUndo').click();
             await page.locator('#pixelToolbarPasteFlip').click();
-            assert.match(await page.locator('#pixelStatus').textContent(),/^PASTED .*MIRRORED.*X\\d+ Y\\d+/,'Paste Flip must mirror the stamp');
+            assert.match(await page.locator('#pixelStatus').textContent(),/^PASTED .*MIRRORED.*X[0-9]+ Y[0-9]+/,'Paste Flip must mirror the stamp');
             // Switching view preserves copied pixels for cross-angle edits.
             await page.locator('#pixelDirection').selectOption('sw');
             await page.locator('#pixelToolbarPasteFlip').click();
