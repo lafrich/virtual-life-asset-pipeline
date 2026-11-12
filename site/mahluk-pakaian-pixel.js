@@ -5,7 +5,7 @@
 (function(root){"use strict";
 const BASE=()=>root.MahlukPakaian,ED=()=>root.MH2PlanePixelEditor;
 const DIRS=["se","sw","ne","nw"];
-let modal=null,engine=null,openPath=null,opening=false,referenceSets={male:{},female:{}},referenceCanvas={};
+let modal=null,engine=null,openPath=null,opening=false,referenceSets={male:{},female:{}},referenceCanvas={},outlineSets={male:{},female:{},both:{}},activeOutline={};
 function atlasFromStrip(strip){
  const a=document.createElement("canvas");a.width=64;a.height=448;
  const g=a.getContext("2d");g.imageSmoothingEnabled=false;
@@ -33,6 +33,36 @@ function tinted(source,hex){
  g.globalCompositeOperation="source-over";
  return c;
 }
+/* Crisp 1px front contour remains visible over an opaque body-cover draft.
+ * Screen guide only: never added to the editable atlas or PNG export.
+ */
+function outlineOf(src,color){
+ const c=document.createElement("canvas");c.width=64;c.height=112;
+ if(!src)return c;
+ const g=c.getContext("2d"),from=document.createElement("canvas");
+ from.width=64;from.height=112;const fg=from.getContext("2d",{willReadFrequently:true});
+ fg.drawImage(src,0,0,64,112);
+ const input=fg.getImageData(0,0,64,112).data,out=g.createImageData(64,112);
+ const rgb=color.match(/[0-9A-F]{2}/ig).map(v=>parseInt(v,16));
+ for(let y=0;y<112;y++)for(let x=0;x<64;x++){
+  const i=y*64+x,offset=i*4;if(!input[offset+3])continue;
+  if((x>0&&input[(i-1)*4+3])&&(x<63&&input[(i+1)*4+3])&&
+     (y>0&&input[(i-64)*4+3])&&(y<111&&input[(i+64)*4+3]))continue;
+  out.data[offset]=rgb[0];out.data[offset+1]=rgb[1];
+  out.data[offset+2]=rgb[2];out.data[offset+3]=255;
+ }
+ g.putImageData(out,0,0);return c;
+}
+function buildOutlines(){
+ outlineSets={male:{},female:{},both:{}};
+ for(const d of DIRS){
+  const male=outlineOf(referenceSets.male?.[d],"#008AD1"),female=outlineOf(referenceSets.female?.[d],"#E15395");
+  outlineSets.male[d]=male;outlineSets.female[d]=female;
+  const c=document.createElement("canvas");c.width=64;c.height=112;
+  const g=c.getContext("2d");g.drawImage(male,0,0);g.globalAlpha=.75;g.drawImage(female,0,0);
+  outlineSets.both[d]=c;
+ }
+}
 function compositeReferences(male,female){
  const result={};
  for(const d of DIRS){
@@ -49,6 +79,7 @@ function updateReferences(){
  const v=modal.querySelector("#pk-ghost-gender").value;
  const imgs=v==="current"?referenceSets[modal.dataset.editGender]||{}:
   v==="both"?referenceCanvas:referenceSets[v]||{};
+ activeOutline=v==="current"?outlineSets[modal.dataset.editGender]||{}:outlineSets[v]||{};
  engine.setReferenceImages(imgs);
  for(const e of modal.querySelectorAll("[data-ref-dir]")){
   const active=e.dataset.refDir===engine.getDir();
@@ -107,7 +138,15 @@ function init(){
   return ok;
  };
  engine=ED().create({overlay:modal,canvas,
-  onApply,onSaveDefault:onSave,onRestore:()=>{},onDirectionChange:(dir)=>{BASE().pixelSelectDirection(dir);updateReferences()}});
+  onApply,onSaveDefault:onSave,onRestore:()=>{},onDirectionChange:(dir)=>{BASE().pixelSelectDirection(dir);updateReferences()},
+  guide:(ctx,dir,u,v,phase)=>{
+   if(phase!=="front"||!modal.querySelector("#pixelOnion")?.checked)return;
+   const pic=activeOutline[dir];if(!pic)return;
+   const opacity=Number(modal.querySelector("#pixelMaleOpacity")?.value||35)/100;
+   ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha=Math.min(.9,Math.max(.15,opacity));
+   ctx.drawImage(pic,0,0,ctx.canvas.width,ctx.canvas.height);ctx.restore();
+  }
+ });
  modal.querySelector("#pk-ghost-gender").onchange=updateReferences;
  modal.querySelector("#pkExportPixel").onclick=async()=>{
   const b=modal.querySelector("#pkExportPixel");b.disabled=true;
@@ -133,6 +172,7 @@ async function open(){
   referenceSets={male:await baseReferences("male",data.tone),
    female:await baseReferences("female",data.tone)};
   referenceCanvas=compositeReferences(referenceSets.male,referenceSets.female);
+  buildOutlines();
   modal.dataset.editGender=data.gender;
   modal.querySelector("#pk-ghost-gender").value="current";
   renderReferenceMatrix();
