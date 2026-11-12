@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#194988">
+<title>LGR · Wardrobe Fit — Genesis Pixel Editor</title>
+<link rel="stylesheet" href="./mahluk-subapps.css?v=mh-sync-1">
+<link rel="stylesheet" href="./mahluk-action-frame-pixel.css?v=genesis-workbench-v1">
+<link rel="stylesheet" href="./mahluk-pakaian.css?v=body-cover-1">
+<style>
+html,body{height:100%;margin:0;background:#abc1dd;font:12px Tahoma,Arial,sans-serif}
+*{box-sizing:border-box}
+#root{height:100dvh;min-height:0;display:flex;flex-direction:column}
+header{min-height:42px;background:linear-gradient(90deg,#0f357b,#4084cb);color:#fff;padding:8px 12px;display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+header strong{font-size:13px}header small{font-size:11px;opacity:.9}
+header a{color:#fff;font-weight:700;margin-left:auto}
+#pakaianpanel{flex:1;min-height:0;overflow:auto}
+.pk-cover-controls{display:flex;align-items:flex-end;flex-wrap:wrap;gap:6px;margin:8px 0}
+.pk-cover-controls label{flex:1;min-width:150px;margin:0}
+.pk-cover-controls button{flex:1;min-width:155px}
+.pk-cover-controls button.primary{background:#e1eefc;border:1px solid #3570b0;font-weight:bold}
+@media(max-width:700px){header small{display:none}header{padding:7px 9px}.pk-layout{display:flex;flex-direction:column}.pk-aside,.pk-main,.pk-right{width:100%}}
+</style>
+</head>
+<body>
+<div id="root">
+<header><strong>▨ LGR WARDROBE FIT · PIXEL EDITOR</strong>
+<small>Genesis official-9 • source mask → editable KEY layer • 4 arah</small>
+<a href="./genesis-base.html">Genesis Base ↗</a></header>
+<section id="pakaianpanel" aria-label="Editor Pakaian LGR berbasis Genesis"></section>
+</div>
+<script src="./lafrich-puppet-core.js"></script>
+<script src="./lgr1-raster.js"></script>
+<script src="./lafrich-puppet-renderer.js"></script>
+<script src="./lgr1-motion.js"></script>
+<script src="./lgr-skin.js"></script>
+<script src="./lgr-wear.js"></script>
+<script src="./lgr-db.js"></script>
+<script src="./lgr-actor.js"></script>
+<script src="./lgr-wardrobe-cover.js?v=body-cover-1"></script>
+<script src="./emotion-studio/shared-pixel-selection.js"></script>
+<script src="./emotion-studio/shared-pixel-editor.js"></script>
+<script src="./mahluk-pakaian.js?v=body-cover-1"></script>
+<script src="./mahluk-pakaian-pixel.js?v=body-cover-1"></script>
+<script>
+window.addEventListener("DOMContentLoaded",()=>{
+ Promise.resolve(window.MahlukPakaian.init(document.getElementById("pakaianpanel")))
+ .catch(e=>{const p=document.getElementById("pakaianpanel");
+ p.textContent="Editor gagal dimuat: "+e.message;console.error(e)});
+});
+</script>
+</body>
+</html>
