@@ -397,6 +397,89 @@ async function translateView(dx,dy){
  root.dispatchEvent(new CustomEvent("lgr-wardrobe-nudged",{detail:{id:kID(),dir:S.dir,side:S.side,dx,dy}}));
  return true;
 }
+/* Six-base Genesis Adjust: artist may paint OUTSIDE the original garment alpha
+ * without editing the anatomy. A single commit records one undo step and only
+ * touches the selected 64x112 view/layer. Pixel-key colours stay canonical.
+ */
+function fitKeyCodes(group){
+ return group==="top"?["C1","C2","C3","C4","C5","O1","O2","O3","O4","O5"]:
+  group==="pants"?["P1","P2","P3","P4"]:group==="shoes"?["S0","S1","S2","S3"]:[];
+}
+function fitKeyColor(code){
+ const hex=root.LGRWear.K[code];
+ if(!hex)return null;
+ return [parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16),255];
+}
+async function paintFitStroke({points,erase=false,ink=null,size=1}={}){
+ if(!["top","pants","shoes"].includes(S.group))throw Error("Base garment only");
+ if(!Array.isArray(points)||!points.length||points.length>12000)throw Error("No valid stroke");
+ const code=fitKeyCodes(S.group).includes(ink)?ink:fitKeyCodes(S.group)[1]||fitKeyCodes(S.group)[0];
+ const color=erase?[0,0,0,0]:fitKeyColor(code);
+ const p=pathOf(),c=await buffer(p),im=getCell(c),old=new Uint8ClampedArray(im.data);
+ const radius=Math.max(0,Math.min(3,Math.trunc(size)-1));
+ const setPixel=(x,y)=>{
+  for(let yy=y-radius;yy<=y+radius;yy++)for(let xx=x-radius;xx<=x+radius;xx++){
+   if(xx<0||xx>=64||yy<0||yy>=112)continue;
+   im.data.set(color,(yy*64+xx)*4);
+  }
+ };
+ const coords=points.map(p=>[Math.round(Number(p.x)),Math.round(Number(p.y))])
+   .filter(p=>p.every(Number.isFinite));
+ for(let i=0;i<coords.length;i++){
+  const [x,y]=coords[i];setPixel(x,y);
+  if(i>0){let [px,py]=coords[i-1],dx=Math.abs(x-px),dy=Math.abs(y-py),
+   sx=px<x?1:-1,sy=py<y?1:-1,err=dx-dy,n=0;
+   while((px!==x||py!==y)&&n++<120){
+    const e2=2*err;if(e2>-dy){err-=dy;px+=sx}if(e2<dx){err+=dx;py+=sy}
+    setPixel(px,py);
+   }
+  }
+ }
+ if(im.data.every((x,i)=>x===old[i]))return {changed:0};
+ pushUndo({data:old});putCell(c,im);markDirty(p);void preview();
+ root.dispatchEvent(new CustomEvent("lgr-wardrobe-fit-edited",{detail:{group:S.group,gender:S.gender,dir:S.dir,side:S.side}}));
+ return {changed:1};
+}
+async function coverFitSkin(radius=1){
+ if(!["top","pants","shoes"].includes(S.group))throw Error("Select a base garment");
+ radius=Math.max(1,Math.min(3,Math.trunc(Number(radius))||1));
+ const p=pathOf(),c=await buffer(p),im=getCell(c),old=new Uint8ClampedArray(im.data);
+ const master=await root.LGRActor.master(S.gender,S.tone),
+  prep=await root.LafrichPuppetRenderer.prepare(master,null,S.dir),
+  bare=root.LafrichPuppetRenderer.render(prep,root.LafrichPuppetCore.blankPose());
+ const body=bare.getContext("2d",{willReadFrequently:true}).getImageData(0,0,64,112).data;
+ const allowed=fitKeyCodes(S.group).map(fitKeyColor);
+ const allowedSet=new Set(allowed.map(x=>x.slice(0,3).join(",")));
+ const inside=(x,y)=>x>=0&&x<64&&y>=0&&y<112;
+ const hasBody=(x,y)=>inside(x,y)&&body[(y*64+x)*4+3]>0;
+ const alpha=(x,y)=>inside(x,y)?old[(y*64+x)*4+3]:0;
+ let yMin=112,yMax=-1;
+ for(let k=0;k<64*112;k++)if(old[k*4+3]){const y=(k/64)|0;yMin=Math.min(yMin,y);yMax=Math.max(yMax,y)}
+ if(yMax<0)throw Error("Garment is empty");
+ const limits=S.group==="top"?[36,89]:S.group==="pants"?[65,108]:[84,111];
+ const lower=Math.max(limits[0],yMin-radius),upper=Math.min(limits[1],yMax+radius);
+ let filled=0;
+ for(let y=lower;y<=upper;y++)for(let x=0;x<64;x++){
+  const k=(y*64+x)*4;
+  if(old[k+3])continue;
+  const nearBody=hasBody(x,y)||hasBody(x-1,y)||hasBody(x+1,y)||hasBody(x,y-1)||hasBody(x,y+1);
+  if(!nearBody)continue;
+  let best=null,bestDist=1e5;
+  for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
+   const xx=x+dx,yy=y+dy;if(!inside(xx,yy))continue;
+   const at=(yy*64+xx)*4;if(!old[at+3])continue;
+   const rgb=[old[at],old[at+1],old[at+2]];
+   if(!allowedSet.has(rgb.join(",")))continue;
+   const dist=Math.abs(dx)+Math.abs(dy);
+   if(dist<bestDist){bestDist=dist;best=[...rgb,255]}
+  }
+  if(best){im.data.set(best,k);filled++}
+ }
+ if(!filled)return {filled:0};
+ pushUndo({data:old});putCell(c,im);markDirty(p);void preview();
+ root.dispatchEvent(new CustomEvent("lgr-wardrobe-fit-edited",{detail:{filled,group:S.group,gender:S.gender,dir:S.dir,side:S.side}}));
+ return {filled};
+}
 async function selectOutfit({gender,group,variant,dir,side}={}){
  if(!["male","female"].includes(gender)||!["top","pants","shoes"].includes(group))
   throw Error("Select valid Male/Female garment");
@@ -519,5 +602,5 @@ async function init(panel){
   controls();updateBaseLabel();refreshOptions();S.ready=true;await openItem();say("PAKAIAN.EXE aktif · "+S.index.items.length+" bahan stok lama untuk direvisi · Genesis "+S.base+". Master baru format v2.");
  }catch(e){console.error(e);say("Gagal memuat PAKAIAN.EXE: "+e.message,true)}
 }
-root.MahlukPakaian=Object.freeze({init,pixelContext,pixelCommit,pixelSelectDirection,exportDraft,translateView,selectOutfit,currentOutfit,saveOutfitDraft,refreshOutfit});
+root.MahlukPakaian=Object.freeze({init,pixelContext,pixelCommit,pixelSelectDirection,exportDraft,translateView,selectOutfit,currentOutfit,saveOutfitDraft,refreshOutfit,paintFitStroke,coverFitSkin});
 })(window);
