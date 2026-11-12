@@ -103,8 +103,8 @@ const fresh=()=>{S.undo=[];S.redo=[];S.selection=null;S.copied=null;};
 async function openItem(){
  if(S.changed.size)saveDraft(true);
  S.bufs.clear();S.changed.clear();fresh();
- S.draft=allVersions()[kID()]||null;
- $("pk-version").textContent=S.draft?(S.draft.approved?"MASTER LOKAL":"DRAFT"):"STOK / BELUM DIEDIT";
+ S.draft=allVersions()[kID()]||root.LGRDB?.get?.("pakaian",S.gender+"_"+S.group+"_"+S.variant)||null;
+ $("pk-version").textContent=S.draft?(S.draft.approved?"MASTER v2":"DRAFT"):"STOK / BELUM DIEDIT";
  $("pk-note").value=S.draft?.note||"";
  $("pk-side").disabled=!canSide();if(!canSide())S.side="front";$("pk-side").value=S.side;
  palettes();await draw();void preview();
@@ -112,10 +112,10 @@ async function openItem(){
 function saveDraft(silent=false,approved=false){
  const store=allVersions(),old=store[kID()]||{},files=S.resetPending?{}:{...(old.files||{})};
  for(const p of S.changed)if(S.bufs.has(p))files[p]=S.bufs.get(p).toDataURL("image/png");
- const out={format:"lgr1-wardrobe-master-v1",gender:S.gender,group:S.group,variant:S.variant,baseVersion:S.basePackages[S.gender]?"official-5-local":S.base,dirs:DIRS,cell:[64,112],keyColours:true,updated:new Date().toISOString(),note:$("pk-note").value,files,approved:!!approved};
+ const out={format:"lgr1-wardrobe-master-v1",gender:S.gender,group:S.group,variant:S.variant,baseVersion:S.base,dirs:DIRS,cell:[64,112],keyColours:true,updated:new Date().toISOString(),note:$("pk-note").value,files,approved:!!approved};
  store[kID()]=out;S.resetPending=false;
  try{localStorage.setItem(KEY,JSON.stringify(store));S.draft=out;S.changed.clear();$("pk-version").textContent=approved?"MASTER LOKAL":"DRAFT";if(!silent)say(approved?"Master ditandai untuk review lokal. Export untuk integrasi game.":"Draft tersimpan di browser ini.")}
- catch(e){say("Gagal simpan: "+e.message,true)}
+ catch(e){say("Gagal simpan: "+e.message,true);throw e}
  return out;
 }
 function markDirty(path){S.changed.add(path);S.edited=true;$("pk-version").textContent="● UNSAVED";void draw()}
@@ -177,43 +177,9 @@ async function makeWear(d){
  return layers;
 }
 function updateBaseLabel(){
- const pkg=S.basePackages[S.gender],name=pkg?"NOVA OFFICIAL 5 (import lokal)":"RUNTIME "+S.base;
- const label=$("pk-base-label");if(label)label.textContent="Base preview: "+name+(pkg?" · tidak mengganti Genesis game":" · import NOVA male/female untuk review");
+ const label=$("pk-base-label");if(label)label.textContent="Base aktif: "+S.base+" (Genesis resmi dari repository)";
 }
-async function importBase(file){
- if(!file||file.size>3000000)throw Error("JSON Genesis terlalu besar");
- const pkg=JSON.parse(await file.text()),C=root.LafrichPuppetCore;
- if(pkg.format!=="lafrich-genesis-base-v1"||!["male","female"].includes(pkg.gender)||!pkg.rig||pkg.rig.gender!==pkg.gender||!pkg.rigSha256)
-  throw Error("Paket tidak valid, perlu genesis-base-male/female-official-5.json");
- const bytes=new TextEncoder().encode(JSON.stringify(pkg.rig)),hash=new Uint8Array(await crypto.subtle.digest("SHA-256",bytes));
- const sha=Array.from(hash,b=>b.toString(16).padStart(2,"0")).join("");
- if(sha!==pkg.rigSha256)throw Error("Checksum Genesis tidak cocok");
- C.validateMaster(pkg.rig);
- S.basePackages[pkg.gender]=pkg;S.masterCache={};
- try{localStorage.setItem("lgr1-pakaian-preview-bases-v1",JSON.stringify(S.basePackages))}
- catch(e){throw Error("Base berhasil dibaca, tetapi gagal menyimpan lokal: "+e.message)}
- updateBaseLabel();await draw();void preview();
- say("NOVA Official 5 "+pkg.gender+" terverifikasi. Preview memakai base ini, tanpa mengubah master Genesis di repo.");
-}
-async function rigFor(){
- const pkg=S.basePackages[S.gender];
- if(!pkg)return root.LGRActor.master(S.gender,S.tone);
- const cacheKey=S.gender+"|"+S.tone+"|"+pkg.rigSha256;
- if(S.masterCache[cacheKey])return S.masterCache[cacheKey];
- const skin=root.LGRSkin.rampFor(S.tone),rig={...pkg.rig,layers:{}};
- for(const [name,views] of Object.entries(pkg.rig.layers||{})){
-  rig.layers[name]={};
-  for(const [dir,src] of Object.entries(views||{})){
-   if(!src){rig.layers[name][dir]=src;continue}
-   const im=await loadImage(src),c=cv(),g=c.getContext("2d",{willReadFrequently:true});
-   g.drawImage(im,0,0);const data=g.getImageData(0,0,64,112);
-   if(root.LGRSkin.fromKey(data.data,skin)){g.putImageData(data,0,0);rig.layers[name][dir]=c.toDataURL("image/png")}
-   else rig.layers[name][dir]=src;
-  }
- }
- S.masterCache[cacheKey]=root.LafrichPuppetCore.validateMaster(rig);
- return S.masterCache[cacheKey];
-}
+async function rigFor(){return root.LGRActor.master(S.gender,S.tone)}
 async function preview(){
  if(!S.ready)return;
  const ticket=++S.previewToken;
@@ -238,21 +204,54 @@ function download(name,content){
  const blob=new Blob([content],{type:"application/json"}),url=URL.createObjectURL(blob),a=make("a",{href:url,download:name});
  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
-function exportMaster(){
- const data=saveDraft(true,!!S.draft?.approved),n="pakaian-"+S.gender+"-"+S.group+"-"+S.variant+".json";
- download(n,JSON.stringify(data,null,2));say("Export "+n+" — belum otomatis diterapkan ke game.");
+async function buildMaster(){
+ if(S.changed.size)saveDraft(true);
+ const DB=root.LGRDB;if(!DB)throw Error("Database belum terhubung");
+ const approved=(await root.LGRActor.loadBases())[S.gender];
+ if(!approved?.pkg?.rigSha256)throw Error("Official Genesis aktif belum tersedia");
+ const files={},paths=canSide()?[pathOf("front"),pathOf("back")]:[pathOf("front")];
+ for(const path of paths){
+  if(!validPath(path))continue;
+  const buf=await buffer(path);if(buf)files[path]=buf.toDataURL("image/png");
+ }
+ const now=new Date().toISOString();
+ const entry={format:"lgr1-pakaian-v2",schema:2,id:S.gender+"_"+S.group+"_"+S.variant,
+  gender:S.gender,group:S.group,variant:S.variant,name:S.variant.replace(/_/g," "),
+  baseVersion:approved.version,baseRigSha256:approved.pkg.rigSha256,
+  files,note:$("pk-note").value,approved:true,updated:now,created:now,rev:1};
+ return DB.validate("pakaian",entry);
+}
+async function saveMaster(){
+ const btn=$("pk-approve");btn.disabled=true;
+ try{
+  const record=await buildMaster(),result=await root.LGRDB.save("pakaian",record,{overwrite:true});
+  const local=allVersions();delete local[kID()];localStorage.setItem(KEY,JSON.stringify(local));
+  S.draft=result.entry;S.changed.clear();
+  $("pk-version").textContent=result.synced?"✓ MASTER v2 · DRIVE":"● MASTER v2 · PENDING SYNC";
+  root.LGRWear?.clearCache?.();root.LGRActor?.clearCaches?.();root.LGRGame?.clear?.();
+  await draw();await preview();
+  say(result.synced?"Master Pakaian v2 aktif & terverifikasi di Drive. Game membaca versi baru.":
+   "Master Pakaian v2 aktif di cache perangkat ini, tapi BELUM sync ke Drive. Hubungkan Drive lalu tekan SYNC.");
+ }catch(e){say("SAVE MASTER GAGAL: "+e.message,true)}
+ finally{btn.disabled=false}
+}
+async function exportMaster(){
+ try{
+  const data=await buildMaster(),n="pakaian-v2-"+S.gender+"-"+S.group+"-"+S.variant+".json";
+  download(n,JSON.stringify(data,null,2));say("Export "+n+" (master v2, tidak otomatis publish).");
+ }catch(e){say("Export gagal: "+e.message,true)}
 }
 async function importMaster(f){
  if(!f||f.size>3000000)throw Error("JSON maksimal 3 MB");
  const p=JSON.parse(await f.text());
- if(p.format!=="lgr1-wardrobe-master-v1"||!GROUPS.includes(p.group)||!["male","female"].includes(p.gender)||typeof p.variant!=="string"||!p.files||typeof p.files!=="object")throw Error("Format master pakaian tidak cocok");
+ if(!["lgr1-wardrobe-master-v1","lgr1-pakaian-v2"].includes(p.format)||!GROUPS.includes(p.group)||!["male","female"].includes(p.gender)||typeof p.variant!=="string"||!p.files||typeof p.files!=="object")throw Error("Format master pakaian tidak cocok");
  const files={};for(const [k,v] of Object.entries(p.files)){if(!validPath(k)||typeof v!=="string"||!v.startsWith("data:image/png;base64,")||v.length>800000)throw Error("Asset key invalid: "+k);files[k]=v}
  if(S.changed.size)saveDraft(true);S.gender=p.gender;S.group=p.group;S.variant=p.variant;
  $("pk-gender").value=S.gender;$("pk-group").value=S.group;refreshOptions();
  if(!options().includes(S.variant))throw Error("Varian tidak ada dalam database stok");
  $("pk-item").value=S.variant;
  const all=allVersions();all[kID()]={...p,files,approved:false,updated:new Date().toISOString()};
- localStorage.setItem(KEY,JSON.stringify(all));await openItem();say("Master JSON diimport sebagai draft, tidak menimpa master game.");
+ localStorage.setItem(KEY,JSON.stringify(all));await openItem();say("Import sebagai draft. Tekan SAVE MASTER untuk mengaktifkan format v2 di game.");
 }
 function refreshOptions(){
  const opts=options();S.variant=setSelect("pk-item",opts.map(x=>[x,x.replace(/_/g," ")]),S.variant);
@@ -266,11 +265,10 @@ function controls(){
  $("pk-color").onchange=async e=>{S.color=e.target.value;await draw();void preview()};
  $("pk-motion").onchange=e=>{S.motion=e.target.value;S.frame=0;void preview()};
  $("pk-ghost").onchange=()=>void draw();
- $("pk-base-import").onchange=e=>{const f=e.target.files?.[0];if(f)importBase(f).catch(x=>say("Base: "+x.message,true));e.target.value=""};
  $("pk-dir").onclick=e=>{const b=e.target.closest("button[data-dir]");if(!b)return;S.dir=b.dataset.dir;fresh();$("pk-direction").textContent=S.dir.toUpperCase();void draw()};
  for(let i=0;i<4;i++)$("pk-v"+i).onclick=()=>{S.dir=DIRS[i];fresh();$("pk-direction").textContent=S.dir.toUpperCase();void draw()};
  $("pk-save").onclick=()=>saveDraft();
- $("pk-approve").onclick=()=>{if(!confirm("Tandai sebagai master lokal? Ini belum mengubah file stock atau Google Drive."))return;saveDraft(false,true)};
+ $("pk-approve").onclick=()=>{if(!confirm("Simpan sebagai MASTER PAKAIAN v2 untuk Genesis aktif? Master sebelumnya dibackup saat tersinkron ke Drive."))return;void saveMaster()};
  $("pk-export").onclick=exportMaster;
  $("pk-import").onchange=e=>{const f=e.target.files?.[0];if(f)importMaster(f).catch(x=>say(x.message,true));e.target.value=""};
  $("pk-reset").onclick=async()=>{if(!confirm("Kembalikan item ini ke sprite stok? Draft lama tetap ada sampai kamu SAVE."))return;S.draft=null;S.resetPending=true;S.bufs.clear();S.changed.clear();fresh();await draw();void preview();say("Sprite stok dimuat. SAVE untuk menyimpan reset.")};
@@ -296,13 +294,13 @@ function controls(){
 }
 async function init(panel){
  if(S.ready)return;
- panel.innerHTML='<div class="pk-layout"><aside class="pk-aside"><div class="pk-box"><h3>DATABASE PAKAIAN</h3><label>Gender<select id="pk-gender"><option value="male">Male</option><option value="female">Female</option></select></label><label>Kategori<select id="pk-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option><option value="hair">Rambut</option><option value="glasses">Kacamata</option><option value="facial">Facial Hair</option></select></label><label>Item<select id="pk-item"></select></label><label>Layer<select id="pk-side"><option value="front">Depan</option><option value="back">Belakang</option></select></label><div class="pk-tag" id="pk-file"></div><div class="pk-tag" id="pk-version">STOK</div></div><div class="pk-box"><h3>WARNA / KEY PIXEL</h3><label>Skin Tone<select id="pk-tone"><option value="light">Light</option><option value="porcelain">Porcelain</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label><label>Warna<select id="pk-color"></select></label><div id="pk-inks" class="pk-inks"></div><p class="pk-small">Pixel disimpan sebagai Color Key, warna preview tidak dibakar ke sprite.</p></div><div class="pk-box"><h3>VERSI / MASTER</h3><label>Catatan versi<textarea id="pk-note" rows="3" placeholder="Catatan penyesuaian..."></textarea></label><button id="pk-save">▣ SAVE DRAFT</button><button id="pk-approve">✓ TANDAI MASTER (LOKAL)</button><button id="pk-export">↓ EXPORT MASTER JSON</button><label class="pk-file">↑ IMPORT MASTER JSON<input id="pk-import" type="file" accept=".json,application/json"></label><button id="pk-reset">↶ RESET KE STOCK</button><p class="pk-small">Draft dan master di browser lokal. Belum auto-sync Drive atau mengganti asset Mainkan.</p></div></aside><main class="pk-main"><div class="pk-box"><h3>01 · PIXEL EDITOR — <span id="pk-direction">SE</span></h3><div class="pk-tools"><button data-pk-tool="pen" aria-pressed="true">✎ PEN</button><button data-pk-tool="erase">⌫ ERASE</button><button data-pk-tool="fill">▧ FILL</button><button data-pk-tool="pick">♢ PICK</button><button data-pk-tool="select">▤ SELECT</button><button id="pk-copy">COPY</button><button id="pk-paste">PASTE</button><button id="pk-paste-flip">PASTE FLIP</button><button id="pk-undo">↶ UNDO</button><button id="pk-redo">↷ REDO</button></div><div id="pk-dir" class="pk-dir"><button data-dir="se">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button><label><input type="checkbox" id="pk-ghost" checked>Base overlay</label></div><div class="pk-canvas"><canvas id="pk-editor" width="64" height="112" aria-label="Pixel Editor 64 × 112"></canvas></div><div class="pk-views"><canvas id="pk-v0" width="64" height="112"></canvas><canvas id="pk-v1" width="64" height="112"></canvas><canvas id="pk-v2" width="64" height="112"></canvas><canvas id="pk-v3" width="64" height="112"></canvas></div></div></main><aside class="pk-right"><div class="pk-box"><h3>02 · REVIEW IN MOTION</h3><div class="pk-small" id="pk-base-label">Base preview: official runtime</div><label>↑ IMPORT NOVA BASE JSON<input id="pk-base-import" type="file" accept=".json,application/json"></label><label>Animasi<select id="pk-motion"><option value="idle">Idle</option><option value="walk">Walk</option><option value="bow">Bow</option><option value="sit">Sit</option><option value="wave">Wave</option></select></label><div class="pk-views pk-review"><canvas id="pk-r0" width="64" height="112"></canvas><canvas id="pk-r1" width="64" height="112"></canvas><canvas id="pk-r2" width="64" height="112"></canvas><canvas id="pk-r3" width="64" height="112"></canvas></div><button id="pk-play">▶ PLAY</button><span id="pk-motion-label">Idle · frame 1</span><p class="pk-small">Preview memakai LGR1Raster & animasi official. Yang berubah hanya layer pakaian.</p></div><div class="pk-box"><h3>03 · ALUR MASTER</h3><ol><li>Pilih pakaian + gender</li><li>Edit 4 view + front/back</li><li>Review idle, walk, bow, sit</li><li>Save Draft → review</li><li>Export master untuk ingest ke game</li></ol><p class="pk-small">Genesis, pivots, slicing dan master animasi tidak disentuh.</p></div><div id="pk-status" role="status">Memuat database pakaian…</div></aside></div>';
+ panel.innerHTML='<div class="pk-layout"><aside class="pk-aside"><div class="pk-box"><h3>DATABASE PAKAIAN</h3><label>Gender<select id="pk-gender"><option value="male">Male</option><option value="female">Female</option></select></label><label>Kategori<select id="pk-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option><option value="hair">Rambut</option><option value="glasses">Kacamata</option><option value="facial">Facial Hair</option></select></label><label>Item<select id="pk-item"></select></label><label>Layer<select id="pk-side"><option value="front">Depan</option><option value="back">Belakang</option></select></label><div class="pk-tag" id="pk-file"></div><div class="pk-tag" id="pk-version">STOK</div></div><div class="pk-box"><h3>WARNA / KEY PIXEL</h3><label>Skin Tone<select id="pk-tone"><option value="light">Light</option><option value="porcelain">Porcelain</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label><label>Warna<select id="pk-color"></select></label><div id="pk-inks" class="pk-inks"></div><p class="pk-small">Pixel disimpan sebagai Color Key, warna preview tidak dibakar ke sprite.</p></div><div class="pk-box"><h3>VERSI / MASTER</h3><label>Catatan versi<textarea id="pk-note" rows="3" placeholder="Catatan penyesuaian..."></textarea></label><button id="pk-save">▣ SAVE DRAFT</button><button id="pk-approve">✓ SAVE MASTER → GAME / DRIVE</button><button id="pk-export">↓ EXPORT MASTER JSON</button><label class="pk-file">↑ IMPORT MASTER JSON<input id="pk-import" type="file" accept=".json,application/json"></label><button id="pk-reset">↶ RESET KE STOCK</button><p class="pk-small">SAVE MASTER membuat master v2 aktif. Bila Drive tersambung, master tersinkron ke Membangun / Mahluk Hidup / Database / Pakaian.</p></div></aside><main class="pk-main"><div class="pk-box"><h3>01 · PIXEL EDITOR — <span id="pk-direction">SE</span></h3><div class="pk-tools"><button data-pk-tool="pen" aria-pressed="true">✎ PEN</button><button data-pk-tool="erase">⌫ ERASE</button><button data-pk-tool="fill">▧ FILL</button><button data-pk-tool="pick">♢ PICK</button><button data-pk-tool="select">▤ SELECT</button><button id="pk-copy">COPY</button><button id="pk-paste">PASTE</button><button id="pk-paste-flip">PASTE FLIP</button><button id="pk-undo">↶ UNDO</button><button id="pk-redo">↷ REDO</button></div><div id="pk-dir" class="pk-dir"><button data-dir="se">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button><label><input type="checkbox" id="pk-ghost" checked>Base overlay</label></div><div class="pk-canvas"><canvas id="pk-editor" width="64" height="112" aria-label="Pixel Editor 64 × 112"></canvas></div><div class="pk-views"><canvas id="pk-v0" width="64" height="112"></canvas><canvas id="pk-v1" width="64" height="112"></canvas><canvas id="pk-v2" width="64" height="112"></canvas><canvas id="pk-v3" width="64" height="112"></canvas></div></div></main><aside class="pk-right"><div class="pk-box"><h3>02 · REVIEW IN MOTION</h3><div class="pk-small" id="pk-base-label">Base aktif: official</div><label>Animasi<select id="pk-motion"><option value="idle">Idle</option><option value="walk">Walk</option><option value="bow">Bow</option><option value="sit">Sit</option><option value="wave">Wave</option></select></label><div class="pk-views pk-review"><canvas id="pk-r0" width="64" height="112"></canvas><canvas id="pk-r1" width="64" height="112"></canvas><canvas id="pk-r2" width="64" height="112"></canvas><canvas id="pk-r3" width="64" height="112"></canvas></div><button id="pk-play">▶ PLAY</button><span id="pk-motion-label">Idle · frame 1</span><p class="pk-small">Preview memakai LGR1Raster & animasi official. Yang berubah hanya layer pakaian.</p></div><div class="pk-box"><h3>03 · ALUR MASTER</h3><ol><li>Pilih pakaian + gender</li><li>Edit 4 view + front/back</li><li>Review idle, walk, bow, sit</li><li>Save Draft → review</li><li>Export master untuk ingest ke game</li></ol><p class="pk-small">Genesis, pivots, slicing dan master animasi tidak disentuh.</p></div><div id="pk-status" role="status">Memuat database pakaian…</div></aside></div>';
  try{
   S.index=await(await fetch(rootUrl()+BASE+"index.json",{cache:"no-store"})).json();
   if(S.index.format!=="lgr1-wear-index-v1"||!Array.isArray(S.index.items))throw Error("Index pakaian tidak valid");
   S.base=(await root.LGRActor.loadBases()).male.version;
-  S.basePackages=dbRead("lgr1-pakaian-preview-bases-v1");
-  controls();updateBaseLabel();refreshOptions();S.ready=true;await openItem();say("PAKAIAN.EXE aktif · "+S.index.items.length+" sprite stok · base runtime "+S.base+". Draft tersimpan lokal.");
+  S.basePackages={};
+  controls();updateBaseLabel();refreshOptions();S.ready=true;await openItem();say("PAKAIAN.EXE aktif · "+S.index.items.length+" bahan stok lama untuk direvisi · Genesis "+S.base+". Master baru format v2.");
  }catch(e){console.error(e);say("Gagal memuat PAKAIAN.EXE: "+e.message,true)}
 }
 root.MahlukPakaian=Object.freeze({init});
