@@ -8,6 +8,7 @@ const index=parse('archive/index-official-4.json');
 const active=parse('index.json');
 const nova5=parse('archive/index-official-5.json');
 const official6=parse('archive/index-official-6.json');
+const official7=parse('archive/index-official-7.json');
 const previous=parse('genesis-base-male.json');
 const archive=parse('archive/genesis-base-male-official-2.json');
 const v2Index=parse('archive/index-official-2.json');
@@ -92,7 +93,8 @@ test('official-4 promotes the Lafrich Female slicing without changing original a
 
 
 test('historical Nova official-5 and final official-6 stay archived while official-7 is active',()=>{
- assert.equal(active.version,'official-7');
+ assert.equal(active.version,'official-8');
+ assert.equal(official7.version,'official-7');
  assert.equal(official6.version,'official-6');
  assert.equal(nova5.version,'official-5');
  assert.equal(index.version,'official-4');
@@ -100,6 +102,6 @@ test('historical Nova official-5 and final official-6 stay archived while offici
  assert.equal(nova5.bases.female.package,'genesis-base-female-official-5.json');
  assert.equal(official6.bases.male.package,'genesis-base-male-official-6.json');
  assert.equal(official6.bases.female.package,'genesis-base-female-official-6.json');
- assert.equal(active.bases.male.package,'genesis-base-male-official-7.json');
- assert.equal(active.bases.female.package,'genesis-base-female-official-7.json');
+ assert.equal(active.bases.male.package,'genesis-base-male-official-8.json');
+ assert.equal(active.bases.female.package,'genesis-base-female-official-8.json');
 });

@@ -9,7 +9,7 @@ def sha(x): return hashlib.sha256(x).hexdigest()
 def im(uri): return Image.open(io.BytesIO(base64.b64decode(uri.split(",",1)[1]))).convert("RGBA")
 class GenesisOfficial7Test(unittest.TestCase):
  def test_active_final_sources(self):
-  index=read(B/"index.json")
+  index=read(B/"archive/index-official-7.json")
   self.assertEqual(index["version"],"official-7")
   self.assertEqual(read(B/"archive/index-official-6.json")["version"],"official-6")
   for g in ("male","female"):
