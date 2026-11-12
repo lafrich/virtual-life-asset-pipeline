@@ -69,10 +69,10 @@ assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/v6p-key-ramp-v1/);
   assert.strictEqual(pkg.skin.encoding,"v6p-key-ramp-v1");
   const raw=fs.readFileSync(path.join(__dirname,"..",B+e.source));
   assert.strictEqual(raw.length,e.sourceBytes);assert.strictEqual(crypto.createHash("sha256").update(raw).digest("hex"),e.sourceSha256,g+" source changed");
-  assert.strictEqual(JSON.parse(raw).format,"lgr-1-draft-v1");
-  assert(fs.existsSync(path.join(__dirname,"..",B+e.sheet)));
+  assert.strictEqual(JSON.parse(raw).format,e.sourceFormat);
+  if(e.sheet)assert(fs.existsSync(path.join(__dirname,"..",B+e.sheet)));
  }
- assert.match(app,/const OFFICIAL_BASE_VERSION="official-5"/);
+ assert.match(app,/const OFFICIAL_BASE_VERSION="official-6"/);
  assert.match(app,/rootPath\+info\.package/);
  assert.match(app,/info\.rigSha256/);
  assert.match(app,/rootPath\+info\.package/,"Genesis editor resolves the active package through the official index");

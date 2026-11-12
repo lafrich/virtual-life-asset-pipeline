@@ -15,7 +15,7 @@ def rgba(uri): return Image.open(io.BytesIO(base64.b64decode(uri.split(",",1)[1]
 
 class NovaOfficial5Test(unittest.TestCase):
  def test_nova_exact_source_and_rig(self):
-  ix=j(BASE/"index.json")
+  ix=j(BASE/"archive"/"index-official-5.json")
   self.assertEqual(ix["version"],"official-5")
   self.assertEqual(j(BASE/"archive"/"index-official-4.json")["version"],"official-4")
   for gender in ("male","female"):

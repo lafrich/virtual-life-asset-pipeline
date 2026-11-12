@@ -186,3 +186,19 @@ package's metadata was corrected to `lafrich_female`/`female`.
 `index.json` revision `official-5` now feeds LGRActor for gameplay, and
 Genesis Base uses it for fresh/reset drafts. Browser drafts are preserved until
 the user explicitly resets. Do not replace earlier official packages.
+
+
+### official-6 (2026-11-12): Latest final Male/Female packages and skin keys
+
+Lafrich supplied `male final.json` and `female final.json` after official-5.
+The active `index.json` now selects immutable `genesis-base-{male,female}-official-6.json`.
+Both uploads were already encoded with canonical V6P skin keys `i, h, e, a, 7, 5`;
+no new recoloring or changes to art were needed. All eleven masks, every 64×112 view,
+manual slices, pivots, placements, draw orders, and supplementary accents are preserved.
+The Female upload carried Male metadata (`lafrich_male`, `male`, `Lafrich Male`),
+which was corrected exclusively in the new Female package, and its rig checksum
+was recalculated. The previous official-5 index is archived in
+`archive/index-official-5.json`, with all earlier approved versions intact.
+Users change game character skin tone via six V6P ramps; custom tone is
+available in Genesis Base preview. Existing browser drafts must still use
+**RESET TO OFFICIAL BASE**; autosave is not silently overwritten.

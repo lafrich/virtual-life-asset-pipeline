@@ -1,28 +1,26 @@
 {
  "format": "lafrich-lgr1-official-base-index-v1",
- "version": "official-5",
- "approved": "2026-11-12T15:33:00+07:00",
+ "version": "official-6",
+ "approved": "2026-11-12",
  "approvedBy": "Lafrich",
  "bases": {
   "male": {
-   "package": "genesis-base-male-official-5.json",
+   "package": "genesis-base-male-official-6.json",
    "packageFormat": "lafrich-genesis-base-v1",
-   "rigSha256": "043b875098a00e7f3ce55883ce720f2f226f80526fb4beea9ac60d9d01ee886f",
-   "sheet": "genesis-base-male-official-5-sheet.png",
-   "source": "candidates/nova-male-final-20261112.json",
-   "sourceFormat": "lgr-1-draft-v1",
-   "sourceSha256": "008138974cd9066ec291bc3d11676c377ecda80e1f8749f465c9c2e8fac609bb",
-   "sourceBytes": 92228
+   "rigSha256": "3f17652a8eca486e6efb510be7bd66f267892242bbc60c2d5fa83744f7742079",
+   "source": "candidates/male-final-20261112-v2.json",
+   "sourceFormat": "lafrich-genesis-base-v1",
+   "sourceSha256": "376e92d51ba2ce92301dc767d3538637d4be60fc6860445fa340ac3c38a62f70",
+   "sourceBytes": 87823
   },
   "female": {
-   "package": "genesis-base-female-official-5.json",
+   "package": "genesis-base-female-official-6.json",
    "packageFormat": "lafrich-genesis-base-v1",
-   "rigSha256": "09b5119f916176d17480889eecc4a643cad1c93b13852b2d7314bb959a5c1740",
-   "sheet": "genesis-base-female-official-5-sheet.png",
-   "source": "candidates/nova-female-final-20261112.json",
-   "sourceFormat": "lgr-1-draft-v1",
-   "sourceSha256": "f63cfc5c30c5eefa06fc304a4e15c4a8200ceba1a96d6325c124a143ab9337ff",
-   "sourceBytes": 92492
+   "rigSha256": "34e2c420bca3df0e51dedc5748a062f82a5039925609456c580109ca801cef7e",
+   "source": "candidates/female-final-20261112-v2.json",
+   "sourceFormat": "lafrich-genesis-base-v1",
+   "sourceSha256": "9263a473bb2ec64cda13ac827796eb2b400ea314e16487a8ed908375299f54da",
+   "sourceBytes": 88159
   }
  },
  "revisions": [
@@ -70,6 +68,18 @@
    "maleRigSha256": "043b875098a00e7f3ce55883ce720f2f226f80526fb4beea9ac60d9d01ee886f",
    "femaleRigSha256": "09b5119f916176d17480889eecc4a643cad1c93b13852b2d7314bb959a5c1740",
    "archive": "archive/index-official-4.json",
+   "sourceGenderFix": {
+    "female": "male → female (metadata only)"
+   }
+  },
+  {
+   "version": "official-6",
+   "date": "2026-11-12",
+   "approvedBy": "Lafrich",
+   "note": "Promote latest uploaded male final.json and female final.json as canonical LGR-1 Genesis 11-part bases. The user-supplied art was already V6P LGR skin-key encoded; preserve pixel layers, all masks, slices, pivots, placements, draw orders and skin palettes exactly. Correct Female mislabeled Male identity metadata only and recalculate the rig checksum.",
+   "maleRigSha256": "3f17652a8eca486e6efb510be7bd66f267892242bbc60c2d5fa83744f7742079",
+   "femaleRigSha256": "34e2c420bca3df0e51dedc5748a062f82a5039925609456c580109ca801cef7e",
+   "archive": "archive/index-official-5.json",
    "sourceGenderFix": {
     "female": "male → female (metadata only)"
    }
