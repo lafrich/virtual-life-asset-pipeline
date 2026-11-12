@@ -53,7 +53,7 @@ async function connectDatabase(){
  try{
   const r=await DB.ready({sync:true});
   state.db={connected:true,...r,state:DB.state};
-  if(!state.dbWatch){state.dbWatch=true;DB.onChange?.(()=>{clearRendered();state.db={...state.db,changedAt:Date.now()}})}
+  if(!state.dbWatch){state.dbWatch=true;DB.onChange?.(()=>{preps.clear();clearRendered();root.LGRWear?.clearCache?.();root.LGRActor?.clearCaches?.();state.db={...state.db,changedAt:Date.now()}})}
  }catch(e){console.warn("LGR database",e);state.db={connected:false,error:String(e.message||e)}}
  return state.db;
 }
@@ -105,7 +105,7 @@ async function accessory(profile,tone){
  const M=W.lookup({...spec(profile),skin:tone}),out={};
  for(let di=0;di<4;di++){
   const c=cv(),g=c.getContext("2d",{willReadFrequently:true});let any=false;
-  for(const p of paths){const im=await image(rel("media/lgr1/mh-wear/"+p+".png"));if(im){g.drawImage(im,di*64,0,64,112,0,0,64,112);any=true}}
+  for(const p of paths){const im=await W.activeStrip(p,genderOf(profile));if(im){g.drawImage(im,di*64,0,64,112,0,0,64,112);any=true}}
   if(!any)continue;const d=g.getImageData(0,0,64,112);W.recolor(d.data,M);
   if(!d.data.some((v,i)=>i%4===3&&v))continue;g.putImageData(d,0,0);out[DIRS[di]]=c.toDataURL("image/png");
  }
