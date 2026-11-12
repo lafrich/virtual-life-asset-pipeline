@@ -8,6 +8,7 @@ on:
       - 'site/mahluk-pakaian-pixel.js'
       - 'site/media/lgr1/wardrobe-adjust/**'
       - 'tests/test_lgr_wardrobe_adjust.cjs'
+      - 'tests/test_lgr_wardrobe_adjust_browser.cjs'
       - 'tests/test_lgr_wardrobe_reference_export.cjs'
       - 'site/genesis-base*'
       - 'site/lgr-skin.js'
