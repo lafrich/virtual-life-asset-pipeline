@@ -64,7 +64,7 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
 <body>
 <div id="app">
  <header class="titlebar"><strong>▣ GENESIS BASE · by Lafrich</strong><small>MALE / FEMALE · 4 VIEWS · PIXELS + SLICES + PIVOTS</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
- <nav id="topnav"><button id="nav-workshop" aria-selected="true">◈ GENESIS BASE</button><button id="nav-emotion" aria-selected="false" hidden>☺ EMOSI.EXE</button><a class="navlink" href="./genesis-workbench.html">↗ MAHLUK HIDUP</a><a class="navlink" href="./genesis-slice-compare.html" title="Arsip perbandingan Male official-2 ke official-3">↔ MALE HISTORY</a><a class="navlink" href="./genesis-v2-compare.html?v=2&amp;gender=female&amp;candidate=v4" title="Compare Lab: Official vs Male/Female V2 dan Female V4, read-only.">↔ COMPARE LAB V2/V4 · SAFE</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
+ <nav id="topnav"><button id="nav-workshop" aria-selected="true">◈ GENESIS BASE</button><button id="nav-emotion" aria-selected="false" hidden>☺ EMOSI.EXE</button><a class="navlink" href="./genesis-workbench.html">↗ MAHLUK HIDUP</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
  <nav id="progress" aria-label="LGR-1 creation stages">
   <button data-step="pixel" aria-selected="true"><span class="progress-index">1</span><b>PIXEL EDITOR</b></button>
   <button data-step="rig" aria-selected="false"><span class="progress-index">2</span><b>PIVOT &amp; SLICING</b></button>
@@ -99,7 +99,6 @@ label.field input,label.field select{display:block;width:100%;padding:7px;margin
    <p class="gb-hint">1 · edit pixels (01) · 2 · cut + pivots (02, ▶ PREVIEW MOTION) · 3 · EXPORT or SAVE TO DRIVE, then send it to Grok Bot as the base. Autosaves in this browser.</p>
    <div class="btnrow"><button id="gb-export" class="active" type="button">↓ EXPORT BASE .JSON</button><button id="gb-sheets" type="button">↓ PNG SHEETS</button></div>
    <div class="btnrow"><button id="gb-import" type="button">↑ IMPORT BASE</button><button id="gb-from-workbench" type="button" title="Copy the current Mahluk Hidup draft of this gender (this browser) into Genesis Base">⇣ COPY MAHLUK HIDUP DRAFT</button></div>
-   <p class="gb-hint" style="margin:7px 0;padding:7px;background:#ebf8f0;border:1px solid #7da88a"><a href="./genesis-v2-compare.html?v=1" style="font-weight:bold;color:#165c4b">↔ COMPARE OFFICIAL VS CANDIDATE V2 (READ ONLY)</a> · Lihat Male/Female + motion tanpa import, overwrite draft, atau sync Drive.</p>
    <input id="gb-file" type="file" accept=".json,application/json" hidden>
    <div class="btnrow"><button id="gb-save-drive" type="button">☁ SAVE BASE TO DRIVE</button><button id="gb-refresh-drive" type="button">↻ DRIVE LIST</button></div>
    <label class="field">SAVED ON DRIVE (Membangun/Mahluk Hidup/Genesis Base)<select id="gb-drive-list"><option value="">Connect Drive, then ↻ DRIVE LIST</option></select></label>

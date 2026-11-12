@@ -181,20 +181,15 @@ jobs:
       - name: Verify LGR-1 public routes and blocked legacy sync
         run: |
           node tests/test_lgr_retirement.cjs
-          node --check site/nova-genesis-loader.js
-          node tests/test_nova_genesis.cjs
-          test -s _site/genesis-nova.html
-          test -s _site/media/lgr1/nova-11fix/male-package.gz.b64
-          test -s _site/media/lgr1/nova-11fix/female-package.gz.b64
           test -s _site/genesis-workbench.html
           test -s _site/genesis-cloud.js
           test -s _site/genesis-base.html
           test -s _site/genesis-base-app.js
-          test -s _site/genesis-v2-compare.html
-          test -s _site/genesis-v2-compare.js
-          test -s _site/media/lgr1/base/candidates/lgr-v2-compare-patches.json
-          node --check site/genesis-v2-compare.js
-          python -m json.tool site/media/lgr1/base/candidates/lgr-v2-compare-patches.json > /dev/null
+          test ! -e _site/genesis-nova.html
+          test ! -e _site/genesis-v2-compare.html
+          test ! -e _site/genesis-female-v3-compare.html
+          test ! -e _site/genesis-female-v4-compare.html
+          test ! -e _site/genesis-slice-compare.html
           test -s _site/lgr-skin.js
           test -s _site/media/lgr1/base/index.json
           test -s _site/media/lgr1/base/genesis-base-male.json
