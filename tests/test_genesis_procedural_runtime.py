@@ -129,8 +129,10 @@ class GenesisRigTests(unittest.TestCase):
         sw = runtime.frame_pose(lib["poses"], wave, 0, "sw")
         # Right hand waves: near in SE, far in SW (mirrored view).
         self.assertNotEqual(se["arm_near_upper"]["a"], 0)
-        # Sideways raise uses per-direction overrides so the arm goes UP in both.
-        self.assertEqual(sw["arm_far_upper"]["a"], se["arm_near_upper"]["a"])
+        # Explicit SW direction uses an absolute screen angle from the artist's export,
+        # which need not be identical to the SE angle.
+        self.assertEqual(sw["arm_far_upper"]["a"], wave["frames"][0]["dirs"]["sw"]["arm_r_upper"]["a"])
+        self.assertNotEqual(sw["arm_far_upper"]["a"], -se["arm_near_upper"]["a"])
         self.assertEqual(sw["arm_near_upper"]["a"], 0)
         self.assertEqual(runtime.rig_part("arm_r_upper", "se"), "arm_near_upper")
         self.assertEqual(runtime.rig_part("arm_r_upper", "sw"), "arm_far_upper")
