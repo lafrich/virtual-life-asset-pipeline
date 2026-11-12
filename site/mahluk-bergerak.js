@@ -356,9 +356,9 @@ function build(panel){
  const timingBox=el("div",{class:"sa-box"},el("h3",{text:"WAKTU · PREVIEW"}),
   el("div",{class:"sa-row"},el("label",{},"durasi frame",ui.ms,"ms"),ui.fps),
   el("div",{class:"sa-row"},el("label",{},ui.loop,"loop"),el("label",{},ui.onion,"onion skin"),ui.snap,ui.source));
- ui.gm=el("button",{type:"button",text:"♂ COWOK",onclick:()=>{S.gender="male";touchPreview()}});
- ui.gf=el("button",{type:"button",text:"♀ CEWEK",onclick:()=>{S.gender="female";touchPreview()}});
- ui.outfit=U.select(Object.entries(A().OUTFITS).filter(([k])=>k!=="custom").map(([k,o])=>({label:o.label,value:k})),"none",v=>{S.outfit=v;touchPreview()});
+ ui.gm=el("button",{type:"button",text:"♂ COWOK",onclick:()=>{S.gender="male";refreshOutfitChoices();touchPreview()}});
+ ui.gf=el("button",{type:"button",text:"♀ CEWEK",onclick:()=>{S.gender="female";refreshOutfitChoices();touchPreview()}});
+ ui.outfit=U.select([{label:"Tanpa baju (base)",value:"none"}],"none",v=>{S.outfit=v;touchPreview()});
  ui.hair=U.select(A().HAIRS.map(h=>({label:h==="none"?"tanpa rambut":"rambut "+h,value:h})),"none",v=>{S.hair=v;touchPreview()});
  ui.tones=el("div",{class:"sa-tones"});
  for(const t of root.LGRSkin.TONE_ORDER)ui.tones.append(el("button",{type:"button",title:t,"data-tone":t,style:"background:"+root.LGRSkin.TONES[t].i+";border-bottom-color:"+root.LGRSkin.TONES[t]["7"],onclick:()=>{S.tone=t;touchPreview()}}));
@@ -386,13 +386,23 @@ function build(panel){
  const resize=()=>{const w=Math.min(stageCol.clientWidth-12,(root.innerHeight*(root.innerWidth<820?.5:.56))*64/112);ui.canvas.style.width=Math.max(160,Math.floor(w))+"px"};
  root.addEventListener("resize",resize);setTimeout(resize,0);
 }
+function refreshOutfitChoices(){
+ const current=S.bases?.[S.gender],approved=(cat,v)=>DB().all("pakaian").some(e=>
+  e.group===cat&&e.variant===v&&e.gender===S.gender&&e.approved&&e.baseVersion===current?.version&&e.baseRigSha256===current?.pkg?.rigSha256);
+ const choices=Object.entries(A().OUTFITS).filter(([k,o])=>k==="none"||(k!=="custom"&&approved("top",o.top)&&approved("pants",o.pants)&&approved("shoes",o.shoes)));
+ if(!S.ui.outfit)return;
+ const value=choices.some(([k])=>k===S.outfit)?S.outfit:"none";
+ S.ui.outfit.replaceChildren(...choices.map(([k,o])=>new Option(o.label,k)));
+ S.ui.outfit.value=value;S.outfit=value;
+}
 function touchPreview(){S.entry.preview={gender:S.gender};A().clearCaches();syncControls();scheduleRender(true)}
 async function init(panel){
  if(S.ready){scheduleRender(true);return}
  U.status("Bergerak: memuat base LGR-1…");
- S.lib=await A().motions();await DB().loadBuiltin();DB().setPoses(S.lib.poses);await A().loadBases();
- await loadNeeded();S.entry=blankEntry();build(panel);S.ready=true;rebuildAll();
- root.addEventListener("lgr-db-synced",()=>{if(S.ready){rebuildList();rebuildNeeded()}});
+ S.lib=await A().motions();await DB().loadBuiltin();DB().setPoses(S.lib.poses);S.bases=await A().loadBases();
+ await loadNeeded();S.entry=blankEntry();build(panel);S.ready=true;refreshOutfitChoices();rebuildAll();
+ root.addEventListener("lgr-db-synced",()=>{if(S.ready){rebuildList();rebuildNeeded();refreshOutfitChoices()}});
+ root.addEventListener("lgr-db-changed",()=>{if(S.ready)refreshOutfitChoices()});
  U.status("Bergerak siap: tap part di gambar, drag buat muter, ＋ FRAME buat frame baru, ☁ SIMPAN.");
 }
 root.MahlukBergerak=Object.freeze({neededStatus,get needed(){return needed},importJson,exportJson,init,get state(){return S},save,newEntry,openItem,listItems});
