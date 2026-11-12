@@ -316,3 +316,11 @@ jobs:
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
+      - name: Outfit Adjust — smoke-test 24 draft variants and Pixel Editor
+        env:
+          NODE_PATH: /tmp/genesis-qa/node_modules
+        run: |
+          python3 -m http.server 8766 --bind 127.0.0.1 >/tmp/lgr-outfit-adjust-http.log 2>&1 &
+          sleep 1
+          node tests/test_lgr_wardrobe_adjust_browser.cjs
+
