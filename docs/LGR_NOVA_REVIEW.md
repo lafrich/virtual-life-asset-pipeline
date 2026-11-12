@@ -211,3 +211,39 @@ Audit script/artifacts exist in the conversation:
 `v6_16part_demo/qa/v6_rejection_report.json`,
 `v6_16part_demo/preview/LGR-V6-FAILED-AUDIT.png`.
 The production LGR masters, GitHub Pages and Drive are unchanged.
+
+## 2026-11-12: Concrete 11-part repair generated (after rejected 16-part)
+
+The owner explicitly rejected further Q&A and asked for an immediate fix.
+`LGR-Nova-11-Fix-Review.zip` was generated and delivered in the conversation.
+It contains `build_lgr_nova_11_fixed.py`, both 11-part JSON candidate
+masters, unflattened fixed per-part PNG sprites for 2 genders × 4 directions,
+one shared numeric motion library, 16 review GIFs, V5-vs-11FIX comparison
+contact sheet, SHA-256 manifest and full Python QA.
+
+**Actual geometry change (single master, not per-pose redraw):**
+- Rebalanced head/torso/leg proportions and moved shoulder, waist, pelvis,
+  elbow, hip and knee pivots to match the new authored pixels.
+- All 11 parts are authored with reusable hidden joint artwork before
+  flattening to the backward-compatible LGR1 JSON.
+- Near upper arm is tucked behind the torso; thighs are behind pelvis.
+  One fixed draw order is used for every pose.
+- Head counterrotation on sleeping is reset to 0° as *motion data*, to
+  prevent a narrow neck seam at the fully horizontal pose.
+- No new wrist/ankle/neck part was introduced.
+
+**QA**: 272 Pillow diagnostic frames (Male/Female, SE/SW/NE/NW,
+6 actions) yielded 0 disconnected components after removing eight
+isolated one-pixel rotation-sampling artifacts. 110 fully enclosed
+single-pixel pinholes were filled using existing skin colours. Both
+candidate master JSON checksums verified with Node `JSON.stringify`.
+241/272 frames still have larger enclosed blank regions (some natural
+limb negative space; not all manually inspected). Sleeping extends
+beyond 64px width. This **is not** LGR1Raster parity.
+
+**Blocking native integration:** The stock master format flattens
+per-part art into one body PNG + ownership mask, losing hidden
+underpaint. V7 diagnostic renders from the 11 independent part PNGs.
+A versioned per-part runtime loader + native tests are needed before
+the proposed master can look exactly as previewed in Mahluk Hidup.
+The PR remains draft; official bases and game are unchanged.
