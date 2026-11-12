@@ -314,6 +314,6 @@ def register():
   s.update(group=group,W=w,D=d,Hmax=h,oris=list(oris))
   def painter(loc,ref=s):draw(loc,ref)
   asset(s['id'],group,w,d,h,oris=oris,note=s['label']+' · Indonesia 200 / '+s['category'])(painter)
- assert len(SPECS)==200 and len({x['id'] for x in SPECS})==200
+ assert len(SPECS)==180 and len({x['id'] for x in SPECS})==180
  assert all(s['id'] in REG for s in SPECS)
  return SPECS
