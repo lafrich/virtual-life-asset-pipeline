@@ -28,8 +28,12 @@ test('anatomical sides: the right hand stays the right hand when mirroring SE<->
 test('per-direction overrides are absolute screen values (sideways raise must not mirror)',()=>{
  const wave=lib.motions.find(m=>m.id==='wave');
  const se=M.framePose(lib.poses,wave,0,'se',M.DEFAULT_SIDES),sw=M.framePose(lib.poses,wave,0,'sw',M.DEFAULT_SIDES);
+ const ne=M.framePose(lib.poses,wave,0,'ne',M.DEFAULT_SIDES);
  assert.ok(se.arm_near_upper.a>90);
- assert.equal(sw.arm_far_upper.a,se.arm_near_upper.a);
+ // Side-specific exports may intentionally differ from SE; each override is an absolute screen angle.
+ assert.equal(sw.arm_far_upper.a,wave.frames[0].dirs.sw.arm_r_upper.a);
+ assert.equal(ne.arm_near_upper.a,wave.frames[0].dirs.ne.arm_r_upper.a);
+ assert.notEqual(sw.arm_far_upper.a,-se.arm_near_upper.a);
 });
 test('angle snap rounds half-up to the step; validation rejects bad motions',()=>{
  assert.equal(M.snap(12.5,5),15);assert.equal(M.snap(-12.5,5),-10);assert.equal(M.snap(44,45),45);assert.equal(M.snap(7,1),7);
