@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="id"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#154b8d"/>
+<title>Genesis · Outfit Adjust — LGR Wardrobe Drafts</title>
+<link rel="stylesheet" href="./mahluk-subapps.css?v=mh-sync-1"/>
+<link rel="stylesheet" href="./mahluk-action-frame-pixel.css?v=genesis-workbench-v1"/>
+<link rel="stylesheet" href="./mahluk-pakaian.css?v=wa24-1"/>
+<style>
+:root{font-family:Tahoma,Arial,sans-serif;color:#24354f;background:#e4eaf1}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#dbe6f4;font-size:12px}
+.wa-titlebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(90deg,#103574,#417cc2);color:white;padding:10px 16px;border-bottom:3px solid #82addd}
+.wa-titlebar strong{font-size:17px;letter-spacing:.03em}.wa-titlebar a{color:white;font-weight:700;margin-left:auto}
+.wa-subtitle{font-size:11px;color:#dce9fa}
+.wa-wrap{width:min(1500px,100%);margin:0 auto;padding:12px}
+.wa-alert{padding:9px 11px;margin-bottom:10px;background:#f4f9ff;border:1px solid #a5c6e7;color:#27456a;border-radius:6px}
+.wa-controls{display:grid;grid-template-columns:1.15fr 1fr 1.25fr 1fr 1fr;gap:8px;align-items:end;margin:0 0 12px}
+.wa-controls label,.wa-nudge label,.wa-toolbar label{font-size:11px;color:#375574;font-weight:700;display:flex;flex-direction:column;gap:4px}
+.wa-controls select,.wa-nudge input,.wa-nudge select,.wa-toolbar select{width:100%;background:white;border:1px solid #8da8c8;border-radius:4px;padding:7px;color:#152c49;min-height:34px}
+.wa-board{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(390px,1.22fr);gap:12px}
+.wa-card{background:#fbfdff;border:1px solid #b8cadd;border-radius:9px;padding:13px;box-shadow:0 2px 8px rgba(31,64,106,.08)}
+.wa-card h2{font-size:14px;margin:0 0 8px;color:#254675}.wa-card p{line-height:1.5;color:#5c718d;margin:8px 0}
+.wa-preview{display:flex;justify-content:center;align-items:center;background:#cfdbeb;min-height:378px;border:1px solid #a0b7d2;border-radius:6px;overflow:hidden;padding:8px}
+#wa-stage{width:min(100%,256px);height:auto;aspect-ratio:64/112;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;cursor:grab;border:1px solid #7792b2;box-shadow:0 2px 10px rgba(31,48,73,.15)}
+#wa-stage:active{cursor:grabbing}
+.wa-help{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;color:#3b638b;margin:8px 0;font-size:11px}
+.wa-nudge{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;justify-content:center;margin-top:12px}
+.wa-arrow-grid{display:grid;grid-template-columns:42px 42px 42px;grid-template-rows:36px 36px 36px;gap:3px}
+.wa-arrow-grid button{font-size:17px;font-weight:bold}
+.wa-arrow-grid .up{grid-column:2;grid-row:1}.wa-arrow-grid .left{grid-column:1;grid-row:2}.wa-arrow-grid .right{grid-column:3;grid-row:2}.wa-arrow-grid .down{grid-column:2;grid-row:3}
+.wa-arrow-grid .center{grid-column:2;grid-row:2;background:#d7e6f7;font-size:10px;display:grid;place-items:center;color:#385879;border:1px solid #a4b9d0;border-radius:3px}
+button{cursor:pointer;background:#e1ecfa;color:#1c477a;border:1px solid #8badce;border-radius:5px;padding:8px 10px;font:600 11px Tahoma,Arial,sans-serif;min-height:33px}
+button:hover{background:#cee2f9}button:disabled{opacity:.45;cursor:default}
+button.primary{background:linear-gradient(#3d8dd2,#1e60ac);color:#fff;border-color:#185494}button.primary:hover{background:#195698}
+button.approved{background:#e0f2de;border-color:#6faa78;color:#276437}
+.wa-tools{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:12px}
+.wa-tools button{flex:1 1 105px}.wa-tools button.primary{flex:2 1 170px}
+.wa-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:8px 0}.wa-toolbar input[type=range]{max-width:120px}
+.wa-view-group{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0 12px}
+.wa-view-group button{padding:5px 2px;background:#e6eef9;display:flex;flex-direction:column;align-items:center;gap:3px}
+.wa-view-group button[aria-pressed=true]{outline:2px solid #2e82d0;background:#d1e6fd}
+.wa-view-group canvas{height:138px;max-width:100%;width:auto;aspect-ratio:64/112;image-rendering:pixelated;image-rendering:crisp-edges}
+.wa-view-group small{font-size:10px}
+#wa-active{font-size:16px;font-weight:700;color:#1e4a82}#wa-rig{font-size:11px;color:#667b96}
+.wa-motion-bar{display:flex;gap:7px;align-items:end;margin-top:10px;flex-wrap:wrap}
+.wa-motion-bar label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700}
+#wa-status{min-height:38px;margin-top:9px;border-top:1px solid #d2e1ef;padding:9px 4px;font-size:11px;color:#2a5b78;line-height:1.5}
+#wa-status.error{color:#b12627}
+.wa-advanced{margin-top:12px;padding:8px 12px;background:#f6faff;border:1px solid #b8cadd;border-radius:8px}
+.wa-advanced summary{cursor:pointer;font-size:12px;font-weight:700;color:#24588e;padding:7px}
+#pakaianpanel #pk-approve,#pakaianpanel #pk-export,#pakaianpanel #pk-cover-body{display:none!important}
+#pakaianpanel{min-height:0;margin:4px 0 8px;overflow:auto}
+#pakaianpanel .pk-layout{min-height:0}
+/* Reused full-native Pixel Editor overlay: Male/Female four-view ghost controls. */
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin:5px 0 8px}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 1px;min-width:0;background:#e3edf9;border:1px solid #7289aa}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid button[aria-pressed=true]{background:#c0defd;outline:2px solid #e6b544}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid canvas{display:block;max-width:100%;width:41px;height:auto;aspect-ratio:64/112;image-rendering:pixelated}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid span{font:9px Tahoma,Arial,sans-serif;color:#263b55}
+#pixelOverlay.wardrobe-source-pixel #pkExportPixel{background:#d7efdc;font-weight:700}
+@media(max-width:900px){.wa-board{grid-template-columns:1fr}.wa-controls{grid-template-columns:repeat(3,minmax(0,1fr))}.wa-preview{min-height:300px}}
+@media(max-width:520px){.wa-wrap{padding:7px}.wa-card{padding:9px}.wa-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.wa-titlebar{padding:9px}.wa-titlebar strong{font-size:14px}.wa-subtitle{display:none}.wa-view-group canvas{height:108px}.wa-nudge{gap:6px}}
+</style></head>
+<body>
+<header class="wa-titlebar"><strong>▨ GENESIS · OUTFIT ADJUST</strong>
+ <span class="wa-subtitle">24 VARIAN / MALE &amp; FEMALE / 4 ARAH / NATIVE 1×</span>
+ <a href="./genesis-base.html">GENESIS BASE</a></header>
+<div class="wa-wrap">
+ <div class="wa-alert" id="wa-count">24 outfit variants — draft editor. Genesis master dan game tidak diubah.</div>
+ <div class="wa-controls">
+  <label>GENDER<select id="wa-gender"><option value="male">Male</option><option value="female">Female</option></select></label>
+  <label>KATEGORI<select id="wa-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option></select></label>
+  <label>VARIAN<select id="wa-variant"></select></label>
+  <label>ARAH<select id="wa-dir"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></label>
+  <label>LAYER<select id="wa-side"><option value="front">Front</option><option value="back">Back</option></select></label>
+ </div>
+ <div class="wa-board">
+  <section class="wa-card"><h2>01 · GESER PAKAIAN DI KARAKTER</h2>
+   <div class="wa-preview"><canvas id="wa-stage" width="64" height="112" tabindex="0" aria-label="Drag seluruh pixel pakaian pada karakter"></canvas></div>
+   <div class="wa-help"><span>Drag = pindah seluruh pakaian</span><span>•</span><span>1× pixel; tidak antialias</span></div>
+   <div class="wa-toolbar">
+    <label><span><input id="wa-show-body" type="checkbox" checked/> Overlay Genesis</span></label>
+    <label><span><input id="wa-show-grid" type="checkbox"/> Grid 1×1</span></label>
+    <label>Opacity <input id="wa-opacity" type="range" min="20" max="100" value="100" step="5"/></label>
+   </div>
+   <div class="wa-nudge">
+    <label>STEP / NUDGE<input id="wa-step" type="number" min="1" max="8" value="1"/></label>
+    <div class="wa-arrow-grid">
+     <button class="up" type="button" data-nudge="0,-1" aria-label="Geser pakaian ke atas">↑</button>
+     <button class="left" type="button" data-nudge="-1,0" aria-label="Geser pakaian ke kiri">←</button>
+     <span class="center">1px</span>
+     <button class="right" type="button" data-nudge="1,0" aria-label="Geser pakaian ke kanan">→</button>
+     <button class="down" type="button" data-nudge="0,1" aria-label="Geser pakaian ke bawah">↓</button>
+    </div>
+    <div class="wa-help" style="display:block"><strong id="wa-offset">SE · FRONT</strong><p>Panah memindahkan sprite di arah dan layer terpilih saja, bukan Genesis.</p></div>
+   </div>
+   <div class="wa-tools"><button id="wa-undo" type="button">↶ UNDO</button><button id="wa-redo" type="button">↷ REDO</button><button id="wa-reset" type="button">↺ RESET VARIAN</button></div>
+  </section>
+  <section class="wa-card"><h2>02 · REVIEW 4 ARAH</h2>
+   <div id="wa-active">MEMUAT…</div><div id="wa-rig">Genesis official</div>
+   <p>Klik arah untuk memilih view yang ingin digeser. Thumbnail memakai renderer resmi LGR; tampilan besar khusus bantu posisi layer.</p>
+   <div class="wa-view-group">
+    <button id="wa-view0" type="button" aria-pressed="true"><canvas id="wa-v0" width="64" height="112"></canvas><small>SE</small></button>
+    <button id="wa-view1" type="button" aria-pressed="false"><canvas id="wa-v1" width="64" height="112"></canvas><small>SW</small></button>
+    <button id="wa-view2" type="button" aria-pressed="false"><canvas id="wa-v2" width="64" height="112"></canvas><small>NE</small></button>
+    <button id="wa-view3" type="button" aria-pressed="false"><canvas id="wa-v3" width="64" height="112"></canvas><small>NW</small></button>
+   </div>
+   <div class="wa-motion-bar"><label>MOTION<select id="wa-motion"><option value="idle">Idle</option><option value="walk">Walk</option><option value="bow">Bow</option><option value="sit">Sit</option><option value="wave">Wave</option></select></label><button id="wa-play" type="button">▶ PLAY</button></div>
+   <div class="wa-tools">
+     <button id="wa-open-pixel" type="button" class="primary">✎ PIXEL EDITOR · SELECT / MOVE / ERASE</button>
+     <button id="wa-save" type="button" class="approved">▣ SAVE DRAFT</button>
+     <button id="wa-export" type="button" class="approved">↓ EXPORT JSON VARIAN</button>
+     <button id="wa-export-all" type="button">↓ EXPORT SEMUA 24 JSON</button>
+   </div>
+   <p><strong>Save Draft</strong> = browser perangkat ini saja. <strong>Export JSON</strong> = file yang bisa dikirim kembali untuk direview. Tidak auto-approve / sync ke Drive.</p>
+   <div id="wa-status" role="status">Memuat editor…</div>
+  </section>
+ </div>
+ <details class="wa-advanced" id="wa-advanced"><summary>▣ ADVANCED EDITOR · PIXEL PAINT / GRID / IMPORT / COLOR / PREVIEW</summary><div id="pakaianpanel"></div></details>
+</div>
+<script src="./lafrich-puppet-core.js"></script>
+<script src="./lgr1-raster.js"></script>
+<script src="./lafrich-puppet-renderer.js"></script>
+<script src="./lgr1-motion.js"></script>
+<script src="./lgr-skin.js"></script>
+<script src="./lgr-wear.js"></script>
+<script src="./lgr-db.js"></script>
+<script src="./lgr-actor.js"></script>
+<script src="./lgr-wardrobe-cover.js"></script>
+<script src="./emotion-studio/shared-pixel-selection.js"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=wa24-1"></script>
+<script src="./mahluk-pakaian.js?v=wa24-1"></script>
+<script src="./mahluk-pakaian-pixel.js?v=wa24-1"></script>
+<script src="./lgr-wardrobe-adjust.js?v=wa24-1"></script>
+</body></html>
