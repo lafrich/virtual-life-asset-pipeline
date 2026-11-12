@@ -61,8 +61,11 @@ async function draw(){
   order.forEach((a,i)=>{
    const {img,shadow}=frames[i],x0=GX+a.x-A().FOOT.x,y0=GY+a.y-A().FOOT.y;
    if(shadow.enabled){
-    g.fillStyle="rgba(0,0,0,"+(56/255)+")";g.beginPath();
-    g.ellipse((GX+a.x+(a.flip?-shadow.x:shadow.x))*Z,(GY+a.y+shadow.y)*Z,shadow.rx*Z,shadow.ry*Z,0,0,Math.PI*2);g.fill();
+    g.fillStyle="rgba(0,0,0,"+(56/255)+")";
+    const cx=GX+a.x+(a.flip?-shadow.x:shadow.x),cy=GY+a.y+shadow.y;
+    for(let yy=Math.floor(cy-shadow.ry);yy<Math.ceil(cy+shadow.ry);yy++)
+     for(let xx=Math.floor(cx-shadow.rx);xx<Math.ceil(cx+shadow.rx);xx++)
+      if(((xx+.5-cx)/shadow.rx)**2+((yy+.5-cy)/shadow.ry)**2<=1)g.fillRect(xx*Z,yy*Z,Z,Z);
    }
    g.save();
    if(a.flip){g.translate((x0+64)*Z,y0*Z);g.scale(-1,1);g.drawImage(img,0,0,64*Z,112*Z)}else g.drawImage(img,x0*Z,y0*Z,64*Z,112*Z);
