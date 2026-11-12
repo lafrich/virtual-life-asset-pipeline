@@ -121,3 +121,21 @@ The V3 Python QA is not a production renderer patch.
 
 The existing draft PR stays unmerged. Active official-4 index, official Male,
 official Female and cloud master files remain untouched.
+
+## 2026-11-12: V4 conditional joints — user's shoulder / pelvis feedback
+
+**User diagnosis:** Raising both arms left visible shoulder pieces and an unnatural pelvis band. V3's permanently drawn, parent-owned hidden caps were responsible for the increased skin volume; a dark horizontal torso/pelvis/thigh pigment transition in the static art also resembled an extra segment.
+
+**New conversation attachment:** `LGR-Nova-V4-Clean-Joints.zip` (male/female candidate JSON, 16 stress GIFs, Python/Pillow generator and 272-frame QA), **not checked into GitHub**.
+
+Changes, all experimental:
+- **Remove unconditional cap duplication in diagnostic rendering.** V4 starts with the master-owned slices only and adds a 1px joint connector *only if* pieces have actually separated. Fully enclosed pinholes between parent and child are closed from existing skin colours, without expanding external silhouettes. A counter-based audit reports 0 conditional connectors and 179 pinhole pixels across all 272 tested frames.
+- A **single, global master-art revision**, applied to both genders and each direction: soften the lower torso border and taper the pelvis/upper-thigh start. 97 pixels differ on the Female SE *rest master* vs V3, by design; all actions reuse this same edited master (no pose-specific redraw).
+- Final raise-hands angle changed from 165° to 140° in motion **data only** to keep hands/arms clear of the head. Motion IDs now begin `nova_v4_` to prevent overwriting earlier experimental tracks.
+- Candidate native `capRadius` is 0 on all child joints to avoid asking the legacy LGR engine to bake permanent hidden caps.
+
+**Pillow diagnostic QA:** 272 frames, 2 genders × 4 views × 6 actions; 0 disconnected components; 0 unresolved joint pairs; at most 5 pixels of per-frame enclosed-pinhole correction; 16 animated previews. The ZIP was checksum-tested using Node's native `JSON.stringify`/SHA-256 for each gender and has structurally valid 64×112 masks.
+
+**Important:** The current browser `LGR1Raster` includes its *own* joint-fill pass that does **not yet** implement V4's conditional closure. Therefore this result is **not native parity** and must NOT be represented as gameplay-ready/no-artefact in Mahluk Hidup. A safe next task is to port this conditional seam strategy into an isolated native test rasterizer and compare all 272 frames before integrating production. Bedroom floor/seat alignment and sleep bounds still need tests.
+
+The official male/female base packages, active index, cloud masters and gameplay runtime remain untouched. PR stays draft.
