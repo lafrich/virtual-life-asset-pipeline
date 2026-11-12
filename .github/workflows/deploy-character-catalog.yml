@@ -34,6 +34,13 @@ on:
       - "tools/human_pose_extras.py"
       - "site/universal-body-actions.js"
       - "tests/test_universal_body_actions.cjs"
+      # Changes to the LGR motion/rig tests must also rebuild Pages,
+      # otherwise stock-motion changes can leave an old failed deploy.
+      - "tests/test_lgr1_motion.cjs"
+      - "tests/test_genesis_procedural_runtime.py"
+      - "tests/test_lgr1_parity.py"
+      - "tests/test_lgr_db.cjs"
+      - "tests/test_lgr_game.cjs"
       - "tests/test_hygiene_published.py"
       - "tools/build_astrofrich.py"
       - "tests/test_universal_sleep.cjs"
