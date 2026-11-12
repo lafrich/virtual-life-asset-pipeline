@@ -1,10 +1,10 @@
-/* LGR WARDROBE ADJUST — 24 artist-guided draft variants. Draft-only.
+/* GENESIS OUTFIT ADJUST — SIX artist-authored base garments. Draft-only.
  * Uses native Genesis/Pixel Editor runtime. No Genesis masks, skin keys,
  * pivots, original 6 baselines, or cloud game masters are modified.
  */
 (function(root){"use strict";
 const DIRS=["se","sw","ne","nw"],GROUPS=["top","pants","shoes"];
-const LOCAL="lgr1-pakaian-drafts-v1",SEEDS="./media/lgr1/wardrobe-adjust/variant-seeds.json";
+const LOCAL="lgr1-pakaian-drafts-v1",SEEDS="./media/lgr1/wardrobe-adjust/base-seeds.json";
 const $=id=>document.getElementById(id),A=()=>root.MahlukPakaian;
 let catalog=null,current=null,refCache=new Map(),drawTicket=0,working=false,drag=null,offsets={};
 let selectionChain=Promise.resolve();
@@ -31,7 +31,7 @@ function ensureSeeds(){
    baseVersion:v.baseVersion,baseRigSha256:v.baseRigSha256,dirs:DIRS,cell:[64,112],strip:[256,112],
    keyColours:true,files:{...v.files},approved:false,referenceOnly:true,
    sourceBaseline:v.sourceBaseline,updated:new Date().toISOString(),
-   note:"24-varian draft from Lafrich baseline. Preview ONLY; not game master."};
+   note:"Six Genesis base fitting drafts from original Lafrich pixel reference; not published to game."};
   created.push(id);
  }
  try{localStorage.setItem(LOCAL,JSON.stringify(records))}
@@ -51,10 +51,11 @@ async function select(gender,group,variant,dir="se",side="front"){
   current=await A().selectOutfit({gender,group,variant,dir,side});
   $("wa-side").value=current.side;
   $("wa-active").textContent=gender.toUpperCase()+" / "+labels[group].toUpperCase()+" / "+nice(variant);
+  refreshFitKey();setEditMode();
   $("wa-rig").textContent="Genesis "+(gender==="male"?"Male Official-8":"Female Official-9")+
     " · "+(seedFor(current)?.baseRigSha256||"").slice(0,12)+"…";
   $("wa-dir").value=current.dir;
-  setStatus("DRAFT aktif. Geser dengan panah atau drag di karakter; save ke browser, export JSON untuk dibagikan.");
+  setStatus("BASE DRAFT aktif. Geser, DRAW di luar outline, atau COVER GARIS KULIT 1–2px. Save Draft lalu Export JSON.");
   await renderStage();drawReviewThumbnails();
  }finally{working=prev}
 }
@@ -73,7 +74,7 @@ async function setSide(side){if(!current)return;
 function selectedChange(){if(!catalog)return;
  const gender=$("wa-gender").value,group=$("wa-group").value;
  const options=catalog.variants.filter(x=>x.gender===gender&&x.group===group);
- const v=options.find(x=>x.variant===$("wa-variant").value)||options[0];
+ const v=options[0];
  if(!v)return;
  // Populate the correct category choices synchronously, even if rig redraw
  // for the previous selection has not completed.
@@ -124,6 +125,40 @@ async function renderStage(deltaX=0,deltaY=0){
     (drag?" · ΔX "+deltaX+" · ΔY "+deltaY:"");
  }catch(e){if(ticket===drawTicket)showError(e)}
 }
+const FIT_CODES={top:["C1","C2","C3","C4","C5","O1","O2","O3","O4","O5"],
+ pants:["P1","P2","P3","P4"],shoes:["S0","S1","S2","S3"]};
+function refreshFitKey(){
+ const group=current?.group||$("wa-group")?.value||"top",options=FIT_CODES[group]||FIT_CODES.top;
+ const select=$("wa-ink");if(!select)return;
+ const old=select.value;select.replaceChildren(...options.map(code=>{
+  const o=new Option(code+" · "+root.LGRWear.K[code],code);return o;
+ }));
+ select.value=options.includes(old)?old:options[Math.min(1,options.length-1)];
+}
+async function coverGap(radius){
+ if(!current)return;
+ const b=$("wa-cover-"+radius);b.disabled=true;
+ try{
+  const result=await A().coverFitSkin(radius);
+  await renderStage();drawReviewThumbnails();
+  setStatus(result.filled?
+   "✓ "+result.filled+" pixel penutup garis kulit ditambah pada "+current.gender+" / "+labels[current.group]+" / "+current.dir.toUpperCase()+
+   ". Hanya layer pakaian. SAVE DRAFT lalu EXPORT JSON.":
+   "Tidak ada gap dalam radius "+radius+"px. Untuk menutup area lebih jauh, pilih DRAW dan lukis langsung tanpa batas mask.");
+ }catch(e){showError(e)}finally{b.disabled=false}
+}
+function canvasPoint(e){
+ const stage=$("wa-stage"),r=stage.getBoundingClientRect();
+ return {x:Math.max(0,Math.min(63,Math.floor((e.clientX-r.left)/r.width*64))),
+  y:Math.max(0,Math.min(111,Math.floor((e.clientY-r.top)/r.height*112)))};
+}
+function setEditMode(){
+ const mode=$("wa-mode")?.value||"move",$stage=$("wa-stage");
+ if($stage)$stage.style.cursor=mode==="move"?"grab":"crosshair";
+ const s=$("wa-edit-help");if(s)s.textContent=mode==="move"?
+  "Drag = geser keseluruhan pakaian di arah yang dipilih.":
+  "DRAW/ERASE = gambar langsung di mana pun, termasuk DI LUAR mask lama; Genesis tetap aman.";
+}
 function drawReviewThumbnails(){
  if(!current)return;
  for(let i=0;i<4;i++){
@@ -155,48 +190,63 @@ async function exportCurrent(){
 function exportAll(){
  A().saveOutfitDraft();
  const store=localRead(),entries=catalog.variants.map(v=>store[k(v)]).filter(Boolean);
- const data={format:"lgr-wardrobe-adjust-bundle-v1",source:"24 LGR wardrobe draft variants",
+ const data={format:"lgr-wardrobe-adjust-bundle-v1",source:"6 Lafrich artist-authored Genesis base garments",
   approved:false,baseVersion:catalog.variants[0].baseVersion,
   exported:new Date().toISOString(),entries};
- download("LGR_24_Adjusted_Wardrobe_DRAFTS.json",data);
- setStatus("Export bundle "+entries.length+" draft. Tidak mengaktifkan master game.");
+ download("LGR_6_Genesis_Base_Fitting_DRAFTS.json",data);
+ setStatus("Export "+entries.length+" BASE draft (Male/Female baju, celana, sepatu). Tidak mengaktifkan master game.");
 }
 async function resetCurrent(){
- if(!current||!root.confirm("RESET "+k(current)+" ke draft awal 24 varian? Editan varian ini di browser akan ditimpa. Genesis/game tidak berubah."))return;
+ if(!current||!root.confirm("RESET "+k(current)+" ke baseline asli buatanmu? Editan varian ini di browser akan ditimpa. Genesis/game tidak berubah."))return;
  const seed=seedFor(current),store=localRead();
  store[k(current)]={format:"lgr1-wardrobe-master-v1",gender:seed.gender,group:seed.group,variant:seed.variant,
   baseVersion:seed.baseVersion,baseRigSha256:seed.baseRigSha256,dirs:DIRS,cell:[64,112],strip:[256,112],
   keyColours:true,approved:false,referenceOnly:true,files:{...seed.files},
-  updated:new Date().toISOString(),note:"Reset to Lafrich draft variant source"};
+  updated:new Date().toISOString(),note:"Reset to the artist original base garment"};
  localStorage.setItem(LOCAL,JSON.stringify(store));
  await A().refreshOutfit();await renderStage();drawReviewThumbnails();
- setStatus("Reset ke sumber draft varian (belum game).",false);
+ setStatus("Reset ke enam patokan BASE asli (belum game).",false);
 }
 function attachDrag(){
  const stage=$("wa-stage");
  stage.addEventListener("pointerdown",e=>{
   if(e.button!==0||!current)return;
   e.preventDefault();stage.setPointerCapture(e.pointerId);
-  const r=stage.getBoundingClientRect();
-  drag={id:e.pointerId,x:e.clientX,y:e.clientY,px:0,py:0,w:r.width,h:r.height};
+  const r=stage.getBoundingClientRect(),mode=$("wa-mode")?.value||"move",xy=canvasPoint(e);
+  drag={id:e.pointerId,mode,x:e.clientX,y:e.clientY,px:0,py:0,w:r.width,h:r.height,
+   points:[xy]};
  });
  stage.addEventListener("pointermove",e=>{
   if(!drag||e.pointerId!==drag.id)return;
+  if(drag.mode!=="move"){
+   const xy=canvasPoint(e),last=drag.points[drag.points.length-1];
+   if(xy.x!==last.x||xy.y!==last.y)drag.points.push(xy);
+   return;
+  }
   drag.px=Math.round((e.clientX-drag.x)/drag.w*64);
   drag.py=Math.round((e.clientY-drag.y)/drag.h*112);
   void renderStage(drag.px,drag.py);
  });
  async function endDrag(e,commit){
   if(!drag||e.pointerId!==drag.id)return;
-  const dx=drag.px,dy=drag.py;drag=null;
-  if(commit&&(dx||dy)){try{await A().translateView(dx,dy)}catch(e){showError(e)}}
-  await renderStage();
+  const d=drag;drag=null;
+  if(commit){
+   try{
+    if(d.mode==="move"&&(d.px||d.py))await A().translateView(d.px,d.py);
+    if(d.mode!=="move")await A().paintFitStroke({points:d.points,
+     erase:d.mode==="erase",ink:$("wa-ink").value,size:Number($("wa-brush").value||1)});
+   }catch(err){showError(err)}
+  }
+  await renderStage();drawReviewThumbnails();
  }
  stage.addEventListener("pointerup",e=>void endDrag(e,true));
  stage.addEventListener("pointercancel",e=>void endDrag(e,false));
 }
 function wire(){
- for(const id of ["wa-gender","wa-group","wa-variant"])$(id).addEventListener("change",selectedChange);
+ for(const id of ["wa-gender","wa-group"])$(id).addEventListener("change",selectedChange);
+ $("wa-mode").addEventListener("change",setEditMode);
+ $("wa-cover-1").onclick=()=>void coverGap(1);
+ $("wa-cover-2").onclick=()=>void coverGap(2);
  $("wa-dir").addEventListener("change",e=>void setDirection(e.target.value).catch(showError));
  $("wa-side").addEventListener("change",e=>void setSide(e.target.value).catch(showError));
  for(const id of ["wa-show-grid","wa-show-body","wa-opacity"]){$(id).addEventListener("input",()=>void renderStage())}
@@ -217,6 +267,7 @@ function wire(){
  $("pk-tone").addEventListener("change",()=>{refCache.clear();void renderStage()});
  $("pk-color").addEventListener("change",()=>void renderStage());
  root.addEventListener("lgr-wardrobe-nudged",()=>void renderStage());
+ root.addEventListener("lgr-wardrobe-fit-edited",()=>{void renderStage();drawReviewThumbnails()});
  root.addEventListener("lgr-pakaian-preview-ready",()=>{drawReviewThumbnails()});
  root.addEventListener("pakaian-pixels-applied",()=>{void renderStage();drawReviewThumbnails()});
  root.addEventListener("pagehide",()=>{try{A()?.saveOutfitDraft()}catch(e){console.warn(e)}});
@@ -224,24 +275,39 @@ function wire(){
 }
 async function init(){
  try{
-  setStatus("Memuat 24 varian dan Genesis aktif…");
+  setStatus("Memuat enam patokan asli Lafrich dan Genesis resmi…");
   const res=await fetch(SEEDS,{cache:"no-cache"});
-  if(!res.ok)throw Error("24 source variants missing (HTTP "+res.status+")");
-  catalog=await res.json();
-  if(catalog.format!=="lgr-wardrobe-adjust-seeds-v1"||catalog.variants?.length!==24||
-   catalog.dirs.join()!==DIRS.join())throw Error("Variant data invalid: expected 24 four-view drafts");
+  if(!res.ok)throw Error("Manifest base fitting belum tersedia (HTTP "+res.status+")");
+  const index=await res.json();
+  const expected=["male_top_tee","female_top_tee","male_pants_trousers","female_pants_trousers","male_shoes_shoes","female_shoes_shoes"];
+  if(index.format!=="lgr-wardrobe-adjust-base-index-v1"||index.entries?.length!==6||
+   index.dirs?.join()!==DIRS.join()||index.entries.some(e=>!expected.includes(e.id))||
+   new Set(index.entries.map(e=>e.id)).size!==6)
+   throw Error("Hanya 6 BASE pakaian yang diizinkan; manifest tidak valid.");
+  const variants=await Promise.all(index.entries.map(async e=>{
+   const resp=await fetch("./"+e.path,{cache:"no-cache"});
+   if(!resp.ok)throw Error("BASE "+e.id+" gagal dimuat (HTTP "+resp.status+")");
+   const master=await resp.json();
+   if(master.format!=="lgr1-pakaian-v2"||master.id!==e.id||master.approved!==true||
+    master.group!==e.group||master.gender!==e.gender||master.variant!==e.variant||!master.files)
+    throw Error("BASE "+e.id+" tidak cocok dengan patokan asli");
+   return {id:e.id,gender:e.gender,group:e.group,variant:e.variant,
+    baseVersion:master.baseVersion,baseRigSha256:master.baseRigSha256,
+    files:master.files,sourceBaseline:e.id};
+  }));
+  catalog={...index,variants};
   const bases=await root.LGRActor.loadBases();
-  const good=warnRig(bases);
-  const added=ensureSeeds();
+  const good=warnRig(bases),added=ensureSeeds();
   await A().init($("pakaianpanel"));
-  if(!A().currentOutfit)throw Error("Outfit adjust bridge not found; reload the page");
+  if(!A().currentOutfit||!A().paintFitStroke||!A().coverFitSkin)
+   throw Error("Genesis base fitting editor belum termuat sempurna; reload halaman");
   selectOptions("wa-gender",[{value:"male",label:"Male"},{value:"female",label:"Female"}],"male");
   selectOptions("wa-group",GROUPS.map(g=>({value:g,label:labels[g]})),"top");
   selectOptions("wa-dir",DIRS.map(d=>({value:d,label:d.toUpperCase()})),"se");
   selectOptions("wa-side",[{value:"front",label:"Front"},{value:"back",label:"Back"}],"front");
-  wire();await select("male","top","tee_long","se","front");
-  $("wa-count").textContent="24 VARIAN · "+added+" BARU · "+(24-added)+" DRAFT LOKAL DILINDUNGI";
-  if(!good)setStatus("Genesis tidak sesuai checksum preview. Edit tetap bisa dilakukan, jangan publish sebagai master sebelum direview.",true);
+  wire();await queueSelect("male","top","tee","se","front");
+  $("wa-count").textContent="6 BASE · MALE/FEMALE · BAJU / CELANA / SEPATU · "+added+" DRAFT BARU · "+(6-added)+" DRAFT LOKAL TETAP AMAN";
+  if(!good)setStatus("Checksum Genesis berubah. Draft boleh diedit, tapi jangan publikasikan sebelum fitting review.",true);
  }catch(e){showError(e)}
 }
 root.addEventListener("DOMContentLoaded",()=>void init());
