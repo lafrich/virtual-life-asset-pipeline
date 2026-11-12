@@ -5,9 +5,9 @@
  */
 (function(root){"use strict";
 const $=id=>document.getElementById(id),DB=()=>root.LGRDB;
-const PAGES=["emotion","bergerak","beraksi","pakaian","lgr"],LABEL={emotion:"EMOSI.EXE",bergerak:"BERGERAK",beraksi:"BERAKSI",pakaian:"PAKAIAN.EXE",lgr:"INFO"};
-const NAV={emotion:"nav-emotion",bergerak:"nav-bergerak",beraksi:"nav-beraksi",pakaian:"nav-pakaian",lgr:"nav-lgr"};
-const PANEL={emotion:"emotionpanel",bergerak:"bergerakpanel",beraksi:"beraksipanel",pakaian:"pakaianpanel",lgr:"lgrpanel"};
+const PAGES=["emotion","bergerak","beraksi","lgr"],LABEL={emotion:"EMOSI.EXE",bergerak:"BERGERAK",beraksi:"BERAKSI",lgr:"INFO"};
+const NAV={emotion:"nav-emotion",bergerak:"nav-bergerak",beraksi:"nav-beraksi",lgr:"nav-lgr"};
+const PANEL={emotion:"emotionpanel",bergerak:"bergerakpanel",beraksi:"beraksipanel",lgr:"lgrpanel"};
 let page="emotion";
 function status(s,err){$("statusmsg").textContent=s;$("status").classList.toggle("error",!!err)}
 async function show(p){
@@ -20,7 +20,6 @@ async function show(p){
  try{
   if(p==="bergerak")await root.MahlukBergerak.init($("bergerakpanel"));
   if(p==="beraksi")await root.MahlukBeraksi.init($("beraksipanel"));
-  if(p==="pakaian")await root.MahlukPakaian.init($("pakaianpanel"));
  }catch(e){console.error(e);status(LABEL[p]+": "+e.message,true)}
 }
 async function countFaces(){
@@ -51,7 +50,7 @@ async function syncNow(interactive,opts={}){
    if(r.skipped||r.shared)return true;
    root.LGRWear?.clearCache?.();root.LGRActor?.clearCaches?.();root.LGRGame?.clear?.();
    root.dispatchEvent(new CustomEvent("lgr-db-synced",{detail:r}));
-   status("Database tersinkron: "+DB().all("bergerak").length+" animasi · "+DB().all("beraksi").length+" adegan · "+DB().all("pakaian").length+" master pakaian"+
+   status("Database tersinkron: "+DB().all("bergerak").length+" animasi · "+DB().all("beraksi").length+" adegan"+
     (r.pulled||r.pushed?" (↓"+r.pulled+" ↑"+r.pushed+")":"")+(r.conflicts?" · "+r.conflicts+" konflik → yang terbaru dipakai, versi lain di Backup":"")+
     (r.errors.length?" · "+r.errors.length+" gagal: "+r.errors[0]:""),!!r.errors.length);
    return true;
@@ -65,7 +64,7 @@ function gate(){
  msg.textContent="Sebelum mulai, sync dulu biar animasi & adegan yang kebuka versi terbaru dari Google Drive."+
   (c.syncedAt?" Terakhir sync: "+new Date(c.syncedAt).toLocaleString("id-ID")+".":" Belum pernah sync di browser ini.");
  const go=document.createElement("button");go.type="button";go.id="gate-sync";go.className="primary";go.textContent="☁ CONNECT GOOGLE DRIVE & SYNC";
- const off=document.createElement("button");off.type="button";off.id="gate-offline";off.textContent="Lanjut offline (cache: "+nb+" animasi · "+ns+" adegan · "+DB().all("pakaian").length+" pakaian)";
+ const off=document.createElement("button");off.type="button";off.id="gate-offline";off.textContent="Lanjut offline (cache: "+nb+" animasi · "+ns+" adegan)";
  const box=document.createElement("section");box.className="sa-gate";box.id="sync-gate";box.setAttribute("role","dialog");box.setAttribute("aria-modal","true");
  box.innerHTML='<div class="panel"><strong>▣ MAHLUK HIDUP.EXE · SYNC DATABASE</strong><div></div></div>';
  const body=box.querySelector(".panel>div"),sub=document.createElement("p");sub.className="sa-hint";sub.style.margin="0";
@@ -78,7 +77,6 @@ function gate(){
 $("nav-emotion").onclick=()=>show("emotion");
 $("nav-bergerak").onclick=()=>show("bergerak");
 $("nav-beraksi").onclick=()=>show("beraksi");
-$("nav-pakaian").onclick=()=>show("pakaian");
 $("nav-lgr").onclick=()=>show("lgr");
 $("connect-drive").onclick=async()=>{
  try{await DB().connect();$("connect-drive").textContent="☁ CONNECTED";await syncNow(true);
@@ -93,7 +91,7 @@ DB().onStatus(chip);
 root.addEventListener("online",()=>{if(DB().connected()&&DB().pending())void syncNow(false,{auto:true})});
 const want=new URLSearchParams(location.search).get("tab");
 void show(PAGES.includes(want)?want:"emotion");
-status("Emosi.exe · ✦ BERGERAK animasi · ⚔ BERAKSI adegan · ▣ PAKAIAN edit wardrobe (draft lokal).");
+status("Emosi.exe · ✦ BERGERAK animasi · ⚔ BERAKSI adegan.");
 // startup: sync first (silent if this tab already has a Drive session), else ask
 if(DB().restoreSession())void syncNow(false);else gate();
 })(window);
