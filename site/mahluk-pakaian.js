@@ -198,6 +198,7 @@ async function preview(){
   if(ticket!==S.previewToken)return;
   for(let i=0;i<4;i++){const t=$("pk-r"+i),g=t.getContext("2d");g.clearRect(0,0,64,112);g.drawImage(canvases[i],0,0)}
   $("pk-motion-label").textContent=S.motion+" · frame "+(S.frame+1);
+  root.dispatchEvent(new CustomEvent("lgr-pakaian-preview-ready",{detail:{id:kID(),frame:S.frame,motion:S.motion}}));
  }catch(e){if(ticket===S.previewToken)say("Preview rig: "+e.message,true)}
 }
 function download(name,content){
