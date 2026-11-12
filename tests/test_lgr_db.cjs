@@ -44,6 +44,19 @@ test('Bergerak: up to 60 frames, same frame shape as motions.json, plays through
  assert.throws(()=>DB.validateBergerak({...motionEntry('x',0),motion:{frames:[{ms:100,parts:{tail:{a:1}}}]}},lib.poses),/unknown part/);
  assert.throws(()=>DB.validateBergerak({...motionEntry('Bad Id',0)},lib.poses));
 });
+test('Bergerak: shadows survive chunk validation and JSON import',()=>{
+ const src=motionEntry('shadow_test',0);
+ src.motion.frames=Array.from({length:8},(_,i)=>({ms:100,parts:{},...(i===0?{shadow:{enabled:false,x:3,y:-2,rx:16,ry:4}}:{})}));
+ const entry=DB.validateBergerak(src,lib.poses);
+ assert.equal(entry.motion.frames.length,8);
+ assert.deepEqual(DB.shadowAt(entry.motion,0),{enabled:false,x:3,y:-2,rx:16,ry:4});
+ assert.deepEqual(DB.shadowAt(entry.motion,7),DB.SHADOW_DEFAULT);
+ const imported=I.normalizeBergerak(JSON.stringify(entry),{poses:lib.poses});
+ assert.deepEqual(imported.errors,[]);
+ assert.deepEqual(DB.validateBergerak(imported.entry,lib.poses).motion.frames[0].shadow,entry.motion.frames[0].shadow);
+ const bad=motionEntry('bad_shadow',0);bad.motion.frames[0].shadow={rx:99};
+ assert.throws(()=>DB.validateBergerak(bad,lib.poses),/Shadow frame 1.rx/);
+});
 test('Beraksi: schema, relative feet positions, layer order, track/emosi timing',()=>{
  const s=DB.validateBeraksi({format:'lgr1-beraksi-v1',id:'ngobrol',name:'Ngobrol',actors:[
   {key:'a1',gender:'male',x:-20,y:0,layer:1,track:[{motion:'builtin:walk',ms:500},{motion:'bergerak:lambai',ms:700}],emosi:[{face:'emosi_x',startMs:600,ms:300}]},
