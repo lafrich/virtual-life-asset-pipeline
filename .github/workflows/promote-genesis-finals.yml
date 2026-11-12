@@ -1,0 +1,135 @@
+name: Promote approved Genesis Male/Female finals (official-7)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/promote-genesis-finals.yml'
+      - 'site/media/lgr1/base/candidates/male-final-20261112-v3.json'
+      - 'site/media/lgr1/base/candidates/female-final-20261112-v3.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: promote-lgr-genesis-official-7
+  cancel-in-progress: false
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image conversion library
+        run: python -m pip install pillow
+      - name: Validate and promote final artwork to official-7
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64,copy,hashlib,io,json
+          from pathlib import Path
+          from PIL import Image
+          B=Path('site/media/lgr1/base')
+          M=B/'candidates/male-final-20261112-v3.json'
+          F=B/'candidates/female-final-20261112-v3.json'
+          I=B/'index.json'
+          male_bytes=M.read_bytes();female_bytes=F.read_bytes()
+          male=json.loads(male_bytes);draft=json.loads(female_bytes)
+          old=json.loads((B/'genesis-base-female-official-6.json').read_text())
+          index=json.loads(I.read_text())
+          def compact(x):return json.dumps(x,ensure_ascii=False,separators=(',',':'))
+          def digest(x):return hashlib.sha256(compact(x).encode()).hexdigest()
+          def save(p,x):p.write_text(compact(x)+'\n',encoding='utf-8')
+          assert index['version']=='official-6', 'Expected official-6; refuse overwrite'
+          assert male['format']=='lafrich-genesis-base-v1' and male['gender']=='male'
+          assert male['rig']['id']=='lafrich_male' and male['rig']['gender']=='male'
+          assert digest(male['rig'])==male['rigSha256'],'Male checksum mismatch'
+          assert draft['format']=='lgr-1-draft-v1' and draft['gender']=='female'
+          record=draft['record'];female_rig=record['rig']
+          assert female_rig['id']=='lafrich_female' and female_rig['gender']=='female'
+          assert female_rig['format']=='lafrich-puppet-master-v1'
+          assert old['gender']=='female'
+          dirs=('se','sw','ne','nw')
+          for rig in (male['rig'],female_rig):
+            assert set(rig['masks'])==set(dirs) and set(rig['pivots'])==set(dirs)
+            assert set(rig['placements'])==set(dirs)
+            for d in dirs:assert len(base64.b64decode(rig['masks'][d]))==64*112
+          female=copy.deepcopy(old)
+          female['rig']=copy.deepcopy(female_rig)
+          female['manualSlice']=copy.deepcopy(record['manual'])
+          female['created']='2026-11-12T12:24:00.000Z'
+          female['edited']='2026-11-12T12:24:00.000Z'
+          for d in dirs:assert len(base64.b64decode(female['manualSlice'][d]))==64*112
+          light=female['skin']['tones']['light']
+          keys=female['skin']['keys']
+          mapping={tuple(bytes.fromhex(light[k][1:])):tuple(bytes.fromhex(keys[k][1:])) for k in female['skin']['order']}
+          reverse={v:k for k,v in mapping.items()}
+          count=0
+          for layer,views in female['rig']['layers'].items():
+            for d,url in list(views.items()):
+              assert d in dirs and url.startswith('data:image/png;base64,'),(layer,d)
+              im=Image.open(io.BytesIO(base64.b64decode(url.split(',',1)[1]))).convert('RGBA')
+              assert im.size==(64,112)
+              original=list(im.getdata());changed=[]
+              for r,g,b,a in original:
+                if a and (r,g,b) in mapping:
+                  nr,ng,nb=mapping[(r,g,b)]
+                  changed.append((nr,ng,nb,a));count+=1
+                else:changed.append((r,g,b,a))
+              restored=[(*reverse.get(x[:3],x[:3]),x[3]) if x[3] else x for x in changed]
+              assert restored==original,'Pixel drift '+layer+'/'+d
+              im.putdata(changed);out=io.BytesIO();im.save(out,format='PNG',optimize=True)
+              views[d]='data:image/png;base64,'+base64.b64encode(out.getvalue()).decode('ascii')
+          assert count>=5000,'Unexpected female skin ramp; refusing promotion'
+          for field in ('masks','pivots','placements','drawOrders','sides','capRadius'):
+            assert female['rig'][field]==female_rig[field],field
+          female['skin']['encoding']='v6p-key-ramp-v1'
+          female['skin']['keyedPixels']=count
+          female['skin']['preview']={'tone':'light'}
+          female['rigSha256']=digest(female['rig'])
+          for g,pkg in [('male',male),('female',female)]:
+            assert pkg['rig']['gender']==g and pkg['gender']==g
+            assert digest(pkg['rig'])==pkg['rigSha256']
+            assert all(d in pkg['rig']['layers']['body'] for d in dirs)
+          archive=B/'archive/index-official-6.json'
+          pm=B/'genesis-base-male-official-7.json'
+          pf=B/'genesis-base-female-official-7.json'
+          assert not archive.exists() and not pm.exists() and not pf.exists(),'Version already exists'
+          archive.parent.mkdir(parents=True,exist_ok=True)
+          archive.write_bytes(I.read_bytes())
+          save(pm,male);save(pf,female)
+          for g,pkg,pth,source,raw_bytes in (
+            ('male',male,pm,M,male_bytes),('female',female,pf,F,female_bytes)):
+            index['bases'][g]={
+              'package':pth.name,'packageFormat':'lafrich-genesis-base-v1',
+              'rigSha256':pkg['rigSha256'],'source':str(source.relative_to(B)),
+              'sourceFormat':json.loads(raw_bytes)['format'],
+              'sourceSha256':hashlib.sha256(raw_bytes).hexdigest(),
+              'sourceBytes':len(raw_bytes)}
+          index['version']='official-7'
+          index['approved']='2026-11-12'
+          index['revisions'].append({
+            'version':'official-7','date':'2026-11-12','approvedBy':'Lafrich',
+            'note':'Update active LGR-1 Male/Female from uploaded male final 1.json and female final 1.json. Male keeps its keyed rig intact; Female light-ramp colours are converted to canonical V6P skin keys with exact pixel roundtrip. Preserve all masks, pivots, placements, draw orders, accents and manual slices. Older versions remain immutable.',
+            'maleRigSha256':male['rigSha256'],'femaleRigSha256':female['rigSha256'],
+            'femaleKeyedPixels':count,'archive':'archive/index-official-6.json'})
+          save(I,index)
+          app=Path('site/genesis-base-app.js')
+          body=app.read_text()
+          needle='const OFFICIAL_BASE_VERSION="official-6";'
+          assert body.count(needle)==1,'Unexpected Genesis loader version'
+          app.write_text(body.replace(needle,'const OFFICIAL_BASE_VERSION="official-7";'))
+          print('Promoted official-7:',index['bases']['male']['rigSha256'],index['bases']['female']['rigSha256'],'female keyed',count)
+          PY
+      - name: Commit immutable official-7 packages and active index
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/media/lgr1/base/archive/index-official-6.json site/media/lgr1/base/index.json site/media/lgr1/base/genesis-base-male-official-7.json site/media/lgr1/base/genesis-base-female-official-7.json site/genesis-base-app.js
+          if ! git diff --cached --quiet; then
+            git commit -m "feat(lgr): activate approved final Genesis male and female official-7"
+            git push origin HEAD:main
+          fi
