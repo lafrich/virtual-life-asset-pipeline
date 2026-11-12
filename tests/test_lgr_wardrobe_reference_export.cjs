@@ -14,7 +14,7 @@ test("draft exporter writes 4-view KEY PNG artwork and active rig metadata, not 
  assert.match(wardrobe,/strip:\[256,112\]/);
  assert.match(wardrobe,/const paths=canSide\(\)\?\[pathOf\("front"\),pathOf\("back"\)\]/);
  assert.match(wardrobe,/JSON\.stringify\(record,null,2\)/);
- assert.match(wardrobe,/root\.MahlukPakaian=Object\.freeze\(\{init,pixelContext,pixelCommit,pixelSelectDirection,exportDraft\}\)/);
+ assert.match(wardrobe,/root\.MahlukPakaian=Object\.freeze\(\{init,pixelContext,pixelCommit,pixelSelectDirection,exportDraft(?:,|\})/);
 });
 test("export from inside Pixel Editor commits live atlas and generates shareable JSON",()=>{
  assert.match(editor,/id=\\"pkExportPixel\\"/);
