@@ -79,12 +79,15 @@
   const CLIP_KEY="mh2-rgba-clipboard-v1";
   let clipboard=null;
   function currentClipboard(){
+   // Always prefer the newest in-memory COPY. A large Genesis draft can fill
+   // localStorage, leaving an older saved stamp even when setItem fails.
+   if(clipboard&&S.validStamp(clipboard,W,H))return clipboard;
    try{
     const saved=JSON.parse(window.localStorage.getItem(CLIP_KEY));
     if(S.validStamp(saved,W,H))
      return {...saved,pixels:new Uint8ClampedArray(saved.pixels)};
    }catch{}
-   return clipboard&&S.validStamp(clipboard,W,H)?clipboard:null;
+   return null;
   }
   function updateClipboardInfo(){
    const saved=currentClipboard();
@@ -264,15 +267,25 @@
    ctx.putImageData(frame,0,dir*H);
   }
   function copySelection(){
-   if(!bone)return;
-   clipboard={...S.copy(frameImage().data,W,H,selection),
-    bone,direction:DIR[dir]};
+   if(!bone)return false;
+   const pixels=frameImage().data,box=selection||S.opaqueBounds(pixels,W,H);
+   if(!box){
+    els.status.textContent="COPY: THIS PART/LAYER HAS NO VISIBLE PIXELS · CHOOSE THE LAYER WITH ART";
+    return false;
+   }
+   const stamp=S.copy(pixels,W,H,box);
+   if(!S.opaqueBounds(stamp.pixels,stamp.w,stamp.h)){
+    els.status.textContent="COPY: SELECTED AREA IS EMPTY · SELECT PIXELS AND COPY AGAIN";
+    return false;
+   }
+   clipboard={...stamp,bone,direction:DIR[dir],copiedAt:Date.now()};
    try{window.localStorage.setItem(CLIP_KEY,JSON.stringify({
     ...clipboard,pixels:Array.from(clipboard.pixels)
-   }))}catch{/* Copy still works in this editor when browser storage is unavailable. */}
+   }))}catch{/* Current in-memory clipboard remains usable despite quota failures. */}
    updateClipboardInfo();
    els.status.textContent="COPIED "+clipboard.w+"×"+clipboard.h+" PIXELS · "+
-    bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · PASTE HERE OR SWITCH VIEW / PART, THEN PASTE";
+    bone.toUpperCase()+" / "+DIR[dir].toUpperCase()+" · PASTE / PASTE FLIP OR SWITCH VIEW";
+   return true;
   }
   // A true four-view transfer: the copied region is saved once and can be
   // composited directly on any native direction, with automatic opposite-angle
@@ -280,12 +293,13 @@
   function pasteSelection(mirror=false){const targetDir=dir;
    const stamp=currentClipboard();
    if(!stamp){els.status.textContent="NO COPIED PIXELS · SELECT + COPY FIRST";return false;}
-   // Same as Emosi.exe: a copied stamp pastes into ANY view (and any part /
-   // layer opened later — the clipboard lives in localStorage for the session).
-   const switching=false;
-   const destX=selection&&!switching?selection.x:(mirror?W-stamp.x-stamp.w:stamp.x);
-   const destY=selection&&!switching?selection.y:stamp.y;
-   const dx=clamp(destX,0,W-1),dy=clamp(destY,0,H-1);
+   // A selected SOURCE box is not a target. With no distinct target box,
+   // regular Paste offsets in the same view while Paste Flip mirrors around
+   // the 64px canvas centre. Selecting a DIFFERENT box anchors both actions.
+   const target=S.pasteTarget(stamp,W,H,{
+    selection,mirror,direction:DIR[dir],bone
+   });
+   const dx=target.x,dy=target.y;
    const original=ctx.getImageData(0,targetDir*H,W,H);
    const background=original.data.slice(),replace=els.pasteReplace.checked;
    saveHistory();
@@ -307,8 +321,8 @@
    selectTool("move-pixels");
    draw();updateHistory();
    els.status.textContent="PASTED "+stamp.w+"×"+stamp.h+" RGBA · "+
-    (mirror?"AUTO MIRRORED · ":"")+DIR[dir].toUpperCase()+
-    " · DRAG TO POSITION · UNDO AVAILABLE";
+    (mirror?"MIRRORED · ":"")+DIR[dir].toUpperCase()+
+    " · X"+dx+" Y"+dy+" · DRAG TO POSITION · APPLY TO SAVE";
    return true;
   }
   els.copy.onclick=copySelection;
