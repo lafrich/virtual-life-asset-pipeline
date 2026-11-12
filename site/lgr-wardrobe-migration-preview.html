@@ -64,7 +64,7 @@ button{background:linear-gradient(#fff,#d1e0f3);cursor:pointer;font-weight:bold}
 const $=id=>document.getElementById(id),dirs=["se","sw","ne","nw"];
 const A=window.LGRActor,R=window.LafrichPuppetRenderer,C=window.LafrichPuppetCore,W=window.LGRWear;
 const choice={gender:"male",skin:"tan",top:"tee",topColor:"navy",pants:"trousers",pantsColor:"denim",shoes:"sneakers",shoesColor:"white",hair:"short",hairColor:"brown",glasses:"none",facial:"none",motion:"walk"};
-const images=new Map();let lib=null,frame=0,playing=true,last=0,busy=false,ticket=0;
+const images=new Map();let lib=null,frame=0,playing=true,lastAdvance=0,busy=false,ticket=0,preparedCache=null;
 function options(id,vals){const el=$(id);for(const v of vals){const o=document.createElement("option");o.value=v;o.textContent=v.replaceAll("_"," ");el.add(o)}el.value=choice[id]||vals[0]}
 for(const id of ["top","pants","shoes","hair","skin","topColor","pantsColor","shoesColor","hairColor"])options(id,(W.OPT[id]||[]).filter(x=>!["nude"].includes(x)));
 for(const id of Object.keys(choice)){if(!$(id))continue;$(id).value=choice[id];$(id).addEventListener("change",()=>{choice[id]=$(id).value;frame=0;void update()})}
@@ -106,15 +106,21 @@ async function update(){
  const thisTicket=++ticket;
  try{
   const bases=await A.loadBases();const b=bases[choice.gender];$("base").textContent="✓ Base aktif "+b.version+" · "+choice.gender+" · SHA "+b.pkg.rigSha256.slice(0,16)+"… · Stok lama bukan master approved";
-  const master=await A.master(choice.gender,choice.skin);
   const motion=lib.motions.find(m=>m.id===choice.motion)||lib.motions[0];
-  const drawn={};
+  const key=JSON.stringify(Object.fromEntries(Object.entries(choice).filter(([k])=>k!=="motion")))+"|"+b.pkg.rigSha256;
+  if(!preparedCache||preparedCache.key!==key){
+    const master=await A.master(choice.gender,choice.skin),prepared={};
+    for(const d of dirs){
+      const wear=await seedWear(d);
+      const character=C.validateCharacter({format:C.CHARACTER,id:"wardrobe_preview",name:"Wardrobe preview",gender:choice.gender,wear,faceId:""});
+      prepared[d]=await R.prepare(master,character,d);
+    }
+    preparedCache={key,master,prepared};
+  }
+  const {master,prepared}=preparedCache,drawn={};
   for(const d of dirs){
-    const wear=await seedWear(d);
-    const character=C.validateCharacter({format:C.CHARACTER,id:"wardrobe_preview",name:"Wardrobe preview",gender:choice.gender,wear,faceId:""});
-    const prep=await R.prepare(master,character,d);
     const p=A.poseOf(master,lib,motion,frame,d);
-    drawn[d]=R.render(prep,p.pose,{order:p.order});
+    drawn[d]=R.render(prepared[d],p.pose,{order:p.order});
   }
   if(thisTicket!==ticket)return;
   for(const d of dirs){const target=viewEls[d];const g=target.getContext("2d");g.imageSmoothingEnabled=false;g.clearRect(0,0,64,112);g.drawImage(drawn[d],0,0)}
@@ -132,7 +138,15 @@ $("png").onclick=()=>{
 };
 try{
  lib=await A.motions();options("motion",lib.motions.map(m=>m.id));$("motion").value=choice.motion;await update();
- window.setInterval(()=>{if(!playing||!lib||busy)return;const m=lib.motions.find(x=>x.id===choice.motion);if(!m)return;frame=(frame+1)%m.frames.length;busy=true;update().finally(()=>{busy=false})},290);
+ lastAdvance=performance.now();
+ window.setInterval(()=>{
+   if(!playing||!lib||busy)return;
+   const m=lib.motions.find(x=>x.id===choice.motion);if(!m)return;
+   const duration=m.frames[frame]?.ms||220;
+   if(performance.now()-lastAdvance<duration)return;
+   lastAdvance=performance.now();frame=(frame+1)%m.frames.length;
+   busy=true;void update().finally(()=>{busy=false});
+ },35);
 }catch(e){$("base").textContent="⚠ Gagal inisialisasi: "+e.message}
 })();
 </script>
