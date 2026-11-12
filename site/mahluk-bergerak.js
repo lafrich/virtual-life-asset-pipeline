@@ -54,6 +54,18 @@ function togglePerView(on){
  else if(f.dirs?.[d]?.[anat]){delete f.dirs[d][anat];if(!Object.keys(f.dirs[d]).length)delete f.dirs[d];if(f.dirs&&!Object.keys(f.dirs).length)delete f.dirs}
  S.perView=on;touch();
 }
+function shadowValue(i=S.frame){return DB().shadowAt(motion(),i)}
+function setShadow(patch){
+ const f=frame(),old=shadowValue();
+ f.shadow={...old,...patch};
+ for(const k of ["x","y","rx","ry"])f.shadow[k]=Math.round(Number(f.shadow[k]));
+ touch();
+}
+function drawShadow(g,shadow,scale=1){
+ if(!shadow.enabled)return;
+ g.fillStyle="rgba(0,0,0,"+(56/255)+")";
+ g.beginPath();g.ellipse((32+shadow.x)*scale,(101+shadow.y)*scale,shadow.rx*scale,shadow.ry*scale,0,0,Math.PI*2);g.fill();
+}
 function touch(){S.dirty=true;syncControls();scheduleRender(true)}
 /* ---- rendering ---- */
 let renderQueued=false,thumbsQueued=false;
@@ -78,9 +90,10 @@ async function render(){
   g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv.width,cv.height);g.imageSmoothingEnabled=false;
   // ground line under the feet
   g.fillStyle="rgba(23,74,150,.18)";g.fillRect(0,101*Z,cv.width,1*Z);
+   drawShadow(g,shadowValue(fi),Z);
   for(const [img,tint,alpha] of [[next,"#3a8f4a",.18],[prev,"#c0392b",.28]]){
    if(!img)continue;const t=document.createElement("canvas");t.width=64;t.height=112;const tg=t.getContext("2d");
-   tg.drawImage(img,0,0);tg.globalCompositeOperation="source-atop";tg.fillStyle=tint;tg.globalAlpha=.55;tg.fillRect(0,0,64,112);
+   tdrawShadow(g,shadowValue(i));g.drawImage(img,0,0);tg.globalCompositeOperation="source-atop";tg.fillStyle=tint;tg.globalAlpha=.55;tg.fillRect(0,0,64,112);
    g.globalAlpha=alpha;g.drawImage(t,0,0,64*Z,112*Z);g.globalAlpha=1;
   }
   g.drawImage(cur,0,0,64*Z,112*Z);
@@ -106,7 +119,7 @@ async function renderThumbs(mo){
  const box=S.ui.frames;const cells=[...box.querySelectorAll("canvas")];
  for(let i=0;i<cells.length&&i<mo.frames.length;i++){
   const c=cells[i],img=await frameImage(i,S.dir,mo).catch(()=>null);if(!img)continue;
-  const g=c.getContext("2d");g.clearRect(0,0,64,112);g.drawImage(img,0,0);
+  const g=c.getContext("2d");g.clearRect(0,0,64,112);drawShadow(g,shadowValue(Math.min(S.frame,mo.frames.length-1)));g.drawImage(img,0,0);
  }
  for(const d of DIRS){
   const c=S.ui.views[d],img=await frameImage(Math.min(S.frame,mo.frames.length-1),d,mo).catch(()=>null);if(!img)continue;
@@ -127,7 +140,12 @@ function hitPiece(x,y){
 }
 function onDown(e){
  if(S.playing)stop();
- const [x,y]=spritePoint(e),piece=hitPiece(x,y);
+ const [x,y]=spritePoint(e);
+ if(S.mode==="shadow"){
+  S.drag={id:e.pointerId,x0:x,y0:y,shadow0:{...shadowValue()},moved:false};
+  S.ui.canvas.setPointerCapture?.(e.pointerId);e.preventDefault();return;
+ }
+ const piece=hitPiece(x,y);
  if(piece){const a=anatOf(piece);if(a&&a!==S.part){S.part=a;S.perView=!!frame().dirs?.[S.dir]?.[a];syncControls();scheduleRender()}}
  const rig=S.shown.rig,pose=S.shown.pose;if(!rig||!pose)return;
  const [cx,cy]=pivotScreen(rig,pose,pieceOf(S.part)),v=screenValue(S.part);
@@ -138,6 +156,11 @@ function onMove(e){
  const d=S.drag;if(!d||d.id!==e.pointerId)return;
  const [x,y]=spritePoint(e);
  if(!d.moved&&Math.hypot(x-d.x0,y-d.y0)<1.2)return;d.moved=true;
+ if(d.shadow0){
+  setShadow({x:Math.max(-24,Math.min(24,d.shadow0.x+Math.round(x-d.x0))),
+   y:Math.max(-16,Math.min(16,d.shadow0.y+Math.round(y-d.y0)))});
+  return;
+ }
  if(S.mode==="move"&&S.part==="pelvis"){setScreen("pelvis",{x:d.v0.x+Math.round(x-d.x0),y:d.v0.y+Math.round(y-d.y0)});return}
  if(Math.hypot(x-d.cx,y-d.cy)<1.5)return;
  let da=(Math.atan2(y-d.cy,x-d.cx)-d.a0)*180/Math.PI;while(da>180)da-=360;while(da<-180)da+=360;
@@ -147,18 +170,19 @@ function onUp(e){if(S.drag?.id===e.pointerId)S.drag=null}
 /* ---- frames ---- */
 function addFrame(dup){
  const fs=motion().frames;if(fs.length>=DB().MAX_FRAMES){U.status("Maksimal "+DB().MAX_FRAMES+" frame.",true);return}
- const f=dup?U.clone(frame()):{ms:frame().ms,parts:U.clone(frame().parts),...(frame().dirs?{dirs:U.clone(frame().dirs)}:{})};
+ const f=dup?U.clone(frame()):{ms:frame().ms,parts:U.clone(frame().parts),...(frame().dirs?{dirs:U.clone(frame().dirs)}:{}),...(frame().shadow?{shadow:U.clone(frame().shadow)}:{})};
  if(!dup){/* new frame starts as a copy of the pose so you only nudge what changes */}
  fs.splice(S.frame+1,0,f);S.frame++;rebuildFrames();touch();
 }
 function deleteFrame(){const fs=motion().frames;if(fs.length<=1){U.status("Minimal 1 frame.",true);return}fs.splice(S.frame,1);S.frame=Math.min(S.frame,fs.length-1);rebuildFrames();touch()}
 function moveFrame(dir){const fs=motion().frames,j=S.frame+dir;if(j<0||j>=fs.length)return;[fs[S.frame],fs[j]]=[fs[j],fs[S.frame]];S.frame=j;rebuildFrames();touch()}
 function resetPart(){const f=frame();delete f.parts[S.part];if(f.dirs?.[S.dir])delete f.dirs[S.dir][S.part];S.perView=false;touch()}
-function resetFrame(){const f=frame();f.parts={};delete f.dirs;delete f.behindTorso;S.perView=false;touch()}
+function resetFrame(){const f=frame();f.parts={};delete f.dirs;delete f.behindTorso;delete f.shadow;S.perView=false;touch()}
 let poseClip=null;
-function copyPose(){poseClip=U.clone({parts:frame().parts,dirs:frame().dirs,behindTorso:frame().behindTorso});U.status("Pose frame "+(S.frame+1)+" dicopy.")}
+function copyPose(){poseClip=U.clone({parts:frame().parts,dirs:frame().dirs,behindTorso:frame().behindTorso,shadow:frame().shadow});U.status("Pose frame "+(S.frame+1)+" dicopy.")}
 function pastePose(){if(!poseClip)return;const f=frame();f.parts=U.clone(poseClip.parts||{});if(poseClip.dirs)f.dirs=U.clone(poseClip.dirs);else delete f.dirs;
- if(poseClip.behindTorso)f.behindTorso=U.clone(poseClip.behindTorso);else delete f.behindTorso;touch();U.status("Pose di-paste ke frame "+(S.frame+1)+".")}
+ if(poseClip.behindTorso)f.behindTorso=U.clone(poseClip.behindTorso);else delete f.behindTorso;
+ if(poseClip.shadow)f.shadow=U.clone(poseClip.shadow);else delete f.shadow;touch();U.status("Pose di-paste ke frame "+(S.frame+1)+".")}
 function mirrorPose(){ // swap left/right limbs (anatomical), e.g. wave with the other hand
  const f=frame(),out={};
  for(const [k,v] of Object.entries(f.parts)){const s=k.replace(/_r_/,"_X_").replace(/_l_/,"_r_").replace(/_X_/,"_l_");out[s]=v}
@@ -295,6 +319,10 @@ function syncControls(){
  S.ui.perView.checked=v.override;S.ui.behind.checked=(frame().behindTorso||[]).includes(S.part);S.ui.behind.disabled=["head","torso","pelvis"].includes(S.part);
  S.ui.ms.value=String(frame().ms);S.ui.loop.checked=motion().loop;S.ui.snap.value=String(snap);S.ui.source.value=motion().source;
  S.ui.mode.hidden=!root_;
+ const sh=shadowValue();S.ui.shadowEnabled.checked=sh.enabled;
+ for(const k of ["x","y","rx","ry"])S.ui.shadowInputs[k].value=String(sh[k]);
+ S.ui.shadowMove.setAttribute("aria-pressed",String(S.mode==="shadow"));
+ S.ui.canvas.style.cursor=S.mode==="shadow"?"move":"crosshair";
  S.ui.frameLabel.textContent="FRAME "+(S.frame+1)+" / "+motion().frames.length+" · total "+motion().frames.reduce((n,f)=>n+f.ms,0)+" ms";
  S.ui.saveState.textContent=S.isNew?"BARU · belum disimpan":(S.dirty?"● belum disimpan":"✓ tersimpan · rev "+(S.entry.rev||1));
  S.ui.saveState.className="sa-tag"+(S.dirty||S.isNew?" warn":"");
@@ -353,6 +381,29 @@ function build(panel){
    el("button",{type:"button",text:"⎘ COPY POSE",onclick:copyPose}),el("button",{type:"button",text:"⎗ PASTE POSE",onclick:pastePose}),
    el("button",{type:"button",text:"⇄ TUKAR KIRI/KANAN",onclick:mirrorPose})),
   el("p",{class:"sa-hint",text:"Tap part di gambar buat milih, lalu drag buat muter di pivot (titik merah). Edit di SE otomatis ke semua view (SW/NW dicerminkan)."}));
+ ui.shadowEnabled=el("input",{type:"checkbox",id:"bg-shadow-enabled",onchange:()=>setShadow({enabled:ui.shadowEnabled.checked})});
+ ui.shadowInputs={};
+ const shField=(k,label,lo,hi)=>{
+  const field=el("input",{type:"number",min:lo,max:hi,step:1,"aria-label":"Shadow "+label,
+   onchange:()=>{const v=Math.round(num(field.value));setShadow({[k]:Math.max(lo,Math.min(hi,v))})}});
+  ui.shadowInputs[k]=field;return el("label",{},label,field);
+ };
+ ui.shadowMove=el("button",{type:"button",id:"bg-shadow-drag",text:"✥ GESER DI PREVIEW",onclick:()=>{
+  S.mode=S.mode==="shadow"?"rotate":"shadow";syncControls();
+ }});
+ const shadowBox=el("details",{class:"sa-box",open:true,id:"bg-shadow-box"},
+  el("summary",{},el("b",{text:"SHADOW · BAYANGAN"})),
+  el("div",{class:"sa-row"},el("label",{},ui.shadowEnabled,"tampilkan shadow"),ui.shadowMove),
+  el("div",{class:"sa-row"},shField("x","X",-24,24),shField("y","Y",-16,16)),
+  el("div",{class:"sa-row"},shField("rx","Lebar / radius",2,28),shField("ry","Tebal / radius",1,10)),
+  el("div",{class:"sa-row"},
+   el("button",{type:"button",text:"↺ RESET FRAME",onclick:()=>{delete frame().shadow;touch()}}),
+   el("button",{type:"button",text:"⇢ TERAPKAN SEMUA FRAME",onclick:()=>{
+    const value=U.clone(shadowValue());
+    for(const f of motion().frames)f.shadow=U.clone(value);
+    touch();U.status("Shadow diterapkan ke "+motion().frames.length+" frame.");
+   }})),
+  el("p",{class:"sa-hint",text:"Shadow hitam flat alpha 56 (pixel-art). X/Y menggeser bayangan; lebar & tebal bisa beda per frame. Posisi mengikuti arah karakter. Edit shadow tidak mengubah Genesis atau pivot."}));
  const timingBox=el("div",{class:"sa-box"},el("h3",{text:"WAKTU · PREVIEW"}),
   el("div",{class:"sa-row"},el("label",{},"durasi frame",ui.ms,"ms"),ui.fps),
   el("div",{class:"sa-row"},el("label",{},ui.loop,"loop"),el("label",{},ui.onion,"onion skin"),ui.snap,ui.source));
@@ -380,7 +431,7 @@ function build(panel){
  const needBox=el("details",{class:"sa-box",open:true},el("summary",{},el("b",{text:"ANIMASI YANG DIBUTUHKAN GAME "}),ui.neededSum),ui.needed,
   el("p",{class:"sa-hint",text:"Centang otomatis kalau animasi dengan id itu ada di database cloud. Tap item buat mulai bikin dengan id yang dipakai game. Kategori 'placeholder' = sementara."}));
  const stageCol=el("div",{class:"sa-stagecol"},el("div",{class:"sa-canvaswrap"},ui.canvas),views,frameBar);
- const side=el("div",{class:"sa-side"},libBox,needBox,partBox,timingBox,previewBox);
+ const side=el("div",{class:"sa-side"},libBox,needBox,partBox,shadowBox,timingBox,previewBox);
  panel.replaceChildren(el("div",{class:"sa-wrap"},stageCol,side));
  // drag-friendly canvas size
  const resize=()=>{const w=Math.min(stageCol.clientWidth-12,(root.innerHeight*(root.innerWidth<820?.5:.56))*64/112);ui.canvas.style.width=Math.max(160,Math.floor(w))+"px"};
