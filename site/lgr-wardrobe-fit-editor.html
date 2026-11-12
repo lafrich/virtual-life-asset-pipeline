@@ -7,7 +7,7 @@
 <title>LGR · Wardrobe Fit — Genesis Pixel Editor</title>
 <link rel="stylesheet" href="./mahluk-subapps.css?v=mh-sync-1">
 <link rel="stylesheet" href="./mahluk-action-frame-pixel.css?v=genesis-workbench-v1">
-<link rel="stylesheet" href="./mahluk-pakaian.css?v=body-cover-1">
+<link rel="stylesheet" href="./mahluk-pakaian.css?v=wardrobe-reference-export-2">
 <style>
 html,body{height:100%;margin:0;background:#abc1dd;font:12px Tahoma,Arial,sans-serif}
 *{box-sizing:border-box}
@@ -20,6 +20,13 @@ header a{color:#fff;font-weight:700;margin-left:auto}
 .pk-cover-controls label{flex:1;min-width:150px;margin:0}
 .pk-cover-controls button{flex:1;min-width:155px}
 .pk-cover-controls button.primary{background:#e1eefc;border:1px solid #3570b0;font-weight:bold}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin:5px 0 8px}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 1px;min-width:0;background:#e3edf9;border:1px solid #7289aa}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid button[aria-pressed=true]{background:#c0defd;outline:2px solid #e6b544}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid canvas{display:block;max-width:100%;width:41px;height:auto;aspect-ratio:64/112;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges}
+#pixelOverlay.wardrobe-source-pixel .pk-ref-grid span{font:9px Tahoma,Arial,sans-serif;color:#263b55}
+#pixelOverlay.wardrobe-source-pixel #pk-ghost-gender{min-width:0;max-width:100%;font-size:11px}
+#pixelOverlay.wardrobe-source-pixel #pkExportPixel{background:linear-gradient(#fbfff3,#c6e7bb);font-weight:bold}
 @media(max-width:700px){header small{display:none}header{padding:7px 9px}.pk-layout{display:flex;flex-direction:column}.pk-aside,.pk-main,.pk-right{width:100%}}
 </style>
 </head>
