@@ -1,4 +1,4 @@
-/* Browser smoke for Genesis Outfit Adjust 24-variant draft application. */
+/* Browser QA for SIX base LGR garments: unrestricted paint, save/export and editor. */
 'use strict';
 const {chromium}=require('playwright');
 const fs=require('node:fs'),assert=require('node:assert/strict');
@@ -10,39 +10,48 @@ const fs=require('node:fs'),assert=require('node:assert/strict');
  page.on('dialog',d=>d.accept());
  try{
   await page.goto('http://127.0.0.1:8766/site/lgr-wardrobe-adjust.html');
-  await page.waitForFunction(()=>document.querySelector('#wa-count')?.textContent?.startsWith('24 VARIAN'),null,{timeout:75000});
-  assert.match(await page.locator('#wa-active').textContent(),/MALE \/ ATASAN \/ Tee Long/i);
-  const status=await page.locator('#wa-status').textContent();
-  assert(!/error|gagal|missing|invalid|failed/i.test(status),status);
-  const count=await page.evaluate(()=>Object.keys(JSON.parse(localStorage.getItem('lgr1-pakaian-drafts-v1')||'{}')).filter(k=>k.includes('|')).length);
-  assert(count>=24,'All 24 drafts must be available without changing game masters');
-  const bbox=()=>page.evaluate(async()=>{
-   const c=(await MahlukPakaian.pixelContext()).canvas;
-   const d=c.getContext('2d').getImageData(0,0,64,112).data;
-   let lo=64,hi=-1,pixels=0;
-   for(let i=0;i<64*112;i++)if(d[i*4+3]){const x=i%64;lo=Math.min(lo,x);hi=Math.max(hi,x);pixels++}
-   return {lo,hi,pixels};
-  });
-  const old=await bbox();assert(old.pixels>50,'Loaded tee long source must have pixels');
-  await page.locator('[data-nudge="1,0"]').click();
-  await page.waitForFunction(async()=>{
-   const c=(await MahlukPakaian.pixelContext()).canvas;
-   const d=c.getContext('2d').getImageData(0,0,64,112).data;
-   let lo=64;for(let i=0;i<64*112;i++)if(d[i*4+3])lo=Math.min(lo,i%64);
-   return lo>=0&&Number(document.querySelector('#pk-version')?.textContent?.includes('UNSAVED'))===1;
-  },null,{timeout:15000});
-  const after=await bbox();assert.equal(after.pixels,old.pixels);assert.equal(after.lo,old.lo+1);
+  await page.waitForFunction(()=>document.querySelector('#wa-count')?.textContent?.startsWith('6 BASE'),null,{timeout:75000});
+  assert.match(await page.locator('#wa-active').textContent(),/MALE \/ ATASAN \/ Tee/i);
+  assert.deepEqual(await page.locator('#wa-group option').evaluateAll(a=>a.map(x=>x.value)),['top','pants','shoes']);
+  assert.equal(await page.locator('#wa-variant').isHidden(),true,'No derivative garment picker');
+  const stored=await page.evaluate(()=>Object.keys(JSON.parse(localStorage.getItem('lgr1-pakaian-drafts-v1')||'{}')).filter(k=>k.includes('|')));
+  assert.equal(stored.length,6,'Exactly six baseline drafts seeded in clean browser');
+  const read=(x,y)=>page.evaluate(async({x,y})=>{
+   const {canvas}=await MahlukPakaian.pixelContext();
+   const d=canvas.getContext('2d',{willReadFrequently:true}).getImageData(x,y,1,1).data;
+   return [...d];
+  },{x,y});
+  const spot={x:4,y:12};
+  const before=await read(spot.x,spot.y);
+  assert.equal(before[3],0,'Outside old garment mask must begin transparent');
+  await page.locator('#wa-mode').selectOption('paint');
+  const b=await page.locator('#wa-stage').boundingBox();
+  await page.mouse.click(b.x+(spot.x+.5)*b.width/64,b.y+(spot.y+.5)*b.height/112);
+  await page.waitForFunction(async({x,y})=>{
+   const {canvas}=await MahlukPakaian.pixelContext();
+   return canvas.getContext('2d').getImageData(x,y,1,1).data[3]===255;
+  },spot,{timeout:15000});
+  await page.locator('#wa-undo').click();
+  await page.waitForFunction(async({x,y})=>{
+   const {canvas}=await MahlukPakaian.pixelContext();
+   return canvas.getContext('2d').getImageData(x,y,1,1).data[3]===0;
+  },spot,{timeout:15000});
+  await page.locator('#wa-cover-1').click();
+  assert(!/gagal|error|failed/i.test(await page.locator('#wa-status').textContent()));
   await page.locator('#wa-save').click();
-  assert.match(await page.locator('#wa-status').textContent(),/Draft disimpan/);
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#wa-export').click()]);
-  await download.saveAs('/tmp/lgr-adjust-one-variant.json');
-  const record=JSON.parse(fs.readFileSync('/tmp/lgr-adjust-one-variant.json','utf8'));
-  assert.equal(record.group,'top');assert.equal(record.variant,'tee_long');assert.equal(record.approved,false);
-  assert.ok(record.files['top/tee_long']);assert.ok(record.files['top/tee_long_back']);
+  const filename='/tmp/lgr-adjust-base-tee.json';await download.saveAs(filename);
+  const record=JSON.parse(fs.readFileSync(filename,'utf8'));
+  assert.equal(record.gender,'male');assert.equal(record.group,'top');assert.equal(record.variant,'tee');
+  assert.equal(record.approved,false);assert.ok(record.files['top/tee']);assert.ok(record.files['top/tee_back']);
+  const [bundle]=await Promise.all([page.waitForEvent('download'),page.locator('#wa-export-all').click()]);
+  const bundleFile='/tmp/lgr-adjust-all-six.json';await bundle.saveAs(bundleFile);
+  const obj=JSON.parse(fs.readFileSync(bundleFile,'utf8'));assert.equal(obj.entries.length,6);
   await page.locator('#wa-gender').selectOption('female');
   await page.locator('#wa-group').selectOption('pants');
-  await page.locator('#wa-variant').selectOption('baggy');
-  await page.waitForFunction(()=>MahlukPakaian.currentOutfit().gender==='female'&&MahlukPakaian.currentOutfit().group==='pants'&&MahlukPakaian.currentOutfit().variant==='baggy');
+  await page.waitForFunction(()=>MahlukPakaian.currentOutfit().gender==='female'&&
+   MahlukPakaian.currentOutfit().group==='pants'&&MahlukPakaian.currentOutfit().variant==='trousers',
+   null,{timeout:30000});
   assert.equal(await page.locator('#wa-side').isDisabled(),true);
   await page.locator('#wa-open-pixel').click();
   await page.locator('#pixelOverlay').waitFor({state:'visible',timeout:45000});
@@ -50,8 +59,8 @@ const fs=require('node:fs'),assert=require('node:assert/strict');
   await page.locator('#pixelClose').click();
   await page.setViewportSize({width:390,height:780});
   assert(await page.locator('#wa-stage').isVisible());
-  assert(await page.locator('#wa-open-pixel').isVisible());
-  assert.deepEqual(errors,[],'No runtime page errors should occur');
-  console.log('Outfit Adjust browser smoke PASS: 24 seeds, per-view nudge, draft save/export, Female Pants, Pixel Editor, mobile layout');
+  assert(await page.locator('#wa-cover-1').isVisible());
+  assert.deepEqual(errors,[],'No browser runtime errors');
+  console.log('Genesis Outfit Adjust SIX BASE browser PASS: free paint outside mask, Undo, skin cover, draft save/export, Female Pants, Pixel Editor and mobile.');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
