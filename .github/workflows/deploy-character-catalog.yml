@@ -185,6 +185,7 @@ jobs:
           node tests/test_mahluk_pakaian.cjs
           node tests/test_pakaian_shared_pixel_editor.cjs
           node --test tests/test_lgr_pakaian_v2.cjs
+          node --test tests/test_lgr_wardrobe_cover.cjs
           node tests/test_genesis_base.cjs
           node tests/test_lgr_slice_candidate.cjs
           python -m unittest discover -s tests -p 'test_nova_official_5.py' -v
