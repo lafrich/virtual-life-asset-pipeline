@@ -269,17 +269,78 @@ async function exportMaster(){
   download(n,JSON.stringify(data,null,2));say("Export "+n+" (master v2, tidak otomatis publish).");
  }catch(e){say("Export gagal: "+e.message,true)}
 }
+/* Lafrich renamed the exported reference files to the actual garment category
+ * after the original Pixel Editor mistakenly exported all six as top/tee.
+ * When these specific LGR_REF files are imported, the filename defines the
+ * category. The user's painted alpha geometry remains unchanged.
+ */
+function categoryFromRefFilename(name){
+ if(!/^LGR_REF_/i.test(String(name||"")))return null;
+ const n=String(name).toLowerCase();
+ if(/sepatu|tshoes|shoes/.test(n))return {group:"shoes",variant:"shoes"};
+ if(/celana|clana|pants/.test(n))return {group:"pants",variant:"trousers"};
+ if(/top_tee|baju/.test(n))return {group:"top",variant:"tee"};
+ return null;
+}
+async function convertReferenceKeyStrip(uri,group){
+ if(!["pants","shoes"].includes(group))return uri;
+ const im=await loadImage(uri),c=cv(256,112),g=c.getContext("2d",{willReadFrequently:true});
+ g.drawImage(im,0,0,256,112);
+ const data=g.getImageData(0,0,256,112),K=root.LGRWear.K,
+  refs=group==="pants"?["P1","P2","P3","P4","P4"]:["S0","S1","S2","S3","S3"];
+ const rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+ const table=new Map();
+ for(let i=0;i<5;i++)table.set(rgb(K["C"+(i+1)]).join(","),rgb(K[refs[i]]));
+ let changed=0;
+ for(let i=0;i<data.data.length;i+=4){
+  if(data.data[i+3]===0)continue;
+  const source=[data.data[i],data.data[i+1],data.data[i+2]].join(",");
+  const newColor=table.get(source);
+  if(!newColor)throw Error("Unknown colour KEY in imported "+group+" garment");
+  data.data[i]=newColor[0];data.data[i+1]=newColor[1];data.data[i+2]=newColor[2];changed++;
+ }
+ if(!changed)throw Error("Imported garment contains no visible pixels");
+ g.putImageData(data,0,0);
+ return c.toDataURL("image/png");
+}
 async function importMaster(f){
  if(!f||f.size>3000000)throw Error("JSON maksimal 3 MB");
  const p=JSON.parse(await f.text());
- if(!["lgr1-wardrobe-master-v1","lgr1-pakaian-v2"].includes(p.format)||!GROUPS.includes(p.group)||!["male","female"].includes(p.gender)||typeof p.variant!=="string"||!p.files||typeof p.files!=="object")throw Error("Format master pakaian tidak cocok");
- const files={};for(const [k,v] of Object.entries(p.files)){if(!validPath(k)||typeof v!=="string"||!v.startsWith("data:image/png;base64,")||v.length>800000)throw Error("Asset key invalid: "+k);files[k]=v}
- if(S.changed.size)saveDraft(true);S.gender=p.gender;S.group=p.group;S.variant=p.variant;
- $("pk-gender").value=S.gender;$("pk-group").value=S.group;refreshOptions();
+ if(!["lgr1-wardrobe-master-v1","lgr1-pakaian-v2","lafrich-wardrobe-artist-reference-v1"].includes(p.format)||
+    !GROUPS.includes(p.group)||!["male","female"].includes(p.gender)||
+    typeof p.variant!=="string"||!p.files||typeof p.files!=="object")
+  throw Error("Format master pakaian tidak cocok");
+ const inferred=categoryFromRefFilename(f.name);
+ const mapping=inferred&&p.group==="top"&&p.variant==="tee"?
+  inferred:{group:p.group,variant:p.variant};
+ const files={};
+ if(mapping.group!==p.group){
+  // Original image was saved under top/tee although it was drawn as pants/shoes.
+  const src=p.files["top/tee"+(p.gender==="female"?"_f":"")];
+  if(!src)throw Error("Reference source top/tee is missing");
+  const target=mapping.group+"/"+mapping.variant+(p.gender==="female"?"_f":"");
+  if(!validPath(target))throw Error("Target garment path invalid: "+target);
+  files[target]=await convertReferenceKeyStrip(src,mapping.group);
+ }else{
+  for(const [k,v] of Object.entries(p.files)){
+   if(!validPath(k)||typeof v!=="string"||!v.startsWith("data:image/png;base64,")||v.length>800000)
+    throw Error("Asset key invalid: "+k);
+   files[k]=v;
+  }
+ }
+ if(S.changed.size)saveDraft(true);
+ S.gender=p.gender;S.group=mapping.group;S.variant=mapping.variant;
+ $("pk-gender").value=S.gender;$("pk-group").value=S.group;
+ refreshOptions();
  if(!options().includes(S.variant))throw Error("Varian tidak ada dalam database stok");
  $("pk-item").value=S.variant;
- const all=allVersions();all[kID()]={...p,files,approved:false,updated:new Date().toISOString()};
- localStorage.setItem(KEY,JSON.stringify(all));await openItem();say("Import sebagai draft. Tekan SAVE MASTER untuk mengaktifkan format v2 di game.");
+ const all=allVersions();
+ all[kID()]={...p,group:S.group,variant:S.variant,files,approved:false,referenceOnly:true,updated:new Date().toISOString()};
+ localStorage.setItem(KEY,JSON.stringify(all));
+ await openItem();
+ say(inferred&&p.group!==S.group?
+  "Import "+f.name+" sebagai "+S.group+"/"+S.variant+" dengan KEY yang benar, DRAFT saja.":
+  "Import sebagai draft. SAVE MASTER hanya jika sudah ditinjau.");
 }
 function refreshOptions(){
  const opts=options();S.variant=setSelect("pk-item",opts.map(x=>[x,x.replace(/_/g," ")]),S.variant);
