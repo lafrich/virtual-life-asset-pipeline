@@ -1,10 +1,11 @@
 'use strict';
-/* Official-4 contract: Male official-3 retained, new Female cuts applied, old bases untouched. */
+/* Historical official-4 contract: older approved sources must remain untouched after Nova official-5. */
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const C=require('../site/lafrich-puppet-core.js');
 const root=path.resolve(__dirname,'../site/media/lgr1/base');
 const parse=f=>JSON.parse(fs.readFileSync(path.join(root,f),'utf8'));
-const index=parse('index.json');
+const index=parse('archive/index-official-4.json');
+const active=parse('index.json');
 const previous=parse('genesis-base-male.json');
 const archive=parse('archive/genesis-base-male-official-2.json');
 const v2Index=parse('archive/index-official-2.json');
@@ -85,4 +86,12 @@ test('official-4 promotes the Lafrich Female slicing without changing original a
    assert.notEqual(cur.masks[d],old.masks[d],'New slicing must differ for '+d);
    assert.ok(C.PARTS.some(p=>JSON.stringify(cur.pivots[d][p])!==JSON.stringify(old.pivots[d][p])),'New pivot expected for '+d);
  }
+});
+
+
+test('current Nova official-5 points to versioned Male and Female while old official-4 is archived',()=>{
+ assert.equal(active.version,'official-5');
+ assert.equal(index.version,'official-4');
+ assert.equal(active.bases.male.package,'genesis-base-male-official-5.json');
+ assert.equal(active.bases.female.package,'genesis-base-female-official-5.json');
 });

@@ -357,9 +357,9 @@ async function sourceCanvases(g){
 }
 // Official LGR-1 base (approved by Lafrich, site/media/lgr1/base/) is the
 // default seed; the frozen V6B source is only the fallback / "OLD V6B" reset.
-const OFFICIAL_BASE_VERSION="official-4";
+const OFFICIAL_BASE_VERSION="official-5";
 async function officialRecord(g){
- // Resolve both active packages via approved index (Male official-3, Female official-4).
+ // Resolve both active Nova official-5 packages via approved index.
  // Previously approved packages stay at their original paths. Never replace a local draft.
  const rootPath="./media/lgr1/base/";
  const ix=await fetch(rootPath+"index.json?v="+OFFICIAL_BASE_VERSION,{cache:"no-store"});

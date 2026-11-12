@@ -89,7 +89,15 @@ def warp(raw,aold,anew):
 def main():
     sil=json.loads(pathlib.Path("tools/data/v6b-silhouette.json").read_text())["silhouette"]
     index_base=json.loads(pathlib.Path("site/media/lgr1/base/index.json").read_text())
-    base={g:json.loads(pathlib.Path("site/media/lgr1/base/genesis-base-%s.json"%g).read_text())["rig"] for g in ("male","female")}
+    base={}
+    for g in ("male","female"):
+        entry=index_base["bases"][g]
+        active_path=pathlib.Path("site/media/lgr1/base")/entry["package"]
+        pkg=json.loads(active_path.read_text())
+        raw=json.dumps(pkg["rig"],ensure_ascii=False,separators=(",",":")).encode("utf-8")
+        if hashlib.sha256(raw).hexdigest()!=entry["rigSha256"]:
+            raise ValueError("Invalid active "+g+" Genesis rig checksum")
+        base[g]=pkg["rig"]
     AO={g:{d:bytearray(base64.b64decode(sil[g][d])) for d in DIRS} for g in base}
     AN={g:{d:union(base[g],d) for d in DIRS} for g in base}
     items=[];meta={}

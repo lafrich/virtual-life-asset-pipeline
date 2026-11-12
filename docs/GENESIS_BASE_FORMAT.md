@@ -165,3 +165,24 @@ never edit an approved package in place.
 ### official-4 (2026-11-11): Female slicing revision
 
 Lafrich approved the adjusted slicing in `genesis_female_draft.json` as the new Genesis **Female** LGR base. The draft is stored byte-identically at `site/media/lgr1/base/candidates/genesis_female_draft-20261111.json`. `genesis-base-female-official-4.json` retains official-2 Female artwork/skin keys and anatomical structure, but uses the uploaded four-angle masks, pivots, placements and manual-slice flags. `genesis-base-female.json` remains the untouched previous package. `archive/index-official-3.json` keeps the previous catalog mapping. Male continues using `genesis-base-male-official-3.json`, unchanged. The active pointers are in `site/media/lgr1/base/index.json` (`official-4`).
+
+
+### official-5 (2026-11-12): Nova final becomes gameplay base
+
+Lafrich approved `nova male final.json` and `nova female final.json` as the
+new universal 11-part Genesis bases. The original drafts are preserved exactly
+in `candidates/nova-{male,female}-final-20261112.json`, and the prior
+`official-4` index is stored in `archive/index-official-4.json`.
+
+All four 64×112 pixel views, masks, slice flags, pivots, placements, sides and
+draw orders come from the uploaded artists' files, with no animation redraw.
+The three used light-tone skin colours are mapped to existing V6P skin-key
+slots (`i`, `h`, `7`); the other three keys remain available for future
+shading. Non-skin red/pink accents are deliberately unkeyed. The mapping back
+to the Light tone has zero pixel differences versus the originals in SE/SW/NE/NW
+for both genders. The Female draft had Male identifiers; only the Female
+package's metadata was corrected to `lafrich_female`/`female`.
+
+`index.json` revision `official-5` now feeds LGRActor for gameplay, and
+Genesis Base uses it for fresh/reset drafts. Browser drafts are preserved until
+the user explicitly resets. Do not replace earlier official packages.

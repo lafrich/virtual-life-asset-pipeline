@@ -1,0 +1,66 @@
+{
+ "format": "lafrich-lgr1-official-base-index-v1",
+ "version": "official-4",
+ "approved": "2026-11-11T15:57:00+07:00",
+ "approvedBy": "Lafrich",
+ "bases": {
+  "male": {
+   "package": "genesis-base-male-official-3.json",
+   "packageFormat": "lafrich-genesis-base-v1",
+   "rigSha256": "2e5ddbc4a09c3316a7d18113c9ec3820fd52407d9ffac865ff9d12d0e54dd537",
+   "sheet": "genesis-base-male-sheet.png",
+   "source": "candidates/lgr-male-slice-test-20261111.json",
+   "sourceFormat": "lgr-1-draft-v1",
+   "sourceSha256": "9977850ed62fe06ada80ab6a72208aa505f7a27402878d974aca0dc146e0a544",
+   "sourceBytes": 104071
+  },
+  "female": {
+   "package": "genesis-base-female-official-4.json",
+   "packageFormat": "lafrich-genesis-base-v1",
+   "rigSha256": "d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a",
+   "sheet": "genesis-base-female-sheet.png",
+   "source": "candidates/genesis_female_draft-20261111.json",
+   "sourceFormat": "lgr-1-draft-v1",
+   "sourceSha256": "89e3747c8a9e7ca0e4496575cbff5a224b7bb371a5503d205e67cec684ced44e",
+   "sourceBytes": 104383
+  }
+ },
+ "revisions": [
+  {
+   "version": "official-1",
+   "date": "2026-11-10T18:45:00+07:00",
+   "note": "Lafrich's approved male/female drafts converted to lafrich-genesis-base-v1."
+  },
+  {
+   "version": "official-2",
+   "date": "2026-11-10T20:05:00+07:00",
+   "approvedBy": "Lafrich",
+   "note": "Same base pixels, slices and pivots (rig checksums unchanged). Back-view (NE/NW) hair redrawn to fit this base: short = original length with strand/volume shading and darker under-layers to the nape; swept = tapered nape with both ears free. Renderer joint fill (LGR1Raster.JOINT_FILL=8, waist +2) closes joint seams in every motion; the rest pose renders unchanged.",
+   "hair": {
+    "short_front.png": "NE/NW idle/walk/talk/sit/sleep/tired/swim/perch cells",
+    "swept_front.png": "NE/NW idle/walk/talk/sit/sleep/tired/swim/perch cells"
+   },
+   "renderer": {
+    "jointFill": 8
+   }
+  },
+  {
+   "version": "official-3",
+   "date": "2026-11-11T02:03:00+07:00",
+   "approvedBy": "Lafrich",
+   "note": "Male LGR rig: apply full four-view masks/pivots/placements from user's LGR male test.json. Original official-2 pixel art/layers, ID, draw order, skin KEY encoding and hierarchy retained. Female unchanged. Official-2 package and index archived as a lossless rollback. Versioned official-3 package: genesis-base-male-official-3.json; original official-2 file at genesis-base-male.json is byte-identical and remains available.",
+   "originalMaleRigSha256": "1c1a220a78488e4e255c0ae4958547587217241041761475ef649ac8665a42a9",
+   "maleRigSha256": "2e5ddbc4a09c3316a7d18113c9ec3820fd52407d9ffac865ff9d12d0e54dd537",
+   "archive": "archive/genesis-base-male-official-2.json"
+  },
+  {
+   "version": "official-4",
+   "date": "2026-11-11T15:57:00+07:00",
+   "approvedBy": "Lafrich",
+   "note": "Female LGR-1: promote user's updated genesis_female_draft.json four-direction masks/pivots/placements/manual slicing; retain official-2 Female original pixel art, skin keys, hierarchy and ID. Male official-3 unchanged. Preserve original Female draft and prior index as immutable rollback.",
+   "originalFemaleRigSha256": "e3c4ce9b14805dbb4364ef61ce380ccc45d78bbc1d86516c241b8d1c7f976dc8",
+   "femaleRigSha256": "d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a",
+   "archive": "archive/index-official-3.json"
+  }
+ ]
+}
