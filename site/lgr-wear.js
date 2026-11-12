@@ -48,6 +48,38 @@ function strip(path){
  const p=new Promise((res)=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=(root.LGRDB_BASE||"")+"media/lgr1/mh-wear/"+path+".png"});
  strips.set(path,p);return p;
 }
+/* New canonical wardrobe: ONLY approved Pakaian v2 tied to current Genesis rig.
+ * Hair retains the old art fallback because its head geometry was preserved.
+ * Tops, pants, shoes, glasses and facial do NOT fall back to retired V6P art.
+ */
+async function activeStrip(path,gender){
+ const category=path.split("/")[0];
+ const DB=root?.LGRDB;
+ const base=path.split("/")[1];
+ const variant=category==="hair"?base.replace(/_(front|back)$/,""):
+   category==="top"?base.replace(/_back(_f)?$/,"").replace(/_f$/,""):
+   ["pants","shoes"].includes(category)?base.replace(/_f$/,""):base;
+ const id=gender+"_"+category+"_"+variant;
+ const entry=DB?.get?.("pakaian",id);
+ if(entry&&entry.format==="lgr1-pakaian-v2"&&entry.gender===gender&&entry.approved&&entry.files?.[path]){
+  let valid=false;
+  try{
+   const bases=await root?.LGRActor?.loadBases?.();
+   valid=entry.baseRigSha256===bases?.[gender]?.pkg?.rigSha256&&entry.baseVersion===bases?.[gender]?.version;
+  }catch{valid=false}
+  if(valid){
+   const key="approved|"+entry.id+"|"+entry.rev+"|"+entry.updated+"|"+path;
+   if(!strips.has(key)){
+    const im=new Image(),p=new Promise(res=>{im.onload=()=>res(im);im.onerror=()=>res(null)});
+    im.src=entry.files[path];strips.set(key,p);
+   }
+   return strips.get(key);
+  }
+ }
+ // Hair was explicitly kept compatible by the artist; all other OLD art retires.
+ return category==="hair"?strip(path):null;
+}
+function clearCache(){strips.clear()}
 // spec {top,topColor,pants,pantsColor,shoes,shoesColor,hair,hairColor}; gender; skin tone
 // → {pants:{se:dataURL,…}, top:…, top_back:…, shoes:…, hair_back:…, hair_front:…}
 async function layers(spec,gender,tone){
@@ -58,7 +90,7 @@ async function layers(spec,gender,tone){
  if(ch.hair!=="none"){files.hair_back="hair/"+ch.hair+"_back";files.hair_front="hair/"+ch.hair+"_front"}
  const out={};
  for(const [layer,path] of Object.entries(files)){
-  const im=await strip(path);if(!im)continue;out[layer]={};
+  const im=await activeStrip(path,gender);if(!im)continue;out[layer]={};
   for(let di=0;di<4;di++){
    const c=document.createElement("canvas");c.width=64;c.height=112;const g=c.getContext("2d",{willReadFrequently:true});
    g.drawImage(im,di*64,0,64,112,0,0,64,112);const d=g.getImageData(0,0,64,112);recolor(d.data,M);
@@ -68,5 +100,5 @@ async function layers(spec,gender,tone){
  }
  return out;
 }
-return Object.freeze({OPT,P,K,norm,lookup,recolor,layers});
+return Object.freeze({OPT,P,K,norm,lookup,recolor,layers,activeStrip,clearCache});
 });
