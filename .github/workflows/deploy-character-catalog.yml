@@ -181,6 +181,11 @@ jobs:
       - name: Verify LGR-1 public routes and blocked legacy sync
         run: |
           node tests/test_lgr_retirement.cjs
+          node --check site/nova-genesis-loader.js
+          node tests/test_nova_genesis.cjs
+          test -s _site/genesis-nova.html
+          test -s _site/media/lgr1/nova-11fix/male-package.gz.b64
+          test -s _site/media/lgr1/nova-11fix/female-package.gz.b64
           test -s _site/genesis-workbench.html
           test -s _site/genesis-cloud.js
           test -s _site/genesis-base.html
