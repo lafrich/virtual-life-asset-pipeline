@@ -10,7 +10,7 @@
 (function(root,factory){"use strict";
  const api=factory(root);
  if(typeof module==="object"&&module.exports)module.exports=api;
- if(root)root.LGRNovaWide=factory(root);
+ if(root)root.LGRNovaWide=api;
 })(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){
  "use strict";
  const W=64,H=112;
