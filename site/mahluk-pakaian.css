@@ -1,0 +1,35 @@
+/* PAKAIAN.EXE — matched to Mahluk Hidup XP chrome, editor remains 1x pixel-accurate */
+#pakaianpanel{overflow:auto;background:#d4deea;min-height:0}
+.pk-layout{display:grid;grid-template-columns:minmax(205px,245px) minmax(270px,1fr) minmax(255px,315px);gap:8px;padding:8px;align-items:start;min-height:100%}
+.pk-aside,.pk-main,.pk-right{display:flex;flex-direction:column;gap:8px;min-width:0}
+.pk-box{background:#f5f8fc;border:1px solid #93a8c4;box-shadow:0 2px 0 #b9c7d8;padding:9px;min-width:0}
+.pk-box h3{font:700 11px Tahoma,Arial,sans-serif;margin:-9px -9px 9px;background:linear-gradient(90deg,#0a397d,#3478be);color:#fff;padding:7px 9px;letter-spacing:.04em}
+.pk-box label{display:flex;flex-direction:column;gap:4px;color:#334a6a;font-size:11px;margin:8px 0}
+.pk-box label:has(input[type="checkbox"]){flex-direction:row;align-items:center}
+.pk-box select,.pk-box textarea{padding:7px 5px;width:100%;min-width:0;color:#244065;background:white;border:1px solid #9aadc1;border-radius:2px;font:12px Tahoma,Arial,sans-serif}
+.pk-box button{min-height:30px;margin:2px;cursor:pointer;font:11px Tahoma,Arial,sans-serif}
+.pk-aside .pk-box>button{display:block;width:100%;margin:5px 0}
+.pk-box button[aria-pressed="true"]{outline:2px solid #dca520;background:#c9e2ff}
+.pk-box button:focus-visible,.pk-box input:focus-visible,.pk-box select:focus-visible{outline:2px solid #df9d17}
+.pk-tag{padding:5px;border:1px solid #b7c6d8;background:#e8f0fb;font-size:10px;overflow-wrap:anywhere;margin-top:4px}
+.pk-small{font-size:10.5px;color:#576a83;line-height:1.55}
+.pk-inks{display:flex;flex-wrap:wrap;gap:3px;margin:7px 0}
+.pk-inks button{width:34px;height:27px;min-height:27px;padding:0;font-size:9px;border:1px solid #657b95}
+.pk-tools{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:7px}
+.pk-tools button{flex:1 0 auto;min-width:52px}
+.pk-dir{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:7px}
+.pk-dir button{min-width:37px}
+.pk-canvas{background:repeating-conic-gradient(#e4e9f1 0 25%,#f9fbfd 0 50%) 0 0/18px 18px;border:1px solid #a0b1c5;display:flex;justify-content:center;overflow:auto;padding:8px;max-height:min(64vh,690px)}
+#pk-editor{width:256px;height:448px;max-width:100%;object-fit:contain;image-rendering:pixelated;touch-action:none;cursor:crosshair;border:1px solid #8c9db4}
+.pk-views{display:flex;gap:5px;justify-content:space-around;margin-top:9px;align-items:flex-start}
+.pk-views canvas{width:48px;height:84px;background:#e7edf7;border:1px solid #a7b6c9;image-rendering:pixelated;cursor:pointer;flex-shrink:1;min-width:0}
+.pk-views canvas[aria-pressed="true"]{border:2px solid #e5a52d}
+.pk-review{flex-wrap:wrap}
+.pk-review canvas{width:60px;height:105px;cursor:default}
+.pk-file{font-weight:bold;position:relative;padding:9px;background:#dfebfa;border:1px solid #91a9c7;text-align:center;cursor:pointer}
+.pk-file input{display:block;width:100%;margin-top:5px;font-size:10px}
+.pk-box ol{padding-left:20px;font-size:11px;line-height:1.75}
+#pk-status{font-size:11px;line-height:1.6;background:#edf4fc;border:1px solid #a4bbd3;padding:9px;overflow-wrap:anywhere}
+@media(max-width:1050px){.pk-layout{grid-template-columns:200px 1fr}.pk-right{grid-column:1/-1}.pk-right .pk-box:first-child{order:0}.pk-review{justify-content:center;gap:18px}}
+@media(max-width:650px){.pk-layout{grid-template-columns:1fr;padding:5px}.pk-main,.pk-right{grid-column:1}.pk-aside{display:grid;grid-template-columns:1fr 1fr}.pk-aside .pk-box:last-child{grid-column:1/-1}.pk-canvas{max-height:52vh}#pk-editor{width:192px;height:336px}.pk-review canvas{width:54px;height:95px}#pakaianpanel{overscroll-behavior:contain}}
+@media(max-width:420px){.pk-aside{grid-template-columns:1fr}.pk-aside .pk-box:last-child{grid-column:1}.pk-tools button{font-size:10px}.pk-views canvas{width:40px;height:70px}}
