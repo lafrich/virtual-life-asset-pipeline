@@ -1,0 +1,268 @@
+/* MAHLUK HIDUP · PAKAIAN.EXE — standalone, non-destructive wardrobe authoring.
+ * Source: stock LGR-1 key-colour strips (64x112 x four views).
+ * Saved drafts/approval are LOCAL ONLY until explicitly exported and ingested.
+ * Never edits Genesis, original wardrobe PNGs, or Bergerak/Emosi databases.
+ */
+(function(root){"use strict";
+const DIRS=["se","sw","ne","nw"], GROUPS=["top","pants","shoes","hair","glasses","facial"];
+const KEY="lgr1-pakaian-drafts-v1", CKEY="lgr1-pakaian-approved-local-v1";
+const BASE="media/lgr1/mh-wear/", $=id=>document.getElementById(id);
+const make=(t,attrs={},...kids)=>{const e=document.createElement(t);for(const [k,v] of Object.entries(attrs)){if(k==="text")e.textContent=v;else if(k==="class")e.className=v;else if(k==="html")e.innerHTML=v;else if(k.startsWith("on"))e[k]=v;else e.setAttribute(k,v)}for(const x of kids.flat())if(x!=null)e.append(x.nodeType?x:document.createTextNode(String(x)));return e};
+const cv=(w=64,h=112)=>{const c=document.createElement("canvas");c.width=w;c.height=h;return c};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const dbRead=k=>{try{return JSON.parse(localStorage.getItem(k)||"{}")}catch{return {}}};
+const S={ready:false,index:null,gender:"male",group:"top",variant:"tee",dir:"se",side:"front",tone:"light",ink:"C2",tool:"pen",motion:"idle",frame:0,base:"",basePackages:{},bufs:new Map(),draft:null,changed:new Set(),undo:[],redo:[],copied:null,selection:null,selectFrom:null,drag:false,playing:null,previewToken:0,edited:false};
+const rootUrl=()=>root.LGRDB_BASE||"./";
+const say=(s,bad=false)=>{const p=$("pk-status");if(p){p.textContent=s;p.style.color=bad?"#a8291d":"#315577"}};
+const kID=()=>S.gender+"|"+S.group+"|"+S.variant;
+const allVersions=()=>dbRead(KEY);
+const validPath=p=>typeof p==="string"&&S.index.items.includes(p);
+const canSide=()=>S.group==="top"||S.group==="hair";
+function pathOf(side=S.side) {
+ let n=S.variant;
+ if(S.group==="hair")n=n+"_"+(side==="back"?"back":"front");
+ else if(S.group==="top"&&side==="back")n=n+"_back";
+ if(["top","pants","shoes"].includes(S.group)&&S.gender==="female")n+="_f";
+ return S.group+"/"+n;
+}
+function options(){
+ const names=new Set();
+ for(const file of S.index.items){
+  const seg=file.split("/");if(seg[0]!==S.group)continue;
+  let n=seg[1];
+  if(["top","pants","shoes"].includes(S.group))n=n.replace(/_f$/,"");
+  if(S.group==="top")n=n.replace(/_back$/,"");
+  if(S.group==="hair")n=n.replace(/_(front|back)$/,"");
+  if(n&&n!=="nude"&&!n.startsWith("custom"))names.add(n);
+ }
+ return [...names].sort();
+}
+function setSelect(id,opts,chosen) {
+ const e=$(id);e.replaceChildren(...opts.map(([v,l])=>new Option(l,v)));
+ e.value=chosen&&opts.some(x=>x[0]===chosen)?chosen:(opts[0]?.[0]||"");
+ return e.value;
+}
+function palettes(){
+ const by={top:["C1","C2","C3","C4","C5","O1","O2","O3","O4","O5","OD","Ki","Kh","Ke"],pants:["P1","P2","P3","P4","Ki","Kh"],shoes:["S0","S1","S2","S3"],hair:["H0","H1","H2","H3","H4","B"],glasses:["GL"],facial:["H0","H1","H2","H3","H4"]};
+ const ids=by[S.group]||["C2"],w=root.LGRWear;
+ $("pk-inks").replaceChildren(...ids.filter(k=>w.K[k]).map(k=>{
+  const b=make("button",{type:"button",title:k,"data-key":k,style:"background:"+w.K[k]+";color:#fff;text-shadow:0 1px #222",text:k});
+  b.onclick=()=>{S.ink=k;palettes()};b.setAttribute("aria-pressed",String(k===S.ink));return b;
+ }));
+ if(!ids.includes(S.ink))S.ink=ids[0];
+ const palette={top:"top",pants:"pants",shoes:"shoes",hair:"hair",glasses:"hair",facial:"hair"}[S.group];
+ const entries=Object.keys(w.P.swatch[palette]||{});
+ setSelect("pk-color",entries.map(x=>[x,x]),S.color&&entries.includes(S.color)?S.color:entries[0]);
+ S.color=$("pk-color").value;
+}
+async function loadImage(src){
+ return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error("Asset tidak ditemukan: "+src));im.src=src});
+}
+async function buffer(path){
+ if(S.bufs.has(path))return S.bufs.get(path);
+ if(!validPath(path))return null;
+ const existing=S.draft?.files?.[path];
+ const im=await loadImage(existing||rootUrl()+BASE+path+".png");
+ if(im.width!==256||im.height!==112)throw Error("Sprite harus 256×112: "+path);
+ const c=cv(256,112);c.getContext("2d").drawImage(im,0,0);S.bufs.set(path,c);return c;
+}
+function getCell(c,d=S.dir){return c.getContext("2d",{willReadFrequently:true}).getImageData(DIRS.indexOf(d)*64,0,64,112)}
+function putCell(c,data,d=S.dir){c.getContext("2d").putImageData(data,DIRS.indexOf(d)*64,0)}
+function recolored(imdata){
+ const copy=new ImageData(new Uint8ClampedArray(imdata.data),64,112);
+ const spec={skin:S.tone,topColor:S.group==="top"?S.color:"navy",pantsColor:S.group==="pants"?S.color:"denim",shoesColor:S.group==="shoes"?S.color:"white",hairColor:["hair","facial","glasses"].includes(S.group)?S.color:"brown"};
+ root.LGRWear.recolor(copy.data,root.LGRWear.lookup(spec));return copy;
+}
+function drawCellTo(target,data){
+ const c=cv();c.getContext("2d").putImageData(recolored(data),0,0);
+ const g=target.getContext("2d");g.clearRect(0,0,target.width,target.height);g.imageSmoothingEnabled=false;g.drawImage(c,0,0,target.width,target.height);
+}
+async function draw(){
+ const path=pathOf(),c=await buffer(path);$("pk-file").textContent=path+".png";
+ if(!c){say("Bagian ini tidak punya sprite stok.",true);return}
+ const editor=$("pk-editor"),g=editor.getContext("2d");g.clearRect(0,0,64,112);
+ if($("pk-ghost").checked){
+  try{
+   const naked=await root.LGRActor.frameCanvas({gender:S.gender,skin:{tone:S.tone},outfit:"none",wear:{}},{dir:S.dir});
+   g.globalAlpha=.33;g.drawImage(naked,0,0);g.globalAlpha=1;
+  }catch(e){console.warn("Ghost base",e)}
+ }
+ const cell=cv();cell.getContext("2d").putImageData(recolored(getCell(c)),0,0);g.drawImage(cell,0,0);
+ if(S.selection){
+  const r=S.selection;g.save();g.strokeStyle="#ffcc20";g.setLineDash([2,1]);g.lineWidth=1;
+  g.strokeRect(r.x+.5,r.y+.5,r.w,r.h);g.restore();
+ }
+ for(let i=0;i<4;i++){
+  const t=$("pk-v"+i),out=cv(),u=getCell(c,DIRS[i]);out.getContext("2d").putImageData(recolored(u),0,0);
+  const tg=t.getContext("2d");tg.clearRect(0,0,64,112);tg.drawImage(out,0,0);
+  t.setAttribute("aria-pressed",String(DIRS[i]===S.dir));
+ }
+}
+const fresh=()=>{S.undo=[];S.redo=[];S.selection=null;S.copied=null;};
+async function openItem(){
+ if(S.changed.size)saveDraft(true);
+ S.bufs.clear();S.changed.clear();fresh();
+ S.draft=allVersions()[kID()]||null;
+ $("pk-version").textContent=S.draft?(S.draft.approved?"MASTER LOKAL":"DRAFT"):"STOK / BELUM DIEDIT";
+ $("pk-note").value=S.draft?.note||"";
+ $("pk-side").disabled=!canSide();if(!canSide())S.side="front";$("pk-side").value=S.side;
+ palettes();await draw();void preview();
+}
+function saveDraft(silent=false,approved=false){
+ const store=allVersions(),old=store[kID()]||{},files={...(old.files||{})};
+ for(const p of S.changed)if(S.bufs.has(p))files[p]=S.bufs.get(p).toDataURL("image/png");
+ const out={format:"lgr1-wardrobe-master-v1",gender:S.gender,group:S.group,variant:S.variant,baseVersion:S.base,dirs:DIRS,cell:[64,112],keyColours:true,updated:new Date().toISOString(),note:$("pk-note").value,files,approved:!!approved};
+ store[kID()]=out;
+ try{localStorage.setItem(KEY,JSON.stringify(store));S.draft=out;S.changed.clear();$("pk-version").textContent=approved?"MASTER LOKAL":"DRAFT";if(!silent)say(approved?"Master ditandai untuk review lokal. Export untuk integrasi game.":"Draft tersimpan di browser ini.")}
+ catch(e){say("Gagal simpan: "+e.message,true)}
+ return out;
+}
+function markDirty(path){S.changed.add(path);S.edited=true;$("pk-version").textContent="● UNSAVED";void draw()}
+async function actionAt(x,y){
+ const path=pathOf(),c=await buffer(path);if(!c)return;
+ const im=getCell(c),a=im.data,at=(xx,yy)=>(yy*64+xx)*4;
+ if(S.tool==="pick"){const i=at(x,y),rgb="#"+[a[i],a[i+1],a[i+2]].map(n=>n.toString(16).padStart(2,"0")).join("").toUpperCase();S.ink=Object.keys(root.LGRWear.K).find(k=>root.LGRWear.K[k].toUpperCase()===rgb)||S.ink;palettes();say("Color Key: "+rgb);return}
+ if(S.tool==="select"){if(!S.selectFrom){S.selectFrom={x,y}}else{const z=S.selectFrom;S.selection={x:Math.min(z.x,x),y:Math.min(z.y,y),w:Math.abs(x-z.x)+1,h:Math.abs(y-z.y)+1};S.selectFrom=null;void draw()}return}
+ if(S.tool==="paste"){if(!S.copied){say("COPY dulu pixel selection.",true);return}pushUndo(im);
+  const cp=S.copied,ox=Math.max(0,Math.min(64-cp.w,x)),oy=Math.max(0,Math.min(112-cp.h,y));
+  for(let yy=0;yy<cp.h;yy++)for(let xx=0;xx<cp.w;xx++){
+   const src=(yy*cp.w+(S.flipPaste?cp.w-xx-1:xx))*4,dst=at(ox+xx,oy+yy);
+   for(let k=0;k<4;k++)a[dst+k]=cp.data[src+k];
+  }
+  putCell(c,im);markDirty(path);S.tool="pen";setTool("pen");void preview();return;
+ }
+ if(!S.drag)pushUndo(im);
+ const i=at(x,y),ink=root.LGRWear.K[S.ink]||"#FF56D3";
+ if(S.tool==="fill"){
+  const old=[a[i],a[i+1],a[i+2],a[i+3]],rgba=S.tool==="erase"?[0,0,0,0]:[parseInt(ink.slice(1,3),16),parseInt(ink.slice(3,5),16),parseInt(ink.slice(5,7),16),255];
+  if(old.every((v,k)=>v===rgba[k]))return;
+  const queue=[y*64+x],seen=new Uint8Array(64*112);seen[y*64+x]=1;
+  for(let q=0;q<queue.length;q++){const id=queue[q],p=id*4;
+   if(!old.every((v,k)=>a[p+k]===v))continue;
+   a.set(rgba,p);const px=id%64,py=(id/64)|0;
+   for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=px+dx,yy=py+dy;if(xx<0||yy<0||xx>63||yy>111)continue;const ni=yy*64+xx;if(!seen[ni]){seen[ni]=1;queue.push(ni)}}}
+ }else if(S.tool==="erase")a.fill(0,i,i+4);
+ else{a[i]=parseInt(ink.slice(1,3),16);a[i+1]=parseInt(ink.slice(3,5),16);a[i+2]=parseInt(ink.slice(5,7),16);a[i+3]=255}
+ putCell(c,im);markDirty(path);
+}
+function pushUndo(im){S.undo.push(new Uint8ClampedArray(im.data));if(S.undo.length>32)S.undo.shift();S.redo=[]}
+async function undoRedo(type){
+ const from=type==="undo"?S.undo:S.redo,to=type==="undo"?S.redo:S.undo;
+ if(!from.length)return;
+ const p=pathOf(),c=await buffer(p),im=getCell(c);to.push(new Uint8ClampedArray(im.data));
+ im.data.set(from.pop());putCell(c,im);markDirty(p);void preview();
+}
+function setTool(t){S.tool=t;document.querySelectorAll("[data-pk-tool]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.pkTool===t)));say("Tool: "+t)}
+function point(e){const r=$("pk-editor").getBoundingClientRect();return [Math.max(0,Math.min(63,Math.floor((e.clientX-r.left)/r.width*64))),Math.max(0,Math.min(111,Math.floor((e.clientY-r.top)/r.height*112)))]}
+async function makeWear(d){
+ const W=root.LGRWear,base={top:"tee",pants:"trousers",shoes:"sneakers",hair:"short",hairColor:"brown",topColor:"navy",pantsColor:"denim",shoesColor:"white"};
+ if(["top","pants","shoes","hair"].includes(S.group))base[S.group]=S.variant;
+ const colorName={top:"topColor",pants:"pantsColor",shoes:"shoesColor",hair:"hairColor"}[S.group];
+ if(colorName)base[colorName]=S.color;
+ const layers=await W.layers(base,S.gender,S.tone),spec={...base,skin:S.tone};
+ for(const side of canSide()?["back","front"]:["front"]){
+  const p=pathOf(side),buf=await buffer(p);if(!buf)continue;
+  const layer={top:side==="back"?"top_back":"top",pants:"pants",shoes:"shoes",hair:side==="back"?"hair_back":"hair_front",glasses:"accessory",facial:"accessory"}[S.group];
+  const image=getCell(buf,d);
+  const col=recolored(image),frame=cv();frame.getContext("2d").putImageData(col,0,0);
+  if(layer==="accessory"){
+   if(layers.accessory?.[d]){
+    const old=await loadImage(layers.accessory[d]);frame.getContext("2d").drawImage(old,0,0);
+   }
+   layers.accessory=layers.accessory||{};
+  }else layers[layer]=layers[layer]||{};
+  layers[layer][d]=frame.toDataURL("image/png");
+ }
+ return layers;
+}
+async function preview(){
+ if(!S.ready)return;
+ const ticket=++S.previewToken;
+ try{
+  const C=root.LafrichPuppetCore,R=root.LafrichPuppetRenderer,A=root.LGRActor;
+  const master=await A.master(S.gender,S.tone),lib=await A.motions();
+  const motion=lib.motions.find(m=>m.id===S.motion)||lib.motions.find(m=>m.id==="idle")||null;
+  const canvases=[];
+  for(const d of DIRS){
+   const wear=await makeWear(d);
+   const character=C.validateCharacter({format:C.CHARACTER,id:"pakaian_preview",name:"Pakaian Preview",gender:S.gender,wear,faceId:""});
+   const prep=await R.prepare(master,character,d);
+   const p=A.poseOf(master,lib,motion,S.frame,d),art=R.render(prep,p.pose,{order:p.order});
+   canvases.push(art);
+  }
+  if(ticket!==S.previewToken)return;
+  for(let i=0;i<4;i++){const t=$("pk-r"+i),g=t.getContext("2d");g.clearRect(0,0,64,112);g.drawImage(canvases[i],0,0)}
+  $("pk-motion-label").textContent=S.motion+" · frame "+(S.frame+1);
+ }catch(e){if(ticket===S.previewToken)say("Preview rig: "+e.message,true)}
+}
+function download(name,content){
+ const blob=new Blob([content],{type:"application/json"}),url=URL.createObjectURL(blob),a=make("a",{href:url,download:name});
+ document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+function exportMaster(){
+ const data=saveDraft(true,!!S.draft?.approved),n="pakaian-"+S.gender+"-"+S.group+"-"+S.variant+".json";
+ download(n,JSON.stringify(data,null,2));say("Export "+n+" — belum otomatis diterapkan ke game.");
+}
+async function importMaster(f){
+ if(!f||f.size>3000000)throw Error("JSON maksimal 3 MB");
+ const p=JSON.parse(await f.text());
+ if(p.format!=="lgr1-wardrobe-master-v1"||!GROUPS.includes(p.group)||!["male","female"].includes(p.gender)||typeof p.variant!=="string"||!p.files||typeof p.files!=="object")throw Error("Format master pakaian tidak cocok");
+ const files={};for(const [k,v] of Object.entries(p.files)){if(!validPath(k)||typeof v!=="string"||!v.startsWith("data:image/png;base64,")||v.length>800000)throw Error("Asset key invalid: "+k);files[k]=v}
+ S.gender=p.gender;S.group=p.group;S.variant=p.variant;
+ $("pk-gender").value=S.gender;$("pk-group").value=S.group;refreshOptions();
+ if(!options().includes(S.variant))throw Error("Varian tidak ada dalam database stok");
+ $("pk-item").value=S.variant;
+ const all=allVersions();all[kID()]={...p,files,approved:false,updated:new Date().toISOString()};
+ localStorage.setItem(KEY,JSON.stringify(all));await openItem();say("Master JSON diimport sebagai draft, tidak menimpa master game.");
+}
+function refreshOptions(){
+ const opts=options();S.variant=setSelect("pk-item",opts.map(x=>[x,x.replace(/_/g," ")]),S.variant);
+}
+function controls(){
+ $("pk-group").onchange=async e=>{S.group=e.target.value;refreshOptions();S.side="front";S.ink={top:"C2",pants:"P2",shoes:"S0",hair:"H2",glasses:"GL",facial:"H2"}[S.group];await openItem()};
+ $("pk-gender").onchange=async e=>{S.gender=e.target.value;await openItem()};
+ $("pk-item").onchange=async e=>{S.variant=e.target.value;await openItem()};
+ $("pk-side").onchange=async e=>{S.side=e.target.value;fresh();await draw()};
+ $("pk-tone").onchange=async e=>{S.tone=e.target.value;await draw();void preview()};
+ $("pk-color").onchange=async e=>{S.color=e.target.value;await draw();void preview()};
+ $("pk-motion").onchange=e=>{S.motion=e.target.value;S.frame=0;void preview()};
+ $("pk-ghost").onchange=()=>void draw();
+ $("pk-dir").onclick=e=>{const b=e.target.closest("button[data-dir]");if(!b)return;S.dir=b.dataset.dir;fresh();$("pk-direction").textContent=S.dir.toUpperCase();void draw()};
+ for(let i=0;i<4;i++)$("pk-v"+i).onclick=()=>{S.dir=DIRS[i];fresh();$("pk-direction").textContent=S.dir.toUpperCase();void draw()};
+ $("pk-save").onclick=()=>saveDraft();
+ $("pk-approve").onclick=()=>{if(!confirm("Tandai sebagai master lokal? Ini belum mengubah file stock atau Google Drive."))return;saveDraft(false,true)};
+ $("pk-export").onclick=exportMaster;
+ $("pk-import").onchange=e=>{const f=e.target.files?.[0];if(f)importMaster(f).catch(x=>say(x.message,true));e.target.value=""};
+ $("pk-reset").onclick=async()=>{if(!confirm("Kembalikan item ini ke sprite stok? Draft lama tetap ada sampai kamu SAVE."))return;S.draft=null;S.bufs.clear();S.changed.clear();fresh();await draw();void preview();say("Sprite stok dimuat. SAVE untuk menyimpan reset.")};
+ $("pk-undo").onclick=()=>undoRedo("undo");$("pk-redo").onclick=()=>undoRedo("redo");
+ $("pk-copy").onclick=async()=>{
+  const c=await buffer(pathOf()),data=getCell(c),r=S.selection||{x:0,y:0,w:64,h:112};
+  const out=new Uint8ClampedArray(r.w*r.h*4);for(let y=0;y<r.h;y++)for(let x=0;x<r.w;x++)out.set(data.data.slice(((r.y+y)*64+(r.x+x))*4,((r.y+y)*64+(r.x+x)+1)*4),(y*r.w+x)*4);
+  S.copied={w:r.w,h:r.h,data:out};say("Copied "+r.w+"×"+r.h+". Pilih PASTE lalu klik canvas.");
+ };
+ $("pk-paste").onclick=()=>{S.flipPaste=false;setTool("paste")};
+ $("pk-paste-flip").onclick=()=>{S.flipPaste=true;setTool("paste")};
+ document.querySelectorAll("[data-pk-tool]").forEach(b=>b.onclick=()=>setTool(b.dataset.pkTool));
+ const editor=$("pk-editor");
+ editor.onpointerdown=async e=>{if(e.button!==0)return;e.preventDefault();editor.setPointerCapture(e.pointerId);S.drag=false;const [x,y]=point(e);S.lastPoint=[x,y];await actionAt(x,y);S.drag=true};
+ editor.onpointermove=e=>{if(!S.drag||!["pen","erase"].includes(S.tool))return;const [x,y]=point(e);if(S.lastPoint[0]===x&&S.lastPoint[1]===y)return;S.lastPoint=[x,y];void actionAt(x,y)};
+ editor.onpointerup=()=>{if(S.drag){S.drag=false;void preview()}};
+ editor.onpointercancel=()=>{S.drag=false};
+ $("pk-play").onclick=e=>{
+  if(S.playing){clearInterval(S.playing);S.playing=null;e.target.textContent="▶ PLAY";return}
+  e.target.textContent="Ⅱ PAUSE";
+  S.playing=setInterval(()=>{if($("pakaianpanel").hidden)return;S.frame=(S.frame+1)%6;void preview()},230);
+ };
+}
+async function init(panel){
+ if(S.ready)return;
+ panel.innerHTML='<div class="pk-layout"><aside class="pk-aside"><div class="pk-box"><h3>DATABASE PAKAIAN</h3><label>Gender<select id="pk-gender"><option value="male">Male</option><option value="female">Female</option></select></label><label>Kategori<select id="pk-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option><option value="hair">Rambut</option><option value="glasses">Kacamata</option><option value="facial">Facial Hair</option></select></label><label>Item<select id="pk-item"></select></label><label>Layer<select id="pk-side"><option value="front">Depan</option><option value="back">Belakang</option></select></label><div class="pk-tag" id="pk-file"></div><div class="pk-tag" id="pk-version">STOK</div></div><div class="pk-box"><h3>WARNA / KEY PIXEL</h3><label>Skin Tone<select id="pk-tone"><option value="light">Light</option><option value="porcelain">Porcelain</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label><label>Warna<select id="pk-color"></select></label><div id="pk-inks" class="pk-inks"></div><p class="pk-small">Pixel disimpan sebagai Color Key, warna preview tidak dibakar ke sprite.</p></div><div class="pk-box"><h3>VERSI / MASTER</h3><label>Catatan versi<textarea id="pk-note" rows="3" placeholder="Catatan penyesuaian..."></textarea></label><button id="pk-save">▣ SAVE DRAFT</button><button id="pk-approve">✓ TANDAI MASTER (LOKAL)</button><button id="pk-export">↓ EXPORT MASTER JSON</button><label class="pk-file">↑ IMPORT MASTER JSON<input id="pk-import" type="file" accept=".json,application/json"></label><button id="pk-reset">↶ RESET KE STOCK</button><p class="pk-small">Draft dan master di browser lokal. Belum auto-sync Drive atau mengganti asset Mainkan.</p></div></aside><main class="pk-main"><div class="pk-box"><h3>01 · PIXEL EDITOR — <span id="pk-direction">SE</span></h3><div class="pk-tools"><button data-pk-tool="pen" aria-pressed="true">✎ PEN</button><button data-pk-tool="erase">⌫ ERASE</button><button data-pk-tool="fill">▧ FILL</button><button data-pk-tool="pick">♢ PICK</button><button data-pk-tool="select">▤ SELECT</button><button id="pk-copy">COPY</button><button id="pk-paste">PASTE</button><button id="pk-paste-flip">PASTE FLIP</button><button id="pk-undo">↶ UNDO</button><button id="pk-redo">↷ REDO</button></div><div id="pk-dir" class="pk-dir"><button data-dir="se">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button><label><input type="checkbox" id="pk-ghost" checked>Base overlay</label></div><div class="pk-canvas"><canvas id="pk-editor" width="64" height="112" aria-label="Pixel Editor 64 × 112"></canvas></div><div class="pk-views"><canvas id="pk-v0" width="64" height="112"></canvas><canvas id="pk-v1" width="64" height="112"></canvas><canvas id="pk-v2" width="64" height="112"></canvas><canvas id="pk-v3" width="64" height="112"></canvas></div></div></main><aside class="pk-right"><div class="pk-box"><h3>02 · REVIEW IN MOTION</h3><label>Animasi<select id="pk-motion"><option value="idle">Idle</option><option value="walk">Walk</option><option value="bow">Bow</option><option value="sit">Sit</option><option value="wave">Wave</option></select></label><div class="pk-views pk-review"><canvas id="pk-r0" width="64" height="112"></canvas><canvas id="pk-r1" width="64" height="112"></canvas><canvas id="pk-r2" width="64" height="112"></canvas><canvas id="pk-r3" width="64" height="112"></canvas></div><button id="pk-play">▶ PLAY</button><span id="pk-motion-label">Idle · frame 1</span><p class="pk-small">Preview memakai LGR1Raster & animasi official. Yang berubah hanya layer pakaian.</p></div><div class="pk-box"><h3>03 · ALUR MASTER</h3><ol><li>Pilih pakaian + gender</li><li>Edit 4 view + front/back</li><li>Review idle, walk, bow, sit</li><li>Save Draft → review</li><li>Export master untuk ingest ke game</li></ol><p class="pk-small">Genesis, pivots, slicing dan master animasi tidak disentuh.</p></div><div id="pk-status" role="status">Memuat database pakaian…</div></aside></div>';
+ try{
+  S.index=await(await fetch(rootUrl()+BASE+"index.json",{cache:"no-store"})).json();
+  if(S.index.format!=="lgr1-wear-index-v1"||!Array.isArray(S.index.items))throw Error("Index pakaian tidak valid");
+  S.base=(await root.LGRActor.loadBases()).male.version;
+  controls();refreshOptions();S.ready=true;await openItem();say("PAKAIAN.EXE aktif · "+S.index.items.length+" sprite stok · base runtime "+S.base+". Draft tersimpan lokal.");
+ }catch(e){console.error(e);say("Gagal memuat PAKAIAN.EXE: "+e.message,true)}
+}
+root.MahlukPakaian=Object.freeze({init});
+})(window);
