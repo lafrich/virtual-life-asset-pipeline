@@ -1,0 +1,320 @@
+{
+  "format": "lgr-wardrobe-adjust-seeds-v1",
+  "draftOnly": true,
+  "dirs": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "cell": [
+    64,
+    112
+  ],
+  "strip": [
+    256,
+    112
+  ],
+  "variants": [
+    {
+      "id": "female_pants_baggy",
+      "gender": "female",
+      "group": "pants",
+      "variant": "baggy",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "pants/baggy_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABMklEQVR42u3aTQqCQBgG4G8yXLXqWq28ggfoMB2gK7TqbIEgtohoEfZnkpPPA24ccHxFXnSYCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmI409Qbc7doNucLtJOT9g+eWfcv6FDoT5UgCgAAAFACiAbxqyiJH7ApD88k89/6gTdPtDF00R0RSfXaBsI8o2Ul1l+SLIL//U8//uF2DVXI6y7R//Z/LLP4H81gDAGgCgAAAFACgAQAEACgBQAIACeEmqq9S70eHq0XjGu8Dklz+H/L4AYMaWo89QthHr0/35pri137PxnMkv/5zzAwAAAAAAAAAAAAAAAAAAAG87A99SdHPPRJLWAAAAAElFTkSuQmCC"
+      },
+      "sourceBaseline": "female_pants_trousers"
+    },
+    {
+      "id": "female_pants_baggy_ripped",
+      "gender": "female",
+      "group": "pants",
+      "variant": "baggy_ripped",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "pants/baggy_ripped_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABZklEQVR42u3cQWrCQBSA4ZemzKqrXqurXqEH6GE8QK6QlTcrFAbCdNFFK6KiNjrT+T5w44D6RxnyQjACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgG4Ma79B2WzLVR/w/WVo+QDr119z/4M9EPplAwAbAGADAGwAf+maixitXwDSr7/2/lXfoExziTxG5PGyF0hLRFpieHtt8oegX3/t/fcbAZ7y9yMth9f/M/36K+h3DQA69niveahMc+ntYOvXX1v/TTeA3buicm/fv3791fUbAcAI4BRJv/4e+6vaAJwi6td/234jABgBnOLp199j//r/BzDNJT7S/sLvGx2OrLd6F5h+/S30GwHACLCitEQ8f+4/n8ef2yBPrbdMv/6e+wEAAAAAAAAAAAAAAAAAAICzfQGRk9TwMWNbUgAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_pants_trousers"
+    },
+    {
+      "id": "female_pants_trousers_ripped",
+      "gender": "female",
+      "group": "pants",
+      "variant": "trousers_ripped",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "pants/trousers_ripped_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABHklEQVR42u3ZsRHCMAxAUZmjzGZUrMAADMMArEDFcm6cmoIqYBT03gLhmzudnEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUEb79gPG7Tk2/cDrqe35gPXrz9x/MAOhLgMADADAAAAMgE/a8hJj7y+A9OvP3m8DgMKOP3vy0qNdzi3izaeSpf/3yevXn6DfBgA2gPn3oXF/jGqHrV9/tv6pA+B11enV/n/9+tP1uwKAK4AVSb/+iv2pBoAVUb/+uf2uAOAKYMXTr79iv68A+vUX7ncFgMIMAAAAAAAAAAAAAAAAAAAAAABIZAUSpJFgWopvIAAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_pants_trousers"
+    },
+    {
+      "id": "female_shoes_boots",
+      "gender": "female",
+      "group": "shoes",
+      "variant": "boots",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "shoes/boots_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABPElEQVR42u3XMYrCQBSA4YlKQLDyTHsGbT2aYLV7ACvPZCUsBGQsxEYDBgLjPPN9ZV4x/jMyxpQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoRFNikXza597Ff3bNkHl0+vXX2r8osgPdfNw8Ov36K+2ffWzl9jpuHp1+/RX0L4oFP265bn6Pew58N/+WXwH9+ivqL/8G4ObXr7+a/jJvAJf29dl5OXwenX79lfaXeQNYdb2P899vHjQPLB8Pecz8Kzj/as+/KbYJfbfc0A+52TZhD3+C3fYhTneZvwDtNaX1f5qcqXbbhzDdM99OAAAAAAAAAAAAAAAI5QZUa6KjgxlX1wAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_shoes_shoes"
+    },
+    {
+      "id": "female_shoes_hightops",
+      "gender": "female",
+      "group": "shoes",
+      "variant": "hightops",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "shoes/hightops_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABDUlEQVR42u3YOwrCQBQF0Jkoqaxck2vQ1qUJVroAK5clCAEZa0H8BYZ55pz2FZN7X5hAUgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKC+XOugct6Vh4NX2/zNPDr55W8x/7xaA8Ns3Dw6+eVvMH+VW6YcD+Xp4etN/mQe/vaXX/5G83dVGlgMr4t5N4+8/NO+jJn/Bftvdv+5WgmX/veHDPolmGpuPcTJXecfQH9LaXlNkzPV3HoIk7vzdgIAAAAAAAAAAAAAQCh3xsGC4NzWABcAAAAASUVORK5CYII="
+      },
+      "sourceBaseline": "female_shoes_shoes"
+    },
+    {
+      "id": "female_shoes_sneakers",
+      "gender": "female",
+      "group": "shoes",
+      "variant": "sneakers",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "shoes/sneakers_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAA6klEQVR42u3VQQ6CMBAFUGoIK8+nB2QFB+BkrkxMvQBBA2Fs7XvbWZT/J2G6DgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACACCnikTxPefXx2z19M6+d/PKXmv8S0sD1uV3Mp3nNy1/GfGT+F+y/2P2nsBIew/6PrPQStJpbD/Xk7n99BVq9fnqQuwQxP4Dh1ebyW82tB/sHAAAAAAAAAAAAAM70BnqoWunwSGHGAAAAAElFTkSuQmCC"
+      },
+      "sourceBaseline": "female_shoes_shoes"
+    },
+    {
+      "id": "female_top_cardigan",
+      "gender": "female",
+      "group": "top",
+      "variant": "cardigan",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "top/cardigan_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAACLklEQVR42u3bT2rbUBAH4LFSDAWtCrmEz9BVD9GT9AA5QM/UVW9QyAG6NXRVKAiCu2gWKXpqVCd+fnrzfUsR2/rNPI2jP44AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACANu0u9canT19PxQ/8/H53zuvXvq4V5+7/S+vWan79b7P/Q83mt/aetRe//PK3ln+ovaNrgiz9zRYWwUv2/TVq1/ri1/+2+j+0tki2NOnlVoet5x5aKkaGgyBrbnVoM/ebq3zqOEXc38bp47e/g4/HiJ/7vlfAOM1zf4+IQ4LspYW/f4iYbnIOvwayDwGkZQCAAQAYAC149ytvNzJnxwCIiIgfb/N2I3N2DACgrle/DVh6Zjnjfe5L1XKL+6z/7fa/znMA4zS/x304Rtzf5jgA7r6cVuUv1akHpVwrtnXd/3GaPwNwhf7XOQUohVo6+B8vhG2x+YuL4u7DblX+/UOfX2Wl/j+zrfv+r61JDwPgv5rpImB/B0BHWXqrmYuAkFi1AeBbIHet9L/NWvkPADIPmxofMrsN9PhrwJnD8c+FsI7OhTNnX6zBU8/8Iq67/jeWfbhqAUpcBDy/dls7ALh67ZwCQGIGABgADfFrQKjm8o8Cj1N5++FY3j7dLL9mi0pZsmT/V/+f6vUJyDX5e84OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANvzG2CdNLTz7C7IAAAAAElFTkSuQmCC",
+        "top/cardigan_back_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAAvklEQVR42u3aOw0AIBBEQcAYvhCAL5RBhwJI+MwouGzxqgsBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACWiScf10vr89Ca403D3ny7Df7ZLpka/iUAIACAAAACAAgAIACAAAACAAgAIAB7vfA+6gXWBjYDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgw0ioxM0a9fy+QAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_top_tee"
+    },
+    {
+      "id": "female_top_cardigan_dots",
+      "gender": "female",
+      "group": "top",
+      "variant": "cardigan_dots",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "top/cardigan_dots_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAACj0lEQVR42u3bTWrbQBgG4LFSDAGtCrmEz5BVD9GT9AA5QM7UVW9QyAG6NWQVKAiCu2gCTjRyVTkaz8/zbAJGcvR+32jskeQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIE+btd748O3HIfoP7283S/afu18ulh7/uXXLNb/+59n/LmXzc3vP1INffvlzy9+lPtA5Qaa2KWEQnHPsH1G73Ae//ufV/y63QVLSTC+3OpSeu8upGC2cBK3mVoc8c3+6yH/thxAebsLh68+3wft9CE/bukdAP4xz/woh7BrIHhv42+cQhqs2J78Msq//DeA14Nyg77f73/1z0nJ2NSgi+/oTwPb57d+52y/dPyctZ1eDIrJ3AWhWfhPA59/tdqPl7FQ4AUytaU55vJ5e+5S0Dmw5+zk1OLX2rb3/F8i+7gQwtaZZunYqaR3YcnY1KCb7h98GjD2z3OJ97rVqWeIx63++/U/zHEA/jO9x7/YhPNy0cQLcfT/Myh+rUw1iuWa8VnX/+2H8tf4C/U9zEfBpOw47dfK/bFdi8ycHxd2XcZZY/sfrOj/KYv2PDfSj7arvfyz/BfqfZALY3N9uFt8LbclR9qpOAP3Ptv+eA4CGJZsAavpEUyuZaqlV2m8AS5+JrkHL2dUg2+xJZprRbaCXXwOO7PZ/10FHF0NK/+RoOftkDd6ve08M+ur6n1n27qIFiKn1SviC7DXcP/cMQN61cxEQGmYCABNARvwaEJJZ/1Hgfoi/vtvHXx+upvcpUSxLK9lP9f9YzQ///Ct/yw8+AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEB+/gCv3ZOcDNaZywAAAABJRU5ErkJggg==",
+        "top/cardigan_dots_back_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAAvklEQVR42u3aOw0AIBBEQcAYvhCAL5RBhwJI+MwouGzxqgsBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACWiScf10vr89Ca403D3ny7Df7ZLpka/iUAIACAAAACAAgAIACAAAACAAgAIAB7vfA+6gXWBjYDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgw0ioxM0a9fy+QAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_top_tee"
+    },
+    {
+      "id": "female_top_shirt",
+      "gender": "female",
+      "group": "top",
+      "variant": "shirt",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "top/shirt_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAADwElEQVR42u3cO27bShQGYJq6IGBAlaq7hltlKVlAKq8tC8hGDNwqa0jlSoAAAgJTKGOPaJKm7YjDGX4fEASJXzrnJ+clJlUFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA63R3q2/cff3ZDf7AH//dfeTr537dWnz09X+2b2utX/7rzL9eMvy1fc+lL371q39t9deLvdDD6fLxh8c3C+keHrvw+c/2bdV9+7/LMvzDaX7dUa+KqV/+q82/XqwzT/fPv0+NZt3DY1c93VfVsRluRG4Op0stT/eTF0H39WcX96g4c/MPfSgx/zl1L5x/naovQ824akK7y/8iCOG3u8mLP6fl7V/Lf2A2u+pDifmPXfcJVzb/rHav1JzLudqb85sXweYcm0sfDqfhGW8L+Yfaj+le2u1XAP0RfCrY8LF/j+Vd8KGmOfWP9S7XWXCqxujG2Fz+ce2J8r/9ANAf3fft+E3Qb0iJxmpszpfeTPUu572//FeZ/7JnACH40IQwwh1OZS355vQhrj3uScl96Ocf/93W8h9bDSzchzppA0o+9Z47M4bft3gDbGXWn7MaSJT/bQ8B4z1MfJNPhd6crz/36f6yfzo2+e35fu2vB7veYdDk0nCsd7nu/+W/yvxvOwD0X3h4a2eoWVMN+rXP7+IPr3nsoCfUGi6Uqnr1luGV3G6Aufk359c92Ur+/Vk/Qf5/fQAYemb51dte/aDDSNk/G8h9BhyrJa41XCgDS8Dcnn//UP7t7vJranYsbdkfan1jC7BE/ss/B9CcX0azMAr2R7c/M0VxN0D/lHffvlwI7e7lz6Xv/+P839nLIgbAocEwUf7LHwLGN/tEsTmG/6Fa4h7kuMz/bP4jg8Am8u+vehLkXydpQJj5t3oa3F/6DewHi74B4prjrcDW8g8DYML862QNiAOPn/wq+e2wuOawHTicXvejv1UosQ9j9Q49EFPS9meo5oT5LzYADI5o8UFYKLrkmSDUtm9flnv9E+59W919/3JXWumj+YczgS3mP3TwuXD+ddKG9J8ELOHZ9/fWWnLNc3rS7rabf6g95cC8xA+ZPAWNZ8OBj+U+G265dj1Yf+110gYw7thk8T/gfDr/LT0C/Z7aF8q/XkUjSvznn2p/375Y7UmsYwDI8VFPtVOA2z8J+NYhxwoOQpLVX3rtc/Kf+zml1p+49roCWwC1AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABVVVW/AVywS6T2BBbLAAAAAElFTkSuQmCC",
+        "top/shirt_back_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAA2UlEQVR42u3awQnCQBRF0fcjZJUmAqnDlWW7so6ATbgaCGMTCqM5p4Lh8bmrSQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4GNq5Mf167OnXZKlpe5b/dKw/bb3vOZkPlKPtc54XDYY//YnU8N5CQAIACAAgAAAAgAIACAAgAAAAgAIwHf9w/dRX2BtYDMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY2BtScxuskyYWFwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_top_tee"
+    },
+    {
+      "id": "female_top_shirt_tie",
+      "gender": "female",
+      "group": "top",
+      "variant": "shirt_tie",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "top/shirt_tie_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAD9UlEQVR42u3cTWrjSBgGYEUeBIHAgGHAB+hVr3KUHGBWOdscYC4SyCqrWc0q0OCVwWAw6oWojlyRHDlpq6TS80AIxPnx+31S/UjqLgoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACYpptr/eL64aXu/IP/fr/5zM8P/bmp+Oz7/2rdpppf/6fZ/3LM5k/td4598Msv/9Tyl6O90fW+ef3x6cMg9eNTHb7/l7tDUf/9XM+y+ev98NytWmWTX/8n2/9ytMpsb399Pjea1Y9PdbG9LYpd1V2IuVnvmyzb27MHQf3wUrdrlJ2h/Q91yLH/Q3KP3P8yVV26inFShMNq/gdBaP5hdfbgn9Py9rf1v2M2O6lDjv3vO+4Trmz+mOxeqTrmc7RXxw8PgsXZVU0d1vvuGW8J/Q/Zd+ne2vVXAPEIfq6x4bXNLr8DPmQakr+vdnOdBc9lbJ0Yi+t/O3ui/l9/AIhH97vDadBv2/6C5KidsZ29Oja1OVe7Oe/9+/rfV5sl9D8++RP0f9xrAKHxoQjr/dtHTku+IXVoZ2/XJOc6xP1vf21p/e9bDYxchzJpAcLV3hyveg+ZGdvZl3gCLGXWH7IaSNT/6w4A8SzX1/T719NCtAeE7e0894Sb3fscXU0O2eOa9NVubvv/If2PB4cl9b+vJiP1/7p3AeKZPdzaifeE///51vyug+P1bn4HQHjPfRd6wp4vZC+Kd7cMT8R1m+P+v6v/1fG0JkvqfzwgJOj/bx8Aup5Zfnfbq93oXdUUq/21eNSb8xahK0vIGrL3LAHn9vz7p/p/WDUffSd/jsv+kPWDLcAY/R//OYDq+DaahdD3r0Xx8te7mSK7EyC+yhuyP2+azHeH/E+Crv5fUMssBsCuwTBR/8e/CNheyoTQz5ssmn/xgRxnn+My/6v97xkEFtH/eNWToP9lkgKE/U97NljS1eD29qddi6WcAO3M7a3A0vofBsCE/S+TFeCwKorvP5rg8V2A3Bsflv7VsalBvB/s2irkVoe+vF0PxOS0/enKnLD/ow0AnSPa86Yo/ls3n0PonGeCkC0s/UP2aFtw88/9TW7RO/sfZsBdtbz+h9VfnHfk/pdJCxKukIcnAXN49v3SrDlnHlKTw2q5/Q/ZUw7MY/yRs1dBw2jY89rcZ8MlZ1eD6WcvkxaAfrtqFv8Dzpf7v6RHoC/JPlL/y0kUIsd//in7Zfti2ZOYxgAwx0c9ZScD138S8KOLHBO4EJIsf+7Zh/R/6Pfkmj9x9rIAWwDZAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICiKIqfxeVcF4y5p+UAAAAASUVORK5CYII=",
+        "top/shirt_tie_back_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAA2UlEQVR42u3awQnCQBRF0fcjZJUmAqnDlWW7so6ATbgaCGMTCqM5p4Lh8bmrSQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4GNq5Mf167OnXZKlpe5b/dKw/bb3vOZkPlKPtc54XDYY//YnU8N5CQAIACAAgAAAAgAIACAAgAAAAgAIwHf9w/dRX2BtYDMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY2BtScxuskyYWFwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_top_tee"
+    },
+    {
+      "id": "female_top_tee_graphic",
+      "gender": "female",
+      "group": "top",
+      "variant": "tee_graphic",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "top/tee_graphic_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAADnUlEQVR42u3cXUobURQA4EmUQCBQCBQEoQvwySfX0QX0ybV1AV2HIPjkAgqCUAgUhEAgTB/Sq5PJnUm0zc3Mne+DUjBGc865/7mxKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKCbRsf6weXXxzL6C39cjT7y/EOf1xUfff3/mreuxq/+3az/OGXxu/YzUzd+8Yu/a/GPk73Q+XLz+O393kDK2/syfP+r2aoovz2UvSz+fHl43JVcZRO/+ne2/uNkmVlMX/9vG83K2/uyWEyL4mUST0TfzJebWBbT1kZQfn0sqznKjvp3sv7jU+Ul1gi2krA6638jCMVfnbU2/j4tb9U/r/qfd3avNFnn09on67dGMNAOH5axW/XfWdL+ffxlkl/9K/E0xh1iT+j4K4D6CN5W2PDYxUt+jT/EdEj8Tbnr6yxYbdxhZo/9C4/lWP/Z6rD4E9f/+ANAfT8zWzV3gnoCctQU42S9M0NmcRag/p2uf9ozgFD4WBJyWvIdmodYw8g5D+rfufqPO5OAoRt6B1D/k/za4x4CVvcwi2lRXP3a/5zHz9tLn8V0sydMfDjyX/b8z7Ptc419e9ufn5pz1/f9fzWGtqX+ZJ1n/RfTncPg1q1BovofdwCIvfC2YObLeIKeZ/1r/OE1V+PZF3vtLaMtfesAsRjCAVjT7NfUQXKp/75YT1D//z4AxO4sb73tFRJz/VwUd5dv33TzlP8hUJjhb54Oir1v998Pqn+s8a/O2mfHnDTFGtkCpKh/+nsAk/VmNLu7fOsIN09F8XCxs0XItgM8XGzHfne5GRCH0AlC/dtm/NzrHxsMV2ebdwES1z/9IWB1KVPtABkU/10NORZ7H5f5/1L/zDr/h2Kp5uAE9T9PlYDXUfDL7929Uv1ruXpH7Ll1gK1ZsLrcDR1gCMv/WKeP5SJh/dNvAfbdbqpdm8zKoTe76hdCcu0Aodb1bUGu9a9uearL/frgl7D+yQaA0Y+rUVm07IXCVcmGA5Hee7iIxxrJw+j79Si38HdWAfXZv3pVNtcBoNr5O1L/k34YaGdGnC/z/ChsNbYQcw7v86t/7+ufZKT58KffMpgNhxy7HHQ/9nFnEzB0L5Ne/AUc9e93/ccyDcNlAIABO/4hYA5/1EL84s80fisAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY+APieCoayofPogAAAABJRU5ErkJggg==",
+        "top/tee_graphic_back_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAA2UlEQVR42u3awQnCQBRF0fcjZJUmAqnDlWW7so6ATbgaCGMTCqM5p4Lh8bmrSQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4GNq5Mf167OnXZKlpe5b/dKw/bb3vOZkPlKPtc54XDYY//YnU8N5CQAIACAAgAAAAgAIACAAgAAAAgAIwHf9w/dRX2BtYDMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY2BtScxuskyYWFwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_top_tee"
+    },
+    {
+      "id": "female_top_tee_long",
+      "gender": "female",
+      "group": "top",
+      "variant": "tee_long",
+      "baseVersion": "official-9",
+      "baseRigSha256": "4560012af600983fee50c4454c34889e638298e99be0d883b592663c7c44d1af",
+      "files": {
+        "top/tee_long_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAADJklEQVR42u3cQW7aQBQGYNupLCF5xapnyKpSL5IDdJWDddUD5CKRusoZsmKFhGQJuQvi4BjbQaQ2M8P3SSgLIPDePx5mTJwsAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgDDlc/3i5uGlGXzBp/v8kuef+7xQXPr+v9q3UOuXf5j5F0uGH9rvXHrwq1/9odVfLPZG17vD/Y/PnxbSPD437ePfVXXW/PrbRBn+end+3Z1eJVO//IPNv1isM5vV+8+p2ax5fG6yzSrLtuVwI2Kz3h1q2awmB0Hz8NJ0e5Qc+QeZf3GtvgwNgg9NqO/iHwRt+PXd5OCPaXkr/7Ty/xbsXqncpzPay/1xENzoAS//MPOffwXQn8Gngm3v+75Nb7S3NZ1T/1jvYv0UlH+w+c8/AfT3M1U93oTOLJmssRrL/aE3U72Lee8v/yDzX/YcQBv8UBNSWvKd24ehgZFyH+QfXP5FMA24dbd+AMj/Ki8770nA7h6mu5yZWuqV+4+P3awO+6dtGd+e77U6BrtZnZwMmlwajvUu1v2//IPMf94JoP/G2692xma/sQa9VvEN/vY99+uZqrX3ldHJfbHv/+UfXP7/fwvQnuR5uw3+DXN/udMWPbY3bG/9kyQh6tU/OtOPDYyO/Ok+j71++Yed//LnALoz3yf7ntguALmohu6JsVvYG8s/qPyXnwC6S5mJvWAK4Z9VS7cHMS7z5R91/sVVGjC0RLqF74CHah1ZLiZ9AMg/mPyLqzWguwzs7m1i2etduvzt7xX7/WjvS/0AkH8Q+S82AQzOaG3h2/JYdMqfBG1tVX0849uvt6qz/M+PPLXS5R9m/le9GOjkb53XuzQvhe3W1tacwvf88o8+/0UmgNGrn8YK35aH51R1lkW+GnyvfXNm2J3aU1kJyD/c/Gd5gZN/fHDpDNf7hMh//4zigFC/+mOpf/aGfuna5wQ+BdWv/pDrLzLgZs1/DiCFf2qhfvUnWr8VAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHPwDBOVNKHGgp4MAAAAASUVORK5CYII=",
+        "top/tee_long_back_f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAA4klEQVR42u3XsQkCQRQE0PkqF1mAkSBYh5FlG1nHgTUIFx3I2oTBnvteBZ9hGHYTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4mer5uHZ7taz75LimHtfaUrDtPrcsUzJ9Us9LjVguGfTf/Z2oYVwGAAwAYAAAAwAYAMAAAP/q0PV15/d2kz0t2iWD7rvvBQC+AIABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICRfAFI5hxQBN9SWwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "female_top_tee"
+    },
+    {
+      "id": "male_pants_baggy",
+      "gender": "male",
+      "group": "pants",
+      "variant": "baggy",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "pants/baggy": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABzklEQVR42u3awUrDQBQF0E4rrvpthYJLV131k1y56rJQ8PMCMi5sNJo0xUDGzMw5IC6GovfN4yWTdLUCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgYCHFH4kvb3HSP3fchRKKLL/8S82/TjJlCtnIpJNZzUhgrQRQr4clXOGm3iKVdJWvtQY13AGF4y4sdX9nL3J8vcRVsxlefHz//D2yHg77rBtB/pH898g/e/60R4C2EG3j/3U9d/L3h183a237P5Q9cf60A+BesFI3Xv5+4zebft4a939oGCTkISBUzAAAAwAwAAADYDbtk872AdDv1yNTX5fkYihftyalk39x/b/MtwCdAsXXS7ZfkOm9Ax7LX+AT8Nrz59D/jgDgCDCfcNiHm5Ov/abTvfVM1Zxd/jxq8D93ANfAJWzwrA0if9FHgSX0/zpZ4G3z/XMtQDyd4831kq4A3Wzb5kcTxNM59vIXdCauPf/S+3/2AfAVcuj25vkpjE3Im5/NyGCGTnMP1kD+svNX1P8AAAAAAAAAAAAAAAAAAMBkH0+SBUiG8C/lAAAAAElFTkSuQmCC"
+      },
+      "sourceBaseline": "male_pants_trousers"
+    },
+    {
+      "id": "male_pants_baggy_ripped",
+      "gender": "male",
+      "group": "pants",
+      "variant": "baggy_ripped",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "pants/baggy_ripped": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAACGUlEQVR42u3bMUvDQBgG4FwtnfxnglBwdOrk5I9xcnJyLAiCfy5QzsGmtjWttdLL5e55oGQIou93X79cTNs0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCyk+CXx+T2e9cc93IYSiiy//LnmnySZMoUsZNLJrGYkMFECqNc0hyvcuVukkq7ytdaghh1QeLgNua7vxYscX95i0171n5ytvo5HzofFfNSNIP+R/L+R/+L5094CdIXoGv+v58dO/p/Dbztrbevflz1x/ukgRWiv+kOWuvDyn9boNa7/bHW4H0obAOHxpup7Xvnlzy1/0gGwCT1bNU3bVEd++XPLP82qQt32cMAtkfzy15Q/qwFgiyi//Gnzpx0A3WTbP3ahnz5iM1uVu0Xsm+xbU7/4LbL82fX/ZJAinPJcfF2g+PI22ivBzjPg/eOh7CXd81aefwz9P9xTgBG/sWWXv5QapPk2YN+nodbTLizm4bfzxVwFK8suf/41GObLQIUt8L8m8GIeqvyPd835M+r/SbLA1+33a12A+LqMB88X8DnwzSJvZ7tud5ogvi7jj/wF3RPXnj/3/r/4ANiE7ClKuL8LxybkwZ8d0/avL8NWc/fWQP6y81fU/wAAAAAAAAAAAAAAAAAAwNk+AV6Xkc5uAb6cAAAAAElFTkSuQmCC"
+      },
+      "sourceBaseline": "male_pants_trousers"
+    },
+    {
+      "id": "male_pants_trousers_ripped",
+      "gender": "male",
+      "group": "pants",
+      "variant": "trousers_ripped",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "pants/trousers_ripped": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAB60lEQVR42u3bQU7CQBQG4CklXM6ExCu4YuVhXLnyCiYm3sxVE1IXgooUSbqYDu99X0JYsID/zXT6Oi2lAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEFhX40vG57dx1o/bbbsIRZZf/lbzr6qsMkEGsurKrGZUsFICyGvdwhlubosU6SyftQYZOqBut+1aHd9Vq4MdbQJkbvFdzrRbs7odwNCXstl/veZ8fuvk/8m22Zfu4f60A0o0/hezH2oTtwMY+lI+NtOfRR14+U/zD/3JAZB9/Lvdtlsqe9UOoHu8S90Kyi9/a7+p6gLwvRHypwXKQn75W8u/bqpCQ3/6no388lfO39QCoEWUX/7IHcBxp3Poy/jyOv5tg8an93FqlzTUCj+x2XPcBQ7fIsvf3Pxf5i7ApRbnODkOBQp17XetvQu8A549f8vzf7G7AJEOcNnlv9UaLHMXoJRSyj7V4GfOLn+7NVjmUeCkt4EunhmSPyqbLn9D83+ZBeDaNU6wBeLaBI/+R6Ds+Vue/1UWgKkB/jfg7x3hcK1fOdsEOjtA5I+dP9n8BwAAAAAAAAAAAAAAAAAAZvkEcTwak8J2Ck0AAAAASUVORK5CYII="
+      },
+      "sourceBaseline": "male_pants_trousers"
+    },
+    {
+      "id": "male_shoes_boots",
+      "gender": "male",
+      "group": "shoes",
+      "variant": "boots",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "shoes/boots": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABrUlEQVR42u3YMWrDMBQGYLsOhkKP1Sl3CPRohUCgnTJl6pk6ZTIYdSh2m8Z2EwKOLH3fKkH4n5QnyUUBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAJMq5fih8vIazH39+KS8dX7Kcs8sfdw1Ws1WgqW4bX7Kcs8sfdQ0e7laQur1tfMlyzi5/VDWYtwEc6+9OV7fD15um+pmT4gkwkq1cb8qT+qR6AuacP9L9P28D6LrasR588/Rznpqk3oDlelMWdTva1cNhG7qNkaLc88e8/2dpAOGwDX24qYDdeFONF2iBzvJP/UHkTz9/RPt/lgbQX/Gaqr/mhPe3MHgF+m/OEhf/d66mKorPx+k5xzq9G9C16/+nRkk8gSJc/7t+BOw2QV+AXOSc/dIa1G0R9ruw5EMgHLYh7HfD2SJZ/9WcCz76xpsaS+HdN5Ut5ey5r/8luXJZf7j6BE3gO0BK3zIAAAAAAAAAAAAAgGh8AQDhHBGDLelvAAAAAElFTkSuQmCC"
+      },
+      "sourceBaseline": "male_shoes_shoes"
+    },
+    {
+      "id": "male_shoes_hightops",
+      "gender": "male",
+      "group": "shoes",
+      "variant": "hightops",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "shoes/hightops": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABZElEQVR42u3YPWrDQBAG0Fkr6GSucoCkCvhoAYPBqVy5yskEYlM5qNCfG1lavdfugvhmZldCEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwvLfmw/PudIyLS8ZTG1sf2bNWcbFP1kb+MGqxp/g+LVqCpIpoq8v2cx9ZLHIB0PKVHvt7m3895bF3+Aqxw/he7AP5D122k9680921RzO3fyd97QDo1kb/s/Gua/7RoAbq3e1NF+vhMg+s9ezbb+IlcU7Up5gA80/+CarDm7IeXVaVuI/9c8+AhKdmes8+tQd1Gvl3yY89WD36+XfqzraT/b0s2fOjzb3StgEEfzVZy9r33f06uvfQfnn6DFvAvoMT/GQAAAAAAAAAAAADAy/0Bs1naGZVV7qUAAAAASUVORK5CYII="
+      },
+      "sourceBaseline": "male_shoes_shoes"
+    },
+    {
+      "id": "male_shoes_sneakers",
+      "gender": "male",
+      "group": "shoes",
+      "variant": "sneakers",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "shoes/sneakers": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABDklEQVR42u3VuwrCQBAF0PFBKr9PP1AQkiqVX2YlyFj4QAmaiBhNPKfZYheGO7PLRgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPBRk74K5XadsSsiikPEfnYqvlxNHu6f19szQ9QlV1tvxuDl+Y+oB7+cffq1rhSHyKrMZ49kzJ5m/wdt84+IrDd5OTPUh59VmY273CF7X+a9Vlvsrw24W9v2hq4t25izvzv/ofeiS65/mT+89IPWm5QBAAAAAAAAAAAAAKDhCKEVmfoyWSoIAAAAAElFTkSuQmCC"
+      },
+      "sourceBaseline": "male_shoes_shoes"
+    },
+    {
+      "id": "male_top_cardigan",
+      "gender": "male",
+      "group": "top",
+      "variant": "cardigan",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "top/cardigan": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAACIklEQVR42u3cQUrDQBQG4EmVgpBVwUv0DK48kwfwAB7LM3iJgiuhECh1oZHapiUNbZo3830bJUXM/2bySCZDUwIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIACbV/et6qghqXmj3Du1Zjhq7enamjR+vxthMEfWgP54+ef4vyvxhz8U2H6dMsok2BoliF1kz9e/inN/+oWgz/4ZDO6AHKuQcn5o2WfecqGct3f7D/XTUofj4fHl6uUvuZ5VrvEzMfMNyk1d67AG9fCHQAU7OININpqbSSl1zZC/mhj5A4A3AFczkVWQRfr8kaiR2abgqafP9oYTfMO4POhvNldYmbybwDWBNSu5PxTzzAbI7wmoHYl5o+QYbQTO3g26nonvlz9/Nx9J143qXp9DjkJ/jLXzU+m3czL1f/f289/s+dw4R/k3x//E8dya3yd87/N3+4DOFKTa87/aa0BtBfE7oJYDhtkujLsN7/FOt/NQF25uja+lLQZqitr32PZNoCWRUCIvwYAaACABgBoAH3YCQjxG0D76uPs7ZEWAYfXLhM55I+QYTZWEVC7EvNPPYM1APAI4HlYZkp03a8Eq5vTn7dbf/e12yKj68qQe+Zzxn++yfvqOmc8b1QLjwDgDuBKSvuiS/nllx8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPLxDbCP/foBstqzAAAAAElFTkSuQmCC",
+        "top/cardigan_back": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAAhUlEQVR42u3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBrAfwAB4CmdfwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "male_top_tee"
+    },
+    {
+      "id": "male_top_cardigan_dots",
+      "gender": "male",
+      "group": "top",
+      "variant": "cardigan_dots",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "top/cardigan_dots": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAACoUlEQVR42u3cQWrbQBQGYCkphoBXgV7CNyh01TP1AD1AVz1Tz9BLGLIqBAQhXaQKjiw78kQa681838aJLBP9b0aDRpq4aQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKBCz99/P6uCGtaaP8KxtznDtz+/tqlFm/LZCI2fWgP54+dfY/9vczb+uTBTRssonSA1S0rd5I+Xf039v71G4ycfbEEnQMk1qDl/tOw3ZtlQr09X+8vbrmn+fD7evts3zd9NmdWuMfMpm6em6W6dgVeuRZ4rgD7c1JDD/SJ2lLkyRz1Jas8fpP/PPgCMzlM2T29fp4yI536PMqrPkflge6g74ZXmj9b/3QOAis0+AMxyF/T+sb6WmJDZoqD154/WRstfAaTMZx7uYs8B584crQapx19K/iVrEW0AaH99aZPmM5fOm9Y4//1g5tf5ZLQa1J4/UP9fdADoGzDaMs5VdJzKa1dC/ggZsh3Y0dxo7Jn4bv/yevhMfNs17Y9vITvBa+Zt95LpMPNu//bn/v3/2Us48Y/yD9v/zLbSBr7R/t/n79cBnKjJkv0/71OA9+Yz/QlxuF/0BTLd7XiG4eB3ar/oTuUamxuXvhjqvX7db8vY//MOAKnPQSOrMbP8YWphHQBUzAAABoAV3QcY7lfSWvCaMssfohb5B4Ap85v7x9jrAGT+2Ny35PsBNa0D6B99XLw88uGuvmuxQebk2hWihPwRMtzkKgJqV2P+tWdwExAqts4BwH8DQhbLfiXYtjv/fr/0d6hfFhndWIbSM1/S/qUv/rmkPa9UC1MAcAWwkNq+6FJ++eUHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBy/AMj6GgJU0DOgwAAAABJRU5ErkJggg==",
+        "top/cardigan_dots_back": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAAhUlEQVR42u3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBrAfwAB4CmdfwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "male_top_tee"
+    },
+    {
+      "id": "male_top_shirt",
+      "gender": "male",
+      "group": "top",
+      "variant": "shirt",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "top/shirt": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAACf0lEQVR42u3cT2rbQBQH4MgugUJXvUehp+kqx+uqpwn0HlkFCoaiLlqnjiLLMyK2Zt77PggJBoN/b/54ZqTo7g4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASGr/9HFVBDbPm7+GzD7cMP/z4MqwtWsl7e2j8tTWQv//8Lfb/4ZaNvxRm8T33v/++7/vXoefOv7oG8ofK31L/H7Zo/GoBB0DkGszmP+yLM/acv6jta2txxewfNqvUYT/f4OdejyBj5mmHPpc/k4Zqsdu0CNOw0QdCxsxzHfyY+fh3Vg3UYtfMgMgyEDJmXrsMVov+JoDq08rjgMg0EGozd3YGkvn8o7erFbvNP8Gnw+vfGWTMfG4fzKa1ePcJoPoE/Pn+9e8MajP/WyKOD49xbgqqWfZ2lH/VFaBIWwDAFqB+T/T51/IMGfHQaCnztHbRalCw7I2Qv6j/X6rFFbPvbhG+qAhPH9/uk09/et3rL2WYZl5bu4BbgAj5izNsOLHdrLgXb3WcFuHktV47wfjwOL7kmmacy7xm5dTrfjhB/h5q4QyAZrcAahHgDABaW/aqRYsTwPRA7HTpHKFh5xr53CFg9m9Hq4Ob1aKdCWDhQCysjJkNclsAsAWwBQA2dtUJ4Hjpw7MB678RXmoX6fbf0mVvkPzF/T/yFqB48F+4Ky6kC5lDT5wFy94I+d/tCUHhtwAOAcEZAEm4CpBjCwCtLXvV4r/rPhS09J94DvuYD8dYyhQ1c037R18F1LTvRrVoYwWQcTloCQwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANC2P/PUSxm3C+oEAAAAAElFTkSuQmCC",
+        "top/shirt_back": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAAhUlEQVR42u3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBrAfwAB4CmdfwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "male_top_tee"
+    },
+    {
+      "id": "male_top_shirt_tie",
+      "gender": "male",
+      "group": "top",
+      "variant": "shirt_tie",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "top/shirt_tie": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAACxklEQVR42u3czWpaQRgG4KMJQsFVINuuugoUejVd5fK66tUECrmGQiBQCASEYBbG1Fp/Zg7Rc+b7ngckEhB8v/lxZs7RrgMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAICElt9/LVVBDbPmb+G9T84ZfvLz66Rv0Upe20Lj962B/O3nH2P/n5yz8Q+FOfia2cvqdT++TVru/L1rIH+o/GPq/5MhGr9awAEQuQY78y8uijO2nL+o7WtrccLsl4NVanGxu8H3/T+CjJm3O/S+/JmMqBbTQYuwHTb6QMiYeVcHX2deP89qBLWYjmZAZBkIGTP3XQarRXsTQPVp5eyl6z7/yTUQajM3dgaS+fyjtasV08HfwXzRdVfPq79ZZMy8bx/MoLX48Amg+gT8afb3kUVt5rcl4vL2Ls5NQTXL3oby97oCFGkL0NvNQ76ZP2Nmcm0BivZE80XX/Z4fniGjHRody7xdu2g1KFj2Rshf1P+P1eKE2afnCH+0CE+zrnv89P8A2Xy0Osj3ZdiVuU/tgm4BIuQvzjDgxHa24h7cG315XM2C99f/zopvhWm1Eyxv75bvjbt9D8CuzLWfHC3vh3fdExEsfwu1GMcZwHyxdyCElTFz5RZALQKcARTJdAUgc+aRLHvVYkwTwM3DagbcPhHfXDpHaNjN5/sy+3SU/8y1uBw84P310T1QOBkzV+571SLTFgDLXrUwAQCBJoD1pQ+/DVj/ifBeu0i3/5bubYPkL+7/ka8CFA/+q+d8A/1I5tATZ8GyN0L+D/uFoPBbgAN3xYWVMTN5tgAwxmWvWpgAaGALoBand9r7AEq/xLO4iPnjGIcyRc1c0/7RVwE17TtQLcaxAsi4HLQEBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGLdXaDVnRbZqRHkAAAAASUVORK5CYII=",
+        "top/shirt_tie_back": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAAhUlEQVR42u3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBrAfwAB4CmdfwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "male_top_tee"
+    },
+    {
+      "id": "male_top_tee_graphic",
+      "gender": "male",
+      "group": "top",
+      "variant": "tee_graphic",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "top/tee_graphic": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAACCklEQVR42u3ay0rDQBQG4KaKILgSBJ9BEHwaVz6eK59GEHyGQsGVIBSkLrxUq+nNZJoz5/ugVGkD/U8mk5nJjEYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQ0Pz6Ya4Kapg1f4Tf3pQM39xdNrsWbZNjI5z8XWsgf/z8Q2z/TcmTvyrMymOOXt+Pu71qIjf+nWsgf1X5h9T+m32c/K1VeAHUXIPM+aNlH5tlQ16HSkDvPu5ga80O1KJwLXQA9C/DhR20Fp1PAaKt1ka6a0RZA8mcP1r7twYAiXXeAdj809+wcX5zP5d/2KK1//JrABfT9d95PKurAWfMjClA65zo6bj91XYHiL6QtG3m5drVUIP/tJ2g+TtZE+gx+7hE+F9FmJy8v86fF39//l+rLTO31i7ZxR85f4QMxX7Y19zoYvpzuHs1GY3uzxfvy58HbgQZM3c1H66t4xtqLfb/FOD7hZBFxswM0n42Ai0Pe2sf/mfNjA7gT6cvm393062TQ5cx866y5y9Yi/IdQMbHXR7xMVB2AoIOANABdOzz0YftwVuaHSxql3H7byX5I7T/cakioHYZ8w89gykAmAIAOgAglX73AZzMcldXfvmNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCgN48qD/rYvMKaAAAAAElFTkSuQmCC",
+        "top/tee_graphic_back": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAAhUlEQVR42u3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBrAfwAB4CmdfwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "male_top_tee"
+    },
+    {
+      "id": "male_top_tee_long",
+      "gender": "male",
+      "group": "top",
+      "variant": "tee_long",
+      "baseVersion": "official-9",
+      "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+      "files": {
+        "top/tee_long": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAABmUlEQVR42u3cQUrDQBQG4I4tWXkVQehdunLlwVy58i6C4FVcBUq6qAgppbRhUuflfd8+If/L9HVmSLJaAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQELD7ntQBTXMmj/CtZd7hi8fT2Vq0a45NsLNn1oD+ePnb3H8l3ve/EthLh7T7Y/HvT+XyIN/cg3kX1T+lsZ/+Y+bf7MF/gCWXIPM+aNlf7DKhrw0ANAAAA2ggmi7tSEE2wPJnD/a+DcDADOAejz8M4N+fazty9cgf9uijX8zADADaHxN1K///gUyGdUuYQ2WkL/18V+/Afxu2FQvwpnzNqvCtZ6tWZQaZM4fbPxbAoAlAKABABoA8dfQ8qMBABoAoAEAJ+b5ItDr5/hxyJ/u9pM89uMLfdvG+iRU8hpkzh8p+6wFrfJcdLcP+xac/PK3nt8SAOwBABoAkMpm1rOfbGSkI7/8ZgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ0AFwfMG0koXxUgAAAABJRU5ErkJggg==",
+        "top/tee_long_back": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAAhUlEQVR42u3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfBrAfwAB4CmdfwAAAABJRU5ErkJggg=="
+      },
+      "sourceBaseline": "male_top_tee"
+    }
+  ]
+}
