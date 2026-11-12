@@ -65,6 +65,12 @@ joint aliases (`rightUpperArm`, `left_forearm`, `hips`, `arm_near_upper`…), `a
 angles, radians (all |a| ≤ 6.3 with decimals, or `"angleUnit":"rad"`), `fps` instead of `ms`, seconds instead of ms.
 Anything that changes meaning (unknown joint, angle/offset out of range, missing frames, unknown pose) blocks the save.
 
+## Stock animations and game-required list (2026-11-13)
+
+The stock motions are **builtin:<id>** entries in `site/media/lgr1/motions.json`. To replace a stock animation from a Bergerak export, copy the exported `motion.source`, `angleSnap`, `loop`, and `frames` into the corresponding built-in motion while preserving its canonical stock `id` and `name`. This keeps all existing game references stable.
+
+**Mahluk Hidup → Bergerak** now has one **DATABASE ANIMASI · KEBUTUHAN GAME** list. The required IDs from `site/media/lgr1/needed-motions.json` are shown **in the same list** as database/cloud and built-in animations. Entries without a motion show **＋ / BELUM ADA** and open a new animation using the required game ID; `placeholder` remains a separate status. The requirements JSON remains a source of IDs and categories, not a second UI list and not a set of fabricated playable clips. User-created database animations and other built-ins remain visible.
+
 ## Shadow authoring
 In **Bergerak → SHADOW · BAYANGAN**, adjust X/Y, width and depth or drag the shadow with **✥ GESER DI PREVIEW**. Values apply to the selected frame. **⇢ TERAPKAN SEMUA FRAME** applies values to each frame; **RESET FRAME** restores defaults. Flat black alpha 56, no blur or antialiasing.
 

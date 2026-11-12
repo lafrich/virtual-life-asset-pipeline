@@ -208,9 +208,13 @@ function stop(){S.playing=false;cancelAnimationFrame(S.raf);if(S.ui.play)S.ui.pl
 /* ---- library ---- */
 function listItems(){
  const db=DB().all("bergerak");
- return [...db.map(e=>({key:"bergerak:"+e.id,label:e.name,meta:e.category+" · "+e.motion.frames.length+"f",entry:e})),
-  ...S.lib.motions.map(m=>({key:"builtin:"+m.id,label:m.name,meta:"bawaan · "+m.frames.length+"f",builtin:m}))];
+ const items=[...db.map(e=>({id:e.id,key:"bergerak:"+e.id,label:e.name,meta:e.category+" · "+e.motion.frames.length+"f",entry:e})),
+  ...S.lib.motions.map(m=>({id:m.id,key:"builtin:"+m.id,label:m.name,meta:"bawaan · "+m.frames.length+"f",builtin:m}))];
+ const rank=new Map(needed.map((n,i)=>[n.id,i])),seen=new Set(items.map(it=>it.id));
+ for(const n of needed)if(!seen.has(n.id))items.push({id:n.id,key:"needed:"+n.id,label:n.name||n.id,meta:n.group||"game",needed:n});
+ return items.map((it,i)=>({...it,required:rank.has(it.id),rank:rank.get(it.id)??(10000+i)})).sort((a,b)=>a.rank-b.rank);
 }
+
 function confirmLeave(){return !S.dirty||confirm("Perubahan animasi ini belum disimpan. Lanjut?")}
 function openItem(it){
  if(!confirmLeave())return;stop();
@@ -282,21 +286,30 @@ function openNeeded(n){
  S.entry={...blankEntry(),id:n.id,name:n.name||n.id,category:n.group||"game"};S.isNew=true;S.dirty=true;S.frame=0;rebuildAll();
  U.status("Bikin animasi game '"+n.id+"' ("+(n.name||"")+"): pose frame, ＋ FRAME, lalu ☁ SIMPAN — id-nya tetap '"+n.id+"' biar game langsung pakai.");
 }
-function rebuildNeeded(){
- const box=S.ui.needed;if(!box)return;box.replaceChildren();
- const c={done:0,builtin:0,placeholder:0,missing:0};
- for(const n of needed){const st=neededStatus(n.id);c[st]++;
-  box.append(el("div",{class:"it need-"+st,"data-need":n.id,"data-status":st,onclick:()=>openNeeded(n),title:"Tap buat "+(st==="missing"?"mulai bikin":"buka")},
-   el("input",{type:"checkbox",checked:st==="done"||st==="builtin",disabled:true,"aria-label":n.id}),el("b",{text:n.id}),el("span",{text:" "+(n.name||"")}),el("small",{text:NEED_LABEL[st]})))}
- S.ui.neededSum.textContent=(c.done+c.builtin)+"/"+needed.length+" siap · "+c.placeholder+" placeholder · "+c.missing+" belum";
-}
 /* ---- UI ---- */
 function rebuildList(){
  const box=S.ui.list;box.replaceChildren();
- const cur=S.isNew?"":"bergerak:"+S.entry.id;
- for(const it of listItems())box.append(el("div",{class:"it",role:"option","aria-selected":String(it.key===cur),onclick:()=>openItem(it),"data-key":it.key},
-  it.builtin?"◇ ":"✦ ",it.label,el("small",{text:it.meta})));
+ const cur=S.isNew?"":"bergerak:"+S.entry.id,query=String(S.ui.search?.value||"").trim().toLowerCase();
+ const c={done:0,builtin:0,placeholder:0,missing:0};
+ for(const n of needed)c[neededStatus(n.id)]++;
+ S.ui.neededSum.textContent=(c.done+c.builtin)+"/"+needed.length+" siap · "+c.placeholder+" placeholder · "+c.missing+" belum";
+ const req=new Map(needed.map(n=>[n.id,n]));
+ let shown=0;
+ for(const it of listItems()){
+  const n=req.get(it.id),st=n?neededStatus(it.id):null;
+  const meta=(n?(n.group||"game")+" · "+NEED_LABEL[st]+" · ":"")+it.meta;
+  if(query&&!([it.id,it.label,meta,n?.name||""].join(" ").toLowerCase().includes(query)))continue;
+  shown++;
+  box.append(el("div",{class:"it"+(st?" need-"+st:""),role:"option","aria-selected":String(it.key===cur),
+   "data-key":it.key,onclick:it.needed?()=>openNeeded(it.needed):()=>openItem(it),
+   title:it.needed?"Belum ada · klik untuk buat animasi dengan ID yang dipakai game":it.label},
+   el("span",{class:"motion-symbol",text:it.builtin?"◇":it.entry?"✦":"＋"}),
+   el("div",{class:"motion-info"},el("b",{text:it.label}),el("span",{class:"motion-id",text:it.id})),
+   el("small",{class:"motion-meta",text:meta})));
+ }
+ if(!shown)box.append(el("p",{class:"sa-hint",text:"Tidak ditemukan animasi yang sesuai."}));
 }
+
 function rebuildFrames(){
  const box=S.ui.frames;box.replaceChildren();
  motion().frames.forEach((f,i)=>{
@@ -336,7 +349,7 @@ function syncControls(){
  for(const b of S.ui.tones.children)b.setAttribute("aria-pressed",String(b.dataset.tone===S.tone));
  S.ui.gm.setAttribute("aria-pressed",String(S.gender==="male"));S.ui.gf.setAttribute("aria-pressed",String(S.gender==="female"));
 }
-function rebuildAll(){S.ui.name.value=S.entry.name;S.ui.cat.value=S.entry.category||"umum";rebuildList();rebuildNeeded();rebuildFrames();rebuildParts();syncControls();scheduleRender(true)}
+function rebuildAll(){S.ui.name.value=S.entry.name;S.ui.cat.value=S.entry.category||"umum";rebuildList();rebuildFrames();rebuildParts();syncControls();scheduleRender(true)}
 function build(panel){
  const ui=S.ui;
  ui.canvas=el("canvas",{width:64*Z,height:112*Z,id:"bg-canvas","aria-label":"Pose editor: tap part, drag to rotate"});
@@ -423,18 +436,19 @@ function build(panel){
  ui.saveState=el("span",{class:"sa-tag"});
  ui.del=el("button",{type:"button",class:"danger",text:"🗑 HAPUS",onclick:U.guard(removeEntry)});
  ui.list=el("div",{class:"sa-list",id:"bg-list",role:"listbox"});
- const libBox=el("div",{class:"sa-box"},el("h3",{text:"DATABASE ANIMASI"}),
+ ui.search=el("input",{type:"search",id:"bg-search",class:"grow",placeholder:"Cari nama, ID, kategori, atau status...",oninput:()=>rebuildList()});
+ ui.neededSum=el("span",{class:"sa-tag"});
+ const libBox=el("div",{class:"sa-box"},el("h3",{text:"DATABASE ANIMASI · KEBUTUHAN GAME"}),
   el("div",{class:"sa-row"},ui.name,ui.cat),
   el("div",{class:"sa-row"},el("button",{type:"button",class:"primary",id:"bg-save",text:"☁ SIMPAN",onclick:U.guard(()=>save(false))}),
    el("button",{type:"button",id:"bg-saveas",text:"⧉ SIMPAN SEBAGAI BARU",onclick:U.guard(()=>save(true))}),
    el("button",{type:"button",id:"bg-new",text:"＋ BARU",onclick:newEntry}),ui.del,ui.saveState),
-  el("div",{class:"sa-row"},el("button",{type:"button",id:"bg-import",text:"↑ IMPORT JSON",onclick:importJson}),el("button",{type:"button",id:"bg-export",text:"↓ EXPORT JSON",onclick:U.guard(exportJson)})),
-  ui.list,el("p",{class:"sa-hint",text:"✦ = database kamu (cloud) · ◇ = bawaan LGR-1 (dibuka sebagai salinan)."}));
- ui.needed=el("div",{class:"sa-list sa-needed",id:"bg-needed"});ui.neededSum=el("span",{class:"sa-tag"});
- const needBox=el("details",{class:"sa-box",open:true},el("summary",{},el("b",{text:"ANIMASI YANG DIBUTUHKAN GAME "}),ui.neededSum),ui.needed,
-  el("p",{class:"sa-hint",text:"Centang otomatis kalau animasi dengan id itu ada di database cloud. Tap item buat mulai bikin dengan id yang dipakai game. Kategori 'placeholder' = sementara."}));
+  el("div",{class:"sa-row"},el("button",{type:"button",id:"bg-import",text:"↑ IMPORT JSON",onclick:importJson}),
+   el("button",{type:"button",id:"bg-export",text:"↓ EXPORT JSON",onclick:U.guard(exportJson)})),
+  el("div",{class:"sa-row"},ui.search,ui.neededSum),ui.list,
+  el("p",{class:"sa-hint",text:"✦ database cloud · ◇ animasi bawaan (dibuka sebagai salinan) · ＋ belum dibuat. Animasi kebutuhan game ada di list ini, termasuk yang belum ada; klik ＋ untuk mulai buat dengan ID game."}));
  const stageCol=el("div",{class:"sa-stagecol"},el("div",{class:"sa-canvaswrap"},ui.canvas),views,frameBar);
- const side=el("div",{class:"sa-side"},libBox,needBox,partBox,shadowBox,timingBox,previewBox);
+ const side=el("div",{class:"sa-side"},libBox,partBox,shadowBox,timingBox,previewBox);
  panel.replaceChildren(el("div",{class:"sa-wrap"},stageCol,side));
  // drag-friendly canvas size
  const resize=()=>{const w=Math.min(stageCol.clientWidth-12,(root.innerHeight*(root.innerWidth<820?.5:.56))*64/112);ui.canvas.style.width=Math.max(160,Math.floor(w))+"px"};
@@ -455,8 +469,8 @@ async function init(panel){
  U.status("Bergerak: memuat base LGR-1…");
  S.lib=await A().motions();await DB().loadBuiltin();DB().setPoses(S.lib.poses);S.bases=await A().loadBases();
  await loadNeeded();S.entry=blankEntry();build(panel);S.ready=true;refreshOutfitChoices();rebuildAll();
- root.addEventListener("lgr-db-synced",()=>{if(S.ready){rebuildList();rebuildNeeded();refreshOutfitChoices()}});
- root.addEventListener("lgr-db-changed",()=>{if(S.ready)refreshOutfitChoices()});
+ root.addEventListener("lgr-db-synced",()=>{if(S.ready){rebuildList();refreshOutfitChoices()}});
+ root.addEventListener("lgr-db-changed",()=>{if(S.ready){rebuildList();refreshOutfitChoices()}});
  U.status("Bergerak siap: tap part di gambar, drag buat muter, ＋ FRAME buat frame baru, ☁ SIMPAN.");
 }
 root.MahlukBergerak=Object.freeze({neededStatus,get needed(){return needed},importJson,exportJson,init,get state(){return S},save,newEntry,openItem,listItems});

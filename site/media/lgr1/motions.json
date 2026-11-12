@@ -76,7 +76,7 @@
  "motions": [
   {
    "id": "idle",
-   "name": "Idle \u00b7 breathing",
+   "name": "Idle · breathing",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
@@ -103,7 +103,7 @@
   },
   {
    "id": "walk",
-   "name": "Walk \u00b7 6 frames",
+   "name": "Walk · 6 frames",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
@@ -246,7 +246,7 @@
   },
   {
    "id": "wave",
-   "name": "Wave \u00b7 right hand",
+   "name": "Wave · right hand",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
@@ -255,26 +255,38 @@
      "ms": 180,
      "parts": {
       "arm_r_upper": {
-       "a": 150
+       "x": 0,
+       "y": 0,
+       "a": 125
       },
       "arm_r_lower": {
-       "a": -25
+       "x": 0,
+       "y": 0,
+       "a": 30
       }
      },
      "dirs": {
       "sw": {
        "arm_r_upper": {
+        "x": 0,
+        "y": 0,
         "a": 150
        },
        "arm_r_lower": {
+        "x": 0,
+        "y": 0,
         "a": -25
        }
       },
       "ne": {
        "arm_r_upper": {
+        "x": 0,
+        "y": 0,
         "a": -150
        },
        "arm_r_lower": {
+        "x": 0,
+        "y": 0,
         "a": 25
        }
       }
@@ -284,85 +296,39 @@
      "ms": 180,
      "parts": {
       "arm_r_upper": {
-       "a": 150
+       "x": 0,
+       "y": 0,
+       "a": 125
       },
       "arm_r_lower": {
-       "a": 0
+       "x": 0,
+       "y": 0,
+       "a": 60
       }
      },
      "dirs": {
       "sw": {
        "arm_r_upper": {
+        "x": 0,
+        "y": 0,
         "a": 150
        },
        "arm_r_lower": {
-        "a": 0
-       }
-      },
-      "ne": {
-       "arm_r_upper": {
-        "a": -150
-       },
-       "arm_r_lower": {
-        "a": 0
-       }
-      }
-     }
-    },
-    {
-     "ms": 180,
-     "parts": {
-      "arm_r_upper": {
-       "a": 150
-      },
-      "arm_r_lower": {
-       "a": 25
-      }
-     },
-     "dirs": {
-      "sw": {
-       "arm_r_upper": {
-        "a": 150
-       },
-       "arm_r_lower": {
-        "a": 25
-       }
-      },
-      "ne": {
-       "arm_r_upper": {
-        "a": -150
-       },
-       "arm_r_lower": {
+        "x": 0,
+        "y": 0,
         "a": -25
        }
-      }
-     }
-    },
-    {
-     "ms": 180,
-     "parts": {
-      "arm_r_upper": {
-       "a": 150
-      },
-      "arm_r_lower": {
-       "a": 0
-      }
-     },
-     "dirs": {
-      "sw": {
-       "arm_r_upper": {
-        "a": 150
-       },
-       "arm_r_lower": {
-        "a": 0
-       }
       },
       "ne": {
        "arm_r_upper": {
+        "x": 0,
+        "y": 0,
         "a": -150
        },
        "arm_r_lower": {
-        "a": 0
+        "x": 0,
+        "y": 0,
+        "a": 25
        }
       }
      }
@@ -371,20 +337,108 @@
   },
   {
    "id": "crouch",
-   "name": "Crouch \u00b7 bend knees",
+   "name": "Crouch · bend knees",
    "source": "crouch",
    "angleSnap": 5,
    "loop": true,
    "frames": [
     {
      "ms": 500,
-     "parts": {}
+     "parts": {
+      "pelvis": {
+       "x": 0,
+       "y": 9,
+       "a": 0
+      },
+      "leg_r_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -25
+      },
+      "leg_r_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 90
+      },
+      "arm_r_upper": {
+       "x": 0,
+       "y": 0,
+       "a": 20
+      },
+      "arm_r_lower": {
+       "x": 0,
+       "y": 0,
+       "a": -25
+      },
+      "arm_l_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 85
+      },
+      "leg_l_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -70
+      },
+      "leg_l_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 55
+      }
+     }
     },
     {
      "ms": 500,
      "parts": {
       "pelvis": {
-       "y": 1
+       "x": 0,
+       "y": 9,
+       "a": 0
+      },
+      "leg_r_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -25
+      },
+      "leg_r_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 90
+      },
+      "arm_r_upper": {
+       "x": 0,
+       "y": 0,
+       "a": 20
+      },
+      "arm_r_lower": {
+       "x": 0,
+       "y": 0,
+       "a": -15
+      },
+      "arm_l_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 85
+      },
+      "leg_l_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -70
+      },
+      "leg_l_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 55
+      },
+      "head": {
+       "x": 0,
+       "y": 0,
+       "a": -10
+      },
+      "arm_l_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -10
       }
      }
     }
@@ -399,7 +453,43 @@
    "frames": [
     {
      "ms": 800,
-     "parts": {}
+     "parts": {
+      "arm_l_upper": {
+       "x": 0,
+       "y": 0,
+       "a": 45
+      },
+      "arm_r_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -85
+      }
+     }
+    },
+    {
+     "ms": 800,
+     "parts": {
+      "arm_l_upper": {
+       "x": 0,
+       "y": 0,
+       "a": 45
+      },
+      "arm_r_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -85
+      },
+      "arm_r_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 35
+      },
+      "arm_l_lower": {
+       "x": 0,
+       "y": 0,
+       "a": -40
+      }
+     }
     }
    ]
   },
@@ -458,7 +548,7 @@
   },
   {
    "id": "sit",
-   "name": "Sit \u00b7 on a chair",
+   "name": "Sit · on a chair",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
@@ -467,31 +557,39 @@
      "ms": 900,
      "parts": {
       "pelvis": {
-       "y": 9
+       "x": 0,
+       "y": 9,
+       "a": 0
       },
       "leg_r_upper": {
-       "a": -80
+       "x": 0,
+       "y": 0,
+       "a": -65
       },
       "leg_l_upper": {
-       "a": -80
+       "x": 0,
+       "y": 0,
+       "a": -65
       },
       "leg_r_lower": {
-       "a": 80
+       "x": 0,
+       "y": 0,
+       "a": 65
       },
       "leg_l_lower": {
-       "a": 80
-      },
-      "arm_r_upper": {
-       "a": -15
-      },
-      "arm_l_upper": {
-       "a": -15
+       "x": 0,
+       "y": 0,
+       "a": 70
       },
       "arm_r_lower": {
+       "x": 0,
+       "y": 0,
        "a": -35
       },
       "arm_l_lower": {
-       "a": -35
+       "x": 0,
+       "y": 0,
+       "a": -15
       }
      }
     },
@@ -499,36 +597,44 @@
      "ms": 900,
      "parts": {
       "pelvis": {
-       "y": 9
+       "x": 0,
+       "y": 9,
+       "a": 0
       },
       "leg_r_upper": {
-       "a": -80
+       "x": 0,
+       "y": 0,
+       "a": -65
       },
       "leg_l_upper": {
-       "a": -80
+       "x": 0,
+       "y": 0,
+       "a": -65
       },
       "leg_r_lower": {
-       "a": 80
+       "x": 0,
+       "y": 0,
+       "a": 65
       },
       "leg_l_lower": {
-       "a": 80
-      },
-      "arm_r_upper": {
-       "a": -15,
-       "y": 1
-      },
-      "arm_l_upper": {
-       "a": -15,
-       "y": 1
-      },
-      "arm_r_lower": {
-       "a": -35
+       "x": 0,
+       "y": 0,
+       "a": 70
       },
       "arm_l_lower": {
-       "a": -35
+       "x": 0,
+       "y": 0,
+       "a": -10
       },
       "head": {
-       "y": 1
+       "x": 0,
+       "y": 0,
+       "a": 10
+      },
+      "arm_r_lower": {
+       "x": 0,
+       "y": 0,
+       "a": -40
       }
      }
     }
@@ -536,7 +642,7 @@
   },
   {
    "id": "lie_sleep",
-   "name": "Lie / sleep \u00b7 curled side sleep (bed, fits the 64px cell)",
+   "name": "Lie / sleep · curled side sleep (bed, fits the 64px cell)",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
@@ -545,36 +651,54 @@
      "ms": 1400,
      "parts": {
       "pelvis": {
-       "x": 16,
+       "x": 14,
        "y": 10,
        "a": -90
       },
-      "leg_r_upper": {
-       "a": 75
-      },
-      "leg_l_upper": {
-       "a": 75
-      },
-      "leg_r_lower": {
-       "a": -90
-      },
-      "leg_l_lower": {
-       "a": -90
-      },
       "arm_r_upper": {
+       "x": 0,
+       "y": 0,
        "a": 15
       },
       "arm_l_upper": {
+       "x": 0,
+       "y": 0,
        "a": 5
       },
       "arm_r_lower": {
+       "x": 0,
+       "y": 0,
        "a": -40
       },
       "arm_l_lower": {
+       "x": 0,
+       "y": 0,
        "a": -30
       },
       "head": {
+       "x": 0,
+       "y": 0,
        "a": 25
+      },
+      "leg_r_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 100
+      },
+      "leg_l_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 110
+      },
+      "leg_r_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -5
+      },
+      "leg_l_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -5
       }
      }
     },
@@ -582,36 +706,54 @@
      "ms": 1400,
      "parts": {
       "pelvis": {
-       "x": 16,
+       "x": 14,
        "y": 10,
        "a": -90
       },
-      "leg_r_upper": {
-       "a": 75
-      },
-      "leg_l_upper": {
-       "a": 75
-      },
-      "leg_r_lower": {
-       "a": -90
-      },
-      "leg_l_lower": {
-       "a": -90
-      },
       "arm_r_upper": {
+       "x": 0,
+       "y": 0,
        "a": 15
       },
       "arm_l_upper": {
+       "x": 0,
+       "y": 0,
        "a": 5
       },
       "arm_r_lower": {
+       "x": 0,
+       "y": 0,
        "a": -40
       },
       "arm_l_lower": {
+       "x": 0,
+       "y": 0,
        "a": -30
       },
       "head": {
-       "a": 22
+       "x": 0,
+       "y": 0,
+       "a": 20
+      },
+      "leg_r_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 100
+      },
+      "leg_l_lower": {
+       "x": 0,
+       "y": 0,
+       "a": 110
+      },
+      "leg_l_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -15
+      },
+      "leg_r_upper": {
+       "x": 0,
+       "y": 0,
+       "a": -10
       }
      }
     }
@@ -619,7 +761,7 @@
   },
   {
    "id": "talk",
-   "name": "Talk \u00b7 head + hand gestures",
+   "name": "Talk · head + hand gestures",
    "source": "neutral",
    "angleSnap": 5,
    "loop": true,
