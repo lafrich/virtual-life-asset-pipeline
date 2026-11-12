@@ -1,0 +1,171 @@
+name: Promote latest Genesis finals to official-8
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/promote-genesis-final-2.yml'
+      - 'site/media/lgr1/base/candidates/male-final-20261112-v4.json'
+      - 'site/media/lgr1/base/candidates/female-final-20261112-v4.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: lgr1-genesis-promote-official-8
+  cancel-in-progress: false
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Pillow
+        run: python -m pip install pillow
+      - name: Convert and validate artist finals
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64,copy,hashlib,io,json
+          from pathlib import Path
+          from PIL import Image
+          B=Path('site/media/lgr1/base')
+          files={g:B/f'candidates/{g}-final-20261112-v4.json' for g in ('male','female')}
+          expected={'male':'a3f0ff74af1f1562a2481dae6e201acccd6fdd377ae6ba8c51f6a418cca102f7','female':'b514dbfa1281bc81f48de840dea88e60a6c62e47d722a495c687fc193486440f'}
+          dirs=('se','sw','ne','nw')
+          compact=lambda x:json.dumps(x,ensure_ascii=False,separators=(',',':'))
+          sha=lambda b:hashlib.sha256(b).hexdigest()
+          righash=lambda x:sha(compact(x).encode())
+          def img(uri):
+            assert uri.startswith('data:image/png;base64,')
+            im=Image.open(io.BytesIO(base64.b64decode(uri.split(',',1)[1]))).convert('RGBA')
+            assert im.size==(64,112)
+            return im
+          def encoded(im):
+            stream=io.BytesIO();im.save(stream,format='PNG',optimize=True)
+            return 'data:image/png;base64,'+base64.b64encode(stream.getvalue()).decode('ascii')
+          def pixels(rig,skin):
+            keys={tuple(bytes.fromhex(x[1:])) for x in skin['keys'].values()};count=0;other={}
+            for views in rig['layers'].values():
+              for uri in views.values():
+                for r,g,b,a in img(uri).getdata():
+                  if not a:continue
+                  if (r,g,b) in keys:count+=1
+                  else:
+                    c='#%02X%02X%02X'%(r,g,b);other[c]=other.get(c,0)+1
+            return count,dict(sorted(other.items()))
+          ixfile=B/'index.json';ix=json.loads(ixfile.read_text())
+          assert ix['version']=='official-7','Expected official-7; no overwrite'
+          archive=B/'archive/index-official-7.json'
+          out={g:B/f'genesis-base-{g}-official-8.json' for g in files}
+          assert not archive.exists() and not any(p.exists() for p in out.values())
+          originals={g:files[g].read_bytes() for g in files}
+          for g in files:assert sha(originals[g])==expected[g],g+' source SHA mismatch'
+          source={g:json.loads(originals[g]) for g in files}
+          m=source['male'];f=source['female']
+          assert m['format']=='lgr-1-draft-v1' and m['gender']=='male'
+          assert m['record']['rig']['gender']=='male' and m['record']['rig']['id']=='lafrich_male'
+          assert f['format']=='lafrich-genesis-base-v1' and f['gender']=='male'
+          assert f['rig']['id']=='lafrich_male' and f['rig']['gender']=='male'
+          assert righash(f['rig'])==f['rigSha256'],'Female source checksum mismatch'
+          male=copy.deepcopy(f)
+          male['gender']='male';male['id']='lafrich_male'
+          male['rig']=copy.deepcopy(m['record']['rig'])
+          male['manualSlice']=copy.deepcopy(m['record']['manual'])
+          male['notes']='';male['created']='2026-11-12T13:53:00.000Z';male['edited']='2026-11-12T13:53:00.000Z'
+          sk=male['skin'];convert={tuple(bytes.fromhex(sk['tones']['light'][k][1:])):tuple(bytes.fromhex(sk['keys'][k][1:])) for k in sk['order']};undo={v:k for k,v in convert.items()}
+          mapped=0
+          for layer,views in male['rig']['layers'].items():
+            for d,url in list(views.items()):
+              original=list(img(url).getdata());new=[]
+              for r,g,b,a in original:
+                if a and (r,g,b) in convert:new.append((*convert[(r,g,b)],a));mapped+=1
+                else:new.append((r,g,b,a))
+              restored=[(*undo.get(x[:3],x[:3]),x[3]) if x[3] else x for x in new]
+              assert restored==original,'Male pixel drift '+layer+'/'+d
+              image=img(url);image.putdata(new);views[d]=encoded(image)
+          assert mapped==5173,mapped
+          male['skin']['preview']={'tone':'light'}
+          count,other=pixels(male['rig'],male['skin'])
+          assert count==mapped
+          male['skin']['keyedPixels']=count
+          male['skin']['offRamp']={'count':sum(other.values()),'colors':other}
+          male['rigSha256']=righash(male['rig'])
+          for field in ('masks','pivots','placements','drawOrders','sides','capRadius'):
+            assert male['rig'][field]==m['record']['rig'][field],field
+          assert male['manualSlice']==m['record']['manual']
+          female=copy.deepcopy(f)
+          female['gender']='female';female['id']='lafrich_female'
+          female['rig']['gender']='female';female['rig']['id']='lafrich_female';female['rig']['name']='Lafrich Female'
+          female['rigSha256']=righash(female['rig'])
+          assert female['rig']['layers']==f['rig']['layers']
+          for field in ('masks','pivots','placements','drawOrders','sides','capRadius','layers'):
+            assert female['rig'][field]==f['rig'][field],field
+          assert female['manualSlice']==f['manualSlice']
+          for g,pkg in (('male',male),('female',female)):
+            rig=pkg['rig'];assert pkg['gender']==g and pkg['id']=='lafrich_'+g
+            assert rig['gender']==g and rig['id']=='lafrich_'+g
+            assert rig['format']=='lafrich-puppet-master-v1'
+            assert righash(rig)==pkg['rigSha256']
+            for d in dirs:
+              assert len(base64.b64decode(rig['masks'][d]))==64*112
+              assert len(base64.b64decode(pkg['manualSlice'][d]))==64*112
+              assert len(rig['pivots'][d])==len(rig['drawOrders'][d])==11
+            assert set(rig['layers']['body'])==set(dirs)
+            assert set(pkg['skin']['tones'])=={'porcelain','light','tan','medium','brown','deep'}
+            n,nonkey=pixels(rig,pkg['skin'])
+            assert n==pkg['skin']['keyedPixels']
+            assert nonkey==pkg['skin']['offRamp']['colors']
+          assert female['skin']['keyedPixels']==5101
+          archive.parent.mkdir(parents=True,exist_ok=True)
+          archive.write_bytes(ixfile.read_bytes())
+          for g,pkg in (('male',male),('female',female)):
+            out[g].write_text(compact(pkg)+'\n')
+            ix['bases'][g]={
+              'package':out[g].name,'packageFormat':'lafrich-genesis-base-v1',
+              'rigSha256':pkg['rigSha256'],'source':str(files[g].relative_to(B)),
+              'sourceFormat':source[g]['format'],'sourceSha256':sha(originals[g]),
+              'sourceBytes':len(originals[g])}
+          ix['version']='official-8';ix['approved']='2026-11-12'
+          ix['revisions'].append({
+            'version':'official-8','date':'2026-11-12','approvedBy':'Lafrich',
+            'note':'Promote final 2 Male/Female originals. Male LGR draft mapped from light skin tones to standard V6P keys with pixel-exact reverse check. Female official-form upload carried Male metadata, corrected only identity. Preserve slices, pivots, masks, artwork, and accents.',
+            'maleRigSha256':male['rigSha256'],'femaleRigSha256':female['rigSha256'],
+            'archive':'archive/index-official-7.json','sourceGenderFix':{'female':'male to female metadata only'}})
+          ixfile.write_text(compact(ix)+'\n')
+          def patch(path,a,b):
+            p=Path(path);s=p.read_text();assert s.count(a)==1,('marker not unique',path,a)
+            p.write_text(s.replace(a,b))
+          patch('site/genesis-base-app.js','const OFFICIAL_BASE_VERSION="official-7";','const OFFICIAL_BASE_VERSION="official-8";')
+          patch('tests/test_genesis_base.cjs','OFFICIAL_BASE_VERSION="official-7"','OFFICIAL_BASE_VERSION="official-8"')
+          patch('tests/test_genesis_official_7.py','index=read(B/"index.json")','index=read(B/"archive/index-official-7.json")')
+          s=Path('tests/test_lgr_slice_candidate.cjs').read_text()
+          a="const official6=parse('archive/index-official-6.json');"
+          assert s.count(a)==1
+          s=s.replace(a,a+"\nconst official7=parse('archive/index-official-7.json');")
+          for a,b in (
+            ("assert.equal(active.version,'official-7');","assert.equal(active.version,'official-8');\n assert.equal(official7.version,'official-7');"),
+            ("active.bases.male.package,'genesis-base-male-official-7.json'","active.bases.male.package,'genesis-base-male-official-8.json'"),
+            ("active.bases.female.package,'genesis-base-female-official-7.json'","active.bases.female.package,'genesis-base-female-official-8.json'")):
+            assert s.count(a)==1,a
+            s=s.replace(a,b)
+          Path('tests/test_lgr_slice_candidate.cjs').write_text(s)
+          print('Active official-8',male['rigSha256'],female['rigSha256'])
+          PY
+      - name: Commit official-8 packages, index and regression pointers
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add site/media/lgr1/base/index.json \
+            site/media/lgr1/base/archive/index-official-7.json \
+            site/media/lgr1/base/genesis-base-male-official-8.json \
+            site/media/lgr1/base/genesis-base-female-official-8.json \
+            site/genesis-base-app.js tests/test_genesis_base.cjs \
+            tests/test_genesis_official_7.py tests/test_lgr_slice_candidate.cjs
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat(lgr): activate final 2 Genesis male and female official-8'
+            git push origin HEAD:main
+          fi
