@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#174a96">
 <title>MAHLUK HIDUP.EXE — Emosi · Bergerak · Beraksi (LGR-1)</title>
 <link rel="stylesheet" href="./mahluk-subapps.css?v=mh-sync-1">
+<link rel="stylesheet" href="./mahluk-pakaian.css?v=pk-1">
 <style>
 :root{font:12px Tahoma,"Segoe UI",Arial,sans-serif;color:#25344d;background:#97abc4}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
@@ -27,8 +28,8 @@ button:focus-visible,a:focus-visible{outline:2px solid #e5a52d;outline-offset:1p
 </head>
 <body>
 <div id="app">
- <header class="titlebar"><strong>▣ MAHLUK HIDUP.EXE</strong><small>EMOSI · BERGERAK · BERAKSI · LGR-1 · by Lafrich</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
- <nav id="topnav"><button id="nav-emotion" aria-selected="true">☺ EMOSI.EXE</button><button id="nav-bergerak" aria-selected="false">✦ BERGERAK</button><button id="nav-beraksi" aria-selected="false">⚔ BERAKSI</button><button id="nav-lgr" aria-selected="false">◈ INFO</button><a id="open-genesis-base" class="navlink" href="./genesis-base.html">↗ GENESIS BASE APP</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="db-sync" title="Sync database Bergerak + Beraksi dari Google Drive">↻ SYNC</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
+ <header class="titlebar"><strong>▣ MAHLUK HIDUP.EXE</strong><small>EMOSI · BERGERAK · BERAKSI · PAKAIAN · LGR-1 · by Lafrich</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
+ <nav id="topnav"><button id="nav-emotion" aria-selected="true">☺ EMOSI.EXE</button><button id="nav-bergerak" aria-selected="false">✦ BERGERAK</button><button id="nav-beraksi" aria-selected="false">⚔ BERAKSI</button><button id="nav-pakaian" aria-selected="false">▣ PAKAIAN</button><button id="nav-lgr" aria-selected="false">◈ INFO</button><a id="open-genesis-base" class="navlink" href="./genesis-base.html">↗ GENESIS BASE APP</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="db-sync" title="Sync database Bergerak + Beraksi dari Google Drive">↻ SYNC</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
  <div id="emotionpanel"><iframe id="emotion-frame" title="Emosi.exe original face and dialogue editor" src="about:blank" allow="clipboard-read; clipboard-write"></iframe></div>
  <section id="lgrpanel" hidden>
   <div class="card">
@@ -39,6 +40,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #e5a52d;outline-offset:1p
     <li><b>Emosi</b> — faces stay in Emosi.exe (tab ☺ EMOSI.EXE). <span id="face-count">Checking Emosi faces…</span></li>
     <li><b>✦ Bergerak</b> — bikin animasi: gerakin part per frame, simpan ke database animasi (cloud).</li>
     <li><b>⚔ Beraksi</b> — bikin adegan: beberapa karakter, baju, animasi, Emosi, posisi, flip, depan/belakang, durasi.</li>
+    <li><b>▣ Pakaian</b> — edit wardrobe keyed stock per Male/Female dan 4 sudut, preview dengan rig, simpan draft dan export master JSON; belum ada Drive publish otomatis.</li>
     <li><b>Database</b> — Drive: Membangun / Mahluk Hidup / Database / Bergerak · Beraksi (Backup untuk konflik/hapus). Dibaca juga oleh Mainkan / Semesta lewat <code>lgr-db.js</code>.</li>
    </ul>
    <p class="small">Your Drive data (Genesis Masters, drafts, motions, Emosi) is untouched.</p>
@@ -46,6 +48,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #e5a52d;outline-offset:1p
  </section>
  <section id="bergerakpanel" class="subapp" hidden aria-label="Bergerak · animasi"></section>
  <section id="beraksipanel" class="subapp" hidden aria-label="Beraksi · adegan"></section>
+ <section id="pakaianpanel" class="subapp" hidden aria-label="Pakaian · database master wardrobe"></section>
  <footer id="status"><b id="stage-label">EMOSI.EXE</b><span id="statusmsg" role="status">Loading Emosi.exe…</span><span id="statuscloud">DATABASE: BELUM SYNC</span><span class="wm">by Lafrich</span></footer>
 </div>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -63,6 +66,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #e5a52d;outline-offset:1p
 <script src="./mahluk-subapps-ui.js?v=mh-sync-1"></script>
 <script src="./mahluk-bergerak.js?v=mh-sync-1"></script>
 <script src="./mahluk-beraksi.js?v=mh-sync-1"></script>
+<script src="./mahluk-pakaian.js?v=pk-1"></script>
 <script src="./mahluk-hidup-shell.js?v=mh-sync-1"></script>
 </body>
 </html>
