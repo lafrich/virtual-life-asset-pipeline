@@ -7,7 +7,7 @@
 <title>LGR · Wardrobe Fit — Genesis Pixel Editor</title>
 <link rel="stylesheet" href="./mahluk-subapps.css?v=mh-sync-1">
 <link rel="stylesheet" href="./mahluk-action-frame-pixel.css?v=genesis-workbench-v1">
-<link rel="stylesheet" href="./mahluk-pakaian.css?v=wardrobe-reference-export-2">
+<link rel="stylesheet" href="./mahluk-pakaian.css?v=wardrobe-reference-export-3">
 <style>
 html,body{height:100%;margin:0;background:#abc1dd;font:12px Tahoma,Arial,sans-serif}
 *{box-sizing:border-box}
@@ -27,13 +27,16 @@ header a{color:#fff;font-weight:700;margin-left:auto}
 #pixelOverlay.wardrobe-source-pixel .pk-ref-grid span{font:9px Tahoma,Arial,sans-serif;color:#263b55}
 #pixelOverlay.wardrobe-source-pixel #pk-ghost-gender{min-width:0;max-width:100%;font-size:11px}
 #pixelOverlay.wardrobe-source-pixel #pkExportPixel{background:linear-gradient(#fbfff3,#c6e7bb);font-weight:bold}
+/* Reference drawing workspace only: publishing remains in the game database UI. */
+#pakaianpanel #pk-approve,#pakaianpanel #pk-export{display:none!important}
+#pakaianpanel #pk-export-draft{background:linear-gradient(#f5fff5,#bde5bd);border-color:#438456;font-weight:bold}
 @media(max-width:700px){header small{display:none}header{padding:7px 9px}.pk-layout{display:flex;flex-direction:column}.pk-aside,.pk-main,.pk-right{width:100%}}
 </style>
 </head>
 <body>
 <div id="root">
 <header><strong>▨ LGR WARDROBE FIT · PIXEL EDITOR</strong>
-<small>Genesis official-9 • source mask → editable KEY layer • 4 arah</small>
+<small>Male/Female resmi · overlay 4 arah · Export JSON referensi (tidak masuk game)</small>
 <a href="./genesis-base.html">Genesis Base ↗</a></header>
 <section id="pakaianpanel" aria-label="Editor Pakaian LGR berbasis Genesis"></section>
 </div>
@@ -45,11 +48,11 @@ header a{color:#fff;font-weight:700;margin-left:auto}
 <script src="./lgr-wear.js"></script>
 <script src="./lgr-db.js"></script>
 <script src="./lgr-actor.js"></script>
-<script src="./lgr-wardrobe-cover.js?v=body-cover-1"></script>
+<script src="./lgr-wardrobe-cover.js?v=wardrobe-reference-export-3"></script>
 <script src="./emotion-studio/shared-pixel-selection.js"></script>
-<script src="./emotion-studio/shared-pixel-editor.js"></script>
-<script src="./mahluk-pakaian.js?v=body-cover-1"></script>
-<script src="./mahluk-pakaian-pixel.js?v=body-cover-1"></script>
+<script src="./emotion-studio/shared-pixel-editor.js?v=wardrobe-reference-export-3"></script>
+<script src="./mahluk-pakaian.js?v=wardrobe-reference-export-3"></script>
+<script src="./mahluk-pakaian-pixel.js?v=wardrobe-reference-export-3"></script>
 <script>
 window.addEventListener("DOMContentLoaded",()=>{
  Promise.resolve(window.MahlukPakaian.init(document.getElementById("pakaianpanel")))
