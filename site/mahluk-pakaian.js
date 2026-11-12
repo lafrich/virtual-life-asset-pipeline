@@ -11,7 +11,7 @@ const make=(t,attrs={},...kids)=>{const e=document.createElement(t);for(const [k
 const cv=(w=64,h=112)=>{const c=document.createElement("canvas");c.width=w;c.height=h;return c};
 const clone=o=>JSON.parse(JSON.stringify(o));
 const dbRead=k=>{try{return JSON.parse(localStorage.getItem(k)||"{}")}catch{return {}}};
-const S={ready:false,index:null,gender:"male",group:"top",variant:"tee",dir:"se",side:"front",tone:"light",ink:"C2",tool:"pen",motion:"idle",frame:0,base:"",basePackages:{},bufs:new Map(),draft:null,changed:new Set(),undo:[],redo:[],copied:null,selection:null,selectFrom:null,drag:false,playing:null,previewToken:0,edited:false};
+const S={ready:false,index:null,gender:"male",group:"top",variant:"tee",dir:"se",side:"front",tone:"light",ink:"C2",tool:"pen",motion:"idle",frame:0,base:"",basePackages:{},bufs:new Map(),draft:null,changed:new Set(),undo:[],redo:[],copied:null,selection:null,selectFrom:null,drag:false,playing:null,previewToken:0,edited:false,masterCache:{},resetPending:false};
 const rootUrl=()=>root.LGRDB_BASE||"./";
 const say=(s,bad=false)=>{const p=$("pk-status");if(p){p.textContent=s;p.style.color=bad?"#a8291d":"#315577"}};
 const kID=()=>S.gender+"|"+S.group+"|"+S.variant;
@@ -83,7 +83,8 @@ async function draw(){
  const editor=$("pk-editor"),g=editor.getContext("2d");g.clearRect(0,0,64,112);
  if($("pk-ghost").checked){
   try{
-   const naked=await root.LGRActor.frameCanvas({gender:S.gender,skin:{tone:S.tone},outfit:"none",wear:{}},{dir:S.dir});
+   const bare=await rigFor(),prepared=await root.LafrichPuppetRenderer.prepare(bare,null,S.dir);
+   const naked=root.LafrichPuppetRenderer.render(prepared,root.LafrichPuppetCore.blankPose());
    g.globalAlpha=.33;g.drawImage(naked,0,0);g.globalAlpha=1;
   }catch(e){console.warn("Ghost base",e)}
  }
@@ -109,10 +110,10 @@ async function openItem(){
  palettes();await draw();void preview();
 }
 function saveDraft(silent=false,approved=false){
- const store=allVersions(),old=store[kID()]||{},files={...(old.files||{})};
+ const store=allVersions(),old=store[kID()]||{},files=S.resetPending?{}:{...(old.files||{})};
  for(const p of S.changed)if(S.bufs.has(p))files[p]=S.bufs.get(p).toDataURL("image/png");
- const out={format:"lgr1-wardrobe-master-v1",gender:S.gender,group:S.group,variant:S.variant,baseVersion:S.base,dirs:DIRS,cell:[64,112],keyColours:true,updated:new Date().toISOString(),note:$("pk-note").value,files,approved:!!approved};
- store[kID()]=out;
+ const out={format:"lgr1-wardrobe-master-v1",gender:S.gender,group:S.group,variant:S.variant,baseVersion:S.basePackages[S.gender]?"official-5-local":S.base,dirs:DIRS,cell:[64,112],keyColours:true,updated:new Date().toISOString(),note:$("pk-note").value,files,approved:!!approved};
+ store[kID()]=out;S.resetPending=false;
  try{localStorage.setItem(KEY,JSON.stringify(store));S.draft=out;S.changed.clear();$("pk-version").textContent=approved?"MASTER LOKAL":"DRAFT";if(!silent)say(approved?"Master ditandai untuk review lokal. Export untuk integrasi game.":"Draft tersimpan di browser ini.")}
  catch(e){say("Gagal simpan: "+e.message,true)}
  return out;
@@ -175,12 +176,50 @@ async function makeWear(d){
  }
  return layers;
 }
+function updateBaseLabel(){
+ const pkg=S.basePackages[S.gender],name=pkg?"NOVA OFFICIAL 5 (import lokal)":"RUNTIME "+S.base;
+ const label=$("pk-base-label");if(label)label.textContent="Base preview: "+name+(pkg?" · tidak mengganti Genesis game":" · import NOVA male/female untuk review");
+}
+async function importBase(file){
+ if(!file||file.size>3000000)throw Error("JSON Genesis terlalu besar");
+ const pkg=JSON.parse(await file.text()),C=root.LafrichPuppetCore;
+ if(pkg.format!=="lafrich-genesis-base-v1"||!["male","female"].includes(pkg.gender)||!pkg.rig||pkg.rig.gender!==pkg.gender||!pkg.rigSha256)
+  throw Error("Paket tidak valid, perlu genesis-base-male/female-official-5.json");
+ const bytes=new TextEncoder().encode(JSON.stringify(pkg.rig)),hash=new Uint8Array(await crypto.subtle.digest("SHA-256",bytes));
+ const sha=Array.from(hash,b=>b.toString(16).padStart(2,"0")).join("");
+ if(sha!==pkg.rigSha256)throw Error("Checksum Genesis tidak cocok");
+ C.validateMaster(pkg.rig);
+ S.basePackages[pkg.gender]=pkg;S.masterCache={};
+ try{localStorage.setItem("lgr1-pakaian-preview-bases-v1",JSON.stringify(S.basePackages))}
+ catch(e){throw Error("Base berhasil dibaca, tetapi gagal menyimpan lokal: "+e.message)}
+ updateBaseLabel();await draw();void preview();
+ say("NOVA Official 5 "+pkg.gender+" terverifikasi. Preview memakai base ini, tanpa mengubah master Genesis di repo.");
+}
+async function rigFor(){
+ const pkg=S.basePackages[S.gender];
+ if(!pkg)return root.LGRActor.master(S.gender,S.tone);
+ const cacheKey=S.gender+"|"+S.tone+"|"+pkg.rigSha256;
+ if(S.masterCache[cacheKey])return S.masterCache[cacheKey];
+ const skin=root.LGRSkin.rampFor(S.tone),rig={...pkg.rig,layers:{}};
+ for(const [name,views] of Object.entries(pkg.rig.layers||{})){
+  rig.layers[name]={};
+  for(const [dir,src] of Object.entries(views||{})){
+   if(!src){rig.layers[name][dir]=src;continue}
+   const im=await loadImage(src),c=cv(),g=c.getContext("2d",{willReadFrequently:true});
+   g.drawImage(im,0,0);const data=g.getImageData(0,0,64,112);
+   if(root.LGRSkin.fromKey(data.data,skin)){g.putImageData(data,0,0);rig.layers[name][dir]=c.toDataURL("image/png")}
+   else rig.layers[name][dir]=src;
+  }
+ }
+ S.masterCache[cacheKey]=root.LafrichPuppetCore.validateMaster(rig);
+ return S.masterCache[cacheKey];
+}
 async function preview(){
  if(!S.ready)return;
  const ticket=++S.previewToken;
  try{
   const C=root.LafrichPuppetCore,R=root.LafrichPuppetRenderer,A=root.LGRActor;
-  const master=await A.master(S.gender,S.tone),lib=await A.motions();
+  const master=await rigFor(),lib=await A.motions();
   const motion=lib.motions.find(m=>m.id===S.motion)||lib.motions.find(m=>m.id==="idle")||null;
   const canvases=[];
   for(const d of DIRS){
@@ -208,7 +247,7 @@ async function importMaster(f){
  const p=JSON.parse(await f.text());
  if(p.format!=="lgr1-wardrobe-master-v1"||!GROUPS.includes(p.group)||!["male","female"].includes(p.gender)||typeof p.variant!=="string"||!p.files||typeof p.files!=="object")throw Error("Format master pakaian tidak cocok");
  const files={};for(const [k,v] of Object.entries(p.files)){if(!validPath(k)||typeof v!=="string"||!v.startsWith("data:image/png;base64,")||v.length>800000)throw Error("Asset key invalid: "+k);files[k]=v}
- S.gender=p.gender;S.group=p.group;S.variant=p.variant;
+ if(S.changed.size)saveDraft(true);S.gender=p.gender;S.group=p.group;S.variant=p.variant;
  $("pk-gender").value=S.gender;$("pk-group").value=S.group;refreshOptions();
  if(!options().includes(S.variant))throw Error("Varian tidak ada dalam database stok");
  $("pk-item").value=S.variant;
@@ -219,21 +258,22 @@ function refreshOptions(){
  const opts=options();S.variant=setSelect("pk-item",opts.map(x=>[x,x.replace(/_/g," ")]),S.variant);
 }
 function controls(){
- $("pk-group").onchange=async e=>{S.group=e.target.value;refreshOptions();S.side="front";S.ink={top:"C2",pants:"P2",shoes:"S0",hair:"H2",glasses:"GL",facial:"H2"}[S.group];await openItem()};
- $("pk-gender").onchange=async e=>{S.gender=e.target.value;await openItem()};
- $("pk-item").onchange=async e=>{S.variant=e.target.value;await openItem()};
+ $("pk-group").onchange=async e=>{if(S.changed.size)saveDraft(true);S.group=e.target.value;refreshOptions();S.side="front";S.ink={top:"C2",pants:"P2",shoes:"S0",hair:"H2",glasses:"GL",facial:"H2"}[S.group];await openItem()};
+ $("pk-gender").onchange=async e=>{if(S.changed.size)saveDraft(true);S.gender=e.target.value;updateBaseLabel();await openItem()};
+ $("pk-item").onchange=async e=>{if(S.changed.size)saveDraft(true);S.variant=e.target.value;await openItem()};
  $("pk-side").onchange=async e=>{S.side=e.target.value;fresh();await draw()};
  $("pk-tone").onchange=async e=>{S.tone=e.target.value;await draw();void preview()};
  $("pk-color").onchange=async e=>{S.color=e.target.value;await draw();void preview()};
  $("pk-motion").onchange=e=>{S.motion=e.target.value;S.frame=0;void preview()};
  $("pk-ghost").onchange=()=>void draw();
+ $("pk-base-import").onchange=e=>{const f=e.target.files?.[0];if(f)importBase(f).catch(x=>say("Base: "+x.message,true));e.target.value=""};
  $("pk-dir").onclick=e=>{const b=e.target.closest("button[data-dir]");if(!b)return;S.dir=b.dataset.dir;fresh();$("pk-direction").textContent=S.dir.toUpperCase();void draw()};
  for(let i=0;i<4;i++)$("pk-v"+i).onclick=()=>{S.dir=DIRS[i];fresh();$("pk-direction").textContent=S.dir.toUpperCase();void draw()};
  $("pk-save").onclick=()=>saveDraft();
  $("pk-approve").onclick=()=>{if(!confirm("Tandai sebagai master lokal? Ini belum mengubah file stock atau Google Drive."))return;saveDraft(false,true)};
  $("pk-export").onclick=exportMaster;
  $("pk-import").onchange=e=>{const f=e.target.files?.[0];if(f)importMaster(f).catch(x=>say(x.message,true));e.target.value=""};
- $("pk-reset").onclick=async()=>{if(!confirm("Kembalikan item ini ke sprite stok? Draft lama tetap ada sampai kamu SAVE."))return;S.draft=null;S.bufs.clear();S.changed.clear();fresh();await draw();void preview();say("Sprite stok dimuat. SAVE untuk menyimpan reset.")};
+ $("pk-reset").onclick=async()=>{if(!confirm("Kembalikan item ini ke sprite stok? Draft lama tetap ada sampai kamu SAVE."))return;S.draft=null;S.resetPending=true;S.bufs.clear();S.changed.clear();fresh();await draw();void preview();say("Sprite stok dimuat. SAVE untuk menyimpan reset.")};
  $("pk-undo").onclick=()=>undoRedo("undo");$("pk-redo").onclick=()=>undoRedo("redo");
  $("pk-copy").onclick=async()=>{
   const c=await buffer(pathOf()),data=getCell(c),r=S.selection||{x:0,y:0,w:64,h:112};
@@ -256,12 +296,13 @@ function controls(){
 }
 async function init(panel){
  if(S.ready)return;
- panel.innerHTML='<div class="pk-layout"><aside class="pk-aside"><div class="pk-box"><h3>DATABASE PAKAIAN</h3><label>Gender<select id="pk-gender"><option value="male">Male</option><option value="female">Female</option></select></label><label>Kategori<select id="pk-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option><option value="hair">Rambut</option><option value="glasses">Kacamata</option><option value="facial">Facial Hair</option></select></label><label>Item<select id="pk-item"></select></label><label>Layer<select id="pk-side"><option value="front">Depan</option><option value="back">Belakang</option></select></label><div class="pk-tag" id="pk-file"></div><div class="pk-tag" id="pk-version">STOK</div></div><div class="pk-box"><h3>WARNA / KEY PIXEL</h3><label>Skin Tone<select id="pk-tone"><option value="light">Light</option><option value="porcelain">Porcelain</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label><label>Warna<select id="pk-color"></select></label><div id="pk-inks" class="pk-inks"></div><p class="pk-small">Pixel disimpan sebagai Color Key, warna preview tidak dibakar ke sprite.</p></div><div class="pk-box"><h3>VERSI / MASTER</h3><label>Catatan versi<textarea id="pk-note" rows="3" placeholder="Catatan penyesuaian..."></textarea></label><button id="pk-save">▣ SAVE DRAFT</button><button id="pk-approve">✓ TANDAI MASTER (LOKAL)</button><button id="pk-export">↓ EXPORT MASTER JSON</button><label class="pk-file">↑ IMPORT MASTER JSON<input id="pk-import" type="file" accept=".json,application/json"></label><button id="pk-reset">↶ RESET KE STOCK</button><p class="pk-small">Draft dan master di browser lokal. Belum auto-sync Drive atau mengganti asset Mainkan.</p></div></aside><main class="pk-main"><div class="pk-box"><h3>01 · PIXEL EDITOR — <span id="pk-direction">SE</span></h3><div class="pk-tools"><button data-pk-tool="pen" aria-pressed="true">✎ PEN</button><button data-pk-tool="erase">⌫ ERASE</button><button data-pk-tool="fill">▧ FILL</button><button data-pk-tool="pick">♢ PICK</button><button data-pk-tool="select">▤ SELECT</button><button id="pk-copy">COPY</button><button id="pk-paste">PASTE</button><button id="pk-paste-flip">PASTE FLIP</button><button id="pk-undo">↶ UNDO</button><button id="pk-redo">↷ REDO</button></div><div id="pk-dir" class="pk-dir"><button data-dir="se">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button><label><input type="checkbox" id="pk-ghost" checked>Base overlay</label></div><div class="pk-canvas"><canvas id="pk-editor" width="64" height="112" aria-label="Pixel Editor 64 × 112"></canvas></div><div class="pk-views"><canvas id="pk-v0" width="64" height="112"></canvas><canvas id="pk-v1" width="64" height="112"></canvas><canvas id="pk-v2" width="64" height="112"></canvas><canvas id="pk-v3" width="64" height="112"></canvas></div></div></main><aside class="pk-right"><div class="pk-box"><h3>02 · REVIEW IN MOTION</h3><label>Animasi<select id="pk-motion"><option value="idle">Idle</option><option value="walk">Walk</option><option value="bow">Bow</option><option value="sit">Sit</option><option value="wave">Wave</option></select></label><div class="pk-views pk-review"><canvas id="pk-r0" width="64" height="112"></canvas><canvas id="pk-r1" width="64" height="112"></canvas><canvas id="pk-r2" width="64" height="112"></canvas><canvas id="pk-r3" width="64" height="112"></canvas></div><button id="pk-play">▶ PLAY</button><span id="pk-motion-label">Idle · frame 1</span><p class="pk-small">Preview memakai LGR1Raster & animasi official. Yang berubah hanya layer pakaian.</p></div><div class="pk-box"><h3>03 · ALUR MASTER</h3><ol><li>Pilih pakaian + gender</li><li>Edit 4 view + front/back</li><li>Review idle, walk, bow, sit</li><li>Save Draft → review</li><li>Export master untuk ingest ke game</li></ol><p class="pk-small">Genesis, pivots, slicing dan master animasi tidak disentuh.</p></div><div id="pk-status" role="status">Memuat database pakaian…</div></aside></div>';
+ panel.innerHTML='<div class="pk-layout"><aside class="pk-aside"><div class="pk-box"><h3>DATABASE PAKAIAN</h3><label>Gender<select id="pk-gender"><option value="male">Male</option><option value="female">Female</option></select></label><label>Kategori<select id="pk-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option><option value="hair">Rambut</option><option value="glasses">Kacamata</option><option value="facial">Facial Hair</option></select></label><label>Item<select id="pk-item"></select></label><label>Layer<select id="pk-side"><option value="front">Depan</option><option value="back">Belakang</option></select></label><div class="pk-tag" id="pk-file"></div><div class="pk-tag" id="pk-version">STOK</div></div><div class="pk-box"><h3>WARNA / KEY PIXEL</h3><label>Skin Tone<select id="pk-tone"><option value="light">Light</option><option value="porcelain">Porcelain</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label><label>Warna<select id="pk-color"></select></label><div id="pk-inks" class="pk-inks"></div><p class="pk-small">Pixel disimpan sebagai Color Key, warna preview tidak dibakar ke sprite.</p></div><div class="pk-box"><h3>VERSI / MASTER</h3><label>Catatan versi<textarea id="pk-note" rows="3" placeholder="Catatan penyesuaian..."></textarea></label><button id="pk-save">▣ SAVE DRAFT</button><button id="pk-approve">✓ TANDAI MASTER (LOKAL)</button><button id="pk-export">↓ EXPORT MASTER JSON</button><label class="pk-file">↑ IMPORT MASTER JSON<input id="pk-import" type="file" accept=".json,application/json"></label><button id="pk-reset">↶ RESET KE STOCK</button><p class="pk-small">Draft dan master di browser lokal. Belum auto-sync Drive atau mengganti asset Mainkan.</p></div></aside><main class="pk-main"><div class="pk-box"><h3>01 · PIXEL EDITOR — <span id="pk-direction">SE</span></h3><div class="pk-tools"><button data-pk-tool="pen" aria-pressed="true">✎ PEN</button><button data-pk-tool="erase">⌫ ERASE</button><button data-pk-tool="fill">▧ FILL</button><button data-pk-tool="pick">♢ PICK</button><button data-pk-tool="select">▤ SELECT</button><button id="pk-copy">COPY</button><button id="pk-paste">PASTE</button><button id="pk-paste-flip">PASTE FLIP</button><button id="pk-undo">↶ UNDO</button><button id="pk-redo">↷ REDO</button></div><div id="pk-dir" class="pk-dir"><button data-dir="se">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button><label><input type="checkbox" id="pk-ghost" checked>Base overlay</label></div><div class="pk-canvas"><canvas id="pk-editor" width="64" height="112" aria-label="Pixel Editor 64 × 112"></canvas></div><div class="pk-views"><canvas id="pk-v0" width="64" height="112"></canvas><canvas id="pk-v1" width="64" height="112"></canvas><canvas id="pk-v2" width="64" height="112"></canvas><canvas id="pk-v3" width="64" height="112"></canvas></div></div></main><aside class="pk-right"><div class="pk-box"><h3>02 · REVIEW IN MOTION</h3><div class="pk-small" id="pk-base-label">Base preview: official runtime</div><label>↑ IMPORT NOVA BASE JSON<input id="pk-base-import" type="file" accept=".json,application/json"></label><label>Animasi<select id="pk-motion"><option value="idle">Idle</option><option value="walk">Walk</option><option value="bow">Bow</option><option value="sit">Sit</option><option value="wave">Wave</option></select></label><div class="pk-views pk-review"><canvas id="pk-r0" width="64" height="112"></canvas><canvas id="pk-r1" width="64" height="112"></canvas><canvas id="pk-r2" width="64" height="112"></canvas><canvas id="pk-r3" width="64" height="112"></canvas></div><button id="pk-play">▶ PLAY</button><span id="pk-motion-label">Idle · frame 1</span><p class="pk-small">Preview memakai LGR1Raster & animasi official. Yang berubah hanya layer pakaian.</p></div><div class="pk-box"><h3>03 · ALUR MASTER</h3><ol><li>Pilih pakaian + gender</li><li>Edit 4 view + front/back</li><li>Review idle, walk, bow, sit</li><li>Save Draft → review</li><li>Export master untuk ingest ke game</li></ol><p class="pk-small">Genesis, pivots, slicing dan master animasi tidak disentuh.</p></div><div id="pk-status" role="status">Memuat database pakaian…</div></aside></div>';
  try{
   S.index=await(await fetch(rootUrl()+BASE+"index.json",{cache:"no-store"})).json();
   if(S.index.format!=="lgr1-wear-index-v1"||!Array.isArray(S.index.items))throw Error("Index pakaian tidak valid");
   S.base=(await root.LGRActor.loadBases()).male.version;
-  controls();refreshOptions();S.ready=true;await openItem();say("PAKAIAN.EXE aktif · "+S.index.items.length+" sprite stok · base runtime "+S.base+". Draft tersimpan lokal.");
+  S.basePackages=dbRead("lgr1-pakaian-preview-bases-v1");
+  controls();updateBaseLabel();refreshOptions();S.ready=true;await openItem();say("PAKAIAN.EXE aktif · "+S.index.items.length+" sprite stok · base runtime "+S.base+". Draft tersimpan lokal.");
  }catch(e){console.error(e);say("Gagal memuat PAKAIAN.EXE: "+e.message,true)}
 }
 root.MahlukPakaian=Object.freeze({init});
