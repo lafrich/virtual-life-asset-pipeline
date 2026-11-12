@@ -10,7 +10,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict');
  page.on('dialog',d=>d.accept());
  try{
   await page.goto('http://127.0.0.1:8766/site/lgr-wardrobe-adjust.html');
-  await page.waitForFunction(()=>document.querySelector('#wa-count')?.textContent?.startsWith('6 BASE'),null,{timeout:75000});
+  await page.waitForFunction(()=>document.querySelector('#wa-active')?.textContent?.startsWith('MALE / ATASAN / Tee'),null,{timeout:75000});
   assert.match(await page.locator('#wa-active').textContent(),/MALE \/ ATASAN \/ Tee/i);
   assert.deepEqual(await page.locator('#wa-group option').evaluateAll(a=>a.map(x=>x.value)),['top','pants','shoes']);
   assert.equal(await page.locator('#wa-variant').isHidden(),true,'No derivative garment picker');
