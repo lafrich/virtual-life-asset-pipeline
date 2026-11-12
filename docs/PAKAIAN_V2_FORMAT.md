@@ -27,3 +27,44 @@ Drive location: Membangun / Mahluk Hidup / Database / Pakaian / <gender>_<group>
 - The user still must visually inspect the four directions and key animations. A successful schema test does not certify the sprite fit.
 
 Tests: node tests/test_mahluk_pakaian.cjs, node --test tests/test_lgr_pakaian_v2.cjs; existing LGR tests remain mandatory.
+
+
+## Lafrich's six artist-approved fitting references (2026-11-13)
+
+**The uploaded filenames are authoritative for the category** even though the
+old Pixel Editor mistakenly exported all six JSON files as `group: top`,
+`variant: tee` with `top/tee` artwork. A filename containing `celana` /
+`clana` is pants; `sepatu` / `tshoes` is shoes. Those are real pixel artworks
+drawn in the correct anatomical positions, not more shirt iterations.
+
+| Uploaded category | Male reference | Female reference | Pakaian v2 ID / sprite path |
+| --- | --- | --- | --- |
+| Top | `LGR_REF_male_top_tee_4view.json` | `LGR_REF_female_top_tee_4view.json` | `male_top_tee` / `top/tee`; `female_top_tee` / `top/tee_f` |
+| Pants | `LGR_REF_male_clana_4view (1).json` | `LGR_REF_female_celana_4view (1).json` | `male_pants_trousers` / `pants/trousers`; `female_pants_trousers` / `pants/trousers_f` |
+| Shoes | `LGR_REF_male_tshoes (1).json` | `LGR_REF_female_sepatu_4view (1).json` | `male_shoes_shoes` / `shoes/shoes`; `female_shoes_shoes` / `shoes/shoes_f` |
+
+Immutable artist source records (including all four directions) live at
+`site/media/lgr1/wardrobe-artist-reference/<gender>_<group>_<variant>.json`.
+`tools/build_lgr_wardrobe_reference_v2.py` promotes them to validated v2
+published defaults at `_site/media/lgr1/wardrobe-approved/`.
+
+The only pixel edit performed by that builder is a **colour-key conversion**:
+C1–C5 → P1–P4 for pants, or C1–C5 → S0–S3 for shoes. No pixel position,
+alpha, front silhouette, direction, size, or scale may change. The vestigial
+`top/tee_back_f` in female pants/shoes source exports is **not** shoe/pants
+artwork and must not be imported into that category.
+
+**Runtime precedence:** a compatible Drive/local `lgr1-pakaian-v2` master
+wins; otherwise only the six published approved artist-reference masters are
+loaded for their exact IDs, if baseVersion and baseRigSha256 match active
+Genesis. Other V6P stock outfits do not come back automatically. Existing
+official Male-8 / Female-9 Genesis art/masks/pivots are never changed.
+
+**Import compatibility:** the separate Wardrobe Fit workbench recognizes
+`LGR_REF_*celana*`, `*clana*`, `*sepatu*` or `*tshoes*` filenames and
+converts their original exported `top/tee` layer into proper pants/shoes
+drafts with P/S colour keys. Import is not an automatic master overwrite.
+
+Artwork baselines are user-authored references; gameplay motion-geometry
+inspection remains separate and must be completed for Walk/Bow/Sit/Arms Up
+before declaring every garment variant finished.
