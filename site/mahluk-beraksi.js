@@ -40,7 +40,7 @@ function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queu
 async function actorFrame(a,t){
  const ti=DB().trackAt(a,t),mo=resolve(ti.item.motion);
  const fi=mo?M().frameIndexAt(mo,ti.localMs):0,face=DB().emosiAt(a,t);
- return {img:await A().frameCanvas(a,{motion:mo,frame:fi,dir:a.dir,faceId:face?.face||"",faceMs:face?.localMs||0}),missing:!mo,face};
+ return {img:await A().frameCanvas(a,{motion:mo,frame:fi,dir:a.dir,faceId:face?.face||"",faceMs:face?.localMs||0}),shadow:DB().shadowAt(mo,fi),missing:!mo,face};
 }
 function drawGround(g){
  g.fillStyle="#cdd9c4";g.fillRect(0,0,SW*Z,SH*Z);
@@ -59,8 +59,11 @@ async function draw(){
   if(ticket!==S.ticket)return;
   g.imageSmoothingEnabled=false;drawGround(g);S.boxes=[];
   order.forEach((a,i)=>{
-   const {img}=frames[i],x0=GX+a.x-A().FOOT.x,y0=GY+a.y-A().FOOT.y;
-   g.fillStyle="rgba(0,0,0,.18)";g.beginPath();g.ellipse((GX+a.x)*Z,(GY+a.y)*Z,11*Z,3*Z,0,0,Math.PI*2);g.fill();
+   const {img,shadow}=frames[i],x0=GX+a.x-A().FOOT.x,y0=GY+a.y-A().FOOT.y;
+   if(shadow.enabled){
+    g.fillStyle="rgba(0,0,0,"+(56/255)+")";g.beginPath();
+    g.ellipse((GX+a.x+(a.flip?-shadow.x:shadow.x))*Z,(GY+a.y+shadow.y)*Z,shadow.rx*Z,shadow.ry*Z,0,0,Math.PI*2);g.fill();
+   }
    g.save();
    if(a.flip){g.translate((x0+64)*Z,y0*Z);g.scale(-1,1);g.drawImage(img,0,0,64*Z,112*Z)}else g.drawImage(img,x0*Z,y0*Z,64*Z,112*Z);
    g.restore();
