@@ -93,7 +93,7 @@ assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/v6p-key-ramp-v1/);
  const ed=read("site/emotion-studio/shared-pixel-editor.js");
  assert.match(ed,/guide\(out,DIR\[dir\],u,v,phase\)/,"guide draws on the screen canvas only");
  assert(!/guide\(ctx/.test(ed),"guide must never draw into the atlas");
- assert.match(html,/genesis-base-app\.js\?v=lgr1-fix-13/);
+ assert.match(html,/genesis-base-app\.js\?v=lgr1-fix-14/);
 }
 // docs exist
 assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/lafrich-genesis-base-v1/);
