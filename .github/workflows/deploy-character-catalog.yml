@@ -194,6 +194,7 @@ jobs:
           test -s _site/lgr-wardrobe-adjust.html
           test -s _site/lgr-wardrobe-adjust.js
           test -s _site/media/lgr1/wardrobe-adjust/variant-seeds.json
+          test -s _site/media/lgr1/wardrobe-adjust/base-seeds.json
       - name: Keep legacy Mahluk motion registry permanently empty
         run: python tools/build_mahluk_motion_registry.py _site/motion-packs
       - name: Verify LGR-1 public routes and blocked legacy sync
