@@ -1,0 +1,249 @@
+# LGR Nova — candidate V1 (review only)
+
+Owner request: redraw an original LGR body for Mahluk Hidup and author game-style
+procedural motion with improved weight, leg overlap, and four-direction coherence.
+
+## Deliverables produced on 2026-11-12
+
+The review bundle, `LGR-Nova-Review.zip`, was generated in the conversation as
+two `lafrich-genesis-base-v1` candidate JSON packages (male/female), eight
+64×112 1× source images, exact 64×112 part-index masks, four candidate
+`lgr1-motion-v1` clips, six diagnostic GIFs and the Python/Pillow generator.
+
+The ZIP lives as a user-downloadable conversation attachment. **It is not in
+this Git branch**; do not interpret the branch as a complete asset import.
+
+Use the standalone `site/lgr-nova-lab.html` review page once served by a
+local site or a preview deployment:
+
+1. Choose `candidates/lgr-nova-male.json` or `lgr-nova-female.json`
+   from the downloaded ZIP.
+2. Optionally choose `candidates/lgr-nova-motions.json`.
+3. Switch all four directions and inspect each motion and skin tone.
+4. Compare against the current official master. The page uses
+   `LGR1Motion`, `LafrichPuppetRenderer` and `LGR1Raster`.
+5. Import into Genesis Base only for manual editor testing; do not approve,
+   save over official or publish until the owner accepts the redraw.
+
+## Format and safety
+
+- 64×112 source PNG, foot/game pivot (32,100), 11 bone pieces.
+- Four views SE/SW/NE/NW; front/back drawn separately, reflected to opposite angles.
+- No AI image generation; native 1× Python/Pillow pixel drawing, nearest-neighbor
+  scaling only for diagnostics.
+- Canonical V6P/LGR skin key palette, no additional RGB game-art colours.
+- Faces left blank for Emosi.exe; outfits not baked.
+- Official `site/media/lgr1/base/index.json`, male official-3 and female
+  official-4 remain **untouched**. No Drive writes.
+- Experimental motion IDs `nova_idle`, `nova_walk`, `nova_run`,
+  `nova_wave` are separate from the built-in shared animation library.
+
+## QA already completed
+
+- Both candidate packages created, both 4-view masks decode to 64×112 bytes.
+- Every visible source pixel has an owned part and there are zero assignments
+  in transparent source regions.
+- All opaque art pixels belong to the canonical skin key colours.
+- Six diagnostic animated GIFs built and human-inspected from a local
+  Pillow cutout renderer.
+
+## QA still required before game readiness
+
+- Load each candidate package into the real LGR core and confirm checksum validation.
+- Inspect seams on walk/run extreme key poses using **native LGR1Raster**
+  (Pillow diagnostic GIF is **not** native parity evidence).
+- Check baseline facing anatomical near/far part mappings on every direction.
+- Test Emosi face alignment, clothing strips, hair, and small-scale legibility.
+- Run existing Genesis/base tests and visual regression tests.
+- Obtain owner approval; only then prepare an independent catalog revision.
+
+**Current review status:** unapproved experimental, no live deployment.
+
+## 2026-11-12 follow-up: strict no-redraw stress test (LGR Nova V2)
+
+The owner ruled out **all action-specific painting**. The new V2 candidate
+rebuilds slimmer **static master art once** (per gender/per view), then uses
+those unchanged PNG layers, masks, slice ownership and pivots for every motion.
+
+In the separate conversation ZIP `LGR-Nova-V2-No-Redraw-Stress-Test.zip`:
+
+- Male/Female `lafrich-genesis-base-v1` candidates; four 64×112 views.
+- Six `lgr1-motion-v1` actions: idle, walk, sit-chair, sit-floor (legs
+  forward), sleep and both-hands-up. Every pose is numerical transforms only.
+- 4-view mask and source RGB audit, plus expanded 160×112 diagnostic GIFs.
+- Chair, floor sit and raise-hands final poses have **zero** opaque pixels
+  outside the original 64px-wide viewport in the Pillow diagnostic.
+- Lying pose loses about one-quarter of visible pixels if cropped to the
+  original 64px viewport. The **experiment-only**
+  `site/lgr-nova-wide-render.js` explores stitching translations of the
+  SAME pose into a wider frame; it does not change base pixels.
+- `tests/test_lgr_nova_wide.cjs` covers pure tiling and immutability math.
+
+**Do not merge as production-ready.** The Pillow diagnostic is not the native
+LGR1Raster implementation. JS/Python pixel parity, native browser joint seams,
+Emosi/wardrobe fitting, memory/performance and floor collision have not been
+verified. A rigid 11-part cutout cannot guarantee all possible animations
+without better IK, foot/hand articulations and procedural deformation. **No
+per-action redraw is required to pursue those engine upgrades.**
+
+## 2026-11-12 follow-up: V3 no-gaps QA (candidate-only)
+
+**New review attachment:** `LGR-Nova-V3-No-Gaps-QA.zip`, containing
+`build_lgr_nova_v3.py`, candidate Male/Female Genesis Base JSON,
+six original `lgr1-motion-v1` clips, 4-direction animated GIFs, stress-strip
+PNGs, and `v3/qa/QA_REPORT.json`.
+
+Exactly **the same 64×112 1× source pixels, body masks, and per-bone pivots
+as V2**; V3 changes candidate `rig.capRadius` to 4–6 (official LGR
+format permits 0–6), with a new checksum and metadata. The Pillow diagnostic
+uses fixed hidden overlap caps derived from the rest master, plus an
+*action-independent* 1px seam guard whose pixels come only from nearby
+existing skin palette colours. **No animation pose is redrawn.**
+
+Automated Pillow QA across **272 actual frames**, 2 genders × 4 directions
+× 6 motion clips (idle has 4 frames, others 6):
+- Frames with disconnected components: **0 / 272**
+- Pixels in separated body islands: **0 max**
+- Unresolved parent–child adjacency reports: **0**
+- Residual near-joint 1px cracks under the diagnostic guard: **0 / 272**
+- Micro crack pixels restored using existing palette: **384 across all frames**
+- Maximum changed output pixels in a single diagnostic frame: **9**
+- Rest pose difference from V2 in all eight gender/direction cells: **0px**
+- Sleeping body area outside original horizontal 64px viewport: still
+  up to **26.15%**; wide renderer and gameplay collision/culling remain
+  unverified
+
+Scope limitation: these results are **not** a statement of identical output
+in native JS `LGR1Raster`. The production renderer already has its own
+joint-fill and underlap code; its outputs should be tested against these
+candidate poses in Mahluk Hidup before any approval or deployment.
+The V3 Python QA is not a production renderer patch.
+
+The existing draft PR stays unmerged. Active official-4 index, official Male,
+official Female and cloud master files remain untouched.
+
+## 2026-11-12: V4 conditional joints — user's shoulder / pelvis feedback
+
+**User diagnosis:** Raising both arms left visible shoulder pieces and an unnatural pelvis band. V3's permanently drawn, parent-owned hidden caps were responsible for the increased skin volume; a dark horizontal torso/pelvis/thigh pigment transition in the static art also resembled an extra segment.
+
+**New conversation attachment:** `LGR-Nova-V4-Clean-Joints.zip` (male/female candidate JSON, 16 stress GIFs, Python/Pillow generator and 272-frame QA), **not checked into GitHub**.
+
+Changes, all experimental:
+- **Remove unconditional cap duplication in diagnostic rendering.** V4 starts with the master-owned slices only and adds a 1px joint connector *only if* pieces have actually separated. Fully enclosed pinholes between parent and child are closed from existing skin colours, without expanding external silhouettes. A counter-based audit reports 0 conditional connectors and 179 pinhole pixels across all 272 tested frames.
+- A **single, global master-art revision**, applied to both genders and each direction: soften the lower torso border and taper the pelvis/upper-thigh start. 97 pixels differ on the Female SE *rest master* vs V3, by design; all actions reuse this same edited master (no pose-specific redraw).
+- Final raise-hands angle changed from 165° to 140° in motion **data only** to keep hands/arms clear of the head. Motion IDs now begin `nova_v4_` to prevent overwriting earlier experimental tracks.
+- Candidate native `capRadius` is 0 on all child joints to avoid asking the legacy LGR engine to bake permanent hidden caps.
+
+**Pillow diagnostic QA:** 272 frames, 2 genders × 4 views × 6 actions; 0 disconnected components; 0 unresolved joint pairs; at most 5 pixels of per-frame enclosed-pinhole correction; 16 animated previews. The ZIP was checksum-tested using Node's native `JSON.stringify`/SHA-256 for each gender and has structurally valid 64×112 masks.
+
+**Important:** The current browser `LGR1Raster` includes its *own* joint-fill pass that does **not yet** implement V4's conditional closure. Therefore this result is **not native parity** and must NOT be represented as gameplay-ready/no-artefact in Mahluk Hidup. A safe next task is to port this conditional seam strategy into an isolated native test rasterizer and compare all 272 frames before integrating production. Bedroom floor/seat alignment and sleep bounds still need tests.
+
+The official male/female base packages, active index, cloud masters and gameplay runtime remain untouched. PR stays draft.
+
+## 2026-11-12: V5 reference-guided cutout prototype
+
+The owner supplied a modular 2D character illustration showing a complete
+standing character beside separated head/neck, upper/lower arms, upper/lower
+legs, hands, shoes and facial-expression pieces. Treat it as a **rig anatomy and
+authoring workflow reference**, not art to trace or ship.
+
+**Conversation artifact:** `LGR-Nova-V5-Reference-Rig.zip`. This ZIP is not
+committed into the branch. It includes the Python/Pillow source generator,
+four direction source PNGs/masks, experimental JSON packages for Male/Female,
+an LGR motion library with 6 clips, 16 diagnostic GIFs, a pivot map,
+V4-to-V5 still comparison and a frame-level QA report.
+
+V5 master changes are authored once, in Python at 1x resolution:
+- More shaped deltoids, tapered upper arms and forearms
+- A hidden neck insertion to avoid a disconnected head during idle bob
+- Revised 11-part hip/pelvis/thigh geometry without an artificial band
+- Independent shin-to-thigh cutouts; shoe and hand shapes remain
+  attached to shin and forearm respectively for **LGR-1 compatibility**
+- Four directions, all skins keyed with canonical six LGR colours
+- Joint pivots adjusted to V5 anatomy, no animation-specific repaints
+
+**272-frame Pillow diagnostic QA:** zero disconnected frames *after*
+removing 12 isolated single-pixel rotation-sampling artifacts with the same
+general cleanup on every pose; zero unresolved parent-child joints; at most
+5 procedural seam pixels added per frame. Male and Female JSON checksums
+independently verify with Node JSON.stringify SHA256.
+
+**Important:** the reference depicts independently articulated wrists,
+ankles and potentially a neck. LGR-1 currently has **11 bones** and cannot
+provide separate hand/foot gesture controls. Fully matching the reference
+would require a new versioned bone hierarchy, IK, and asset/engine migration
+without overwriting existing LGR-1 saves. Candidate V5 is **not** a claimed
+complete answer to this. No live game or official base was modified.
+
+## 2026-11-12: 16-part prototype formally REJECTED after owner review
+
+Owner inspected the actual animation and reported that it was visually
+worse, with holes. This assessment takes precedence over earlier claims
+based on neutral-pose pixel identity. **Do not promote the 16-part demo.**
+
+Independent QA now samples 11 timesteps (0.0–1.0) across five actions,
+four directions and two genders (**440 total actual frames**) using the
+unchanged V6 Pillow diagnostic renderer. Results:
+- **54 / 440** frames contain disconnected opaque islands (4-connectivity).
+- **64 detached pixels** total across sampled frames; worst frame 3.
+- Neutral-pose equality is *not* evidence of motion quality.
+- These metrics do not quantify ugly silhouettes, joints that appear
+  anatomically wrong while still connected, or native LGR1Raster output.
+
+Root implementation defect: `build_lgr_nova_v6_demo.py` first flattens V5
+body art and then repartitions alpha by absolute scanline
+(`head y>=46`, `forearms y>=74`, `shins y>=100`) with no complete,
+individually drawn/underpainted anatomical sprites at neck, wrist and ankle.
+A flat mask cannot invent the hidden overlapping geometry that is revealed
+by rotation. Automatically increasing bone count was not the right next step.
+
+Required corrective architecture: author one canonical, complete pixel
+sprite **per anatomical part and direction**, with hidden underlaps and
+deliberate parent-child joint ownership at rest. Add forward-kinematics
+and pose-space overlap guards driven by these parts; introduce separate
+hand/foot/neck bones only after the 11-part baseline passes visual stress
+tests with no orphan islands, clipping, detached shoulders, pelvis bands
+or outline bulges. All pose animation remains numeric; never redraw
+per animation. Run exact native JS visual QA before any catalog promotion.
+
+Audit script/artifacts exist in the conversation:
+`LGR_Nova_Lab/audit_v6_rejected.py`,
+`v6_16part_demo/qa/v6_rejection_report.json`,
+`v6_16part_demo/preview/LGR-V6-FAILED-AUDIT.png`.
+The production LGR masters, GitHub Pages and Drive are unchanged.
+
+## 2026-11-12: Concrete 11-part repair generated (after rejected 16-part)
+
+The owner explicitly rejected further Q&A and asked for an immediate fix.
+`LGR-Nova-11-Fix-Review.zip` was generated and delivered in the conversation.
+It contains `build_lgr_nova_11_fixed.py`, both 11-part JSON candidate
+masters, unflattened fixed per-part PNG sprites for 2 genders × 4 directions,
+one shared numeric motion library, 16 review GIFs, V5-vs-11FIX comparison
+contact sheet, SHA-256 manifest and full Python QA.
+
+**Actual geometry change (single master, not per-pose redraw):**
+- Rebalanced head/torso/leg proportions and moved shoulder, waist, pelvis,
+  elbow, hip and knee pivots to match the new authored pixels.
+- All 11 parts are authored with reusable hidden joint artwork before
+  flattening to the backward-compatible LGR1 JSON.
+- Near upper arm is tucked behind the torso; thighs are behind pelvis.
+  One fixed draw order is used for every pose.
+- Head counterrotation on sleeping is reset to 0° as *motion data*, to
+  prevent a narrow neck seam at the fully horizontal pose.
+- No new wrist/ankle/neck part was introduced.
+
+**QA**: 272 Pillow diagnostic frames (Male/Female, SE/SW/NE/NW,
+6 actions) yielded 0 disconnected components after removing eight
+isolated one-pixel rotation-sampling artifacts. 110 fully enclosed
+single-pixel pinholes were filled using existing skin colours. Both
+candidate master JSON checksums verified with Node `JSON.stringify`.
+241/272 frames still have larger enclosed blank regions (some natural
+limb negative space; not all manually inspected). Sleeping extends
+beyond 64px width. This **is not** LGR1Raster parity.
+
+**Blocking native integration:** The stock master format flattens
+per-part art into one body PNG + ownership mask, losing hidden
+underpaint. V7 diagnostic renders from the 11 independent part PNGs.
+A versioned per-part runtime loader + native tests are needed before
+the proposed master can look exactly as previewed in Mahluk Hidup.
+The PR remains draft; official bases and game are unchanged.

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LGR Nova Lab · read-only comparison</title>
+<style>
+:root{font:13px Tahoma,Arial,sans-serif;color:#18304b;background:#b7c9e4}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#7092c7,#d7e3f5 55%,#f5f4f0);min-height:100dvh}
+main{max-width:960px;padding:12px;margin:auto}h1{font-size:15px;margin:0}.window{background:#e5edf8;border:2px solid;border-color:#fff #788caa #788caa #fff;box-shadow:3px 4px 0 #6f83a5}
+header{background:linear-gradient(90deg,#17428b,#3189ce);padding:12px;color:white}
+header p{margin:6px 0 0}.body{padding:14px}.safe{padding:9px;background:#f1f8f3;border:1px solid #86ac9f}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}label{display:grid;gap:5px;flex:1 1 150px;font-weight:bold}
+select,input,button{font:inherit;padding:9px;border:2px solid;border-color:#fff #7789a4 #7789a4 #fff;background:#f8fafc;color:#263d5c;min-height:37px}
+button{cursor:pointer}button:disabled{cursor:default;opacity:.6}input[type=file]{width:100%;font-weight:normal}
+.panes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pane{background:#f4f7fc;border:1px solid #8c9fbc}.pane h2{font-size:13px;background:#244f91;color:white;margin:0;padding:10px}
+.pane.candidate h2{background:#287b70}.stage{min-height:355px;display:grid;place-items:center;background:repeating-conic-gradient(#e9eff7 0 25%,#dce7f5 0 50%) 50%/32px 32px}
+canvas{width:224px;max-width:96%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
+small,#status{line-height:1.5}#status{padding:12px;background:#f5f7fa;border:1px inset #b8c4d4;margin-top:12px}
+.scrub{width:100%}footer{font-size:11px;color:#566b89;margin:16px 0}
+@media(max-width:620px){.panes{grid-template-columns:1fr}.stage{min-height:270px}canvas{width:176px}}
+</style></head><body><main><section class="window">
+<header><h1>▣ LGR NOVA · FOUR-DIRECTION COMPARE LAB</h1><p>Native LGR1Raster · 11 body parts · read-only · no Drive/localStorage writes</p></header>
+<div class="body"><p class="safe">Safety: Import JSON untuk preview di memori saja. Tidak mengganti official Genesis Male/Female atau menulis ke Google Drive. JSON harus berasal dari paket Nova yang disediakan.</p>
+<div class="controls">
+<label>Nova candidate JSON<input type="file" id="candidateFile" accept=".json,application/json"></label>
+<label>Nova motion JSON (optional)<input type="file" id="motionFile" accept=".json,application/json"></label>
+</div>
+<div class="controls">
+<label>Gender<select id="gender"><option value="male">Male</option><option value="female">Female</option></select></label>
+<label>Direction<select id="direction"><option value="se">SE ↘</option><option value="sw">SW ↙</option><option value="ne">NE ↗</option><option value="nw">NW ↖</option></select></label>
+<label>Motion<select id="motion"><option value="rest">Rest / Neutral</option></select></label>
+<label>Skin tone<select id="skin"><option value="light">Light</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label>
+</div>
+<div class="panes"><section class="pane"><h2 id="officialLabel">OFFICIAL GENESIS</h2><div class="stage"><canvas width="64" height="112" id="official"></canvas></div></section>
+<section class="pane candidate"><h2 id="candidateLabel">NOVA CANDIDATE</h2><div class="stage"><canvas width="64" height="112" id="candidate"></canvas></div></section></div>
+<div class="controls"><button id="play" aria-pressed="true">Ⅱ Pause</button><label>Timeline<input type="range" id="scrub" class="scrub" min="0" max="0" value="0"></label><strong id="frameInfo">REST</strong></div>
+<div id="status" role="status">Load official renderer… lalu pilih file candidate LGR Nova dari ZIP.</div>
+<footer>Preview ini menggunakan engine LGR yang sama dengan Mahluk Hidup, bukan animasi GIF yang dibake. Kostum dan Emosi belum dilibatkan. Desain karakter memerlukan persetujuan Lafrich sebelum dijadikan official master.</footer>
+</div></section></main>
+<script src="./lafrich-puppet-core.js"></script>
+<script src="./lgr1-raster.js"></script>
+<script src="./lafrich-puppet-renderer.js"></script>
+<script src="./lgr1-motion.js"></script>
+<script src="./lgr-skin.js"></script>
+<script src="./lgr-actor.js"></script>
+<script>
+(()=>{'use strict';
+const C=window.LafrichPuppetCore,R=window.LafrichPuppetRenderer,M=window.LGR1Motion,A=window.LGRActor,S=window.LGRSkin;
+const el=id=>document.getElementById(id),candidates={},prep=new Map();
+let gender='male',direction='se',tone='light',library=null,motion=null,frame=0,playing=true,last=performance.now(),elapsed=0,revision=0,busy=false;
+const info=(text,error=false)=>{el('status').textContent=text;el('status').style.color=error?'#ad2424':'#24517b'};
+const bytesToHex=bytes=>[...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function sha256(s){return bytesToHex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))}
+async function readJSON(file){if(!file)throw Error('Pilih file JSON');return JSON.parse(await file.text())}
+function image(url){return new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(Error('PNG invalid'));i.src=url})}
+async function displayMaster(rig){
+ const result={...rig,layers:{}};
+ for(const [layer,dirs] of Object.entries(rig.layers||{})){
+  result.layers[layer]={};
+  for(const [d,url] of Object.entries(dirs||{})){
+   const img=await image(url),canvas=document.createElement('canvas');
+   if(img.naturalWidth!==64||img.naturalHeight!==112)throw Error('Layer '+layer+'/'+d+' bukan 64×112');
+   canvas.width=64;canvas.height=112;
+   const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
+   const data=ctx.getImageData(0,0,64,112);S.fromKey(data.data,S.rampFor(tone));ctx.putImageData(data,0,0);
+   result.layers[layer][d]=canvas.toDataURL('image/png');
+  }
+ }
+ return C.validateMaster(result);
+}
+async function prepared(which,d,g,skin){
+ const id=which+'|'+d+'|'+g+'|'+skin;
+ if(prep.has(id))return prep.get(id);
+ const p=(async()=>{
+  const master=which==='official'?await A.master(g,skin):await displayMaster(candidates[g].rig);
+  const prepared=await R.prepare(master,null,d);
+  return {master,prepared};
+ })();prep.set(id,p);p.catch(()=>prep.delete(id));return p;
+}
+async function loadCandidate(file){
+ const pkg=await readJSON(file);
+ if(pkg.format!=='lafrich-genesis-base-v1'||!['male','female'].includes(pkg.gender))throw Error('Harus JSON Genesis Base male/female');
+ if(pkg.rigSha256!==await sha256(JSON.stringify(pkg.rig)))throw Error('Checksum rig invalid');
+ const rig=C.validateMaster(pkg.rig);if(rig.gender!==pkg.gender)throw Error('Gender tidak sesuai');
+ candidates[pkg.gender]={rig,filename:file.name};
+ prep.clear();gender=pkg.gender;el('gender').value=gender;revision++;
+ info(file.name+' diverifikasi. Menyiapkan native renderer LGR…');
+}
+function resetMotion(){
+ const selected=el('motion').value,all=library?.motions||[];
+ el('motion').replaceChildren(...[{id:'rest',name:'Rest / Neutral'},...all].map(m=>{
+  const option=document.createElement('option');option.value=m.id;option.textContent=m.name;return option;
+ }));
+ el('motion').value=all.some(x=>x.id===selected)?selected:'rest';
+ motion=all.find(m=>m.id===el('motion').value)||null;frame=0;elapsed=0;last=performance.now();scrubUpdate();
+}
+function scrubUpdate(){
+ el('scrub').max=motion?motion.frames.length-1:0;el('scrub').value=frame;el('scrub').disabled=!motion;
+ el('frameInfo').textContent=motion?(frame+1)+' / '+motion.frames.length:'REST';
+}
+function redraw(){revision++;void paint()}
+async function paint(){
+ if(busy)return;busy=true;const active=revision,g=gender,d=direction,s=tone,m=motion,f=frame;
+ try{
+  const op=await prepared('official',d,g,s);
+  let cp=null;if(candidates[g])cp=await prepared('candidate',d,g,s);
+  if(active!==revision)return;
+  for(const [kind,data] of [['official',op],['candidate',cp]]){
+   const ctx=el(kind).getContext('2d');ctx.clearRect(0,0,64,112);
+   if(!data)continue;
+   const result=m?A.poseOf(data.master,library,m,f,d):{pose:C.blankPose(),order:A.baseOrder(data.master,d)};
+   const canvas=R.render(data.prepared,result.pose,{order:result.order});
+   ctx.drawImage(canvas,0,0);
+  }
+  el('officialLabel').textContent='OFFICIAL · '+g.toUpperCase();
+  el('candidateLabel').textContent=cp?'NOVA · '+g.toUpperCase():'NOVA · pilih JSON '+g;
+ }catch(err){info('Render error: '+err.message,true)}finally{busy=false;if(active!==revision)void paint()}
+}
+el('candidateFile').addEventListener('change',async e=>{try{await loadCandidate(e.target.files[0]);redraw()}catch(err){info(err.message,true)}});
+el('motionFile').addEventListener('change',async e=>{try{const obj=await readJSON(e.target.files[0]);library=M.validateLibrary(obj);resetMotion();redraw()}catch(err){info(err.message,true)}});
+el('gender').addEventListener('change',e=>{gender=e.target.value;redraw()});
+el('direction').addEventListener('change',e=>{direction=e.target.value;redraw()});
+el('skin').addEventListener('change',e=>{tone=e.target.value;prep.clear();redraw()});
+el('motion').addEventListener('change',e=>{motion=library.motions.find(m=>m.id===e.target.value)||null;frame=0;elapsed=0;scrubUpdate();redraw()});
+el('scrub').addEventListener('input',e=>{frame=Number(e.target.value);elapsed=0;scrubUpdate();redraw()});
+el('play').addEventListener('click',()=>{playing=!playing;el('play').textContent=playing?'Ⅱ Pause':'▶ Play';el('play').setAttribute('aria-pressed',String(playing));last=performance.now()});
+function tick(now){
+ const delta=Math.min(120,now-last);last=now;
+ if(playing&&motion&&!busy){
+  elapsed+=delta;const cap=motion.frames[frame].ms;
+  if(elapsed>=cap){elapsed-=cap;frame=(frame+1)%motion.frames.length;scrubUpdate();redraw()}
+ }
+ requestAnimationFrame(tick);
+}
+(async()=>{try{library=await A.motions();resetMotion();redraw();info('Official siap. Pilih candidate JSON male/female; optional: import motions JSON Nova.')}catch(err){info(err.message,true)}})();
+requestAnimationFrame(tick);
+})();
+</script></body></html>
