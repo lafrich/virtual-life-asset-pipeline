@@ -273,6 +273,64 @@ function wire(){
  root.addEventListener("pagehide",()=>{try{A()?.saveOutfitDraft()}catch(e){console.warn(e)}});
  attachDrag();
 }
+/* Workbench can also run from repository /site in local QA.
+ * Pages publishes generated approved v2 masters; source dev uses exact
+ * immutable artist-reference records. Pants/shoes C-KEY conversion mirrors
+ * tools/build_lgr_wardrobe_reference_v2.py without changing alpha or XY.
+ */
+async function fallbackArtistSource(e){
+ const response=await fetch("./media/lgr1/wardrobe-artist-reference/"+e.id+".json",{cache:"no-cache"});
+ if(!response.ok)throw Error("Patokan asli "+e.id+" tidak ditemukan (HTTP "+response.status+")");
+ const source=await response.json();
+ if(source.format!=="lafrich-wardrobe-artist-reference-v1"||source.id!==e.id||
+  source.gender!==e.gender||source.group!==e.group||source.variant!==e.variant||
+  source.approvedReference!==true||!source.files)
+  throw Error("Patokan asli tidak cocok: "+e.id);
+ const K=root.LGRWear.K,files={};
+ const remap=e.group==="pants"?["P1","P2","P3","P4","P4"]:
+  e.group==="shoes"?["S0","S1","S2","S3","S3"]:null;
+ const rgb=s=>[parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16)];
+ for(const [name,uri] of Object.entries(source.files)){
+  if(!name.startsWith(e.group+"/"))throw Error("Incorrect category path: "+name);
+  if(!remap){files[name]=uri;continue}
+  const im=await new Promise((resolve,reject)=>{
+   const p=new Image();p.onload=()=>resolve(p);
+   p.onerror=()=>reject(Error("PNG reference invalid: "+name));p.src=uri;
+  });
+  const c=canvas(256,112),g=c.getContext("2d",{willReadFrequently:true});
+  if(im.width!==256||im.height!==112)throw Error("Invalid original strip size");
+  g.drawImage(im,0,0);
+  const data=g.getImageData(0,0,256,112),keyMap=new Map();
+  for(let i=0;i<5;i++)keyMap.set(rgb(K["C"+(i+1)]).join(","),rgb(K[remap[i]]));
+  for(let i=0;i<data.data.length;i+=4){
+   if(!data.data[i+3])continue;
+   if(data.data[i+3]!==255)throw Error("Unexpected anti-aliased pixel");
+   const old=[data.data[i],data.data[i+1],data.data[i+2]].join(",");
+   const next=keyMap.get(old);if(!next)throw Error("Unknown KEY "+old+" in "+e.id);
+   data.data[i]=next[0];data.data[i+1]=next[1];data.data[i+2]=next[2];
+  }
+  g.putImageData(data,0,0);files[name]=c.toDataURL("image/png");
+ }
+ return {format:"lgr1-pakaian-v2",approved:true,id:e.id,gender:e.gender,
+  group:e.group,variant:e.variant,baseVersion:source.baseVersion,
+  baseRigSha256:source.baseRigSha256,files};
+}
+async function loadArtistBase(e){
+ // Prefer the exact generated game v2 on Pages; local developer site can
+ // rebuild from the same untouched artist original JSON, only recolouring keys.
+ let master=null;
+ try{
+  const response=await fetch("./"+e.path,{cache:"no-cache"});
+  if(response.ok)master=await response.json();
+ }catch(err){console.warn("Published wardrobe baseline unavailable:",err)}
+ if(!master)master=await fallbackArtistSource(e);
+ if(master.format!=="lgr1-pakaian-v2"||master.id!==e.id||master.approved!==true||
+  master.group!==e.group||master.gender!==e.gender||master.variant!==e.variant||!master.files)
+  throw Error("BASE "+e.id+" tidak cocok dengan patokan asli");
+ return {id:e.id,gender:e.gender,group:e.group,variant:e.variant,
+  baseVersion:master.baseVersion,baseRigSha256:master.baseRigSha256,
+  files:master.files,sourceBaseline:e.id};
+}
 async function init(){
  try{
   setStatus("Memuat enam patokan asli Lafrich dan Genesis resmi…");
@@ -284,17 +342,7 @@ async function init(){
    index.dirs?.join()!==DIRS.join()||index.entries.some(e=>!expected.includes(e.id))||
    new Set(index.entries.map(e=>e.id)).size!==6)
    throw Error("Hanya 6 BASE pakaian yang diizinkan; manifest tidak valid.");
-  const variants=await Promise.all(index.entries.map(async e=>{
-   const resp=await fetch("./"+e.path,{cache:"no-cache"});
-   if(!resp.ok)throw Error("BASE "+e.id+" gagal dimuat (HTTP "+resp.status+")");
-   const master=await resp.json();
-   if(master.format!=="lgr1-pakaian-v2"||master.id!==e.id||master.approved!==true||
-    master.group!==e.group||master.gender!==e.gender||master.variant!==e.variant||!master.files)
-    throw Error("BASE "+e.id+" tidak cocok dengan patokan asli");
-   return {id:e.id,gender:e.gender,group:e.group,variant:e.variant,
-    baseVersion:master.baseVersion,baseRigSha256:master.baseRigSha256,
-    files:master.files,sourceBaseline:e.id};
-  }));
+  const variants=await Promise.all(index.entries.map(loadArtistBase));
   catalog={...index,variants};
   const bases=await root.LGRActor.loadBases();
   const good=warnRig(bases),added=ensureSeeds();
