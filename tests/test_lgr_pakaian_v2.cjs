@@ -17,7 +17,7 @@ test("retired format and mismatched gender/path/rig cannot be published",()=>{
  {...base,baseRigSha256:""},
  {...base,id:"male_top_shirt"},
  {...base,files:{"top/tee_f":png}},
- {...base,files:{"top/tee":png.replace(/.$/,"X")}},
+ {...base,files:{"top/tee":"data:image/png;base64,AAAAAAAAAAAA"}},
  ])assert.throws(()=>DB.validate("pakaian",obj));
 });
 test("wardrobe kind exists as an independent game database",()=>{
