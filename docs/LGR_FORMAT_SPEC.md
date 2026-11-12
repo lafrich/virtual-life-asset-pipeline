@@ -1,5 +1,8 @@
 # LGR-1 — Lafrich Genesis Rig
 
+> **CURRENT CHARACTER BRIEF (12 Nov 2026):** For new LGR characters, use [LGR — Panduan Brief Karakter (Current)](LGR_CHARACTER_BRIEF_CURRENT.md). Active Genesis registry is **official-9**: Male uses **official-8**, Female uses **official-9**; clothing uses **approved Pakaian v2** compatible with the active base version **and** rig SHA. Historical sections below describe the design and evolution of LGR and may mention earlier editor routes or original frozen bases. Do not use those historical details to override the live registry.
+
+
 **Canonical name:** Lafrich Genesis Rig, version 1 (**LGR-1**).
 
 **Technical category:** 2D skeletal cutout pixel rig (2.5D / four-direction isometric puppet).
