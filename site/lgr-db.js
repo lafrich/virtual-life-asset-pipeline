@@ -25,7 +25,8 @@ const FOLDER_MIME="application/vnd.google-apps.folder";
 const BASE_PATH=Object.freeze(["Membangun","Mahluk Hidup","Database"]);
 const KINDS=Object.freeze({
  bergerak:Object.freeze({folder:"Bergerak",format:"lgr1-bergerak-v1"}),
- beraksi:Object.freeze({folder:"Beraksi",format:"lgr1-beraksi-v1"})});
+ beraksi:Object.freeze({folder:"Beraksi",format:"lgr1-beraksi-v1"}),
+ pakaian:Object.freeze({folder:"Pakaian",format:"lgr1-pakaian-v2"})});
 const BACKUP_FOLDER="Backup",FILE_SCHEMA="lgr1-db-file-v1",CACHE_KEY="lgr1-db-cache-v1",TOKEN_KEY="lgr1-db-session-v1";
 const MAX_FRAMES=60,MAX_ACTORS=8,MAX_TRACK=24,MAX_EMOSI=24,MAX_SCENE_MS=600000;
 const DIRS=["se","sw","ne","nw"];
@@ -116,9 +117,50 @@ function validateBeraksi(e){
   stage:{units:"px",anchor:"feet",footX:32,footY:101,width:int(e.stage?.width,64,1024,256),height:int(e.stage?.height,64,512,160)},
   actors};
 }
+/* PAKAIAN v2 · approved, 4-view KEY-colour master bound to one Genesis rig.
+ * No legacy V6P assets are read by this kind; source PNGs remain reference only.
+ */
+function validatePakaian(e){
+ assert(e&&e.format===KINDS.pakaian.format,"Not an lgr1-pakaian-v2 entry");
+ const gender=e.gender,group=e.group,variant=String(e.variant||"");
+ assert(["male","female"].includes(gender),"Pakaian gender invalid");
+ assert(["top","pants","shoes","hair","glasses","facial"].includes(group),"Pakaian group invalid");
+ assert(/^[a-z][a-z0-9_]{0,25}$/.test(variant),"Pakaian variant invalid");
+ const id=gender+"_"+group+"_"+variant;
+ assert(e.id===id&&ID_RE.test(id),"Pakaian id must match gender_group_variant");
+ assert(/^[a-f0-9]{64}$/.test(String(e.baseRigSha256||"")),"Pakaian must bind to official Genesis rig SHA256");
+ assert(e.baseVersion&&/^official-[0-9]+$/.test(e.baseVersion),"Pakaian baseVersion required");
+ const files=e.files;
+ assert(files&&typeof files==="object"&&!Array.isArray(files),"Pakaian files required");
+ const names=Object.keys(files);
+ assert(names.length>=1&&names.length<=2,"Pakaian requires 1–2 keyed sprite strips");
+ let bytes=0;
+ for(const name of names){
+  const [cat,suffix,...rest]=name.split("/");
+  assert(!rest.length&&cat===group&&/^[a-z0-9_]+$/.test(suffix),"Pakaian file category invalid: "+name);
+  const allow=(group==="hair"?[variant+"_front",variant+"_back"]:
+    group==="top"?[variant+(gender==="female"?"_f":""),variant+"_back"+(gender==="female"?"_f":"")]:
+    [variant+(["pants","shoes"].includes(group)&&gender==="female"?"_f":"")]);
+  assert(allow.includes(suffix),"Unexpected Pakaian sprite: "+name);
+  const uri=files[name];assert(typeof uri==="string"&&uri.startsWith("data:image/png;base64,")&&uri.length<150000,"Pakaian PNG too large or invalid");
+  const s=uri.slice(22),raw=typeof atob==="function"?atob(s):Buffer.from(s,"base64").toString("binary");
+  assert(raw.length>24&&raw.slice(0,8)==="\x89PNG\r\n\x1a\n","Pakaian expects PNG bytes");
+  const u32=i=>(raw.charCodeAt(i)*16777216)+(raw.charCodeAt(i+1)<<16)+(raw.charCodeAt(i+2)<<8)+raw.charCodeAt(i+3);
+  assert(u32(16)===256&&u32(20)===112,"Pakaian strip must be 256×112 (4×64×112)");
+  bytes+=uri.length;
+ }
+ assert(bytes<300000,"Pakaian over size limit");
+ assert(files[group+"/"+(group==="hair"?variant+"_front":variant+(["top","pants","shoes"].includes(group)&&gender==="female"?"_f":""))],
+   "Front/key sprite required");
+ return {format:KINDS.pakaian.format,schema:2,id,gender,group,variant,
+  name:str(e.name||variant,60),baseVersion:e.baseVersion,baseRigSha256:e.baseRigSha256,
+  files:{...files},note:str(e.note,500),approved:true,
+  rev:int(e.rev,1,1e9,1),updated:validDate(e.updated),created:validDate(e.created||e.updated)};
+}
 function validate(kind,e,poses){
  if(kind==="bergerak")return validateBergerak(e,poses);
  if(kind==="beraksi")return validateBeraksi(e);
+ if(kind==="pakaian")return validatePakaian(e);
  throw Error("Unknown LGR database kind "+kind);
 }
 /* ---------------- playback helpers (shared with the game) ---------------- */
@@ -133,10 +175,10 @@ function emosiAt(actor,t){let cur=null;for(const f of actor.emosi||[])if(t>=f.st
 function drawOrder(scene){return scene.actors.map((a,i)=>({a,i})).sort((p,q)=>p.a.layer-q.a.layer||p.i-q.i).map(p=>p.a)}
 /* ---------------- local cache ---------------- */
 function storage(){try{return root?.localStorage||null}catch{return null}}
-function emptyCache(){return {format:CACHE_KEY,syncedAt:null,kinds:{bergerak:{},beraksi:{}}}}
+function emptyCache(){return {format:CACHE_KEY,syncedAt:null,kinds:{bergerak:{},beraksi:{},pakaian:{}}}}
 function readCache(){
  try{const c=JSON.parse(storage()?.getItem(CACHE_KEY)||"null");
-  if(c?.format===CACHE_KEY&&c.kinds)return {...emptyCache(),...c,kinds:{bergerak:c.kinds.bergerak||{},beraksi:c.kinds.beraksi||{}}}}catch{}
+  if(c?.format===CACHE_KEY&&c.kinds)return {...emptyCache(),...c,kinds:{bergerak:c.kinds.bergerak||{},beraksi:c.kinds.beraksi||{},pakaian:c.kinds.pakaian||{}}}}catch{}
  return emptyCache();
 }
 function writeCache(c){try{storage()?.setItem(CACHE_KEY,JSON.stringify(c));return true}catch{return false}}
@@ -411,7 +453,7 @@ async function remove(kind,id,opts={}){
 }
 
 function exportAll(){const c=readCache();return {format:"lgr1-db-export-v1",exported:new Date().toISOString(),
- bergerak:all("bergerak"),beraksi:all("beraksi"),syncedAt:c.syncedAt}}
+ bergerak:all("bergerak"),beraksi:all("beraksi"),pakaian:all("pakaian"),syncedAt:c.syncedAt}}
 /* ---------------- motion lookup for scenes / game ---------------- */
 let builtin=null;
 async function loadBuiltin(url){
@@ -431,7 +473,7 @@ function resolveMotion(ref){
 async function ready(opts={}){
  await loadBuiltin(opts.motionsUrl);
  if(opts.sync!==false&&(connected()||restoreSession()))try{await sync()}catch{}
- return {bergerak:all("bergerak").length,beraksi:all("beraksi").length,syncedAt:readCache().syncedAt};
+ return {bergerak:all("bergerak").length,beraksi:all("beraksi").length,pakaian:all("pakaian").length,syncedAt:readCache().syncedAt};
 }
 // validated, playable lgr1-motion (LGR1Motion.framePose/frameIndexAt work on it)
 function motion(ref){
@@ -443,7 +485,7 @@ function scene(id){return get("beraksi",id)}
 // fires when another tab (e.g. Mahluk Hidup) saved/synced the shared cache
 function onChange(cb){const h=e=>{if(e.key===CACHE_KEY)cb()};root?.addEventListener?.("storage",h);return()=>root?.removeEventListener?.("storage",h)}
 return Object.freeze({VERSION,ready,motion,scene,onChange,CLIENT,SCOPE,BASE_PATH,KINDS,BACKUP_FOLDER,FILE_SCHEMA,CACHE_KEY,MAX_FRAMES,MAX_ACTORS,TONES,
- slug,canonical,sha256,validate,validateBergerak,validateBeraksi,validateMotionLong,decide,
+ slug,canonical,sha256,validate,validateBergerak,validateBeraksi,validatePakaian,validateMotionLong,decide,
  sceneDuration,trackAt,emosiAt,drawOrder,
  connect,connected,disconnect,useToken,restoreSession,setFetch,onStatus,get state(){return state},
  sync,scheduleSync,SAVE_DEBOUNCE_MS,syncRuns:()=>syncRunCount,
