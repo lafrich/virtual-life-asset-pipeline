@@ -64,7 +64,10 @@ function setShadow(patch){
 function drawShadow(g,shadow,scale=1){
  if(!shadow.enabled)return;
  g.fillStyle="rgba(0,0,0,"+(56/255)+")";
- g.beginPath();g.ellipse((32+shadow.x)*scale,(101+shadow.y)*scale,shadow.rx*scale,shadow.ry*scale,0,0,Math.PI*2);g.fill();
+ const cx=32+shadow.x,cy=101+shadow.y;
+ for(let y=Math.max(0,Math.floor(cy-shadow.ry));y<Math.min(112,Math.ceil(cy+shadow.ry));y++)
+  for(let x=Math.max(0,Math.floor(cx-shadow.rx));x<Math.min(64,Math.ceil(cx+shadow.rx));x++)
+   if(((x+.5-cx)/shadow.rx)**2+((y+.5-cy)/shadow.ry)**2<=1)g.fillRect(x*scale,y*scale,scale,scale);
 }
 function touch(){S.dirty=true;syncControls();scheduleRender(true)}
 /* ---- rendering ---- */
