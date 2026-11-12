@@ -93,7 +93,7 @@ async function render(){
    drawShadow(g,shadowValue(fi),Z);
   for(const [img,tint,alpha] of [[next,"#3a8f4a",.18],[prev,"#c0392b",.28]]){
    if(!img)continue;const t=document.createElement("canvas");t.width=64;t.height=112;const tg=t.getContext("2d");
-   tdrawShadow(g,shadowValue(i));g.drawImage(img,0,0);tg.globalCompositeOperation="source-atop";tg.fillStyle=tint;tg.globalAlpha=.55;tg.fillRect(0,0,64,112);
+   tg.drawImage(img,0,0);tg.globalCompositeOperation="source-atop";tg.fillStyle=tint;tg.globalAlpha=.55;tg.fillRect(0,0,64,112);
    g.globalAlpha=alpha;g.drawImage(t,0,0,64*Z,112*Z);g.globalAlpha=1;
   }
   g.drawImage(cur,0,0,64*Z,112*Z);
@@ -119,7 +119,7 @@ async function renderThumbs(mo){
  const box=S.ui.frames;const cells=[...box.querySelectorAll("canvas")];
  for(let i=0;i<cells.length&&i<mo.frames.length;i++){
   const c=cells[i],img=await frameImage(i,S.dir,mo).catch(()=>null);if(!img)continue;
-  const g=c.getContext("2d");g.clearRect(0,0,64,112);drawShadow(g,shadowValue(Math.min(S.frame,mo.frames.length-1)));g.drawImage(img,0,0);
+  const g=c.getContext("2d");g.clearRect(0,0,64,112);drawShadow(g,shadowValue(i));g.drawImage(img,0,0);
  }
  for(const d of DIRS){
   const c=S.ui.views[d],img=await frameImage(Math.min(S.frame,mo.frames.length-1),d,mo).catch(()=>null);if(!img)continue;
