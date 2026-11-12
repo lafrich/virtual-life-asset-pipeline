@@ -7,9 +7,10 @@ const shell=fs.readFileSync(site+"mahluk-hidup-shell.js","utf8");
 const editor=fs.readFileSync(site+"mahluk-pakaian.js","utf8");
 const css=fs.readFileSync(site+"mahluk-pakaian.css","utf8");
 const stock=JSON.parse(fs.readFileSync(site+"media/lgr1/mh-wear/index.json","utf8"));
-assert.ok(html.includes('id="nav-pakaian"')&&html.includes('id="pakaianpanel"'));
-assert.ok(html.includes('./mahluk-pakaian.js')&&html.includes('./mahluk-pakaian.css'));
-assert.ok(shell.includes('pakaian:"pakaianpanel"')&&shell.includes('MahlukPakaian.init'));
+assert.ok(!html.includes('id="nav-pakaian"')&&!html.includes('id="pakaianpanel"'), 'Pakaian UI retired');
+assert.ok(!html.includes('./mahluk-pakaian.js')&&!html.includes('./mahluk-pakaian.css'), 'Pakaian scripts no longer loaded');
+assert.ok(!shell.includes('MahlukPakaian.init')&&!shell.includes('nav-pakaian'), 'Pakaian cannot initialize');
+assert.ok(html.includes('./lgr-wear.js')&&html.includes('./lgr-db.js'), 'Keep existing outfit/wardrobe data consumption');
 new vm.Script(editor,{filename:"mahluk-pakaian.js"});
 assert.ok(editor.includes('lgr1-wardrobe-master-v1'));
 assert.ok(editor.includes('LGRWear.lookup')&&editor.includes('LGRWear.recolor'));
@@ -23,4 +24,4 @@ assert.ok(!editor.includes('DELETE /'),"Wardrobe editor must not delete Drive da
 for(const group of ["top","pants","shoes","hair","facial","glasses"])
  assert.ok(stock.items.some(p=>p.startsWith(group+"/")),"Missing source group "+group);
 assert.ok(css.includes("@media(max-width:650px)"));
-console.log("PAKAIAN.EXE static shell, syntax, stock catalog, and non-destructive authoring: OK");
+console.log("Pakaian UI retired; existing wardrobe code/data preserved: OK");
