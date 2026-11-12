@@ -1,0 +1,63 @@
+{
+  "format": "lgr-wardrobe-adjust-base-index-v1",
+  "draftOnly": true,
+  "baseVersion": "official-9",
+  "dirs": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "cell": [
+    64,
+    112
+  ],
+  "strip": [
+    256,
+    112
+  ],
+  "entries": [
+    {
+      "id": "male_top_tee",
+      "gender": "male",
+      "group": "top",
+      "variant": "tee",
+      "path": "media/lgr1/wardrobe-approved/male_top_tee.json"
+    },
+    {
+      "id": "male_pants_trousers",
+      "gender": "male",
+      "group": "pants",
+      "variant": "trousers",
+      "path": "media/lgr1/wardrobe-approved/male_pants_trousers.json"
+    },
+    {
+      "id": "male_shoes_shoes",
+      "gender": "male",
+      "group": "shoes",
+      "variant": "shoes",
+      "path": "media/lgr1/wardrobe-approved/male_shoes_shoes.json"
+    },
+    {
+      "id": "female_top_tee",
+      "gender": "female",
+      "group": "top",
+      "variant": "tee",
+      "path": "media/lgr1/wardrobe-approved/female_top_tee.json"
+    },
+    {
+      "id": "female_pants_trousers",
+      "gender": "female",
+      "group": "pants",
+      "variant": "trousers",
+      "path": "media/lgr1/wardrobe-approved/female_pants_trousers.json"
+    },
+    {
+      "id": "female_shoes_shoes",
+      "gender": "female",
+      "group": "shoes",
+      "variant": "shoes",
+      "path": "media/lgr1/wardrobe-approved/female_shoes_shoes.json"
+    }
+  ]
+}
