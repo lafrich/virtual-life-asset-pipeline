@@ -193,6 +193,7 @@ jobs:
           node tests/test_mahluk_pakaian.cjs
           node tests/test_pakaian_shared_pixel_editor.cjs
           node --test tests/test_lgr_pakaian_v2.cjs
+          node --test tests/test_lgr_wardrobe_reference_runtime.cjs
           node --test tests/test_lgr_wardrobe_cover.cjs
           node --test tests/test_lgr_wardrobe_reference_export.cjs
           node --check site/mahluk-pakaian-pixel.js
