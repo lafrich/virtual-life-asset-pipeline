@@ -58,3 +58,30 @@ local site or a preview deployment:
 - Obtain owner approval; only then prepare an independent catalog revision.
 
 **Current review status:** unapproved experimental, no live deployment.
+
+## 2026-11-12 follow-up: strict no-redraw stress test (LGR Nova V2)
+
+The owner ruled out **all action-specific painting**. The new V2 candidate
+rebuilds slimmer **static master art once** (per gender/per view), then uses
+those unchanged PNG layers, masks, slice ownership and pivots for every motion.
+
+In the separate conversation ZIP `LGR-Nova-V2-No-Redraw-Stress-Test.zip`:
+
+- Male/Female `lafrich-genesis-base-v1` candidates; four 64×112 views.
+- Six `lgr1-motion-v1` actions: idle, walk, sit-chair, sit-floor (legs
+  forward), sleep and both-hands-up. Every pose is numerical transforms only.
+- 4-view mask and source RGB audit, plus expanded 160×112 diagnostic GIFs.
+- Chair, floor sit and raise-hands final poses have **zero** opaque pixels
+  outside the original 64px-wide viewport in the Pillow diagnostic.
+- Lying pose loses about one-quarter of visible pixels if cropped to the
+  original 64px viewport. The **experiment-only**
+  `site/lgr-nova-wide-render.js` explores stitching translations of the
+  SAME pose into a wider frame; it does not change base pixels.
+- `tests/test_lgr_nova_wide.cjs` covers pure tiling and immutability math.
+
+**Do not merge as production-ready.** The Pillow diagnostic is not the native
+LGR1Raster implementation. JS/Python pixel parity, native browser joint seams,
+Emosi/wardrobe fitting, memory/performance and floor collision have not been
+verified. A rigid 11-part cutout cannot guarantee all possible animations
+without better IK, foot/hand articulations and procedural deformation. **No
+per-action redraw is required to pursue those engine upgrades.**
