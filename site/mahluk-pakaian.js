@@ -373,6 +373,47 @@ function pixelCommit(id,atlas,saveLocal){
  say(saveLocal?"Pixel Editor: perubahan 4 arah disimpan sebagai DRAFT. SAVE MASTER untuk game.":"Pixel Editor: perubahan 4 arah sudah diterapkan. SAVE MASTER untuk game.");
  return true;
 }
+/* Outfit Adjust (draft-only): nudge the selected 64×112 garment cell by
+ * integer pixels. There is no body or pivot modification. Uses the same
+ * per-view undo stack as the existing Pixel Editor.
+ */
+async function translateView(dx,dy){
+ dx=Math.trunc(Number(dx)||0);dy=Math.trunc(Number(dy)||0);
+ if(!dx&&!dy)return true;
+ if(Math.abs(dx)>64||Math.abs(dy)>112)throw Error("Offset is out of range");
+ const p=pathOf(),canvas=await buffer(p);
+ if(!canvas)throw Error("No garment sprite for "+p);
+ const original=getCell(canvas),after=new Uint8ClampedArray(original.data.length);
+ for(let y=0;y<112;y++)for(let x=0;x<64;x++){
+  const nx=x+dx,ny=y+dy;
+  if(nx<0||nx>=64||ny<0||ny>=112)continue;
+  const k=(y*64+x)*4,n=(ny*64+nx)*4;
+  after.set(original.data.subarray(k,k+4),n);
+ }
+ pushUndo(original);
+ original.data.set(after);putCell(canvas,original);
+ markDirty(p);void preview();
+ root.dispatchEvent(new CustomEvent("lgr-wardrobe-nudged",{detail:{id:kID(),dir:S.dir,side:S.side,dx,dy}}));
+ return true;
+}
+async function selectOutfit({gender,group,variant,dir,side}={}){
+ if(!["male","female"].includes(gender)||!["top","pants","shoes"].includes(group))
+  throw Error("Select valid Male/Female garment");
+ if(typeof variant!=="string"||!variant||!S.index?.items)throw Error("No outfit item");
+ if(S.changed.size)saveDraft(true);
+ S.gender=gender;S.group=group;S.variant=variant;S.dir=DIRS.includes(dir)?dir:S.dir;
+ S.side=side==="back"&&group==="top"?"back":"front";
+ if(!validPath(pathOf("front")))throw Error("Variant is not listed in stock: "+pathOf("front"));
+ $("pk-gender").value=gender;$("pk-group").value=group;refreshOptions();
+ $("pk-item").value=variant;$("pk-side").value=S.side;
+ $("pk-direction").textContent=S.dir.toUpperCase();
+ S.ink={top:"C2",pants:"P2",shoes:"S0"}[group];
+ updateBaseLabel();await openItem();
+ return {gender,group,variant,dir:S.dir,side:S.side};
+}
+function currentOutfit(){return {gender:S.gender,group:S.group,variant:S.variant,dir:S.dir,side:S.side,dirty:S.changed.size>0}}
+function saveOutfitDraft(){return saveDraft(false,false)}
+async function refreshOutfit(){await openItem()}
 /* Build an editable wardrobe template from the ACTIVE Genesis body, not old
  * garments. Cover ALL BODY is deliberate: it is a working mask to ERASE from
  * with the existing shared Genesis Pixel Editor, never an approved outfit.
@@ -477,5 +518,5 @@ async function init(panel){
   controls();updateBaseLabel();refreshOptions();S.ready=true;await openItem();say("PAKAIAN.EXE aktif · "+S.index.items.length+" bahan stok lama untuk direvisi · Genesis "+S.base+". Master baru format v2.");
  }catch(e){console.error(e);say("Gagal memuat PAKAIAN.EXE: "+e.message,true)}
 }
-root.MahlukPakaian=Object.freeze({init,pixelContext,pixelCommit,pixelSelectDirection,exportDraft});
+root.MahlukPakaian=Object.freeze({init,pixelContext,pixelCommit,pixelSelectDirection,exportDraft,translateView,selectOutfit,currentOutfit,saveOutfitDraft,refreshOutfit});
 })(window);
