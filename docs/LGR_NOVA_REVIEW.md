@@ -139,3 +139,38 @@ Changes, all experimental:
 **Important:** The current browser `LGR1Raster` includes its *own* joint-fill pass that does **not yet** implement V4's conditional closure. Therefore this result is **not native parity** and must NOT be represented as gameplay-ready/no-artefact in Mahluk Hidup. A safe next task is to port this conditional seam strategy into an isolated native test rasterizer and compare all 272 frames before integrating production. Bedroom floor/seat alignment and sleep bounds still need tests.
 
 The official male/female base packages, active index, cloud masters and gameplay runtime remain untouched. PR stays draft.
+
+## 2026-11-12: V5 reference-guided cutout prototype
+
+The owner supplied a modular 2D character illustration showing a complete
+standing character beside separated head/neck, upper/lower arms, upper/lower
+legs, hands, shoes and facial-expression pieces. Treat it as a **rig anatomy and
+authoring workflow reference**, not art to trace or ship.
+
+**Conversation artifact:** `LGR-Nova-V5-Reference-Rig.zip`. This ZIP is not
+committed into the branch. It includes the Python/Pillow source generator,
+four direction source PNGs/masks, experimental JSON packages for Male/Female,
+an LGR motion library with 6 clips, 16 diagnostic GIFs, a pivot map,
+V4-to-V5 still comparison and a frame-level QA report.
+
+V5 master changes are authored once, in Python at 1x resolution:
+- More shaped deltoids, tapered upper arms and forearms
+- A hidden neck insertion to avoid a disconnected head during idle bob
+- Revised 11-part hip/pelvis/thigh geometry without an artificial band
+- Independent shin-to-thigh cutouts; shoe and hand shapes remain
+  attached to shin and forearm respectively for **LGR-1 compatibility**
+- Four directions, all skins keyed with canonical six LGR colours
+- Joint pivots adjusted to V5 anatomy, no animation-specific repaints
+
+**272-frame Pillow diagnostic QA:** zero disconnected frames *after*
+removing 12 isolated single-pixel rotation-sampling artifacts with the same
+general cleanup on every pose; zero unresolved parent-child joints; at most
+5 procedural seam pixels added per frame. Male and Female JSON checksums
+independently verify with Node JSON.stringify SHA256.
+
+**Important:** the reference depicts independently articulated wrists,
+ankles and potentially a neck. LGR-1 currently has **11 bones** and cannot
+provide separate hand/foot gesture controls. Fully matching the reference
+would require a new versioned bone hierarchy, IK, and asset/engine migration
+without overwriting existing LGR-1 saves. Candidate V5 is **not** a claimed
+complete answer to this. No live game or official base was modified.
