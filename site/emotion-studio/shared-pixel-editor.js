@@ -546,7 +546,12 @@
    draw();zoomFit();updateHistory();
    canvas.focus({preventScroll:true});
   }
-  return {open,redraw:draw,setDirection:switchDirection,isOpen:()=>!overlay.hidden,close:()=>{overlay.hidden=true},getAtlas:()=>atlas,getDir:()=>DIR[dir],isDirty:()=>dirty};
+  // Non-destructive reference swap for wardrobe fitting. Changing a ghost
+  // never re-opens the canvas or modifies its four-direction RGBA atlas.
+  function setReferenceImages(images){
+   refs=images||null;ref=refs?.[DIR[dir]]||null;draw();
+  }
+  return {open,redraw:draw,setReferenceImages,setDirection:switchDirection,isOpen:()=>!overlay.hidden,close:()=>{overlay.hidden=true},getAtlas:()=>atlas,getDir:()=>DIR[dir],isDirty:()=>dirty};
  }
  return Object.freeze({W,H,DIR,rasterLine,flood,rgba,mirroredX,create});
 });
