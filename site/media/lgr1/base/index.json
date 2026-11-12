@@ -1,28 +1,28 @@
 {
  "format": "lafrich-lgr1-official-base-index-v1",
- "version": "official-4",
- "approved": "2026-11-11T15:57:00+07:00",
+ "version": "official-5",
+ "approved": "2026-11-12T15:33:00+07:00",
  "approvedBy": "Lafrich",
  "bases": {
   "male": {
-   "package": "genesis-base-male-official-3.json",
+   "package": "genesis-base-male-official-5.json",
    "packageFormat": "lafrich-genesis-base-v1",
-   "rigSha256": "2e5ddbc4a09c3316a7d18113c9ec3820fd52407d9ffac865ff9d12d0e54dd537",
-   "sheet": "genesis-base-male-sheet.png",
-   "source": "candidates/lgr-male-slice-test-20261111.json",
+   "rigSha256": "043b875098a00e7f3ce55883ce720f2f226f80526fb4beea9ac60d9d01ee886f",
+   "sheet": "genesis-base-male-official-5-sheet.png",
+   "source": "candidates/nova-male-final-20261112.json",
    "sourceFormat": "lgr-1-draft-v1",
-   "sourceSha256": "9977850ed62fe06ada80ab6a72208aa505f7a27402878d974aca0dc146e0a544",
-   "sourceBytes": 104071
+   "sourceSha256": "008138974cd9066ec291bc3d11676c377ecda80e1f8749f465c9c2e8fac609bb",
+   "sourceBytes": 92228
   },
   "female": {
-   "package": "genesis-base-female-official-4.json",
+   "package": "genesis-base-female-official-5.json",
    "packageFormat": "lafrich-genesis-base-v1",
-   "rigSha256": "d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a",
-   "sheet": "genesis-base-female-sheet.png",
-   "source": "candidates/genesis_female_draft-20261111.json",
+   "rigSha256": "09b5119f916176d17480889eecc4a643cad1c93b13852b2d7314bb959a5c1740",
+   "sheet": "genesis-base-female-official-5-sheet.png",
+   "source": "candidates/nova-female-final-20261112.json",
    "sourceFormat": "lgr-1-draft-v1",
-   "sourceSha256": "89e3747c8a9e7ca0e4496575cbff5a224b7bb371a5503d205e67cec684ced44e",
-   "sourceBytes": 104383
+   "sourceSha256": "f63cfc5c30c5eefa06fc304a4e15c4a8200ceba1a96d6325c124a143ab9337ff",
+   "sourceBytes": 92492
   }
  },
  "revisions": [
@@ -61,6 +61,18 @@
    "originalFemaleRigSha256": "e3c4ce9b14805dbb4364ef61ce380ccc45d78bbc1d86516c241b8d1c7f976dc8",
    "femaleRigSha256": "d08d31c9ba2f18d20b52188528f91dc595293ef88e6c33771484cc33b4f6f79a",
    "archive": "archive/index-official-3.json"
+  },
+  {
+   "version": "official-5",
+   "date": "2026-11-12T15:33:00+07:00",
+   "approvedBy": "Lafrich",
+   "note": "Promote user's Nova final Male/Female pixel masters as gameplay LGR-1 Genesis bases. Convert exactly three light skin blocking tones to LGR canonical key i/h/7 (pixel-perfect back-conversion), retain pink accents, 11 parts, 4 directions, original slicing/pivots/placements and draw orders. Normalize Female mislabeled male id/gender metadata only. Previous official-4 index and packages preserved.",
+   "maleRigSha256": "043b875098a00e7f3ce55883ce720f2f226f80526fb4beea9ac60d9d01ee886f",
+   "femaleRigSha256": "09b5119f916176d17480889eecc4a643cad1c93b13852b2d7314bb959a5c1740",
+   "archive": "archive/index-official-4.json",
+   "sourceGenderFix": {
+    "female": "male → female (metadata only)"
+   }
   }
  ]
 }

@@ -72,7 +72,7 @@ assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/v6p-key-ramp-v1/);
   assert.strictEqual(JSON.parse(raw).format,"lgr-1-draft-v1");
   assert(fs.existsSync(path.join(__dirname,"..",B+e.sheet)));
  }
- assert.match(app,/const OFFICIAL_BASE_VERSION="official-4"/);
+ assert.match(app,/const OFFICIAL_BASE_VERSION="official-5"/);
  assert.match(app,/rootPath\+info\.package/);
  assert.match(app,/info\.rigSha256/);
  assert.match(app,/rootPath\+info\.package/,"Genesis editor resolves the active package through the official index");
@@ -93,7 +93,7 @@ assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/v6p-key-ramp-v1/);
  const ed=read("site/emotion-studio/shared-pixel-editor.js");
  assert.match(ed,/guide\(out,DIR\[dir\],u,v,phase\)/,"guide draws on the screen canvas only");
  assert(!/guide\(ctx/.test(ed),"guide must never draw into the atlas");
- assert.match(html,/genesis-base-app\.js\?v=lgr1-fix-13/);
+ assert.match(html,/genesis-base-app\.js\?v=lgr1-fix-14/);
 }
 // docs exist
 assert.match(read("docs/GENESIS_BASE_FORMAT.md"),/lafrich-genesis-base-v1/);
