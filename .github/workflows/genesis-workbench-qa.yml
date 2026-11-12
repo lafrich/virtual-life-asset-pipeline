@@ -276,8 +276,24 @@ jobs:
             await shell.goto(B+'genesis-workbench.html?tab=lgr');
             await shell.locator('#face-count').filter({hasText:/Emosi faces: \d+ male/}).waitFor({timeout:30000});
             assert.strictEqual(await shell.locator('#open-genesis-base').getAttribute('href'),'./genesis-base.html');
+            assert.strictEqual(await shell.locator('#open-nova-genesis').getAttribute('href'),'./genesis-nova.html');
+            const nova=await ctx.newPage();
+            nova.on('dialog',d=>d.accept());
+            nova.on('pageerror',e=>errors.push('nova '+e.message));
+            await nova.goto(B+'genesis-nova.html');
+            await nova.locator('#load-male').click();
+            await nova.waitForFunction(()=>document.getElementById('state').textContent.includes('NOVA MALE aktif'),null,{timeout:45000});
+            assert.strictEqual(await nova.frameLocator('#editor').locator('#gender').inputValue(),'male');
+            assert.match(await nova.evaluate(()=>localStorage.getItem('vl-lafrich-genesis-base-drafts-v1')),/lafrich_male/);
+            const [nd]=await Promise.all([nova.waitForEvent('download',{timeout:30000}),nova.locator('#export').click()]);
+            await nd.saveAs('/tmp/nova-edited.json');
+            const np=JSON.parse(fs.readFileSync('/tmp/nova-edited.json','utf8'));
+            assert.strictEqual(np.gender,'male');assert.strictEqual(np.parts.length,11);
+            await nova.locator('#load-female').click();
+            await nova.waitForFunction(()=>document.getElementById('state').textContent.includes('NOVA FEMALE aktif'),null,{timeout:45000});
+            assert.strictEqual(await nova.frameLocator('#editor').locator('#gender').inputValue(),'female');
             assert.deepStrictEqual(errors,[]);
-            console.log('Genesis Base + Mahluk Hidup shell browser smoke: OK');
+            console.log('Genesis Base + Mahluk Hidup shell + editable Nova male/female browser smoke: OK');
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
