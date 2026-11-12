@@ -7,6 +7,7 @@ const DIRS=["se","sw","ne","nw"],GROUPS=["top","pants","shoes"];
 const LOCAL="lgr1-pakaian-drafts-v1",SEEDS="./media/lgr1/wardrobe-adjust/variant-seeds.json";
 const $=id=>document.getElementById(id),A=()=>root.MahlukPakaian;
 let catalog=null,current=null,refCache=new Map(),drawTicket=0,working=false,drag=null,offsets={};
+let selectionChain=Promise.resolve();
 const OFFSET_KEY="lgr-wardrobe-adjust-offsets-v1";
 const labels={top:"Atasan",pants:"Celana",shoes:"Sepatu"};
 const nice=x=>x.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
@@ -57,17 +58,27 @@ async function select(gender,group,variant,dir="se",side="front"){
   await renderStage();drawReviewThumbnails();
  }finally{working=prev}
 }
+function queueSelect(gender,group,variant,dir,side){
+ // UI events can arrive while a previous async image/rig load is running.
+ // Serialize commits; do NOT drop the newer gender/category selection.
+ const next=selectionChain.catch(()=>{}).then(()=>select(gender,group,variant,dir,side));
+ selectionChain=next;return next;
+}
 async function setDirection(dir){if(!DIRS.includes(dir)||!current)return;
- await select(current.gender,current.group,current.variant,dir,current.side);
+ await queueSelect(current.gender,current.group,current.variant,dir,current.side);
 }
 async function setSide(side){if(!current)return;
- await select(current.gender,current.group,current.variant,current.dir,side);
+ await queueSelect(current.gender,current.group,current.variant,current.dir,side);
 }
-function selectedChange(){if(working||!catalog)return;
+function selectedChange(){if(!catalog)return;
  const gender=$("wa-gender").value,group=$("wa-group").value;
  const options=catalog.variants.filter(x=>x.gender===gender&&x.group===group);
  const v=options.find(x=>x.variant===$("wa-variant").value)||options[0];
- if(v)void select(gender,group,v.variant,current?.dir||"se","front").catch(showError);
+ if(!v)return;
+ // Populate the correct category choices synchronously, even if rig redraw
+ // for the previous selection has not completed.
+ selectOptions("wa-variant",options.map(x=>({value:x.variant,label:nice(x.variant)})),v.variant);
+ void queueSelect(gender,group,v.variant,current?.dir||"se","front").catch(showError);
 }
 function colorSpec(){
  const shade=$("pk-color")?.value||"navy";
