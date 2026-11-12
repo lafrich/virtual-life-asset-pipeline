@@ -232,7 +232,7 @@ function drawEntry(out,entry,tr){
 // each joint an EMPTY pixel that is a <=2px crack or an enclosed hole gets the
 // joint pair's own rest colour (child, then parent), else the commonest
 // neighbour colour. Never draws over art; gaps that exist at rest stay open.
-const JOINT_FILL=8,REST=new WeakMap();
+const JOINT_FILL=2,REST=new WeakMap();
 function crackAt(al,x,y){
  const h=(al(x-1,y)||al(x-2,y))&&(al(x+1,y)||al(x+2,y))&&(al(x-1,y)||al(x+1,y));
  const v=(al(x,y-1)||al(x,y-2))&&(al(x,y+1)||al(x,y+2))&&(al(x,y-1)||al(x,y+1));
@@ -262,7 +262,7 @@ function jointFill(out,prep,tr,R0){
  for(const child of PARTS){
   const parent=PARENTS[child];if(!parent)continue;
   const imgs=[child,parent].filter(p=>parts[p]&&parts[p].bbox).map(p=>parts[p].img);if(!imgs.length)continue;
-  const pv=prep.pivots[child],[jx,jy]=mapPoint(tr[parent].mat,pv.x,pv.y),R=child==="torso"?R0+2:R0;
+  const pv=prep.pivots[child],[jx,jy]=mapPoint(tr[parent].mat,pv.x,pv.y),R=R0;
   const invs=[inverse(tr[parent].mat),inverse(tr[child].mat)],outside=outsideOf(out);
   for(let y=Math.max(2,Math.floor(jy-R));y<Math.min(H-2,Math.ceil(jy+R)+1);y++)
   for(let x=Math.max(2,Math.floor(jx-R));x<Math.min(W-2,Math.ceil(jx+R)+1);x++){
