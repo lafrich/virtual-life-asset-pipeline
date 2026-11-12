@@ -202,3 +202,8 @@ was recalculated. The previous official-5 index is archived in
 Users change game character skin tone via six V6P ramps; custom tone is
 available in Genesis Base preview. Existing browser drafts must still use
 **RESET TO OFFICIAL BASE**; autosave is not silently overwritten.
+
+
+### official-7 (2026-11-12): Latest Male/Female final 1 uploads
+
+The active `site/media/lgr1/base/index.json` points to the new immutable `genesis-base-{male,female}-official-7.json` packages. Raw `male final 1.json` and `female final 1.json` are kept byte-for-byte as `candidates/*-final-20261112-v3.json`. Male is already a valid keyed package. Female was an LGR draft in the Light skin palette; the approved pipeline maps only its exact six Light ramp colours to V6P skin keys, checks exact per-pixel reverse mapping, and preserves masks, pivots, placements, draw orders, manual slicing, and non-skin accents. Previous active index is archived in `archive/index-official-6.json`; earlier packages remain untouched.

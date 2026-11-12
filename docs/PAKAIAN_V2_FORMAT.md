@@ -1,6 +1,6 @@
 # PAKAIAN.EXE — Approved LGR wardrobe v2
 
-Updated 2026-11-12. Active Genesis is read from site/media/lgr1/base/index.json (currently official-6). Never hardcode Official 5 or automatically apply outdated wardrobe when Genesis changes.
+Updated 2026-11-12. Active Genesis is read from site/media/lgr1/base/index.json (currently official-7). Never hardcode Official 5 or automatically apply outdated wardrobe when Genesis changes.
 
 ## Workflow
 

@@ -1,37 +1,20 @@
-# Official LGR-1 Genesis bases — final Male / Female (official-6)
+# Official LGR-1 Genesis bases — Male / Female (official-7)
 
-Current active bases for Mahluk Hidup / LGRActor / Mainkan, chosen by `index.json`:
+Mahluk Hidup, LGRActor, Mainkan, and the Genesis Base editor resolve their current master via `site/media/lgr1/base/index.json`.
 
-- Male: `genesis-base-male-official-6.json`
-- Female: `genesis-base-female-official-6.json`
+- Male: `genesis-base-male-official-7.json`
+- Female: `genesis-base-female-official-7.json`
 
-Approved by Lafrich 2026-11-12 from the latest user uploads `male final.json` and
-`female final.json`. Originals are retained byte-for-byte in
-`candidates/male-final-20261112-v2.json` and
-`candidates/female-final-20261112-v2.json`.
+Approved 2026-11-12 from Lafrich's latest uploaded `male final 1.json` and `female final 1.json`. Exact original JSON files are preserved as `candidates/male-final-20261112-v3.json` and `candidates/female-final-20261112-v3.json`.
 
-## Skin-key, anatomy and metadata
+## Skin / geometry
 
-Both uploads already store their skin pixels as canonical `v6p-key-ramp-v1`
-key colours. There is **no need to paint them again**. Six ramp choices
-(porcelain, light, tan, medium, brown, deep) and custom editor colour continue
-to work at draw time via `LGRSkin` and `LGRActor`. Male has 5,531 keyed skin
-pixels; Female has 5,452. The remaining pink accents (4 Male, 8 Female) stay
-untinted by design.
+- Male: uploaded `lafrich-genesis-base-v1` package, preserved verbatim with its canonical V6P skin keys (5,490 keyed pixels).
+- Female: uploaded `lgr-1-draft-v1` rig. Its exact Light palette pixels are converted to V6P keys, with per-pixel reverse verification; 5,411 pixels are keyed. Non-skin accents remain original.
+- Both: 64×112 sprites in SE/SW/NE/NW, 11-part hierarchy, masks, pivots, placements, draw orders, joint properties and manual slice flags preserved. Skin ramps: porcelain, light, tan, medium, brown, deep.
 
-The Female upload was mislabeled as Male. The final Female package corrects
-only `gender`, `id`, `rig.gender`, `rig.id`, `rig.name`, and recalculates
-`rigSha256` to satisfy the engine's integrity gate. Male metadata is unchanged.
-Every original pixel layer, mask, pivot, placement, manual slicing flag, draw
-order and joint property is preserved exactly.
+## History and rollback
 
-## Rollback / drafts
+`archive/index-official-6.json` contains the previous live index. All previous approved files and original drafts remain intact; **never edit historical official packages**. Browser autosave drafts are not silently replaced: in Genesis Base choose **↻ RESET TO OFFICIAL BASE** to seed a fresh draft from official-7.
 
-- Previous active catalog preserved: `archive/index-official-5.json`.
-- Old official-2, -3, -4, -5 packages, catalogs and input drafts stay intact.
-- Restore an archive **via a new catalog revision**, never edit an older approved package.
-- Browser-local drafts stay untouched until explicit `↻ RESET TO OFFICIAL BASE`.
-- Outfit and Emosi facial alignment need visual verification against new geometry.
-
-Validation: `tests/test_genesis_base.cjs`, `tests/test_nova_official_5.py`,
-`tests/test_genesis_official_6.py`.
+Validate with `tests/test_genesis_official_7.py`, `tests/test_genesis_official_6.py` and `tests/test_genesis_base.cjs`. Existing outfits may need manual visual retargeting to the latest body geometry; this promotion does not overwrite wardrobe assets.

@@ -12,7 +12,7 @@ def image(uri): return Image.open(io.BytesIO(base64.b64decode(uri.split(",", 1)[
 
 class GenesisOfficial6Test(unittest.TestCase):
  def test_final_packages(self):
-  ix = read(B/"index.json")
+  ix = read(B/"archive/index-official-6.json")
   self.assertEqual(ix["version"], "official-6")
   self.assertEqual(read(B/"archive/index-official-5.json")["version"], "official-5")
   for gender in ("male", "female"):
