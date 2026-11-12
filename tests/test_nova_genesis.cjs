@@ -41,7 +41,7 @@ for(const gender of ['male','female'])read(gender);
 const shell=fs.readFileSync(path.join(ROOT,'genesis-workbench.html'),'utf8');
 const entry=fs.readFileSync(path.join(ROOT,'genesis-nova.html'),'utf8');
 assert.match(shell,/href="\.\/genesis-nova\.html"/);
-assert.match(entry,/id="editor" src="\.\/genesis-base\.html/);
+assert.match(entry,/id="editor"[^>]*src="\.\/genesis-base\.html/);
 assert.match(entry,/id="load-male"/);
 assert.match(entry,/id="load-female"/);
 assert.match(entry,/id="export"/);
