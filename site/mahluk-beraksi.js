@@ -8,14 +8,14 @@
 (function(root){"use strict";
 const U=root.MHUI,el=U.el,DB=()=>root.LGRDB,A=()=>root.LGRActor,M=()=>root.LGR1Motion;
 const DIRS=["se","sw","ne","nw"],SW=256,SH=160,Z=3,GX=SW/2,GY=128;
-const S={lib:null,scene:null,isNew:true,dirty:false,sel:null,t:0,playing:false,raf:0,drag:null,ui:{},ready:false,boxes:[],ticket:0};
+const S={lib:null,bases:null,scene:null,isNew:true,dirty:false,sel:null,t:0,playing:false,raf:0,drag:null,ui:{},ready:false,boxes:[],ticket:0};
 const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 function blankScene(){
  return {format:"lgr1-beraksi-v1",id:"",name:"Adegan baru",category:"umum",notes:"",loop:true,durationMs:null,stage:{width:SW,height:SH},actors:[]};
 }
 function newActor(gender){
  const n=S.scene.actors.length,keys=new Set(S.scene.actors.map(a=>a.key));let i=1;while(keys.has("a"+i))i++;
- return {key:"a"+i,name:(gender==="female"?"Cewek ":"Cowok ")+i,gender,skin:{tone:"light"},outfit:"tee_trousers",wear:{hair:gender==="female"?"long":"short",hairColor:"brown"},
+ return {key:"a"+i,name:(gender==="female"?"Cewek ":"Cowok ")+i,gender,skin:{tone:"light"},outfit:"none",wear:{hair:gender==="female"?"long":"short",hairColor:"brown"},
   x:n%2?24:-24,y:0,dir:n%2?"sw":"se",flip:false,layer:n,track:[{motion:"builtin:idle",ms:2000}],emosi:[]};
 }
 const actorBy=k=>S.scene.actors.find(a=>a.key===k);
@@ -199,12 +199,17 @@ function rebuildActor(){
  const tones=el("div",{class:"sa-tones"});
  for(const t of root.LGRSkin.TONE_ORDER)tones.append(el("button",{type:"button",title:t,"aria-pressed":String(a.skin.tone===t),style:"background:"+root.LGRSkin.TONES[t].i+";border-bottom-color:"+root.LGRSkin.TONES[t]["7"],onclick:()=>{a.skin={tone:t};touch(true)}}));
  const gender=U.select([{label:"♂ Cowok (base male)",value:"male"},{label:"♀ Cewek (base female)",value:"female"}],a.gender,v=>{a.gender=v;touch(true);rebuildActors()});
- const outfit=U.select(Object.entries(A().OUTFITS).map(([k,o])=>({label:o.label,value:k})),a.outfit,v=>{a.outfit=v;if(v==="custom")a.wear={top:"tee",topColor:"charcoal",pants:"trousers",pantsColor:"slate",shoes:"sneakers",shoesColor:"white",...(a.wear||{})};touch(true)});
+ const official=S.bases?.[a.gender];
+ const approved=(group)=>new Set(DB().all("pakaian").filter(e=>e.group===group&&e.gender===a.gender&&e.approved&&e.baseVersion===official?.version&&e.baseRigSha256===official?.pkg?.rigSha256).map(e=>e.variant));
+ const available=Object.entries(A().OUTFITS).filter(([k,o])=>k==="none"||k==="custom"||
+   (approved("top").has(o.top)&&approved("pants").has(o.pants)&&approved("shoes").has(o.shoes)));
+ const outfit=U.select(available.map(([k,o])=>({label:o.label,value:k})),available.some(([k])=>k===a.outfit)?a.outfit:"none",v=>{a.outfit=v;if(v==="custom")a.wear={top:"nude",pants:"nude",shoes:"nude",...(a.wear||{})};touch(true)});
  const V=root.LGRWear,w=a.wear||(a.wear={});
  const pick=(k,list,label)=>U.select(list.map(v=>({label:label+": "+v,value:v})),w[k]||list[0],v=>{w[k]=v;touch()});
- const custom=a.outfit==="custom"&&V?el("div",{class:"sa-row"},pick("top",V.OPT.top.filter(x=>x!=="custom"),"atasan"),pick("topColor",V.OPT.topColor,"warna"),
-  pick("pants",V.OPT.pants.filter(x=>x!=="custom"),"celana"),pick("pantsColor",V.OPT.pantsColor,"warna"),
-  pick("shoes",V.OPT.shoes.filter(x=>x!=="custom"),"sepatu"),pick("shoesColor",V.OPT.shoesColor,"warna")):null;
+ const custom=a.outfit==="custom"&&V?el("div",{class:"sa-row"},
+  pick("top",["nude",...approved("top")],"atasan"),pick("topColor",V.OPT.topColor,"warna"),
+  pick("pants",["nude",...approved("pants")],"celana"),pick("pantsColor",V.OPT.pantsColor,"warna"),
+  pick("shoes",["nude",...approved("shoes")],"sepatu"),pick("shoesColor",V.OPT.shoesColor,"warna")):null;
  const hair=U.select(A().HAIRS.map(h=>({label:h==="none"?"tanpa rambut":"rambut "+h,value:h})),w.hair||"none",v=>{w.hair=v;touch()});
  const hairColor=V?U.select(V.OPT.hairColor.map(c=>({label:"warna rambut: "+c,value:c})),w.hairColor||"brown",v=>{w.hairColor=v;touch()}):null;
  const dirs=el("div",{class:"sa-row"},el("span",{class:"sa-hint",text:"hadap"}),...DIRS.map(d=>el("button",{type:"button","aria-pressed":String(a.dir===d),text:d.toUpperCase(),onclick:()=>{a.dir=d;touch(true)}})),
@@ -264,7 +269,7 @@ function addActor(gender,given){
 async function init(panel){
  if(S.ready){rebuildList();rebuildActor();schedule();return}
  U.status("Beraksi: memuat base, animasi, Emosi…");
- S.lib=await A().motions();await DB().loadBuiltin();DB().setPoses(S.lib.poses);await A().loadBases();await A().refreshFaces().catch(()=>[]);
+ S.lib=await A().motions();await DB().loadBuiltin();DB().setPoses(S.lib.poses);S.bases=await A().loadBases();await A().refreshFaces().catch(()=>[]);
  build(panel);S.ready=true;S.isNew=true;S.scene=blankScene();S.scene.actors.push(newActor("male"));S.scene.actors.push(newActor("female"));S.sel="a1";S.dirty=false;rebuildAll();
  root.addEventListener("lgr-db-synced",()=>{if(S.ready){rebuildList();rebuildActor()}});
  root.addEventListener("lgr-db-changed",()=>{if(S.ready)rebuildActor()});
