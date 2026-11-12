@@ -123,7 +123,7 @@ async function renderThumbs(mo){
  }
  for(const d of DIRS){
   const c=S.ui.views[d],img=await frameImage(Math.min(S.frame,mo.frames.length-1),d,mo).catch(()=>null);if(!img)continue;
-  const g=c.getContext("2d");g.clearRect(0,0,64,112);g.drawImage(img,0,0);
+  const g=c.getContext("2d");g.clearRect(0,0,64,112);drawShadow(g,shadowValue(Math.min(S.frame,mo.frames.length-1)));g.drawImage(img,0,0);
  }
 }
 /* ---- canvas interaction: tap selects a part, drag rotates (or moves the root) ---- */
