@@ -284,6 +284,60 @@ function pixelCommit(id,atlas,saveLocal){
  say(saveLocal?"Pixel Editor: perubahan 4 arah disimpan sebagai DRAFT. SAVE MASTER untuk game.":"Pixel Editor: perubahan 4 arah sudah diterapkan. SAVE MASTER untuk game.");
  return true;
 }
+/* Build an editable wardrobe template from the ACTIVE Genesis body, not old
+ * garments. Cover ALL BODY is deliberate: it is a working mask to ERASE from
+ * with the existing shared Genesis Pixel Editor, never an approved outfit.
+ */
+async function coverBodyDraft(){
+ const group=S.group,mode=$("pk-cover-mode")?.value||"full";
+ if(!["top","pants","shoes"].includes(group)){
+  say("COVER BODY hanya untuk Atasan / Celana / Sepatu.",true);return;
+ }
+ if(!root.LGRWardrobeCover?.build){
+  say("LGRWardrobeCover belum termuat.",true);return;
+ }
+ if(!confirm("Bangun DRAFT baru dari tubuh Genesis "+S.gender+" ("+mode+") di keempat arah? Editan draft item ini akan diganti; MASTER game dan Genesis tidak akan diubah."))return;
+ const button=$("pk-cover-body");button.disabled=true;
+ try{
+  // Local rollback of any in-progress strip, including unsaved pixel edits.
+  const old={draft:S.draft,bufs:{}};
+  for(const [key,c] of S.bufs)old.bufs[key]=c.toDataURL("image/png");
+  try{localStorage.setItem("lgr1-pakaian-cover-backup-v1:"+kID()+":"+Date.now(),JSON.stringify(old))}catch(e){console.warn("Local cover backup:",e)}
+  const approved=(await root.LGRActor.loadBases())[S.gender],pkg=approved?.pkg;
+  if(!pkg?.rig?.masks)throw Error("Official Genesis masks unavailable");
+  if(JSON.stringify(pkg.parts)!==JSON.stringify(root.LGRWardrobeCover.PARTS))
+   throw Error("Body part order mismatch; refusing to alter clothing");
+  const master=await rigFor(),front=pathOf("front"),back=canSide()?pathOf("back"):null;
+  if(!validPath(front)||(back&&!validPath(back)))throw Error("Wear path not in wardrobe index");
+  const strip=cv(256,112),ctx=strip.getContext("2d",{willReadFrequently:true});
+  ctx.imageSmoothingEnabled=false;
+  let covered=0;
+  for(let i=0;i<DIRS.length;i++){
+   const d=DIRS[i],url=master.layers.body?.[d];
+   if(!url)throw Error("Genesis body missing for "+d);
+   const im=await loadImage(url),tmp=cv(),g=tmp.getContext("2d",{willReadFrequently:true});
+   g.drawImage(im,0,0);
+   const body=g.getImageData(0,0,64,112);
+   const owners=Uint8Array.from(atob(pkg.rig.masks[d]),ch=>ch.charCodeAt(0));
+   const result=root.LGRWardrobeCover.build(body.data,owners,group,mode);
+   if(!result.count)throw Error("No body pixels found for "+d);
+   covered+=result.count;
+   ctx.putImageData(new ImageData(result.pixels,64,112),i*64,0);
+  }
+  // Generate on the working front layer. Clear OLD rear-layer art rather than
+  // silently mix old official-2 sleeves behind the new official rig.
+  S.bufs.set(front,strip);S.changed.add(front);
+  if(back){S.bufs.set(back,cv(256,112));S.changed.add(back)}
+  S.resetPending=false;S.edited=true;fresh();
+  S.side="front";$("pk-side").value="front";
+  saveDraft(true);
+  await draw();await preview();
+  say("✓ "+covered+" body pixels mengikuti Genesis "+approved.version+" · 4 arah · KEY "+group+" · DRAFT ONLY. Hapus bagian tidak perlu di Pixel Editor.");
+  // Open user's real shared pixel editor with 4 directions & Move Pixels.
+  await root.PakaianPixelEditor.open();
+ }catch(e){console.error(e);say("COVER BODY gagal: "+e.message,true)}
+ finally{button.disabled=false}
+}
 function controls(){
  $("pk-group").onchange=async e=>{if(S.changed.size)saveDraft(true);S.group=e.target.value;refreshOptions();S.side="front";S.ink={top:"C2",pants:"P2",shoes:"S0",hair:"H2",glasses:"GL",facial:"H2"}[S.group];await openItem()};
  $("pk-gender").onchange=async e=>{if(S.changed.size)saveDraft(true);S.gender=e.target.value;updateBaseLabel();await openItem()};
@@ -294,6 +348,7 @@ function controls(){
  $("pk-motion").onchange=e=>{S.motion=e.target.value;S.frame=0;void preview()};
  $("pk-ghost").onchange=()=>void draw();
  $("pk-open-full-editor").onclick=()=>void root.PakaianPixelEditor.open();
+ $("pk-cover-body").onclick=()=>void coverBodyDraft();
  $("pk-dir").onclick=e=>{const b=e.target.closest("button[data-dir]");if(!b)return;S.dir=b.dataset.dir;fresh();$("pk-direction").textContent=S.dir.toUpperCase();void draw()};
  for(let i=0;i<4;i++)$("pk-v"+i).onclick=()=>{S.dir=DIRS[i];fresh();$("pk-direction").textContent=S.dir.toUpperCase();void draw()};
  $("pk-save").onclick=()=>saveDraft();
@@ -323,7 +378,7 @@ function controls(){
 }
 async function init(panel){
  if(S.ready)return;
- panel.innerHTML='<div class="pk-layout"><aside class="pk-aside"><div class="pk-box"><h3>DATABASE PAKAIAN</h3><label>Gender<select id="pk-gender"><option value="male">Male</option><option value="female">Female</option></select></label><label>Kategori<select id="pk-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option><option value="hair">Rambut</option><option value="glasses">Kacamata</option><option value="facial">Facial Hair</option></select></label><label>Item<select id="pk-item"></select></label><label>Layer<select id="pk-side"><option value="front">Depan</option><option value="back">Belakang</option></select></label><div class="pk-tag" id="pk-file"></div><div class="pk-tag" id="pk-version">STOK</div></div><div class="pk-box"><h3>WARNA / KEY PIXEL</h3><label>Skin Tone<select id="pk-tone"><option value="light">Light</option><option value="porcelain">Porcelain</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label><label>Warna<select id="pk-color"></select></label><div id="pk-inks" class="pk-inks"></div><p class="pk-small">Pixel disimpan sebagai Color Key, warna preview tidak dibakar ke sprite.</p></div><div class="pk-box"><h3>VERSI / MASTER</h3><label>Catatan versi<textarea id="pk-note" rows="3" placeholder="Catatan penyesuaian..."></textarea></label><button id="pk-save">▣ SAVE DRAFT</button><button id="pk-approve">✓ SAVE MASTER → GAME / DRIVE</button><button id="pk-export">↓ EXPORT MASTER JSON</button><label class="pk-file">↑ IMPORT MASTER JSON<input id="pk-import" type="file" accept=".json,application/json"></label><button id="pk-reset">↶ RESET KE STOCK</button><p class="pk-small">SAVE MASTER membuat master v2 aktif. Bila Drive tersambung, master tersinkron ke Membangun / Mahluk Hidup / Database / Pakaian.</p></div></aside><main class="pk-main"><div class="pk-box"><h3>01 · PIXEL EDITOR — <span id="pk-direction">SE</span></h3><div class="pk-editor-launch"><button id="pk-open-full-editor" class="primary" type="button">✎ BUKA PIXEL EDITOR</button><p>Editor yang sama dengan Genesis: Move Pixels (M), Select (S), Grid 1/8/16 px, zoom/pinch, copy, paste flip, dan Undo/Redo. Pilih arah lewat thumbnail di bawah atau langsung dalam editor.</p></div><div class="pk-tools"><button data-pk-tool="pen" aria-pressed="true">✎ PEN</button><button data-pk-tool="erase">⌫ ERASE</button><button data-pk-tool="fill">▧ FILL</button><button data-pk-tool="pick">♢ PICK</button><button data-pk-tool="select">▤ SELECT</button><button id="pk-copy">COPY</button><button id="pk-paste">PASTE</button><button id="pk-paste-flip">PASTE FLIP</button><button id="pk-undo">↶ UNDO</button><button id="pk-redo">↷ REDO</button></div><div id="pk-dir" class="pk-dir"><button data-dir="se">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button><label><input type="checkbox" id="pk-ghost" checked>Base overlay</label></div><div class="pk-canvas"><canvas id="pk-editor" width="64" height="112" aria-label="Pixel Editor 64 × 112"></canvas></div><div class="pk-views"><canvas id="pk-v0" width="64" height="112"></canvas><canvas id="pk-v1" width="64" height="112"></canvas><canvas id="pk-v2" width="64" height="112"></canvas><canvas id="pk-v3" width="64" height="112"></canvas></div></div></main><aside class="pk-right"><div class="pk-box"><h3>02 · REVIEW IN MOTION</h3><div class="pk-small" id="pk-base-label">Base aktif: official</div><label>Animasi<select id="pk-motion"><option value="idle">Idle</option><option value="walk">Walk</option><option value="bow">Bow</option><option value="sit">Sit</option><option value="wave">Wave</option></select></label><div class="pk-views pk-review"><canvas id="pk-r0" width="64" height="112"></canvas><canvas id="pk-r1" width="64" height="112"></canvas><canvas id="pk-r2" width="64" height="112"></canvas><canvas id="pk-r3" width="64" height="112"></canvas></div><button id="pk-play">▶ PLAY</button><span id="pk-motion-label">Idle · frame 1</span><p class="pk-small">Preview memakai LGR1Raster & animasi official. Yang berubah hanya layer pakaian.</p></div><div class="pk-box"><h3>03 · ALUR MASTER</h3><ol><li>Pilih pakaian + gender</li><li>Edit 4 view + front/back</li><li>Review idle, walk, bow, sit</li><li>Save Draft → review</li><li>Export master untuk ingest ke game</li></ol><p class="pk-small">Genesis, pivots, slicing dan master animasi tidak disentuh.</p></div><div id="pk-status" role="status">Memuat database pakaian…</div></aside></div>';
+ panel.innerHTML='<div class="pk-layout"><aside class="pk-aside"><div class="pk-box"><h3>DATABASE PAKAIAN</h3><label>Gender<select id="pk-gender"><option value="male">Male</option><option value="female">Female</option></select></label><label>Kategori<select id="pk-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option><option value="hair">Rambut</option><option value="glasses">Kacamata</option><option value="facial">Facial Hair</option></select></label><label>Item<select id="pk-item"></select></label><label>Layer<select id="pk-side"><option value="front">Depan</option><option value="back">Belakang</option></select></label><div class="pk-tag" id="pk-file"></div><div class="pk-tag" id="pk-version">STOK</div></div><div class="pk-box"><h3>WARNA / KEY PIXEL</h3><label>Skin Tone<select id="pk-tone"><option value="light">Light</option><option value="porcelain">Porcelain</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select></label><label>Warna<select id="pk-color"></select></label><div id="pk-inks" class="pk-inks"></div><p class="pk-small">Pixel disimpan sebagai Color Key, warna preview tidak dibakar ke sprite.</p></div><div class="pk-box"><h3>VERSI / MASTER</h3><label>Catatan versi<textarea id="pk-note" rows="3" placeholder="Catatan penyesuaian..."></textarea></label><button id="pk-save">▣ SAVE DRAFT</button><button id="pk-approve">✓ SAVE MASTER → GAME / DRIVE</button><button id="pk-export">↓ EXPORT MASTER JSON</button><label class="pk-file">↑ IMPORT MASTER JSON<input id="pk-import" type="file" accept=".json,application/json"></label><button id="pk-reset">↶ RESET KE STOCK</button><p class="pk-small">SAVE MASTER membuat master v2 aktif. Bila Drive tersambung, master tersinkron ke Membangun / Mahluk Hidup / Database / Pakaian.</p></div></aside><main class="pk-main"><div class="pk-box"><h3>01 · PIXEL EDITOR — <span id="pk-direction">SE</span></h3><div class="pk-editor-launch"><div class="pk-cover-controls"><label>Cakupan tubuh dari Genesis<select id="pk-cover-mode"><option value="full">SELURUH BADAN (tanpa kepala)</option><option value="top">TORSO + LENGAN PENDEK</option><option value="long_top">TORSO + LENGAN PANJANG</option><option value="pants">PINGGUL + KAKI</option><option value="shoes">KAKI BAWAH / SEPATU</option></select></label><button id="pk-cover-body" class="primary" type="button">▨ COVER BODY → PIXEL EDITOR</button></div><p class="pk-small">Buat coverage 4 arah dari body mask Genesis resmi (bukan kaos lama); erase / move / detail di Pixel Editor. Hanya DRAFT pakaian, bukan update anatomi atau game.</p><button id="pk-open-full-editor" class="primary" type="button">✎ BUKA PIXEL EDITOR</button><p>Editor yang sama dengan Genesis: Move Pixels (M), Select (S), Grid 1/8/16 px, zoom/pinch, copy, paste flip, dan Undo/Redo. Pilih arah lewat thumbnail di bawah atau langsung dalam editor.</p></div><div class="pk-tools"><button data-pk-tool="pen" aria-pressed="true">✎ PEN</button><button data-pk-tool="erase">⌫ ERASE</button><button data-pk-tool="fill">▧ FILL</button><button data-pk-tool="pick">♢ PICK</button><button data-pk-tool="select">▤ SELECT</button><button id="pk-copy">COPY</button><button id="pk-paste">PASTE</button><button id="pk-paste-flip">PASTE FLIP</button><button id="pk-undo">↶ UNDO</button><button id="pk-redo">↷ REDO</button></div><div id="pk-dir" class="pk-dir"><button data-dir="se">SE</button><button data-dir="sw">SW</button><button data-dir="ne">NE</button><button data-dir="nw">NW</button><label><input type="checkbox" id="pk-ghost" checked>Base overlay</label></div><div class="pk-canvas"><canvas id="pk-editor" width="64" height="112" aria-label="Pixel Editor 64 × 112"></canvas></div><div class="pk-views"><canvas id="pk-v0" width="64" height="112"></canvas><canvas id="pk-v1" width="64" height="112"></canvas><canvas id="pk-v2" width="64" height="112"></canvas><canvas id="pk-v3" width="64" height="112"></canvas></div></div></main><aside class="pk-right"><div class="pk-box"><h3>02 · REVIEW IN MOTION</h3><div class="pk-small" id="pk-base-label">Base aktif: official</div><label>Animasi<select id="pk-motion"><option value="idle">Idle</option><option value="walk">Walk</option><option value="bow">Bow</option><option value="sit">Sit</option><option value="wave">Wave</option></select></label><div class="pk-views pk-review"><canvas id="pk-r0" width="64" height="112"></canvas><canvas id="pk-r1" width="64" height="112"></canvas><canvas id="pk-r2" width="64" height="112"></canvas><canvas id="pk-r3" width="64" height="112"></canvas></div><button id="pk-play">▶ PLAY</button><span id="pk-motion-label">Idle · frame 1</span><p class="pk-small">Preview memakai LGR1Raster & animasi official. Yang berubah hanya layer pakaian.</p></div><div class="pk-box"><h3>03 · ALUR MASTER</h3><ol><li>Pilih pakaian + gender</li><li>Edit 4 view + front/back</li><li>Review idle, walk, bow, sit</li><li>Save Draft → review</li><li>Export master untuk ingest ke game</li></ol><p class="pk-small">Genesis, pivots, slicing dan master animasi tidak disentuh.</p></div><div id="pk-status" role="status">Memuat database pakaian…</div></aside></div>';
  try{
   S.index=await(await fetch(rootUrl()+BASE+"index.json",{cache:"no-store"})).json();
   if(S.index.format!=="lgr1-wear-index-v1"||!Array.isArray(S.index.items))throw Error("Index pakaian tidak valid");
