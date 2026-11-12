@@ -138,6 +138,7 @@ jobs:
           node --check site/vlhub-characters-publish.js
           node --check site/v6p-compositor.js
           node tests/test_lgr_retirement.cjs
+          node tests/test_mahluk_pakaian.cjs
           node tests/test_lgr_cloud_safety.cjs
           node --check site/lgr-db.js
           node --check site/lgr-actor.js
