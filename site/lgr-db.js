@@ -54,6 +54,23 @@ const contentSha=e=>sha256(canonical({...e,rev:undefined,updated:undefined}));
 // and are validated by LGR1Motion.validateMotion in chunks of 6 (its keyframe
 // limit), so a Bergerak motion up to 60 frames plays through the unchanged
 // LGR1Motion.framePose / frameIndexAt / frameOrder runtime.
+// Optional frame-level shadow edits are separate from the canonical Genesis rig.
+const SHADOW_DEFAULT=Object.freeze({enabled:true,x:0,y:0,rx:11,ry:3});
+function validateShadow(s,label){
+ assert(s&&typeof s==="object"&&!Array.isArray(s),"Shadow "+label+": expected an object");
+ assert(s.enabled===undefined||typeof s.enabled==="boolean","Shadow "+label+": enabled must be boolean");
+ const out={enabled:s.enabled!==false};
+ for(const [k,lo,hi] of [["x",-24,24],["y",-16,16],["rx",2,28],["ry",1,10]]){
+  const v=s[k]===undefined?SHADOW_DEFAULT[k]:Number(s[k]);
+  assert(Number.isInteger(v)&&v>=lo&&v<=hi,"Shadow "+label+"."+k+": "+lo+".."+hi+" integer required");
+  out[k]=v;
+ }
+ return out;
+}
+function shadowAt(m,index){
+ const i=Math.max(0,Math.min((m?.frames?.length||1)-1,index|0));
+ return m?.frames?.[i]?.shadow||SHADOW_DEFAULT;
+}
 function validateMotionLong(m,poses){
  const Mo=M();assert(Mo?.validateMotion,"LGR1Motion not loaded");
  assert(m&&typeof m==="object","Motion missing");
@@ -61,7 +78,8 @@ function validateMotionLong(m,poses){
  const out=[];let head=null;
  for(let i=0;i<m.frames.length;i+=6){
   const v=Mo.validateMotion({...m,frames:m.frames.slice(i,i+6)},poses);
-  if(!head)head=v;out.push(...v.frames);
+  if(!head)head=v;
+  out.push(...v.frames.map((f,j)=>m.frames[i+j].shadow===undefined?f:{...f,shadow:validateShadow(m.frames[i+j].shadow,"frame "+(i+j+1))}));
  }
  return {...head,frames:out};
 }
@@ -485,7 +503,7 @@ function scene(id){return get("beraksi",id)}
 // fires when another tab (e.g. Mahluk Hidup) saved/synced the shared cache
 function onChange(cb){const h=e=>{if(e.key===CACHE_KEY)cb()};root?.addEventListener?.("storage",h);return()=>root?.removeEventListener?.("storage",h)}
 return Object.freeze({VERSION,ready,motion,scene,onChange,CLIENT,SCOPE,BASE_PATH,KINDS,BACKUP_FOLDER,FILE_SCHEMA,CACHE_KEY,MAX_FRAMES,MAX_ACTORS,TONES,
- slug,canonical,sha256,validate,validateBergerak,validateBeraksi,validatePakaian,validateMotionLong,decide,
+ slug,canonical,sha256,validate,validateBergerak,validateBeraksi,validatePakaian,validateMotionLong,validateShadow,shadowAt,SHADOW_DEFAULT,decide,
  sceneDuration,trackAt,emosiAt,drawOrder,
  connect,connected,disconnect,useToken,restoreSession,setFetch,onStatus,get state(){return state},
  sync,scheduleSync,SAVE_DEBOUNCE_MS,syncRuns:()=>syncRunCount,
