@@ -8,9 +8,10 @@ const shared=fs.readFileSync("site/emotion-studio/shared-pixel-editor.js","utf8"
 const selection=fs.readFileSync("site/emotion-studio/shared-pixel-selection.js","utf8");
 const css=fs.readFileSync("site/mahluk-pakaian.css","utf8");
 new vm.Script(adapter);new vm.Script(e);new vm.Script(shared);new vm.Script(selection);
-const order=["shared-pixel-selection.js","shared-pixel-editor.js","mahluk-pakaian.js","mahluk-pakaian-pixel.js"].map(t=>h.indexOf(t));
-assert.ok(order.every(n=>n>=0));assert.ok(order.every((n,i)=>!i||n>order[i-1]),"Shared engine must load before wardrobe adapter");
-assert.ok(h.includes('mahluk-action-frame-pixel.css'),"Genesis editor must use same styling");
+// The Pakaian application is retired from the shell; retain its source as an
+// inert reference and preserve stock wardrobe assets for existing characters.
+for(const name of ["mahluk-pakaian.js","mahluk-pakaian-pixel.js","shared-pixel-editor.js","shared-pixel-selection.js","mahluk-action-frame-pixel.css"])
+ assert.ok(!h.includes(name),"Retired wardrobe editor must not load: "+name);
 const match=adapter.match(/node\.innerHTML=("(?:\\.|[^"\\])*");/);
 assert.ok(match,"Missing shared-editor modal template");
 const html=JSON.parse(match[1]);
@@ -25,4 +26,4 @@ assert.ok(e.includes("S.changed.add(path)")&&e.includes("pixelCommit")&&e.includ
 assert.ok(e.includes('pk-open-full-editor')&&e.includes('PakaianPixelEditor.open()'),"Full editor must be reachable");
 assert.ok(css.includes(".pk-editor-launch"),"Visible full-editor launcher missing");
 assert.ok(!adapter.includes("LGRDB.save("),"Editor changes should not bypass deliberate SAVE MASTER");
-console.log("Pakaian shared Genesis pixel editor: controls, grid, move, conversions and master isolation OK");
+console.log("Pakaian UI retired; inactive editor source still parses and wardrobe data remains protected: OK");
