@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LGR · Wardrobe Migration Preview (read-only)</title>
+<style>
+:root{font:13px Tahoma,Arial,sans-serif;color:#1c304d;background:#94aaca}*{box-sizing:border-box}body{margin:0}
+header{background:linear-gradient(90deg,#113b82,#397bc2);color:white;padding:12px 16px;border-bottom:2px solid #e5f0ff}
+h1{font-size:15px;margin:0}header small{display:block;margin-top:4px;opacity:.9}main{padding:12px;max-width:1280px;margin:auto}
+.panel{background:#eaf1fb;border:1px solid #738ba8;box-shadow:2px 2px 0 #64788f;padding:12px;margin-bottom:12px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px}
+label{display:flex;flex-direction:column;gap:4px;font-weight:bold;font-size:12px}select,button{font:inherit;border:1px solid #7189a9;background:#fff;padding:8px;color:#1c304d;min-height:34px}
+button{background:linear-gradient(#fff,#d1e0f3);cursor:pointer;font-weight:bold}button:hover{background:#d8eafb}
+.directions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.stage{min-width:0;text-align:center;background:repeating-conic-gradient(#eff3f9 0 25%,#dfe7f2 0 50%) 50%/18px 18px;border:1px solid #93a7c5;padding:7px 2px}
+.stage strong{display:block;margin-bottom:6px;font-size:12px}.stage canvas{width:min(100%,192px);image-rendering:pixelated;image-rendering:crisp-edges;aspect-ratio:64/112;display:block;margin:auto}
+.status{background:#fff;padding:9px;white-space:pre-wrap;border-left:3px solid #d4a03d}.note{font-size:12px;line-height:1.5;color:#40536b}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}.row>*{flex:0 1 auto}
+.swatches{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.swatch{width:21px;height:21px;border:1px solid #64758b}
+@media(max-width:580px){.directions{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:8px}.panel{padding:9px}}
+</style>
+</head>
+<body>
+<header><h1>▣ LGR · PAKAIAN MIGRATION PREVIEW</h1><small>Preview read-only • Stock lama sebagai seed • Genesis resmi terbaru + animasi LGR asli</small></header>
+<main>
+<section class="panel">
+<div id="base" class="status">Memuat base resmi…</div>
+<p class="note">Ini <b>preview kompatibilitas sebelum retouch manual</b>, bukan pakaian v2 yang sudah approved. Gambar pakaian berasal dari stok lama (official-2) dan dipasang ke rig terbaru untuk mengungkap offset, potongan, overlap, dan deformasi. Tidak menulis ke Genesis, Drive, game, atau database.</p>
+<div class="controls">
+<label>Genesis<select id="gender"><option value="male">Male · Official-8</option><option value="female">Female · Official-9</option></select></label>
+<label>Atasan<select id="top"></select></label>
+<label>Warna atasan<select id="topColor"></select></label>
+<label>Celana<select id="pants"></select></label>
+<label>Warna celana<select id="pantsColor"></select></label>
+<label>Sepatu<select id="shoes"></select></label>
+<label>Warna sepatu<select id="shoesColor"></select></label>
+<label>Rambut<select id="hair"></select></label>
+<label>Warna rambut<select id="hairColor"></select></label>
+<label>Skin tone<select id="skin"></select></label>
+<label>Kacamata<select id="glasses"><option value="none">none</option><option value="round">round</option><option value="square">square</option></select></label>
+<label>Facial hair<select id="facial"><option value="none">none</option><option value="both">both</option><option value="mustache">mustache</option><option value="stubble">stubble</option></select></label>
+<label>Injeksi motion<select id="motion"></select></label>
+</div>
+<div class="row">
+<button id="play">❚❚ Pause</button><button id="prev">◀ Frame</button><button id="next">Frame ▶</button><button id="png">⬇ Contact sheet PNG</button>
+<span id="frame" aria-live="polite">Frame 1</span>
+</div>
+<div class="swatches" id="swatches"></div>
+</section>
+<section class="panel"><div class="directions" id="views"></div></section>
+<section class="panel"><strong>QA sebelum dijadikan master Pakaian v2</strong>
+<p class="note">Periksa pada setiap gender dan 4 arah: idle, walk, sit, bow, crouch, arms_up, lie_sleep. Prioritaskan bahu, siku, pinggang, lutut, sepatu, layer belakang, dan area skin yang bocor. Warna ditransformasikan lewat KEY C1–C5 / O1–O5, P1–P4, S0–S3; warna skin/hair tetap terpisah. Hanya artwork final 256×112 (SE|SW|NE|NW) dengan SHA rig yang sesuai boleh disimpan sebagai approved.</p></section>
+</main>
+<script src="./lafrich-puppet-core.js"></script>
+<script src="./lgr1-raster.js"></script>
+<script src="./lafrich-puppet-renderer.js"></script>
+<script src="./lgr1-motion.js"></script>
+<script src="./lgr-skin.js"></script>
+<script src="./lgr-wear.js"></script>
+<script src="./lgr-actor.js"></script>
+<script>
+(async()=>{
+"use strict";
+const $=id=>document.getElementById(id),dirs=["se","sw","ne","nw"];
+const A=window.LGRActor,R=window.LafrichPuppetRenderer,C=window.LafrichPuppetCore,W=window.LGRWear;
+const choice={gender:"male",skin:"tan",top:"tee",topColor:"navy",pants:"trousers",pantsColor:"denim",shoes:"sneakers",shoesColor:"white",hair:"short",hairColor:"brown",glasses:"none",facial:"none",motion:"walk"};
+const images=new Map();let lib=null,frame=0,playing=true,last=0,busy=false,ticket=0;
+function options(id,vals){const el=$(id);for(const v of vals){const o=document.createElement("option");o.value=v;o.textContent=v.replaceAll("_"," ");el.add(o)}el.value=choice[id]||vals[0]}
+for(const id of ["top","pants","shoes","hair","skin","topColor","pantsColor","shoesColor","hairColor"])options(id,(W.OPT[id]||[]).filter(x=>!["nude"].includes(x)));
+for(const id of Object.keys(choice)){if(!$(id))continue;$(id).value=choice[id];$(id).addEventListener("change",()=>{choice[id]=$(id).value;frame=0;void update()})}
+const viewEls={};for(const d of dirs){const div=document.createElement("div");div.className="stage";const h=document.createElement("strong");h.textContent=d.toUpperCase();const canvas=document.createElement("canvas");canvas.width=64;canvas.height=112;div.append(h,canvas);$("views").append(div);viewEls[d]=canvas}
+const canvas=()=>{const c=document.createElement("canvas");c.width=64;c.height=112;return c};
+const load=path=>{if(!images.has(path)){const p=new Promise(resolve=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>resolve(null);im.src="media/lgr1/mh-wear/"+path+".png"});images.set(path,p)}return images.get(path)};
+async function seedWear(dir){
+ const f=choice.gender==="female"?"_f":"",di=dirs.indexOf(dir);
+ const files={
+  top:"top/"+choice.top+f,
+  top_back:"top/"+choice.top+"_back"+f,
+  pants:"pants/"+choice.pants+f,
+  shoes:"shoes/"+choice.shoes+f,
+  hair_back:"hair/"+choice.hair+"_back",
+  hair_front:"hair/"+choice.hair+"_front",
+  ...(choice.glasses!=="none"?{accessory:"glasses/"+choice.glasses}:{}),
+  ...(choice.facial!=="none"?{facial:"facial/"+choice.facial}:{})
+ };
+ const palette=W.lookup(choice),wear={};
+ for(const [layer,path] of Object.entries(files)){
+  const im=await load(path);if(!im)continue;
+  const c=canvas(),g=c.getContext("2d",{willReadFrequently:true});g.drawImage(im,di*64,0,64,112,0,0,64,112);
+  const data=g.getImageData(0,0,64,112);W.recolor(data.data,palette);g.putImageData(data,0,0);
+  if(layer==="facial"&&wear.accessory?.[dir]){
+    const current=new Image();await new Promise(resolve=>{current.onload=resolve;current.onerror=resolve;current.src=wear.accessory[dir]});
+    if(current.width)g.drawImage(current,0,0);
+  }
+  const target=layer==="facial"?"accessory":layer;
+  if(!wear[target])wear[target]={};wear[target][dir]=c.toDataURL("image/png");
+ }
+ return wear;
+}
+function swatches(){
+ const P=W.P.swatch;
+ const keys=[P.top[choice.topColor],P.pants[choice.pantsColor],P.shoes[choice.shoesColor],P.hair[choice.hairColor],P.skin[choice.skin]];
+ $("swatches").replaceChildren(...keys.map(color=>{const e=document.createElement("span");e.className="swatch";e.title=color;e.style.background=color;return e}))
+}
+async function update(){
+ const thisTicket=++ticket;
+ try{
+  const bases=await A.loadBases();const b=bases[choice.gender];$("base").textContent="✓ Base aktif "+b.version+" · "+choice.gender+" · SHA "+b.pkg.rigSha256.slice(0,16)+"… · Stok lama bukan master approved";
+  const master=await A.master(choice.gender,choice.skin);
+  const motion=lib.motions.find(m=>m.id===choice.motion)||lib.motions[0];
+  const drawn={};
+  for(const d of dirs){
+    const wear=await seedWear(d);
+    const character=C.validateCharacter({format:C.CHARACTER,id:"wardrobe_preview",name:"Wardrobe preview",gender:choice.gender,wear,faceId:""});
+    const prep=await R.prepare(master,character,d);
+    const p=A.poseOf(master,lib,motion,frame,d);
+    drawn[d]=R.render(prep,p.pose,{order:p.order});
+  }
+  if(thisTicket!==ticket)return;
+  for(const d of dirs){const target=viewEls[d];const g=target.getContext("2d");g.imageSmoothingEnabled=false;g.clearRect(0,0,64,112);g.drawImage(drawn[d],0,0)}
+  $("frame").textContent=choice.motion+" · frame "+(frame+1)+" / "+motion.frames.length;
+  swatches();
+ }catch(error){$("base").textContent="⚠ Preview belum dapat ditampilkan: "+error.message;console.error(error)}
+}
+$("play").onclick=()=>{playing=!playing;$("play").textContent=playing?"❚❚ Pause":"▶ Play"};
+$("prev").onclick=()=>{const m=lib.motions.find(x=>x.id===choice.motion);frame=(frame-1+m.frames.length)%m.frames.length;void update()};
+$("next").onclick=()=>{const m=lib.motions.find(x=>x.id===choice.motion);frame=(frame+1)%m.frames.length;void update()};
+$("png").onclick=()=>{
+ const out=document.createElement("canvas");out.width=256;out.height=112;const g=out.getContext("2d");g.imageSmoothingEnabled=false;
+ dirs.forEach((d,i)=>g.drawImage(viewEls[d],i*64,0));
+ const a=document.createElement("a");a.download="wardrobe-preview-"+choice.gender+"-"+choice.motion+".png";a.href=out.toDataURL("image/png");a.click();
+};
+try{
+ lib=await A.motions();options("motion",lib.motions.map(m=>m.id));$("motion").value=choice.motion;await update();
+ window.setInterval(()=>{if(!playing||!lib||busy)return;const m=lib.motions.find(x=>x.id===choice.motion);if(!m)return;frame=(frame+1)%m.frames.length;busy=true;update().finally(()=>{busy=false})},290);
+}catch(e){$("base").textContent="⚠ Gagal inisialisasi: "+e.message}
+})();
+</script>
+</body></html>
