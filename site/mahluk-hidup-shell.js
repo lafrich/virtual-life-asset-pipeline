@@ -49,6 +49,7 @@ async function syncNow(interactive,opts={}){
   try{
    const r=await DB().sync({interactive,force:!!interactive,auto:!!opts.auto&&!interactive});
    if(r.skipped||r.shared)return true;
+   root.LGRWear?.clearCache?.();root.LGRActor?.clearCaches?.();root.LGRGame?.clear?.();
    root.dispatchEvent(new CustomEvent("lgr-db-synced",{detail:r}));
    status("Database tersinkron: "+DB().all("bergerak").length+" animasi · "+DB().all("beraksi").length+" adegan · "+DB().all("pakaian").length+" master pakaian"+
     (r.pulled||r.pushed?" (↓"+r.pulled+" ↑"+r.pushed+")":"")+(r.conflicts?" · "+r.conflicts+" konflik → yang terbaru dipakai, versi lain di Backup":"")+
