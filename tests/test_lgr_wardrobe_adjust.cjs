@@ -1,65 +1,61 @@
-/* Genesis Outfit Adjust: native 24-variant draft packaging and UI wiring. */
-const {test}=require("node:test"),assert=require("node:assert/strict");
-const fs=require("node:fs");
-const root="site/";
-const src=fs.readFileSync(root+"lgr-wardrobe-adjust.js","utf8");
-const page=fs.readFileSync(root+"lgr-wardrobe-adjust.html","utf8");
-const bridge=fs.readFileSync(root+"mahluk-pakaian.js","utf8");
-const seed=JSON.parse(fs.readFileSync(root+"media/lgr1/wardrobe-adjust/variant-seeds.json","utf8"));
+/* Active Genesis Outfit Adjust: exactly six artist-authored base garments. */
+const {test}=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs");
+const root="site/",src=fs.readFileSync(root+"lgr-wardrobe-adjust.js","utf8"),
+ page=fs.readFileSync(root+"lgr-wardrobe-adjust.html","utf8"),
+ bridge=fs.readFileSync(root+"mahluk-pakaian.js","utf8"),
+ seed=JSON.parse(fs.readFileSync(root+"media/lgr1/wardrobe-adjust/base-seeds.json","utf8")),
+ archive=JSON.parse(fs.readFileSync(root+"media/lgr1/wardrobe-adjust/variant-seeds.json","utf8"));
 const dirs=["se","sw","ne","nw"];
-test("24 exact source drafts: all 12 variants x two genders; 4-view PNG strips",()=>{
- assert.equal(seed.format,"lgr-wardrobe-adjust-seeds-v1");
- assert.equal(seed.draftOnly,true);
- assert.deepEqual(seed.dirs,dirs);
- assert.equal(seed.variants.length,24);
- const expected={top:["tee_long","tee_graphic","shirt","shirt_tie","cardigan","cardigan_dots"],
-  pants:["trousers_ripped","baggy","baggy_ripped"],
-  shoes:["sneakers","boots","hightops"]};
- const ids=new Set();
- for(const gender of ["male","female"]){
-  for(const [group,names] of Object.entries(expected)){
-   const actual=seed.variants.filter(v=>v.gender===gender&&v.group===group).map(v=>v.variant);
-   assert.deepEqual(new Set(actual),new Set(names),gender+"/"+group);
-  }
- }
- for(const v of seed.variants){
-  assert.ok(!ids.has(v.id),v.id);ids.add(v.id);
-  assert.equal(v.id,[v.gender,v.group,v.variant].join("_"));
-  assert.equal(v.baseVersion,"official-9");
-  assert.match(v.baseRigSha256,/^[0-9a-f]{64}$/);
-  const names=Object.keys(v.files);
-  assert.equal(names.length,v.group==="top"?2:1);
-  for(const [path,uri] of Object.entries(v.files)){
-   assert.ok(path.startsWith(v.group+"/"),path);
-   assert.match(uri,/^data:image\/png;base64,/);
-   const bytes=Buffer.from(uri.split(",")[1],"base64");
-   assert.equal(bytes.subarray(0,8).toString("hex"),"89504e470d0a1a0a",v.id);
-   assert.equal(bytes.readUInt32BE(16),256,v.id);
-   assert.equal(bytes.readUInt32BE(20),112,v.id);
-  }
- }
+test("Active app is only six artist-approved originals: Male/Female baju celana sepatu",()=>{
+ assert.equal(seed.format,"lgr-wardrobe-adjust-base-index-v1");
+ assert.equal(seed.draftOnly,true);assert.deepEqual(seed.dirs,dirs);
+ assert.equal(seed.entries.length,6);
+ const expected=["male_top_tee","male_pants_trousers","male_shoes_shoes",
+  "female_top_tee","female_pants_trousers","female_shoes_shoes"];
+ assert.deepEqual(seed.entries.map(e=>e.id),expected);
+ assert.equal(new Set(seed.entries.map(e=>e.id)).size,6);
+ for(const item of seed.entries)assert.equal(item.path,"media/lgr1/wardrobe-approved/"+item.id+".json");
+ assert.equal(archive.variants.length,24,"Old derivative sources retained for later revision");
+ assert.match(src,/base-seeds\.json/);
+ assert.match(src,/lgr-wardrobe-adjust-base-index-v1/);
+ assert.match(src,/index\.entries\?\.length!==6/);
+ assert.match(src,/await Promise\.all\(index\.entries\.map/);
+ assert.match(src,/master\.format!=="lgr1-pakaian-v2"/);
+ assert.match(src,/await queueSelect\("male","top","tee","se","front"\)/);
+ assert.doesNotMatch(src,/variant-seeds\.json/);
 });
-test("outfit adjust app reuses four-view Genesis editor and preserves draft-only state",()=>{
- assert.match(page,/lgr-wardrobe-adjust\.js/);
- assert.match(page,/shared-pixel-editor\.js/);
- assert.match(page,/mahluk-pakaian-pixel\.js/);
- assert.match(page,/#pakaianpanel #pk-approve.*display:none!important/);
+test("UI shows only Male/Female and baju celana sepatu, no variant dropdown",()=>{
+ assert.match(page,/id="wa-gender"/);
+ assert.match(page,/id="wa-group"/);
+ assert.match(page,/<option value="top">Atasan<\/option>/);
+ assert.match(page,/<option value="pants">Celana<\/option>/);
+ assert.match(page,/<option value="shoes">Sepatu<\/option>/);
+ assert.match(page,/<select id="wa-variant"[^>]*hidden>/);
+ assert.doesNotMatch(page,/<label>VARIAN/);
+ assert.doesNotMatch(page,/<details class="wa-advanced"/);
+ assert.match(page,/6 BASE/);
+ assert.match(page,/#pakaianpanel\{display:none!important\}/);
+ assert.match(page,/id="wa-cover-1"/);
+ assert.match(page,/id="wa-cover-2"/);
+ assert.match(page,/id="wa-mode"/);
+ assert.match(page,/id="wa-ink"/);
+ assert.match(page,/id="wa-brush"/);
+});
+test("Free paint and skin cover alter garment sprites without changing Genesis and remain draft",()=>{
+ assert.match(src,/await A\(\)\.paintFitStroke\(/);
+ assert.match(src,/await A\(\)\.coverFitSkin\(radius\)/);
+ assert.match(src,/function attachDrag\(\)/);
+ assert.match(src,/function ensureSeeds\(\)/);
+ assert.match(src,/if\(records\[id\]\)continue;/);
  assert.match(src,/root\.PakaianPixelEditor\.open\(\)/);
- assert.match(src,/function ensureSeeds\(/);
- assert.match(src,/if\(records\[id\]\)continue;/); // don't clobber saved art
- assert.match(src,/root\.LGRActor\.master\(gender,tone\)/);
- assert.match(src,/await A\(\)\.translateView\(dx,dy\)/);
- assert.match(src,/function exportAll\(/);
- assert.match(src,/lgr-wardrobe-adjust-bundle-v1/);
+ assert.match(src,/LGR_6_Genesis_Base_Fitting_DRAFTS\.json/);
  assert.doesNotMatch(src,/LGRDB\.save\(/);
-});
-test("core per-direction translate uses source pixels, individual undo, and bounded alpha",()=>{
- assert.match(bridge,/async function translateView\(dx,dy\)/);
- assert.match(bridge,/const original=getCell\(canvas\),after=new Uint8ClampedArray\(original\.data\.length\)/);
- assert.match(bridge,/if\(nx<0\|\|nx>=64\|\|ny<0\|\|ny>=112\)continue/);
- assert.match(bridge,/pushUndo\(original\)/);
- assert.match(bridge,/original\.data\.set\(after\);putCell\(canvas,original\)/);
+ assert.match(bridge,/async function paintFitStroke\(/);
+ assert.match(bridge,/async function coverFitSkin\(radius=1\)/);
+ assert.match(bridge,/pushUndo\(\{data:old\}\)/);
+ assert.match(bridge,/const nearBody=hasBody/);
+ assert.match(bridge,/im\.data\.set\(best,k\)/);
  assert.match(bridge,/function saveOutfitDraft\(\)/);
- assert.match(bridge,/function currentOutfit\(\)/);
- assert.match(bridge,/lgr-pakaian-preview-ready/);
+ assert.match(bridge,/root\.dispatchEvent\(new CustomEvent\("lgr-wardrobe-fit-edited"/);
+ assert.match(page,/shared-pixel-editor\.js/);
 });
