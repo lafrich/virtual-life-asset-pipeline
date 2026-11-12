@@ -1,0 +1,36 @@
+{
+  "format": "lafrich-wardrobe-artist-reference-v1",
+  "id": "male_shoes_shoes",
+  "gender": "male",
+  "group": "shoes",
+  "variant": "shoes",
+  "originalFilename": "LGR_REF_male_tshoes (1).json",
+  "originalExportGroup": "top",
+  "originalExportVariant": "tee",
+  "originalExportPath": "top/tee",
+  "baseVersion": "official-9",
+  "baseRigSha256": "d4de1eb210ed07f7ec6135ff670377a97cecaf341c6eabeefa907863630d248d",
+  "dirs": [
+    "se",
+    "sw",
+    "ne",
+    "nw"
+  ],
+  "cell": [
+    64,
+    112
+  ],
+  "strip": [
+    256,
+    112
+  ],
+  "keyColours": true,
+  "sourceKeyFamily": "C",
+  "targetKeyFamily": "S",
+  "approvedReference": true,
+  "gameMaster": false,
+  "sourceUpdated": "2026-11-12T19:22:40.269Z",
+  "files": {
+    "shoes/shoes": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABwCAYAAADxJ64TAAAEnklEQVR4AezU243bMBAF0E36STspMu2koA34QUAQZFsvMpqZE0CQrQfNe2Zzf375R4BAWQEFUHb0ghP4+lIA/goIFBZQAIWHL3ptgZZeATQFB4GiAgqg6ODFJtAEFEBTcBAoKqAAig5e7NoCPb0C6BLOBAoKKICCQxeZQBdQAF3CmUBBAQVQcOgi1xZYplcASw2fCRQTUADFBi4ugaWAAlhq+EygmIACKDZwcWsLrNMrgLWI7wQKCSiAQsMWlcBaQAGsRXwnUEhAARQatqi1BbbSK4AtFdcIFBFQAEUGLSaBLQEFsKXiGoEiAgqgyKDFrC3wKr0CeCXjOoECAgqgwJBFJPBKQAG8knGdQAEBBVBgyCLWFniXXgG803GPQHIBBZB8wOIReCegAN7puEcguYACSD5g8WoLfEqvAD4JuU8gsYACSDxc0Qh8ElAAn4TcJ5BYQAEkHq5otQX2pFcAe5Q8QyCpgAJIOlixCOwRUAB7lDxDIKmAAkg6WLFqC+xNrwD2SnmOQEIBBZBwqCIR2CugAPZKeY5AQgEFkHCoItUWOJJeARzR8iyBZAIKINlAxSFwREABHNHyLIFkAgog2UDFqS1wNL0COCrmeQKJBBRAomGKQuCogAI4KuZ5AokEFECiYYpSW+BMegVwRs07BJIIKIAkgxSDwBkBBXBGzTsEkggogCSDFKO2wNn0CuCsnPcIJBBQAAmGKAKBswIK4Kyc9wgkEFAACYYoQm2BK+kVwBU97xIILqAAgg/Q9glcEVAAV/S8SyC4gAIIPkDbry1wNb0CuCrofQKBBRRA4OHZOoGrAgrgqqD3CQQWUACBh2frtQXuSK8A7lC0BoGgAgog6OBsm8AdAgrgDkVrEAgqoACCDs62awvclV4B3CVpHQIBBRRAwKHZMoG7BBTAXZLWIRBQQAEEHJot1xa4M70CuFPTWgSCCSiAYAOzXQJ3CiiAOzWtRSCYgAIINjDbrS1wd3oFcLeo9QgEElAAgYZlqwTuFlAAd4taj0AgAQUQaFi2WltgRHoFMELVmgSCCCiAIIOyTQIjBBTACFVrEggioACCDMo2awuMSq8ARslal0AAAQUQYEi2SGCUgAIYJWtdAgEEFECAIdlibYGR6RXASF1rE3i4gAJ4+IBsj8BIAQUwUtfaBB4uoAAePiDbqy0wOr0CGC1sfQIPFphWAN+//36vj6XL+l7/vnwm4ueeY31eZlnfa9+X9zN8bpnWxzLX+l77vrwf+XPLsj6Wedb32vfl/ZGfpxXAVogetJ+3nsl6rWfu56w53+Xq2ft5/Wy73o719Sjf297bsbXffr2ft56Zce2/FsCMgH6DQFSBGfueVgA//vz6sXW0kFvX+7V2P/LRc2ydW66t6+1au5fpaJm2jpZx63q71u+1c8RjmaF9Xh8t0/pa/97uzTimFcCMMH4jl0D7zxA90dMzKIDof2H2T+CCgAK4gOdVAqMEZq2rAGZJ+x0CDxRQAA8cii0RmCWgAGZJ+x0CDxRQAA8cii3VFpiZXgHM1PZbBB4moAAeNhDbITBTQAHM1PZbBB4moAAeNhDbqS0wO/0/AAAA//95gcLiAAAABklEQVQDAJ2u2OG0Qr+EAAAAAElFTkSuQmCC"
+  }
+}
