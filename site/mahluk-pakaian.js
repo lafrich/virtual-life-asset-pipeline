@@ -110,7 +110,7 @@ async function openItem(){
  palettes();await draw();void preview();
 }
 function saveDraft(silent=false,approved=false){
- const store=allVersions(),old=store[kID()]||{},files=S.resetPending?{}:{...(old.files||{})};
+ const store=allVersions(),old=store[kID()]||S.draft||{},files=S.resetPending?{}:{...(old.files||{})};
  for(const p of S.changed)if(S.bufs.has(p))files[p]=S.bufs.get(p).toDataURL("image/png");
  const out={format:"lgr1-wardrobe-master-v1",gender:S.gender,group:S.group,variant:S.variant,baseVersion:S.base,dirs:DIRS,cell:[64,112],keyColours:true,updated:new Date().toISOString(),note:$("pk-note").value,files,approved:!!approved};
  store[kID()]=out;S.resetPending=false;
@@ -225,10 +225,11 @@ async function saveMaster(){
  const btn=$("pk-approve");btn.disabled=true;
  try{
   const record=await buildMaster(),result=await root.LGRDB.save("pakaian",record,{overwrite:true});
-  const local=allVersions();delete local[kID()];localStorage.setItem(KEY,JSON.stringify(local));
+  try{const local=allVersions();delete local[kID()];localStorage.setItem(KEY,JSON.stringify(local))}catch(e){console.warn("Draft cleanup skipped",e)}
   S.draft=result.entry;S.changed.clear();
   $("pk-version").textContent=result.synced?"✓ MASTER v2 · DRIVE":"● MASTER v2 · PENDING SYNC";
   root.LGRWear?.clearCache?.();root.LGRActor?.clearCaches?.();root.LGRGame?.clear?.();
+  root.dispatchEvent(new CustomEvent("lgr-db-changed",{detail:{kind:"pakaian",id:result.entry.id}}));
   await draw();await preview();
   say(result.synced?"Master Pakaian v2 aktif & terverifikasi di Drive. Game membaca versi baru.":
    "Master Pakaian v2 aktif di cache perangkat ini, tapi BELUM sync ke Drive. Hubungkan Drive lalu tekan SYNC.");
