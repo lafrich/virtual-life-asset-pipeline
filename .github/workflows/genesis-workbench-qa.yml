@@ -3,6 +3,12 @@ on:
   push:
     paths:
       - 'site/genesis-workbench.*'
+      - 'site/lgr-wardrobe-adjust.*'
+      - 'site/mahluk-pakaian.js'
+      - 'site/mahluk-pakaian-pixel.js'
+      - 'site/media/lgr1/wardrobe-adjust/**'
+      - 'tests/test_lgr_wardrobe_adjust.cjs'
+      - 'tests/test_lgr_wardrobe_reference_export.cjs'
       - 'site/genesis-base*'
       - 'site/lgr-skin.js'
       - 'site/media/lgr1/base/**'
@@ -60,6 +66,12 @@ on:
   pull_request:
     paths:
       - 'site/genesis-workbench.*'
+      - 'site/lgr-wardrobe-adjust.*'
+      - 'site/mahluk-pakaian.js'
+      - 'site/mahluk-pakaian-pixel.js'
+      - 'site/media/lgr1/wardrobe-adjust/**'
+      - 'tests/test_lgr_wardrobe_adjust.cjs'
+      - 'tests/test_lgr_wardrobe_reference_export.cjs'
       - 'site/genesis-base*'
       - 'site/lgr-skin.js'
       - 'site/media/lgr1/base/**'
