@@ -21,6 +21,10 @@ WORK=ROOT/'_work'
 PACK='indonesia-200-v1'
 N_SHARDS=4
 items=recipe.register()
+# Hard retirement gate: no superseded Indonesia 200 vehicle source can be published.
+assert all(s["category"]!="transport" and not s["id"].startswith("id200_transport_") for s in items), (
+ "Retired Indonesia 200 transport art must never be regenerated"
+)
 
 def check(path):
  assert path.is_file() and path.stat().st_size>32,path
