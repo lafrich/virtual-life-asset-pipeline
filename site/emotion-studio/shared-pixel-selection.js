@@ -69,6 +69,39 @@
    (stamp.pixels instanceof Uint8ClampedArray||Array.isArray(stamp.pixels))&&
    stamp.pixels.length===stamp.w*stamp.h*4;
  }
+ // A Genesis body part may sit on a mostly transparent 64x112 plane.
+ // Copying the full plane makes Paste appear inert or impossible to move.
+ // Bound implicit COPY to actual, non-transparent pixels instead.
+ function opaqueBounds(data,width,height){
+  if(!data||data.length!==width*height*4)return null;
+  let left=width,top=height,right=-1,bottom=-1;
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+   if(!data[(y*width+x)*4+3])continue;
+   left=Math.min(left,x);right=Math.max(right,x);
+   top=Math.min(top,y);bottom=Math.max(bottom,y);
+  }
+  return right<0?null:{x:left,y:top,w:right-left+1,h:bottom-top+1};
+ }
+ function sameRect(a,b){
+  return !!a&&!!b&&a.x===b.x&&a.y===b.y&&a.w===b.w&&a.h===b.h;
+ }
+ function pasteTarget(stamp,width=64,height=112,{selection=null,mirror=false,direction="",bone=""}={}){
+  if(!validStamp(stamp,width,height))throw Error("Invalid native RGBA clipboard");
+  // A SELECT remaining after COPY is the SOURCE box, not a destination.
+  // An explicitly drawn different box acts as a destination anchor.
+  const explicit=selection&&!sameRect(selection,stamp);
+  let x=explicit?selection.x:(mirror?width-stamp.x-stamp.w:stamp.x);
+  let y=explicit?selection.y:stamp.y;
+  // Same-view normal paste must be visible instead of overwriting the exact
+  // source pixels. Pasted content stays movable and Undo-able.
+  if(!explicit&&!mirror&&stamp.direction===direction&&stamp.bone===bone){
+   if(x+stamp.w+2<=width)x+=2;
+   else if(x>=2)x-=2;
+   else if(y+stamp.h+2<=height)y+=2;
+   else if(y>=2)y-=2;
+  }
+  return {x:clamp(x,0,width-1),y:clamp(y,0,height-1),explicit:!!explicit};
+ }
  function paste(data,width,height,stamp,{x=stamp.x,y=stamp.y,mirror=false,replace=false}={}){
   if(!validStamp(stamp,width,height))throw new Error("Invalid native RGBA clipboard");
   const output=new Uint8ClampedArray(data),left=Math.round(x),top=Math.round(y);
@@ -82,5 +115,5 @@
   }
   return output;
  }
- return Object.freeze({rectFromPoints,normalizeRect,contains,flip,translate,copy,paste,validStamp,CLIP_FORMAT});
+ return Object.freeze({rectFromPoints,normalizeRect,contains,flip,translate,copy,paste,validStamp,opaqueBounds,pasteTarget,CLIP_FORMAT});
 });
