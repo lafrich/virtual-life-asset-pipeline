@@ -9,7 +9,7 @@ def sha(buf):return hashlib.sha256(buf).hexdigest()
 def rgba(uri):return Image.open(io.BytesIO(base64.b64decode(uri.split(",",1)[1]))).convert("RGBA")
 class Official8Test(unittest.TestCase):
  def test_approved_final_2(self):
-  idx=read(B/"index.json")
+  idx=read(B/"archive/index-official-8.json")
   self.assertEqual(idx["version"],"official-8")
   self.assertEqual(read(B/"archive/index-official-7.json")["version"],"official-7")
   for gender in ("male","female"):

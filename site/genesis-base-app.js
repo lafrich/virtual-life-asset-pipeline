@@ -357,7 +357,7 @@ async function sourceCanvases(g){
 }
 // Official LGR-1 base (approved by Lafrich, site/media/lgr1/base/) is the
 // default seed; the frozen V6B source is only the fallback / "OLD V6B" reset.
-const OFFICIAL_BASE_VERSION="official-8";
+const OFFICIAL_BASE_VERSION="official-9";
 async function officialRecord(g){
  // Resolve active official-6 male/female bases via approved index and checksum.
  // Previously approved packages stay at their original paths. Never replace a local draft.
