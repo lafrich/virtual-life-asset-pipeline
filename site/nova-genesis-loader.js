@@ -68,8 +68,8 @@ async function exportJson(){
  }catch(e){status("Export gagal: "+e.message,true)}
  finally{setBusy(false)}
 }
-$("load-male").addEventListener("click",()=>void load("male"));
-$("load-female").addEventListener("click",()=>void load("female"));
-$("export").addEventListener("click",()=>void exportJson());
+$("load-male").addEventListener("click",()=>load("male"));
+$("load-female").addEventListener("click",()=>load("female"));
+$("export").addEventListener("click",()=>exportJson());
 frame.addEventListener("load",()=>status("Genesis Base siap. Klik LOAD NOVA MALE atau FEMALE. Setelah load, kamu bisa menggambar pixel dan mengubah pivot/slicing di editor bawaan."));
 })();
