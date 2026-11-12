@@ -1,4 +1,4 @@
-/* PAKAIAN.EXE static integration contract: no stock or Genesis mutation. */
+/* PAKAIAN.EXE integration: only new v2 masters go to shared DB; Genesis unchanged. */
 "use strict";
 const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm");
 const site="site/";
@@ -14,7 +14,9 @@ new vm.Script(editor,{filename:"mahluk-pakaian.js"});
 assert.ok(editor.includes('lgr1-wardrobe-master-v1'));
 assert.ok(editor.includes('LGRWear.lookup')&&editor.includes('LGRWear.recolor'));
 assert.ok(editor.includes('root.LafrichPuppetRenderer.prepare')&&editor.includes('A.motions()'));
-assert.ok(editor.includes('rigFor()')&&editor.includes('pk-base-import'));
+assert.ok(editor.includes('rigFor()')&&editor.includes('buildMaster()'));
+assert.ok(editor.includes('LGRDB.save("pakaian",record,{overwrite:true})')&&editor.includes('lgr1-pakaian-v2'));
+assert.ok(!editor.includes('pk-base-import'), 'do not allow previewing retired Genesis 5 instead of active Genesis');
 assert.ok(editor.includes('pk-export')&&editor.includes('pk-approve'));
 assert.ok(!editor.includes('fetch("https://www.googleapis.com/upload/'));
 assert.ok(!editor.includes('DELETE /'),"Wardrobe editor must not delete Drive data");
