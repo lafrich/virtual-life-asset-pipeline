@@ -50,7 +50,7 @@ async function syncNow(interactive,opts={}){
    const r=await DB().sync({interactive,force:!!interactive,auto:!!opts.auto&&!interactive});
    if(r.skipped||r.shared)return true;
    root.dispatchEvent(new CustomEvent("lgr-db-synced",{detail:r}));
-   status("Database tersinkron: "+DB().all("bergerak").length+" animasi · "+DB().all("beraksi").length+" adegan"+
+   status("Database tersinkron: "+DB().all("bergerak").length+" animasi · "+DB().all("beraksi").length+" adegan · "+DB().all("pakaian").length+" master pakaian"+
     (r.pulled||r.pushed?" (↓"+r.pulled+" ↑"+r.pushed+")":"")+(r.conflicts?" · "+r.conflicts+" konflik → yang terbaru dipakai, versi lain di Backup":"")+
     (r.errors.length?" · "+r.errors.length+" gagal: "+r.errors[0]:""),!!r.errors.length);
    return true;
@@ -64,7 +64,7 @@ function gate(){
  msg.textContent="Sebelum mulai, sync dulu biar animasi & adegan yang kebuka versi terbaru dari Google Drive."+
   (c.syncedAt?" Terakhir sync: "+new Date(c.syncedAt).toLocaleString("id-ID")+".":" Belum pernah sync di browser ini.");
  const go=document.createElement("button");go.type="button";go.id="gate-sync";go.className="primary";go.textContent="☁ CONNECT GOOGLE DRIVE & SYNC";
- const off=document.createElement("button");off.type="button";off.id="gate-offline";off.textContent="Lanjut offline (cache: "+nb+" animasi · "+ns+" adegan)";
+ const off=document.createElement("button");off.type="button";off.id="gate-offline";off.textContent="Lanjut offline (cache: "+nb+" animasi · "+ns+" adegan · "+DB().all("pakaian").length+" pakaian)";
  const box=document.createElement("section");box.className="sa-gate";box.id="sync-gate";box.setAttribute("role","dialog");box.setAttribute("aria-modal","true");
  box.innerHTML='<div class="panel"><strong>▣ MAHLUK HIDUP.EXE · SYNC DATABASE</strong><div></div></div>';
  const body=box.querySelector(".panel>div"),sub=document.createElement("p");sub.className="sa-hint";sub.style.margin="0";
