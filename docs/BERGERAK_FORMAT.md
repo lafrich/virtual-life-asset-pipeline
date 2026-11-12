@@ -51,6 +51,7 @@ entry pulled from Drive). Import helper (auto-fix + Indonesian errors): `LGRImpo
 | `x`, `y` | pixels, −32…32 (normally only `pelvis` = root offset; `torso` x/y also moves the whole body) |
 | `frames[i].dirs` | optional per-view overrides `{se|sw|ne|nw: {<joint>: {a,x,y}}}` — **absolute screen values** for that view, used instead of the mirrored delta |
 | `frames[i].behindTorso` | optional list of limb joints drawn behind the torso in that frame |
+| `frames[i].shadow` | optional ground shadow per frame: `{enabled:true,x:0,y:0,rx:11,ry:3}`. When absent, default is a black ellipse (alpha 56) at foot (32,101). Integer ranges: x −24..24, y −16..16, rx 2..28, ry 1..10. `enabled:false` hides the shadow. Used by Beraksi stage. |
 
 Views: SE edits apply to every view. SW/NW mirror x and angle (the same anatomical hand moves), NE uses SE values.
 Runtime mapping is exactly `LGR1Motion.framePose(poses, motion, frameIndex, dir, sides)` and
@@ -63,3 +64,8 @@ Import also accepts (and converts, listing every fix): a bare `{frames:[…]}` m
 joint aliases (`rightUpperArm`, `left_forearm`, `hips`, `arm_near_upper`…), `angle`/`rotation` keys, plain numbers as
 angles, radians (all |a| ≤ 6.3 with decimals, or `"angleUnit":"rad"`), `fps` instead of `ms`, seconds instead of ms.
 Anything that changes meaning (unknown joint, angle/offset out of range, missing frames, unknown pose) blocks the save.
+
+## Shadow authoring
+In **Bergerak → SHADOW · BAYANGAN**, adjust X/Y, width and depth or drag the shadow with **✥ GESER DI PREVIEW**. Values apply to the selected frame. **⇢ TERAPKAN SEMUA FRAME** applies values to each frame; **RESET FRAME** restores defaults. Flat black alpha 56, no blur or antialiasing.
+
+The LGR-1 motion validator is unchanged for JS/Python parity. LGRDB validates and retains optional `frames[].shadow` in cloud sync and JSON import/export. Shadow is drawn separately on the Beraksi stage, not baked into Genesis or clothing sprites.
