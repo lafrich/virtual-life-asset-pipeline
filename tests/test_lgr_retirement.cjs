@@ -59,7 +59,7 @@ for(const lib of ["emosi-bridge","mahluk-hidup-shell","lgr-db","lgr-import","lgr
  assert.match(shell,new RegExp("\\./"+lib+"\\.js"),"shell must load "+lib);
 assert.match(shell,/href="\.\/genesis-base\.html"/);
 assert.match(shell,/BERGERAK/);assert.match(shell,/BERAKSI/);
-assert.doesNotMatch(shell,/nav-pakaian|pakaianpanel|mahluk-pakaian\\.js/,"Retired Pakaian app must not mount");
+assert.doesNotMatch(shell,/nav-pakaian|pakaianpanel|mahluk-pakaian\.js/,"Retired Pakaian app must not mount");
 assert.match(read("site/mahluk-bergerak.js"),/bg-shadow-box/,"Bergerak has shadow controls");
 assert.match(read("site/lgr-db.js"),/function shadowAt/,"Shadow metadata survives validation");
 assert.doesNotMatch(shell,/genesis-workbench\.js|v6p-|mahluk-hub|cloud-first|drive-sync/);
