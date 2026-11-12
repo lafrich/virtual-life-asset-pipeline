@@ -207,3 +207,8 @@ available in Genesis Base preview. Existing browser drafts must still use
 ### official-7 (2026-11-12): Latest Male/Female final 1 uploads
 
 The active `site/media/lgr1/base/index.json` points to the new immutable `genesis-base-{male,female}-official-7.json` packages. Raw `male final 1.json` and `female final 1.json` are kept byte-for-byte as `candidates/*-final-20261112-v3.json`. Male is already a valid keyed package. Female was an LGR draft in the Light skin palette; the approved pipeline maps only its exact six Light ramp colours to V6P skin keys, checks exact per-pixel reverse mapping, and preserves masks, pivots, placements, draw orders, manual slicing, and non-skin accents. Previous active index is archived in `archive/index-official-6.json`; earlier packages remain untouched.
+
+
+### official-8 (2026-11-12): Male/Female final 2 become active
+
+Latest approved inputs `male final 2.json` and `female final 2.json` are saved byte-for-byte in `site/media/lgr1/base/candidates/*-final-20261112-v4.json`. Male was an LGR draft in Light colour form; its exact three skin shades were keyed to V6P (5,173 keyed pixels; exact reverse pixel check). Female was a keyed `lafrich-genesis-base-v1` package mislabeled Male; only its identity metadata was corrected, and the rig SHA-256 was recalculated (5,101 keyed pixels). All anatomical geometry, slicing, manual locks, masks, pivots, drawing order, body sprites, skin ramps, and non-skin accents remain authored. Live `index.json` selects immutable `genesis-base-{male,female}-official-8.json`; `archive/index-official-7.json` is the exact preceding index. The user must explicitly reset old browser drafts to load this new approved baseline.

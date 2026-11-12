@@ -182,6 +182,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_nova_official_5.py' -v
           python3 -m unittest discover -s tests -p 'test_genesis_official_6.py' -v
           python3 -m unittest discover -s tests -p 'test_genesis_official_7.py' -v
+          python3 -m unittest discover -s tests -p 'test_genesis_official_8.py' -v
           python3 -m unittest discover -s tests -p 'test_genesis_procedural_runtime.py' -v
           python3 -m unittest discover -s tests -p 'test_lgr1_parity.py' -v
 

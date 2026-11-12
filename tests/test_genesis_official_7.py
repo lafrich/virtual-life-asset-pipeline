@@ -1,4 +1,4 @@
-"""Regression for active official-7: exact uploads, rigs, skin-key fidelity and historical fallback."""
+"""Regression for archived official-7: exact uploads, rigs, skin-key fidelity and historical fallback."""
 import base64,hashlib,io,json,unittest
 from pathlib import Path
 from PIL import Image

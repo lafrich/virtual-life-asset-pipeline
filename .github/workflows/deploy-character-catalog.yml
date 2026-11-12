@@ -190,6 +190,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_nova_official_5.py' -v
           python -m unittest discover -s tests -p 'test_genesis_official_6.py' -v
           python -m unittest discover -s tests -p 'test_genesis_official_7.py' -v
+          python -m unittest discover -s tests -p 'test_genesis_official_8.py' -v
           test -s _site/genesis-workbench.html
           test -s _site/genesis-cloud.js
           test -s _site/genesis-base.html
@@ -201,9 +202,9 @@ jobs:
           test ! -e _site/genesis-slice-compare.html
           test -s _site/lgr-skin.js
           test -s _site/media/lgr1/base/index.json
-          test -s _site/media/lgr1/base/genesis-base-male-official-7.json
-          test -s _site/media/lgr1/base/genesis-base-female-official-7.json
-          python -c 'import json,pathlib; b=pathlib.Path("_site/media/lgr1/base"); x=json.loads((b/"index.json").read_text()); assert x["version"]=="official-7"; assert {x["bases"][g]["package"] for g in ("male","female")}=={"genesis-base-male-official-7.json","genesis-base-female-official-7.json"}; print("Verified deployed official-7 Genesis bases")'
+          test -s _site/media/lgr1/base/genesis-base-male-official-8.json
+          test -s _site/media/lgr1/base/genesis-base-female-official-8.json
+          python -c 'import json,pathlib; b=pathlib.Path("_site/media/lgr1/base"); x=json.loads((b/"index.json").read_text()); assert x["version"]=="official-8"; assert {x["bases"][g]["package"] for g in ("male","female")}=={"genesis-base-male-official-8.json","genesis-base-female-official-8.json"}; print("Verified deployed official-8 Genesis bases")'
           test -s _site/media/lgr1/base/genesis-base-male.json
           test -s _site/media/lgr1/base/genesis-base-female.json
           test -s _site/mahluk-hidup-shell.js

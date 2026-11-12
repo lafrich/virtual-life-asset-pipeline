@@ -92,7 +92,7 @@ test('official-4 promotes the Lafrich Female slicing without changing original a
 });
 
 
-test('historical Nova official-5 and final official-6 stay archived while official-7 is active',()=>{
+test('historical Nova official-5 and final official-6 stay archived while official-8 is active',()=>{
  assert.equal(active.version,'official-8');
  assert.equal(official7.version,'official-7');
  assert.equal(official6.version,'official-6');
