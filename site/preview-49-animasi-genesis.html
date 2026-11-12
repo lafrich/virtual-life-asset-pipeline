@@ -70,7 +70,7 @@ async function boot(){
  el("next").onclick=()=>choose(ids[(ids.indexOf(selected)+1)%ids.length]);
  selected=ids.includes("run")?"run":ids[0];build();choose(selected);
  await window.LGRActor.master("male","light");
- ready=true;mainRender();
+ ready=true;mainRender();for(const card of visible.values())if(card.dataset.visible==='true')miniRender(card.dataset.id,card);
  }catch(err){status("Preview tidak berhasil dimuat: "+err.message,true);console.error(err)}
 }
 requestAnimationFrame(animate);boot();
