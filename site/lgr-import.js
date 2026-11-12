@@ -108,6 +108,8 @@ function normalizeBergerak(input,ctx={}){
   if(ms<40||ms>2000)errors.push(at+".ms: "+ms+" di luar 40–2000 ms.");
   const parts=normalizePose(f.parts??f.pose??f.joints??f.bones,at+".parts",fixes,errors,allA,f.parts===undefined);
   const fr={ms,parts};
+  // Preserve optional authored shadow, validation happens in LGRDB.
+  if(f.shadow!==undefined)fr.shadow=f.shadow;
   if(f.behindTorso!==undefined){
    const b=Array.isArray(f.behindTorso)?f.behindTorso:[];const ok=[];
    for(const x of b){const j=jointName(x);if(j&&!["head","torso","pelvis"].includes(j.name))ok.push(j.name);else fixes.push(at+".behindTorso: '"+x+"' diabaikan (cuma lengan/kaki).")}
