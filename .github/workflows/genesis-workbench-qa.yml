@@ -144,6 +144,8 @@ jobs:
           node --test tests/test_lgr_pakaian_v2.cjs
           node --test tests/test_lgr_wardrobe_cover.cjs
           node --test tests/test_lgr_wardrobe_reference_export.cjs
+          node --test tests/test_lgr_wardrobe_adjust.cjs
+          node --check site/lgr-wardrobe-adjust.js
           node --check site/mahluk-pakaian-pixel.js
           node --check site/emotion-studio/shared-pixel-editor.js
           node tests/test_lgr_cloud_safety.cjs
