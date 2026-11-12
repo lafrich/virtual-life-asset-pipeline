@@ -2,10 +2,10 @@
 <html lang="id"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#154b8d"/>
-<title>Genesis · Outfit Adjust — LGR Wardrobe Drafts</title>
+<title>Genesis · Base Fitting — Baju, Celana, Sepatu</title>
 <link rel="stylesheet" href="./mahluk-subapps.css?v=mh-sync-1"/>
 <link rel="stylesheet" href="./mahluk-action-frame-pixel.css?v=genesis-workbench-v1"/>
-<link rel="stylesheet" href="./mahluk-pakaian.css?v=wa24-1"/>
+<link rel="stylesheet" href="./mahluk-pakaian.css?v=wa-base6-1"/>
 <style>
 :root{font-family:Tahoma,Arial,sans-serif;color:#24354f;background:#e4eaf1}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#dbe6f4;font-size:12px}
@@ -14,7 +14,7 @@
 .wa-subtitle{font-size:11px;color:#dce9fa}
 .wa-wrap{width:min(1500px,100%);margin:0 auto;padding:12px}
 .wa-alert{padding:9px 11px;margin-bottom:10px;background:#f4f9ff;border:1px solid #a5c6e7;color:#27456a;border-radius:6px}
-.wa-controls{display:grid;grid-template-columns:1.15fr 1fr 1.25fr 1fr 1fr;gap:8px;align-items:end;margin:0 0 12px}
+.wa-controls{display:grid;grid-template-columns:1.1fr 1.1fr 1fr 1fr;gap:8px;align-items:end;margin:0 0 12px}
 .wa-controls label,.wa-nudge label,.wa-toolbar label{font-size:11px;color:#375574;font-weight:700;display:flex;flex-direction:column;gap:4px}
 .wa-controls select,.wa-nudge input,.wa-nudge select,.wa-toolbar select{width:100%;background:white;border:1px solid #8da8c8;border-radius:4px;padding:7px;color:#152c49;min-height:34px}
 .wa-board{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(390px,1.22fr);gap:12px}
@@ -50,6 +50,13 @@ button.approved{background:#e0f2de;border-color:#6faa78;color:#276437}
 .wa-advanced summary{cursor:pointer;font-size:12px;font-weight:700;color:#24588e;padding:7px}
 #pakaianpanel #pk-approve,#pakaianpanel #pk-export,#pakaianpanel #pk-cover-body{display:none!important}
 #pakaianpanel{min-height:0;margin:4px 0 8px;overflow:auto}
+/* Six-base workbench: keep the native editor controllers mounted, not visible. */
+#pakaianpanel{display:none!important}
+.wa-fit-controls{display:flex;gap:7px;flex-wrap:wrap;margin:7px 0 10px;align-items:end}
+.wa-fit-controls label{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:bold;color:#335c81}
+.wa-fit-controls select{min-width:76px;padding:7px;border-radius:4px;border:1px solid #9bb3d1}
+.wa-fit-controls button{min-width:110px}
+#wa-edit-help{margin:5px 0;color:#42688d;font-size:11px}
 #pakaianpanel .pk-layout{min-height:0}
 /* Reused full-native Pixel Editor overlay: Male/Female four-view ghost controls. */
 #pixelOverlay.wardrobe-source-pixel .pk-ref-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin:5px 0 8px}
@@ -63,21 +70,27 @@ button.approved{background:#e0f2de;border-color:#6faa78;color:#276437}
 </style></head>
 <body>
 <header class="wa-titlebar"><strong>▨ GENESIS · OUTFIT ADJUST</strong>
- <span class="wa-subtitle">24 VARIAN / MALE &amp; FEMALE / 4 ARAH / NATIVE 1×</span>
+ <span class="wa-subtitle">6 BASE / MALE &amp; FEMALE / 4 ARAH / NATIVE 1×</span>
  <a href="./genesis-base.html">GENESIS BASE</a></header>
 <div class="wa-wrap">
- <div class="wa-alert" id="wa-count">24 outfit variants — draft editor. Genesis master dan game tidak diubah.</div>
+ <div class="wa-alert" id="wa-count">6 BASE · BAJU / CELANA / SEPATU · Genesis master dan game tidak diubah.</div>
  <div class="wa-controls">
   <label>GENDER<select id="wa-gender"><option value="male">Male</option><option value="female">Female</option></select></label>
   <label>KATEGORI<select id="wa-group"><option value="top">Atasan</option><option value="pants">Celana</option><option value="shoes">Sepatu</option></select></label>
-  <label>VARIAN<select id="wa-variant"></select></label>
+  <select id="wa-variant" aria-label="Base internal" hidden></select>
   <label>ARAH<select id="wa-dir"><option value="se">SE</option><option value="sw">SW</option><option value="ne">NE</option><option value="nw">NW</option></select></label>
   <label>LAYER<select id="wa-side"><option value="front">Front</option><option value="back">Back</option></select></label>
  </div>
  <div class="wa-board">
   <section class="wa-card"><h2>01 · GESER PAKAIAN DI KARAKTER</h2>
    <div class="wa-preview"><canvas id="wa-stage" width="64" height="112" tabindex="0" aria-label="Drag seluruh pixel pakaian pada karakter"></canvas></div>
-   <div class="wa-help"><span>Drag = pindah seluruh pakaian</span><span>•</span><span>1× pixel; tidak antialias</span></div>
+   <div class="wa-help"><span id="wa-edit-help">Drag = geser keseluruhan pakaian di arah yang dipilih.</span><span>•</span><span>1× pixel; tidak antialias</span></div>
+   <div class="wa-fit-controls">
+    <label>MODE<select id="wa-mode"><option value="move">GESER</option><option value="paint">DRAW BEBAS</option><option value="erase">ERASE</option></select></label>
+    <label>PIXEL KEY<select id="wa-ink"></select></label>
+    <label>BRUSH<select id="wa-brush"><option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option></select></label>
+    <button id="wa-cover-1" type="button">TUTUP GARIS KULIT 1PX</button><button id="wa-cover-2" type="button">TUTUP GARIS KULIT 2PX</button>
+   </div>
    <div class="wa-toolbar">
     <label><span><input id="wa-show-body" type="checkbox" checked/> Overlay Genesis</span></label>
     <label><span><input id="wa-show-grid" type="checkbox"/> Grid 1×1</span></label>
@@ -94,9 +107,9 @@ button.approved{background:#e0f2de;border-color:#6faa78;color:#276437}
     </div>
     <div class="wa-help" style="display:block"><strong id="wa-offset">SE · FRONT</strong><p>Panah memindahkan sprite di arah dan layer terpilih saja, bukan Genesis.</p></div>
    </div>
-   <div class="wa-tools"><button id="wa-undo" type="button">↶ UNDO</button><button id="wa-redo" type="button">↷ REDO</button><button id="wa-reset" type="button">↺ RESET VARIAN</button></div>
+   <div class="wa-tools"><button id="wa-undo" type="button">↶ UNDO</button><button id="wa-redo" type="button">↷ REDO</button><button id="wa-reset" type="button">↺ RESET BASE</button></div>
   </section>
-  <section class="wa-card"><h2>02 · REVIEW 4 ARAH</h2>
+  <section class="wa-card"><h2>02 · REVIEW GENESIS 4 ARAH</h2>
    <div id="wa-active">MEMUAT…</div><div id="wa-rig">Genesis official</div>
    <p>Klik arah untuk memilih view yang ingin digeser. Thumbnail memakai renderer resmi LGR; tampilan besar khusus bantu posisi layer.</p>
    <div class="wa-view-group">
@@ -109,14 +122,14 @@ button.approved{background:#e0f2de;border-color:#6faa78;color:#276437}
    <div class="wa-tools">
      <button id="wa-open-pixel" type="button" class="primary">✎ PIXEL EDITOR · SELECT / MOVE / ERASE</button>
      <button id="wa-save" type="button" class="approved">▣ SAVE DRAFT</button>
-     <button id="wa-export" type="button" class="approved">↓ EXPORT JSON VARIAN</button>
-     <button id="wa-export-all" type="button">↓ EXPORT SEMUA 24 JSON</button>
+     <button id="wa-export" type="button" class="approved">↓ EXPORT BASE JSON</button>
+     <button id="wa-export-all" type="button">↓ EXPORT SEMUA 6 BASE JSON</button>
    </div>
-   <p><strong>Save Draft</strong> = browser perangkat ini saja. <strong>Export JSON</strong> = file yang bisa dikirim kembali untuk direview. Tidak auto-approve / sync ke Drive.</p>
+   <p><strong>DRAW BEBAS</strong> tidak dibatasi siluet pakaian lama. <strong>TUTUP GARIS KULIT</strong> menambah pixel garment dekat badan Genesis pada satu arah/layer. <strong>Save Draft</strong> disimpan di browser; <strong>Export JSON</strong> untuk review. Tidak auto-approve / sync Drive.</p>
    <div id="wa-status" role="status">Memuat editor…</div>
   </section>
  </div>
- <details class="wa-advanced" id="wa-advanced"><summary>▣ ADVANCED EDITOR · PIXEL PAINT / GRID / IMPORT / COLOR / PREVIEW</summary><div id="pakaianpanel"></div></details>
+ <div id="pakaianpanel" aria-hidden="true"></div>
 </div>
 <script src="./lafrich-puppet-core.js"></script>
 <script src="./lgr1-raster.js"></script>
@@ -129,7 +142,7 @@ button.approved{background:#e0f2de;border-color:#6faa78;color:#276437}
 <script src="./lgr-wardrobe-cover.js"></script>
 <script src="./emotion-studio/shared-pixel-selection.js"></script>
 <script src="./emotion-studio/shared-pixel-editor.js?v=wa24-1"></script>
-<script src="./mahluk-pakaian.js?v=wa24-1"></script>
+<script src="./mahluk-pakaian.js?v=wa-base6-1"></script>
 <script src="./mahluk-pakaian-pixel.js?v=wa24-1"></script>
-<script src="./lgr-wardrobe-adjust.js?v=wa24-1"></script>
+<script src="./lgr-wardrobe-adjust.js?v=wa-base6-1"></script>
 </body></html>
