@@ -325,7 +325,8 @@ async function importMaster(f){
   for(const [k,v] of Object.entries(p.files)){
    if(!validPath(k)||typeof v!=="string"||!v.startsWith("data:image/png;base64,")||v.length>800000)
     throw Error("Asset key invalid: "+k);
-   files[k]=v;
+   files[k]=p.sourceKeyFamily==="C"&&["pants","shoes"].includes(mapping.group)?
+    await convertReferenceKeyStrip(v,mapping.group):v;
   }
  }
  if(S.changed.size)saveDraft(true);
