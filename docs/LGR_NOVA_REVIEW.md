@@ -174,3 +174,40 @@ provide separate hand/foot gesture controls. Fully matching the reference
 would require a new versioned bone hierarchy, IK, and asset/engine migration
 without overwriting existing LGR-1 saves. Candidate V5 is **not** a claimed
 complete answer to this. No live game or official base was modified.
+
+## 2026-11-12: 16-part prototype formally REJECTED after owner review
+
+Owner inspected the actual animation and reported that it was visually
+worse, with holes. This assessment takes precedence over earlier claims
+based on neutral-pose pixel identity. **Do not promote the 16-part demo.**
+
+Independent QA now samples 11 timesteps (0.0–1.0) across five actions,
+four directions and two genders (**440 total actual frames**) using the
+unchanged V6 Pillow diagnostic renderer. Results:
+- **54 / 440** frames contain disconnected opaque islands (4-connectivity).
+- **64 detached pixels** total across sampled frames; worst frame 3.
+- Neutral-pose equality is *not* evidence of motion quality.
+- These metrics do not quantify ugly silhouettes, joints that appear
+  anatomically wrong while still connected, or native LGR1Raster output.
+
+Root implementation defect: `build_lgr_nova_v6_demo.py` first flattens V5
+body art and then repartitions alpha by absolute scanline
+(`head y>=46`, `forearms y>=74`, `shins y>=100`) with no complete,
+individually drawn/underpainted anatomical sprites at neck, wrist and ankle.
+A flat mask cannot invent the hidden overlapping geometry that is revealed
+by rotation. Automatically increasing bone count was not the right next step.
+
+Required corrective architecture: author one canonical, complete pixel
+sprite **per anatomical part and direction**, with hidden underlaps and
+deliberate parent-child joint ownership at rest. Add forward-kinematics
+and pose-space overlap guards driven by these parts; introduce separate
+hand/foot/neck bones only after the 11-part baseline passes visual stress
+tests with no orphan islands, clipping, detached shoulders, pelvis bands
+or outline bulges. All pose animation remains numeric; never redraw
+per animation. Run exact native JS visual QA before any catalog promotion.
+
+Audit script/artifacts exist in the conversation:
+`LGR_Nova_Lab/audit_v6_rejected.py`,
+`v6_16part_demo/qa/v6_rejection_report.json`,
+`v6_16part_demo/preview/LGR-V6-FAILED-AUDIT.png`.
+The production LGR masters, GitHub Pages and Drive are unchanged.
