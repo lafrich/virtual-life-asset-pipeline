@@ -85,3 +85,39 @@ Emosi/wardrobe fitting, memory/performance and floor collision have not been
 verified. A rigid 11-part cutout cannot guarantee all possible animations
 without better IK, foot/hand articulations and procedural deformation. **No
 per-action redraw is required to pursue those engine upgrades.**
+
+## 2026-11-12 follow-up: V3 no-gaps QA (candidate-only)
+
+**New review attachment:** `LGR-Nova-V3-No-Gaps-QA.zip`, containing
+`build_lgr_nova_v3.py`, candidate Male/Female Genesis Base JSON,
+six original `lgr1-motion-v1` clips, 4-direction animated GIFs, stress-strip
+PNGs, and `v3/qa/QA_REPORT.json`.
+
+Exactly **the same 64×112 1× source pixels, body masks, and per-bone pivots
+as V2**; V3 changes candidate `rig.capRadius` to 4–6 (official LGR
+format permits 0–6), with a new checksum and metadata. The Pillow diagnostic
+uses fixed hidden overlap caps derived from the rest master, plus an
+*action-independent* 1px seam guard whose pixels come only from nearby
+existing skin palette colours. **No animation pose is redrawn.**
+
+Automated Pillow QA across **272 actual frames**, 2 genders × 4 directions
+× 6 motion clips (idle has 4 frames, others 6):
+- Frames with disconnected components: **0 / 272**
+- Pixels in separated body islands: **0 max**
+- Unresolved parent–child adjacency reports: **0**
+- Residual near-joint 1px cracks under the diagnostic guard: **0 / 272**
+- Micro crack pixels restored using existing palette: **384 across all frames**
+- Maximum changed output pixels in a single diagnostic frame: **9**
+- Rest pose difference from V2 in all eight gender/direction cells: **0px**
+- Sleeping body area outside original horizontal 64px viewport: still
+  up to **26.15%**; wide renderer and gameplay collision/culling remain
+  unverified
+
+Scope limitation: these results are **not** a statement of identical output
+in native JS `LGR1Raster`. The production renderer already has its own
+joint-fill and underlap code; its outputs should be tested against these
+candidate poses in Mahluk Hidup before any approval or deployment.
+The V3 Python QA is not a production renderer patch.
+
+The existing draft PR stays unmerged. Active official-4 index, official Male,
+official Female and cloud master files remain untouched.
