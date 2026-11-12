@@ -176,6 +176,14 @@ jobs:
         run: python tools/generate_archive_previews.py
       - name: Build auto-discovered character catalog
         run: python tools/build_character_catalog.py
+      - name: Publish Lafrich artist-authored six-item wardrobe reference v2
+        run: |
+          python -m unittest discover -s tests -p 'test_lgr_wardrobe_reference_baselines.py' -v
+          python tools/build_lgr_wardrobe_reference_v2.py
+          for id in male_top_tee female_top_tee male_pants_trousers female_pants_trousers male_shoes_shoes female_shoes_shoes; do
+            test -s "_site/media/lgr1/wardrobe-approved/${id}.json"
+          done
+          test -s _site/media/lgr1/wardrobe-approved/index.json
       - name: Keep legacy Mahluk motion registry permanently empty
         run: python tools/build_mahluk_motion_registry.py _site/motion-packs
       - name: Verify LGR-1 public routes and blocked legacy sync
