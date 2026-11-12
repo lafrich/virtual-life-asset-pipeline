@@ -29,7 +29,7 @@ button:focus-visible,a:focus-visible{outline:2px solid #e5a52d;outline-offset:1p
 <body>
 <div id="app">
  <header class="titlebar"><strong>▣ MAHLUK HIDUP.EXE</strong><small>EMOSI · BERGERAK · BERAKSI · PAKAIAN · LGR-1 · by Lafrich</small><div class="winbuttons" aria-hidden="true"><span>—</span><span>□</span><span>×</span></div></header>
- <nav id="topnav"><button id="nav-emotion" aria-selected="true">☺ EMOSI.EXE</button><button id="nav-bergerak" aria-selected="false">✦ BERGERAK</button><button id="nav-beraksi" aria-selected="false">⚔ BERAKSI</button><button id="nav-pakaian" aria-selected="false">▣ PAKAIAN</button><button id="nav-lgr" aria-selected="false">◈ INFO</button><a id="open-genesis-base" class="navlink" href="./genesis-base.html">↗ GENESIS BASE APP</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="db-sync" title="Sync database Bergerak + Beraksi dari Google Drive">↻ SYNC</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
+ <nav id="topnav"><button id="nav-emotion" aria-selected="true">☺ EMOSI.EXE</button><button id="nav-bergerak" aria-selected="false">✦ BERGERAK</button><button id="nav-beraksi" aria-selected="false">⚔ BERAKSI</button><button id="nav-pakaian" aria-selected="false">▣ PAKAIAN</button><button id="nav-lgr" aria-selected="false">◈ INFO</button><a id="open-genesis-base" class="navlink" href="./genesis-base.html">↗ GENESIS BASE APP</a><span class="space"></span><button id="connect-drive">☁ CONNECT DRIVE</button><button id="db-sync" title="Sync database Bergerak, Beraksi, dan Pakaian dari Google Drive">↻ SYNC</button><button id="fullscreen">↗ FULLSCREEN</button></nav>
  <div id="emotionpanel"><iframe id="emotion-frame" title="Emosi.exe original face and dialogue editor" src="about:blank" allow="clipboard-read; clipboard-write"></iframe></div>
  <section id="lgrpanel" hidden>
   <div class="card">
@@ -40,8 +40,8 @@ button:focus-visible,a:focus-visible{outline:2px solid #e5a52d;outline-offset:1p
     <li><b>Emosi</b> — faces stay in Emosi.exe (tab ☺ EMOSI.EXE). <span id="face-count">Checking Emosi faces…</span></li>
     <li><b>✦ Bergerak</b> — bikin animasi: gerakin part per frame, simpan ke database animasi (cloud).</li>
     <li><b>⚔ Beraksi</b> — bikin adegan: beberapa karakter, baju, animasi, Emosi, posisi, flip, depan/belakang, durasi.</li>
-    <li><b>▣ Pakaian</b> — edit wardrobe keyed stock per Male/Female dan 4 sudut, preview dengan rig, simpan draft dan export master JSON; belum ada Drive publish otomatis.</li>
-    <li><b>Database</b> — Drive: Membangun / Mahluk Hidup / Database / Bergerak · Beraksi (Backup untuk konflik/hapus). Dibaca juga oleh Mainkan / Semesta lewat <code>lgr-db.js</code>.</li>
+    <li><b>▣ Pakaian</b> — revisi wardrobe untuk Genesis aktif, 4 sudut, preview gerak, simpan master baru format v2 ke Database/Pakaian dan sinkronkan dengan game.</li>
+    <li><b>Database</b> — Drive: Membangun / Mahluk Hidup / Database / Bergerak · Beraksi · Pakaian (Backup untuk konflik/hapus). Dibaca juga oleh Mainkan / Semesta lewat <code>lgr-db.js</code>.</li>
    </ul>
    <p class="small">Your Drive data (Genesis Masters, drafts, motions, Emosi) is untouched.</p>
   </div>
