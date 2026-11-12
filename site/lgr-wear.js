@@ -52,34 +52,57 @@ function strip(path){
  * Hair retains the old art fallback because its head geometry was preserved.
  * Tops, pants, shoes, glasses and facial do NOT fall back to retired V6P art.
  */
+const OFFICIAL_REF_IDS=new Set([
+ "male_top_tee","female_top_tee",
+ "male_pants_trousers","female_pants_trousers",
+ "male_shoes_shoes","female_shoes_shoes"
+]);
+const approvedRefs=new Map();
+async function referenceMaster(id){
+ if(!OFFICIAL_REF_IDS.has(id))return null;
+ if(!approvedRefs.has(id)){
+  const url=(root.LGRDB_BASE||"")+"media/lgr1/wardrobe-approved/"+id+".json";
+  const promise=(async()=>{try{
+   const result=await root.fetch(url,{cache:"no-cache"});
+   if(!result.ok)return null;
+   const entry=await result.json();
+   if(entry?.format!=="lgr1-pakaian-v2"||entry.id!==id||entry.approved!==true)return null;
+   return entry;
+  }catch{return null}})();
+  approvedRefs.set(id,promise);
+ }
+ return approvedRefs.get(id);
+}
+function imageForMaster(entry,path,prefix){
+ const key=prefix+"|"+entry.id+"|"+entry.rev+"|"+entry.updated+"|"+path;
+ if(!strips.has(key)){
+  const im=new Image(),p=new Promise(res=>{im.onload=()=>res(im);im.onerror=()=>res(null)});
+  im.src=entry.files[path];strips.set(key,p);
+ }
+ return strips.get(key);
+}
 async function activeStrip(path,gender){
- const category=path.split("/")[0];
- const DB=root?.LGRDB;
- const base=path.split("/")[1];
+ const category=path.split("/")[0],base=path.split("/")[1];
  const variant=category==="hair"?base.replace(/_(front|back)$/,""):
    category==="top"?base.replace(/_back(_f)?$/,"").replace(/_f$/,""):
    ["pants","shoes"].includes(category)?base.replace(/_f$/,""):base;
  const id=gender+"_"+category+"_"+variant;
- const entry=DB?.get?.("pakaian",id);
- if(entry&&entry.format==="lgr1-pakaian-v2"&&entry.gender===gender&&entry.approved&&entry.files?.[path]){
-  let valid=false;
-  try{
-   const bases=await root?.LGRActor?.loadBases?.();
-   valid=entry.baseRigSha256===bases?.[gender]?.pkg?.rigSha256&&entry.baseVersion===bases?.[gender]?.version;
-  }catch{valid=false}
-  if(valid){
-   const key="approved|"+entry.id+"|"+entry.rev+"|"+entry.updated+"|"+path;
-   if(!strips.has(key)){
-    const im=new Image(),p=new Promise(res=>{im.onload=()=>res(im);im.onerror=()=>res(null)});
-    im.src=entry.files[path];strips.set(key,p);
-   }
-   return strips.get(key);
-  }
- }
- // Hair was explicitly kept compatible by the artist; all other OLD art retires.
+ let live=null;
+ try{live=(await root?.LGRActor?.loadBases?.())?.[gender]}catch{}
+ const compatible=entry=>Boolean(entry&&entry.format==="lgr1-pakaian-v2"&&
+  entry.id===id&&entry.gender===gender&&entry.group===category&&
+  entry.variant===variant&&entry.approved===true&&entry.files?.[path]&&
+  live?.pkg?.rigSha256===entry.baseRigSha256&&live?.version===entry.baseVersion);
+ // User-saved cloud/local v2 masters take precedence over shipped references.
+ const saved=root?.LGRDB?.get?.("pakaian",id);
+ if(compatible(saved))return imageForMaster(saved,path,"approved");
+ // Artist-approved six default reference fits ship with the game. Never
+ // silently revive retired V6P clothing for unsupported variants.
+ const fallback=await referenceMaster(id);
+ if(compatible(fallback))return imageForMaster(fallback,path,"published");
  return category==="hair"?strip(path):null;
 }
-function clearCache(){strips.clear()}
+function clearCache(){strips.clear();approvedRefs.clear()}
 // spec {top,topColor,pants,pantsColor,shoes,shoesColor,hair,hairColor}; gender; skin tone
 // → {pants:{se:dataURL,…}, top:…, top_back:…, shoes:…, hair_back:…, hair_front:…}
 async function layers(spec,gender,tone){
