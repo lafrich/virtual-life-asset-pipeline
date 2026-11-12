@@ -1,0 +1,137 @@
+name: Promote female very final Genesis to official-9
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/promote-genesis-female-very-final.yml'
+      - 'site/media/lgr1/base/candidates/female-very-final-20261112-v5.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: lgr1-genesis-female-official-9
+  cancel-in-progress: false
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Pillow
+        run: python -m pip install pillow
+      - name: Validate artwork and promote female only
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64,copy,hashlib,io,json
+          from collections import Counter
+          from pathlib import Path
+          from PIL import Image
+          B=Path('site/media/lgr1/base')
+          srcpath=B/'candidates/female-very-final-20261112-v5.json'
+          srcbytes=srcpath.read_bytes()
+          sha=lambda x:hashlib.sha256(x).hexdigest()
+          assert sha(srcbytes)=='7a7b5e74a2f37edb0c0a8b3a8327fa6de696fb87daf1e53d2dfa9060562c6a47'
+          source=json.loads(srcbytes)
+          assert source['format']=='lgr-1-draft-v1' and source['gender']=='female'
+          orig=source['record']['rig']
+          assert orig['id']=='lafrich_female' and orig['gender']=='female'
+          assert orig['format']=='lafrich-puppet-master-v1'
+          assert source['record']['skin']['tone']=='light'
+          ixfile=B/'index.json';ix=json.loads(ixfile.read_text())
+          assert ix['version']=='official-8'
+          oldmale=copy.deepcopy(ix['bases']['male'])
+          oldfemale=copy.deepcopy(ix['bases']['female'])
+          oldpkg=json.loads((B/oldfemale['package']).read_text())
+          assert oldpkg['format']=='lafrich-genesis-base-v1' and oldpkg['gender']=='female'
+          assert oldpkg['rigSha256']==oldfemale['rigSha256']
+          archive=B/'archive/index-official-8.json'
+          dest=B/'genesis-base-female-official-9.json'
+          assert not archive.exists() and not dest.exists()
+          pkg=copy.deepcopy(oldpkg)
+          pkg['gender']='female';pkg['id']='lafrich_female'
+          pkg['rig']=copy.deepcopy(orig)
+          pkg['manualSlice']=copy.deepcopy(source['record']['manual'])
+          pkg['edited']=source['record']['edited']
+          pkg['notes']=''
+          skin=pkg['skin']; skin['baseTone']='light';skin['preview']={'tone':'light'}
+          colors={tuple(bytes.fromhex(skin['tones']['light'][k][1:])):tuple(bytes.fromhex(skin['keys'][k][1:])) for k in skin['order']}
+          inverse={v:k for k,v in colors.items()}
+          def decode(uri):
+            assert uri.startswith('data:image/png;base64,')
+            im=Image.open(io.BytesIO(base64.b64decode(uri.split(',',1)[1]))).convert('RGBA')
+            assert im.size==(64,112)
+            return im
+          def encode(im):
+            b=io.BytesIO();im.save(b,format='PNG',optimize=True)
+            return 'data:image/png;base64,'+base64.b64encode(b.getvalue()).decode('ascii')
+          count=0;off=Counter()
+          for layer,views in pkg['rig']['layers'].items():
+            for direction,url in list(views.items()):
+              original=list(decode(url).getdata())
+              changed=[]
+              for r,g,b,a in original:
+                k=colors.get((r,g,b)) if a else None
+                changed.append((*k,a) if k else (r,g,b,a))
+                if k:count+=1
+                elif a:off['#%02X%02X%02X'%(r,g,b)]+=1
+              assert [(*inverse.get(x[:3],x[:3]),x[3]) if x[3] else x for x in changed]==original,(layer,direction)
+              im=decode(url);im.putdata(changed);views[direction]=encode(im)
+          assert count==5101,count
+          assert dict(off)=={'#D98282':4,'#F08F8F':2},dict(off)
+          skin['keyedPixels']=count
+          skin['offRamp']={'count':sum(off.values()),'colors':dict(sorted(off.items()))}
+          for field in ('masks','pivots','placements','drawOrders','sides','capRadius'):
+            assert pkg['rig'][field]==orig[field],field
+          assert pkg['manualSlice']==source['record']['manual']
+          for direction in ('se','sw','ne','nw'):
+            assert len(base64.b64decode(pkg['rig']['masks'][direction]))==7168
+            assert len(base64.b64decode(pkg['manualSlice'][direction]))==7168
+            assert len(pkg['rig']['pivots'][direction])==len(pkg['rig']['drawOrders'][direction])==11
+          compact=lambda obj:json.dumps(obj,ensure_ascii=False,separators=(',',':'))
+          pkg['rigSha256']=sha(compact(pkg['rig']).encode('utf-8'))
+          assert set(pkg['skin']['tones'])=={'porcelain','light','tan','medium','brown','deep'}
+          archive.write_bytes(ixfile.read_bytes())
+          dest.write_text(compact(pkg)+'\n',encoding='utf-8')
+          ix['version']='official-9'
+          ix['bases']['female']={
+            'package':dest.name,'packageFormat':'lafrich-genesis-base-v1',
+            'rigSha256':pkg['rigSha256'],'source':str(srcpath.relative_to(B)),
+            'sourceFormat':source['format'],'sourceSha256':sha(srcbytes),
+            'sourceBytes':len(srcbytes)}
+          assert ix['bases']['male']==oldmale,'Male must remain official-8 unchanged'
+          ix['revisions'].append({
+            'version':'official-9','date':'2026-11-12','approvedBy':'Lafrich',
+            'note':'Female-only correction from genesis_female_very final.json. Official-8 Male stays identical. Map 5101 Female light skin pixels to V6P key ramp with exact reverse verification; retain all masks, pivots, sprite geometry, slicing, placements and accents.',
+            'maleRigSha256':oldmale['rigSha256'],'femaleRigSha256':pkg['rigSha256'],
+            'archive':'archive/index-official-8.json','femaleOnly':True})
+          ixfile.write_text(compact(ix)+'\n',encoding='utf-8')
+          def replace(path,a,b):
+            p=Path(path);s=p.read_text(encoding='utf-8')
+            assert s.count(a)==1,(path,a,s.count(a))
+            p.write_text(s.replace(a,b),encoding='utf-8')
+          replace('site/genesis-base-app.js','const OFFICIAL_BASE_VERSION="official-8";','const OFFICIAL_BASE_VERSION="official-9";')
+          replace('tests/test_genesis_base.cjs','OFFICIAL_BASE_VERSION="official-8"','OFFICIAL_BASE_VERSION="official-9"')
+          replace('tests/test_genesis_official_8.py','idx=read(B/"index.json")','idx=read(B/"archive/index-official-8.json")')
+          replace('tests/test_lgr_slice_candidate.cjs',"const official7=parse('archive/index-official-7.json');","const official7=parse('archive/index-official-7.json');\nconst official8=parse('archive/index-official-8.json');")
+          replace('tests/test_lgr_slice_candidate.cjs',"while official-8 is active","while official-9 is active")
+          replace('tests/test_lgr_slice_candidate.cjs',"assert.equal(active.version,'official-8');","assert.equal(active.version,'official-9');\n assert.equal(official8.version,'official-8');")
+          replace('tests/test_lgr_slice_candidate.cjs',"assert.equal(active.bases.female.package,'genesis-base-female-official-8.json');","assert.equal(active.bases.female.package,'genesis-base-female-official-9.json');")
+          print('official-9 female-only promotion',pkg['rigSha256'],count)
+          PY
+      - name: Commit new female and activate index
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add site/media/lgr1/base/index.json \
+            site/media/lgr1/base/archive/index-official-8.json \
+            site/media/lgr1/base/genesis-base-female-official-9.json \
+            site/genesis-base-app.js tests/test_genesis_base.cjs \
+            tests/test_genesis_official_8.py tests/test_lgr_slice_candidate.cjs
+          git commit -m 'feat(lgr): activate female very final as official-9'
+          git push origin HEAD:main
