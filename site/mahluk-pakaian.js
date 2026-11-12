@@ -339,7 +339,7 @@ async function coverBodyDraft(){
  finally{button.disabled=false}
 }
 function controls(){
- $("pk-group").onchange=async e=>{if(S.changed.size)saveDraft(true);S.group=e.target.value;refreshOptions();S.side="front";S.ink={top:"C2",pants:"P2",shoes:"S0",hair:"H2",glasses:"GL",facial:"H2"}[S.group];await openItem()};
+ $("pk-group").onchange=async e=>{if(S.changed.size)saveDraft(true);S.group=e.target.value;refreshOptions();S.side="front";$("pk-cover-mode").value=S.group==="pants"?"pants":S.group==="shoes"?"shoes":"full";S.ink={top:"C2",pants:"P2",shoes:"S0",hair:"H2",glasses:"GL",facial:"H2"}[S.group];await openItem()};
  $("pk-gender").onchange=async e=>{if(S.changed.size)saveDraft(true);S.gender=e.target.value;updateBaseLabel();await openItem()};
  $("pk-item").onchange=async e=>{if(S.changed.size)saveDraft(true);S.variant=e.target.value;await openItem()};
  $("pk-side").onchange=async e=>{S.side=e.target.value;fresh();await draw()};
