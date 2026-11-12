@@ -13,7 +13,7 @@ assert.ok(shell.includes('pakaian:"pakaianpanel"')&&shell.includes('MahlukPakaia
 new vm.Script(editor,{filename:"mahluk-pakaian.js"});
 assert.ok(editor.includes('lgr1-wardrobe-master-v1'));
 assert.ok(editor.includes('LGRWear.lookup')&&editor.includes('LGRWear.recolor'));
-assert.ok(editor.includes('root.LafrichPuppetRenderer.prepare')&&editor.includes('root.LGRActor.motions'));
+assert.ok(editor.includes('root.LafrichPuppetRenderer.prepare')&&editor.includes('A.motions()'));
 assert.ok(editor.includes('rigFor()')&&editor.includes('pk-base-import'));
 assert.ok(editor.includes('pk-export')&&editor.includes('pk-approve'));
 assert.ok(!editor.includes('fetch("https://www.googleapis.com/upload/'));
