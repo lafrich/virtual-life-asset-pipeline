@@ -15,7 +15,6 @@ from indonesia_200_art_direction_v5 import refine as art_direct
 from indonesia_200_umkm_signature import variant as umkm_signature
 from indonesia_200_vegetation_hifi import render as vegetation_hifi
 from indonesia_200_attribute_detail_v6 import refine as attribute_detail
-from indonesia_200_vehicle_hifi_v7 import render as vehicle_hifi
 
 SPEC_PATH=Path('assets/street_buildings/_work/indonesia_200_specs.json')
 SPECS=json.loads(SPEC_PATH.read_text(encoding='utf-8'))['items']
@@ -99,49 +98,6 @@ def wheels(L,pairs,rad=.20):
  for x,y in pairs:
   L.s.cyl(*L.cr(x,y),1,19,rad,'DARK',2)
   L.s.cyl(*L.cr(x,y),19,21,rad*.52,'CONC',3)
-
-def draw_vehicle(L,s):
- shadow(L)
- W,D=L.W,L.D; k=s['kind']; paint=color(s)
- bike=k in ('motor','sepeda','becak','bentor')
- truck=k in ('truck','pickup')
- bus=k in ('angkot','bus','van')
- if bike:
-  wheels(L,[(.32,D*.6),(W-.34,D*.6)],.17 if k=='sepeda' else .24)
-  safe_box(L,.38,.35,W-.3,D-.3,18,30,'DARK',2)
-  safe_box(L,.6,.48,W-.67,D-.3,30,46,paint,3)
-  if k in ('becak','bentor'):
-   safe_box(L,.08,.12,.85,D-.22,18,75,'WOOD',3)
-   safe_box(L,.12,.18,.8,D-.2,73,81,paint,4)
-  elif k=='andong':
-   safe_box(L,.2,.22,W-.2,D-.22,22,62,'WOOD',3)
-  else:
-   safe_box(L,W*.47,.46,W*.68,D-.13,45,73,paint,3)
-   pole(L,W*.58,D*.45,81,'DARK',.045)
-   dome(L,W*.55,D*.56,72,.16,16,'SKIN')
-   dome(L,W*.55,D*.56,91,.16,12,paint)
-   if 'box' in s['label'].lower() or 'kurir' in s['label'].lower():
-    safe_box(L,.16,.18,.60,D-.18,41,78,'RED',3)
-   if 'penumpang' in s['label'].lower():
-    dome(L,W*.28,D*.55,77,.15,13,'GREEN')
-  return
- wheels(L,[(.5,.37),(W-.6,.37)],.27)
- safe_box(L,.18,.18,W-.18,D-.18,23,68,paint,3)
- if bus:
-  safe_box(L,.24,.22,W-.25,D-.25,68,116,'CREAM',3)
-  for i in range(5 if k=='bus' else 3):
-   x=.4+i*(W-.8)/(5 if k=='bus' else 3)
-   safe_box(L,x,.155,x+.47,D-.15,77,110,'GLASS',3)
- elif truck:
-  safe_box(L,W*.63,.2,W-.2,D-.2,62,112,'CREAM',3)
-  safe_box(L,.28,.2,W*.58,D-.2,63,92,'WOOD' if 'sayur' in s['label'].lower() else 'SENG',3)
- else:
-  safe_box(L,W*.3,.2,W*.75,D-.2,67,94,'GLASS',2)
- if 'ambulans' in s['label'].lower():
-  safe_box(L,W*.46,.11,W*.57,.2,69,84,'RED',4)
-  safe_box(L,W*.41,.11,W*.63,.2,74,79,'RED',4)
- if 'sampah' in s['label'].lower():
-  safe_box(L,.28,.14,W*.58,D-.2,61,96,'GREEN',3)
 
 def draw_building(L,s):
  shadow(L);W,D=L.W,L.D;k=s['kind'];paint=color(s)
@@ -333,7 +289,6 @@ def draw_structure(L,s):
 def draw(L,s):
  # Quality gate: NO legacy faceless-cube fallback for the 200-asset pack.
  # Every asset must have a recognizable authored v2 recipe.
- if vehicle_hifi(L,s):return
  if vegetation_hifi(L,s):return
  if umkm_signature(L,s):return
  if quality_override(L,s):
@@ -346,8 +301,7 @@ def draw(L,s):
  raise ValueError('Missing Indonesia 200 authored scene recipe: '+s['id'])
  if special(L,s):return
  cat=s['category'];kind=s['kind']
- if cat=='transport':draw_vehicle(L,s)
- elif cat in ('warung','bangunan') or (cat=='publik' and kind in ('warung','public','mushola','saung')):
+ if cat in ('warung','bangunan') or (cat=='publik' and kind in ('warung','public','mushola','saung')):
   draw_building(L,s)
  elif cat=='tanaman':draw_plant(L,s)
  elif cat=='gerobak' and kind=='gerobak' or cat=='pasar' and kind in ('lapak','tenda','gerobak'):

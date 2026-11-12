@@ -1,11 +1,11 @@
-"""Build 200 Indonesian placement-ready assets using the canonical Loc/Spr renderer.
+"""Build 180 Indonesian placement-ready assets using the canonical Loc/Spr renderer.
 
 Examples:
   python assets/street_buildings/_work/publish_indonesia_200.py --shard 0
   python assets/street_buildings/_work/publish_indonesia_200.py --merge
 
-Four independent shards, each exactly 50 IDs; merges are published only if
-all 200 PNG + depth output groups are present and valid.
+Four independent shards, each exactly 45 IDs; merges are published only if
+all 180 PNG + depth output groups are present and valid.
 """
 from __future__ import annotations
 import argparse,json,hashlib
@@ -70,11 +70,11 @@ def one(s):
 def shard(n):
  assert 0<=n<N_SHARDS
  queue=[s for i,s in enumerate(items) if i%N_SHARDS==n]
- assert len(queue)==50
+ assert len(queue)==45
  entries=[]
  for i,s in enumerate(queue,1):
   e=one(s);entries.append(e)
-  if i%5==0:print('SHARD',n,i,'/ 50 sprites:',sum(len(x['variants']) for x in entries),flush=True)
+  if i%5==0:print('SHARD',n,i,'/ 45 sprites:',sum(len(x['variants']) for x in entries),flush=True)
  path=WORK/f'indonesia_200_batch_{n}.json'
  path.write_text(json.dumps(entries,indent=2,ensure_ascii=False)+'\n')
  print('Shard',n,'OK:',len(entries),'native objects and',sum(len(x['variants']) for x in entries),'directions')
@@ -85,11 +85,11 @@ def merge():
   part=WORK/f'indonesia_200_batch_{n}.json'
   assert part.is_file(),('missing batch file',part)
   rows=json.loads(part.read_text())
-  assert len(rows)==50,(n,len(rows))
+  assert len(rows)==45,(n,len(rows))
   entries+=rows
  reference={s['id']:i for i,s in enumerate(items)}
  entries.sort(key=lambda e:reference[e['id']])
- assert len(entries)==200 and len({s['id'] for s in entries})==200
+ assert len(entries)==180 and len({s['id'] for s in entries})==180
  assert all(s['published'] and s['pack']==PACK for s in entries)
  total=0
  for entry in entries:
@@ -120,10 +120,10 @@ def merge():
  print('ART DIVERSITY OK:',len(signatures),'unique native sprite thumbnails')
  dest=ROOT/'indonesia_200_catalog.json'
  dest.write_text(json.dumps(dict(version=2,projection='isometric-2:1',
-   tile=[64,32],palette='v6b-existing-only',count=200,pack=PACK,
+   tile=[64,32],palette='v6b-existing-only',count=180,pack=PACK,
    assets=entries),indent=2,ensure_ascii=False)+'\n')
  # 10 contact sheets of 20 objects, always real rendered PNG artwork.
- for page in range(10):
+ for page in range(9):
   sub=entries[page*20:(page+1)*20]
   cellw,cellh=226,214
   sheet=Image.new('RGB',(5*cellw,4*cellh),(28,38,52))
@@ -137,7 +137,7 @@ def merge():
    label=entry['label']
    draw.text(((i%5)*cellw+8,(i//5)*cellh+181),label[:31],fill=(238,242,247))
   sheet.save(ROOT/f'indonesia_200_contact_{page+1:02}.png',optimize=True)
- print('PUBLISHED 200 NEW INDONESIAN SPRITES:',total,'real pixel-art views,',total,'native depth maps, 10 contact sheets')
+ print('PUBLISHED 180 NEW INDONESIAN SPRITES:',total,'real pixel-art views,',total,'native depth maps, 9 contact sheets')
 
 if __name__=='__main__':
  parser=argparse.ArgumentParser()
