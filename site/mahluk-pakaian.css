@@ -33,3 +33,16 @@
 @media(max-width:1050px){.pk-layout{grid-template-columns:200px 1fr}.pk-right{grid-column:1/-1}.pk-right .pk-box:first-child{order:0}.pk-review{justify-content:center;gap:18px}}
 @media(max-width:650px){.pk-layout{grid-template-columns:1fr;padding:5px}.pk-main,.pk-right{grid-column:1}.pk-aside{display:grid;grid-template-columns:1fr 1fr}.pk-aside .pk-box:last-child{grid-column:1/-1}.pk-canvas{max-height:52vh}#pk-editor{width:192px;height:336px}.pk-review canvas{width:54px;height:95px}#pakaianpanel{overscroll-behavior:contain}}
 @media(max-width:420px){.pk-aside{grid-template-columns:1fr}.pk-aside .pk-box:last-child{grid-column:1}.pk-tools button{font-size:10px}.pk-views canvas{width:40px;height:70px}}
+
+/* Pakaian uses the same full-screen Pixel Editor as Genesis/Emosi.
+   Legacy inline canvas remains hidden only as a thumbnail data source. */
+.pk-main .pk-tools,.pk-main .pk-dir,.pk-main .pk-canvas{display:none!important}
+.pk-editor-launch{display:grid;gap:8px;padding:10px;background:#e4edf9;border:1px solid #9db2cc}
+.pk-editor-launch button{font:bold 13px Tahoma,Arial,sans-serif;min-height:42px;background:linear-gradient(#fff3cd,#f3c458);border:1px solid #bf8a19;color:#28405b}
+.pk-editor-launch p{margin:0;color:#456281;font:11px/1.5 Tahoma,Arial,sans-serif}
+.pk-views{margin-top:10px}
+.pk-views canvas{cursor:pointer}
+#pixelOverlay.wardrobe-source-pixel .pixel-dialog-header strong{letter-spacing:.05em}
+#pixelOverlay.wardrobe-source-pixel .pixel-toolbar{flex-wrap:wrap}
+#pixelOverlay.wardrobe-source-pixel .pixel-swatches{grid-template-columns:repeat(6,minmax(0,1fr))}
+#pixelOverlay.wardrobe-source-pixel .pixel-swatches button{min-height:24px}
