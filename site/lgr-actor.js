@@ -139,7 +139,7 @@ async function frameCanvas(actor,opts){
  if(!pose){const p=poseOf(prep.master,lib,opts.motion||null,opts.frame|0,d);pose=p.pose;order=order||p.order}
  return R().render(prep,pose,order?{order}:undefined);
 }
-function clearCaches(){prepCache.clear();frameCache.clear()}
+function clearCaches(){prepCache.clear();frameCache.clear();wearCache.clear();root.LGRWear?.clearCache?.()}
 async function rigOf(gender){return master(gender,"light")}
 return root.LGRActor=Object.freeze({FOOT,OUTFITS,HAIRS,loadBases,master,rigOf,wear,wearSpec,refreshFaces,facesFor,
  get faces(){return faces},faceImage,motions,poseOf,baseOrder,prepared,frameCanvas,clearCaches});
