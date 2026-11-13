@@ -609,7 +609,21 @@ function controls(){
  $("pk-export").onclick=exportMaster;
  $("pk-export-draft").onclick=()=>void exportDraft().catch(console.warn);
  $("pk-import").onchange=e=>{const f=e.target.files?.[0];if(f)importMaster(f).catch(x=>say(x.message,true));e.target.value=""};
- $("pk-reset").onclick=async()=>{if(!confirm("Kembalikan item ini ke sprite stok? Draft lama tetap ada sampai kamu SAVE."))return;S.draft=null;S.resetPending=true;S.bufs.clear();S.changed.clear();fresh();await draw();void preview();say("Sprite stok dimuat. SAVE untuk menyimpan reset.")};
+ $("pk-reset").onclick=async()=>{
+  const id=S.gender+"_"+S.group+"_"+S.variant,canonical=await officialGarment(id);
+  if(!confirm(canonical?"Reset ke 6 BASE RESMI 2026-11-13 untuk "+id+"? Edit lokal akan dicadangkan. Genesis dan game tidak berubah.":
+    "Reset ke stok lama "+id+"? Draft lama tetap tersedia sampai kamu simpan."))return;
+  const old=allVersions()[kID()];
+  if(old)try{localStorage.setItem("lgr-pakaian-backup-before-reset:"+kID()+":"+Date.now(),JSON.stringify(old))}catch(err){console.warn("Reset backup:",err)}
+  S.bufs.clear();S.changed.clear();fresh();
+  if(canonical){
+   S.draft=canonical;S.resetPending=false;
+   for(const p of Object.keys(canonical.files)){if(validPath(p)){await buffer(p);S.changed.add(p)}}
+   $("pk-version").textContent="● BASE RESMI (RESET DRAFT)";
+  }else{S.draft=null;S.resetPending=true}
+  await draw();void preview();
+  say(canonical?"Enam base resmi dipulihkan. SAVE DRAFT untuk menyimpan; master game tidak berubah.":"Sprite stok lama dimuat. SAVE DRAFT untuk menyimpan reset.");
+ };
  $("pk-undo").onclick=()=>undoRedo("undo");$("pk-redo").onclick=()=>undoRedo("redo");
  $("pk-copy").onclick=async()=>{
   const c=await buffer(pathOf()),data=getCell(c),r=S.selection||{x:0,y:0,w:64,h:112};
