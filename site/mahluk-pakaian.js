@@ -1,5 +1,5 @@
 /* MAHLUK HIDUP · PAKAIAN.EXE — standalone, non-destructive wardrobe authoring.
- * Source: stock LGR-1 key-colour strips (64x112 x four views).
+ * Source for six base garments: 2026-11-13 artist-approved Genesis v2 PNGs; other varieties require approval.
  * Saved drafts/approval are LOCAL ONLY until explicitly exported and ingested.
  * Never edits Genesis, original wardrobe PNGs, or Bergerak/Emosi databases.
  */
@@ -100,11 +100,50 @@ async function draw(){
  }
 }
 const fresh=()=>{S.undo=[];S.redo=[];S.selection=null;S.copied=null;};
+/* The six uploaded 2026-11-13 Genesis fitting masters are authoritative
+ * everywhere, including Mahluk Hidup's Pakaian editor (not just Mainkan).
+ * Source mode and GitHub Pages both load the same exact native-key PNG art.
+ * A newer intentional local edit is preserved; older master caches are not
+ * allowed to silently obscure the freshly approved base.
+ */
+const ARTIST_BASE_IDS=new Set(["male_top_tee","female_top_tee",
+ "male_pants_trousers","female_pants_trousers","male_shoes_shoes","female_shoes_shoes"]);
+async function officialGarment(id){
+ if(!ARTIST_BASE_IDS.has(id))return null;
+ if(!S.masterCache[id]){
+  S.masterCache[id]=(async()=>{
+   for(const [folder,artist] of [["wardrobe-approved",false],["wardrobe-artist-reference",true]]){
+    try{
+     const r=await fetch(rootUrl()+"media/lgr1/"+folder+"/"+id+".json",{cache:"no-cache"});
+     if(!r.ok)continue;
+     const data=await r.json(),part=id.split("_"),gender=part[0],group=part[1],variant=part.slice(2).join("_");
+     if(data.id!==id||data.gender!==gender||data.group!==group||data.variant!==variant)continue;
+     if(artist){
+      if(data.format!=="lafrich-wardrobe-artist-reference-v1"||!data.approvedReference)continue;
+      const family={top:"C",pants:"P",shoes:"S"}[group];
+      if(data.sourceKeyFamily!==family)continue;
+     }else if(data.format!=="lgr1-pakaian-v2"||!data.approved)continue;
+     const approved=(await root.LGRActor.loadBases())[gender];
+     if(data.baseVersion!==approved?.version||data.baseRigSha256!==approved?.pkg?.rigSha256)continue;
+     return artist?{format:"lgr1-pakaian-v2",gender,group,variant,id,
+      approved:true,baseVersion:data.baseVersion,baseRigSha256:data.baseRigSha256,
+      files:data.files,updated:data.sourceUpdated,rev:2,artistBase:true}:data;
+    }catch(err){console.warn("Official wardrobe base",id,folder,err)}
+   }
+   return null;
+  })();
+ }
+ return S.masterCache[id];
+}
 async function openItem(){
  if(S.changed.size)saveDraft(true);
  S.bufs.clear();S.changed.clear();fresh();
- S.draft=allVersions()[kID()]||root.LGRDB?.get?.("pakaian",S.gender+"_"+S.group+"_"+S.variant)||null;
- $("pk-version").textContent=S.draft?(S.draft.approved?"MASTER v2":"DRAFT"):"STOK / BELUM DIEDIT";
+ const id=S.gender+"_"+S.group+"_"+S.variant,local=allVersions()[kID()],
+  saved=root.LGRDB?.get?.("pakaian",id)||null,
+  official=await officialGarment(id);
+ const newer=a=>a&&official&&Date.parse(a.updated||"")>Date.parse(official.updated||"");
+ S.draft=official?(newer(local)?local:newer(saved)?saved:official):(local||saved||null);
+ $("pk-version").textContent=S.draft?(S.draft===official?"✓ BASE RESMI 2026-11-13":S.draft.approved?"MASTER v2":"DRAFT"):"STOK / BELUM DIEDIT";
  $("pk-note").value=S.draft?.note||"";
  $("pk-side").disabled=!canSide();if(!canSide())S.side="front";$("pk-side").value=S.side;
  palettes();await draw();void preview();
