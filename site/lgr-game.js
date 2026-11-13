@@ -1,8 +1,8 @@
 /* LGR-1 game character runtime (Mainkan test play, Semesta, Bangun Ruang).
  *
  * Thin game adapter over the shared LGR stack (no V6P runtime):
- *   LGRActor  official LGR-1 base (official-2) + skin tone       (lgr-actor.js)
- *   LGRWear   outfits + hair, media/lgr1/mh-wear, key colours    (lgr-wear.js)
+ *   LGRActor  official LGR-1 base (official-9) + skin tone       (lgr-actor.js)
+ *   LGRWear   six artist-approved base outfits + hair (wardrobe-approved)    (lgr-wear.js)
  *   LGRDB     Bergerak motions / Beraksi scenes from the cloud DB (lgr-db.js)
  *   LafrichPuppetRenderer → LGR1Raster (joint fill on), Emosi face under the
  *   front hair in SE/SW only.
@@ -16,7 +16,7 @@
  if(root)root.LGRGame=api;
 })(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(root){
 "use strict";
-const VERSION="lgr-game-7";
+const VERSION="lgr-game-8-artist-base-20261113";
 const DIRS=["se","sw","ne","nw"];
 const here=(()=>{try{const s=document.currentScript?.src;return s?s.slice(0,s.lastIndexOf("/")+1):"/virtual-life-asset-pipeline/"}catch{return "/virtual-life-asset-pipeline/"}})();
 if(root&&!root.LGRDB_BASE)root.LGRDB_BASE=here;
@@ -87,9 +87,20 @@ function resolveAction(action){
 }
 // virtual-office profile.appearance → LGRWear spec
 function spec(profile){
- const a=profile.appearance||{},s={};
- const put=(k,v)=>{if(v&&!["custom","nude","none"].includes(v))s[k]=v};
- put("top",a.topStyle);put("pants",a.pantsStyle);put("shoes",a.shoesStyle);put("hair",a.hairStyle);
+ const a=profile.appearance||{};
+ // Mainkan must render the six currently approved artist bases, even for
+ // profiles created before the wardrobe refit. Unapproved old category styles
+ // visually fall back to the matching base rather than becoming invisible.
+ const s={top:"tee",pants:"trousers",shoes:"shoes"};
+ for(const [key,legacy] of [["top","topStyle"],["pants","pantsStyle"],["shoes","shoesStyle"]]){
+  const value=a[legacy];
+  if(value==="nude"||value==="none"){delete s[key];continue}
+  if(value&&value!=="custom"){
+   const approved={top:"tee",pants:"trousers",shoes:"shoes"}[key];
+   s[key]=approved;
+  }
+ }
+ if(a.hairStyle&&!["custom","nude","none"].includes(a.hairStyle))s.hair=a.hairStyle;
  for(const k of ["topColor","pantsColor","shoesColor","hairColor"])if(a[k])s[k]=a[k];
  return s;
 }
