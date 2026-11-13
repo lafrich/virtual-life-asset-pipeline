@@ -23,20 +23,32 @@ function warnRig(bases){
  return true;
 }
 function ensureSeeds(){
- const records=localRead(),created=[];
+ const records=localRead(),created=[];let superseded=0,protectedDrafts=0;
  for(const v of catalog.variants){
-  const id=k(v);
-  if(records[id])continue; // NEVER destroy an artist's edits.
+  const id=k(v),old=records[id];
+  if(old){
+   const sameSource=old.baseSourceUpdated&&old.baseSourceUpdated===v.sourceUpdated;
+   if(sameSource)continue;
+   // Keep the artist's newer work, but never silently show an older
+   // unedited baseline. Old drafts being reset are backed up separately.
+   if(Date.parse(old.updated||"")>Date.parse(v.sourceUpdated||"")){
+    protectedDrafts++;continue;
+   }
+   try{localStorage.setItem("lgr-wardrobe-backup-before-base-refresh:"+id+":"+Date.now(),JSON.stringify(old))}
+   catch(e){console.warn("Base draft archive failed; keeping existing edit:",e);protectedDrafts++;continue}
+   superseded++;
+  }
   records[id]={format:"lgr1-wardrobe-master-v1",gender:v.gender,group:v.group,variant:v.variant,
    baseVersion:v.baseVersion,baseRigSha256:v.baseRigSha256,dirs:DIRS,cell:[64,112],strip:[256,112],
    keyColours:true,files:{...v.files},approved:false,referenceOnly:true,
-   sourceBaseline:v.sourceBaseline,updated:new Date().toISOString(),
-   note:"Six Genesis base fitting drafts from original Lafrich pixel reference; not published to game."};
+   sourceBaseline:v.sourceBaseline,baseSourceUpdated:v.sourceUpdated,updated:v.sourceUpdated,
+   note:"2026-11-13 artist-approved Genesis BASE; editing is local draft only."};
   created.push(id);
  }
  try{localStorage.setItem(LOCAL,JSON.stringify(records))}
  catch(e){setStatus("Storage browser penuh. Export JSON lebih dulu. "+e.message,true);throw e}
- return created.length;
+ if(protectedDrafts)console.warn(protectedDrafts+" newer local base drafts were preserved; choose RESET BASE to reload the uploaded canonical 2026-11-13 reference");
+ return {created:created.length,superseded,protectedDrafts};
 }
 function seedFor(o){return catalog.variants.find(v=>v.gender===o.gender&&v.group===o.group&&v.variant===o.variant)}
 async function select(gender,group,variant,dir="se",side="front"){
@@ -202,7 +214,7 @@ async function resetCurrent(){
  store[k(current)]={format:"lgr1-wardrobe-master-v1",gender:seed.gender,group:seed.group,variant:seed.variant,
   baseVersion:seed.baseVersion,baseRigSha256:seed.baseRigSha256,dirs:DIRS,cell:[64,112],strip:[256,112],
   keyColours:true,approved:false,referenceOnly:true,files:{...seed.files},
-  updated:new Date().toISOString(),note:"Reset to the artist original base garment"};
+  updated:seed.sourceUpdated,baseSourceUpdated:seed.sourceUpdated,note:"Reset to 2026-11-13 latest artist-approved base garment"};
  localStorage.setItem(LOCAL,JSON.stringify(store));
  await A().refreshOutfit();await renderStage();drawReviewThumbnails();
  setStatus("Reset ke enam patokan BASE asli (belum game).",false);
@@ -292,6 +304,11 @@ async function fallbackArtistSource(e){
  const rgb=s=>[parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16)];
  for(const [name,uri] of Object.entries(source.files)){
   if(!name.startsWith(e.group+"/"))throw Error("Incorrect category path: "+name);
+  // Current November 13 editor exports are already native C/P/S KEY strips.
+  // Preserve the source URI byte-for-byte; only old archived C-key sources
+  // (which are no longer canonical) would need a conversion.
+  const native=e.group==="top"?"C":e.group==="pants"?"P":"S";
+  if(source.sourceKeyFamily===native){files[name]=uri;continue}
   if(!remap){files[name]=uri;continue}
   const im=await new Promise((resolve,reject)=>{
    const p=new Image();p.onload=()=>resolve(p);
@@ -313,11 +330,11 @@ async function fallbackArtistSource(e){
  }
  return {format:"lgr1-pakaian-v2",approved:true,id:e.id,gender:e.gender,
   group:e.group,variant:e.variant,baseVersion:source.baseVersion,
-  baseRigSha256:source.baseRigSha256,files};
+  baseRigSha256:source.baseRigSha256,files,updated:source.sourceUpdated};
 }
 async function loadArtistBase(e){
- // Prefer the exact generated game v2 on Pages; local developer site can
- // rebuild from the same untouched artist original JSON, only recolouring keys.
+ // Prefer the exact generated v2 master on Pages; source developer previews
+ // load the SAME native-key PNG bytes from the artist record as fallback.
  let master=null;
  try{
   const response=await fetch("./"+e.path,{cache:"no-cache"});
@@ -329,7 +346,7 @@ async function loadArtistBase(e){
   throw Error("BASE "+e.id+" tidak cocok dengan patokan asli");
  return {id:e.id,gender:e.gender,group:e.group,variant:e.variant,
   baseVersion:master.baseVersion,baseRigSha256:master.baseRigSha256,
-  files:master.files,sourceBaseline:e.id};
+  files:master.files,sourceBaseline:e.id,sourceUpdated:master.updated};
 }
 async function init(){
  try{
@@ -345,7 +362,7 @@ async function init(){
   const variants=await Promise.all(index.entries.map(loadArtistBase));
   catalog={...index,variants};
   const bases=await root.LGRActor.loadBases();
-  const good=warnRig(bases),added=ensureSeeds();
+  const good=warnRig(bases),seedState=ensureSeeds();
   await A().init($("pakaianpanel"));
   if(!A().currentOutfit||!A().paintFitStroke||!A().coverFitSkin)
    throw Error("Genesis base fitting editor belum termuat sempurna; reload halaman");
@@ -354,7 +371,10 @@ async function init(){
   selectOptions("wa-dir",DIRS.map(d=>({value:d,label:d.toUpperCase()})),"se");
   selectOptions("wa-side",[{value:"front",label:"Front"},{value:"back",label:"Back"}],"front");
   wire();await queueSelect("male","top","tee","se","front");
-  $("wa-count").textContent="6 BASE · MALE/FEMALE · BAJU / CELANA / SEPATU · "+added+" DRAFT BARU · "+(6-added)+" DRAFT LOKAL TETAP AMAN";
+  $("wa-count").textContent="6 BASE RESMI 2026-11-13 · BAJU / CELANA / SEPATU · "+
+   seedState.created+" DIPERBARUI · "+seedState.superseded+" CADANGAN DRAFT LAMA · "+
+   seedState.protectedDrafts+" EDIT LOKAL DIPERTAHANKAN";
+  if(seedState.protectedDrafts)setStatus("Ada draft lokal yang lebih baru dari patokan upload. Klik RESET BASE jika ingin memakai tepat 6 JSON yang baru dikirim.",true);
   if(!good)setStatus("Checksum Genesis berubah. Draft boleh diedit, tapi jangan publikasikan sebelum fitting review.",true);
  }catch(e){showError(e)}
 }
