@@ -19,7 +19,7 @@ test("Active app is only six artist-approved originals: Male/Female baju celana 
  assert.match(src,/base-seeds\.json/);
  assert.match(src,/lgr-wardrobe-adjust-base-index-v1/);
  assert.match(src,/index\.entries\?\.length!==6/);
- assert.match(src,/await Promise\.all\(index\.entries\.map/);
+ assert.match(src,/await Promise\.all\(index\.entries\.map\(loadArtistBase\)/);
  assert.match(src,/master\.format!=="lgr1-pakaian-v2"/);
  assert.match(src,/await queueSelect\("male","top","tee","se","front"\)/);
  assert.doesNotMatch(src,/variant-seeds\.json/);
@@ -46,7 +46,10 @@ test("Free paint and skin cover alter garment sprites without changing Genesis a
  assert.match(src,/await A\(\)\.coverFitSkin\(radius\)/);
  assert.match(src,/function attachDrag\(\)/);
  assert.match(src,/function ensureSeeds\(\)/);
- assert.match(src,/if\(records\[id\]\)continue;/);
+ assert.match(src,/const sameSource=old\.baseSourceUpdated/);
+ assert.match(src,/Date\.parse\(old\.updated/);
+ assert.match(src,/lgr-wardrobe-backup-before-base-refresh/);
+ assert.match(src,/protectedDrafts\+\+/);
  assert.match(src,/root\.PakaianPixelEditor\.open\(\)/);
  assert.match(src,/LGR_6_Genesis_Base_Fitting_DRAFTS\.json/);
  assert.doesNotMatch(src,/LGRDB\.save\(/);
