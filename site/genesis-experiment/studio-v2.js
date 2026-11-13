@@ -155,10 +155,10 @@ function compute(info,time){
   applyChain(key,upper,lower,"torso",at,function(shoulder,rest,t,dirFace){
    var dx=rest.x-shoulder.x,dy=rest.y-shoulder.y;
    if(anim==="wave")return side==="near"?p(shoulder.x+dirFace*10*t+dx*(1-t),shoulder.y-14*t+dy*(1-t)):rest;
-   if(anim==="reach")return p(shoulder.x+(side==="near"?dirFace*15:-dirFace*9)*t+dx*(1-t),shoulder.y+3*t+dy*(1-t));
+   if(anim==="reach")return p(shoulder.x+(side==="near"?dirFace*15:dirFace*12)*t+dx*(1-t),shoulder.y+3*t+dy*(1-t));
    var gait=st.playing?Math.sin(time*3.2+(side==="near"?Math.PI:0)):1;
    return p(rest.x+dirFace*gait*7*t,rest.y-3*Math.max(0,gait)*t);
-  },(side==="near"?face:-face));
+  },(side==="near"?-face:-face));
  }
  arms("near");arms("far");
  var control=clone(pose);
@@ -208,7 +208,7 @@ async function render(){
   $("metrics").textContent=lines.length?lines.join(" | "):"Neutral · seluruh joint mengikuti pivot Genesis resmi.";
   $("protection").textContent="Working draft "+g.toUpperCase()+" · sumber "+b.model.rigSha256.slice(0,12)+"… · 11 parts · 4 directions · NO SAVE TO MASTER";
   last={motion:motion,b:b,before:before,after:after};
-  if(!$("status").classList.contains("error"))status("IK arms + knees + head/torso siap. Pilih target dan drag titik emas pada preview kanan.");
+  status("IK arms + knees + head/torso siap. Pilih target dan drag titik emas pada preview kanan.");
  }catch(e){console.error(e);status("Render gagal: "+e.message,true)}
 }
 function requestRender(){render()}
