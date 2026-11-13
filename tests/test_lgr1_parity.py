@@ -325,7 +325,7 @@ class JointFillTest(unittest.TestCase):
     def test_rest_unchanged_and_bow_filled(self):
         lib = rt.load_library()
         bow = next(m for m in lib["motions"] if m["id"] == "bow")
-        self.assertEqual(rt.JOINT_FILL, 2)
+        self.assertEqual(rt.JOINT_FILL, 4)
         for gender in ("male", "female"):
             rig = json.loads((ROOT/"site"/"media"/"lgr1"/"base"/f"genesis-base-{gender}.json").read_text())["rig"]
             binding = {"rig": rig, "views": {d: {"pivots": rig["pivots"][d], "maskBase64": rig["masks"][d]} for d in rt.DIRECTIONS}}

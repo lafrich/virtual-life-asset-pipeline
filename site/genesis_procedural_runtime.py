@@ -114,7 +114,7 @@ CAP_RADIUS = {"pelvis": 0, "torso": 3, "head": 2, "arm_near_upper": 3, "arm_near
 INHERIT, UNASSIGNED = 254, 255
 # Render-time joint fill radius (px; the waist gets +2). 0 disables. Twin of
 # LGR1Raster.JOINT_FILL. Fills only empty seam pixels; the rest pose is unchanged.
-JOINT_FILL = 2
+JOINT_FILL = 4
 ANAT = ("head", "torso", "pelvis", "arm_r_upper", "arm_r_lower", "arm_l_upper", "arm_l_lower",
         "leg_r_upper", "leg_r_lower", "leg_l_upper", "leg_l_lower")
 DEFAULT_SIDES = {"se": "right", "sw": "left", "ne": "right", "nw": "left"}

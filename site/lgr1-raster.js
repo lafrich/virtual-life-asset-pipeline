@@ -232,7 +232,7 @@ function drawEntry(out,entry,tr){
 // each joint an EMPTY pixel that is a <=2px crack or an enclosed hole gets the
 // joint pair's own rest colour (child, then parent), else the commonest
 // neighbour colour. Never draws over art; gaps that exist at rest stay open.
-const JOINT_FILL=2,REST=new WeakMap();
+const JOINT_FILL=4,REST=new WeakMap();
 function crackAt(al,x,y){
  const h=(al(x-1,y)||al(x-2,y))&&(al(x+1,y)||al(x+2,y))&&(al(x-1,y)||al(x+1,y));
  const v=(al(x,y-1)||al(x,y-2))&&(al(x,y+1)||al(x,y+2))&&(al(x,y-1)||al(x,y+1));
