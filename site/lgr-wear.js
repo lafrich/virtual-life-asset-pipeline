@@ -1,6 +1,6 @@
 /* LGR-1 WEAR — outfits + hair for LGR-1 characters, self-contained (no V6P
- * runtime). Garment art: media/lgr1/mh-wear/<cat>/<item>.png (256×112 strips,
- * SE|SW|NE|NW, key colours; baked once by tools/bake_lgr_wear.py). Palettes and
+ * runtime). Six official artist base outfits: media/lgr1/wardrobe-approved/*.json.
+ * Other retired V6P wardrobe art is not used for active clothing. Palettes and
  * key codes below are the customizer's (kept as data so skin/hair/cloth tones
  * stay identical in game). Binding to the body follows LGR1Raster rules.
  */
@@ -93,13 +93,19 @@ async function activeStrip(path,gender){
   entry.id===id&&entry.gender===gender&&entry.group===category&&
   entry.variant===variant&&entry.approved===true&&entry.files?.[path]&&
   live?.pkg?.rigSha256===entry.baseRigSha256&&live?.version===entry.baseVersion);
- // User-saved cloud/local v2 masters take precedence over shipped references.
+ // For the six artist-approved BASE garments, a superseded local/cloud
+ // Pakaian master must NOT silently hide the latest 2026-11-13 baseline.
+ // Newer explicit master approvals still take priority. All other variants
+ // retain their original approved-master-only behaviour.
  const saved=root?.LGRDB?.get?.("pakaian",id);
+ if(OFFICIAL_REF_IDS.has(id)){
+  const fallback=await referenceMaster(id);
+  if(compatible(fallback)){
+   const savedIsNewer=compatible(saved)&&Date.parse(saved.updated||"")>Date.parse(fallback.updated||"");
+   return savedIsNewer?imageForMaster(saved,path,"approved"):imageForMaster(fallback,path,"canonical");
+  }
+ }
  if(compatible(saved))return imageForMaster(saved,path,"approved");
- // Artist-approved six default reference fits ship with the game. Never
- // silently revive retired V6P clothing for unsupported variants.
- const fallback=await referenceMaster(id);
- if(compatible(fallback))return imageForMaster(fallback,path,"published");
  return category==="hair"?strip(path):null;
 }
 function clearCache(){strips.clear();approvedRefs.clear()}
