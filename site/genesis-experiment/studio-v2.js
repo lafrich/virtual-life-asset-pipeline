@@ -27,7 +27,7 @@ function status(msg,bad){$("status").textContent=msg;$("status").classList.toggl
 function editStatus(msg){$("gx-status").textContent=msg}
 function encodeMask(mask){var s="";for(var i=0;i<N;i++)s+=String.fromCharCode(mask[i]);return btoa(s)}
 function decodeMask(s){var a=atob(s),out=Uint8Array.from(a,function(c){return c.charCodeAt(0)});if(out.length!==N)throw Error("Invalid slice mask ("+out.length+")");return out}
-function rgb(hex){return [parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),255]}
+function rgb(hex){return [parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)]}
 function keyOf(c){return "#"+[c[0],c[1],c[2]].map(function(v){return v.toString(16).padStart(2,"0")}).join("").toUpperCase()}
 function reader(uri){
  if(!uri)return Promise.resolve(new Uint8ClampedArray(N*4));
