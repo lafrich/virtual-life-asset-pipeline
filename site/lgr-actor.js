@@ -3,7 +3,7 @@
  * Hidup Bergerak / Beraksi and usable by the game apps.
  *  - base:  media/lgr1/base/index.json → genesis-base-<g>.json (checksum
  *           verified, skin stored as KEY colours → swapped to the tone here)
- *  - wear:  lgr-wear.js strips (media/lgr1/mh-wear), bound through the LGR-1
+ *  - wear:  six 2026-11-13 canonical wardrobe base strips (wardrobe-approved),
  *           mask rules in LGR1Raster (outfit → nearest part, hair → head)
  *  - face:  Emosi.exe atlas column (animated by frame), drawn by the
  *           renderer under front hair; SE/SW only (hidden in back views)
@@ -15,7 +15,7 @@ const C=()=>root.LafrichPuppetCore,R=()=>root.LafrichPuppetRenderer,M=()=>root.L
 const FOOT=Object.freeze({x:32,y:101});
 const OUTFITS=Object.freeze({
  none:{label:"Tanpa baju (base)"},
- tee_trousers:{label:"Kaos + celana + sneakers",top:"tee",pants:"trousers",shoes:"sneakers",topColor:"red",pantsColor:"denim",shoesColor:"white"},
+ tee_trousers:{label:"Kaos + celana + sepatu (base)",top:"tee",pants:"trousers",shoes:"shoes",topColor:"red",pantsColor:"denim",shoesColor:"white"},
  shirt_tie_baggy:{label:"Kemeja dasi + baggy + sepatu",top:"shirt_tie",pants:"baggy",shoes:"shoes",topColor:"white",pantsColor:"khaki",shoesColor:"black"},
  cardigan_ripped:{label:"Cardigan + celana sobek + sneakers",top:"cardigan",pants:"trousers_ripped",shoes:"sneakers",topColor:"mustard",pantsColor:"night",shoesColor:"red"},
  custom:{label:"Atur sendiri…"}
@@ -67,6 +67,11 @@ async function master(gender,tone){
 function wearSpec(actor){
  const o=OUTFITS[actor.outfit]||OUTFITS.none,w=actor.wear||{};
  const s=actor.outfit==="custom"?{...w}:{top:o.top,pants:o.pants,shoes:o.shoes,topColor:o.topColor,pantsColor:o.pantsColor,shoesColor:o.shoesColor};
+ // Temporary baseline rendering for not-yet-approved wardrobe variants; avoid
+ // nude/invisible old stock in Mahluk Hidup motion previews and Beraksi.
+ if(s.top&&s.top!=="nude"&&s.top!=="none")s.top="tee";
+ if(s.pants&&s.pants!=="nude"&&s.pants!=="none")s.pants="trousers";
+ if(s.shoes&&s.shoes!=="nude"&&s.shoes!=="none")s.shoes="shoes";
  if(w.hair&&w.hair!=="none"){s.hair=w.hair;s.hairColor=w.hairColor||"black"}
  for(const k of Object.keys(s))if(!s[k]||s[k]==="nude"||s[k]==="none")delete s[k];
  return Object.keys(s).some(k=>["top","pants","shoes","hair"].includes(k))?s:null;
