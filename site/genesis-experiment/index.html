@@ -61,7 +61,7 @@ kbd{font-family:inherit;font-size:10px;background:#343a49;border:1px solid #515a
  </div>
  <div class="section">
   <h2>02 / Gerak</h2>
-  <div class="triplet" id="presets"><button data-preset="neutral" class="active">Idle</button><button data-preset="sit">Duduk</button><button data-preset="squat">Jongkok</button><button data-preset="step">Melangkah</button><button data-preset="wave">Melambai</button><button data-preset="custom">Custom IK</button></div>
+  <div class="triplet" id="presets"><button data-preset="neutral">Idle</button><button data-preset="sit" class="active">Duduk</button><button data-preset="squat">Jongkok</button><button data-preset="step">Melangkah</button><button data-preset="wave">Melambai</button><button data-preset="custom">Custom IK</button></div>
   <div class="sliderrow"><label for="bend">Intensitas gerak</label><b id="bendval">100%</b></div><input id="bend" type="range" min="0" max="100" step="1" value="100">
   <div class="buttonrow" style="margin-top:10px"><button id="play">▶ Animasi</button><button id="reset">↺ Reset</button></div>
  </div>
@@ -415,7 +415,7 @@ window.GENESIS_EXPERIMENT_SOURCES = { male: {"format":"lafrich-genesis-base-v1",
 var R=window.LGR1Raster;
 var W=64,H=112,BASE="../media/lgr1/base/";
 var SOURCES={male:"genesis-base-male-official-8.json",female:"genesis-base-female-official-9.json"};
-var state={gender:"male",dir:"se",skin:"light",preset:"neutral",bend:1,playing:false,overlap:true,markers:true,grid:false,leg:"near",flip:1,custom:null,progress:0};
+var state={gender:"male",dir:"se",skin:"light",preset:"sit",bend:1,playing:false,overlap:true,markers:true,grid:false,leg:"near",flip:1,custom:null,progress:0};
 var models={},prepared={},rasterInfo={},frame=null,playStart=0,sequence=0,lastResult=null;
 var el=function(id){return document.getElementById(id)};
 var setStatus=function(message,error){el("status").textContent=message;el("status").className="status"+(error?" error":"")};
@@ -517,7 +517,7 @@ function solve(hip,knee,foot,target,sign){
 function makePose(info,phase){
  var dir=state.dir,piv=info.pivots,facing=dir==="sw"||dir==="nw"?-1:1;
  var mode=state.preset,amount=state.bend;
- var f=state.playing?(0.88+0.12*Math.sin(phase*3.5)):1;
+ var f=state.playing?(0.5-0.5*Math.cos(phase*2.7)):1;
  var t=amount*(mode==="neutral"?0:mode==="custom"?1:f);
  var ymove=(mode==="sit"?8:mode==="squat"?10:mode==="step"?-1:0)*t;
  var pelvis={x:0,y:ymove,a:0},pose={pelvis:pelvis};
