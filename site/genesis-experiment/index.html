@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Genesis Experiment — LGR Knee IK Beta</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:#101218;color:#e9edf5}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 48% -20%,#293146 0,transparent 62%),#101218}
+button,select,input{font:inherit}button,select{border:1px solid #353c4d;background:#212635;color:#e9edf5;border-radius:8px;padding:9px 11px;cursor:pointer}
+button:hover,select:hover{border-color:#75829b}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #ffb454;outline-offset:2px}
+button.active{background:#503b23;border-color:#e3a458;color:#ffe2b4}button.primary{background:#ebac59;color:#211506;border-color:#ebac59;font-weight:700}button:disabled{opacity:.4;cursor:not-allowed}
+select{width:100%}input[type=range]{width:100%;accent-color:#edb05b;cursor:pointer}
+.wrap{max-width:1490px;margin:auto;padding:22px 24px 48px}
+header{display:flex;gap:18px;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #313748}
+.brand{display:flex;align-items:center;gap:12px}.mark{display:grid;place-items:center;width:42px;height:42px;background:#eaae60;border:2px solid #f9d28f;color:#252017;border-radius:11px;font-size:24px;font-weight:900}
+h1{font-size:22px;line-height:1.1;letter-spacing:-.5px;margin:0}.sub{font-size:12px;color:#8d99ae;margin-top:6px}
+.tag{color:#ffd79f;background:#4c3927;border:1px solid #80633d;border-radius:100px;font-size:10px;font-weight:800;letter-spacing:1.3px;padding:8px 11px}
+.lead{font-size:13px;line-height:1.7;color:#aab6ca;margin:14px 0 20px;max-width:960px}
+.layout{display:grid;grid-template-columns:minmax(260px,310px) minmax(0,1fr);gap:18px;align-items:start}
+.panel,.viewer,.info{background:#191e29;border:1px solid #353d4e;border-radius:13px;overflow:hidden}
+.panel{padding:17px}.section{padding:15px 0;border-bottom:1px solid #343b4a}.section:first-child{padding-top:0}.section:last-child{border:0;padding-bottom:0}
+.section h2{font-size:12px;letter-spacing:1.1px;color:#9facbf;text-transform:uppercase;margin:0 0 12px}
+.control{display:block;margin:10px 0 6px;color:#c7d0dd;font-size:12px;font-weight:650}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.triplet{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.buttonrow{display:flex;flex-wrap:wrap;gap:7px}.buttonrow button{flex:1;min-width:72px}
+.panel small,.hint{font-size:11px;color:#8d9aaf;line-height:1.6}
+.sliderrow{display:flex;justify-content:space-between;font-size:12px;color:#bac4d5;margin-top:6px}
+.main{min-width:0;display:grid;gap:13px}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.viewer{min-width:0;padding:15px 14px 14px}.viewer-head{display:flex;justify-content:space-between;align-items:start;gap:8px;min-height:42px}
+.viewer-head h2{margin:0;font-size:13px}.viewer-head p{margin:5px 0 0;font-size:11px;color:#8492a8}.idtag{border-radius:5px;background:#303748;color:#bac6d7;padding:4px 6px;font-size:10px;white-space:nowrap}
+.stage{--zoom:4;position:relative;max-width:340px;width:min(100%,320px);margin:14px auto 9px;aspect-ratio:64/112;image-rendering:pixelated;border:1px solid #3a4557;background-color:#262d3b;background-image:linear-gradient(45deg,#2c3444 25%,transparent 25%),linear-gradient(-45deg,#2c3444 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2c3444 75%),linear-gradient(-45deg,transparent 75%,#2c3444 75%);background-size:22px 22px;background-position:0 0,0 11px,11px -11px,-11px 0}
+.stage canvas{position:absolute;width:100%;height:100%;inset:0;image-rendering:pixelated}
+.stage .overlay{touch-action:none}.stage.editable .overlay{cursor:crosshair}
+.legend{font-size:11px;color:#9ba9bd;line-height:1.55;min-height:32px}
+.info{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.info h3{font-size:11px;margin:0 0 7px;color:#aebacf;text-transform:uppercase;letter-spacing:.7px}
+.info p{margin:0;color:#d7deea;font-size:12px;line-height:1.7}
+.status{font-size:12px;line-height:1.7;color:#b7c3d6;margin:10px 0 0;min-height:20px}
+.status.error{color:#ffa4a4}
+footer{color:#7e899c;font-size:11px;line-height:1.6;margin-top:15px}
+kbd{font-family:inherit;font-size:10px;background:#343a49;border:1px solid #515a6b;border-radius:4px;padding:2px 5px}
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.panel{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 20px}.section{border-bottom:0;padding:0}}
+@media(max-width:560px){.wrap{padding:16px 10px 30px}.compare{grid-template-columns:1fr}.panel{display:block}.section{padding:14px 0;border-bottom:1px solid #343b4a}.info{grid-template-columns:1fr}header{align-items:start}h1{font-size:19px}.viewer{padding:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div class="brand"><div class="mark">G</div><div><h1>Genesis Experiment</h1><div class="sub">LGR-1 · TWO-BONE KNEE IK · PIXEL SEAM STUDY</div></div></div>
+ <div class="tag">ISOLATED BETA</div>
+</header>
+<p class="lead">Eksperimen gerak lutut dengan Genesis Male Official-8 dan Female Official-9. Panel kiri menunjukkan rotasi paha saja (simulasi kontrol); panel kanan memakai two-bone IK dan overlap joint. Tidak ada penulisan ke database, master Genesis, wardrobe, atau animasi utama.</p>
+<div class="layout">
+<aside class="panel" aria-label="Kontrol eksperimen">
+ <div class="section">
+  <h2>01 / Model</h2>
+  <div class="two"><div><label class="control" for="gender">Karakter</label><select id="gender"><option value="male">Genesis Male</option><option value="female">Genesis Female</option></select></div><div><label class="control" for="dir">Sudut</label><select id="dir"><option value="se">SE · depan kanan</option><option value="sw">SW · depan kiri</option><option value="ne">NE · belakang kanan</option><option value="nw">NW · belakang kiri</option></select></div></div>
+  <label class="control" for="skin">Skin key</label><select id="skin"><option value="light">Light</option><option value="porcelain">Porcelain</option><option value="tan">Tan</option><option value="medium">Medium</option><option value="brown">Brown</option><option value="deep">Deep</option></select>
+ </div>
+ <div class="section">
+  <h2>02 / Gerak</h2>
+  <div class="triplet" id="presets"><button data-preset="neutral" class="active">Idle</button><button data-preset="sit">Duduk</button><button data-preset="squat">Jongkok</button><button data-preset="step">Melangkah</button><button data-preset="wave">Melambai</button><button data-preset="custom">Custom IK</button></div>
+  <div class="sliderrow"><label for="bend">Intensitas gerak</label><b id="bendval">100%</b></div><input id="bend" type="range" min="0" max="100" step="1" value="100">
+  <div class="buttonrow" style="margin-top:10px"><button id="play">▶ Animasi</button><button id="reset">↺ Reset</button></div>
+ </div>
+ <div class="section">
+  <h2>03 / Knee IK</h2>
+  <label class="control" for="leg">Kaki yang diedit</label>
+  <select id="leg"><option value="near">Near leg</option><option value="far">Far leg</option></select>
+  <div class="buttonrow" style="margin-top:11px"><button id="bendDir" title="Ganti arah lipatan sendi">↔ Balik arah lutut</button><button id="overlap" class="active">● Overlap ON</button></div>
+  <div class="buttonrow" style="margin-top:8px"><button id="markers" class="active">◎ Joint markers</button><button id="grid"># Grid</button></div>
+  <p class="hint">Seret target kaki <b style="color:#f5bb6d">●</b> pada panel kanan untuk menguji IK manual. Target yang berada di luar jangkauan akan dibatasi secara otomatis.</p>
+ </div>
+ <div class="section">
+  <h2>04 / Export & keamanan</h2>
+  <div class="buttonrow"><button class="primary" id="export">↓ Pose JSON</button><button id="snapshot">↓ PNG preview</button></div>
+  <p class="hint">Export menggunakan format <code>genesis-experiment-pose-v1</code>, terpisah dari LGR produksi. Tidak melakukan auto-save, upload, sync, atau overwrite.</p>
+ </div>
+</aside>
+<div class="main">
+ <div class="compare">
+  <section class="viewer"><div class="viewer-head"><div><h2>Rotasi saja</h2><p>Tanpa perhitungan inverse kinematics</p></div><span class="idtag">CONTROL</span></div><div class="stage"><canvas id="before" width="64" height="112" aria-label="Pratinjau tanpa IK"></canvas><canvas class="overlay" id="beforeOverlay" width="64" height="112"></canvas></div><div class="legend">Paha diarahkan ke target, tetapi betis tetap mengikuti rotasi paha. Ini simulasi pembanding, bukan rekaman engine produksi.</div></section>
+  <section class="viewer"><div class="viewer-head"><div><h2>IK + Seam Overlap</h2><p>Two-bone solver · transform non-destruktif</p></div><span class="idtag">EXPERIMENT</span></div><div class="stage editable"><canvas id="after" width="64" height="112" aria-label="Pratinjau IK"></canvas><canvas class="overlay" id="afterOverlay" width="64" height="112" aria-label="Seret target kaki untuk mengatur IK"></canvas></div><div class="legend"><span style="color:#e9b26d">● target kaki</span> · <span style="color:#79d0c1">● knee joint</span> · <span style="color:#d4afee">● hip joint</span> · aktifkan markers untuk memeriksa alignment.</div></section>
+ </div>
+ <div class="info"><div><h3>IK diagnostics</h3><p id="metrics">Memuat karakter…</p></div><div><h3>Data & perlindungan</h3><p id="protection">Membaca official base saja. Tidak memodifikasi file apa pun.</p></div></div>
+ <div id="status" class="status" role="status">Membaca source Genesis…</div>
+</div>
+</div>
+<footer>Experiment-only build • Hapus folder <kbd>site/genesis-experiment/</kbd> untuk membuang seluruh aplikasi beta. Runtime utama, JSON official, registry base, dan Mahluk Hidup tidak diubah.</footer>
+</div>
+<script src="../lgr1-raster.js"></script>
+<script>
+(function(){
+"use strict";
+var R=window.LGR1Raster;
+var W=64,H=112,BASE="../media/lgr1/base/";
+var SOURCES={male:"genesis-base-male-official-8.json",female:"genesis-base-female-official-9.json"};
+var state={gender:"male",dir:"se",skin:"light",preset:"neutral",bend:1,playing:false,overlap:true,markers:true,grid:false,leg:"near",flip:1,custom:null,progress:0};
+var models={},prepared={},rasterInfo={},frame=null,playStart=0,sequence=0,lastResult=null;
+var el=function(id){return document.getElementById(id)};
+var setStatus=function(message,error){el("status").textContent=message;el("status").className="status"+(error?" error":"")};
+var point=function(x,y){return {x:x,y:y}},add=function(a,b){return point(a.x+b.x,a.y+b.y)},sub=function(a,b){return point(a.x-b.x,a.y-b.y)};
+var length=function(p){return Math.hypot(p.x,p.y)},lerp=function(a,b,t){return a+(b-a)*t};
+var map=function(m,p){return point(m[0]*p.x+m[2]*p.y+m[4],m[1]*p.x+m[3]*p.y+m[5])};
+var deg=function(r){return r*180/Math.PI},rad=function(d){return d*Math.PI/180};
+var clamp=function(v,min,max){return Math.max(min,Math.min(max,v))};
+function decodeMask(s){
+ var bytes=atob(s),out=new Uint8Array(bytes.length);
+ for(var i=0;i<bytes.length;i++)out[i]=bytes.charCodeAt(i);
+ if(out.length!==W*H)throw Error("Mask invalid: "+out.length+" pixel, expected "+(W*H));
+ return out;
+}
+function rgb(hex){return [parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)]}
+function decodeImage(src,skin){
+ return new Promise(function(resolve,reject){
+  if(!src){resolve(new Uint8ClampedArray(W*H*4));return}
+  var image=new Image();
+  image.onload=function(){
+   try{
+    if(image.naturalWidth!==W||image.naturalHeight!==H)throw Error("Layer image not 64x112");
+    var canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
+    var ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.imageSmoothingEnabled=false;ctx.drawImage(image,0,0);
+    var data=ctx.getImageData(0,0,W,H).data;
+    var keys=Object.keys(skin.keys),mapping={};
+    keys.forEach(function(k){mapping[skin.keys[k].toUpperCase()]=rgb(skin.tones[state.skin][k])});
+    for(var i=0;i<data.length;i+=4){
+     if(data[i+3]===0)continue;
+     var color="#"+[data[i],data[i+1],data[i+2]].map(function(v){return v.toString(16).padStart(2,"0")}).join("").toUpperCase();
+     if(mapping[color]){data[i]=mapping[color][0];data[i+1]=mapping[color][1];data[i+2]=mapping[color][2]}
+    }
+    resolve(data);
+   }catch(e){reject(e)}
+  };
+  image.onerror=function(){reject(Error("PNG source failed to decode"))};
+  image.src=src;
+ });
+}
+async function load(gender){
+ if(models[gender])return models[gender];
+ var res=await fetch(BASE+SOURCES[gender],{cache:"no-store"});
+ if(!res.ok)throw Error("Tidak dapat memuat "+SOURCES[gender]+" (HTTP "+res.status+")");
+ var model=await res.json();
+ if(model.format!=="lafrich-genesis-base-v1"||model.gender!==gender||model.canvas.width!==W||model.canvas.height!==H)throw Error("Unexpected official Genesis format");
+ models[gender]=model;return model;
+}
+async function prep(gender,dir,tone,overlap){
+ var key=[gender,dir,tone,overlap?"cap":"none"].join("/");
+ if(prepared[key])return prepared[key];
+ var model=await load(gender),rig=model.rig,mask=decodeMask(rig.masks[dir]);
+ var layers={};
+ var names=Object.keys(rig.layers);
+ for(var i=0;i<names.length;i++){
+  var layer=names[i],src=rig.layers[layer]&&rig.layers[layer][dir];
+  if(src)layers[layer]=await decodeImage(src,model.skin);
+ }
+ var caps=Object.assign({},rig.capRadius||{});
+ if(overlap){caps.leg_near_lower=3;caps.leg_far_lower=3;caps.leg_near_upper=2;caps.leg_far_upper=2}
+ else{caps.leg_near_lower=0;caps.leg_far_lower=0;caps.leg_near_upper=0;caps.leg_far_upper=0}
+ var preparedModel=R.prepare({mask:mask,layers:layers,order:rig.drawOrders[dir],pivots:rig.pivots[dir],placements:rig.placements[dir],caps:caps});
+ var anchors={};
+ ["near","far"].forEach(function(side){
+  var name="leg_"+side+"_lower",partIndex=R.PARTS.indexOf(name),minY=H,maxY=-1,centerX=0,count=0;
+  for(var i=0;i<mask.length;i++)if(mask[i]===partIndex){var y=(i/W)|0;if(y>maxY)maxY=y}
+  var y0=Math.max(0,maxY-3);
+  for(var j=0;j<mask.length;j++)if(mask[j]===partIndex&&(j/W|0)>=y0){centerX+=j%W;count++}
+  if(count===0)throw Error("Lower leg '"+side+"' has no assigned pixels");
+  var a=rig.pivots[dir][name],foot=point(centerX/count,maxY-1);
+  if(length(sub(foot,a))<3)foot=point(a.x,a.y+12);
+  anchors[side]=foot;
+ });
+ prepared[key]=preparedModel;
+ rasterInfo[key]={anchors:anchors,pivots:rig.pivots[dir],rig:rig};
+ return preparedModel;
+}
+function targetFor(side,mode,anchor,pivot,dir,t){
+ var facing=dir==="sw"||dir==="nw"?-1:1;
+ var dst=point(anchor.x,anchor.y);
+ if(mode==="sit")dst=point(pivot.x+facing*(side==="near"?17:13),pivot.y+(side==="near"?15:18));
+ if(mode==="squat")dst=point(pivot.x+facing*(side==="near"?7:-7),pivot.y+(side==="near"?12:15));
+ if(mode==="step")dst=point(pivot.x+facing*(side==="near"?17:-8),pivot.y+(side==="near"?21:25));
+ return point(lerp(anchor.x,dst.x,t),lerp(anchor.y,dst.y,t));
+}
+function solve(hip,knee,foot,target,sign){
+ var u=sub(knee,hip),v=sub(foot,knee),l1=length(u),l2=length(v),raw=sub(target,hip),distance=length(raw);
+ if(l1<1||l2<1)throw Error("Missing leg bone length");
+ var lo=Math.abs(l1-l2)+.06,hi=l1+l2-.06,dist=clamp(distance,lo,hi);
+ var unit=distance>1e-8?point(raw.x/distance,raw.y/distance):point(0,1);
+ var d=point(hip.x+unit.x*dist,hip.y+unit.y*dist);
+ var alpha=Math.atan2(unit.y,unit.x);
+ var cosine=clamp((l1*l1+dist*dist-l2*l2)/(2*l1*dist),-1,1);
+ var beta=Math.acos(cosine),thighAngle=alpha-sign*beta;
+ var newKnee=point(hip.x+l1*Math.cos(thighAngle),hip.y+l1*Math.sin(thighAngle));
+ var shinAngle=Math.atan2(d.y-newKnee.y,d.x-newKnee.x);
+ var upper=deg(thighAngle-Math.atan2(u.y,u.x));
+ var lower=deg(shinAngle-Math.atan2(v.y,v.x))-upper;
+ return {upper:upper,lower:lower,reach:distance-dist,target:target,clamped:d,knee:newKnee,length1:l1,length2:l2};
+}
+function makePose(info,phase){
+ var dir=state.dir,piv=info.pivots,facing=dir==="sw"||dir==="nw"?-1:1;
+ var mode=state.preset,amount=state.bend;
+ var f=state.playing?(0.88+0.12*Math.sin(phase*3.5)):1;
+ var t=amount*(mode==="neutral"?0:mode==="custom"?1:f);
+ var ymove=(mode==="sit"?8:mode==="squat"?10:mode==="step"?-1:0)*t;
+ var pelvis={x:0,y:ymove,a:0},pose={pelvis:pelvis};
+ if(mode==="sit"||mode==="squat"){pose.torso={a:(mode==="sit"?-8:12)*t*facing};pose.head={a:-pose.torso.a*.6}}
+ if(mode==="wave"){pose.arm_near_upper={a:-facing*85*t};pose.arm_near_lower={a:facing*(40+30*Math.sin(phase*5))*t};pose.head={a:5*Math.sin(phase*2)*t}}
+ var targets={},solvers={},base={},reference={};
+ ["near","far"].forEach(function(side){
+  var upperName="leg_"+side+"_upper",lowerName="leg_"+side+"_lower";
+  var hip=add(point(piv[upperName].x,piv[upperName].y),point(pelvis.x,pelvis.y));
+  var knee=add(point(piv[lowerName].x,piv[lowerName].y),point(pelvis.x,pelvis.y));
+  var foot=add(info.anchors[side],point(pelvis.x,pelvis.y));
+  var target=targetFor(side,mode,foot,hip,dir,t);
+  if(mode==="custom"&&state.custom&&state.custom[side]){target=point(lerp(foot.x,state.custom[side].x,amount),lerp(foot.y,state.custom[side].y,amount))}
+  if(mode==="step"&&state.playing){var gait=Math.sin(phase*3.2+(side==="far"?Math.PI:0));target.x+=facing*gait*5*t;target.y-=Math.max(0,gait)*3*t}
+  targets[side]=target;
+  reference[side]={hip:hip,knee:knee,foot:foot};
+  if(mode==="neutral"||mode==="wave"&&t===0||t<.0001){solvers[side]={upper:0,lower:0,reach:0,target:target,clamped:target,knee:knee};return}
+  if(mode==="wave"){solvers[side]={upper:0,lower:0,reach:0,target:target,clamped:target,knee:knee};return}
+  var sign=state.flip*facing;
+  var solution=solve(hip,knee,foot,target,sign);
+  solvers[side]=solution;
+  pose[upperName]={a:solution.upper};
+  pose[lowerName]={a:solution.lower};
+  base[upperName]={a:solution.upper};
+  base[lowerName]={a:0};
+ });
+ var control=Object.assign({},pose,base);
+ if(mode==="neutral"||mode==="wave")control=Object.assign({},pose);
+ return {pose:pose,control:control,targets:targets,solvers:solvers,reference:reference};
+}
+function paint(canvas,rgba){
+ var ctx=canvas.getContext("2d");ctx.clearRect(0,0,W,H);ctx.putImageData(new ImageData(rgba,W,H),0,0);
+}
+function circle(ctx,p,color,r,outline){
+ ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);
+ ctx.fillStyle=color;ctx.fill();if(outline){ctx.strokeStyle="#101218";ctx.lineWidth=.7;ctx.stroke()}
+}
+function overlay(canvas,info,pose,targetMode,metrics){
+ var ctx=canvas.getContext("2d");ctx.clearRect(0,0,W,H);
+ if(state.grid){ctx.strokeStyle="rgba(230,237,247,.15)";ctx.lineWidth=.14;for(var i=0;i<=W;i+=8){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,H);ctx.stroke()}for(var j=0;j<=H;j+=8){ctx.beginPath();ctx.moveTo(0,j);ctx.lineTo(W,j);ctx.stroke()}}
+ if(!state.markers)return;
+ var matrices=R.matrices(info.pivots,info.rig.placements[state.dir],pose);
+ ["far","near"].forEach(function(side){
+  var prefix="leg_"+side,hip=map(matrices[prefix+"_upper"].mat,info.pivots[prefix+"_upper"]);
+  var knee=map(matrices[prefix+"_lower"].mat,info.pivots[prefix+"_lower"]);
+  var ankle=map(matrices[prefix+"_lower"].mat,info.anchors[side]);
+  ctx.strokeStyle=side===state.leg?"rgba(255,237,199,.82)":"rgba(170,187,207,.55)";
+  ctx.lineWidth=.65;ctx.beginPath();ctx.moveTo(hip.x,hip.y);ctx.lineTo(knee.x,knee.y);ctx.lineTo(ankle.x,ankle.y);ctx.stroke();
+  circle(ctx,hip,"#d4afee",1.35,true);circle(ctx,knee,"#79d0c1",1.35,true);circle(ctx,ankle,"#eff3fa",1.2,true);
+  if(targetMode){
+   var target=metrics.targets[side];ctx.strokeStyle="#e9b26d";ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(ankle.x,ankle.y);ctx.lineTo(target.x,target.y);ctx.stroke();
+   circle(ctx,target,side===state.leg?"#f5b45b":"#ab8455",side===state.leg?2.3:1.6,true);
+  }
+ });
+}
+function diagnose(info,motion){
+ var mats=R.matrices(info.pivots,info.rig.placements[state.dir],motion.pose),parts=[];
+ ["near","far"].forEach(function(side){
+  var tr=mats["leg_"+side+"_lower"],foot=map(tr.mat,info.anchors[side]),target=motion.targets[side],err=length(sub(foot,target)),solver=motion.solvers[side];
+  parts.push((side==="near"?"Near":"Far")+": knee "+Math.round(solver.lower||0)+"° · target error "+err.toFixed(1)+"px"+((solver.reach||0)>.1?" (clamped)":""));
+ });
+ el("metrics").textContent=parts.join(" | ");
+}
+async function renderNow(){
+ var version=++sequence;
+ try{
+  if(!R)throw Error("LGR1Raster unavailable");
+  var gender=state.gender,dir=state.dir,tone=state.skin,overlap=state.overlap;
+  var [p0,p1]=await Promise.all([prep(gender,dir,tone,false),prep(gender,dir,tone,overlap)]);
+  if(version!==sequence)return;
+  var k0=[gender,dir,tone,"none"].join("/"),k1=[gender,dir,tone,overlap?"cap":"none"].join("/");
+  var info=rasterInfo[k1],m=makePose(info,state.progress);
+  var baseline=R.render(p0,m.control),experiment=R.render(p1,m.pose);
+  paint(el("before"),baseline);paint(el("after"),experiment);
+  overlay(el("beforeOverlay"),rasterInfo[k0],m.control,false,m);
+  overlay(el("afterOverlay"),info,m.pose,true,m);
+  diagnose(info,m);
+  var model=models[gender];
+  el("protection").textContent="Source "+SOURCES[gender]+" · SHA "+String(model.rigSha256).slice(0,12)+"… · 11 parts / 4 angles · cap "+(overlap?"3 px":"off")+" · No writes";
+  lastResult={motion:m,info:info,model:model,baseline:baseline,experiment:experiment};
+  setStatus("Source resmi berhasil dibaca. Target kaki dapat digeser langsung di preview kanan.",false);
+ }catch(err){setStatus("Gagal render: "+(err.message||String(err)),true);console.error(err)}
+}
+function schedule(){renderNow()}
+function refreshButtons(){
+ document.querySelectorAll("[data-preset]").forEach(function(b){b.classList.toggle("active",b.dataset.preset===state.preset)});
+ el("bendval").textContent=Math.round(state.bend*100)+"%";
+ el("play").textContent=state.playing?"❚❚ Hentikan":"▶ Animasi";
+ el("overlap").textContent=state.overlap?"● Overlap ON":"○ Overlap OFF";
+ el("overlap").classList.toggle("active",state.overlap);
+ el("markers").classList.toggle("active",state.markers);el("grid").classList.toggle("active",state.grid);
+ el("bendDir").textContent=state.flip===1?"↔ Balik arah lutut":"↔ Arah lutut dibalik";
+}
+function stop(){state.playing=false;if(frame!==null)cancelAnimationFrame(frame);frame=null;refreshButtons()}
+function tick(time){
+ if(!state.playing)return;
+ state.progress=(time-playStart)/1000;
+ schedule();frame=requestAnimationFrame(tick);
+}
+function start(){state.playing=true;playStart=performance.now();refreshButtons();frame=requestAnimationFrame(tick)}
+function reset(){
+ stop();state.preset="neutral";state.bend=1;state.custom=null;state.flip=1;state.progress=0;
+ el("bend").value=100;refreshButtons();schedule();
+}
+document.querySelectorAll("[data-preset]").forEach(function(b){b.addEventListener("click",function(){
+ var mode=b.dataset.preset;if(mode==="custom"&&lastResult&&!state.custom)state.custom=Object.assign({},lastResult.motion.targets);
+ state.preset=mode;state.progress=0;refreshButtons();schedule();
+})});
+["gender","dir","skin","leg"].forEach(function(id){el(id).addEventListener("change",function(){state[id==="skin"?"skin":id]=this.value;state.custom=null;stop();schedule()})});
+el("bend").addEventListener("input",function(){state.bend=Number(this.value)/100;refreshButtons();schedule()});
+el("play").addEventListener("click",function(){if(state.playing)stop();else start()});
+el("reset").addEventListener("click",reset);
+el("bendDir").addEventListener("click",function(){state.flip*=-1;refreshButtons();schedule()});
+el("overlap").addEventListener("click",function(){state.overlap=!state.overlap;refreshButtons();schedule()});
+el("markers").addEventListener("click",function(){state.markers=!state.markers;refreshButtons();schedule()});
+el("grid").addEventListener("click",function(){state.grid=!state.grid;refreshButtons();schedule()});
+var dragging=false;
+function dragTarget(event){
+ if(!lastResult)return;
+ var canvas=el("afterOverlay"),rect=canvas.getBoundingClientRect();
+ var x=clamp((event.clientX-rect.left)*W/rect.width,1,W-2);
+ var y=clamp((event.clientY-rect.top)*H/rect.height,1,H-2);
+ if(!state.custom)state.custom=Object.assign({},lastResult.motion.targets);
+ state.custom[state.leg]=point(x,y);state.preset="custom";state.bend=1;el("bend").value=100;refreshButtons();schedule();
+}
+el("afterOverlay").addEventListener("pointerdown",function(e){dragging=true;this.setPointerCapture(e.pointerId);stop();dragTarget(e)});
+el("afterOverlay").addEventListener("pointermove",function(e){if(dragging)dragTarget(e)});
+el("afterOverlay").addEventListener("pointerup",function(){dragging=false});
+el("afterOverlay").addEventListener("pointercancel",function(){dragging=false});
+function downloadBlob(blob,name){
+ var url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(url)},3000);
+}
+el("export").addEventListener("click",function(){
+ if(!lastResult)return;
+ var src=lastResult,output={
+  format:"genesis-experiment-pose-v1",experimental:true,notForProduction:true,createdAt:new Date().toISOString(),
+  model:{gender:state.gender,source:SOURCES[state.gender],rigSha256:src.model.rigSha256,dir:state.dir,skin:state.skin},
+  settings:{preset:state.preset,intensity:state.bend,kneeDirection:state.flip,overlap:state.overlap},
+  targetFeet:src.motion.targets,pose:src.motion.pose,controlPose:src.motion.control,solver:src.motion.solvers,
+  note:"Isolated test; this JSON is not an official LGR Genesis base or motion."
+ };
+ downloadBlob(new Blob([JSON.stringify(output,null,2)],{type:"application/json"}),"genesis-experiment-"+state.gender+"-"+state.preset+".json");
+});
+el("snapshot").addEventListener("click",function(){
+ if(!lastResult)return;
+ var s=4,c=document.createElement("canvas");c.width=(W*2+16)*s;c.height=(H+17)*s;
+ var ctx=c.getContext("2d");ctx.fillStyle="#151a24";ctx.fillRect(0,0,c.width,c.height);ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(el("before"),0,12*s,W*s,H*s);ctx.drawImage(el("after"),(W+16)*s,12*s,W*s,H*s);
+ ctx.fillStyle="#efc38c";ctx.font="bold 12px sans-serif";ctx.fillText("ROTATION ONLY",7,30);ctx.fillText("TWO-BONE IK",((W+16)*s)+8,30);
+ c.toBlob(function(blob){if(blob)downloadBlob(blob,"genesis-experiment-"+state.gender+"-"+state.preset+".png")},"image/png");
+});
+refreshButtons();schedule();
+})();
+</script>
+</body>
+</html>
