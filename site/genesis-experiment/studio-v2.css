@@ -1,0 +1,42 @@
+
+/* Genesis Experiment v2 — all styles isolated under experiment-specific classes. */
+.genex-workbench{background:#191e29;border:1px solid #353d4e;border-radius:13px;padding:17px;display:grid;gap:16px}
+.genex-title{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.genex-title h2{font-size:14px;margin:0;color:#f6deb7}
+.genex-title p{color:#8f9cb0;font-size:11px;margin:6px 0 0;line-height:1.5}
+.genex-tabs{display:flex;gap:7px;flex-wrap:wrap}
+.genex-tabs button{flex:1;min-width:84px}
+.genex-editor-layout{display:grid;grid-template-columns:minmax(210px,1fr) minmax(200px,255px);gap:16px}
+.genex-editor-stage{width:min(100%,384px);aspect-ratio:64/112;margin:0 auto;position:relative;overflow:hidden;border:1px solid #66738a;border-radius:4px;image-rendering:pixelated;touch-action:none;background-color:#2a3140;background-image:linear-gradient(45deg,#384050 25%,transparent 25%),linear-gradient(-45deg,#384050 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#384050 75%),linear-gradient(-45deg,transparent 75%,#384050 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0}
+.genex-editor-stage canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+.genex-editor-stage #gx-overlay{cursor:crosshair;touch-action:none}
+.genex-editor-stage.show-grid:after{content:"";pointer-events:none;position:absolute;inset:0;background-image:linear-gradient(to right,rgba(230,240,255,.19) 1px,transparent 1px),linear-gradient(to bottom,rgba(230,240,255,.19) 1px,transparent 1px);background-size:calc(100% / 64) calc(100% / 112);opacity:.65}
+.genex-editor-stage:focus-within{outline:2px solid #e8b777;outline-offset:3px}
+.genex-controls{display:flex;flex-direction:column;gap:10px;min-width:0}
+.genex-controls label{display:block;font-size:11px;color:#9face0;margin-bottom:5px}
+.genex-controls select,.genex-controls input[type=number],.genex-controls input[type=color]{width:100%}
+.genex-controls input[type=number]{background:#252b37;color:#f0f3f8;border:1px solid #495264;padding:8px;border-radius:7px}
+.genex-controls input[type=color]{height:36px;background:transparent;border:1px solid #495264;border-radius:7px;padding:3px}
+.genex-control-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.genex-colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.genex-small{color:#99a6ba;font-size:11px;line-height:1.5}
+.genex-toolset{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.genex-toolset button{font-size:12px;padding:8px 2px}
+.genex-full{display:flex;gap:6px;flex-wrap:wrap}
+.genex-full button{flex:1;min-width:90px}
+.genex-full input[type=file]{display:none}
+.genex-pivots{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.genex-pivots label{min-width:0}
+.genex-note{font-size:11px;color:#acb7c9;line-height:1.6}
+.genex-note strong{color:#e7c391}
+.genex-status{font:11px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:#edc18a;min-height:24px;background:#222936;border:1px solid #404b5d;border-radius:6px;padding:7px 9px;overflow-wrap:anywhere}
+.genex-edit-tool-note{font-size:12px;color:#abb6ca;line-height:1.65;min-height:32px}
+.genex-section-line{border-top:1px solid #343b4b;padding-top:11px}
+.genex-hidden{display:none!important}
+.genex-check{display:flex!important;align-items:center;gap:7px;font-size:11px;color:#c6d0df;margin:0!important}
+.genex-check input{accent-color:#edb05b}
+.genex-tip{color:#b3bfcd;font-size:11px;line-height:1.5}
+.genex-workbench button.active{background:#594127;border-color:#f0b96c;color:#ffe5b6}
+.genex-inline{font-size:12px;color:#d7e0ed}
+#gx-help{font-size:11px;color:#aebcd2}
+@media(max-width:640px){.genex-workbench{padding:11px}.genex-editor-layout{grid-template-columns:1fr}.genex-editor-stage{max-width:350px}.genex-controls{display:grid;grid-template-columns:1fr 1fr}.genex-control-group,.genex-pivots,.genex-full,.genex-small,.genex-note,.genex-status{grid-column:span 2}}
