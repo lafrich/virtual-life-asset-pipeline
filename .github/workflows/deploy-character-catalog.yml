@@ -205,10 +205,14 @@ jobs:
           node tests/test_pakaian_shared_pixel_editor.cjs
           node --test tests/test_lgr_pakaian_v2.cjs
           node --test tests/test_lgr_wardrobe_reference_runtime.cjs
+          node --test tests/test_lgr_game_base_clothing.cjs
           node --test tests/test_lgr_wardrobe_cover.cjs
           node --test tests/test_lgr_wardrobe_reference_export.cjs
           node --test tests/test_lgr_wardrobe_adjust.cjs
           node --check site/lgr-wardrobe-adjust.js
+          node --check site/lgr-game.js
+          node --check site/lgr-actor.js
+          node --check site/mahluk-pakaian.js
           node --check site/mahluk-pakaian-pixel.js
           node --check site/emotion-studio/shared-pixel-editor.js
           node tests/test_genesis_base.cjs
