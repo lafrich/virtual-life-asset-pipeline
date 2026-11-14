@@ -130,7 +130,12 @@ async function prepared(actor,d,face){
  const tone=actor.skin?.tone||"light",spec=wearSpec(actor);
  const key=actor.gender+"|"+tone+"|"+JSON.stringify(spec)+"|"+d+"|"+(face?.key||"");
  if(prepCache.has(key))return prepCache.get(key);
- const p=(async()=>{const m=await master(actor.gender,tone),ch=await wear(actor.gender,tone,spec);return R().prepare(m,ch,d,face?.img||null)})();
+ const p=(async()=>{
+  const m=await master(actor.gender,tone),ch=await wear(actor.gender,tone,spec);
+  const X=root.LGR1Raster,S=SK(),W=root.LGRWear;
+  const recolor=S?data=>{S.fromKey(data,S.rampFor(S.TONES[tone]?tone:"light"));if(W&&spec)W.recolor(data,W.lookup({...spec,skin:tone}))}:null;
+  return R().prepare(m,ch,d,face?.img||null,{lowerSprites:X?.LOWER_SPRITES,recolor});
+ })();
  if(prepCache.size>300)prepCache.clear();
  prepCache.set(key,p);p.catch(()=>prepCache.delete(key));return p;
 }

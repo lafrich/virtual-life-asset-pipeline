@@ -140,7 +140,7 @@ function faceImage(face,col,tone){
 }
 const lookKey=p=>JSON.stringify([genderOf(p),toneOf(p),spec(p),p.appearance?.facialHair||"",p.appearance?.glasses||""]);
 function prepare(profile,d,face,faceCol){
- const key=lookKey(profile)+"|"+d+"|"+(face?face.src+"#"+faceCol:"-");
+ const X=root.LGR1Raster,key=lookKey(profile)+"|"+d+"|"+(face?face.src+"#"+faceCol:"-")+"|ls="+(X&&X.LOWER_SPRITES?"1":"0");
  if(preps.has(key))return preps.get(key);
  const p=(async()=>{
   const A=dep("LGRActor"),W=dep("LGRWear"),C=dep("LafrichPuppetCore"),R=dep("LafrichPuppetRenderer");
@@ -149,7 +149,9 @@ function prepare(profile,d,face,faceCol){
   if(acc)wear.accessory=acc;
   const ch=Object.keys(wear).length?C.validateCharacter({format:C.CHARACTER,id:"lgr_game",name:"player",gender:g,wear,faceId:""}):null;
   const fimg=(d==="se"||d==="sw")?await faceImage(face,faceCol,tone):null;
-  return R.prepare(m,ch,d,fimg);
+  const X=dep("LGR1Raster"),S=root.LGRSkin;
+  const recolor=S?data=>{S.fromKey(data,S.rampFor(tone));W.recolor(data,W.lookup({...spec(profile),skin:tone}))}:null;
+  return R.prepare(m,ch,d,fimg,{lowerSprites:X.LOWER_SPRITES,recolor});
  })();
  preps.set(key,p);if(preps.size>160)preps.delete(preps.keys().next().value);
  p.then(v=>{p.done=true;p.value=v},e=>{p.done=true;p.error=e;console.warn("LGR prepare",e)});
@@ -161,13 +163,15 @@ function frame(profile,dir,action,t,face,faceCol=0){
  if(!state.ready){load().catch(()=>{});return null}
  const d=DIRS.includes(dir)?dir:"se",r=resolveAction(action),m=r.motion,M=dep("LGR1Motion");
  const i=M.frameIndexAt(m,Math.max(0,t||0)*1000);
- const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-");
- if(frames.has(fkey))return frames.get(fkey);
  const pp=prepare(profile,d,face,faceCol);
  if(!pp.done||pp.error)return null;
- const A=dep("LGRActor"),R=dep("LafrichPuppetRenderer");
+ const A=dep("LGRActor"),R=dep("LafrichPuppetRenderer"),X=dep("LGR1Raster");
  const {pose,order}=A.poseOf(pp.value.master,state.lib,m,i,d);
- const c=R.render(pp.value,pose,{order});
+ const use=X.LOWER_SPRITES,cv=X.CANVAS,avail=pp.value.lower?.avail;
+ const picked=use?X.selectLower(pose,pp.value.outfit||"base",avail):"rig";
+ const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-")+"|lower="+picked+"|cv="+cv;
+ if(frames.has(fkey))return frames.get(fkey);
+ const c=R.render(pp.value,pose,{order,canvas:cv,lowerSprites:use});
  frames.set(fkey,c);if(frames.size>600)frames.delete(frames.keys().next().value);
  return c;
 }

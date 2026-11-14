@@ -24,6 +24,11 @@
 })(typeof window!=="undefined"?window:typeof globalThis!=="undefined"?globalThis:null,function(){
 "use strict";
 const W=64,H=112,N=W*H;
+// Overflow canvas (option A, preview). Logical 64x112 + pivot (32,100) stay the contract.
+// Flags default off so live/tests stay pixel-identical. Twin of genesis_procedural_runtime.py.
+const BW=128,BH=128,OX=32,OY=16,LEGACY_GEOM={cw:W,ch:H,ox:0,oy:0,cn:N},OVERFLOW_GEOM={cw:BW,ch:BH,ox:OX,oy:OY,cn:BW*BH};
+let LOWER_SPRITES=false,CANVAS="legacy64";
+const LEG_PARTS=Object.freeze(["leg_far_upper","leg_far_lower","leg_near_upper","leg_near_lower"]);
 const PARTS=Object.freeze(["leg_far_upper","leg_far_lower","arm_far_upper","arm_far_lower",
  "torso","leg_near_upper","leg_near_lower","arm_near_upper","arm_near_lower","head","pelvis"]);
 const PARENTS=Object.freeze({pelvis:null,torso:"pelvis",head:"torso",
@@ -147,20 +152,51 @@ function buildBalls(parts,pivots,order){
  }
  return balls;
 }
-function pinholeFill(out,maxsize){
+function canvasGeom(mode){
+ mode=mode===undefined||mode===null?CANVAS:mode;
+ return mode==="overflow128"?{cw:OVERFLOW_GEOM.cw,ch:OVERFLOW_GEOM.ch,ox:OVERFLOW_GEOM.ox,oy:OVERFLOW_GEOM.oy,cn:OVERFLOW_GEOM.cn}:{cw:W,ch:H,ox:0,oy:0,cn:N};
+}
+function cropLogical(out,mode){
+ const g=canvasGeom(mode);
+ if(g.ox===0&&g.oy===0&&g.cw===W&&g.ch===H)return out;
+ const cropped=new Uint8ClampedArray(N*4);
+ for(let y=0;y<H;y++)cropped.set(out.subarray(((y+g.oy)*g.cw+g.ox)*4,((y+g.oy)*g.cw+g.ox+W)*4),y*W*4);
+ return cropped;
+}
+function angOf(pose,part){return Number((pose&&pose[part]||{}).a||0)}
+function lowerAngles(pose){
+ return {thigh:Math.max(Math.abs(angOf(pose,"leg_near_upper")),Math.abs(angOf(pose,"leg_far_upper"))),
+  knee:Math.max(Math.abs(angOf(pose,"leg_near_lower")),Math.abs(angOf(pose,"leg_far_lower"))),
+  pa:angOf(pose,"pelvis"),dy:Number((pose&&pose.pelvis||{}).y||0)};
+}
+function selectLower(pose,outfit,available){
+ const a=lowerAngles(pose);let pid;
+ if(Math.abs(a.pa)>=60)pid=(a.knee>=60||a.thigh>=40)?"lie_curl":"lie_straight";
+ else if(a.dy>=12&&a.knee>=180)pid="sit_floor";
+ else if(a.dy>=12&&a.knee>=120&&a.thigh>=55)pid="crouch";
+ else if(a.dy>=6&&a.thigh>=50&&a.knee>=50)pid="sit_chair";
+ else if(a.dy>=6&&a.knee>=80)pid="kneel";
+ else pid="rig";
+ if(pid==="rig"&&outfit==="skirt"&&!LEG_PARTS.some(p=>angOf(pose,p)))pid="stand";
+ const has=p=>!available||available.has?available.has(p):available.includes(p);
+ if(pid!=="rig"&&available&&!has(pid))pid=(pid==="sit_floor"&&has("sit_chair"))?"sit_chair":"rig";
+ return pid;
+}
+function lowerFileName(pose,view,body,outfit){return "lgr1_lower_"+pose+"_"+view+"_"+body+"_"+outfit+".png"}
+function pinholeFill(out,maxsize,geom){
  maxsize=maxsize===undefined?PINHOLE:maxsize;
- const seen=new Uint8Array(N),st=[];
- for(let k=0;k<N;k++){const x=k%W,y=(k-x)/W;if((x===0||x===W-1||y===0||y===H-1)&&!out[k*4+3]){seen[k]=1;st.push(k)}}
- while(st.length){const k=st.pop(),x=k%W,y=(k-x)/W;
-  for(const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]])if(nx>=0&&nx<W&&ny>=0&&ny<H){const n=ny*W+nx;if(!seen[n]&&!out[n*4+3]){seen[n]=1;st.push(n)}}}
- for(let k=0;k<N;k++){
+ const g=geom||canvasGeom(),cw=g.cw,ch=g.ch,cn=g.cn,seen=new Uint8Array(cn),st=[];
+ for(let k=0;k<cn;k++){const x=k%cw,y=(k-x)/cw;if((x===0||x===cw-1||y===0||y===ch-1)&&!out[k*4+3]){seen[k]=1;st.push(k)}}
+ while(st.length){const k=st.pop(),x=k%cw,y=(k-x)/cw;
+  for(const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]])if(nx>=0&&nx<cw&&ny>=0&&ny<ch){const n=ny*cw+nx;if(!seen[n]&&!out[n*4+3]){seen[n]=1;st.push(n)}}}
+ for(let k=0;k<cn;k++){
   if(out[k*4+3]||seen[k])continue;
   const comp=[k];seen[k]=1;
-  for(let i=0;i<comp.length;i++){const j=comp[i];for(const n of [j-1,j+1,j-W,j+W])if(!seen[n]&&!out[n*4+3]){seen[n]=1;comp.push(n)}}
+  for(let i=0;i<comp.length;i++){const j=comp[i];for(const n of [j-1,j+1,j-cw,j+cw])if(!seen[n]&&!out[n*4+3]){seen[n]=1;comp.push(n)}}
   if(comp.length>maxsize)continue;
   for(const j of comp){
    const cnt=new Map();
-   for(const n of [j-1,j+1,j-W,j+W])if(out[n*4+3]===255){const k2=out[n*4]+","+out[n*4+1]+","+out[n*4+2]+","+out[n*4+3];
+   for(const n of [j-1,j+1,j-cw,j+cw])if(out[n*4+3]===255){const k2=out[n*4]+","+out[n*4+1]+","+out[n*4+2]+","+out[n*4+3];
     if(!cnt.has(k2))cnt.set(k2,[n,0]);cnt.get(k2)[1]++}
    let best=null,bn=0,bs=0;
    for(const [,[n,c]] of cnt){const s3=out[n*4]+out[n*4+1]+out[n*4+2];if(best===null||c>bn||(c===bn&&s3<bs)){best=n;bn=c;bs=s3}}
@@ -295,7 +331,7 @@ function matrices(pivots,placements,pose){
  }
  return out;
 }
-function drawEntry(out,entry,tr){
+function drawEntry(out,entry,tr,geom){
  if(!entry||!entry.bbox)return;
  const [x0,y0,x1,y1]=entry.bbox,m=tr.mat,inv=inverse(m);
  const right=Math.abs(tr.angle-90*Math.round(tr.angle/90))<1e-9;
@@ -304,21 +340,22 @@ function drawEntry(out,entry,tr){
   const [px,py]=mapPoint(m,cx,cy);
   minX=Math.min(minX,px);maxX=Math.max(maxX,px);minY=Math.min(minY,py);maxY=Math.max(maxY,py);
  }
- const ox0=Math.max(0,Math.floor(minX)-1),ox1=Math.min(W-1,Math.ceil(maxX)+1);
- const oy0=Math.max(0,Math.floor(minY)-1),oy1=Math.min(H-1,Math.ceil(maxY)+1);
+ const g=geom||canvasGeom(),cw=g.cw,ch=g.ch,ox=g.ox,oy=g.oy;
+ const ox0=Math.max(0,Math.floor(minX)-1+ox),ox1=Math.min(cw-1,Math.ceil(maxX)+1+ox);
+ const oy0=Math.max(0,Math.floor(minY)-1+oy),oy1=Math.min(ch-1,Math.ceil(maxY)+1+oy);
  const img=entry.img,sc=right?null:scaledOf(entry);
  for(let y=oy0;y<=oy1;y++)for(let x=ox0;x<=ox1;x++){
-  const [sx,sy]=mapPoint(inv,x+.5,y+.5);
+  const [sx,sy]=mapPoint(inv,x-ox+.5,y-oy+.5);
   if(right){
    const ix=Math.floor(sx),iy=Math.floor(sy);
    if(ix<x0||ix>x1||iy<y0||iy>y1)continue;
    const o=(iy*W+ix)*4;
-   if(img[o+3])over(out,y*W+x,img[o],img[o+1],img[o+2],img[o+3]);
+   if(img[o+3])over(out,y*cw+x,img[o],img[o+1],img[o+2],img[o+3]);
   }else{
    const u=Math.floor((sx-sc.ox)*8),v=Math.floor((sy-sc.oy)*8);
    if(u<0||v<0||u>=sc.w||v>=sc.h)continue;
    const p=sc.data[v*sc.w+u];
-   if(p)over(out,y*W+x,p>>>24,(p>>>16)&255,(p>>>8)&255,p&255);
+   if(p)over(out,y*cw+x,p>>>24,(p>>>16)&255,(p>>>8)&255,p&255);
   }
  }
 }
@@ -387,27 +424,35 @@ function jointFill(out,prep,tr,R0){
  }
 }
 function render(prep,pose,opts){
- const out=renderParts(prep,pose,opts);
- if(prep.mode==="v2"){if(PINHOLE>0)pinholeFill(out);return out}
+ const geom=canvasGeom(opts?.canvas),out=renderParts(prep,pose,opts,geom);
+ if(prep.mode==="v2"){if(PINHOLE>0)pinholeFill(out,undefined,geom);return out}
+ if(geom.cw!==W||geom.ch!==H)return out;
  if(JOINT_FILL>0){const tr=matrices(prep.pivots,prep.placements,pose);jointFill(out,prep,tr,JOINT_FILL);jointFill(out,prep,tr,JOINT_FILL)}
  return out;
 }
-function renderParts(prep,pose,opts){
- const out=new Uint8ClampedArray(N*4),tr=matrices(prep.pivots,prep.placements,pose);
- const order=validOrder(opts?.order)?opts.order:prep.order;
+function renderParts(prep,pose,opts,geom){
+ const g=geom||canvasGeom(opts?.canvas),cw=g.cw,ox=g.ox,oy=g.oy,cn=g.cn;
+ const out=new Uint8ClampedArray(cn*4),tr=matrices(prep.pivots,prep.placements,pose);
+ const order=validOrder(opts?.order)?opts.order:prep.order,lower=opts?.lower||null,hideLegs=!!lower;
  for(const [name] of GROUPS){
-  const g=prep.groups[name],s=g.still;
-  for(let k=0;k<N;k++){const c=k*4;if(s[c+3])over(out,k,s[c],s[c+1],s[c+2],s[c+3])}
-  const balls=name==="main"?(prep.balls||{}):{};
+  const grp=prep.groups[name],s=grp.still;
+  for(let k=0;k<N;k++){const c=k*4;if(s[c+3]){const x=k%W,y=(k-x)/W;over(out,(y+oy)*cw+(x+ox),s[c],s[c+1],s[c+2],s[c+3])}}
+  if(name==="main"&&lower)drawEntry(out,lower,tr.pelvis,g);
+  let balls=name==="main"?(prep.balls||{}):{};
+  if(hideLegs)balls=Object.fromEntries(Object.entries(balls).filter(([k])=>!String(k).startsWith("leg_")));
   order.forEach((part,idx)=>{
-   for(const child of Object.keys(balls))if(Math.min(order.indexOf(child),order.indexOf(PARENTS[child]))===idx)drawEntry(out,balls[child],tr[child]);
-   drawEntry(out,g.parts[part],tr[part]);
+   for(const child of Object.keys(balls))if(Math.min(order.indexOf(child),order.indexOf(PARENTS[child]))===idx)drawEntry(out,balls[child],tr[child],g);
+   if(hideLegs&&LEG_PARTS.includes(part))return;
+   drawEntry(out,grp.parts[part],tr[part],g);
   });
-  if(name==="main"&&prep.face)drawEntry(out,prep.face,tr.head);
+  if(name==="main"&&prep.face)drawEntry(out,prep.face,tr.head,g);
  }
  return out;
 }
-return Object.freeze({W,H,N,PARTS,PARENTS,DRAW_ORDER,GROUPS,LAYERS,CAP_RADIUS,INHERIT,UNASSIGNED,bodyMask,
+function setLowerSprites(v){LOWER_SPRITES=!!v}
+function setCanvas(mode){CANVAS=mode==="overflow128"?"overflow128":"legacy64"}
+return Object.freeze({W,H,N,BW,BH,OX,OY,PARTS,PARENTS,DRAW_ORDER,GROUPS,LAYERS,CAP_RADIUS,INHERIT,UNASSIGNED,bodyMask,
  over,expandMask,prepare,render,renderParts,JOINT_FILL,JOINT_MODE,KNEE_Y,HIP_Y,PINHOLE,fixSlice,buildBalls,pinholeFill,
- matrices,scale2x,validOrder,bboxOf});
+ matrices,scale2x,validOrder,bboxOf,canvasGeom,cropLogical,selectLower,lowerAngles,lowerFileName,LEG_PARTS,
+ get LOWER_SPRITES(){return LOWER_SPRITES},get CANVAS(){return CANVAS},setLowerSprites,setCanvas});
 });

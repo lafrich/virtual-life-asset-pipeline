@@ -12,7 +12,40 @@
  "use strict";
  const C=()=>root?.LafrichPuppetCore,X=()=>root?.LGR1Raster;
  const rgba=(w=64,h=112)=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;return cv};
- const cache=new Map(),pixelCache=new Map();
+ const cache=new Map(),pixelCache=new Map(),lowerCache=new Map();
+ const LOWER_POSES=["stand","sit_chair","sit_floor","crouch","kneel","lie_straight","lie_curl"];
+ let manifestP=null;
+ function lowerBase(){return root.LGR_LOWER_BASE||((root.LGRDB_BASE||"")+"media/lgr1/lower/")}
+ function manifestUrl(){return root.LGR_LOWER_MANIFEST||((root.LGRDB_BASE||"")+"media/lgr1/lower-manifest.json")}
+ function bodyId(gender,manifest){const b=(manifest&&manifest.bodies)||root.LGR_LOWER_BODIES;if(b){const g=gender==="female"?"female":"male";for(const k of Object.keys(b))if(k.startsWith(g))return k}
+  return gender==="female"?"female9":"male8"}
+ function outfitOf(ch){if(!ch?.wear?.pants)return "base";const p=String(ch.wear.pants.se||ch.wear.pants.sw||"");return /skirt_a/.test(p)?"skirt":"pants"}
+ async function loadManifest(){
+  if(manifestP)return manifestP;
+  manifestP=(async()=>{try{const r=await fetch(manifestUrl(),{cache:"no-cache"});if(!r.ok)return null;return await r.json()}catch{return null}})();
+  return manifestP;
+ }
+ async function loadLowerBank(dir,gender,outfit,recolor){
+  const X=()=>root?.LGR1Raster,key=[dir,gender,outfit].join("|");
+  if(lowerCache.has(key))return lowerCache.get(key);
+  const p=(async()=>{
+   const man=await loadManifest(),bank={},avail=new Set(),body=bodyId(gender,man);
+   const poses=man&&man.poses?Object.keys(man.poses):LOWER_POSES;
+   for(const pose of poses){
+    const name=(X().lowerFileName||((a,b,c,d)=>"lgr1_lower_"+a+"_"+b+"_"+c+"_"+d+".png"))(pose,dir,body,outfit);
+    try{
+     const img=await loadPng(lowerBase()+name);
+     const c=rgba(),ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(img,0,0);
+     const data=new Uint8ClampedArray(ctx.getImageData(0,0,64,112).data);
+     if(recolor)recolor(data);
+     bank[pose]={img:data,bbox:X().bboxOf(data),scaled:null,pose};
+     avail.add(pose);
+    }catch{}
+   }
+   return {bank,avail,outfit,body};
+  })();
+  lowerCache.set(key,p);return p;
+ }
  function loadPng(data){
   if(!data)return Promise.resolve(null);
   if(cache.has(data))return cache.get(data);
@@ -25,7 +58,7 @@
   });
   cache.set(data,promise);return promise;
  }
- function clearCache(){cache.clear();pixelCache.clear()}
+ function clearCache(){cache.clear();pixelCache.clear();lowerCache.clear()}
  async function pixels(data){
   if(!data)return null;
   if(pixelCache.has(data))return pixelCache.get(data);
@@ -51,7 +84,7 @@
   ctx.drawImage(emosi,0,di*112,64,112,0,0,64,112);
   return new Uint8ClampedArray(ctx.getImageData(0,0,64,112).data);
  }
- async function prepare(master,ch,dir,emosi=null){
+ async function prepare(master,ch,dir,emosi=null,opts){
   const Cc=C(),m=Cc.validateMaster(master);
   const selected=ch?Cc.validateCharacter(ch):null;
   if(selected&&selected.gender!==m.gender)throw Error("Custom Wear body differs from LGR-1 master");
@@ -67,11 +100,24 @@
   const raster=X().prepare({layers,wear,tweak,mask:Cc.decode(m.masks[dir]),
    pivots:m.pivots[dir],placements:m.placements?.[dir]||{},
    order:m.drawOrders?.[dir],caps:m.capRadius,face:emosiCell(emosi,dir)});
-  return {master:m,character:selected,dir,raster,order:raster.order};
+  const outfit=opts?.outfit||outfitOf(selected),use=opts?.lowerSprites??X().LOWER_SPRITES;
+  let lower=null;
+  if(use) lower=await loadLowerBank(dir,m.gender,outfit,opts?.recolor);
+  return {master:m,character:selected,dir,raster,order:raster.order,outfit,lower};
  }
  function render(prepared,pose,opts){
-  const data=X().render(prepared.raster,pose||C().blankPose(),opts&&typeof opts==="object"?opts:undefined);
-  const canvas=rgba();canvas.getContext("2d").putImageData(new ImageData(data,64,112),0,0);
+  const o=opts&&typeof opts==="object"?{...opts}:{};
+  const use=o.lowerSprites??X().LOWER_SPRITES,canvasMode=o.canvas??X().CANVAS;
+  let lower=o.lower||null,picked="rig";
+  if(use&&!lower&&prepared.lower){
+   picked=X().selectLower(pose||C().blankPose(),prepared.outfit,prepared.lower.avail);
+   if(picked!=="rig")lower=prepared.lower.bank[picked]||null;
+  }
+  o.canvas=canvasMode;if(lower)o.lower=lower;
+  const data=X().render(prepared.raster,pose||C().blankPose(),o);
+  const g=X().canvasGeom(canvasMode),canvas=rgba(g.cw,g.ch);
+  canvas.getContext("2d").putImageData(new ImageData(data,g.cw,g.ch),0,0);
+  canvas.dataset.lower=lower?picked||lower.pose||"sprite":"rig";
   return canvas;
  }
  function seededPreviewSource(gender){

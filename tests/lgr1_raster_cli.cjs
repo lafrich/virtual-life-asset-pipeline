@@ -10,5 +10,11 @@ for(const [k,v] of Object.entries(input.layers||{}))layers[k]=raw(v);
 for(const [k,v] of Object.entries(input.wear||{}))wear[k]=raw(v);
 const prep=R.prepare({layers,wear,mask:bytes(input.mask),tweak:bytes(input.tweak),
  pivots:input.pivots,placements:input.placements,order:input.order,caps:input.caps,face:raw(input.face)});
-const out=input.frames.map(f=>Buffer.from(R.render(prep,f.pose,{order:f.order})).toString("base64"));
+const out=input.frames.map(f=>{
+ const opts={order:f.order};
+ if(f.canvas||input.canvas)opts.canvas=f.canvas||input.canvas;
+ const rawLower=f.lower||input.lower;
+ if(rawLower){const img=raw(rawLower);opts.lower={img,bbox:R.bboxOf(img),scaled:null}}
+ return Buffer.from(R.render(prep,f.pose,opts)).toString("base64");
+});
 process.stdout.write(JSON.stringify(out));

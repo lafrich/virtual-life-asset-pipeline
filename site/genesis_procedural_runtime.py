@@ -22,6 +22,14 @@ from collections import deque
 from pathlib import Path
 
 W, H = 64, 112
+# Overflow canvas (option A, preview). Logical 64x112 and pivot (32,100) stay the contract.
+# canvas = (x+OX, y+OY); pivot maps to (64, 116). Both flags default off (live-safe).
+BW, BH, OX, OY = 128, 128, 32, 16
+LOWER_SPRITES = False
+CANVAS = "legacy64"  # or "overflow128"
+_LEGACY_GEOM = {"cw": W, "ch": H, "ox": 0, "oy": 0, "cn": W * H}
+_OVERFLOW_GEOM = {"cw": BW, "ch": BH, "ox": OX, "oy": OY, "cn": BW * BH}
+LEG_PARTS = ("leg_far_upper", "leg_far_lower", "leg_near_upper", "leg_near_lower")
 DIRECTIONS = ("se", "sw", "ne", "nw")
 PARTS = ("leg_far_upper", "leg_far_lower", "arm_far_upper", "arm_far_lower",
          "torso", "leg_near_upper", "leg_near_lower", "arm_near_upper",
@@ -607,26 +615,145 @@ def build_balls(parts, pivots, order):
     return balls
 
 
-def pinhole_fill(out, maxsize=None):
+def canvas_geom(mode=None):
+    """Active output canvas. Default legacy 64x112 so existing callers stay pixel-identical."""
+    mode = CANVAS if mode is None else mode
+    return dict(_OVERFLOW_GEOM if mode == "overflow128" else _LEGACY_GEOM)
+
+
+def crop_logical(out, canvas=None):
+    """Crop an overflow buffer back to the 64x112 logical frame. Byte-identical for unclipped frames."""
+    g = canvas_geom(canvas)
+    if g["ox"] == 0 and g["oy"] == 0 and g["cw"] == W and g["ch"] == H:
+        return out
+    cropped = bytearray(N * 4)
+    for y in range(H):
+        src = ((y + g["oy"]) * g["cw"] + g["ox"]) * 4
+        cropped[y * W * 4:(y + 1) * W * 4] = out[src:src + W * 4]
+    return cropped
+
+
+def lower_art_roots():
+    media = Path(__file__).resolve().parent / "media" / "lgr1"
+    alt = Path("/workspace/lgr-leg-fix-a")
+    return (media, alt)
+
+
+def load_lower_manifest():
+    for root in lower_art_roots():
+        for p in (root / "lower-manifest.json", root / "manifest.json"):
+            if p.is_file():
+                return json.loads(p.read_text()), root
+    return None, None
+
+
+def lower_png_path(pose, view, body, outfit, root=None):
+    name = f"lgr1_lower_{pose}_{view}_{body}_{outfit}.png"
+    roots = (root,) if root is not None else lower_art_roots()
+    for r in roots:
+        if r is None:
+            continue
+        for p in (r / "lower" / name, r / "art" / "lower" / name, r / name):
+            if p.is_file():
+                return p
+    return None
+
+
+def lower_available(pose, view=None, body=None, outfit=None):
+    if view and body and outfit:
+        return lower_png_path(pose, view, body, outfit) is not None
+    pat = f"lgr1_lower_{pose}_*.png"
+    for r in lower_art_roots():
+        for d in (r / "lower", r / "art" / "lower"):
+            if d.is_dir() and next(d.glob(pat), None):
+                return True
+    return False
+
+
+def body_id(gender, manifest=None):
+    if manifest is None:
+        manifest = (load_lower_manifest()[0] or {})
+    gender = "female" if gender == "female" else "male"
+    for k in (manifest.get("bodies") or {}):
+        if k.startswith(gender):
+            return k
+    return "female9" if gender == "female" else "male8"
+
+
+def _ang(pose, part):
+    return float(((pose or {}).get(part) or {}).get("a", 0) or 0)
+
+
+def lower_angles(pose):
+    return dict(
+        thigh=max(abs(_ang(pose, "leg_near_upper")), abs(_ang(pose, "leg_far_upper"))),
+        knee=max(abs(_ang(pose, "leg_near_lower")), abs(_ang(pose, "leg_far_lower"))),
+        pa=_ang(pose, "pelvis"),
+        dy=float(((pose or {}).get("pelvis") or {}).get("y", 0) or 0),
+    )
+
+
+def select_lower(pose, outfit=None, view=None, body=None):
+    """Manifest selection_rule + on-disk existence fallbacks. Returns 'rig' or a pose id."""
+    a = lower_angles(pose)
+    if abs(a["pa"]) >= 60:
+        pid = "lie_curl" if (a["knee"] >= 60 or a["thigh"] >= 40) else "lie_straight"
+    elif a["dy"] >= 12 and a["knee"] >= 180:
+        pid = "sit_floor"
+    elif a["dy"] >= 12 and a["knee"] >= 120 and a["thigh"] >= 55:
+        pid = "crouch"
+    elif a["dy"] >= 6 and a["thigh"] >= 50 and a["knee"] >= 50:
+        pid = "sit_chair"
+    elif a["dy"] >= 6 and a["knee"] >= 80:
+        pid = "kneel"
+    else:
+        pid = "rig"
+    if pid == "rig" and outfit == "skirt" and not any(_ang(pose, p) for p in LEG_PARTS):
+        pid = "stand"
+    def has(p):
+        return lower_available(p, view, body, outfit) if (view and body and outfit) else lower_available(p)
+    if pid != "rig" and not has(pid):
+        if pid == "sit_floor" and has("sit_chair"):
+            pid = "sit_chair"
+        else:
+            pid = "rig"
+    return pid
+
+
+def load_lower_entry(pose_id, view, body, outfit):
+    path = lower_png_path(pose_id, view, body, outfit)
+    if not path:
+        return None
+    from PIL import Image
+    im = Image.open(path).convert("RGBA")
+    if im.size != (W, H):
+        raise ValueError(f"lower sprite must be {W}x{H}: {path}")
+    img = bytearray(im.tobytes())
+    return {"img": img, "bbox": _bbox(img), "scaled": None, "pose": pose_id, "path": str(path)}
+
+
+def pinhole_fill(out, maxsize=None, geom=None):
     """v2: close only enclosed transparent specks (<= PINHOLE px, 4-connected); twin of LGR1Raster.pinholeFill."""
     maxsize = PINHOLE if maxsize is None else maxsize
-    seen = bytearray(N)
+    g = geom or canvas_geom()
+    cw, ch, cn = g["cw"], g["ch"], g["cn"]
+    seen = bytearray(cn)
     st = []
-    for k in range(N):
-        x, y = k % W, k // W
-        if (x == 0 or x == W - 1 or y == 0 or y == H - 1) and not out[k * 4 + 3]:
+    for k in range(cn):
+        x, y = k % cw, k // cw
+        if (x == 0 or x == cw - 1 or y == 0 or y == ch - 1) and not out[k * 4 + 3]:
             seen[k] = 1
             st.append(k)
     while st:
         k = st.pop()
-        x, y = k % W, k // W
+        x, y = k % cw, k // cw
         for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
-            if 0 <= nx < W and 0 <= ny < H:
-                n = ny * W + nx
+            if 0 <= nx < cw and 0 <= ny < ch:
+                n = ny * cw + nx
                 if not seen[n] and not out[n * 4 + 3]:
                     seen[n] = 1
                     st.append(n)
-    for k in range(N):
+    for k in range(cn):
         if out[k * 4 + 3] or seen[k]:
             continue
         comp = [k]
@@ -635,8 +762,8 @@ def pinhole_fill(out, maxsize=None):
         while i < len(comp):
             j = comp[i]
             i += 1
-            x, y = j % W, j // W
-            for n in (j - 1, j + 1, j - W, j + W):
+            x, y = j % cw, j // cw
+            for n in (j - 1, j + 1, j - cw, j + cw):
                 if not seen[n] and not out[n * 4 + 3]:
                     seen[n] = 1
                     comp.append(n)
@@ -644,7 +771,7 @@ def pinhole_fill(out, maxsize=None):
             continue
         for j in comp:
             counts = {}
-            for n in (j - 1, j + 1, j - W, j + W):
+            for n in (j - 1, j + 1, j - cw, j + cw):
                 if out[n * 4 + 3] == 255:
                     c = bytes(out[n * 4:n * 4 + 4])
                     counts[c] = counts.get(c, 0) + 1
@@ -732,7 +859,7 @@ def _js_round(v):
     return math.floor(v + 0.5)
 
 
-def _draw_entry(out, entry, tr):
+def _draw_entry(out, entry, tr, geom=None):
     if not entry or not entry["bbox"]:
         return
     x0, y0, x1, y1 = entry["bbox"]
@@ -744,34 +871,39 @@ def _draw_entry(out, entry, tr):
         px, py = map_point(m, cx, cy)
         xs.append(px)
         ys.append(py)
-    ox0, ox1 = max(0, math.floor(min(xs)) - 1), min(W - 1, math.ceil(max(xs)) + 1)
-    oy0, oy1 = max(0, math.floor(min(ys)) - 1), min(H - 1, math.ceil(max(ys)) + 1)
+    g = geom or canvas_geom()
+    cw, ch, ox, oy = g["cw"], g["ch"], g["ox"], g["oy"]
+    ox0, ox1 = max(0, math.floor(min(xs)) - 1 + ox), min(cw - 1, math.ceil(max(xs)) + 1 + ox)
+    oy0, oy1 = max(0, math.floor(min(ys)) - 1 + oy), min(ch - 1, math.ceil(max(ys)) + 1 + oy)
     img = entry["img"]
     sc = None if right else _scaled(entry)
     for y in range(oy0, oy1 + 1):
         for x in range(ox0, ox1 + 1):
-            sx, sy = map_point(inv, x + .5, y + .5)
+            sx, sy = map_point(inv, x - ox + .5, y - oy + .5)
             if right:
                 ix, iy = math.floor(sx), math.floor(sy)
                 if ix < x0 or ix > x1 or iy < y0 or iy > y1:
                     continue
                 o = (iy * W + ix) * 4
                 if img[o + 3]:
-                    _over(out, y * W + x, img[o], img[o + 1], img[o + 2], img[o + 3])
+                    _over(out, y * cw + x, img[o], img[o + 1], img[o + 2], img[o + 3])
             else:
                 u, v = math.floor((sx - sc["ox"]) * 8), math.floor((sy - sc["oy"]) * 8)
                 if u < 0 or v < 0 or u >= sc["w"] or v >= sc["h"]:
                     continue
                 p = sc["data"][v * sc["w"] + u]
                 if p:
-                    _over(out, y * W + x, p >> 24, (p >> 16) & 255, (p >> 8) & 255, p & 255)
+                    _over(out, y * cw + x, p >> 24, (p >> 16) & 255, (p >> 8) & 255, p & 255)
 
 
-def render_raw(prep: dict, pose: dict, order=None) -> bytearray:
-    out = _render_parts(prep, pose, order)
+def render_raw(prep: dict, pose: dict, order=None, canvas=None, lower=None) -> bytearray:
+    geom = canvas_geom(canvas)
+    out = _render_parts(prep, pose, order, geom=geom, lower=lower)
     if prep.get("mode") == "v2":
         if PINHOLE > 0:
-            pinhole_fill(out)
+            pinhole_fill(out, geom=geom)
+        return out
+    if geom["cw"] != W or geom["ch"] != H:
         return out
     if JOINT_FILL > 0:
         tr = raw_matrices(prep["pivots"], prep["placements"], pose)
@@ -780,25 +912,35 @@ def render_raw(prep: dict, pose: dict, order=None) -> bytearray:
     return out
 
 
-def _render_parts(prep: dict, pose: dict, order=None) -> bytearray:
-    out = bytearray(N * 4)
+def _render_parts(prep: dict, pose: dict, order=None, geom=None, lower=None) -> bytearray:
+    geom = geom or canvas_geom()
+    cw, ox, oy, cn = geom["cw"], geom["ox"], geom["oy"], geom["cn"]
+    out = bytearray(cn * 4)
     tr = raw_matrices(prep["pivots"], prep["placements"], pose)
     order = order if _valid_order(order) else prep["order"]
+    hide_legs = bool(lower)
     for name, _ in GROUPS:
-        g = prep["groups"][name]
-        s = g["still"]
+        grp = prep["groups"][name]
+        still = grp["still"]
         for k in range(N):
             c = k * 4
-            if s[c + 3]:
-                _over(out, k, s[c], s[c + 1], s[c + 2], s[c + 3])
+            if still[c + 3]:
+                x, y = k % W, k // W
+                _over(out, (y + oy) * cw + (x + ox), still[c], still[c + 1], still[c + 2], still[c + 3])
+        if name == "main" and lower:
+            _draw_entry(out, lower, tr["pelvis"], geom)
         balls = (prep.get("balls") or {}) if name == "main" else {}
+        if hide_legs:
+            balls = {k: v for k, v in balls.items() if not str(k).startswith("leg_")}
         for idx, part in enumerate(order):
             for child, ball in balls.items():
                 if min(order.index(child), order.index(PARENTS[child])) == idx:
-                    _draw_entry(out, ball, tr[child])
-            _draw_entry(out, g["parts"][part], tr[part])
+                    _draw_entry(out, ball, tr[child], geom)
+            if hide_legs and part in LEG_PARTS:
+                continue
+            _draw_entry(out, grp["parts"][part], tr[part], geom)
         if name == "main" and prep["face"]:
-            _draw_entry(out, prep["face"], tr["head"])
+            _draw_entry(out, prep["face"], tr["head"], geom)
     return out
 
 
@@ -980,10 +1122,11 @@ def binding_inputs(binding: dict, direction: str, layer_overrides: dict | None =
 
 
 def render(binding: dict, direction: str, pose: dict, layer_overrides: dict | None = None,
-           face: bytes | None = None, order=None, tweak=None):
-    """Render one 64x112 RGBA frame (Pillow image). ``layer_overrides`` are
-    Custom Wear layers: they inherit the body mask and pixels outside the body
-    outline follow the nearest part. ``face`` is an optional Emosi RGBA cell."""
+           face: bytes | None = None, order=None, tweak=None, canvas=None, lower=None,
+           lower_sprites=None, outfit=None, gender=None):
+    """Render one RGBA frame (Pillow image). Default stays 64x112. Pass
+    ``canvas='overflow128'`` for the 128x128 overflow buffer. ``layer_overrides``
+    are Custom Wear layers; ``face`` is an optional Emosi RGBA cell."""
     from PIL import Image
     validate(binding)
     if direction not in DIRECTIONS:
@@ -991,8 +1134,17 @@ def render(binding: dict, direction: str, pose: dict, layer_overrides: dict | No
     i = binding_inputs(binding, direction, layer_overrides)
     prep = prepare_raw(i["layers"], i["mask"], i["pivots"], i["placements"], i["order"],
                        i["caps"], i["wear"], tweak, face)
-    out = render_raw(prep, pose, order)
-    return Image.frombytes("RGBA", (W, H), bytes(out))
+    use = LOWER_SPRITES if lower_sprites is None else lower_sprites
+    if lower is None and use:
+        g = gender or binding.get("gender") or (binding.get("rig") or {}).get("gender")
+        body = body_id(g)
+        off = outfit or ("pants" if (layer_overrides or {}).get("pants") else "base")
+        pid = select_lower(pose, off, direction, body)
+        if pid != "rig":
+            lower = load_lower_entry(pid, direction, body, off)
+    out = render_raw(prep, pose, order, canvas=canvas, lower=lower)
+    g = canvas_geom(canvas)
+    return Image.frombytes("RGBA", (g["cw"], g["ch"]), bytes(out))
 
 
 def render_motion(binding: dict, direction: str, motion_id: str, index: int,
