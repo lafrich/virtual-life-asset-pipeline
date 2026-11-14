@@ -83,7 +83,7 @@ function bboxOf(img){
 // leg slice clean-up + hip/knee pivots (fixSlice), no radius caps except the head, no JOINT_FILL,
 // rounded joint capsules in the child's own colours (buildBalls, hidden at rest) and a pinhole-only
 // fill. "legacy" = caps + JOINT_FILL as before.
-const JOINT_MODE="v2",KNEE_Y=90,HIP_Y=78,PINHOLE=2,BALL_MAX_R=4;
+const JOINT_MODE="v2",KNEE_Y=90,HIP_Y=0,PINHOLE=2,BALL_MAX_R=4; // HIP_Y 0 = keep the artist hip pivots
 function runsOf(xs){const out=[];let cur=[];
  for(const x of xs){if(cur.length&&x===cur[cur.length-1]+1)cur.push(x);else{if(cur.length)out.push(cur);cur=[x]}}
  if(cur.length)out.push(cur);return out}
@@ -106,7 +106,7 @@ function fixSlice(mask,pivots){
  const ul=new Set([LEG.near[0],LEG.near[1],LEG.far[0],LEG.far[1]]);
  for(let k=0;k<c*W;k++)if(ul.has(out[k]))out[k]=PEL;
  for(const s of ["near","far"]){
-  if(cent.has(s+"|"+c))pv["leg_"+s+"_upper"]={x:cent.get(s+"|"+c),y:HIP_Y};
+  if(HIP_Y&&cent.has(s+"|"+c))pv["leg_"+s+"_upper"]={x:cent.get(s+"|"+c),y:HIP_Y};
   if(cent.has(s+"|"+KNEE_Y))pv["leg_"+s+"_lower"]={x:cent.get(s+"|"+KNEE_Y),y:KNEE_Y};
  }
  return {mask:out,pivots:pv};

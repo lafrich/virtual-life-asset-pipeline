@@ -118,14 +118,14 @@ JOINT_FILL = 4
 # Joint mode (twin of LGR1Raster.JOINT_MODE). "v2" = joint-fix preview:
 #  - leg slice clean-up: below the crotch every leg/pelvis pixel belongs to the leg run it sits in,
 #    thigh pixels above the crotch go to the pelvis, knee seam at KNEE_Y;
-#  - pivots: hip = (thigh-run centre, HIP_Y), knee = (shin-run centre, KNEE_Y);
+#  - pivots: knee = (shin-run centre, KNEE_Y); hip pivots stay as drawn (HIP_Y=0; set e.g. 78 to re-centre);
 #  - no radius caps (head cap kept), no JOINT_FILL crack/web fill;
 #  - joint capsules: per joint a rounded end in the child's own fill/outline colours, rotating with
 #    the child, drawn under the lower of (parent, child) and clipped so the rest pose is unchanged;
 #  - pinhole fill: only enclosed transparent specks of <= PINHOLE px are closed.
 # "legacy" = the previous behaviour (caps + JOINT_FILL).
 JOINT_MODE = "v2"
-KNEE_Y, HIP_Y, PINHOLE, BALL_MAX_R = 90, 78, 2, 4.0
+KNEE_Y, HIP_Y, PINHOLE, BALL_MAX_R = 90, 0, 2, 4.0  # HIP_Y 0 = keep the artist hip pivots
 ANAT = ("head", "torso", "pelvis", "arm_r_upper", "arm_r_lower", "arm_l_upper", "arm_l_lower",
         "leg_r_upper", "leg_r_lower", "leg_l_upper", "leg_l_lower")
 DEFAULT_SIDES = {"se": "right", "sw": "left", "ne": "right", "nw": "left"}
@@ -534,7 +534,7 @@ def fix_slice(mask, pivots):
         if out[k] in uppers_lowers:
             out[k] = pel
     for s in ("near", "far"):
-        if (s, c) in cent:
+        if HIP_Y and (s, c) in cent:
             pv["leg_" + s + "_upper"] = {"x": cent[(s, c)], "y": HIP_Y}
         if (s, KNEE_Y) in cent:
             pv["leg_" + s + "_lower"] = {"x": cent[(s, KNEE_Y)], "y": KNEE_Y}
