@@ -1,0 +1,2300 @@
+{
+ "format": "lgr1-lower-sprite-manifest-v2 (option A round 2, PREVIEW)",
+ "status": "preview only - not wired into any runtime; going live needs Ichsan's approval",
+ "logical_frame": {
+  "w": 64,
+  "h": 112,
+  "pivot": [
+   32,
+   100
+  ],
+  "note": "unchanged contract; motion data, wear strips, head/Emosi anchors all live in this space"
+ },
+ "overflow_canvas": {
+  "w": 128,
+  "h": 128,
+  "offset": [
+   32,
+   16
+  ],
+  "pivot_on_canvas": [
+   64,
+   116
+  ],
+  "math": "canvas_x = x + 32, canvas_y = y + 16; legacy 64x112 crop = canvas rows 16..127, cols 32..95",
+  "why": "bbox of all 62 motions in logical px is x -7..70, y 29..111 (faint/get_up lose up to 99 px at 64x112, tent_sleep 66, bench_sleep 63); kneel NE/NW shins reach row 105, sit_floor row 101"
+ },
+ "sprite_space": {
+  "anchor": "pelvis",
+  "draw_with": "the frame's pelvis matrix (same transform the rig gives the pelvis part; RotSprite at non-90 angles, exact at 0/90/180/270)",
+  "authored_rows": "pelvis-local (rest space). Floor poses are drawn for a canonical pelvis drop REF_DY so soles/knees/buttocks touch row 100 when pelvis.y == REF_DY",
+  "REF_DY": {
+   "stand": 0,
+   "lie_straight": 0,
+   "lie_curl": 0,
+   "sit_chair": 9,
+   "crouch": 14,
+   "sit_floor": 14,
+   "sit_long": 10,
+   "kneel": 10
+  }
+ },
+ "draw_slot": "first entry of the main draw group (where the legs are today in every view); rig parts leg_far_upper/lower and leg_near_upper/lower are not drawn and their joint balls are removed; pelvis, torso, arms, head draw over the sprite unchanged; pinhole_fill runs after compositing",
+ "views": [
+  "se",
+  "sw",
+  "ne",
+  "nw"
+ ],
+ "mirror_rule": "sw = mirror(se) and nw = mirror(ne) (x -> 63-x) unless a view is drawn on its own (crouch NW is: the NW arm crosses the chest, so the knee is drawn compact). All 4 views ship as separate files; the runtime never mirrors.",
+ "bodies": {
+  "male8": "genesis-base-male-official-8.json",
+  "female9": "genesis-base-female-official-9.json"
+ },
+ "outfits": {
+  "base": "skin keys only",
+  "pants": "skin + pants ramp + shoe keys; pairs with NEW art/wear/trousers_a(_f).png (official trousers + crotch notch closed + 1px leg-edge skin sliver covered + female NE stray waist pixel removed) on pelvis/torso/legs",
+  "skirt": "skin legs + shoe keys + the skirt continuation below the pelvis; pairs with NEW art/wear/skirt_a(_f).png on pelvis/torso instead of trousers"
+ },
+ "poses": {
+  "stand": {
+   "status": "drawn",
+   "use": "skirt outfit only, frames with all leg angles 0; other outfits keep rig legs"
+  },
+  "walk": {
+   "status": "not drawn on purpose - rig legs with v2 joints (see REPORT.md walk evaluation)"
+  },
+  "sit_chair": {
+   "status": "drawn (round 2: NE/NW thigh-forward volume + far shin under the seat)"
+  },
+  "sit_floor": {
+   "status": "drawn (round 2) - lesehan, cross-legged",
+   "motions": [
+    "sit_lesehan"
+   ]
+  },
+  "sit_long": {
+   "status": "drawn (round 2) - legs out on the floor, leaning back",
+   "motions": [
+    "faint f4",
+    "get_up f2"
+   ]
+  },
+  "crouch": {
+   "status": "drawn (round 2: NE/NW redrawn, knee + shin + foot instead of a blob; NW drawn separately)"
+  },
+  "kneel": {
+   "status": "drawn (round 2) - thighs upright, knees on the floor, shins back",
+   "motions": [
+    "faint f3",
+    "tent_crawl_out f0-f4"
+   ]
+  },
+  "lie_straight": {
+   "status": "drawn (overflow canvas; rest legs)"
+  },
+  "lie_curl": {
+   "status": "drawn (overflow canvas; = the sit_chair sprite, rotated with the pelvis)"
+  }
+ },
+ "selection_rule": {
+  "inputs": "frame's resolved pose (screen space): pa = pelvis.a, dy = pelvis.y, thigh = max |leg_*_upper.a|, knee = max |leg_*_lower.a|",
+  "order": [
+   "|pa| >= 60 -> lie_curl if knee >= 60 or thigh >= 40, else lie_straight",
+   "dy >= 12 and knee >= 180 -> sit_floor",
+   "dy >= 12 and knee >= 120 and thigh >= 55 -> crouch",
+   "dy >= 6 and thigh >= 50 and knee >= 50 -> sit_chair",
+   "dy >= 6 and thigh >= 60 and knee < 50 -> sit_long",
+   "thigh <= 30 and knee >= 80 -> kneel",
+   "outfit == skirt and every leg angle == 0 -> stand",
+   "else -> rig (v2 joints)"
+  ],
+  "reference_impl": "tools/posepick.py (select) + tools/compose.py (frame)",
+  "frame_counts_all_62_motions": {
+   "rig": 311,
+   "crouch": 2,
+   "sit_chair": 55,
+   "lie_curl": 4,
+   "lie_straight": 12,
+   "kneel": 6,
+   "sit_long": 2,
+   "sit_floor": 6
+  }
+ },
+ "explicit_picks": {
+  "sit_lesehan": "all frames -> sit_floor",
+  "faint": {
+   "3": "kneel",
+   "4": "sit_long",
+   "5": "lie_curl"
+  },
+  "get_up": {
+   "0": "lie_curl",
+   "1": "sit_chair",
+   "2": "sit_long"
+  },
+  "tent_crawl_out": {
+   "0-4": "kneel"
+  }
+ },
+ "motions_by_sprite": {
+  "crouch": [
+   "crouch"
+  ],
+  "sit_chair": [
+   "drink_coffee_sit",
+   "eat_sit",
+   "fishing_wait_sit",
+   "get_up",
+   "online_learning",
+   "read_book",
+   "sit",
+   "sit_class",
+   "work_bank_counter"
+  ],
+  "lie_curl": [
+   "faint",
+   "get_up",
+   "lie_sleep"
+  ],
+  "lie_straight": [
+   "bench_sleep",
+   "tent_sleep"
+  ],
+  "kneel": [
+   "faint",
+   "tent_crawl_out"
+  ],
+  "sit_long": [
+   "faint",
+   "get_up"
+  ],
+  "sit_floor": [
+   "sit_lesehan"
+  ]
+ },
+ "per_motion_frames": {
+  "idle": [
+   "rig",
+   "rig"
+  ],
+  "walk": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "wave": [
+   "rig",
+   "rig"
+  ],
+  "crouch": [
+   "crouch",
+   "crouch"
+  ],
+  "arms_up": [
+   "rig",
+   "rig"
+  ],
+  "bow": [
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "sit": [
+   "sit_chair",
+   "sit_chair"
+  ],
+  "lie_sleep": [
+   "lie_curl",
+   "lie_curl"
+  ],
+  "talk": [
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "accident_wet": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "arrest_hansip": [
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "arrested": [
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "bench_sleep": [
+   "lie_straight",
+   "lie_straight",
+   "lie_straight",
+   "lie_straight",
+   "lie_straight",
+   "lie_straight"
+  ],
+  "check_phone": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "clean_gorong": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "collect": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "cook": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "cook_stir": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "drink_coffee": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "drink_coffee_sit": [
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair"
+  ],
+  "eat": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "eat_sit": [
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair"
+  ],
+  "eat_snack": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "faint": [
+   "rig",
+   "rig",
+   "rig",
+   "kneel",
+   "sit_long",
+   "lie_curl"
+  ],
+  "fishing_cast": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "fishing_wait": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "fishing_wait_sit": [
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair"
+  ],
+  "get_up": [
+   "lie_curl",
+   "sit_chair",
+   "sit_long",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "give_sedekah": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "hand_over": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "handshake": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "help_npc": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "listen_nod": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "mandi": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "mix_drink": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "mulung_pick": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "ogah_flag": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "online_learning": [
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair"
+  ],
+  "parkir_whistle": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "pee_stand": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "pee_wall": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "pick_up": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "pray_generic": [
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "protest": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "read_book": [
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair"
+  ],
+  "receive_sedekah": [
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "rinse_tap": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "run": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "sell_food_stall": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "silver_pose": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "sit_class": [
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair"
+  ],
+  "sit_lesehan": [
+   "sit_floor",
+   "sit_floor",
+   "sit_floor",
+   "sit_floor",
+   "sit_floor",
+   "sit_floor"
+  ],
+  "steal": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "sweep": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "tent_crawl_out": [
+   "kneel",
+   "kneel",
+   "kneel",
+   "kneel",
+   "kneel",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "tent_sleep": [
+   "lie_straight",
+   "lie_straight",
+   "lie_straight",
+   "lie_straight",
+   "lie_straight",
+   "lie_straight"
+  ],
+  "tired": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "tired_walk": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "use_storage": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "walk_carry_sack": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "wc_squat": [
+   "rig",
+   "rig",
+   "rig",
+   "rig",
+   "rig"
+  ],
+  "work_bank_counter": [
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair",
+   "sit_chair"
+  ]
+ },
+ "files": {
+  "lgr1_lower_stand_se_male8_base.png": {
+   "pose": "stand",
+   "view": "se",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "f56b56b4d8531c46f60331b48dd9efd7e2073c9ff9ab36178edd11763f2f0da4"
+  },
+  "lgr1_lower_stand_se_male8_pants.png": {
+   "pose": "stand",
+   "view": "se",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "bd3b2966ad0d019653f54f841f5299b41a99f565838b875bc7cc1a265872b872"
+  },
+  "lgr1_lower_stand_se_male8_skirt.png": {
+   "pose": "stand",
+   "view": "se",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "df1f561714749d108c5dcf7e29e2ec7633f42f8dcdccbd7e68b98aa06df81f4c"
+  },
+  "lgr1_lower_stand_sw_male8_base.png": {
+   "pose": "stand",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "9fabae03bdd05ccd9d38e15d26f73bc5fbe5194838f283cc27af7b793209d955"
+  },
+  "lgr1_lower_stand_sw_male8_pants.png": {
+   "pose": "stand",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "29d71dbb7fd179d157925832472c4159b55e638f52f95e1fbf437967d0500502"
+  },
+  "lgr1_lower_stand_sw_male8_skirt.png": {
+   "pose": "stand",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "597c5aa9ff55e7cf621a579ba9ecc34bb007f87a9c7d0233b0964387c96b938d"
+  },
+  "lgr1_lower_stand_ne_male8_base.png": {
+   "pose": "stand",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "9b13105a651dff847865e7b22b6ce104fdf226770c565bf6286e5846278d933d"
+  },
+  "lgr1_lower_stand_ne_male8_pants.png": {
+   "pose": "stand",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "fffa1c1df026058b2e2dab7c4ba7ea3a05a275db58a602f0795465eb1b277372"
+  },
+  "lgr1_lower_stand_ne_male8_skirt.png": {
+   "pose": "stand",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "50c61e7f37a360c919df58579204a3deeb8617aeb163b74e0e6424a3b3500aac"
+  },
+  "lgr1_lower_stand_nw_male8_base.png": {
+   "pose": "stand",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "03a064d72105a7f07c6873a685dabc512b8a541f45d000a6c5eda7ef11783346"
+  },
+  "lgr1_lower_stand_nw_male8_pants.png": {
+   "pose": "stand",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "7978551112aa519ec9aab0c460d3838ce1d81731b1b38e6dd32e2453f202acd1"
+  },
+  "lgr1_lower_stand_nw_male8_skirt.png": {
+   "pose": "stand",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "79088eca84a1bfe7285ec719f37c3a088eaaaa61e464fbc6ed528f40e96713fe"
+  },
+  "lgr1_lower_sit_chair_se_male8_base.png": {
+   "pose": "sit_chair",
+   "view": "se",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "73f22f7c49b8b8058af8be3f4e3fe3da63402f1de88ffb1288cfe7b974899e7e"
+  },
+  "lgr1_lower_sit_chair_se_male8_pants.png": {
+   "pose": "sit_chair",
+   "view": "se",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "88982c0c75f3a02c5cb90b34c5614fcb2b746a640f463360f64743f5471752d5"
+  },
+  "lgr1_lower_sit_chair_se_male8_skirt.png": {
+   "pose": "sit_chair",
+   "view": "se",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "a1678a6957929d03e5c68e8352f8b1db53e5df3aa2fc11c7c3ae0a06c06849b2"
+  },
+  "lgr1_lower_sit_chair_sw_male8_base.png": {
+   "pose": "sit_chair",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "832cc2685b0e538f22a50b78b403d8d68653f278ec2ec1d437a4d8988971cf7e"
+  },
+  "lgr1_lower_sit_chair_sw_male8_pants.png": {
+   "pose": "sit_chair",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "8019e51c42d8fd8e58da912fa9919202eee32a76df12e716f22c0283e5d2560e"
+  },
+  "lgr1_lower_sit_chair_sw_male8_skirt.png": {
+   "pose": "sit_chair",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "dbcff3948cfe01eb98dd868cb086d58a497576a5edba8f654e517151db806ae3"
+  },
+  "lgr1_lower_sit_chair_ne_male8_base.png": {
+   "pose": "sit_chair",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "8716d8565f276f8ffd8b1c7c94ac38787c4136ed44a2346ca686261defd3c5ef"
+  },
+  "lgr1_lower_sit_chair_ne_male8_pants.png": {
+   "pose": "sit_chair",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "1be1e10ec3adb0946e87280ac7ea95f132175dad0f023c269cb34ddfc32c8884"
+  },
+  "lgr1_lower_sit_chair_ne_male8_skirt.png": {
+   "pose": "sit_chair",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "2cbd425dbc3cc73821968440eac31f6149d71984c82bfc492f21ce10c279ce0e"
+  },
+  "lgr1_lower_sit_chair_nw_male8_base.png": {
+   "pose": "sit_chair",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "dea8c57d9b3e9e7d961307742c2340f8ac3ef467a71dc2463748e326aa4f32d7"
+  },
+  "lgr1_lower_sit_chair_nw_male8_pants.png": {
+   "pose": "sit_chair",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "17dd981341f6ba7f8fed330d6a801d944d876a04c2984f9dfdeda76957b053b7"
+  },
+  "lgr1_lower_sit_chair_nw_male8_skirt.png": {
+   "pose": "sit_chair",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "8712b743f4bd637461a473207934ef9588096a3736e445c44d5731397cafc4bc"
+  },
+  "lgr1_lower_crouch_se_male8_base.png": {
+   "pose": "crouch",
+   "view": "se",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "1f760dd1078b1ac0f2328069a0944b0de88118c7bc6fa263b95b41ddd9170ece"
+  },
+  "lgr1_lower_crouch_se_male8_pants.png": {
+   "pose": "crouch",
+   "view": "se",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "77abd223abafcef4cc4d0ff38892989cc712cb0b3c20236195ce41eae6b34b83"
+  },
+  "lgr1_lower_crouch_se_male8_skirt.png": {
+   "pose": "crouch",
+   "view": "se",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "ea310cff86950c8766841d0976b6ad9ba5fbd0a76d364b7ee5f0a5afefeeedab"
+  },
+  "lgr1_lower_crouch_sw_male8_base.png": {
+   "pose": "crouch",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "415ee1bdb2b4955f6d7403de55b1264cf46c4da7cba690fda6343f2588b22dec"
+  },
+  "lgr1_lower_crouch_sw_male8_pants.png": {
+   "pose": "crouch",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "ccd069820dd1c14e8f2da87174c3df7ae336d0badb75785de71238fc08447fb6"
+  },
+  "lgr1_lower_crouch_sw_male8_skirt.png": {
+   "pose": "crouch",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "87cbaf9b4a0c283f2be84a0b70045964b013b6728bd333d85e6ace5f34260066"
+  },
+  "lgr1_lower_crouch_ne_male8_base.png": {
+   "pose": "crouch",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "fe16e6dbd9a838561a21149ef541ab620944a691930c1c20ac770336da0af467"
+  },
+  "lgr1_lower_crouch_ne_male8_pants.png": {
+   "pose": "crouch",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "7c418244f3f72ed59be4e553d0f1a956b559107ffb7838155cf9b5dee33282b6"
+  },
+  "lgr1_lower_crouch_ne_male8_skirt.png": {
+   "pose": "crouch",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "3032455c1786d55977b5df38f77b5cde7c983777f0ccc6581dfec7c4fb7c0b94"
+  },
+  "lgr1_lower_crouch_nw_male8_base.png": {
+   "pose": "crouch",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "5a8fca719ab85908571dfac42387d4ff83de45ef5c5b554092d2b9d8d9b81d39"
+  },
+  "lgr1_lower_crouch_nw_male8_pants.png": {
+   "pose": "crouch",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "42f77f0474fdab01e172b55de63c60f9279d77711638317d0fb4fe9fa4e2db71"
+  },
+  "lgr1_lower_crouch_nw_male8_skirt.png": {
+   "pose": "crouch",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "b2b51ada155cfdc3fa55eb426523f1b1bdaff558c8c28e54d02a39a6d58b29b1"
+  },
+  "lgr1_lower_sit_floor_se_male8_base.png": {
+   "pose": "sit_floor",
+   "view": "se",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "ab6fe45cb2cadabcbeafcf44b1f6323490efc1762f2177c85344ecce6136b40a"
+  },
+  "lgr1_lower_sit_floor_se_male8_pants.png": {
+   "pose": "sit_floor",
+   "view": "se",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "5b8c65d1bf00b1bdb394bd0e6f42f527f046998d189808af7d50eb391a758ba5"
+  },
+  "lgr1_lower_sit_floor_se_male8_skirt.png": {
+   "pose": "sit_floor",
+   "view": "se",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "8aa11d0b2f16016cbe53d71ac761dc515023c673dbbfb4a31792946c1355906d"
+  },
+  "lgr1_lower_sit_floor_sw_male8_base.png": {
+   "pose": "sit_floor",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "0a61283818ef01b5f0b40e886b74b96ab3920a42858bf457fc7e8c794b237180"
+  },
+  "lgr1_lower_sit_floor_sw_male8_pants.png": {
+   "pose": "sit_floor",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "874359ea8ea9a0bae31fc894191690b4e284630d33070e5f53aa62035cbdb3bd"
+  },
+  "lgr1_lower_sit_floor_sw_male8_skirt.png": {
+   "pose": "sit_floor",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "9e0c092533a3a26531671a9bf99fcbb18c8b0e4ffc1f18509eccc775e8c42771"
+  },
+  "lgr1_lower_sit_floor_ne_male8_base.png": {
+   "pose": "sit_floor",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "0521e738a42e290c02f43006c5d7a61b5f20e19aa93ea7410c4c7adbce84688f"
+  },
+  "lgr1_lower_sit_floor_ne_male8_pants.png": {
+   "pose": "sit_floor",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "7f8d5e594b023dccf4790c275d219b964c55fe8c95505a2f76a811497a9f0c0f"
+  },
+  "lgr1_lower_sit_floor_ne_male8_skirt.png": {
+   "pose": "sit_floor",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "529f23a758a4fb1647e2d65c69206a668b06394d063bc9b7a448950ad33b790a"
+  },
+  "lgr1_lower_sit_floor_nw_male8_base.png": {
+   "pose": "sit_floor",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "dc16c253e3f4929adf0db48d3a6a756247d41ca923ec23dca1dd6b28250cf65a"
+  },
+  "lgr1_lower_sit_floor_nw_male8_pants.png": {
+   "pose": "sit_floor",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "9c327b2497de761af707d4ece7dcf4972b9e82e80da2b58342c6fcf81976d818"
+  },
+  "lgr1_lower_sit_floor_nw_male8_skirt.png": {
+   "pose": "sit_floor",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "22cdc67a913525f42a32b499c0b51a494839bf172d665753b30a915d38b22587"
+  },
+  "lgr1_lower_sit_long_se_male8_base.png": {
+   "pose": "sit_long",
+   "view": "se",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "6dc31c74cd0bbd4d85b4c660cad0646716ab1acf3fa441abec816f1c3cde332a"
+  },
+  "lgr1_lower_sit_long_se_male8_pants.png": {
+   "pose": "sit_long",
+   "view": "se",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "c40d9e4e38e265c6340a32180f548485c997df09e6068ca771d0e1992747a2be"
+  },
+  "lgr1_lower_sit_long_se_male8_skirt.png": {
+   "pose": "sit_long",
+   "view": "se",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "18005f5b9396698b6e003962ed278c197c8a6ca9abbcff8cf4209fb1ddacad12"
+  },
+  "lgr1_lower_sit_long_sw_male8_base.png": {
+   "pose": "sit_long",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "6ff0ced488ad26a67d4321c364a9b9b6a0a1a284b17d506a7b2f18e253b7a696"
+  },
+  "lgr1_lower_sit_long_sw_male8_pants.png": {
+   "pose": "sit_long",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "38cc103432015a14c1179a293d1146ee995f5702f24f584cb71569414e527332"
+  },
+  "lgr1_lower_sit_long_sw_male8_skirt.png": {
+   "pose": "sit_long",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "8a5ad58b7c6a42fdbaeffdbc8b0b90a1c8149904d41915a5315ac01babd7b0fd"
+  },
+  "lgr1_lower_sit_long_ne_male8_base.png": {
+   "pose": "sit_long",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "0faaebdae03b42185de4abf341a5f257db354b2f4654d9e84c98f289acd57ea2"
+  },
+  "lgr1_lower_sit_long_ne_male8_pants.png": {
+   "pose": "sit_long",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "9dc93a0e7c7e0df20163e5f62cbbfe49d3d1096357f56457a36cb17a47d386aa"
+  },
+  "lgr1_lower_sit_long_ne_male8_skirt.png": {
+   "pose": "sit_long",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "d25c091cae15955fe50d969f0915487f22d41d0b7d232182d44e8a41f71ec468"
+  },
+  "lgr1_lower_sit_long_nw_male8_base.png": {
+   "pose": "sit_long",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "e04edadd425d53601c284565c043442d41e1e1f372f78b2136a20fceae871682"
+  },
+  "lgr1_lower_sit_long_nw_male8_pants.png": {
+   "pose": "sit_long",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "044ed9f1fe2cd1ea0886e84fa00bab62ffcc3ed2986fe3b0b53fc9a466fa7237"
+  },
+  "lgr1_lower_sit_long_nw_male8_skirt.png": {
+   "pose": "sit_long",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "e2d75a7c1abc414d55dd55bc981ea6dc875d0594d69c963decb5066fa6ecb859"
+  },
+  "lgr1_lower_kneel_se_male8_base.png": {
+   "pose": "kneel",
+   "view": "se",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "c68947891b7e32e03531313e0612ca161bab8fc5f179712f386442a00906b076"
+  },
+  "lgr1_lower_kneel_se_male8_pants.png": {
+   "pose": "kneel",
+   "view": "se",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "18524eb0f6f6a85b35babf4ede202962ed2159fd07ffbec7d98555da7b66b410"
+  },
+  "lgr1_lower_kneel_se_male8_skirt.png": {
+   "pose": "kneel",
+   "view": "se",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "4ae62b97ab835c27b6231bb243fabfb8025e0b261aa319612d8db0de86d81d9c"
+  },
+  "lgr1_lower_kneel_sw_male8_base.png": {
+   "pose": "kneel",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "17ecc8b5f87dc6b4c51c431d824ee1d6b6ab34aaeb8652b9b67020a2682bcdf6"
+  },
+  "lgr1_lower_kneel_sw_male8_pants.png": {
+   "pose": "kneel",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "2bb183ee86f1e0c4eec2283f3807b59a74c521a34c11676491d4aa9268dc0cd6"
+  },
+  "lgr1_lower_kneel_sw_male8_skirt.png": {
+   "pose": "kneel",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "f2b608447dc8b8d758dbf7758170ec437c8ebfeb2e721eb2117a94cd6389841f"
+  },
+  "lgr1_lower_kneel_ne_male8_base.png": {
+   "pose": "kneel",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "02c519a181713a34b469bad82cf85d909a8050b444f1a0ca5b66e7d8c1601c5a"
+  },
+  "lgr1_lower_kneel_ne_male8_pants.png": {
+   "pose": "kneel",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "2a4d5dccc3b69aabc699d6da41b056302bb248c5c4d61768d24596928afc36be"
+  },
+  "lgr1_lower_kneel_ne_male8_skirt.png": {
+   "pose": "kneel",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "9cfac34dda0beb6a9ce66bec1e849173807df260aaf0445af13328f0b26ff31f"
+  },
+  "lgr1_lower_kneel_nw_male8_base.png": {
+   "pose": "kneel",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "ed05e11586d76b069e376fe75b55453284d040be4eba669d37e64a0f327fd402"
+  },
+  "lgr1_lower_kneel_nw_male8_pants.png": {
+   "pose": "kneel",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "cfb886a8f0562a47a11a76410ee6c07c7f10ba68a94d2ee45d8d9b2a9d8623ad"
+  },
+  "lgr1_lower_kneel_nw_male8_skirt.png": {
+   "pose": "kneel",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "5b6d7e6d565543ac5961c4081ac436fa918dac1ba5c0929ec55b9d927db13742"
+  },
+  "lgr1_lower_lie_straight_se_male8_base.png": {
+   "pose": "lie_straight",
+   "view": "se",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "f56b56b4d8531c46f60331b48dd9efd7e2073c9ff9ab36178edd11763f2f0da4"
+  },
+  "lgr1_lower_lie_straight_se_male8_pants.png": {
+   "pose": "lie_straight",
+   "view": "se",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "bd3b2966ad0d019653f54f841f5299b41a99f565838b875bc7cc1a265872b872"
+  },
+  "lgr1_lower_lie_straight_se_male8_skirt.png": {
+   "pose": "lie_straight",
+   "view": "se",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "df1f561714749d108c5dcf7e29e2ec7633f42f8dcdccbd7e68b98aa06df81f4c"
+  },
+  "lgr1_lower_lie_straight_sw_male8_base.png": {
+   "pose": "lie_straight",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "9fabae03bdd05ccd9d38e15d26f73bc5fbe5194838f283cc27af7b793209d955"
+  },
+  "lgr1_lower_lie_straight_sw_male8_pants.png": {
+   "pose": "lie_straight",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "29d71dbb7fd179d157925832472c4159b55e638f52f95e1fbf437967d0500502"
+  },
+  "lgr1_lower_lie_straight_sw_male8_skirt.png": {
+   "pose": "lie_straight",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "597c5aa9ff55e7cf621a579ba9ecc34bb007f87a9c7d0233b0964387c96b938d"
+  },
+  "lgr1_lower_lie_straight_ne_male8_base.png": {
+   "pose": "lie_straight",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "9b13105a651dff847865e7b22b6ce104fdf226770c565bf6286e5846278d933d"
+  },
+  "lgr1_lower_lie_straight_ne_male8_pants.png": {
+   "pose": "lie_straight",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "fffa1c1df026058b2e2dab7c4ba7ea3a05a275db58a602f0795465eb1b277372"
+  },
+  "lgr1_lower_lie_straight_ne_male8_skirt.png": {
+   "pose": "lie_straight",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "50c61e7f37a360c919df58579204a3deeb8617aeb163b74e0e6424a3b3500aac"
+  },
+  "lgr1_lower_lie_straight_nw_male8_base.png": {
+   "pose": "lie_straight",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "03a064d72105a7f07c6873a685dabc512b8a541f45d000a6c5eda7ef11783346"
+  },
+  "lgr1_lower_lie_straight_nw_male8_pants.png": {
+   "pose": "lie_straight",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "7978551112aa519ec9aab0c460d3838ce1d81731b1b38e6dd32e2453f202acd1"
+  },
+  "lgr1_lower_lie_straight_nw_male8_skirt.png": {
+   "pose": "lie_straight",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "79088eca84a1bfe7285ec719f37c3a088eaaaa61e464fbc6ed528f40e96713fe"
+  },
+  "lgr1_lower_lie_curl_se_male8_base.png": {
+   "pose": "lie_curl",
+   "view": "se",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "73f22f7c49b8b8058af8be3f4e3fe3da63402f1de88ffb1288cfe7b974899e7e"
+  },
+  "lgr1_lower_lie_curl_se_male8_pants.png": {
+   "pose": "lie_curl",
+   "view": "se",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "88982c0c75f3a02c5cb90b34c5614fcb2b746a640f463360f64743f5471752d5"
+  },
+  "lgr1_lower_lie_curl_se_male8_skirt.png": {
+   "pose": "lie_curl",
+   "view": "se",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "a1678a6957929d03e5c68e8352f8b1db53e5df3aa2fc11c7c3ae0a06c06849b2"
+  },
+  "lgr1_lower_lie_curl_sw_male8_base.png": {
+   "pose": "lie_curl",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "832cc2685b0e538f22a50b78b403d8d68653f278ec2ec1d437a4d8988971cf7e"
+  },
+  "lgr1_lower_lie_curl_sw_male8_pants.png": {
+   "pose": "lie_curl",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "8019e51c42d8fd8e58da912fa9919202eee32a76df12e716f22c0283e5d2560e"
+  },
+  "lgr1_lower_lie_curl_sw_male8_skirt.png": {
+   "pose": "lie_curl",
+   "view": "sw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "dbcff3948cfe01eb98dd868cb086d58a497576a5edba8f654e517151db806ae3"
+  },
+  "lgr1_lower_lie_curl_ne_male8_base.png": {
+   "pose": "lie_curl",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "8716d8565f276f8ffd8b1c7c94ac38787c4136ed44a2346ca686261defd3c5ef"
+  },
+  "lgr1_lower_lie_curl_ne_male8_pants.png": {
+   "pose": "lie_curl",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "1be1e10ec3adb0946e87280ac7ea95f132175dad0f023c269cb34ddfc32c8884"
+  },
+  "lgr1_lower_lie_curl_ne_male8_skirt.png": {
+   "pose": "lie_curl",
+   "view": "ne",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "2cbd425dbc3cc73821968440eac31f6149d71984c82bfc492f21ce10c279ce0e"
+  },
+  "lgr1_lower_lie_curl_nw_male8_base.png": {
+   "pose": "lie_curl",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "dea8c57d9b3e9e7d961307742c2340f8ac3ef467a71dc2463748e326aa4f32d7"
+  },
+  "lgr1_lower_lie_curl_nw_male8_pants.png": {
+   "pose": "lie_curl",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "17dd981341f6ba7f8fed330d6a801d944d876a04c2984f9dfdeda76957b053b7"
+  },
+  "lgr1_lower_lie_curl_nw_male8_skirt.png": {
+   "pose": "lie_curl",
+   "view": "nw",
+   "body": "male8",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "8712b743f4bd637461a473207934ef9588096a3736e445c44d5731397cafc4bc"
+  },
+  "lgr1_lower_stand_se_female9_base.png": {
+   "pose": "stand",
+   "view": "se",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "f56b56b4d8531c46f60331b48dd9efd7e2073c9ff9ab36178edd11763f2f0da4"
+  },
+  "lgr1_lower_stand_se_female9_pants.png": {
+   "pose": "stand",
+   "view": "se",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "edd377e10c841bc1e86c62721609567cb67f08852e579042596f178c679db371"
+  },
+  "lgr1_lower_stand_se_female9_skirt.png": {
+   "pose": "stand",
+   "view": "se",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "6837e5e397cc33bbbbcf61aa2881fc4e8d49e3ed9ccf70026e9bdcb6f6660c2c"
+  },
+  "lgr1_lower_stand_sw_female9_base.png": {
+   "pose": "stand",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "9fabae03bdd05ccd9d38e15d26f73bc5fbe5194838f283cc27af7b793209d955"
+  },
+  "lgr1_lower_stand_sw_female9_pants.png": {
+   "pose": "stand",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "e5b31689a9911adabf9bc3843ce20d92e1e27b0f4e8f460083beccdf2629b438"
+  },
+  "lgr1_lower_stand_sw_female9_skirt.png": {
+   "pose": "stand",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "4f880210ee2880cc87018679641ca28f338b085610e72182d3be1d53191d8d9b"
+  },
+  "lgr1_lower_stand_ne_female9_base.png": {
+   "pose": "stand",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "9b13105a651dff847865e7b22b6ce104fdf226770c565bf6286e5846278d933d"
+  },
+  "lgr1_lower_stand_ne_female9_pants.png": {
+   "pose": "stand",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "023f3ba5ad41325f125e790b17a5bf53d853f00cd3a2cce88fe50808e5adc6ad"
+  },
+  "lgr1_lower_stand_ne_female9_skirt.png": {
+   "pose": "stand",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "1644ef428e7a5c38fc895073e022131cd9aa21d99585c3660b21af3e391123b7"
+  },
+  "lgr1_lower_stand_nw_female9_base.png": {
+   "pose": "stand",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "03a064d72105a7f07c6873a685dabc512b8a541f45d000a6c5eda7ef11783346"
+  },
+  "lgr1_lower_stand_nw_female9_pants.png": {
+   "pose": "stand",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "810583d412eefad0e7639992f62e5d8795846e590eab543779e6bddf3c3d723d"
+  },
+  "lgr1_lower_stand_nw_female9_skirt.png": {
+   "pose": "stand",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "2f94b22c8d4140b6d14bdc8f08bf46d3c3888e32973a1936ecca6c7f8ef2c375"
+  },
+  "lgr1_lower_sit_chair_se_female9_base.png": {
+   "pose": "sit_chair",
+   "view": "se",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "73f22f7c49b8b8058af8be3f4e3fe3da63402f1de88ffb1288cfe7b974899e7e"
+  },
+  "lgr1_lower_sit_chair_se_female9_pants.png": {
+   "pose": "sit_chair",
+   "view": "se",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "88982c0c75f3a02c5cb90b34c5614fcb2b746a640f463360f64743f5471752d5"
+  },
+  "lgr1_lower_sit_chair_se_female9_skirt.png": {
+   "pose": "sit_chair",
+   "view": "se",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "a1678a6957929d03e5c68e8352f8b1db53e5df3aa2fc11c7c3ae0a06c06849b2"
+  },
+  "lgr1_lower_sit_chair_sw_female9_base.png": {
+   "pose": "sit_chair",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "832cc2685b0e538f22a50b78b403d8d68653f278ec2ec1d437a4d8988971cf7e"
+  },
+  "lgr1_lower_sit_chair_sw_female9_pants.png": {
+   "pose": "sit_chair",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "8019e51c42d8fd8e58da912fa9919202eee32a76df12e716f22c0283e5d2560e"
+  },
+  "lgr1_lower_sit_chair_sw_female9_skirt.png": {
+   "pose": "sit_chair",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "dbcff3948cfe01eb98dd868cb086d58a497576a5edba8f654e517151db806ae3"
+  },
+  "lgr1_lower_sit_chair_ne_female9_base.png": {
+   "pose": "sit_chair",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "8716d8565f276f8ffd8b1c7c94ac38787c4136ed44a2346ca686261defd3c5ef"
+  },
+  "lgr1_lower_sit_chair_ne_female9_pants.png": {
+   "pose": "sit_chair",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "1be1e10ec3adb0946e87280ac7ea95f132175dad0f023c269cb34ddfc32c8884"
+  },
+  "lgr1_lower_sit_chair_ne_female9_skirt.png": {
+   "pose": "sit_chair",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "2cbd425dbc3cc73821968440eac31f6149d71984c82bfc492f21ce10c279ce0e"
+  },
+  "lgr1_lower_sit_chair_nw_female9_base.png": {
+   "pose": "sit_chair",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "dea8c57d9b3e9e7d961307742c2340f8ac3ef467a71dc2463748e326aa4f32d7"
+  },
+  "lgr1_lower_sit_chair_nw_female9_pants.png": {
+   "pose": "sit_chair",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "17dd981341f6ba7f8fed330d6a801d944d876a04c2984f9dfdeda76957b053b7"
+  },
+  "lgr1_lower_sit_chair_nw_female9_skirt.png": {
+   "pose": "sit_chair",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "8712b743f4bd637461a473207934ef9588096a3736e445c44d5731397cafc4bc"
+  },
+  "lgr1_lower_crouch_se_female9_base.png": {
+   "pose": "crouch",
+   "view": "se",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "1f760dd1078b1ac0f2328069a0944b0de88118c7bc6fa263b95b41ddd9170ece"
+  },
+  "lgr1_lower_crouch_se_female9_pants.png": {
+   "pose": "crouch",
+   "view": "se",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "77abd223abafcef4cc4d0ff38892989cc712cb0b3c20236195ce41eae6b34b83"
+  },
+  "lgr1_lower_crouch_se_female9_skirt.png": {
+   "pose": "crouch",
+   "view": "se",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "ea310cff86950c8766841d0976b6ad9ba5fbd0a76d364b7ee5f0a5afefeeedab"
+  },
+  "lgr1_lower_crouch_sw_female9_base.png": {
+   "pose": "crouch",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "415ee1bdb2b4955f6d7403de55b1264cf46c4da7cba690fda6343f2588b22dec"
+  },
+  "lgr1_lower_crouch_sw_female9_pants.png": {
+   "pose": "crouch",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "ccd069820dd1c14e8f2da87174c3df7ae336d0badb75785de71238fc08447fb6"
+  },
+  "lgr1_lower_crouch_sw_female9_skirt.png": {
+   "pose": "crouch",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "87cbaf9b4a0c283f2be84a0b70045964b013b6728bd333d85e6ace5f34260066"
+  },
+  "lgr1_lower_crouch_ne_female9_base.png": {
+   "pose": "crouch",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "fe16e6dbd9a838561a21149ef541ab620944a691930c1c20ac770336da0af467"
+  },
+  "lgr1_lower_crouch_ne_female9_pants.png": {
+   "pose": "crouch",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "7c418244f3f72ed59be4e553d0f1a956b559107ffb7838155cf9b5dee33282b6"
+  },
+  "lgr1_lower_crouch_ne_female9_skirt.png": {
+   "pose": "crouch",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "3032455c1786d55977b5df38f77b5cde7c983777f0ccc6581dfec7c4fb7c0b94"
+  },
+  "lgr1_lower_crouch_nw_female9_base.png": {
+   "pose": "crouch",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "5a8fca719ab85908571dfac42387d4ff83de45ef5c5b554092d2b9d8d9b81d39"
+  },
+  "lgr1_lower_crouch_nw_female9_pants.png": {
+   "pose": "crouch",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "42f77f0474fdab01e172b55de63c60f9279d77711638317d0fb4fe9fa4e2db71"
+  },
+  "lgr1_lower_crouch_nw_female9_skirt.png": {
+   "pose": "crouch",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "b2b51ada155cfdc3fa55eb426523f1b1bdaff558c8c28e54d02a39a6d58b29b1"
+  },
+  "lgr1_lower_sit_floor_se_female9_base.png": {
+   "pose": "sit_floor",
+   "view": "se",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "ab6fe45cb2cadabcbeafcf44b1f6323490efc1762f2177c85344ecce6136b40a"
+  },
+  "lgr1_lower_sit_floor_se_female9_pants.png": {
+   "pose": "sit_floor",
+   "view": "se",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "5b8c65d1bf00b1bdb394bd0e6f42f527f046998d189808af7d50eb391a758ba5"
+  },
+  "lgr1_lower_sit_floor_se_female9_skirt.png": {
+   "pose": "sit_floor",
+   "view": "se",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "8aa11d0b2f16016cbe53d71ac761dc515023c673dbbfb4a31792946c1355906d"
+  },
+  "lgr1_lower_sit_floor_sw_female9_base.png": {
+   "pose": "sit_floor",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "0a61283818ef01b5f0b40e886b74b96ab3920a42858bf457fc7e8c794b237180"
+  },
+  "lgr1_lower_sit_floor_sw_female9_pants.png": {
+   "pose": "sit_floor",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "874359ea8ea9a0bae31fc894191690b4e284630d33070e5f53aa62035cbdb3bd"
+  },
+  "lgr1_lower_sit_floor_sw_female9_skirt.png": {
+   "pose": "sit_floor",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "9e0c092533a3a26531671a9bf99fcbb18c8b0e4ffc1f18509eccc775e8c42771"
+  },
+  "lgr1_lower_sit_floor_ne_female9_base.png": {
+   "pose": "sit_floor",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "0521e738a42e290c02f43006c5d7a61b5f20e19aa93ea7410c4c7adbce84688f"
+  },
+  "lgr1_lower_sit_floor_ne_female9_pants.png": {
+   "pose": "sit_floor",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "7f8d5e594b023dccf4790c275d219b964c55fe8c95505a2f76a811497a9f0c0f"
+  },
+  "lgr1_lower_sit_floor_ne_female9_skirt.png": {
+   "pose": "sit_floor",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "529f23a758a4fb1647e2d65c69206a668b06394d063bc9b7a448950ad33b790a"
+  },
+  "lgr1_lower_sit_floor_nw_female9_base.png": {
+   "pose": "sit_floor",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "dc16c253e3f4929adf0db48d3a6a756247d41ca923ec23dca1dd6b28250cf65a"
+  },
+  "lgr1_lower_sit_floor_nw_female9_pants.png": {
+   "pose": "sit_floor",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "9c327b2497de761af707d4ece7dcf4972b9e82e80da2b58342c6fcf81976d818"
+  },
+  "lgr1_lower_sit_floor_nw_female9_skirt.png": {
+   "pose": "sit_floor",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "22cdc67a913525f42a32b499c0b51a494839bf172d665753b30a915d38b22587"
+  },
+  "lgr1_lower_sit_long_se_female9_base.png": {
+   "pose": "sit_long",
+   "view": "se",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "6dc31c74cd0bbd4d85b4c660cad0646716ab1acf3fa441abec816f1c3cde332a"
+  },
+  "lgr1_lower_sit_long_se_female9_pants.png": {
+   "pose": "sit_long",
+   "view": "se",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "c40d9e4e38e265c6340a32180f548485c997df09e6068ca771d0e1992747a2be"
+  },
+  "lgr1_lower_sit_long_se_female9_skirt.png": {
+   "pose": "sit_long",
+   "view": "se",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "18005f5b9396698b6e003962ed278c197c8a6ca9abbcff8cf4209fb1ddacad12"
+  },
+  "lgr1_lower_sit_long_sw_female9_base.png": {
+   "pose": "sit_long",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "6ff0ced488ad26a67d4321c364a9b9b6a0a1a284b17d506a7b2f18e253b7a696"
+  },
+  "lgr1_lower_sit_long_sw_female9_pants.png": {
+   "pose": "sit_long",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "38cc103432015a14c1179a293d1146ee995f5702f24f584cb71569414e527332"
+  },
+  "lgr1_lower_sit_long_sw_female9_skirt.png": {
+   "pose": "sit_long",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "8a5ad58b7c6a42fdbaeffdbc8b0b90a1c8149904d41915a5315ac01babd7b0fd"
+  },
+  "lgr1_lower_sit_long_ne_female9_base.png": {
+   "pose": "sit_long",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "0faaebdae03b42185de4abf341a5f257db354b2f4654d9e84c98f289acd57ea2"
+  },
+  "lgr1_lower_sit_long_ne_female9_pants.png": {
+   "pose": "sit_long",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "9dc93a0e7c7e0df20163e5f62cbbfe49d3d1096357f56457a36cb17a47d386aa"
+  },
+  "lgr1_lower_sit_long_ne_female9_skirt.png": {
+   "pose": "sit_long",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "d25c091cae15955fe50d969f0915487f22d41d0b7d232182d44e8a41f71ec468"
+  },
+  "lgr1_lower_sit_long_nw_female9_base.png": {
+   "pose": "sit_long",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "e04edadd425d53601c284565c043442d41e1e1f372f78b2136a20fceae871682"
+  },
+  "lgr1_lower_sit_long_nw_female9_pants.png": {
+   "pose": "sit_long",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "044ed9f1fe2cd1ea0886e84fa00bab62ffcc3ed2986fe3b0b53fc9a466fa7237"
+  },
+  "lgr1_lower_sit_long_nw_female9_skirt.png": {
+   "pose": "sit_long",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "e2d75a7c1abc414d55dd55bc981ea6dc875d0594d69c963decb5066fa6ecb859"
+  },
+  "lgr1_lower_kneel_se_female9_base.png": {
+   "pose": "kneel",
+   "view": "se",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "c68947891b7e32e03531313e0612ca161bab8fc5f179712f386442a00906b076"
+  },
+  "lgr1_lower_kneel_se_female9_pants.png": {
+   "pose": "kneel",
+   "view": "se",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "18524eb0f6f6a85b35babf4ede202962ed2159fd07ffbec7d98555da7b66b410"
+  },
+  "lgr1_lower_kneel_se_female9_skirt.png": {
+   "pose": "kneel",
+   "view": "se",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "4ae62b97ab835c27b6231bb243fabfb8025e0b261aa319612d8db0de86d81d9c"
+  },
+  "lgr1_lower_kneel_sw_female9_base.png": {
+   "pose": "kneel",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "17ecc8b5f87dc6b4c51c431d824ee1d6b6ab34aaeb8652b9b67020a2682bcdf6"
+  },
+  "lgr1_lower_kneel_sw_female9_pants.png": {
+   "pose": "kneel",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "2bb183ee86f1e0c4eec2283f3807b59a74c521a34c11676491d4aa9268dc0cd6"
+  },
+  "lgr1_lower_kneel_sw_female9_skirt.png": {
+   "pose": "kneel",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "f2b608447dc8b8d758dbf7758170ec437c8ebfeb2e721eb2117a94cd6389841f"
+  },
+  "lgr1_lower_kneel_ne_female9_base.png": {
+   "pose": "kneel",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "02c519a181713a34b469bad82cf85d909a8050b444f1a0ca5b66e7d8c1601c5a"
+  },
+  "lgr1_lower_kneel_ne_female9_pants.png": {
+   "pose": "kneel",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "2a4d5dccc3b69aabc699d6da41b056302bb248c5c4d61768d24596928afc36be"
+  },
+  "lgr1_lower_kneel_ne_female9_skirt.png": {
+   "pose": "kneel",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "9cfac34dda0beb6a9ce66bec1e849173807df260aaf0445af13328f0b26ff31f"
+  },
+  "lgr1_lower_kneel_nw_female9_base.png": {
+   "pose": "kneel",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "ed05e11586d76b069e376fe75b55453284d040be4eba669d37e64a0f327fd402"
+  },
+  "lgr1_lower_kneel_nw_female9_pants.png": {
+   "pose": "kneel",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "cfb886a8f0562a47a11a76410ee6c07c7f10ba68a94d2ee45d8d9b2a9d8623ad"
+  },
+  "lgr1_lower_kneel_nw_female9_skirt.png": {
+   "pose": "kneel",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "5b6d7e6d565543ac5961c4081ac436fa918dac1ba5c0929ec55b9d927db13742"
+  },
+  "lgr1_lower_lie_straight_se_female9_base.png": {
+   "pose": "lie_straight",
+   "view": "se",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "f56b56b4d8531c46f60331b48dd9efd7e2073c9ff9ab36178edd11763f2f0da4"
+  },
+  "lgr1_lower_lie_straight_se_female9_pants.png": {
+   "pose": "lie_straight",
+   "view": "se",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "edd377e10c841bc1e86c62721609567cb67f08852e579042596f178c679db371"
+  },
+  "lgr1_lower_lie_straight_se_female9_skirt.png": {
+   "pose": "lie_straight",
+   "view": "se",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "6837e5e397cc33bbbbcf61aa2881fc4e8d49e3ed9ccf70026e9bdcb6f6660c2c"
+  },
+  "lgr1_lower_lie_straight_sw_female9_base.png": {
+   "pose": "lie_straight",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "9fabae03bdd05ccd9d38e15d26f73bc5fbe5194838f283cc27af7b793209d955"
+  },
+  "lgr1_lower_lie_straight_sw_female9_pants.png": {
+   "pose": "lie_straight",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "e5b31689a9911adabf9bc3843ce20d92e1e27b0f4e8f460083beccdf2629b438"
+  },
+  "lgr1_lower_lie_straight_sw_female9_skirt.png": {
+   "pose": "lie_straight",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "4f880210ee2880cc87018679641ca28f338b085610e72182d3be1d53191d8d9b"
+  },
+  "lgr1_lower_lie_straight_ne_female9_base.png": {
+   "pose": "lie_straight",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "9b13105a651dff847865e7b22b6ce104fdf226770c565bf6286e5846278d933d"
+  },
+  "lgr1_lower_lie_straight_ne_female9_pants.png": {
+   "pose": "lie_straight",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "023f3ba5ad41325f125e790b17a5bf53d853f00cd3a2cce88fe50808e5adc6ad"
+  },
+  "lgr1_lower_lie_straight_ne_female9_skirt.png": {
+   "pose": "lie_straight",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "1644ef428e7a5c38fc895073e022131cd9aa21d99585c3660b21af3e391123b7"
+  },
+  "lgr1_lower_lie_straight_nw_female9_base.png": {
+   "pose": "lie_straight",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "03a064d72105a7f07c6873a685dabc512b8a541f45d000a6c5eda7ef11783346"
+  },
+  "lgr1_lower_lie_straight_nw_female9_pants.png": {
+   "pose": "lie_straight",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "810583d412eefad0e7639992f62e5d8795846e590eab543779e6bddf3c3d723d"
+  },
+  "lgr1_lower_lie_straight_nw_female9_skirt.png": {
+   "pose": "lie_straight",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "2f94b22c8d4140b6d14bdc8f08bf46d3c3888e32973a1936ecca6c7f8ef2c375"
+  },
+  "lgr1_lower_lie_curl_se_female9_base.png": {
+   "pose": "lie_curl",
+   "view": "se",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "73f22f7c49b8b8058af8be3f4e3fe3da63402f1de88ffb1288cfe7b974899e7e"
+  },
+  "lgr1_lower_lie_curl_se_female9_pants.png": {
+   "pose": "lie_curl",
+   "view": "se",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "88982c0c75f3a02c5cb90b34c5614fcb2b746a640f463360f64743f5471752d5"
+  },
+  "lgr1_lower_lie_curl_se_female9_skirt.png": {
+   "pose": "lie_curl",
+   "view": "se",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "a1678a6957929d03e5c68e8352f8b1db53e5df3aa2fc11c7c3ae0a06c06849b2"
+  },
+  "lgr1_lower_lie_curl_sw_female9_base.png": {
+   "pose": "lie_curl",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "832cc2685b0e538f22a50b78b403d8d68653f278ec2ec1d437a4d8988971cf7e"
+  },
+  "lgr1_lower_lie_curl_sw_female9_pants.png": {
+   "pose": "lie_curl",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "8019e51c42d8fd8e58da912fa9919202eee32a76df12e716f22c0283e5d2560e"
+  },
+  "lgr1_lower_lie_curl_sw_female9_skirt.png": {
+   "pose": "lie_curl",
+   "view": "sw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "dbcff3948cfe01eb98dd868cb086d58a497576a5edba8f654e517151db806ae3"
+  },
+  "lgr1_lower_lie_curl_ne_female9_base.png": {
+   "pose": "lie_curl",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "8716d8565f276f8ffd8b1c7c94ac38787c4136ed44a2346ca686261defd3c5ef"
+  },
+  "lgr1_lower_lie_curl_ne_female9_pants.png": {
+   "pose": "lie_curl",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "1be1e10ec3adb0946e87280ac7ea95f132175dad0f023c269cb34ddfc32c8884"
+  },
+  "lgr1_lower_lie_curl_ne_female9_skirt.png": {
+   "pose": "lie_curl",
+   "view": "ne",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "2cbd425dbc3cc73821968440eac31f6149d71984c82bfc492f21ce10c279ce0e"
+  },
+  "lgr1_lower_lie_curl_nw_female9_base.png": {
+   "pose": "lie_curl",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "base",
+   "anchor": "pelvis",
+   "sha256": "dea8c57d9b3e9e7d961307742c2340f8ac3ef467a71dc2463748e326aa4f32d7"
+  },
+  "lgr1_lower_lie_curl_nw_female9_pants.png": {
+   "pose": "lie_curl",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "pants",
+   "anchor": "pelvis",
+   "sha256": "17dd981341f6ba7f8fed330d6a801d944d876a04c2984f9dfdeda76957b053b7"
+  },
+  "lgr1_lower_lie_curl_nw_female9_skirt.png": {
+   "pose": "lie_curl",
+   "view": "nw",
+   "body": "female9",
+   "outfit": "skirt",
+   "anchor": "pelvis",
+   "sha256": "8712b743f4bd637461a473207934ef9588096a3736e445c44d5731397cafc4bc"
+  }
+ },
+ "wear": {
+  "skirt_a.png / skirt_a_f.png": "art/wear/, 256x112 SE|SW|NE|NW, skirt top on pelvis/torso (open bottom, closed notch)",
+  "trousers_a.png / trousers_a_f.png": "art/wear/, 256x112 SE|SW|NE|NW, official trousers with 3 fixes (see outfits.pants)"
+ },
+ "baked_base_packages": {
+  "male": "base/genesis-base-male-official-8-legfix-a-preview.json",
+  "female": "base/genesis-base-female-official-9-legfix-a-preview.json",
+  "what": "official pixels unchanged; v2 leg slice + pivots baked into masks, capRadius 0"
+ },
+ "head_emosi": "head pixels and head matrix identical to live in every QA frame (qa.json)",
+ "joints_v4": {
+  "status": "PREVIEW R3 (2026-11-14), not live; primary path for custom motions. Option A lower sprites (poses/files above) = optional fallback only.",
+  "built_on": "rt joint_mode v2 (fixSlice, KNEE_Y 90, HIP_Y 0, buildBalls, pinholeFill)",
+  "prep": {
+   "deltoid_to_torso": {
+    "parts": [
+     "arm_near_upper",
+     "arm_far_upper"
+    ],
+    "rule": "mask px owned by the upper arm with y <= pivot.y + SH_DY -> torso",
+    "SH_DY": 0
+   },
+   "pivots": "artist pivots kept (shoulder, elbow, hip); knee = v2 (shin-run centre, KNEE_Y)",
+   "baked_bases": {
+    "male": {
+     "file": "base/genesis-base-male-official-8-joints4-preview.json",
+     "sha256": "f3f942893c26d67e49837634771f8899114b993ebd4f4222a99028d51da1a3fa",
+     "master": "genesis-base-male-official-8.json",
+     "master_sha256": "c556461a4b98df4bee984c7b558de76fcfd70936daaaff118b53be21eca1ef6c",
+     "rest_identical": true
+    },
+    "female": {
+     "file": "base/genesis-base-female-official-9-joints4-preview.json",
+     "sha256": "e97cca95dc029c272cf8924b85bf3fabcbada65fd97743108fbca9d48832d93d",
+     "master": "genesis-base-female-official-9.json",
+     "master_sha256": "99f4db1cf3200d3c2f4f9f6fc7af7fd120e260feb4a726956e8518970fd4fa5d",
+     "rest_identical": true
+    }
+   }
+  },
+  "render_passes": [
+   "raise_front: near arm drawn over head pixels when outward angle >= 120 (still behind torso)",
+   "active zone from ID render: moved parts + parent within 7.5px of moved joints; head/hair/face + rest-art exemptions never written",
+   "dejag: 1px dents filled (fill colour of neighbour), 1px outline teeth cleared",
+   "edge repair: exposed fill -> family outline (skin K7, P1-3 -> P4, C1-3 -> C4), never thickening (no 2x2, keeps a fill neighbour)",
+   "pinholeFill (v2)"
+  ],
+  "options": {
+   "SH_DY": 0,
+   "RAISE_FRONT": 120,
+   "HIP_CENTRE": false,
+   "shoulder_x": false,
+   "LOWER_SPRITES": false
+  },
+  "outline_keys": {
+   "skin": "#FF44DC",
+   "pants_skirt": "#FFA4AC",
+   "tee": "#FF62CD"
+  },
+  "cache_key": "baseVersion|rigSha|jointMode=v4|SH_DY|RAISE_FRONT|HIP_CENTRE|wear ids|pose hash",
+  "reference": "tools/joints4.py; QA joints/qa/summary.json; spec BAYMAX-HOOK.md (R3)"
+ }
+}
