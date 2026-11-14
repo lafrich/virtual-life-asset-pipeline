@@ -115,6 +115,17 @@ INHERIT, UNASSIGNED = 254, 255
 # Render-time joint fill radius (px; the waist gets +2). 0 disables. Twin of
 # LGR1Raster.JOINT_FILL. Fills only empty seam pixels; the rest pose is unchanged.
 JOINT_FILL = 4
+# Joint mode (twin of LGR1Raster.JOINT_MODE). "v2" = joint-fix preview:
+#  - leg slice clean-up: below the crotch every leg/pelvis pixel belongs to the leg run it sits in,
+#    thigh pixels above the crotch go to the pelvis, knee seam at KNEE_Y;
+#  - pivots: hip = (thigh-run centre, HIP_Y), knee = (shin-run centre, KNEE_Y);
+#  - no radius caps (head cap kept), no JOINT_FILL crack/web fill;
+#  - joint capsules: per joint a rounded end in the child's own fill/outline colours, rotating with
+#    the child, drawn under the lower of (parent, child) and clipped so the rest pose is unchanged;
+#  - pinhole fill: only enclosed transparent specks of <= PINHOLE px are closed.
+# "legacy" = the previous behaviour (caps + JOINT_FILL).
+JOINT_MODE = "v2"
+KNEE_Y, HIP_Y, PINHOLE, BALL_MAX_R = 90, 78, 2, 4.0
 ANAT = ("head", "torso", "pelvis", "arm_r_upper", "arm_r_lower", "arm_l_upper", "arm_l_lower",
         "leg_r_upper", "leg_r_lower", "leg_l_upper", "leg_l_lower")
 DEFAULT_SIDES = {"se": "right", "sw": "left", "ne": "right", "nw": "left"}
@@ -383,12 +394,16 @@ def _bbox(img):
 
 def prepare_raw(layers: dict, mask, pivots: dict, placements: dict | None = None,
                 order=None, caps: dict | None = None, wear: dict | None = None,
-                tweak=None, face=None) -> dict:
+                tweak=None, face=None, joint_mode=None) -> dict:
     """Raw-RGBA twin of LGR1Raster.prepare (bytes/bytearray of 64*112*4)."""
     wear = wear or {}
     order = list(order) if _valid_order(order) else list(DRAW_ORDER)
     capr = dict(CAP_RADIUS)
     capr.update(caps or {})
+    mode = joint_mode or JOINT_MODE
+    if mode == "v2":
+        mask, pivots = fix_slice(mask, pivots)
+        capr = {k: (v if k == "head" else 0) for k, v in capr.items()}
     expanded = expand_mask(body_mask(mask, layers)) if any(wear.get(l) for l in LAYERS) else None
     groups = {}
     for name, glayers in GROUPS:
@@ -467,8 +482,178 @@ def prepare_raw(layers: dict, mask, pivots: dict, placements: dict | None = None
             entries[part] = {"img": img, "bbox": _bbox(img), "scaled": None}
         groups[name] = {"still": still, "parts": entries}
     face_entry = {"img": face, "bbox": _bbox(face), "scaled": None} if face else None
+    balls = build_balls(groups["main"]["parts"], pivots, order) if mode == "v2" else {}
     return {"order": order, "pivots": pivots, "placements": placements or {},
-            "groups": groups, "face": face_entry}
+            "groups": groups, "face": face_entry, "mode": mode, "balls": balls}
+
+
+def _runs(xs):
+    out, cur = [], []
+    for x in xs:
+        if cur and x == cur[-1] + 1:
+            cur.append(x)
+        else:
+            if cur:
+                out.append(cur)
+            cur = [x]
+    if cur:
+        out.append(cur)
+    return out
+
+
+def fix_slice(mask, pivots):
+    """v2 leg slice + hip/knee pivots (in memory; masters untouched). Twin of LGR1Raster.fixSlice."""
+    out = bytearray(mask)
+    pv = {k: {"x": v["x"], "y": v["y"]} for k, v in pivots.items()}
+    pel = PARTS.index("pelvis")
+    leg = {"near": (PARTS.index("leg_near_upper"), PARTS.index("leg_near_lower")),
+           "far": (PARTS.index("leg_far_upper"), PARTS.index("leg_far_lower"))}
+    legset = {leg["near"][0], leg["near"][1], leg["far"][0], leg["far"][1], pel}
+    top = next((k // W for k in range(N) if out[k] == leg["far"][0]), -1)
+    if top < 0:
+        return bytes(out), pv
+    row = lambda y: [x for x in range(W) if out[y * W + x] in legset]
+    c = top
+    while c < KNEE_Y and len(_runs(row(c))) < 2:
+        c += 1
+    if c >= KNEE_Y:
+        return bytes(mask), {k: {"x": v["x"], "y": v["y"]} for k, v in pivots.items()}
+    hipx = {s: pv["leg_" + s + "_upper"]["x"] for s in ("near", "far")}
+    cent = {}
+    for y in range(c, H):
+        for run in _runs(row(y)):
+            m = (run[0] + run[-1] + 1) / 2
+            side = "near" if abs(hipx["near"] - m) <= abs(hipx["far"] - m) else "far"
+            part = leg[side][0 if y < KNEE_Y else 1]
+            for x in run:
+                out[y * W + x] = part
+            if (y == c or y == KNEE_Y) and (side, y) not in cent:
+                cent[(side, y)] = math.floor(m + 0.5)
+    uppers_lowers = {leg["near"][0], leg["near"][1], leg["far"][0], leg["far"][1]}
+    for k in range(c * W):
+        if out[k] in uppers_lowers:
+            out[k] = pel
+    for s in ("near", "far"):
+        if (s, c) in cent:
+            pv["leg_" + s + "_upper"] = {"x": cent[(s, c)], "y": HIP_Y}
+        if (s, KNEE_Y) in cent:
+            pv["leg_" + s + "_lower"] = {"x": cent[(s, KNEE_Y)], "y": KNEE_Y}
+    return bytes(out), pv
+
+
+def _seam_run(img, pv):
+    px, py = pv["x"], pv["y"]
+    for dy in (0, 1, 2, -1, 3, 4, 5, 6, 7, 8):
+        y = py + dy
+        if not 0 <= y < H:
+            continue
+        xs = [x for x in range(max(0, px - 5), min(W, px + 5)) if img[(y * W + x) * 4 + 3] == 255]
+        if xs:
+            best = None
+            for run in _runs(xs):
+                if best is None or abs((run[0] + run[-1] + 1) / 2 - px) < abs((best[0] + best[-1] + 1) / 2 - px):
+                    best = run
+            return y, best
+    return None, None
+
+
+def build_balls(parts, pivots, order):
+    """v2 joint capsules (twin of LGR1Raster.buildBalls)."""
+    balls = {}
+    for child, parent in PARENTS.items():
+        if not parent or child == "head":
+            continue
+        cimg = parts[child]["img"]
+        pv = pivots[child]
+        ys, run = _seam_run(cimg, pv)
+        if not run or len(run) < 2:
+            continue
+        col = lambda x: bytes(cimg[(ys * W + x) * 4:(ys * W + x) * 4 + 4])
+        rim = col(run[0])
+        inner = [col(x) for x in run[1:-1]] or [rim]
+        counts = {}
+        for c in inner:
+            counts[c] = counts.get(c, 0) + 1
+        fill, best = None, -1
+        for c, n in counts.items():
+            if n > best:
+                fill, best = c, n
+        r = min(BALL_MAX_R, len(run) / 2)
+        cx, cy = pv["x"], pv["y"]
+        slot = min(order.index(child), order.index(parent))
+        cover = bytearray(N)
+        for part in order[slot:]:
+            im = parts[part]["img"]
+            for k in range(N):
+                if im[k * 4 + 3] == 255:
+                    cover[k] = 1
+        lo, hi, x0r, x1r = min(cy, ys), max(cy, ys), run[0], run[-1]
+
+        def inside(x, y):
+            if (x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= r * r:
+                return True
+            return y >= cy and lo <= y < hi + 1 and x0r <= x <= x1r
+        img = bytearray(N * 4)
+        for y in range(math.floor(lo - r) - 1, math.floor(hi + r) + 2):
+            for x in range(math.floor(cx - r) - 2, math.floor(cx + r) + 3):
+                if not (0 <= x < W and 0 <= y < H) or not inside(x, y) or not cover[y * W + x]:
+                    continue
+                edge = not (inside(x + 1, y) and inside(x - 1, y) and inside(x, y + 1) and inside(x, y - 1))
+                img[(y * W + x) * 4:(y * W + x) * 4 + 4] = rim if edge else fill
+        bb = _bbox(img)
+        if bb:
+            balls[child] = {"img": img, "bbox": bb, "scaled": None}
+    return balls
+
+
+def pinhole_fill(out, maxsize=None):
+    """v2: close only enclosed transparent specks (<= PINHOLE px, 4-connected); twin of LGR1Raster.pinholeFill."""
+    maxsize = PINHOLE if maxsize is None else maxsize
+    seen = bytearray(N)
+    st = []
+    for k in range(N):
+        x, y = k % W, k // W
+        if (x == 0 or x == W - 1 or y == 0 or y == H - 1) and not out[k * 4 + 3]:
+            seen[k] = 1
+            st.append(k)
+    while st:
+        k = st.pop()
+        x, y = k % W, k // W
+        for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if 0 <= nx < W and 0 <= ny < H:
+                n = ny * W + nx
+                if not seen[n] and not out[n * 4 + 3]:
+                    seen[n] = 1
+                    st.append(n)
+    for k in range(N):
+        if out[k * 4 + 3] or seen[k]:
+            continue
+        comp = [k]
+        seen[k] = 1
+        i = 0
+        while i < len(comp):
+            j = comp[i]
+            i += 1
+            x, y = j % W, j // W
+            for n in (j - 1, j + 1, j - W, j + W):
+                if not seen[n] and not out[n * 4 + 3]:
+                    seen[n] = 1
+                    comp.append(n)
+        if len(comp) > maxsize:
+            continue
+        for j in comp:
+            counts = {}
+            for n in (j - 1, j + 1, j - W, j + W):
+                if out[n * 4 + 3] == 255:
+                    c = bytes(out[n * 4:n * 4 + 4])
+                    counts[c] = counts.get(c, 0) + 1
+            best, bn, bs = None, 0, 0
+            for c, n in counts.items():
+                s3 = c[0] + c[1] + c[2]
+                if best is None or n > bn or (n == bn and s3 < bs):
+                    best, bn, bs = c, n, s3
+            if best is not None:
+                out[j * 4:j * 4 + 4] = best
 
 
 def _pack(d, o):
@@ -583,6 +768,10 @@ def _draw_entry(out, entry, tr):
 
 def render_raw(prep: dict, pose: dict, order=None) -> bytearray:
     out = _render_parts(prep, pose, order)
+    if prep.get("mode") == "v2":
+        if PINHOLE > 0:
+            pinhole_fill(out)
+        return out
     if JOINT_FILL > 0:
         tr = raw_matrices(prep["pivots"], prep["placements"], pose)
         joint_fill(out, prep, tr, JOINT_FILL)
@@ -601,7 +790,11 @@ def _render_parts(prep: dict, pose: dict, order=None) -> bytearray:
             c = k * 4
             if s[c + 3]:
                 _over(out, k, s[c], s[c + 1], s[c + 2], s[c + 3])
-        for part in order:
+        balls = (prep.get("balls") or {}) if name == "main" else {}
+        for idx, part in enumerate(order):
+            for child, ball in balls.items():
+                if min(order.index(child), order.index(PARENTS[child])) == idx:
+                    _draw_entry(out, ball, tr[child])
             _draw_entry(out, g["parts"][part], tr[part])
         if name == "main" and prep["face"]:
             _draw_entry(out, prep["face"], tr["head"])

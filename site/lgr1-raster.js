@@ -79,10 +79,103 @@ function bboxOf(img){
   if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
  return x1<0?null:[x0,y0,x1,y1];
 }
+// Joint mode (twin of genesis_procedural_runtime.JOINT_MODE). "v2" = joint-fix preview:
+// leg slice clean-up + hip/knee pivots (fixSlice), no radius caps except the head, no JOINT_FILL,
+// rounded joint capsules in the child's own colours (buildBalls, hidden at rest) and a pinhole-only
+// fill. "legacy" = caps + JOINT_FILL as before.
+const JOINT_MODE="v2",KNEE_Y=90,HIP_Y=78,PINHOLE=2,BALL_MAX_R=4;
+function runsOf(xs){const out=[];let cur=[];
+ for(const x of xs){if(cur.length&&x===cur[cur.length-1]+1)cur.push(x);else{if(cur.length)out.push(cur);cur=[x]}}
+ if(cur.length)out.push(cur);return out}
+function fixSlice(mask,pivots){
+ const out=Uint8Array.from(mask),pv={};for(const k of Object.keys(pivots))pv[k]={x:pivots[k].x,y:pivots[k].y};
+ const PEL=PARTS.indexOf("pelvis"),LEG={near:[PARTS.indexOf("leg_near_upper"),PARTS.indexOf("leg_near_lower")],
+  far:[PARTS.indexOf("leg_far_upper"),PARTS.indexOf("leg_far_lower")]};
+ const legset=new Set([LEG.near[0],LEG.near[1],LEG.far[0],LEG.far[1],PEL]);
+ let top=-1;for(let k=0;k<N;k++)if(out[k]===LEG.far[0]){top=(k-k%W)/W;break}
+ if(top<0)return {mask:out,pivots:pv};
+ const row=y=>{const xs=[];for(let x=0;x<W;x++)if(legset.has(out[y*W+x]))xs.push(x);return xs};
+ let c=top;while(c<KNEE_Y&&runsOf(row(c)).length<2)c++;
+ if(c>=KNEE_Y){const pv0={};for(const k of Object.keys(pivots))pv0[k]={x:pivots[k].x,y:pivots[k].y};return {mask:Uint8Array.from(mask),pivots:pv0}}
+ const hipx={near:pv.leg_near_upper.x,far:pv.leg_far_upper.x},cent=new Map();
+ for(let y=c;y<H;y++)for(const run of runsOf(row(y))){
+  const m=(run[0]+run[run.length-1]+1)/2,side=Math.abs(hipx.near-m)<=Math.abs(hipx.far-m)?"near":"far";
+  const part=LEG[side][y<KNEE_Y?0:1];for(const x of run)out[y*W+x]=part;
+  const key=side+"|"+y;if((y===c||y===KNEE_Y)&&!cent.has(key))cent.set(key,Math.floor(m+0.5));
+ }
+ const ul=new Set([LEG.near[0],LEG.near[1],LEG.far[0],LEG.far[1]]);
+ for(let k=0;k<c*W;k++)if(ul.has(out[k]))out[k]=PEL;
+ for(const s of ["near","far"]){
+  if(cent.has(s+"|"+c))pv["leg_"+s+"_upper"]={x:cent.get(s+"|"+c),y:HIP_Y};
+  if(cent.has(s+"|"+KNEE_Y))pv["leg_"+s+"_lower"]={x:cent.get(s+"|"+KNEE_Y),y:KNEE_Y};
+ }
+ return {mask:out,pivots:pv};
+}
+function seamRun(img,pv){
+ const px=pv.x,py=pv.y;
+ for(const dy of [0,1,2,-1,3,4,5,6,7,8]){
+  const y=py+dy;if(y<0||y>=H)continue;
+  const xs=[];for(let x=Math.max(0,px-5);x<Math.min(W,px+5);x++)if(img[(y*W+x)*4+3]===255)xs.push(x);
+  if(xs.length){let best=null;const ctr=r=>Math.abs((r[0]+r[r.length-1]+1)/2-px);
+   for(const run of runsOf(xs))if(best===null||ctr(run)<ctr(best))best=run;return {y,run:best}}
+ }
+ return null;
+}
+function buildBalls(parts,pivots,order){
+ const balls={};
+ for(const child of Object.keys(PARENTS)){
+  const parent=PARENTS[child];if(!parent||child==="head")continue;
+  const cimg=parts[child].img,pv=pivots[child],sr=seamRun(cimg,pv);
+  if(!sr||sr.run.length<2)continue;
+  const ys=sr.y,run=sr.run,col=x=>{const o=(ys*W+x)*4;return [cimg[o],cimg[o+1],cimg[o+2],cimg[o+3]]};
+  const rim=col(run[0]),inner=run.length>2?run.slice(1,-1).map(col):[rim];
+  const counts=new Map(),key=c=>c.join(",");let fill=null,best=-1;
+  for(const c of inner){const k=key(c);counts.set(k,(counts.get(k)||[c,0]));counts.get(k)[1]++}
+  for(const [,[c,n]] of counts)if(n>best){fill=c;best=n}
+  const r=Math.min(BALL_MAX_R,run.length/2),cx=pv.x,cy=pv.y;
+  const slot=Math.min(order.indexOf(child),order.indexOf(parent)),cover=new Uint8Array(N);
+  for(const part of order.slice(slot)){const im=parts[part].img;for(let k=0;k<N;k++)if(im[k*4+3]===255)cover[k]=1}
+  const lo=Math.min(cy,ys),hi=Math.max(cy,ys),x0r=run[0],x1r=run[run.length-1];
+  const inside=(x,y)=>(x+.5-cx)**2+(y+.5-cy)**2<=r*r||(y>=cy&&lo<=y&&y<hi+1&&x0r<=x&&x<=x1r);
+  const img=new Uint8ClampedArray(N*4);
+  for(let y=Math.floor(lo-r)-1;y<Math.floor(hi+r)+2;y++)for(let x=Math.floor(cx-r)-2;x<Math.floor(cx+r)+3;x++){
+   if(!(x>=0&&x<W&&y>=0&&y<H)||!inside(x,y)||!cover[y*W+x])continue;
+   const edge=!(inside(x+1,y)&&inside(x-1,y)&&inside(x,y+1)&&inside(x,y-1));
+   img.set(edge?rim:fill,(y*W+x)*4);
+  }
+  const bb=bboxOf(img);if(bb)balls[child]={img,bbox:bb,scaled:null};
+ }
+ return balls;
+}
+function pinholeFill(out,maxsize){
+ maxsize=maxsize===undefined?PINHOLE:maxsize;
+ const seen=new Uint8Array(N),st=[];
+ for(let k=0;k<N;k++){const x=k%W,y=(k-x)/W;if((x===0||x===W-1||y===0||y===H-1)&&!out[k*4+3]){seen[k]=1;st.push(k)}}
+ while(st.length){const k=st.pop(),x=k%W,y=(k-x)/W;
+  for(const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]])if(nx>=0&&nx<W&&ny>=0&&ny<H){const n=ny*W+nx;if(!seen[n]&&!out[n*4+3]){seen[n]=1;st.push(n)}}}
+ for(let k=0;k<N;k++){
+  if(out[k*4+3]||seen[k])continue;
+  const comp=[k];seen[k]=1;
+  for(let i=0;i<comp.length;i++){const j=comp[i];for(const n of [j-1,j+1,j-W,j+W])if(!seen[n]&&!out[n*4+3]){seen[n]=1;comp.push(n)}}
+  if(comp.length>maxsize)continue;
+  for(const j of comp){
+   const cnt=new Map();
+   for(const n of [j-1,j+1,j-W,j+W])if(out[n*4+3]===255){const k2=out[n*4]+","+out[n*4+1]+","+out[n*4+2]+","+out[n*4+3];
+    if(!cnt.has(k2))cnt.set(k2,[n,0]);cnt.get(k2)[1]++}
+   let best=null,bn=0,bs=0;
+   for(const [,[n,c]] of cnt){const s3=out[n*4]+out[n*4+1]+out[n*4+2];if(best===null||c>bn||(c===bn&&s3<bs)){best=n;bn=c;bs=s3}}
+   if(best!==null){const v=[out[best*4],out[best*4+1],out[best*4+2],out[best*4+3]];out.set(v,j*4)}
+  }
+ }
+}
 function prepare(o){
- const mask=o.mask,layers=o.layers||{},wear=o.wear||{},tweak=o.tweak||null;
+ const mode=o.jointMode||JOINT_MODE;
+ let mask=o.mask,pivots=o.pivots;
+ if(mode==="v2"){const f=fixSlice(mask,pivots);mask=f.mask;pivots=f.pivots}
+ const layers=o.layers||{},wear=o.wear||{},tweak=o.tweak||null;
  const order=validOrder(o.order)?o.order.slice():DRAW_ORDER.slice();
  const caps=Object.assign({},CAP_RADIUS,o.caps||{});
+ if(mode==="v2")for(const k of Object.keys(caps))if(k!=="head")caps[k]=0;
  const anyWear=LAYERS.some(l=>wear[l]);
  const expanded=anyWear?expandMask(bodyMask(mask,layers)):null;
  const groups={};
@@ -109,7 +202,7 @@ function prepare(o){
    const child=PARTS[ci],parent=PARENTS[child];if(!parent)continue;
    const pi=PARTS.indexOf(parent),cImg=parts[ci],pImg=parts[pi];
    const r=Math.max(0,Math.min(6,Math.floor(Number(caps[child])||0)));
-   const pv=o.pivots[child],above=order.indexOf(child)>order.indexOf(parent);
+   const pv=pivots[child],above=order.indexOf(child)>order.indexOf(parent);
    for(let k=0;k<N;k++){
     const c=k*4;if(cImg[c+3]!==255)continue;
     const x=k%W,y=(k-x)/W,dx=x-pv.x,dy=y-pv.y;
@@ -141,7 +234,8 @@ function prepare(o){
  }
  let face=null;
  if(o.face)face={img:o.face,bbox:bboxOf(o.face),scaled:null};
- return {order,pivots:o.pivots,placements:o.placements||{},groups,face};
+ const balls=mode==="v2"?buildBalls(groups.main.parts,pivots,order):{};
+ return {order,pivots,placements:o.placements||{},groups,face,mode,balls};
 }
 function pack(d,o){return d[o+3]?((d[o]<<24)|(d[o+1]<<16)|(d[o+2]<<8)|d[o+3])>>>0:0}
 function scale2x(src,w,h){
@@ -294,6 +388,7 @@ function jointFill(out,prep,tr,R0){
 }
 function render(prep,pose,opts){
  const out=renderParts(prep,pose,opts);
+ if(prep.mode==="v2"){if(PINHOLE>0)pinholeFill(out);return out}
  if(JOINT_FILL>0){const tr=matrices(prep.pivots,prep.placements,pose);jointFill(out,prep,tr,JOINT_FILL);jointFill(out,prep,tr,JOINT_FILL)}
  return out;
 }
@@ -303,11 +398,16 @@ function renderParts(prep,pose,opts){
  for(const [name] of GROUPS){
   const g=prep.groups[name],s=g.still;
   for(let k=0;k<N;k++){const c=k*4;if(s[c+3])over(out,k,s[c],s[c+1],s[c+2],s[c+3])}
-  for(const part of order)drawEntry(out,g.parts[part],tr[part]);
+  const balls=name==="main"?(prep.balls||{}):{};
+  order.forEach((part,idx)=>{
+   for(const child of Object.keys(balls))if(Math.min(order.indexOf(child),order.indexOf(PARENTS[child]))===idx)drawEntry(out,balls[child],tr[child]);
+   drawEntry(out,g.parts[part],tr[part]);
+  });
   if(name==="main"&&prep.face)drawEntry(out,prep.face,tr.head);
  }
  return out;
 }
 return Object.freeze({W,H,N,PARTS,PARENTS,DRAW_ORDER,GROUPS,LAYERS,CAP_RADIUS,INHERIT,UNASSIGNED,bodyMask,
- over,expandMask,prepare,render,renderParts,JOINT_FILL,matrices,scale2x,validOrder,bboxOf});
+ over,expandMask,prepare,render,renderParts,JOINT_FILL,JOINT_MODE,KNEE_Y,HIP_Y,PINHOLE,fixSlice,buildBalls,pinholeFill,
+ matrices,scale2x,validOrder,bboxOf});
 });
