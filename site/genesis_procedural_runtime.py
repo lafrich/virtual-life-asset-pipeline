@@ -524,9 +524,10 @@ def fix_slice(mask, pivots):
         for run in _runs(row(y)):
             m = (run[0] + run[-1] + 1) / 2
             side = "near" if abs(hipx["near"] - m) <= abs(hipx["far"] - m) else "far"
-            part = leg[side][0 if y < KNEE_Y else 1]
             for x in run:
-                out[y * W + x] = part
+                o = mask[y * W + x]
+                s = "near" if o in leg["near"] else "far" if o in leg["far"] else side
+                out[y * W + x] = leg[s][0 if y < KNEE_Y else 1]
             if (y == c or y == KNEE_Y) and (side, y) not in cent:
                 cent[(side, y)] = math.floor(m + 0.5)
     uppers_lowers = {leg["near"][0], leg["near"][1], leg["far"][0], leg["far"][1]}

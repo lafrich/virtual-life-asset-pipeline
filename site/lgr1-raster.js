@@ -100,7 +100,7 @@ function fixSlice(mask,pivots){
  const hipx={near:pv.leg_near_upper.x,far:pv.leg_far_upper.x},cent=new Map();
  for(let y=c;y<H;y++)for(const run of runsOf(row(y))){
   const m=(run[0]+run[run.length-1]+1)/2,side=Math.abs(hipx.near-m)<=Math.abs(hipx.far-m)?"near":"far";
-  const part=LEG[side][y<KNEE_Y?0:1];for(const x of run)out[y*W+x]=part;
+  for(const x of run){const o=mask[y*W+x],s=LEG.near.includes(o)?"near":LEG.far.includes(o)?"far":side;out[y*W+x]=LEG[s][y<KNEE_Y?0:1]}
   const key=side+"|"+y;if((y===c||y===KNEE_Y)&&!cent.has(key))cent.set(key,Math.floor(m+0.5));
  }
  const ul=new Set([LEG.near[0],LEG.near[1],LEG.far[0],LEG.far[1]]);
