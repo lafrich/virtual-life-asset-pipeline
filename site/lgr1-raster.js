@@ -625,17 +625,6 @@ function w4GarmentFam(wear){
  }
  return fam;
 }
-// tie-break twin of Python's max(set(band), key=band.count): CPython 3.13 tuple hash + set slot order (<=4 items, table 8)
-const PYM=(1n<<64n)-1n,PYP1=11400714785074694791n,PYP2=14029467366897019727n,PYP5=2870177450012600261n;
-function w4PyHash(t){let acc=PYP5;for(const v of t){acc=(acc+BigInt(v)*PYP2)&PYM;acc=((acc<<31n)|(acc>>33n))&PYM;acc=(acc*PYP1)&PYM}
- acc=(acc+(BigInt(t.length)^(PYP5^3527539n)))&PYM;return acc===PYM?1546275796n:acc}
-function w4PySetOrder(list){
- const uniq=[],seen=new Set();for(const t of list){const k=t.join(",");if(!seen.has(k)){seen.add(k);uniq.push(t)}}
- if(uniq.length>4)return uniq;
- const tab=new Array(8).fill(null);
- for(const t of uniq){const h=w4PyHash(t);let i=Number(h&7n),pt=h;while(tab[i]){pt>>=5n;i=Number((BigInt(i)*5n+1n+pt)&7n)}tab[i]=t}
- return tab.filter(Boolean);
-}
 function w4Entry(img){const bb=bboxOf(img);return bb?{img,bbox:bb,scaled:null}:null}
 function w4ArmpitUnders(gm,pivots){
  const T=gm.torso.img,out={};
@@ -656,8 +645,8 @@ function w4ArmpitUnders(gm,pivots){
   for(let y=top+1;y<bot;y++){
    const e=roundHalfEven(et+(eb-et)*(y-top)/(bot-top)),cur=te(y);
    const band=[];for(let x=left?cur:cur-3;x<(left?cur+4:cur+1);x++)if(x>=0&&x<W&&T[(y*W+x)*4+3]){const o=(y*W+x)*4;band.push([T[o],T[o+1],T[o+2],T[o+3]])}
-   const band2=band; // w4.py's outline-key filter is a no-op there (uint8 shifts wrap), mirrored for parity
-   let inner=edge;if(band2.length){const cnt=new Map();let bn=-1;for(const b of band2){const kk=b.join(",");cnt.set(kk,(cnt.get(kk)||0)+1)}for(const b of w4PySetOrder(band2)){const n2=cnt.get(b.join(","));if(n2>bn){bn=n2;inner=b}}}
+   let band2=band.filter(b=>!V4_OUTL.has((b[0]<<16)|(b[1]<<8)|b[2]));if(!band2.length)band2=band;
+   let inner=edge;if(band2.length){const cnt=new Map();let bn=-1;for(const b of band2){const kk=b.join(",");cnt.set(kk,(cnt.get(kk)||0)+1)}for(const b of band2){const n2=cnt.get(b.join(","));if(n2>bn){bn=n2;inner=b}}}
    const x0=left?e:cur+1,x1=left?cur:e+1;
    for(let x=x0;x<x1;x++){if(!co(x,y))continue;const c=x===e?edge:inner,o=(y*W+x)*4;img[o]=c[0];img[o+1]=c[1];img[o+2]=c[2];img[o+3]=c[3]}
   }
@@ -683,16 +672,31 @@ function w4LegUnders(gm){
  return out;
 }
 function w4Prep(prep,wear,under){
- const gm=prep.groups.main.parts;
+ const gm=prep.groups.main.parts,inj=[],G=OVERFLOW_GEOM,z=zeroPose();
+ const rest0=(under&&under.length)?renderParts(prep,z,{noUnders:true},G):null;
  for(const u of under||[]){
   const U=u.img||u[0],O=u.own||u[1];if(!U||!O)continue;
   for(let k=0;k<N;k++){
    if(!U[k*4+3]||!O[k*4+3]||!O[k*4])continue;
    const part=PARTS[O[k*4]-1];if(!part||!gm[part])continue;const img=gm[part].img;
-   if(img[k*4+3])continue;for(let j=0;j<4;j++)img[k*4+j]=U[k*4+j];
+   if(img[k*4+3])continue;for(let j=0;j<4;j++)img[k*4+j]=U[k*4+j];inj.push([part,k]);
   }
  }
- for(const part of Object.keys(gm)){gm[part].bbox=bboxOf(gm[part].img);gm[part].scaled=null}
+ const rebox=()=>{for(const part of Object.keys(gm)){gm[part].bbox=bboxOf(gm[part].img);gm[part].scaled=null}};
+ rebox();
+ // rest mask: injected under pixels that would show in the rest pose are dropped (they only appear once a limb turns)
+ if(inj.length){
+  const tr=matrices(prep.pivots,prep.placements,z);
+  for(let n=0;n<4;n++){
+   const rest1=renderParts(prep,z,{noUnders:true},G),drop=new Set();
+   inj.forEach(([part,k],ix)=>{const [x,y]=mapPoint(tr[part].mat,k%W+.5,((k/W)|0)+.5),X=Math.floor(x)+G.ox,Y=Math.floor(y)+G.oy;
+    if(X<0||Y<0||X>=G.cw||Y>=G.ch)return;const o=(Y*G.cw+X)*4;
+    if(rest0[o]!==rest1[o]||rest0[o+1]!==rest1[o+1]||rest0[o+2]!==rest1[o+2]||rest0[o+3]!==rest1[o+3])drop.add(ix)});
+   if(!drop.size)break;
+   for(const ix of drop){const [part,k]=inj[ix];gm[part].img.fill(0,k*4,k*4+4)}
+   const keep=inj.filter((_,ix)=>!drop.has(ix));inj.length=0;inj.push(...keep);rebox();
+  }
+ }
  const fam=new Map(W4_SKIN_FAM);for(const [k,v] of w4GarmentFam(wear))fam.set(k,v);
  prep.w4={fam,unders:Object.assign(w4ArmpitUnders(gm,prep.pivots),w4LegUnders(gm))};
  return prep;

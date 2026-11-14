@@ -2,7 +2,7 @@
 
 JS port of lgr-outfit-v4/tools/w4.py (BAYMAX-HOOK-WEAR R4/R5): under-strip injection, armpit and seat/knee
 under-fill, raised arm drawn over the torso (>= 60 deg), garment-aware edge repair, seal, despeckle.
-Off by default (W4 flag false, prepare() without w4 is unchanged); the W4 passes keep the v4 rest pose; every frame
+Off by default (W4 flag false, prepare() without w4 is unchanged); under strips masked at rest so W4 rest == v4 rest; shoes drawn; every frame
 matches the reference renders of w4.py (sha256 fixture, generated on the site runtime's own draw/v4_post twins).
 """
 import hashlib
@@ -19,9 +19,9 @@ PREVIEW = ROOT / "site/media/lgr1/mh-wear/preview"
 FIX = json.loads((ROOT / "tests/fixtures/lgr1_w4_reference.json").read_text())
 
 
-def strip(name, gender, d):
+def strip(name, gender, d, base=PREVIEW):
     f = "_f" if gender == "female" else ""
-    im = Image.open(PREVIEW / f"{name}{f}.png").convert("RGBA")
+    im = Image.open(base / f"{name}{f}.png").convert("RGBA")
     j = rt.DIRECTIONS.index(d)
     return im.crop((j * 64, 0, j * 64 + 64, 112)).tobytes()
 
@@ -51,7 +51,8 @@ class W4Test(unittest.TestCase):
             sides = rt.sides_of(rig)
             for d in rt.DIRECTIONS:
                 i = rt.binding_inputs(binding, d)
-                wear = {"top": strip("tee_v4", gender, d), "pants": strip("trousers_v4", gender, d)}
+                wear = {"top": strip("tee_v4", gender, d), "pants": strip("trousers_v4", gender, d),
+                        "shoes": strip("shoes", gender, d, ROOT / "site/media/lgr1/mh-wear/shoes")}
                 under = [(strip(n + "_under", gender, d), strip(n + "_under_own", gender, d)) for n in ("tee_v4", "trousers_v4")]
                 frames = [{"pose": rt.zero_pose(), "order": i["order"]}]
                 for name, mid, f in FIX["poses"]:
@@ -59,11 +60,9 @@ class W4Test(unittest.TestCase):
                     frames.append({"pose": rt.frame_pose(lib["poses"], m, f, d, sides),
                                    "order": rt.frame_order(i["order"], m, f, d, sides)})
                 w4 = js(i, wear, frames, True, under)
-                # the W4 passes alone leave the rest pose as v4; the _under strips themselves show 2-11 px at
-                # rest (art, identical in the w4.py reference)
-                bare = js(i, wear, frames[:1], True)
+                # rest mask: the _under strips never show in the rest pose, so W4 rest == v4 rest
                 v4 = js(i, wear, frames[:1], False)
-                self.assertEqual(bare[0], v4[0], f"{gender} {d}: W4 (no under strips) rest != v4 rest")
+                self.assertEqual(w4[0], v4[0], f"{gender} {d}: W4 rest != v4 rest")
                 for (name, _, _), px in zip(FIX["poses"], w4[1:]):
                     self.assertEqual(hashlib.sha256(px).hexdigest(), FIX["sha256"][gender][d][name],
                                      f"{gender} {d} {name}: JS W4 != w4.py reference")

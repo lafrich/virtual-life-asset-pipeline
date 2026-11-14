@@ -150,7 +150,7 @@ async function layers(spec,gender,tone,opts){
   if(!im)im=await activeStrip(path,gender);if(!im)continue;out[layer]={};
   for(let di=0;di<4;di++){
    const c=document.createElement("canvas");c.width=64;c.height=112;const g=c.getContext("2d",{willReadFrequently:true});
-   g.drawImage(im,di*64,0,64,112,0,0,64,112);const d=g.getImageData(0,0,64,112);if(!(w4n&&im))recolor(d.data,M);
+   g.drawImage(im,di*64,0,64,112,0,0,64,112);const d=g.getImageData(0,0,64,112);if(!(w4&&im&&(w4n||layer==="shoes")))recolor(d.data,M);
    let any=false;for(let i=3;i<d.data.length;i+=4)if(d.data[i]){any=true;break}
    if(!any)continue;g.putImageData(d,0,0);out[layer][DIRS[di]]=c.toDataURL("image/png");
   }
