@@ -758,6 +758,30 @@ function w4Despeckle(px,zone,geom,iters){
  return a;
 }
 function w4Erode(flags,cw,ch,cn){const o=new Uint8Array(cn);for(let i=0;i<cn;i++){if(!flags[i])continue;const x=i%cw,y=(i/cw)|0;if(x>0&&y>0&&x<cw-1&&y<ch-1&&flags[i-1]&&flags[i+1]&&flags[i-cw]&&flags[i+cw])o[i]=1}return o}
+// (R6, preview) trouser calm, twin of w4.py calm(): an INTERIOR trouser pixel (all 8 neighbours opaque) in the moving
+// zone with no same-colour 8-neighbour, or forming an isolated 2 px dash, takes the most common other trouser colour
+// around it (ties P1,P2,P3,P4); a 1 px P1 sliver between two P4 outline pixels becomes the shadow tone P2. Silhouette edges and 3+ px lines stay, so legs keep their separation and no holes open.
+const W4_CALM_PREF=["#FF92B5","#FF98B2","#FF9EAF","#FFA4AC"].map(hx),W4_NB8=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+function w4Calm(px,zone,geom){
+ const cw=geom.cw,ch=geom.ch,cn=geom.cn,src=px,out=Uint8ClampedArray.from(px),op=new Uint8Array(cn),c=new Int32Array(cn);
+ for(let i=0;i<cn;i++)if(src[i*4+3]){op[i]=1;c[i]=rgbAt(src,i)}
+ const same=(y,x)=>{const r=[];for(const [dy,dx] of W4_NB8){const j=(y+dy)*cw+x+dx;if(op[j]&&c[j]===c[y*cw+x])r.push([y+dy,x+dx])}return r};
+ for(let y=1;y<ch-1;y++)for(let x=1;x<cw-1;x++){
+  const i=y*cw+x;if(!zone[i]||!op[i]||W4_CALM_PREF.indexOf(c[i])<0)continue;
+  let full=true;for(const [dy,dx] of W4_NB8)if(!op[(y+dy)*cw+x+dx]){full=false;break}
+  if(!full)continue;
+  if(c[i]===W4_CALM_PREF[0]&&((c[i-1]===W4_CALM_PREF[3]&&c[i+1]===W4_CALM_PREF[3])||(c[i-cw]===W4_CALM_PREF[3]&&c[i+cw]===W4_CALM_PREF[3]))){
+   const v=W4_CALM_PREF[1];out[i*4]=(v>>16)&255;out[i*4+1]=(v>>8)&255;out[i*4+2]=v&255;continue}   // 1 px sliver between outlines -> shadow tone
+  const s=same(y,x);if(s.length>1)continue;
+  if(s.length===1){const [qy,qx]=s[0];if(!(qy>=1&&qy<ch-1&&qx>=1&&qx<cw-1)||same(qy,qx).length!==1)continue}
+  const cnt=new Map();
+  for(const [dy,dx] of W4_NB8){const v=c[(y+dy)*cw+x+dx];if(v!==c[i]&&W4_CALM_PREF.indexOf(v)>=0)cnt.set(v,(cnt.get(v)||0)+1)}
+  if(!cnt.size)continue;
+  let best=null,bn=-1;for(const v of W4_CALM_PREF){const n=cnt.get(v)||0;if(n>bn){best=v;bn=n}}
+  for(const [dy,dx] of W4_NB8){const j=(y+dy)*cw+x+dx;if(c[j]===best){for(let k=0;k<4;k++)out[i*4+k]=src[j*4+k];break}}
+ }
+ return out;
+}
 function w4Render(prep,pose,opts){
  const geom=canvasGeom(opts?.canvas),order=w4RaiseOrder(prep,pose,opts?.order),o2=Object.assign({},opts||{},{order,lower:null});
  let out=renderParts(prep,pose,o2,geom);
@@ -789,6 +813,7 @@ function w4Render(prep,pose,opts){
   const hd=v4Dilate(head,cw,ch,cn,N4D),dz=new Uint8Array(cn);for(let i=0;i<cn;i++)dz[i]=zone[i]&&!hd[i]?1:0;
   out=w4Despeckle(out,dz,geom,3);
   out=w4Seal(out,own,mi,zone,head,geom,3);
+  if(opts?.w4Calm!==false&&globalThis.LGR_W4_CALM!==false&&[...moved].some(p=>p.startsWith("leg_")))out=w4Calm(out,dz,geom);
  }
  if(PINHOLE>0)pinholeFill(out,undefined,geom);
  return out;
