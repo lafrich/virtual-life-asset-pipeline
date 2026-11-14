@@ -95,7 +95,10 @@ class LowerSpriteHookTest(unittest.TestCase):
             "lie_sleep": ["lie_curl", "lie_curl"],
             "tent_sleep": ["lie_straight"] * 6,
             "bench_sleep": ["lie_straight"] * 6,
-            "sit_lesehan": ["sit_chair"] * 6,  # sit_floor planned; falls back
+            "sit_lesehan": ["sit_floor"] * 6,
+            "faint": ["rig", "rig", "rig", "kneel", "sit_long", "lie_curl"],
+            "get_up": ["lie_curl", "sit_chair", "sit_long"],
+            "tent_crawl_out": ["kneel"] * 5,
         }
         for mid, expect in cases.items():
             m, frames = frames_of(mid, "se", sides, rt.DRAW_ORDER)
@@ -104,12 +107,24 @@ class LowerSpriteHookTest(unittest.TestCase):
             # Compare against the prefix we know; extra frames (round 2) are fine if rule-stable.
             self.assertEqual(got[:len(expect)], expect, f"{mid}: {got}")
 
-        # kneel is planned: a synthetic deep-knee / shallow-thigh pose falls back to rig
+        # kneel band (round 2): shallow thigh, deep knee — no longer falls back
         p = rt.zero_pose()
         p["pelvis"] = {"x": 0, "y": 8, "a": 0}
         p["leg_near_lower"] = {"x": 0, "y": 0, "a": 90}
         p["leg_near_upper"] = {"x": 0, "y": 0, "a": 20}
-        self.assertEqual(rt.select_lower(p, "base"), "rig")
+        self.assertEqual(rt.select_lower(p, "base"), "kneel")
+
+        # sit_long band: legs out, shallow knee
+        q = rt.zero_pose()
+        q["pelvis"] = {"x": 0, "y": 8, "a": 0}
+        q["leg_near_upper"] = {"x": 0, "y": 0, "a": 70}
+        q["leg_near_lower"] = {"x": 0, "y": 0, "a": 20}
+        self.assertEqual(rt.select_lower(q, "base"), "sit_long")
+
+        # sit_floor is drawn: no fallback to sit_chair
+        self.assertTrue(rt.lower_available("sit_floor", "se", "male8", "base"))
+        self.assertTrue(rt.lower_available("kneel", "nw", "male8", "base"))
+        self.assertTrue(rt.lower_available("sit_long", "se", "female9", "pants"))
 
         # skirt + straight legs -> stand (drawn)
         self.assertEqual(rt.select_lower(rt.zero_pose(), "skirt", "se", "male8"), "stand")
@@ -149,13 +164,73 @@ class LowerSpriteHookTest(unittest.TestCase):
 
     def test_format_picks_new_files_without_hardcoding(self):
         # sit_floor / kneel are not drawn yet; when PNGs land, the resolver uses them.
-        self.assertFalse(rt.lower_available("sit_floor", "se", "male8", "base"))
-        self.assertFalse(rt.lower_available("kneel", "se", "male8", "base"))
+        self.assertTrue(rt.lower_available("sit_floor", "se", "male8", "base"))
+        self.assertTrue(rt.lower_available("kneel", "se", "male8", "base"))
+        self.assertTrue(rt.lower_available("sit_long", "se", "male8", "base"))
         self.assertTrue(rt.lower_available("sit_chair", "se", "male8", "base"))
         self.assertTrue(rt.lower_available("crouch", "nw", "female9", "pants"))
         path = rt.lower_png_path("lie_curl", "sw", "male8", "base")
         self.assertIsNotNone(path)
         self.assertTrue(path.name.startswith("lgr1_lower_lie_curl_"))
+
+
+
+    def test_exact_view_files_are_not_mirrored(self):
+        # Runtime always loads the exact view. Crouch NW is drawn on its own.
+        ne = rt.lower_png_path("crouch", "ne", "male8", "base")
+        nw = rt.lower_png_path("crouch", "nw", "male8", "base")
+        se = rt.lower_png_path("crouch", "se", "male8", "base")
+        sw = rt.lower_png_path("crouch", "sw", "male8", "base")
+        self.assertTrue(all([ne, nw, se, sw]))
+        self.assertNotEqual(ne.name, nw.name)
+        from PIL import Image
+        def pixels(path):
+            return Image.open(path).convert("RGBA").tobytes()
+        def mirror(path):
+            im = Image.open(path).convert("RGBA")
+            return im.transpose(Image.FLIP_LEFT_RIGHT).tobytes()
+        self.assertNotEqual(pixels(nw), mirror(ne), "crouch NW must not be a runtime/file mirror of NE")
+        # Other NW may be a stored mirror, but we still load the NW file, not flip at runtime.
+        self.assertEqual(Path(nw).name, "lgr1_lower_crouch_nw_male8_base.png")
+
+    def test_kneel_reaches_row_105_in_crop_and_overflow(self):
+        """kneel NE/NW shins reach logical row 105 when pelvis.y == REF_DY 10.
+        The 64x112 crop keeps rows 0-111, so 101-105 stay. Overflow maps 105 -> 121."""
+        rig, binding = active("male")
+        for d in ("ne", "nw"):
+            i = rt.binding_inputs(binding, d)
+            prep = rt.prepare_raw(i["layers"], i["mask"], i["pivots"], i["placements"], i["order"], i["caps"], i["wear"])
+            pose = rt.zero_pose()
+            pose["pelvis"] = {"x": 0, "y": 10, "a": 0}
+            lower = rt.load_lower_entry("kneel", d, "male8", "base")
+            self.assertIsNotNone(lower)
+            # Confirm the rest-space sprite itself has pixels (will shift to ~105 with dy=10)
+            img = lower["img"]
+            rows = [y for y in range(112) if any(img[(y * 64 + x) * 4 + 3] for x in range(64))]
+            self.assertTrue(rows)  # authored
+            big = rt.render_raw(prep, pose, canvas="overflow128", lower=lower)
+            crop = rt.crop_logical(big, "overflow128")
+            def row_has(buf, y, w=64):
+                return any(buf[(y * w + x) * 4 + 3] for x in range(w))
+            # logical row 105 must survive the old 64x112 crop
+            self.assertTrue(row_has(crop, 105) or row_has(crop, 104) or row_has(crop, 103),
+                            f"{d}: expected shin pixels near logical row 105 in the 64x112 crop")
+            # overflow canvas: logical 105 -> y=121, must not clip at 128
+            self.assertTrue(any(big[((105 + 16) * 128 + x) * 4 + 3] for x in range(128))
+                            or any(big[((104 + 16) * 128 + x) * 4 + 3] for x in range(128)),
+                            f"{d}: expected shin pixels on the 128 canvas")
+            self.assertEqual(len(big), 128 * 128 * 4)
+
+    def test_preview_wear_strips_exist(self):
+        self.assertIsNotNone(rt.preview_wear_path("trousers_a", "male"))
+        self.assertIsNotNone(rt.preview_wear_path("trousers_a", "female"))
+        self.assertIsNotNone(rt.preview_wear_path("skirt_a", "male"))
+        self.assertEqual(rt.preview_wear_id("pants"), "trousers_a")
+        self.assertEqual(rt.preview_wear_id("skirt", seated=False), "skirt_a")
+        self.assertIn(rt.preview_wear_id("skirt", seated=True), {"skirt_a_seat", "skirt_a"})
+        cell = rt.load_preview_wear("pants", "male", "se")
+        self.assertEqual(len(cell), rt.N * 4)
+        self.assertTrue(any(cell[i + 3] for i in range(0, len(cell), 4)))
 
 
 if __name__ == "__main__":

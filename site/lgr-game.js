@@ -139,13 +139,15 @@ function faceImage(face,col,tone){
  return p;
 }
 const lookKey=p=>JSON.stringify([genderOf(p),toneOf(p),spec(p),p.appearance?.facialHair||"",p.appearance?.glasses||""]);
-function prepare(profile,d,face,faceCol){
- const X=root.LGR1Raster,key=lookKey(profile)+"|"+d+"|"+(face?face.src+"#"+faceCol:"-")+"|ls="+(X&&X.LOWER_SPRITES?"1":"0");
+function prepare(profile,d,face,faceCol,opts){
+ const X=root.LGR1Raster,seated=!!(opts&&opts.seated),outfit=(opts&&opts.outfit)||"pants";
+ const wearHint=X&&X.LOWER_SPRITES?(root.LGRWear&&root.LGRWear.previewWearName(outfit,seated))||"preview":"official";
+ const key=lookKey(profile)+"|"+d+"|"+(face?face.src+"#"+faceCol:"-")+"|ls="+(X&&X.LOWER_SPRITES?"1":"0")+"|wear="+wearHint;
  if(preps.has(key))return preps.get(key);
  const p=(async()=>{
   const A=dep("LGRActor"),W=dep("LGRWear"),C=dep("LafrichPuppetCore"),R=dep("LafrichPuppetRenderer");
   const g=genderOf(profile),tone=toneOf(profile),m=await A.master(g,tone);
-  const wear=await W.layers(spec(profile),g,tone),acc=await accessory(profile,tone);
+  const wear=await W.layers(spec(profile),g,tone,{seated,outfit}),acc=await accessory(profile,tone);
   if(acc)wear.accessory=acc;
   const ch=Object.keys(wear).length?C.validateCharacter({format:C.CHARACTER,id:"lgr_game",name:"player",gender:g,wear,faceId:""}):null;
   const fimg=(d==="se"||d==="sw")?await faceImage(face,faceCol,tone):null;
@@ -163,14 +165,22 @@ function frame(profile,dir,action,t,face,faceCol=0){
  if(!state.ready){load().catch(()=>{});return null}
  const d=DIRS.includes(dir)?dir:"se",r=resolveAction(action),m=r.motion,M=dep("LGR1Motion");
  const i=M.frameIndexAt(m,Math.max(0,t||0)*1000);
- const pp=prepare(profile,d,face,faceCol);
+ const X=dep("LGR1Raster"),A=dep("LGRActor");
+ // Need the pose first so a seated skirt can pick skirt_a_seat and so the cache key includes wear.
+ let pp=prepare(profile,d,face,faceCol);
  if(!pp.done||pp.error)return null;
- const A=dep("LGRActor"),R=dep("LafrichPuppetRenderer"),X=dep("LGR1Raster");
  const {pose,order}=A.poseOf(pp.value.master,state.lib,m,i,d);
- const use=X.LOWER_SPRITES,cv=X.CANVAS,avail=pp.value.lower?.avail;
- const picked=use?X.selectLower(pose,pp.value.outfit||"base",avail):"rig";
- const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-")+"|lower="+picked+"|cv="+cv;
+ const use=X.LOWER_SPRITES,cv=X.CANVAS,outfit=pp.value.outfit||"base";
+ const picked=use?X.selectLower(pose,outfit,pp.value.lower?.avail):"rig";
+ const seated=use&&(X.SEATED_POSES||[]).includes(picked);
+ const wearId=use?(root.LGRWear&&root.LGRWear.previewWearName(outfit==="skirt"?"skirt":(outfit==="pants"?"pants":null),seated))||"preview":"official";
+ if(use&&outfit==="skirt"){
+  const seatedPrep=prepare(profile,d,face,faceCol,{seated,outfit:"skirt"});
+  if(seatedPrep.done&&!seatedPrep.error)pp=seatedPrep;
+ }
+ const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-")+"|lower="+picked+"|cv="+cv+"|wear="+wearId;
  if(frames.has(fkey))return frames.get(fkey);
+ const R=dep("LafrichPuppetRenderer");
  const c=R.render(pp.value,pose,{order,canvas:cv,lowerSprites:use});
  frames.set(fkey,c);if(frames.size>600)frames.delete(frames.keys().next().value);
  return c;

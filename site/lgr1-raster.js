@@ -175,14 +175,18 @@ function selectLower(pose,outfit,available){
  else if(a.dy>=12&&a.knee>=180)pid="sit_floor";
  else if(a.dy>=12&&a.knee>=120&&a.thigh>=55)pid="crouch";
  else if(a.dy>=6&&a.thigh>=50&&a.knee>=50)pid="sit_chair";
- else if(a.dy>=6&&a.knee>=80)pid="kneel";
+ else if(a.dy>=6&&a.thigh>=60&&a.knee<50)pid="sit_long";
+ else if(a.thigh<=30&&a.knee>=80)pid="kneel";
  else pid="rig";
  if(pid==="rig"&&outfit==="skirt"&&!LEG_PARTS.some(p=>angOf(pose,p)))pid="stand";
  const has=p=>!available||available.has?available.has(p):available.includes(p);
- if(pid!=="rig"&&available&&!has(pid))pid=(pid==="sit_floor"&&has("sit_chair"))?"sit_chair":"rig";
+ // Missing art falls back to the rig (no sit_floor → sit_chair). Always the exact view file; never mirror.
+ if(pid!=="rig"&&available&&!has(pid))pid="rig";
  return pid;
 }
+const SEATED_POSES=["sit_chair","sit_floor","sit_long","crouch"];
 function lowerFileName(pose,view,body,outfit){return "lgr1_lower_"+pose+"_"+view+"_"+body+"_"+outfit+".png"}
+function previewWearId(outfit,seated){return outfit==="pants"?"trousers_a":outfit==="skirt"?(seated?"skirt_a_seat":"skirt_a"):"none"}
 function pinholeFill(out,maxsize,geom){
  maxsize=maxsize===undefined?PINHOLE:maxsize;
  const g=geom||canvasGeom(),cw=g.cw,ch=g.ch,cn=g.cn,seen=new Uint8Array(cn),st=[];
@@ -453,6 +457,6 @@ function setLowerSprites(v){LOWER_SPRITES=!!v}
 function setCanvas(mode){CANVAS=mode==="overflow128"?"overflow128":"legacy64"}
 return Object.freeze({W,H,N,BW,BH,OX,OY,PARTS,PARENTS,DRAW_ORDER,GROUPS,LAYERS,CAP_RADIUS,INHERIT,UNASSIGNED,bodyMask,
  over,expandMask,prepare,render,renderParts,JOINT_FILL,JOINT_MODE,KNEE_Y,HIP_Y,PINHOLE,fixSlice,buildBalls,pinholeFill,
- matrices,scale2x,validOrder,bboxOf,canvasGeom,cropLogical,selectLower,lowerAngles,lowerFileName,LEG_PARTS,
+ matrices,scale2x,validOrder,bboxOf,canvasGeom,cropLogical,selectLower,lowerAngles,lowerFileName,previewWearId,SEATED_POSES,LEG_PARTS,
  get LOWER_SPRITES(){return LOWER_SPRITES},get CANVAS(){return CANVAS},setLowerSprites,setCanvas});
 });

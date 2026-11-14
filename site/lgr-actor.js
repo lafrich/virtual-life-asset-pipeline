@@ -76,12 +76,13 @@ function wearSpec(actor){
  for(const k of Object.keys(s))if(!s[k]||s[k]==="nude"||s[k]==="none")delete s[k];
  return Object.keys(s).some(k=>["top","pants","shoes","hair"].includes(k))?s:null;
 }
-async function wear(gender,tone,spec){
+async function wear(gender,tone,spec,opts){
  if(!spec)return null;
- const key=gender+"|"+tone+"|"+JSON.stringify(spec);if(wearCache.has(key))return wearCache.get(key);
+ const W=root.LGRWear;if(!W)throw Error("Baju butuh lgr-wear.js");
+ const wearId=W.previewWearName((opts&&opts.outfit)||(spec.pants==="skirt"?"skirt":"pants"),!!(opts&&opts.seated))||"official";
+ const key=gender+"|"+tone+"|"+JSON.stringify(spec)+"|"+wearId;if(wearCache.has(key))return wearCache.get(key);
  const p=(async()=>{
-  const W=root.LGRWear;if(!W)throw Error("Baju butuh lgr-wear.js");
-  const out=await W.layers(spec,gender,SK().TONES[tone]?tone:"light");
+  const out=await W.layers(spec,gender,SK().TONES[tone]?tone:"light",opts);
   return C().validateCharacter({format:C().CHARACTER,id:"lgr_actor",name:"actor",gender,wear:out,faceId:""});
  })();
  wearCache.set(key,p);p.catch(()=>wearCache.delete(key));return p;
@@ -126,12 +127,14 @@ function poseOf(m,lib,motion,frame,d){
  const pose=Object.assign(C().blankPose(),M().framePose(lib.poses,motion,frame,d,sides));
  return {pose,order:M().frameOrder(baseOrder(m,d),motion,frame,d,sides)};
 }
-async function prepared(actor,d,face){
+async function prepared(actor,d,face,opts){
  const tone=actor.skin?.tone||"light",spec=wearSpec(actor);
- const key=actor.gender+"|"+tone+"|"+JSON.stringify(spec)+"|"+d+"|"+(face?.key||"");
+ const seated=!!(opts&&opts.seated),outfit=(opts&&opts.outfit)||"pants";
+ const wearId=(root.LGRWear&&root.LGR1Raster&&root.LGR1Raster.LOWER_SPRITES&&root.LGRWear.previewWearName(outfit,seated))||"official";
+ const key=actor.gender+"|"+tone+"|"+JSON.stringify(spec)+"|"+d+"|"+(face?.key||"")+"|wear="+wearId;
  if(prepCache.has(key))return prepCache.get(key);
  const p=(async()=>{
-  const m=await master(actor.gender,tone),ch=await wear(actor.gender,tone,spec);
+  const m=await master(actor.gender,tone),ch=await wear(actor.gender,tone,spec,{seated,outfit});
   const X=root.LGR1Raster,S=SK(),W=root.LGRWear;
   const recolor=S?data=>{S.fromKey(data,S.rampFor(S.TONES[tone]?tone:"light"));if(W&&spec)W.recolor(data,W.lookup({...spec,skin:tone}))}:null;
   return R().prepare(m,ch,d,face?.img||null,{lowerSprites:X?.LOWER_SPRITES,recolor});
@@ -147,7 +150,13 @@ async function frameCanvas(actor,opts){
  const prep=await prepared(actor,d,face);
  let pose=opts.pose,order=opts.order;
  if(!pose){const p=poseOf(prep.master,lib,opts.motion||null,opts.frame|0,d);pose=p.pose;order=order||p.order}
- return R().render(prep,pose,order?{order}:undefined);
+ const X=root.LGR1Raster,picked=X&&X.LOWER_SPRITES?X.selectLower(pose,opts.outfit||"base"):"rig";
+ const seated=X&&(X.SEATED_POSES||[]).includes(picked);
+ if(seated){
+  const prep2=await prepared(actor,d,face,{seated:true,outfit:opts.outfit||"pants"});
+  return R().render(prep2,pose,{order,canvas:X.CANVAS,lowerSprites:true});
+ }
+ return R().render(prep,pose,{order,canvas:X&&X.CANVAS,lowerSprites:X&&X.LOWER_SPRITES});
 }
 function clearCaches(){prepCache.clear();frameCache.clear();wearCache.clear();root.LGRWear?.clearCache?.()}
 async function rigOf(gender){return master(gender,"light")}

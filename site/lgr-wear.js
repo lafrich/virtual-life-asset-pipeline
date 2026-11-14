@@ -111,15 +111,36 @@ async function activeStrip(path,gender){
 function clearCache(){strips.clear();approvedRefs.clear()}
 // spec {top,topColor,pants,pantsColor,shoes,shoesColor,hair,hairColor}; gender; skin tone
 // → {pants:{se:dataURL,…}, top:…, top_back:…, shoes:…, hair_back:…, hair_front:…}
-async function layers(spec,gender,tone){
+function previewWearOn(){return !!(root.LGR_PREVIEW_WEAR||root.LGR1Raster&&root.LGR1Raster.LOWER_SPRITES)}
+function previewWearName(outfit,seated){
+ if(outfit==="pants"||outfit==="trousers")return "trousers_a";
+ if(outfit==="skirt")return seated?"skirt_a_seat":"skirt_a";
+ return null;
+}
+function previewWearUrl(name,gender){
+ const f=gender==="female"?"_f":"";
+ const base=root.LGR_LOWER_WEAR||((root.LGRDB_BASE||"")+"media/lgr1/mh-wear/preview/");
+ return base+name+f+".png";
+}
+function loadPreviewWearImage(name,gender){
+ const url=previewWearUrl(name,gender);
+ if(strips.has(url))return strips.get(url);
+ const p=new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=url});
+ strips.set(url,p);return p;
+}
+async function layers(spec,gender,tone,opts){
  const ch=norm({...spec,skin:tone}),f=gender==="female"?"_f":"",M=lookup(ch),files={};
  if(ch.top!=="nude"){files.top_back="top/"+ch.top+"_back"+f;files.top="top/"+ch.top+f}
  if(ch.pants!=="nude")files.pants="pants/"+ch.pants+f;
  if(ch.shoes!=="nude")files.shoes="shoes/"+ch.shoes+f;
  if(ch.hair!=="none"){files.hair_back="hair/"+ch.hair+"_back";files.hair_front="hair/"+ch.hair+"_front"}
- const out={};
+ const seated=!!(opts&&opts.seated),preview=previewWearOn(),wantSkirt=(opts&&opts.outfit)==="skirt"||ch.pants==="skirt";
+ const previewName=preview?previewWearName(wantSkirt?"skirt":(ch.pants==="trousers"||ch.pants==="pants"?"pants":null),seated):null;
+ const out={};layers.lastWearId=previewName||"official";
  for(const [layer,path] of Object.entries(files)){
-  const im=await activeStrip(path,gender);if(!im)continue;out[layer]={};
+  let im=null;
+  if(layer==="pants"&&previewName)im=await loadPreviewWearImage(previewName,gender);
+  if(!im)im=await activeStrip(path,gender);if(!im)continue;out[layer]={};
   for(let di=0;di<4;di++){
    const c=document.createElement("canvas");c.width=64;c.height=112;const g=c.getContext("2d",{willReadFrequently:true});
    g.drawImage(im,di*64,0,64,112,0,0,64,112);const d=g.getImageData(0,0,64,112);recolor(d.data,M);
@@ -129,5 +150,5 @@ async function layers(spec,gender,tone){
  }
  return out;
 }
-return Object.freeze({OPT,P,K,norm,lookup,recolor,layers,activeStrip,clearCache});
+return Object.freeze({OPT,P,K,norm,lookup,recolor,layers,activeStrip,clearCache,previewWearOn,previewWearName,previewWearUrl,loadPreviewWearImage});
 });

@@ -13,7 +13,7 @@
  const C=()=>root?.LafrichPuppetCore,X=()=>root?.LGR1Raster;
  const rgba=(w=64,h=112)=>{const cv=document.createElement("canvas");cv.width=w;cv.height=h;return cv};
  const cache=new Map(),pixelCache=new Map(),lowerCache=new Map();
- const LOWER_POSES=["stand","sit_chair","sit_floor","crouch","kneel","lie_straight","lie_curl"];
+ const LOWER_POSES=["stand","sit_chair","sit_floor","sit_long","crouch","kneel","lie_straight","lie_curl"];
  let manifestP=null;
  function lowerBase(){return root.LGR_LOWER_BASE||((root.LGRDB_BASE||"")+"media/lgr1/lower/")}
  function manifestUrl(){return root.LGR_LOWER_MANIFEST||((root.LGRDB_BASE||"")+"media/lgr1/lower-manifest.json")}

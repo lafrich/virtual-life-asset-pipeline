@@ -704,7 +704,9 @@ def select_lower(pose, outfit=None, view=None, body=None):
         pid = "crouch"
     elif a["dy"] >= 6 and a["thigh"] >= 50 and a["knee"] >= 50:
         pid = "sit_chair"
-    elif a["dy"] >= 6 and a["knee"] >= 80:
+    elif a["dy"] >= 6 and a["thigh"] >= 60 and a["knee"] < 50:
+        pid = "sit_long"
+    elif a["thigh"] <= 30 and a["knee"] >= 80:
         pid = "kneel"
     else:
         pid = "rig"
@@ -712,12 +714,70 @@ def select_lower(pose, outfit=None, view=None, body=None):
         pid = "stand"
     def has(p):
         return lower_available(p, view, body, outfit) if (view and body and outfit) else lower_available(p)
+    # Missing art falls back to the rig (no sit_floor → sit_chair). Walk stays on v2 joints.
     if pid != "rig" and not has(pid):
-        if pid == "sit_floor" and has("sit_chair"):
-            pid = "sit_chair"
-        else:
-            pid = "rig"
+        pid = "rig"
     return pid
+
+
+
+# Preview wear (official trousers/skirt files are never written). Used on every
+# frame while LOWER_SPRITES is on, including walk/idle rig frames.
+SEATED_POSES = frozenset({"sit_chair", "sit_floor", "sit_long", "crouch"})
+_PREVIEW_WEAR_NAMES = {
+    ("pants", False): "trousers_a",
+    ("pants", True): "trousers_a",
+    ("skirt", False): "skirt_a",
+    ("skirt", True): "skirt_a_seat",
+}
+
+
+def preview_wear_id(outfit, seated=False):
+    if outfit not in ("pants", "skirt"):
+        return "none"
+    name = _PREVIEW_WEAR_NAMES[(outfit, bool(seated) and outfit == "skirt")]
+    # Fall back to skirt_a if the optional seated variant is absent.
+    if outfit == "skirt" and seated and preview_wear_path(name, "male") is None:
+        name = "skirt_a"
+    return name
+
+
+def preview_wear_roots():
+    media = Path(__file__).resolve().parent / "media" / "lgr1"
+    alt = Path("/workspace/lgr-leg-fix-a")
+    return (
+        media / "mh-wear" / "preview",
+        media / "mh-wear" / "skirt",
+        media / "mh-wear" / "pants",
+        alt / "art" / "wear",
+    )
+
+
+def preview_wear_path(name, gender):
+    suffix = "_f" if gender == "female" else ""
+    filename = f"{name}{suffix}.png"
+    for root in preview_wear_roots():
+        p = root / filename
+        if p.is_file():
+            return p
+    return None
+
+
+def load_preview_wear(outfit, gender, direction, seated=False):
+    """64x112 pants-layer cell (key colours) for one view, or None."""
+    name = preview_wear_id(outfit, seated)
+    if name == "none":
+        return None
+    path = preview_wear_path(name, gender)
+    if not path:
+        return None
+    from PIL import Image
+    im = Image.open(path).convert("RGBA")
+    if im.size[1] != H or im.size[0] % W:
+        raise ValueError(f"preview wear must be Nx{H}: {path}")
+    di = DIRECTIONS.index(direction)
+    cell = im.crop((di * W, 0, di * W + W, H))
+    return bytearray(cell.tobytes())
 
 
 def load_lower_entry(pose_id, view, body, outfit):
@@ -1131,15 +1191,21 @@ def render(binding: dict, direction: str, pose: dict, layer_overrides: dict | No
     validate(binding)
     if direction not in DIRECTIONS:
         raise ValueError("Unknown direction")
+    g = gender or binding.get("gender") or (binding.get("rig") or {}).get("gender")
+    off = outfit or ("pants" if (layer_overrides or {}).get("pants") else "base")
+    use = LOWER_SPRITES if lower_sprites is None else lower_sprites
+    pid = select_lower(pose, off, direction, body_id(g)) if use else "rig"
     i = binding_inputs(binding, direction, layer_overrides)
+    if use and off in ("pants", "skirt") and not (layer_overrides or {}).get("pants"):
+        cell = load_preview_wear(off, "female" if g == "female" else "male",
+                                 direction, seated=pid in SEATED_POSES)
+        if cell:
+            i["wear"] = dict(i["wear"] or {})
+            i["wear"]["pants"] = cell
     prep = prepare_raw(i["layers"], i["mask"], i["pivots"], i["placements"], i["order"],
                        i["caps"], i["wear"], tweak, face)
-    use = LOWER_SPRITES if lower_sprites is None else lower_sprites
     if lower is None and use:
-        g = gender or binding.get("gender") or (binding.get("rig") or {}).get("gender")
         body = body_id(g)
-        off = outfit or ("pants" if (layer_overrides or {}).get("pants") else "base")
-        pid = select_lower(pose, off, direction, body)
         if pid != "rig":
             lower = load_lower_entry(pid, direction, body, off)
     out = render_raw(prep, pose, order, canvas=canvas, lower=lower)
