@@ -112,8 +112,9 @@ function clearCache(){strips.clear();approvedRefs.clear()}
 // spec {top,topColor,pants,pantsColor,shoes,shoesColor,hair,hairColor}; gender; skin tone
 // → {pants:{se:dataURL,…}, top:…, top_back:…, shoes:…, hair_back:…, hair_front:…}
 function w4On(){return !!(root.LGR_W4_WEAR||root.LGR1Raster&&root.LGR1Raster.W4)}
-// W4 preview: tee_v4 / trousers_v4 strips stay in KEY colours (the renderer recolours after the W4 passes)
-const W4_WEAR={top:"tee_v4",pants:"trousers_v4"};
+// W4 preview: tee_v5 / trousers_v5 strips stay in KEY colours (the renderer recolours after the W4 passes).
+// v5 = v4 silhouette + under strips with calmer key tones (tools/lgr1_wear_v5.py); v4 files stay for the w4.py parity fixture.
+const W4_WEAR={top:"tee_v5",pants:"trousers_v5"};
 function previewWearOn(){return !!(root.LGR_PREVIEW_WEAR||root.LGR1Raster&&root.LGR1Raster.LOWER_SPRITES)}
 function previewWearName(outfit,seated){
  if(outfit==="pants"||outfit==="trousers")return "trousers_a";
