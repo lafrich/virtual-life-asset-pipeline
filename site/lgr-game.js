@@ -142,7 +142,8 @@ const lookKey=p=>JSON.stringify([genderOf(p),toneOf(p),spec(p),p.appearance?.fac
 function prepare(profile,d,face,faceCol,opts){
  const X=root.LGR1Raster,seated=!!(opts&&opts.seated),outfit=(opts&&opts.outfit)||"pants";
  const wearHint=X&&X.LOWER_SPRITES?(root.LGRWear&&root.LGRWear.previewWearName(outfit,seated))||"preview":"official";
- const key=lookKey(profile)+"|"+d+"|"+(face?face.src+"#"+faceCol:"-")+"|ls="+(X&&X.LOWER_SPRITES?"1":"0")+"|wear="+wearHint;
+ const jm=X&&(X.jointMode||X.JOINT_MODE)||"v2";
+ const key=lookKey(profile)+"|"+d+"|"+(face?face.src+"#"+faceCol:"-")+"|ls="+(X&&X.LOWER_SPRITES?"1":"0")+"|wear="+wearHint+"|jm="+jm;
  if(preps.has(key))return preps.get(key);
  const p=(async()=>{
   const A=dep("LGRActor"),W=dep("LGRWear"),C=dep("LafrichPuppetCore"),R=dep("LafrichPuppetRenderer");
@@ -153,7 +154,7 @@ function prepare(profile,d,face,faceCol,opts){
   const fimg=(d==="se"||d==="sw")?await faceImage(face,faceCol,tone):null;
   const X=dep("LGR1Raster"),S=root.LGRSkin;
   const recolor=S?data=>{S.fromKey(data,S.rampFor(tone));W.recolor(data,W.lookup({...spec(profile),skin:tone}))}:null;
-  return R.prepare(m,ch,d,fimg,{lowerSprites:X.LOWER_SPRITES,recolor});
+  return R.prepare(m,ch,d,fimg,{lowerSprites:X.LOWER_SPRITES,recolor,jointMode:X.jointMode||X.JOINT_MODE});
  })();
  preps.set(key,p);if(preps.size>160)preps.delete(preps.keys().next().value);
  p.then(v=>{p.done=true;p.value=v},e=>{p.done=true;p.error=e;console.warn("LGR prepare",e)});
@@ -178,7 +179,8 @@ function frame(profile,dir,action,t,face,faceCol=0){
   const seatedPrep=prepare(profile,d,face,faceCol,{seated,outfit:"skirt"});
   if(seatedPrep.done&&!seatedPrep.error)pp=seatedPrep;
  }
- const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-")+"|lower="+picked+"|cv="+cv+"|wear="+wearId;
+ const jm=X.jointMode||X.JOINT_MODE||"v2";
+ const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-")+"|lower="+picked+"|cv="+cv+"|wear="+wearId+"|jm="+jm+"|sh="+((X.SH_DY??0)+"|"+(X.RAISE_FRONT??120)+"|"+(X.HIP_CENTRE?"1":"0"));
  if(frames.has(fkey))return frames.get(fkey);
  const R=dep("LafrichPuppetRenderer");
  const c=R.render(pp.value,pose,{order,canvas:cv,lowerSprites:use});

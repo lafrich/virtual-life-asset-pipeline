@@ -133,7 +133,24 @@ JOINT_FILL = 4
 #  - pinhole fill: only enclosed transparent specks of <= PINHOLE px are closed.
 # "legacy" = the previous behaviour (caps + JOINT_FILL).
 JOINT_MODE = "v2"
+# v4 (R3, preview): joint-safe rig on top of v2. Default stays v2 so live/tests are unchanged.
+# HIP_CENTRE and the elbow/knee crack fill stay OFF (existing motions were tuned for artist hips).
+SH_DY, RAISE_FRONT, HIP_CENTRE, V4_CRACK = 0, 120, False, False
 KNEE_Y, HIP_Y, PINHOLE, BALL_MAX_R = 90, 0, 2, 4.0  # HIP_Y 0 = keep the artist hip pivots
+
+def _hx(h):
+    return int(h.lstrip("#"), 16)
+
+V4_FAM = {}
+for _f in ("#FF2CE8", "#FF32E5", "#FF38E2", "#FF3EDF"):
+    V4_FAM[_hx(_f)] = _hx("#FF44DC")  # skin i/h/e/a -> K7
+for _f in ("#FF92B5", "#FF98B2", "#FF9EAF"):
+    V4_FAM[_hx(_f)] = _hx("#FFA4AC")  # pants/skirt P1-3 -> P4
+for _f in ("#FF50D6", "#FF56D3", "#FF5CD0"):
+    V4_FAM[_hx(_f)] = _hx("#FF62CD")  # tee C1-3 -> C4
+V4_OUTL = {_hx("#FF44DC"), _hx("#FFA4AC"), _hx("#FF62CD"), _hx("#FF68CA"), _hx("#FF4AD9")}
+N4D = ((0, 1), (0, -1), (1, 0), (-1, 0))
+N8D = tuple((dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if dy or dx)
 ANAT = ("head", "torso", "pelvis", "arm_r_upper", "arm_r_lower", "arm_l_upper", "arm_l_lower",
         "leg_r_upper", "leg_r_lower", "leg_l_upper", "leg_l_lower")
 DEFAULT_SIDES = {"se": "right", "sw": "left", "ne": "right", "nw": "left"}
@@ -409,8 +426,10 @@ def prepare_raw(layers: dict, mask, pivots: dict, placements: dict | None = None
     capr = dict(CAP_RADIUS)
     capr.update(caps or {})
     mode = joint_mode or JOINT_MODE
-    if mode == "v2":
+    if mode in ("v2", "v4"):
         mask, pivots = fix_slice(mask, pivots)
+        if mode == "v4":
+            mask, pivots = shoulder_to_torso(mask, pivots)
         capr = {k: (v if k == "head" else 0) for k, v in capr.items()}
     expanded = expand_mask(body_mask(mask, layers)) if any(wear.get(l) for l in LAYERS) else None
     groups = {}
@@ -490,7 +509,7 @@ def prepare_raw(layers: dict, mask, pivots: dict, placements: dict | None = None
             entries[part] = {"img": img, "bbox": _bbox(img), "scaled": None}
         groups[name] = {"still": still, "parts": entries}
     face_entry = {"img": face, "bbox": _bbox(face), "scaled": None} if face else None
-    balls = build_balls(groups["main"]["parts"], pivots, order) if mode == "v2" else {}
+    balls = build_balls(groups["main"]["parts"], pivots, order) if mode in ("v2", "v4") else {}
     return {"order": order, "pivots": pivots, "placements": placements or {},
             "groups": groups, "face": face_entry, "mode": mode, "balls": balls}
 
@@ -956,10 +975,273 @@ def _draw_entry(out, entry, tr, geom=None):
                     _over(out, y * cw + x, p >> 24, (p >> 16) & 255, (p >> 8) & 255, p & 255)
 
 
+
+def shoulder_to_torso(mask, pivots, sh_dy=None):
+    """v4.1: deltoid rows of each upper arm (y <= pivot.y + SH_DY) are owned by the torso."""
+    mask = bytearray(mask)
+    pivots = {k: (dict(v) if isinstance(v, dict) else v) for k, v in pivots.items()}
+    torso, dy = PARTS.index("torso"), SH_DY if sh_dy is None else sh_dy
+    for side in ("near", "far"):
+        name = f"arm_{side}_upper"
+        arm, py = PARTS.index(name), pivots[name]["y"]
+        for k in range(N):
+            if mask[k] == arm and k // W <= py + dy:
+                mask[k] = torso
+    return mask, pivots
+
+
+def v4_moved(pose):
+    moved = set()
+    for p in PARTS:
+        if PARENTS[p] and float(((pose or {}).get(p) or {}).get("a", 0) or 0) % 360:
+            moved.add(p)
+    changed = True
+    while changed:
+        changed = False
+        for p in PARTS:
+            if PARENTS.get(p) in moved and p not in moved:
+                moved.add(p)
+                changed = True
+    return moved
+
+
+def _v4_outside(out, cw, ch, cn):
+    seen = bytearray(cn)
+    st = []
+    for k in range(cn):
+        x, y = k % cw, k // cw
+        if (x in (0, cw - 1) or y in (0, ch - 1)) and not out[k * 4 + 3]:
+            seen[k] = 1
+            st.append(k)
+    while st:
+        k = st.pop()
+        x, y = k % cw, k // cw
+        for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if 0 <= nx < cw and 0 <= ny < ch:
+                n = ny * cw + nx
+                if not seen[n] and not out[n * 4 + 3]:
+                    seen[n] = 1
+                    st.append(n)
+    return seen
+
+
+def _v4_code(out, i):
+    o = i * 4
+    return (out[o] << 16) | (out[o + 1] << 8) | out[o + 2] if out[o + 3] else -1
+
+
+def _v4_ncount(op, cw, ch, i, dirs):
+    x, y = i % cw, i // cw
+    n = 0
+    for dy, dx in dirs:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < cw and 0 <= ny < ch and op[ny * cw + nx]:
+            n += 1
+    return n
+
+
+def _v4_dilate(flags, cw, ch, cn, dirs=N4D):
+    out = bytearray(flags)
+    for i in range(cn):
+        if not flags[i]:
+            continue
+        x, y = i % cw, i // cw
+        for dy, dx in dirs:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < cw and 0 <= ny < ch:
+                out[ny * cw + nx] = 1
+    return out
+
+
+def v4_post(px, geom, active=None, block=None, dejag=True, repair=True):
+    """De-jag + edge-outline repair. Twin of tools/joints4.post, no scipy."""
+    cw, ch, cn = geom["cw"], geom["ch"], geom["cn"]
+    a = bytearray(px)
+    op = bytearray(1 if a[i * 4 + 3] else 0 for i in range(cn))
+    act = bytearray(1 for _ in range(cn)) if active is None else bytearray(active)
+    blk = bytearray(cn) if block is None else bytearray(block)
+    for i in range(cn):
+        if blk[i]:
+            act[i] = 0
+    nearblk = _v4_dilate(blk, cw, ch, cn, N4D)
+    if dejag:
+        outside = _v4_outside(a, cw, ch, cn)
+        isol = bytearray(1 if op[i] and _v4_code(a, i) in V4_OUTL else 0 for i in range(cn))
+        actn = _v4_dilate(act, cw, ch, cn, N4D)
+        for i in range(cn):
+            if not (outside[i] and actn[i] and not nearblk[i] and not op[i]):
+                continue
+            if _v4_ncount(op, cw, ch, i, N4D) < 3:
+                continue
+            x, y = i % cw, i // cw
+            fills, nbs = [], []
+            for dy, dx in N4D:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < cw and 0 <= ny < ch and op[ny * cw + nx]:
+                    nbs.append(ny * cw + nx)
+                    if not isol[ny * cw + nx]:
+                        fills.append(ny * cw + nx)
+            src = fills[0] if fills else (nbs[0] if nbs else None)
+            if src is None:
+                continue
+            a[i * 4:i * 4 + 4] = a[src * 4:src * 4 + 4]
+            op[i] = 1
+        isol = bytearray(1 if op[i] and _v4_code(a, i) in V4_OUTL else 0 for i in range(cn))
+        for i in range(cn):
+            if isol[i] and act[i] and _v4_ncount(op, cw, ch, i, N4D) <= 1 and _v4_ncount(op, cw, ch, i, N8D) <= 2:
+                a[i * 4:i * 4 + 4] = b"\0\0\0\0"
+                op[i] = 0
+    if repair:
+        outside = _v4_outside(a, cw, ch, cn)
+        dil = _v4_dilate(outside, cw, ch, cn, N4D)
+        isol = bytearray(1 if op[i] and _v4_code(a, i) in V4_OUTL else 0 for i in range(cn))
+        for i in range(cn):
+            if not (op[i] and dil[i] and act[i]):
+                continue
+            c = _v4_code(a, i)
+            if c not in V4_FAM:
+                continue
+            x, y = i % cw, i // cw
+            blockish = False
+            for dy in (-1, 1):
+                for dx in (-1, 1):
+                    iy, ix = y + dy, x + dx
+                    if not (0 <= ix < cw and 0 <= iy < ch):
+                        continue
+                    if isol[y * cw + ix] and isol[iy * cw + x] and isol[iy * cw + ix]:
+                        blockish = True
+            fill_nb = False
+            for dy, dx in N8D:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < cw and 0 <= ny < ch:
+                    n = ny * cw + nx
+                    if op[n] and not isol[n]:
+                        fill_nb = True
+                        break
+            if blockish or not fill_nb:
+                continue
+            ol = V4_FAM[c]
+            a[i * 4] = (ol >> 16) & 255
+            a[i * 4 + 1] = (ol >> 8) & 255
+            a[i * 4 + 2] = ol & 255
+    return a
+
+
+def _v4_id_entry(ent, idx, ex=None):
+    if not ent or not ent["bbox"]:
+        return ent
+    img = bytearray(N * 4)
+    for k in range(N):
+        if ent["img"][k * 4 + 3]:
+            img[k * 4:k * 4 + 4] = bytes((idx, 1 if (ex is not None and ex[k]) else 0, 0, 255))
+    return {"img": img, "bbox": ent["bbox"], "scaled": None}
+
+
+def v4_id_prep(prep, geom):
+    """ID render prep: each pixel is (part_id+1, exempt, 0, 255). Cached per canvas mode."""
+    key = "_v4_id_" + str(geom["cw"])
+    if key in prep:
+        return prep[key]
+    z = zero_pose()
+    rest = _render_parts(prep, z, geom=geom)
+    after = v4_post(rest, geom)
+    cn, cw, ch, ox, oy = geom["cn"], geom["cw"], geom["ch"], geom["ox"], geom["oy"]
+    changed = bytearray(cn)
+    for i in range(cn):
+        if rest[i * 4:i * 4 + 4] != after[i * 4:i * 4 + 4]:
+            changed[i] = 1
+    dil = _v4_dilate(changed, cw, ch, cn, N8D)
+    ex = bytearray(N)
+    for i in range(cn):
+        if dil[i] and rest[i * 4 + 3]:
+            x, y = i % cw - ox, i // cw - oy
+            if 0 <= x < W and 0 <= y < H:
+                ex[y * W + x] = 1
+    hid = PARTS.index("head") + 1
+    q = {"order": prep["order"], "pivots": prep["pivots"], "placements": prep["placements"],
+         "mode": prep["mode"], "face": None, "groups": {}, "balls": {}}
+    for name, gr in prep["groups"].items():
+        st = bytearray(N * 4)
+        for k in range(N):
+            if gr["still"][k * 4 + 3]:
+                st[k * 4:k * 4 + 4] = bytes((hid, 1, 0, 255))
+        parts = {}
+        for part, ent in gr["parts"].items():
+            idx = hid if (name != "main" or part == "head") else PARTS.index(part) + 1
+            parts[part] = _v4_id_entry(ent, idx, ex)
+        q["groups"][name] = {"still": st, "parts": parts}
+    q["balls"] = {ch: _v4_id_entry(b, PARTS.index(ch) + 1) for ch, b in (prep.get("balls") or {}).items()}
+    if prep.get("face"):
+        q["face"] = _v4_id_entry(prep["face"], hid)
+    prep[key] = q
+    return q
+
+
+def v4_raise_front(prep, pose, order, out, geom):
+    """If the near arm is swung outward >= RAISE_FRONT, draw it over the head overlap only."""
+    a = float(((pose or {}).get("arm_near_upper") or {}).get("a", 0) or 0)
+    a = (a + 180) % 360 - 180
+    left = prep["pivots"]["arm_near_upper"]["x"] < 32
+    outward = a if left else -a
+    if outward < RAISE_FRONT:
+        return out
+    arm = _render_parts(prep, pose, order, geom=geom, only={"arm_near_upper", "arm_near_lower"})
+    hd = _render_parts(prep, pose, order, geom=geom, only={"head"})
+    out = bytearray(out)
+    cn = geom["cn"]
+    for i in range(cn):
+        if arm[i * 4 + 3] and hd[i * 4 + 3]:
+            out[i * 4:i * 4 + 4] = arm[i * 4:i * 4 + 4]
+    return out
+
+
+def v4_passes(prep, pose, order, out, geom, lower=None):
+    """Render-time v4: raise-front, then de-jag + edge repair on the active zone, then caller pinholes."""
+    out = v4_raise_front(prep, pose, order, out, geom)
+    moved = v4_moved(pose)
+    if not moved:
+        return out
+    ip = v4_id_prep(prep, geom)
+    ids = _render_parts(ip, pose, order, geom=geom)
+    cw, ch, cn, ox, oy = geom["cw"], geom["ch"], geom["cn"], geom["ox"], geom["oy"]
+    hid = PARTS.index("head")
+    act = bytearray(cn)
+    blk = bytearray(cn)
+    own = [ids[i * 4] - 1 for i in range(cn)]
+    for i in range(cn):
+        if not ids[i * 4 + 3]:
+            continue
+        if ids[i * 4 + 1] or own[i] == hid:
+            blk[i] = 1
+        if 0 <= own[i] < len(PARTS) and PARTS[own[i]] in moved and PARTS[own[i]] != "head":
+            act[i] = 1
+    tr = raw_matrices(prep["pivots"], prep["placements"], pose)
+    for ch in moved:
+        par = PARENTS[ch]
+        if par in moved or par == "head" or not par:
+            continue
+        jx, jy = map_point(tr[par]["mat"], prep["pivots"][ch]["x"], prep["pivots"][ch]["y"])
+        pi = PARTS.index(par)
+        r2 = 7.5 * 7.5
+        for i in range(cn):
+            if own[i] != pi:
+                continue
+            x, y = i % cw - ox + .5, i // cw - oy + .5
+            if (x - jx) ** 2 + (y - jy) ** 2 <= r2:
+                act[i] = 1
+    if lower is not None:
+        for i in range(cn):
+            if not ids[i * 4 + 3] and out[i * 4 + 3]:
+                act[i] = 1
+    return v4_post(out, geom, act, blk)
+
+
 def render_raw(prep: dict, pose: dict, order=None, canvas=None, lower=None) -> bytearray:
     geom = canvas_geom(canvas)
     out = _render_parts(prep, pose, order, geom=geom, lower=lower)
-    if prep.get("mode") == "v2":
+    if prep.get("mode") in ("v2", "v4"):
+        if prep.get("mode") == "v4":
+            out = v4_passes(prep, pose, order, out, geom, lower)
         if PINHOLE > 0:
             pinhole_fill(out, geom=geom)
         return out
@@ -972,7 +1254,7 @@ def render_raw(prep: dict, pose: dict, order=None, canvas=None, lower=None) -> b
     return out
 
 
-def _render_parts(prep: dict, pose: dict, order=None, geom=None, lower=None) -> bytearray:
+def _render_parts(prep: dict, pose: dict, order=None, geom=None, lower=None, only=None) -> bytearray:
     geom = geom or canvas_geom()
     cw, ox, oy, cn = geom["cw"], geom["ox"], geom["oy"], geom["cn"]
     out = bytearray(cn * 4)
@@ -982,24 +1264,28 @@ def _render_parts(prep: dict, pose: dict, order=None, geom=None, lower=None) -> 
     for name, _ in GROUPS:
         grp = prep["groups"][name]
         still = grp["still"]
-        for k in range(N):
-            c = k * 4
-            if still[c + 3]:
-                x, y = k % W, k // W
-                _over(out, (y + oy) * cw + (x + ox), still[c], still[c + 1], still[c + 2], still[c + 3])
-        if name == "main" and lower:
+        if only is None:
+            for k in range(N):
+                c = k * 4
+                if still[c + 3]:
+                    x, y = k % W, k // W
+                    _over(out, (y + oy) * cw + (x + ox), still[c], still[c + 1], still[c + 2], still[c + 3])
+        if name == "main" and lower and only is None:
             _draw_entry(out, lower, tr["pelvis"], geom)
         balls = (prep.get("balls") or {}) if name == "main" else {}
         if hide_legs:
             balls = {k: v for k, v in balls.items() if not str(k).startswith("leg_")}
         for idx, part in enumerate(order):
-            for child, ball in balls.items():
-                if min(order.index(child), order.index(PARENTS[child])) == idx:
-                    _draw_entry(out, ball, tr[child], geom)
+            if only is not None and part not in only:
+                continue
+            if only is None:
+                for child, ball in balls.items():
+                    if min(order.index(child), order.index(PARENTS[child])) == idx:
+                        _draw_entry(out, ball, tr[child], geom)
             if hide_legs and part in LEG_PARTS:
                 continue
             _draw_entry(out, grp["parts"][part], tr[part], geom)
-        if name == "main" and prep["face"]:
+        if name == "main" and prep["face"] and (only is None or "head" in only):
             _draw_entry(out, prep["face"], tr["head"], geom)
     return out
 
@@ -1183,7 +1469,7 @@ def binding_inputs(binding: dict, direction: str, layer_overrides: dict | None =
 
 def render(binding: dict, direction: str, pose: dict, layer_overrides: dict | None = None,
            face: bytes | None = None, order=None, tweak=None, canvas=None, lower=None,
-           lower_sprites=None, outfit=None, gender=None):
+           lower_sprites=None, outfit=None, gender=None, joint_mode=None):
     """Render one RGBA frame (Pillow image). Default stays 64x112. Pass
     ``canvas='overflow128'`` for the 128x128 overflow buffer. ``layer_overrides``
     are Custom Wear layers; ``face`` is an optional Emosi RGBA cell."""
@@ -1203,7 +1489,7 @@ def render(binding: dict, direction: str, pose: dict, layer_overrides: dict | No
             i["wear"] = dict(i["wear"] or {})
             i["wear"]["pants"] = cell
     prep = prepare_raw(i["layers"], i["mask"], i["pivots"], i["placements"], i["order"],
-                       i["caps"], i["wear"], tweak, face)
+                       i["caps"], i["wear"], tweak, face, joint_mode=joint_mode)
     if lower is None and use:
         body = body_id(g)
         if pid != "rig":

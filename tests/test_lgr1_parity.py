@@ -19,13 +19,14 @@ FIXTURE = ROOT/"tests"/"fixtures"/"lgr1_male_bound.json"
 b64 = lambda raw: base64.b64encode(bytes(raw)).decode()
 
 
-def node_render(inputs, frames, wear=None, tweak=None, face=None):
+def node_render(inputs, frames, wear=None, tweak=None, face=None, joint_mode=None):
     payload = {"layers": {k: b64(v) for k, v in inputs["layers"].items()},
                "wear": {k: b64(v) for k, v in (wear or {}).items()},
                "mask": b64(inputs["mask"]), "tweak": b64(tweak) if tweak else None,
                "pivots": inputs["pivots"], "placements": inputs["placements"],
                "order": inputs["order"], "caps": inputs["caps"],
-               "face": b64(face) if face else None, "frames": frames}
+               "face": b64(face) if face else None, "frames": frames,
+               "jointMode": joint_mode}
     out = subprocess.run(["node", str(ROOT/"tests"/"lgr1_raster_cli.cjs")], input=json.dumps(payload),
                          capture_output=True, text=True, check=True).stdout
     return [base64.b64decode(x) for x in json.loads(out)]

@@ -88,7 +88,16 @@ function bboxOf(img){
 // leg slice clean-up + hip/knee pivots (fixSlice), no radius caps except the head, no JOINT_FILL,
 // rounded joint capsules in the child's own colours (buildBalls, hidden at rest) and a pinhole-only
 // fill. "legacy" = caps + JOINT_FILL as before.
-const JOINT_MODE="v2",KNEE_Y=90,HIP_Y=0,PINHOLE=2,BALL_MAX_R=4; // HIP_Y 0 = keep the artist hip pivots
+const JOINT_MODE="v2",SH_DY=0,RAISE_FRONT=120,HIP_CENTRE=false,V4_CRACK=false,KNEE_Y=90,HIP_Y=0,PINHOLE=2,BALL_MAX_R=4; // HIP_Y 0 = keep the artist hip pivots
+const hx=h=>parseInt(h.replace("#",""),16);
+const V4_FAM=new Map();
+for(const f of ["#FF2CE8","#FF32E5","#FF38E2","#FF3EDF"])V4_FAM.set(hx(f),hx("#FF44DC"));
+for(const f of ["#FF92B5","#FF98B2","#FF9EAF"])V4_FAM.set(hx(f),hx("#FFA4AC"));
+for(const f of ["#FF50D6","#FF56D3","#FF5CD0"])V4_FAM.set(hx(f),hx("#FF62CD"));
+const V4_OUTL=new Set([hx("#FF44DC"),hx("#FFA4AC"),hx("#FF62CD"),hx("#FF68CA"),hx("#FF4AD9")]);
+const N4D=[[0,1],[0,-1],[1,0],[-1,0]];
+const N8D=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(dy||dx)N8D.push([dy,dx]);
+let JOINT_MODE_CUR=JOINT_MODE;
 function runsOf(xs){const out=[];let cur=[];
  for(const x of xs){if(cur.length&&x===cur[cur.length-1]+1)cur.push(x);else{if(cur.length)out.push(cur);cur=[x]}}
  if(cur.length)out.push(cur);return out}
@@ -209,13 +218,13 @@ function pinholeFill(out,maxsize,geom){
  }
 }
 function prepare(o){
- const mode=o.jointMode||JOINT_MODE;
+ const mode=o.jointMode||JOINT_MODE_CUR;
  let mask=o.mask,pivots=o.pivots;
- if(mode==="v2"){const f=fixSlice(mask,pivots);mask=f.mask;pivots=f.pivots}
+ if(mode==="v2"||mode==="v4"){const f=fixSlice(mask,pivots);mask=f.mask;pivots=f.pivots;if(mode==="v4"){const s=shoulderToTorso(mask,pivots);mask=s.mask;pivots=s.pivots}}
  const layers=o.layers||{},wear=o.wear||{},tweak=o.tweak||null;
  const order=validOrder(o.order)?o.order.slice():DRAW_ORDER.slice();
  const caps=Object.assign({},CAP_RADIUS,o.caps||{});
- if(mode==="v2")for(const k of Object.keys(caps))if(k!=="head")caps[k]=0;
+ if(mode==="v2"||mode==="v4")for(const k of Object.keys(caps))if(k!=="head")caps[k]=0;
  const anyWear=LAYERS.some(l=>wear[l]);
  const expanded=anyWear?expandMask(bodyMask(mask,layers)):null;
  const groups={};
@@ -274,7 +283,7 @@ function prepare(o){
  }
  let face=null;
  if(o.face)face={img:o.face,bbox:bboxOf(o.face),scaled:null};
- const balls=mode==="v2"?buildBalls(groups.main.parts,pivots,order):{};
+ const balls=(mode==="v2"||mode==="v4")?buildBalls(groups.main.parts,pivots,order):{};
  return {order,pivots,placements:o.placements||{},groups,face,mode,balls};
 }
 function pack(d,o){return d[o+3]?((d[o]<<24)|(d[o+1]<<16)|(d[o+2]<<8)|d[o+3])>>>0:0}
@@ -427,9 +436,165 @@ function jointFill(out,prep,tr,R0){
   }
  }
 }
+
+function shoulderToTorso(mask,pivots,shDy){
+ const out=Uint8Array.from(mask),pv={};for(const k of Object.keys(pivots))pv[k]={x:pivots[k].x,y:pivots[k].y};
+ const T=PARTS.indexOf("torso"),dy=shDy==null?SH_DY:shDy;
+ for(const side of ["near","far"]){
+  const name="arm_"+side+"_upper",arm=PARTS.indexOf(name),py=pv[name].y;
+  for(let k=0;k<N;k++)if(out[k]===arm&&((k-k%W)/W)<=py+dy)out[k]=T;
+ }
+ return {mask:out,pivots:pv};
+}
+function v4Moved(pose){
+ const moved=new Set();
+ for(const p of PARTS)if(PARENTS[p]&&((Number((pose&&pose[p]||{}).a)||0)%360))moved.add(p);
+ let changed=true;
+ while(changed){changed=false;for(const p of PARTS)if(moved.has(PARENTS[p])&&!moved.has(p)){moved.add(p);changed=true}}
+ return moved;
+}
+function v4Outside(out,cw,ch,cn){
+ const seen=new Uint8Array(cn),st=[];
+ for(let k=0;k<cn;k++){const x=k%cw,y=(k/cw)|0;if((x===0||x===cw-1||y===0||y===ch-1)&&!out[k*4+3]){seen[k]=1;st.push(k)}}
+ while(st.length){
+  const k=st.pop(),x=k%cw,y=(k/cw)|0;
+  for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]){
+   const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=cw||ny>=ch)continue;
+   const n=ny*cw+nx;if(!seen[n]&&!out[n*4+3]){seen[n]=1;st.push(n)}
+  }
+ }
+ return seen;
+}
+function v4Code(out,i){const o=i*4;return out[o+3]?((out[o]<<16)|(out[o+1]<<8)|out[o+2]):-1}
+function v4Ncount(op,cw,ch,i,dirs){
+ const x=i%cw,y=(i/cw)|0;let n=0;
+ for(const [dy,dx] of dirs){const nx=x+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<cw&&ny<ch&&op[ny*cw+nx])n++}
+ return n;
+}
+function v4Dilate(flags,cw,ch,cn,dirs){
+ const out=Uint8Array.from(flags);
+ for(let i=0;i<cn;i++){
+  if(!flags[i])continue;
+  const x=i%cw,y=(i/cw)|0;
+  for(const [dy,dx] of dirs){const nx=x+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<cw&&ny<ch)out[ny*cw+nx]=1}
+ }
+ return out;
+}
+function v4Post(px,geom,active,block,dejag,repair){
+ const cw=geom.cw,ch=geom.ch,cn=geom.cn,a=Uint8ClampedArray.from(px);
+ const op=new Uint8Array(cn);for(let i=0;i<cn;i++)if(a[i*4+3])op[i]=1;
+ const act=active==null?new Uint8Array(cn).fill(1):Uint8Array.from(active);
+ const blk=block==null?new Uint8Array(cn):Uint8Array.from(block);
+ for(let i=0;i<cn;i++)if(blk[i])act[i]=0;
+ const nearblk=v4Dilate(blk,cw,ch,cn,N4D);
+ if(dejag!==false){
+  const outside=v4Outside(a,cw,ch,cn);
+  let isol=new Uint8Array(cn);for(let i=0;i<cn;i++)if(op[i]&&V4_OUTL.has(v4Code(a,i)))isol[i]=1;
+  const actn=v4Dilate(act,cw,ch,cn,N4D);
+  for(let i=0;i<cn;i++){
+   if(!(outside[i]&&actn[i]&&!nearblk[i]&&!op[i]))continue;
+   if(v4Ncount(op,cw,ch,i,N4D)<3)continue;
+   const x=i%cw,y=(i/cw)|0;const fills=[],nbs=[];
+   for(const [dy,dx] of N4D){
+    const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=cw||ny>=ch)continue;
+    const n=ny*cw+nx;if(op[n]){nbs.push(n);if(!isol[n])fills.push(n)}
+   }
+   const src=fills.length?fills[0]:(nbs.length?nbs[0]:-1);if(src<0)continue;
+   a[i*4]=a[src*4];a[i*4+1]=a[src*4+1];a[i*4+2]=a[src*4+2];a[i*4+3]=a[src*4+3];op[i]=1;
+  }
+  isol=new Uint8Array(cn);for(let i=0;i<cn;i++)if(op[i]&&V4_OUTL.has(v4Code(a,i)))isol[i]=1;
+  for(let i=0;i<cn;i++)if(isol[i]&&act[i]&&v4Ncount(op,cw,ch,i,N4D)<=1&&v4Ncount(op,cw,ch,i,N8D)<=2){a[i*4]=a[i*4+1]=a[i*4+2]=a[i*4+3]=0;op[i]=0}
+ }
+ if(repair!==false){
+  const outside=v4Outside(a,cw,ch,cn),dil=v4Dilate(outside,cw,ch,cn,N4D);
+  const isol=new Uint8Array(cn);for(let i=0;i<cn;i++)if(op[i]&&V4_OUTL.has(v4Code(a,i)))isol[i]=1;
+  for(let i=0;i<cn;i++){
+   if(!(op[i]&&dil[i]&&act[i]))continue;
+   const c=v4Code(a,i);if(!V4_FAM.has(c))continue;
+   const x=i%cw,y=(i/cw)|0;let blockish=false;
+   for(const dy of [-1,1])for(const dx of [-1,1]){
+    const iy=y+dy,ix=x+dx;if(ix<0||iy<0||ix>=cw||iy>=ch)continue;
+    if(isol[y*cw+ix]&&isol[iy*cw+x]&&isol[iy*cw+ix])blockish=true;
+   }
+   let fillNb=false;
+   for(const [dy,dx] of N8D){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=cw||ny>=ch)continue;const n=ny*cw+nx;if(op[n]&&!isol[n]){fillNb=true;break}}
+   if(blockish||!fillNb)continue;
+   const ol=V4_FAM.get(c);a[i*4]=(ol>>>16)&255;a[i*4+1]=(ol>>>8)&255;a[i*4+2]=ol&255;
+  }
+ }
+ return a;
+}
+function v4IdEntry(ent,idx,ex){
+ if(!ent||!ent.bbox)return ent;
+ const img=new Uint8ClampedArray(N*4);
+ for(let k=0;k<N;k++)if(ent.img[k*4+3]){img[k*4]=idx;img[k*4+1]=(ex&&ex[k])?1:0;img[k*4+2]=0;img[k*4+3]=255}
+ return {img,bbox:ent.bbox,scaled:null};
+}
+function v4IdPrep(prep,geom){
+ const key="_v4Id"+geom.cw;
+ if(prep[key])return prep[key];
+ const rest=renderParts(prep,zeroPose(),null,geom),after=v4Post(rest,geom);
+ const cn=geom.cn,cw=geom.cw,ch=geom.ch,ox=geom.ox,oy=geom.oy;
+ const changed=new Uint8Array(cn);
+ for(let i=0;i<cn;i++)if(rest[i*4]!==after[i*4]||rest[i*4+1]!==after[i*4+1]||rest[i*4+2]!==after[i*4+2]||rest[i*4+3]!==after[i*4+3])changed[i]=1;
+ const dil=v4Dilate(changed,cw,ch,cn,N8D),ex=new Uint8Array(N);
+ for(let i=0;i<cn;i++)if(dil[i]&&rest[i*4+3]){const x=i%cw-ox,y=((i/cw)|0)-oy;if(x>=0&&y>=0&&x<W&&y<H)ex[y*W+x]=1}
+ const hid=PARTS.indexOf("head")+1;
+ const q={order:prep.order,pivots:prep.pivots,placements:prep.placements,mode:prep.mode,face:null,groups:{},balls:{}};
+ for(const name of Object.keys(prep.groups)){
+  const gr=prep.groups[name],st=new Uint8ClampedArray(N*4);
+  for(let k=0;k<N;k++)if(gr.still[k*4+3]){st[k*4]=hid;st[k*4+1]=1;st[k*4+3]=255}
+  const parts={};
+  for(const part of Object.keys(gr.parts)){
+   const idx=(name!=="main"||part==="head")?hid:PARTS.indexOf(part)+1;
+   parts[part]=v4IdEntry(gr.parts[part],idx,ex);
+  }
+  q.groups[name]={still:st,parts};
+ }
+ q.balls={};for(const ch of Object.keys(prep.balls||{}))q.balls[ch]=v4IdEntry(prep.balls[ch],PARTS.indexOf(ch)+1);
+ if(prep.face)q.face=v4IdEntry(prep.face,hid);
+ prep[key]=q;return q;
+}
+function zeroPose(){const z={};for(const p of PARTS)z[p]={x:0,y:0,a:0};return z}
+function v4RaiseFront(prep,pose,opts,out,geom){
+ let a=Number((pose&&pose.arm_near_upper||{}).a)||0;a=((a+180)%360+360)%360-180;
+ const left=prep.pivots.arm_near_upper.x<32,outward=left?a:-a;
+ if(outward<RAISE_FRONT)return out;
+ const arm=renderParts(prep,pose,Object.assign({},opts||{},{only:new Set(["arm_near_upper","arm_near_lower"]),lower:null}),geom);
+ const hd=renderParts(prep,pose,Object.assign({},opts||{},{only:new Set(["head"]),lower:null}),geom);
+ out=Uint8ClampedArray.from(out);
+ for(let i=0;i<geom.cn;i++)if(arm[i*4+3]&&hd[i*4+3]){out[i*4]=arm[i*4];out[i*4+1]=arm[i*4+1];out[i*4+2]=arm[i*4+2];out[i*4+3]=arm[i*4+3]}
+ return out;
+}
+function v4Passes(prep,pose,opts,out,geom){
+ out=v4RaiseFront(prep,pose,opts,out,geom);
+ const moved=v4Moved(pose);if(!moved.size)return out;
+ const ids=renderParts(v4IdPrep(prep,geom),pose,opts,geom);
+ const cw=geom.cw,ch=geom.ch,cn=geom.cn,ox=geom.ox,oy=geom.oy,hid=PARTS.indexOf("head");
+ const act=new Uint8Array(cn),blk=new Uint8Array(cn),own=new Int16Array(cn);
+ for(let i=0;i<cn;i++)own[i]=ids[i*4]-1;
+ for(let i=0;i<cn;i++){
+  if(!ids[i*4+3])continue;
+  if(ids[i*4+1]||own[i]===hid)blk[i]=1;
+  if(own[i]>=0&&own[i]<PARTS.length&&moved.has(PARTS[own[i]])&&PARTS[own[i]]!=="head")act[i]=1;
+ }
+ const tr=matrices(prep.pivots,prep.placements,pose);
+ for(const ch of moved){
+  const par=PARENTS[ch];if(moved.has(par)||par==="head"||!par)continue;
+  const [jx,jy]=mapPoint(tr[par].mat,prep.pivots[ch].x,prep.pivots[ch].y),pi=PARTS.indexOf(par),r2=7.5*7.5;
+  for(let i=0;i<cn;i++){
+   if(own[i]!==pi)continue;
+   const x=i%cw-ox+.5,y=((i/cw)|0)-oy+.5;
+   if((x-jx)*(x-jx)+(y-jy)*(y-jy)<=r2)act[i]=1;
+  }
+ }
+ if(opts&&opts.lower)for(let i=0;i<cn;i++)if(!ids[i*4+3]&&out[i*4+3])act[i]=1;
+ return v4Post(out,geom,act,blk);
+}
+
 function render(prep,pose,opts){
- const geom=canvasGeom(opts?.canvas),out=renderParts(prep,pose,opts,geom);
- if(prep.mode==="v2"){if(PINHOLE>0)pinholeFill(out,undefined,geom);return out}
+ const geom=canvasGeom(opts?.canvas);let out=renderParts(prep,pose,opts,geom);
+ if(prep.mode==="v2"||prep.mode==="v4"){if(prep.mode==="v4")out=v4Passes(prep,pose,opts,out,geom);if(PINHOLE>0)pinholeFill(out,undefined,geom);return out}
  if(geom.cw!==W||geom.ch!==H)return out;
  if(JOINT_FILL>0){const tr=matrices(prep.pivots,prep.placements,pose);jointFill(out,prep,tr,JOINT_FILL);jointFill(out,prep,tr,JOINT_FILL)}
  return out;
@@ -437,26 +602,28 @@ function render(prep,pose,opts){
 function renderParts(prep,pose,opts,geom){
  const g=geom||canvasGeom(opts?.canvas),cw=g.cw,ox=g.ox,oy=g.oy,cn=g.cn;
  const out=new Uint8ClampedArray(cn*4),tr=matrices(prep.pivots,prep.placements,pose);
- const order=validOrder(opts?.order)?opts.order:prep.order,lower=opts?.lower||null,hideLegs=!!lower;
+ const order=validOrder(opts?.order)?opts.order:prep.order,lower=opts?.lower||null,hideLegs=!!lower,only=opts?.only||null;
  for(const [name] of GROUPS){
   const grp=prep.groups[name],s=grp.still;
-  for(let k=0;k<N;k++){const c=k*4;if(s[c+3]){const x=k%W,y=(k-x)/W;over(out,(y+oy)*cw+(x+ox),s[c],s[c+1],s[c+2],s[c+3])}}
-  if(name==="main"&&lower)drawEntry(out,lower,tr.pelvis,g);
+  if(!only)for(let k=0;k<N;k++){const c=k*4;if(s[c+3]){const x=k%W,y=(k-x)/W;over(out,(y+oy)*cw+(x+ox),s[c],s[c+1],s[c+2],s[c+3])}}
+  if(name==="main"&&lower&&!only)drawEntry(out,lower,tr.pelvis,g);
   let balls=name==="main"?(prep.balls||{}):{};
   if(hideLegs)balls=Object.fromEntries(Object.entries(balls).filter(([k])=>!String(k).startsWith("leg_")));
   order.forEach((part,idx)=>{
-   for(const child of Object.keys(balls))if(Math.min(order.indexOf(child),order.indexOf(PARENTS[child]))===idx)drawEntry(out,balls[child],tr[child],g);
+   if(only&&!only.has(part))return;
+   if(!only)for(const child of Object.keys(balls))if(Math.min(order.indexOf(child),order.indexOf(PARENTS[child]))===idx)drawEntry(out,balls[child],tr[child],g);
    if(hideLegs&&LEG_PARTS.includes(part))return;
    drawEntry(out,grp.parts[part],tr[part],g);
   });
-  if(name==="main"&&prep.face)drawEntry(out,prep.face,tr.head,g);
+  if(name==="main"&&prep.face&&(!only||only.has("head")))drawEntry(out,prep.face,tr.head,g);
  }
  return out;
 }
+function setJointMode(m){JOINT_MODE_CUR=(m==="v4"||m==="legacy"||m==="v2")?m:"v2"}
 function setLowerSprites(v){LOWER_SPRITES=!!v}
 function setCanvas(mode){CANVAS=mode==="overflow128"?"overflow128":"legacy64"}
 return Object.freeze({W,H,N,BW,BH,OX,OY,PARTS,PARENTS,DRAW_ORDER,GROUPS,LAYERS,CAP_RADIUS,INHERIT,UNASSIGNED,bodyMask,
- over,expandMask,prepare,render,renderParts,JOINT_FILL,JOINT_MODE,KNEE_Y,HIP_Y,PINHOLE,fixSlice,buildBalls,pinholeFill,
- matrices,scale2x,validOrder,bboxOf,canvasGeom,cropLogical,selectLower,lowerAngles,lowerFileName,previewWearId,SEATED_POSES,LEG_PARTS,
- get LOWER_SPRITES(){return LOWER_SPRITES},get CANVAS(){return CANVAS},setLowerSprites,setCanvas});
+ over,expandMask,prepare,render,renderParts,JOINT_FILL,JOINT_MODE,SH_DY,RAISE_FRONT,HIP_CENTRE,V4_CRACK,KNEE_Y,HIP_Y,PINHOLE,fixSlice,buildBalls,pinholeFill,
+ shoulderToTorso,v4Post,v4Passes,matrices,scale2x,validOrder,bboxOf,canvasGeom,cropLogical,selectLower,lowerAngles,lowerFileName,previewWearId,SEATED_POSES,LEG_PARTS,
+ get LOWER_SPRITES(){return LOWER_SPRITES},get CANVAS(){return CANVAS},get jointMode(){return JOINT_MODE_CUR},setLowerSprites,setCanvas,setJointMode});
 });

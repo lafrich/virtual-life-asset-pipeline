@@ -99,7 +99,8 @@
   const tweak=t?Uint8Array.from(atob(t),c=>c.charCodeAt(0)):null;
   const raster=X().prepare({layers,wear,tweak,mask:Cc.decode(m.masks[dir]),
    pivots:m.pivots[dir],placements:m.placements?.[dir]||{},
-   order:m.drawOrders?.[dir],caps:m.capRadius,face:emosiCell(emosi,dir)});
+   order:m.drawOrders?.[dir],caps:m.capRadius,face:emosiCell(emosi,dir),
+   jointMode:opts?.jointMode??X().jointMode});
   const outfit=opts?.outfit||outfitOf(selected),use=opts?.lowerSprites??X().LOWER_SPRITES;
   let lower=null;
   if(use) lower=await loadLowerBank(dir,m.gender,outfit,opts?.recolor);

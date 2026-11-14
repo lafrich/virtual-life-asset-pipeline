@@ -9,7 +9,8 @@ const layers={},wear={};
 for(const [k,v] of Object.entries(input.layers||{}))layers[k]=raw(v);
 for(const [k,v] of Object.entries(input.wear||{}))wear[k]=raw(v);
 const prep=R.prepare({layers,wear,mask:bytes(input.mask),tweak:bytes(input.tweak),
- pivots:input.pivots,placements:input.placements,order:input.order,caps:input.caps,face:raw(input.face)});
+ pivots:input.pivots,placements:input.placements,order:input.order,caps:input.caps,face:raw(input.face),
+ jointMode:input.jointMode});
 const out=input.frames.map(f=>{
  const opts={order:f.order};
  if(f.canvas||input.canvas)opts.canvas=f.canvas||input.canvas;

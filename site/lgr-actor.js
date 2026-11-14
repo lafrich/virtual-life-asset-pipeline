@@ -131,13 +131,14 @@ async function prepared(actor,d,face,opts){
  const tone=actor.skin?.tone||"light",spec=wearSpec(actor);
  const seated=!!(opts&&opts.seated),outfit=(opts&&opts.outfit)||"pants";
  const wearId=(root.LGRWear&&root.LGR1Raster&&root.LGR1Raster.LOWER_SPRITES&&root.LGRWear.previewWearName(outfit,seated))||"official";
- const key=actor.gender+"|"+tone+"|"+JSON.stringify(spec)+"|"+d+"|"+(face?.key||"")+"|wear="+wearId;
+ const jm=(root.LGR1Raster&&(root.LGR1Raster.jointMode||root.LGR1Raster.JOINT_MODE))||"v2";
+ const key=actor.gender+"|"+tone+"|"+JSON.stringify(spec)+"|"+d+"|"+(face?.key||"")+"|wear="+wearId+"|jm="+jm;
  if(prepCache.has(key))return prepCache.get(key);
  const p=(async()=>{
   const m=await master(actor.gender,tone),ch=await wear(actor.gender,tone,spec,{seated,outfit});
   const X=root.LGR1Raster,S=SK(),W=root.LGRWear;
   const recolor=S?data=>{S.fromKey(data,S.rampFor(S.TONES[tone]?tone:"light"));if(W&&spec)W.recolor(data,W.lookup({...spec,skin:tone}))}:null;
-  return R().prepare(m,ch,d,face?.img||null,{lowerSprites:X?.LOWER_SPRITES,recolor});
+  return R().prepare(m,ch,d,face?.img||null,{lowerSprites:X?.LOWER_SPRITES,recolor,jointMode:X?.jointMode||X?.JOINT_MODE});
  })();
  if(prepCache.size>300)prepCache.clear();
  prepCache.set(key,p);p.catch(()=>prepCache.delete(key));return p;
