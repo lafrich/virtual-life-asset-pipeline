@@ -1,0 +1,93 @@
+{
+ "source": "lgr-outfit-v4/tools/w4.py render_w4 on the site runtime (draw/v4_post twins)",
+ "canvas": "overflow128",
+ "poses": [
+  [
+   "stand",
+   "idle",
+   0
+  ],
+  [
+   "walk",
+   "walk",
+   1
+  ],
+  [
+   "sit",
+   "sit",
+   1
+  ],
+  [
+   "squat",
+   "crouch",
+   1
+  ],
+  [
+   "arms_up",
+   "arms_up",
+   1
+  ]
+ ],
+ "sha256": {
+  "male": {
+   "se": {
+    "stand": "00f547f23dc512240774e8e1664e5846797557bff0077bcd7f7a6b5f1d02a652",
+    "walk": "5927ff21afc34d8c377390d6b051e5bc060687282fc58bd094fd55d98b6a4ce4",
+    "sit": "b71a121044ae618cb47b85d61b2b0d57b2d6d45b830b6558c598699d718a2dd8",
+    "squat": "10ceb6946c5f7ee2b65edcca69baea0d865e3d385697cc8d6799c3143b65346f",
+    "arms_up": "b452983ced0de0b398e731741feaa26b2213d05594ad43c18fd1f1b1d747639a"
+   },
+   "sw": {
+    "stand": "6a8a71987117a185cbf8644b3c3985cb56d3ca3283d2a60bcb3008f1037685fc",
+    "walk": "cd9774d5c60534bb239d865c5608b58d7990d4964e149617cd675cb500ff42b5",
+    "sit": "722661496022f412ecf30eea6b713c2d177e431370d51efea6260cd8c81646f0",
+    "squat": "be751bdc902ba589bfdfc35842981137328b8ab74d85e1382ba266cdf0473875",
+    "arms_up": "0bcbeb4359ebc1205cf6207faf2606139a2ea3b13654c1dc8cc1465ea66fc336"
+   },
+   "ne": {
+    "stand": "fd22927ff85a94af17a92c5c759bb73aad1279b73834868f84becef26a738c1e",
+    "walk": "eb2e4014428edb64a0dc9eb5b5c9620b8d791b78ec459eee36fa093acd253070",
+    "sit": "228fa2e2629d7564b6a50fac350ce4e57778e0878d987dce97a1ae63daa0e286",
+    "squat": "08d63509bdbcb0e09a935eca67f5987bcc35d4362fa89328001d3a9baa30364d",
+    "arms_up": "3c3e547591e56904c34c51c472b5938c2a5cb4418e4e0fd295c60442f61c04c6"
+   },
+   "nw": {
+    "stand": "3bf3a395d68e30c3a685a9c03cf9569951efa452c5c5815afea40b3b90908279",
+    "walk": "ee55d875c48b06a63c76d2c85fcbc96396a7862aa1f6f1d1a676a57b2f82caa4",
+    "sit": "630e1d4370c29a6cffefed6f1620b8456ff55161d0317f7288f187b7eedd38a6",
+    "squat": "3d4bf8daf8f7b0990e6da5e5a6f6b4c706c369f63a4ce52671feca2f240ff7a4",
+    "arms_up": "35cc49395ea3db6cf02720efa4498928d71e0deb04e3173eaa01459f9578c2dd"
+   }
+  },
+  "female": {
+   "se": {
+    "stand": "810543d38a301801c69497710f1c684e0b5d7734e0ddad754d637fbb02915c7b",
+    "walk": "73e75c1829124efea83ce6c953c6e0924db5492587a3336a883e5a8a6a83d83e",
+    "sit": "0eb2d420ddb076f017c6d89aea671a07b2e49c21358288011bc34a11756e49ed",
+    "squat": "644e43b5ec5d633c1f4960369fbafc037df352b29af6952bc03b771f5e51c335",
+    "arms_up": "cda8b3baba7118b03d52fb55109c073901f9e0b41ce008d84dc8e82dc5a4c667"
+   },
+   "sw": {
+    "stand": "ef6ac9252ab6fd9e656019806f2f8827ccc67823a69855023b40fe181d548b8f",
+    "walk": "b13d9c2763caacc7745c770ae747bd5a1831d1e1a7ddf1c5dff08c0a80a81f2b",
+    "sit": "90d6a9903ae425e84c81581411d4b47da7ed175373555180500d930bfc07d262",
+    "squat": "e030907b265daa61df79202919232a3f39544a99ecebef42bfd16be3aec47895",
+    "arms_up": "4fc0535d9fe859026541590b458c405b08305405f089f6ae29d8107bffd766f2"
+   },
+   "ne": {
+    "stand": "4268fd20fe5251c6e1c682514c7914973b01f0eb7c7d53ef20be030be3a1b602",
+    "walk": "73342ce8c28b5149831b359ccf6339036e3488e0571898a386bff9e8ea85f270",
+    "sit": "59b79ee412335f9821f860101b9895068ee2a15a78b3b66ce90be574cde631bf",
+    "squat": "5662e966037951af59702012dcd036a75c58963d71c27487f1c67860db085c8e",
+    "arms_up": "e7473b2b752e4d4eda8ce0b3dccf20f004f2ebf1554ff54e4b7330dae79753bf"
+   },
+   "nw": {
+    "stand": "e574fd6a2a8e337cbd23d23e6349502f45ffec0278263588fe835676c0cac171",
+    "walk": "006c5c04d9144aae10cdf6577c0d9a26574aa6f648cf71b70fb0b111f67836a3",
+    "sit": "4b42cd81c48aa7e3b020a76b7e9db075a6c4d8136bebd721f2f7b68b776a170a",
+    "squat": "92d1bbeb7c6540e3de56251fa107fde0d9a04396d20c6db8e0dad8d8bd70bac6",
+    "arms_up": "b4eb7c3c7e8dc7aa2d031c96257a716fff266597eb1304c3b13e8c768d9f85c6"
+   }
+  }
+ }
+}

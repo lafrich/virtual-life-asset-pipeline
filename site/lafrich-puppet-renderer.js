@@ -84,6 +84,18 @@
   ctx.drawImage(emosi,0,di*112,64,112,0,0,64,112);
   return new Uint8ClampedArray(ctx.getImageData(0,0,64,112).data);
  }
+ // W4 preview (LGR1Raster.setW4(true) + jointMode v4): tee_v4/trousers_v4 hidden under-strips (_under + _under_own)
+ async function w4Opts(selected,gender,dir,opts){
+  const W=root?.LGRWear,jm=opts?.jointMode??X().jointMode;
+  if(!(X().W4&&jm==="v4"&&W&&W.w4On&&W.w4On())||opts?.w4===false)return {};
+  const di=C().DIRS.indexOf(dir),under=[];
+  const strip=url=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(Error("W4 strip "+url));im.src=url});
+  const cell=async name=>{const img=await strip(W.previewWearUrl(name,gender));const c=rgba(),g=c.getContext("2d",{willReadFrequently:true});
+   g.drawImage(img,di*64,0,64,112,0,0,64,112);return new Uint8ClampedArray(g.getImageData(0,0,64,112).data)};
+  const want=[];if(selected?.wear?.top)want.push(W.W4_WEAR.top);if(selected?.wear?.pants&&opts?.outfit!=="skirt")want.push(W.W4_WEAR.pants);
+  for(const n of want){try{under.push({img:await cell(n+"_under"),own:await cell(n+"_under_own")})}catch{}}
+  return {w4:true,under};
+ }
  async function prepare(master,ch,dir,emosi=null,opts){
   const Cc=C(),m=Cc.validateMaster(master);
   const selected=ch?Cc.validateCharacter(ch):null;
@@ -100,11 +112,11 @@
   const raster=X().prepare({layers,wear,tweak,mask:Cc.decode(m.masks[dir]),
    pivots:m.pivots[dir],placements:m.placements?.[dir]||{},
    order:m.drawOrders?.[dir],caps:m.capRadius,face:emosiCell(emosi,dir),
-   jointMode:opts?.jointMode??X().jointMode});
+   jointMode:opts?.jointMode??X().jointMode,...(await w4Opts(selected,m.gender,dir,opts))});
   const outfit=opts?.outfit||outfitOf(selected),use=opts?.lowerSprites??X().LOWER_SPRITES;
   let lower=null;
   if(use) lower=await loadLowerBank(dir,m.gender,outfit,opts?.recolor);
-  return {master:m,character:selected,dir,raster,order:raster.order,outfit,lower};
+  return {master:m,character:selected,dir,raster,order:raster.order,outfit,lower,postRecolor:raster.w4?opts?.recolor||null:null};
  }
  function render(prepared,pose,opts){
   const o=opts&&typeof opts==="object"?{...opts}:{};
@@ -116,6 +128,7 @@
   }
   o.canvas=canvasMode;if(lower)o.lower=lower;
   const data=X().render(prepared.raster,pose||C().blankPose(),o);
+  if(prepared.postRecolor)prepared.postRecolor(data); // W4 preview: wear stayed in key colours through the passes
   const g=X().canvasGeom(canvasMode),canvas=rgba(g.cw,g.ch);
   canvas.getContext("2d").putImageData(new ImageData(data,g.cw,g.ch),0,0);
   canvas.dataset.lower=lower?picked||lower.pose||"sprite":"rig";

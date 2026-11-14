@@ -143,7 +143,7 @@ function prepare(profile,d,face,faceCol,opts){
  const X=root.LGR1Raster,seated=!!(opts&&opts.seated),outfit=(opts&&opts.outfit)||"pants";
  const wearHint=X&&X.LOWER_SPRITES?(root.LGRWear&&root.LGRWear.previewWearName(outfit,seated))||"preview":"official";
  const jm=X&&(X.jointMode||X.JOINT_MODE)||"v2";
- const key=lookKey(profile)+"|"+d+"|"+(face?face.src+"#"+faceCol:"-")+"|ls="+(X&&X.LOWER_SPRITES?"1":"0")+"|wear="+wearHint+"|jm="+jm;
+ const key=lookKey(profile)+"|"+d+"|"+(face?face.src+"#"+faceCol:"-")+"|ls="+(X&&X.LOWER_SPRITES?"1":"0")+"|wear="+wearHint+"|jm="+jm+(X&&X.W4?"|w4":"");
  if(preps.has(key))return preps.get(key);
  const p=(async()=>{
   const A=dep("LGRActor"),W=dep("LGRWear"),C=dep("LafrichPuppetCore"),R=dep("LafrichPuppetRenderer");
@@ -180,7 +180,7 @@ function frame(profile,dir,action,t,face,faceCol=0){
   if(seatedPrep.done&&!seatedPrep.error)pp=seatedPrep;
  }
  const jm=X.jointMode||X.JOINT_MODE||"v2";
- const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-")+"|lower="+picked+"|cv="+cv+"|wear="+wearId+"|jm="+jm+"|sh="+((X.SH_DY??0)+"|"+(X.RAISE_FRONT??120)+"|"+(X.HIP_CENTRE?"1":"0"));
+ const fkey=lookKey(profile)+"|"+d+"|"+r.source+":"+m.id+"|"+i+"|"+(face?face.src+"#"+faceCol:"-")+"|lower="+picked+"|cv="+cv+"|wear="+wearId+"|jm="+jm+(X.W4?"|w4":"")+"|sh="+((X.SH_DY??0)+"|"+(X.RAISE_FRONT??120)+"|"+(X.HIP_CENTRE?"1":"0"));
  if(frames.has(fkey))return frames.get(fkey);
  const R=dep("LafrichPuppetRenderer");
  const c=R.render(pp.value,pose,{order,canvas:cv,lowerSprites:use});

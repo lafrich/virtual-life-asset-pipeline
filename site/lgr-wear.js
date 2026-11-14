@@ -111,6 +111,9 @@ async function activeStrip(path,gender){
 function clearCache(){strips.clear();approvedRefs.clear()}
 // spec {top,topColor,pants,pantsColor,shoes,shoesColor,hair,hairColor}; gender; skin tone
 // → {pants:{se:dataURL,…}, top:…, top_back:…, shoes:…, hair_back:…, hair_front:…}
+function w4On(){return !!(root.LGR_W4_WEAR||root.LGR1Raster&&root.LGR1Raster.W4)}
+// W4 preview: tee_v4 / trousers_v4 strips stay in KEY colours (the renderer recolours after the W4 passes)
+const W4_WEAR={top:"tee_v4",pants:"trousers_v4"};
 function previewWearOn(){return !!(root.LGR_PREVIEW_WEAR||root.LGR1Raster&&root.LGR1Raster.LOWER_SPRITES)}
 function previewWearName(outfit,seated){
  if(outfit==="pants"||outfit==="trousers")return "trousers_a";
@@ -134,21 +137,25 @@ async function layers(spec,gender,tone,opts){
  if(ch.pants!=="nude")files.pants="pants/"+ch.pants+f;
  if(ch.shoes!=="nude")files.shoes="shoes/"+ch.shoes+f;
  if(ch.hair!=="none"){files.hair_back="hair/"+ch.hair+"_back";files.hair_front="hair/"+ch.hair+"_front"}
+ const w4=w4On()&&!(opts&&opts.w4===false),w4Names={};
+ if(w4){if(files.top){delete files.top_back;w4Names.top=W4_WEAR.top}if(files.pants&&ch.pants!=="skirt")w4Names.pants=W4_WEAR.pants}
  const seated=!!(opts&&opts.seated),preview=previewWearOn(),wantSkirt=(opts&&opts.outfit)==="skirt"||ch.pants==="skirt";
  const previewName=preview?previewWearName(wantSkirt?"skirt":(ch.pants==="trousers"||ch.pants==="pants"?"pants":null),seated):null;
- const out={};layers.lastWearId=previewName||"official";
+ const out={};layers.lastWearId=(w4&&(w4Names.top||w4Names.pants))?"w4":(previewName||"official");
  for(const [layer,path] of Object.entries(files)){
   let im=null;
-  if(layer==="pants"&&previewName)im=await loadPreviewWearImage(previewName,gender);
+  const w4n=w4Names[layer];
+  if(w4n)im=await loadPreviewWearImage(w4n,gender);
+  else if(layer==="pants"&&previewName)im=await loadPreviewWearImage(previewName,gender);
   if(!im)im=await activeStrip(path,gender);if(!im)continue;out[layer]={};
   for(let di=0;di<4;di++){
    const c=document.createElement("canvas");c.width=64;c.height=112;const g=c.getContext("2d",{willReadFrequently:true});
-   g.drawImage(im,di*64,0,64,112,0,0,64,112);const d=g.getImageData(0,0,64,112);recolor(d.data,M);
+   g.drawImage(im,di*64,0,64,112,0,0,64,112);const d=g.getImageData(0,0,64,112);if(!(w4n&&im))recolor(d.data,M);
    let any=false;for(let i=3;i<d.data.length;i+=4)if(d.data[i]){any=true;break}
    if(!any)continue;g.putImageData(d,0,0);out[layer][DIRS[di]]=c.toDataURL("image/png");
   }
  }
  return out;
 }
-return Object.freeze({OPT,P,K,norm,lookup,recolor,layers,activeStrip,clearCache,previewWearOn,previewWearName,previewWearUrl,loadPreviewWearImage});
+return Object.freeze({OPT,P,K,norm,lookup,recolor,layers,activeStrip,clearCache,previewWearOn,previewWearName,previewWearUrl,loadPreviewWearImage,w4On,W4_WEAR});
 });

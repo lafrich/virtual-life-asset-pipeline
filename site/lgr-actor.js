@@ -132,7 +132,7 @@ async function prepared(actor,d,face,opts){
  const seated=!!(opts&&opts.seated),outfit=(opts&&opts.outfit)||"pants";
  const wearId=(root.LGRWear&&root.LGR1Raster&&root.LGR1Raster.LOWER_SPRITES&&root.LGRWear.previewWearName(outfit,seated))||"official";
  const jm=(root.LGR1Raster&&(root.LGR1Raster.jointMode||root.LGR1Raster.JOINT_MODE))||"v2";
- const key=actor.gender+"|"+tone+"|"+JSON.stringify(spec)+"|"+d+"|"+(face?.key||"")+"|wear="+wearId+"|jm="+jm;
+ const key=actor.gender+"|"+tone+"|"+JSON.stringify(spec)+"|"+d+"|"+(face?.key||"")+"|wear="+wearId+"|jm="+jm+(root.LGR1Raster&&root.LGR1Raster.W4?"|w4":"");
  if(prepCache.has(key))return prepCache.get(key);
  const p=(async()=>{
   const m=await master(actor.gender,tone),ch=await wear(actor.gender,tone,spec,{seated,outfit});

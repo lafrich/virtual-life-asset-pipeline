@@ -27,7 +27,7 @@ const W=64,H=112,N=W*H;
 // Overflow canvas (option A, preview). Logical 64x112 + pivot (32,100) stay the contract.
 // Flags default off so live/tests stay pixel-identical. Twin of genesis_procedural_runtime.py.
 const BW=128,BH=128,OX=32,OY=16,LEGACY_GEOM={cw:W,ch:H,ox:0,oy:0,cn:N},OVERFLOW_GEOM={cw:BW,ch:BH,ox:OX,oy:OY,cn:BW*BH};
-let LOWER_SPRITES=false,CANVAS="legacy64";
+let LOWER_SPRITES=false,CANVAS="legacy64",W4=false; // W4: preview-only joint-safe wear (tee_v4/trousers_v4), needs jointMode v4
 const LEG_PARTS=Object.freeze(["leg_far_upper","leg_far_lower","leg_near_upper","leg_near_lower"]);
 const PARTS=Object.freeze(["leg_far_upper","leg_far_lower","arm_far_upper","arm_far_lower",
  "torso","leg_near_upper","leg_near_lower","arm_near_upper","arm_near_lower","head","pelvis"]);
@@ -284,7 +284,9 @@ function prepare(o){
  let face=null;
  if(o.face)face={img:o.face,bbox:bboxOf(o.face),scaled:null};
  const balls=(mode==="v2"||mode==="v4")?buildBalls(groups.main.parts,pivots,order):{};
- return {order,pivots,placements:o.placements||{},groups,face,mode,balls};
+ const prep={order,pivots,placements:o.placements||{},groups,face,mode,balls};
+ if(o.w4&&mode==="v4")w4Prep(prep,wear,o.under||[]);
+ return prep;
 }
 function pack(d,o){return d[o+3]?((d[o]<<24)|(d[o+1]<<16)|(d[o+2]<<8)|d[o+3])>>>0:0}
 function scale2x(src,w,h){
@@ -480,7 +482,8 @@ function v4Dilate(flags,cw,ch,cn,dirs){
  }
  return out;
 }
-function v4Post(px,geom,active,block,dejag,repair){
+function v4Post(px,geom,active,block,dejag,repair,fam){
+ const FAMM=fam||V4_FAM;
  const cw=geom.cw,ch=geom.ch,cn=geom.cn,a=Uint8ClampedArray.from(px);
  const op=new Uint8Array(cn);for(let i=0;i<cn;i++)if(a[i*4+3])op[i]=1;
  const act=active==null?new Uint8Array(cn).fill(1):Uint8Array.from(active);
@@ -510,7 +513,7 @@ function v4Post(px,geom,active,block,dejag,repair){
   const isol=new Uint8Array(cn);for(let i=0;i<cn;i++)if(op[i]&&V4_OUTL.has(v4Code(a,i)))isol[i]=1;
   for(let i=0;i<cn;i++){
    if(!(op[i]&&dil[i]&&act[i]))continue;
-   const c=v4Code(a,i);if(!V4_FAM.has(c))continue;
+   const c=v4Code(a,i);if(!FAMM.has(c))continue;
    const x=i%cw,y=(i/cw)|0;let blockish=false;
    for(const dy of [-1,1])for(const dx of [-1,1]){
     const iy=y+dy,ix=x+dx;if(ix<0||iy<0||ix>=cw||iy>=ch)continue;
@@ -519,7 +522,7 @@ function v4Post(px,geom,active,block,dejag,repair){
    let fillNb=false;
    for(const [dy,dx] of N8D){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=cw||ny>=ch)continue;const n=ny*cw+nx;if(op[n]&&!isol[n]){fillNb=true;break}}
    if(blockish||!fillNb)continue;
-   const ol=V4_FAM.get(c);a[i*4]=(ol>>>16)&255;a[i*4+1]=(ol>>>8)&255;a[i*4+2]=ol&255;
+   const ol=FAMM.get(c);a[i*4]=(ol>>>16)&255;a[i*4+1]=(ol>>>8)&255;a[i*4+2]=ol&255;
   }
  }
  return a;
@@ -533,7 +536,7 @@ function v4IdEntry(ent,idx,ex){
 function v4IdPrep(prep,geom){
  const key="_v4Id"+geom.cw;
  if(prep[key])return prep[key];
- const rest=renderParts(prep,zeroPose(),null,geom),after=v4Post(rest,geom);
+ const rest=renderParts(prep,zeroPose(),{noUnders:true},geom),after=v4Post(rest,geom);
  const cn=geom.cn,cw=geom.cw,ch=geom.ch,ox=geom.ox,oy=geom.oy;
  const changed=new Uint8Array(cn);
  for(let i=0;i<cn;i++)if(rest[i*4]!==after[i*4]||rest[i*4+1]!==after[i*4+1]||rest[i*4+2]!==after[i*4+2]||rest[i*4+3]!==after[i*4+3])changed[i]=1;
@@ -553,6 +556,7 @@ function v4IdPrep(prep,geom){
  }
  q.balls={};for(const ch of Object.keys(prep.balls||{}))q.balls[ch]=v4IdEntry(prep.balls[ch],PARTS.indexOf(ch)+1);
  if(prep.face)q.face=v4IdEntry(prep.face,hid);
+ if(prep.w4){q.w4={unders:{}};for(const ch of Object.keys(prep.w4.unders)){const u=prep.w4.unders[ch];q.w4.unders[ch]={ent:v4IdEntry(u.ent,PARTS.indexOf(u.par)+1),par:u.par}}}
  prep[key]=q;return q;
 }
 function zeroPose(){const z={};for(const p of PARTS)z[p]={x:0,y:0,a:0};return z}
@@ -592,7 +596,201 @@ function v4Passes(prep,pose,opts,out,geom){
  return v4Post(out,geom,act,blk);
 }
 
+// ---- W4 joint-safe wear (PREVIEW, port of lgr-outfit-v4/tools/w4.py; only when prepare({w4:true}) on a v4 prep) ----
+const W4_RAISE_OVER=60,W4_SEAL_R=3,W4_LEG_UNDER_ROWS=2;
+const W4_SKIN_FAM=new Map(["#FF2CE8","#FF32E5","#FF38E2","#FF3EDF"].map(h=>[hx(h),hx("#FF44DC")]));
+const W4_SKIN=new Set([...W4_SKIN_FAM.keys(),hx("#FF44DC"),hx("#FF4AD9")]);
+const W4_PANTS=new Set(["#FF92B5","#FF98B2","#FF9EAF","#FFA4AC"].map(hx));
+const W4_GARMENT=new Set(["#FF50D6","#FF56D3","#FF5CD0","#FF62CD","#FF68CA","#FF6EC7","#FF74C4","#FF7AC1","#FF80BE","#FF86BB","#FF8CB8",
+ "#FF92B5","#FF98B2","#FF9EAF","#FFA4AC","#FFAAA9","#FFB0A6","#FFB6A3","#FFBCA0","#FFC89A","#FFCE97"].map(hx));
+const W4_ARMS=["arm_far_upper","arm_far_lower","arm_near_upper","arm_near_lower"];
+const rgbAt=(b,k)=>(b[k*4]<<16)|(b[k*4+1]<<8)|b[k*4+2];
+function roundHalfEven(v){const f=Math.floor(v),d=v-f;if(d===.5)return f%2===0?f:f+1;return d<.5?f:f+1}
+function w4Top(counts){let best=null,bn=-1;for(const [c,n] of [...counts.entries()].sort((a,b)=>a[0]-b[0]))if(n>bn){best=c;bn=n}return [best,bn]}
+function w4GarmentFam(wear){
+ const fam=new Map();
+ for(const layer of Object.keys(wear||{})){
+  const b=wear[layer];if(!b)continue;
+  const op=new Uint8Array(N);let any=false;for(let k=0;k<N;k++)if(b[k*4+3]){op[k]=1;any=true}
+  if(!any)continue;
+  const ec=new Map(),ic=new Map();let etot=0;
+  for(let k=0;k<N;k++){
+   if(!op[k])continue;const x=k%W,y=(k-x)/W;
+   const er=x>0&&x<W-1&&y>0&&y<H-1&&op[k-1]&&op[k+1]&&op[k-W]&&op[k+W];
+   const c=rgbAt(b,k),m=er?ic:ec;m.set(c,(m.get(c)||0)+1);if(!er)etot++;
+  }
+  if(!ic.size)continue;
+  const [eTop,en]=w4Top(ec),[fill]=w4Top(ic);
+  if(eTop!==fill&&en>=0.5*etot)for(const v of [...ic.keys()].sort((a,b)=>a-b))if(v!==eTop&&(v>>>16)===(eTop>>>16))fam.set(v,eTop);
+ }
+ return fam;
+}
+// tie-break twin of Python's max(set(band), key=band.count): CPython 3.13 tuple hash + set slot order (<=4 items, table 8)
+const PYM=(1n<<64n)-1n,PYP1=11400714785074694791n,PYP2=14029467366897019727n,PYP5=2870177450012600261n;
+function w4PyHash(t){let acc=PYP5;for(const v of t){acc=(acc+BigInt(v)*PYP2)&PYM;acc=((acc<<31n)|(acc>>33n))&PYM;acc=(acc*PYP1)&PYM}
+ acc=(acc+(BigInt(t.length)^(PYP5^3527539n)))&PYM;return acc===PYM?1546275796n:acc}
+function w4PySetOrder(list){
+ const uniq=[],seen=new Set();for(const t of list){const k=t.join(",");if(!seen.has(k)){seen.add(k);uniq.push(t)}}
+ if(uniq.length>4)return uniq;
+ const tab=new Array(8).fill(null);
+ for(const t of uniq){const h=w4PyHash(t);let i=Number(h&7n),pt=h;while(tab[i]){pt>>=5n;i=Number((BigInt(i)*5n+1n+pt)&7n)}tab[i]=t}
+ return tab.filter(Boolean);
+}
+function w4Entry(img){const bb=bboxOf(img);return bb?{img,bbox:bb,scaled:null}:null}
+function w4ArmpitUnders(gm,pivots){
+ const T=gm.torso.img,out={};
+ for(const s of ["near","far"]){
+  const ch="arm_"+s+"_upper",C=gm[ch].img;
+  let sx=0,n=0;for(let k=0;k<N;k++)if(C[k*4+3]){sx+=k%W;n++}
+  if(!n)continue;
+  const left=sx/n<32,to=(x,y)=>T[(y*W+x)*4+3]>0,co=(x,y)=>C[(y*W+x)*4+3]>0;
+  const te=y=>{if(y<0||y>=H)return null;let r=null;for(let x=0;x<W;x++)if(to(x,y)){if(left){r=x;break}r=x}return r};
+  const py=pivots[ch].y;let top=null;
+  for(let y=py+1;y>py-6;y--){const e=te(y);if(e===null)continue;let hit=false;
+   if(left){for(let x=0;x<e;x++)if(co(x,y)){hit=true;break}}else{for(let x=e+1;x<W;x++)if(co(x,y)){hit=true;break}}
+   if(!hit){top=y;break}}
+  if(top===null)continue;
+  let bot=null;for(let y=top+1;y<H;y++){const e=te(y);if(e===null)break;const nb=left?e-1:e+1;if(!(nb>=0&&nb<W&&co(nb,y))){bot=y;break}}
+  if(bot===null||bot-top<2)continue;
+  const et=te(top),eb=te(bot),img=new Uint8ClampedArray(N*4),eo=(top*W+et)*4,edge=[T[eo],T[eo+1],T[eo+2],T[eo+3]];
+  for(let y=top+1;y<bot;y++){
+   const e=roundHalfEven(et+(eb-et)*(y-top)/(bot-top)),cur=te(y);
+   const band=[];for(let x=left?cur:cur-3;x<(left?cur+4:cur+1);x++)if(x>=0&&x<W&&T[(y*W+x)*4+3]){const o=(y*W+x)*4;band.push([T[o],T[o+1],T[o+2],T[o+3]])}
+   const band2=band; // w4.py's outline-key filter is a no-op there (uint8 shifts wrap), mirrored for parity
+   let inner=edge;if(band2.length){const cnt=new Map();let bn=-1;for(const b of band2){const kk=b.join(",");cnt.set(kk,(cnt.get(kk)||0)+1)}for(const b of w4PySetOrder(band2)){const n2=cnt.get(b.join(","));if(n2>bn){bn=n2;inner=b}}}
+   const x0=left?e:cur+1,x1=left?cur:e+1;
+   for(let x=x0;x<x1;x++){if(!co(x,y))continue;const c=x===e?edge:inner,o=(y*W+x)*4;img[o]=c[0];img[o+1]=c[1];img[o+2]=c[2];img[o+3]=c[3]}
+  }
+  const ent=w4Entry(img);if(ent)out[ch]={ent,par:"torso"};
+ }
+ return out;
+}
+function w4LegUnders(gm){
+ const out={};
+ for(const s of ["near","far"])for(const [ch,par] of [["leg_"+s+"_upper","pelvis"],["leg_"+s+"_lower","leg_"+s+"_upper"]]){
+  const C=gm[ch].img,P=gm[par].img,co=k=>C[k*4+3]>0,po=k=>P[k*4+3]>0;
+  let top=-1,anyP=false;for(let k=0;k<N;k++){if(top<0&&co(k))top=(k/W)|0;if(po(k))anyP=true}
+  if(top<0||!anyP)continue;
+  const img=new Uint8ClampedArray(N*4),lim=ch.endsWith("upper")?Math.min(top,H-1):H-1;
+  for(let x=0;x<W;x++){
+   let yb=-1;for(let y=0;y<=lim;y++)if(po(y*W+x))yb=y;
+   if(yb<0)continue;
+   const fk=(yb-1>=0&&po((yb-1)*W+x))?(yb-1)*W+x:yb*W+x,bk=yb*W+x;
+   for(let y=yb+1;y<yb+1+W4_LEG_UNDER_ROWS;y++)if(y<H&&co(y*W+x)){const sk=y===yb+W4_LEG_UNDER_ROWS?bk:fk,o=(y*W+x)*4;for(let j=0;j<4;j++)img[o+j]=P[sk*4+j]}
+  }
+  const ent=w4Entry(img);if(ent)out[ch]={ent,par};
+ }
+ return out;
+}
+function w4Prep(prep,wear,under){
+ const gm=prep.groups.main.parts;
+ for(const u of under||[]){
+  const U=u.img||u[0],O=u.own||u[1];if(!U||!O)continue;
+  for(let k=0;k<N;k++){
+   if(!U[k*4+3]||!O[k*4+3]||!O[k*4])continue;
+   const part=PARTS[O[k*4]-1];if(!part||!gm[part])continue;const img=gm[part].img;
+   if(img[k*4+3])continue;for(let j=0;j<4;j++)img[k*4+j]=U[k*4+j];
+  }
+ }
+ for(const part of Object.keys(gm)){gm[part].bbox=bboxOf(gm[part].img);gm[part].scaled=null}
+ const fam=new Map(W4_SKIN_FAM);for(const [k,v] of w4GarmentFam(wear))fam.set(k,v);
+ prep.w4={fam,unders:Object.assign(w4ArmpitUnders(gm,prep.pivots),w4LegUnders(gm))};
+ return prep;
+}
+function w4RaiseOrder(prep,pose,od){
+ const order=validOrder(od)?od.slice():prep.order.slice();
+ for(const s of ["near","far"]){
+  const up="arm_"+s+"_upper",lo="arm_"+s+"_lower",left=prep.pivots[up].x<32;
+  let a=Number((pose&&pose[up]||{}).a)||0;a=((a+180)%360+360)%360-180;const oa=left?a:-a;
+  if(oa>=W4_RAISE_OVER||(s==="near"&&oa<=-W4_RAISE_OVER)){
+   for(const p of [up,lo])if(order.indexOf(p)<order.indexOf("torso")){order.splice(order.indexOf(p),1);order.splice(order.indexOf("torso")+1,0,p)}
+   if(order.indexOf(lo)<order.indexOf(up)){order.splice(order.indexOf(lo),1);order.splice(order.indexOf(up)+1,0,lo)}
+  }
+ }
+ return order;
+}
+function w4Seal1(a,own,movedIdx,act,block,geom){
+ const cw=geom.cw,ch=geom.ch,cn=geom.cn,op=new Uint8Array(cn);for(let i=0;i<cn;i++)if(a[i*4+3])op[i]=1;
+ const at=(y,x)=>op[(((y%ch)+ch)%ch)*cw+(((x%cw)+cw)%cw)];
+ const dil=v4Dilate(op,cw,ch,cn,N8D);
+ const slit=[];
+ for(let i=0;i<cn;i++){
+  if(op[i]||!act[i])continue;const x=i%cw,y=(i/cw)|0;
+  let s=(at(y,x-1)&&at(y,x+1))||(at(y-1,x)&&at(y+1,x))||(at(y-1,x-1)&&at(y+1,x+1))||(at(y-1,x+1)&&at(y+1,x-1))||
+   (at(y,x-1)&&at(y,x+2))||(at(y,x+1)&&at(y,x-2))||(at(y-1,x)&&at(y+2,x))||(at(y+1,x)&&at(y-2,x));
+  if(!s&&x>0&&y>0&&x<cw-1&&y<ch-1&&v4Ncount(op,cw,ch,i,N8D)>=5){let all=true;for(let dy=-1;dy<=1&&all;dy++)for(let dx=-1;dx<=1;dx++)if(!dil[(y+dy)*cw+x+dx]){all=false;break}s=all}
+  if(s)slit.push(i);
+ }
+ if(!slit.length)return null;
+ const hid=PARTS.indexOf("head"),tid=PARTS.indexOf("torso"),armi=new Set(W4_ARMS.map(p=>PARTS.indexOf(p)));
+ const code=i=>rgbAt(a,i),cloth=i=>op[i]&&!W4_SKIN.has(code(i)),headm=i=>op[i]&&(own[i]===hid||block[i]),mv=i=>op[i]&&movedIdx.has(own[i]);
+ const out=Uint8ClampedArray.from(a);
+ for(const i of slit){
+  const x=i%cw,y=(i/cw)|0;let nb=[];
+  for(const [dy,dx] of [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]]){const ny=y+dy,nx=x+dx;if(ny>=0&&ny<ch&&nx>=0&&nx<cw&&op[ny*cw+nx])nb.push(ny*cw+nx)}
+  if(!nb.length)continue;
+  if(nb.some(headm)){if(nb.some(q=>armi.has(own[q]))||!nb.some(q=>cloth(q)&&own[q]===tid))continue;nb=nb.filter(q=>!headm(q))}
+  if(nb.some(q=>armi.has(own[q])&&!cloth(q))&&nb.some(q=>!armi.has(own[q])))continue;
+  const key=q=>[cloth(q)?0:1,mv(q)?0:1,V4_OUTL.has(code(q))?1:0];
+  nb=nb.map((q,j)=>[key(q),j,q]).sort((p,r)=>p[0][0]-r[0][0]||p[0][1]-r[0][1]||p[0][2]-r[0][2]||p[1]-r[1]).map(e=>e[2]);
+  if(!nb.length)continue;const q=nb[0];for(let j=0;j<4;j++)out[i*4+j]=a[q*4+j];
+ }
+ return out;
+}
+function w4Seal(px,own,movedIdx,act,block,geom,iters){for(let n=0;n<(iters||12);n++){const q=w4Seal1(px,own,movedIdx,act,block,geom);if(!q)break;px=q}return px}
+function w4Despeckle(px,zone,geom,iters){
+ const cw=geom.cw,ch=geom.ch,cn=geom.cn,a=Uint8ClampedArray.from(px);
+ for(let n=0;n<(iters||3);n++){
+  const op=new Uint8Array(cn),G=new Uint8Array(cn);
+  for(let i=0;i<cn;i++)if(a[i*4+3]){op[i]=1;if(W4_GARMENT.has(rgbAt(a,i)))G[i]=1}
+  const kill=[];
+  for(let i=0;i<cn;i++){
+   if(!G[i]||!zone[i])continue;
+   const n8=v4Ncount(op,cw,ch,i,N8D),g8=v4Ncount(G,cw,ch,i,N8D),n4=v4Ncount(op,cw,ch,i,N4D)-1;
+   if(n8<=2||g8<=1||(W4_PANTS.has(rgbAt(a,i))&&n4<=1))kill.push(i);
+  }
+  if(!kill.length)break;for(const i of kill)a[i*4]=a[i*4+1]=a[i*4+2]=a[i*4+3]=0;
+ }
+ return a;
+}
+function w4Erode(flags,cw,ch,cn){const o=new Uint8Array(cn);for(let i=0;i<cn;i++){if(!flags[i])continue;const x=i%cw,y=(i/cw)|0;if(x>0&&y>0&&x<cw-1&&y<ch-1&&flags[i-1]&&flags[i+1]&&flags[i-cw]&&flags[i+cw])o[i]=1}return o}
+function w4Render(prep,pose,opts){
+ const geom=canvasGeom(opts?.canvas),order=w4RaiseOrder(prep,pose,opts?.order),o2=Object.assign({},opts||{},{order,lower:null});
+ let out=renderParts(prep,pose,o2,geom);
+ out=v4RaiseFront(prep,pose,o2,out,geom);
+ const moved=v4Moved(pose);
+ if(moved.size){
+  const ids=renderParts(v4IdPrep(prep,geom),pose,o2,geom);
+  const cw=geom.cw,ch=geom.ch,cn=geom.cn,ox=geom.ox,oy=geom.oy,hid=PARTS.indexOf("head");
+  const act=new Uint8Array(cn),head=new Uint8Array(cn),blk=new Uint8Array(cn),own=new Int16Array(cn);
+  for(let i=0;i<cn;i++){own[i]=ids[i*4]-1;if(!ids[i*4+3])continue;
+   if(own[i]===hid)head[i]=1;if(head[i]||ids[i*4+1])blk[i]=1;
+   if(own[i]>=0&&own[i]<PARTS.length&&moved.has(PARTS[own[i]])&&PARTS[own[i]]!=="head")act[i]=1}
+  const tr=matrices(prep.pivots,prep.placements,pose);
+  for(const c of moved){
+   const par=PARENTS[c];if(!par||moved.has(par)||par==="head")continue;
+   const [jx,jy]=mapPoint(tr[par].mat,prep.pivots[c].x,prep.pivots[c].y),pi=PARTS.indexOf(par);
+   for(let i=0;i<cn;i++){if(own[i]!==pi)continue;const x=i%cw-ox+.5,y=((i/cw)|0)-oy+.5;if((x-jx)*(x-jx)+(y-jy)*(y-jy)<=56.25)act[i]=1}
+  }
+  out=v4Post(out,geom,act,blk,true,true,prep.w4.fam);
+  let zone=act;for(let n=0;n<W4_SEAL_R;n++)zone=v4Dilate(zone,cw,ch,cn,N4D);
+  if([...moved].some(p=>p.startsWith("arm_"))){
+   const ti=new Set(["torso","pelvis","leg_near_upper","leg_far_upper"].map(p=>PARTS.indexOf(p))),tp=new Uint8Array(cn);
+   for(let i=0;i<cn;i++)if(ids[i*4+3]&&ti.has(own[i]))tp[i]=1;
+   const er=w4Erode(tp,cw,ch,cn);let b=new Uint8Array(cn);for(let i=0;i<cn;i++)b[i]=tp[i]&&!er[i]?1:0;
+   b=v4Dilate(v4Dilate(b,cw,ch,cn,N4D),cw,ch,cn,N4D);zone=Uint8Array.from(zone);for(let i=0;i<cn;i++)if(b[i])zone[i]=1;
+  }
+  const mi=new Set([...moved].map(p=>PARTS.indexOf(p)));
+  out=w4Seal(out,own,mi,zone,head,geom,12);
+  const hd=v4Dilate(head,cw,ch,cn,N4D),dz=new Uint8Array(cn);for(let i=0;i<cn;i++)dz[i]=zone[i]&&!hd[i]?1:0;
+  out=w4Despeckle(out,dz,geom,3);
+  out=w4Seal(out,own,mi,zone,head,geom,3);
+ }
+ if(PINHOLE>0)pinholeFill(out,undefined,geom);
+ return out;
+}
 function render(prep,pose,opts){
+ if(prep.w4&&prep.mode==="v4")return w4Render(prep,pose,opts);
  const geom=canvasGeom(opts?.canvas);let out=renderParts(prep,pose,opts,geom);
  if(prep.mode==="v2"||prep.mode==="v4"){if(prep.mode==="v4")out=v4Passes(prep,pose,opts,out,geom);if(PINHOLE>0)pinholeFill(out,undefined,geom);return out}
  if(geom.cw!==W||geom.ch!==H)return out;
@@ -608,11 +806,13 @@ function renderParts(prep,pose,opts,geom){
   if(!only)for(let k=0;k<N;k++){const c=k*4;if(s[c+3]){const x=k%W,y=(k-x)/W;over(out,(y+oy)*cw+(x+ox),s[c],s[c+1],s[c+2],s[c+3])}}
   if(name==="main"&&lower&&!only)drawEntry(out,lower,tr.pelvis,g);
   let balls=name==="main"?(prep.balls||{}):{};
+  const unders=(name==="main"&&prep.w4&&!opts?.noUnders)?prep.w4.unders:null;
   if(hideLegs)balls=Object.fromEntries(Object.entries(balls).filter(([k])=>!String(k).startsWith("leg_")));
   order.forEach((part,idx)=>{
    if(only&&!only.has(part))return;
    if(!only)for(const child of Object.keys(balls))if(Math.min(order.indexOf(child),order.indexOf(PARENTS[child]))===idx)drawEntry(out,balls[child],tr[child],g);
    if(hideLegs&&LEG_PARTS.includes(part))return;
+   if(unders&&unders[part]&&!only)drawEntry(out,unders[part].ent,tr[unders[part].par],g);
    drawEntry(out,grp.parts[part],tr[part],g);
   });
   if(name==="main"&&prep.face&&(!only||only.has("head")))drawEntry(out,prep.face,tr.head,g);
@@ -621,9 +821,10 @@ function renderParts(prep,pose,opts,geom){
 }
 function setJointMode(m){JOINT_MODE_CUR=(m==="v4"||m==="legacy"||m==="v2")?m:"v2"}
 function setLowerSprites(v){LOWER_SPRITES=!!v}
+function setW4(v){W4=!!v}
 function setCanvas(mode){CANVAS=mode==="overflow128"?"overflow128":"legacy64"}
 return Object.freeze({W,H,N,BW,BH,OX,OY,PARTS,PARENTS,DRAW_ORDER,GROUPS,LAYERS,CAP_RADIUS,INHERIT,UNASSIGNED,bodyMask,
  over,expandMask,prepare,render,renderParts,JOINT_FILL,JOINT_MODE,SH_DY,RAISE_FRONT,HIP_CENTRE,V4_CRACK,KNEE_Y,HIP_Y,PINHOLE,fixSlice,buildBalls,pinholeFill,
- shoulderToTorso,v4Post,v4Passes,matrices,scale2x,validOrder,bboxOf,canvasGeom,cropLogical,selectLower,lowerAngles,lowerFileName,previewWearId,SEATED_POSES,LEG_PARTS,
- get LOWER_SPRITES(){return LOWER_SPRITES},get CANVAS(){return CANVAS},get jointMode(){return JOINT_MODE_CUR},setLowerSprites,setCanvas,setJointMode});
+ shoulderToTorso,v4Post,v4Passes,w4Render,w4GarmentFam,w4RaiseOrder,W4_RAISE_OVER,matrices,scale2x,validOrder,bboxOf,canvasGeom,cropLogical,selectLower,lowerAngles,lowerFileName,previewWearId,SEATED_POSES,LEG_PARTS,
+ get LOWER_SPRITES(){return LOWER_SPRITES},get W4(){return W4},setW4,get CANVAS(){return CANVAS},get jointMode(){return JOINT_MODE_CUR},setLowerSprites,setCanvas,setJointMode});
 });
